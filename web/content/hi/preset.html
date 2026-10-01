@@ -1,0 +1,91 @@
+{{ with .Preset }}
+<p class="eyebrow"><a href="{{ $.Up.URL }}">{{ $.Up.Label }}</a></p>
+<h1>{{ .Title }}</h1>
+<p class="lead">{{ .Question }}</p>
+<p>
+  <code>{{ .ID }}</code> प्रीसेट एक कमांड में इस सवाल के लिए असली टेस्ट फ़ाइलों का पूरा सेट बनाता है,
+  और उनके बगल में एक <code>manifest.json</code> जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या
+  प्रतिक्रिया देनी चाहिए। नीचे सब कुछ इस संस्करण के डिफ़ॉल्ट पर प्रोग्राम से पढ़ा गया है।
+</p>
+
+{{ if .Catches }}
+<section class="section" id="catches">
+  <h2>यह आम तौर पर क्या पकड़ता है?</h2>
+  <ul class="ticks">
+  {{- range .Catches }}
+    <li>{{ . }}</li>
+  {{- end }}
+  </ul>
+</section>
+{{ end }}
+
+<section class="section" id="set">
+  <h2>सेट में क्या है?</h2>
+  <p>डिफ़ॉल्ट पर, जैसा <code>tfg preset show {{ .ID }}</code> बताता है:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">फ़ाइलें</th><td>{{ .Budget.Files }}</td></tr>
+        <tr><th scope="row">इसकी रेसिपी में टार्गेट</th><td>{{ .Budget.Targets }}</td></tr>
+        <tr><th scope="row">कुल आकार</th><td>{{ .Bytes }} B</td></tr>
+        <tr><th scope="row">फ़ॉर्मैट</th><td>{{ join .Budget.Formats ", " }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>और उस सेट का मैनिफ़ेस्ट आपके सिस्टम से क्या अपेक्षा रखता है:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>अपेक्षित</th><th>अर्थ</th><th class="num">फ़ाइलें</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Outcomes }}
+        <tr><td><code>{{ .Name }}</code></td><td>{{ .Meaning }}</td><td class="num">{{ .Count }}</td></tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>आप क्या बदल सकते हैं?</h2>
+  {{- if .Settings }}
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>सेटिंग</th><th>लेती है</th><th>डिफ़ॉल्ट</th><th>क्या करती है</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Settings }}
+        <tr>
+          <td><code>--{{ .Flag }}</code></td>
+          <td>{{ .Takes }}</td>
+          <td><code>{{ .Default }}</code></td>
+          <td>{{ .Detail }}{{ if .Placeholder }} <strong>यह डिफ़ॉल्ट हमारी अस्थायी जगह-धारक संख्या है, आपके सिस्टम का मान नहीं। अपना मान दें।</strong>{{ end }}</td>
+        </tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+  {{- else }}
+  <p>इस प्रीसेट की कोई सेटिंग नहीं है। सेट हर बार वही रहता है।</p>
+  {{- end }}
+</section>
+
+<section class="section" id="run">
+  <h2>इसे कैसे चलाएँ?</h2>
+  <p>देखें कि सेट की क़ीमत क्या होगी, उसे बनाएँ, या संपादन के लिए उसकी रेसिपी लें:</p>
+  <pre><code>tfg preset show {{ .ID }}
+tfg generate --preset {{ .ID }}{{ range .Placeholders }} --{{ .Flag }} {{ .Default }}{{ end }} --out ./{{ .ID }}
+tfg preset eject {{ .ID }} &gt; {{ .ID }}.yaml</code></pre>
+  <p>या अपनी रेसिपी में, अपने टेस्ट के बगल में, इस पर आगे बनाएँ:</p>
+  <pre><code>version: 1
+extends: preset:{{ .ID }}
+{{- with .Placeholders }}
+with:
+{{- range . }}
+  {{ .Flag }}: {{ .Default }}
+{{- end }}
+{{- end }}</code></pre>
+</section>
+{{ end }}

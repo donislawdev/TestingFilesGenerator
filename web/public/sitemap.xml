@@ -40,6 +40,45 @@
     <loc>https://testingfilesgenerator.donislawdev.com/presets/upload-validation/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/formats/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/presets/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/docs/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/use-cases/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/create-file-exact-size/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/faq/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/presets/empty-and-minimal/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/presets/filename-handling/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/presets/size-boundaries/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/presets/tabular-import/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/presets/text-encoding/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/presets/upload-validation/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/cs/</loc>
   </url>
   <url>
@@ -194,6 +233,45 @@
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/fr/prereglages/upload-validation/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/formats/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/presets/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/docs/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/use-cases/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/create-file-exact-size/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/faq/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/presets/empty-and-minimal/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/presets/filename-handling/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/presets/size-boundaries/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/presets/tabular-import/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/presets/text-encoding/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/presets/upload-validation/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/id/</loc>
@@ -545,6 +623,45 @@
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/ru/presets/upload-validation/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/formats/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/presets/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/docs/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/use-cases/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/create-file-exact-size/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/faq/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/presets/empty-and-minimal/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/presets/filename-handling/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/presets/size-boundaries/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/presets/tabular-import/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/presets/text-encoding/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/presets/upload-validation/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/tr/</loc>

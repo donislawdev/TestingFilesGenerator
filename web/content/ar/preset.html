@@ -1,0 +1,91 @@
+{{ with .Preset }}
+<p class="eyebrow"><a href="{{ $.Up.URL }}">{{ $.Up.Label }}</a></p>
+<h1>{{ .Title }}</h1>
+<p class="lead">{{ .Question }}</p>
+<p>
+  يبني الإعداد المسبق <code>{{ .ID }}</code> بأمر واحد مجموعة كاملة من ملفات الاختبار الحقيقية لهذا
+  السؤال، وبجانبها <code>manifest.json</code> يحدد كيف يجب أن يتفاعل نظامك مع كل ملف. كل ما يلي
+  مقروء من البرنامج، عند القيم الافتراضية لهذا الإصدار.
+</p>
+
+{{ if .Catches }}
+<section class="section" id="catches">
+  <h2>ماذا يكتشف عادةً؟</h2>
+  <ul class="ticks">
+  {{- range .Catches }}
+    <li>{{ . }}</li>
+  {{- end }}
+  </ul>
+</section>
+{{ end }}
+
+<section class="section" id="set">
+  <h2>ماذا في المجموعة؟</h2>
+  <p>عند القيم الافتراضية، كما يبلّغ <code>tfg preset show {{ .ID }}</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">الملفات</th><td>{{ .Budget.Files }}</td></tr>
+        <tr><th scope="row">الأهداف في وصفته</th><td>{{ .Budget.Targets }}</td></tr>
+        <tr><th scope="row">الحجم الإجمالي</th><td>{{ .Bytes }} B</td></tr>
+        <tr><th scope="row">الصيغ</th><td>{{ join .Budget.Formats ", " }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>وما يتوقعه بيان تلك المجموعة من نظامك:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>المتوقع</th><th>المعنى</th><th class="num">الملفات</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Outcomes }}
+        <tr><td><code>{{ .Name }}</code></td><td>{{ .Meaning }}</td><td class="num">{{ .Count }}</td></tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>ما الذي يمكنك تغييره؟</h2>
+  {{- if .Settings }}
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>الإعداد</th><th>يقبل</th><th>الافتراضي</th><th>ما يفعله</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Settings }}
+        <tr>
+          <td><code>--{{ .Flag }}</code></td>
+          <td>{{ .Takes }}</td>
+          <td><code>{{ .Default }}</code></td>
+          <td>{{ .Detail }}{{ if .Placeholder }} <strong>هذه القيمة الافتراضية مؤقتة منا، وليست قيمة نظامك. مرّر قيمتك أنت.</strong>{{ end }}</td>
+        </tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+  {{- else }}
+  <p>لا إعدادات لهذا الإعداد المسبق. المجموعة هي نفسها في كل مرة.</p>
+  {{- end }}
+</section>
+
+<section class="section" id="run">
+  <h2>كيف تشغّله؟</h2>
+  <p>اطّلع على كلفة المجموعة، أو ابنِها، أو خذ وصفتها لتعدّلها:</p>
+  <pre><code>tfg preset show {{ .ID }}
+tfg generate --preset {{ .ID }}{{ range .Placeholders }} --{{ .Flag }} {{ .Default }}{{ end }} --out ./{{ .ID }}
+tfg preset eject {{ .ID }} &gt; {{ .ID }}.yaml</code></pre>
+  <p>أو ابنِ عليه في وصفة خاصة بك، بجانب اختباراتك:</p>
+  <pre><code>version: 1
+extends: preset:{{ .ID }}
+{{- with .Placeholders }}
+with:
+{{- range . }}
+  {{ .Flag }}: {{ .Default }}
+{{- end }}
+{{- end }}</code></pre>
+</section>
+{{ end }}

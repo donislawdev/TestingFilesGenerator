@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="hi">
+<title>तय आकार की फ़ाइल कैसे बनाएँ - Windows, Linux, macOS</title>
+<meta name="description" content="fsutil, dd, truncate और mkfile, हर एक अपने सिस्टम पर मापा गया, और जब टेस्ट को PDF या PNG चाहिए तब इस तरह बनी फ़ाइल क्यों काम नहीं आती।">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/hi/create-file-exact-size/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/create-file-exact-size/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/vytvoreni-souboru-presne-velikosti/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/datei-bestimmter-groesse-erstellen/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/crear-archivo-de-tamano-exacto/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/creer-fichier-taille-exacte/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/create-file-exact-size/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/membuat-file-ukuran-tepat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/creare-file-di-dimensione-esatta/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/create-file-exact-size/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/create-file-exact-size/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/bestand-met-exacte-grootte-maken/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/plik-o-zadanym-rozmiarze/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/criar-arquivo-de-tamanho-exato/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/creare-fisier-de-dimensiune-exacta/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/create-file-exact-size/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/create-file-exact-size/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/tam-boyutta-dosya-olusturma/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/create-file-exact-size/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tao-tep-kich-thuoc-chinh-xac/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/create-file-exact-size/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/create-file-exact-size/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/create-file-exact-size/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="hi_IN">
+<meta property="og:title" content="तय आकार की फ़ाइल कैसे बनाएँ - Windows, Linux, macOS">
+<meta property="og:description" content="fsutil, dd, truncate और mkfile, हर एक अपने सिस्टम पर मापा गया, और जब टेस्ट को PDF या PNG चाहिए तब इस तरह बनी फ़ाइल क्यों काम नहीं आती।">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/hi/create-file-exact-size/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - सटीक आकार की असली टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="तय आकार की फ़ाइल कैसे बनाएँ - Windows, Linux, macOS">
+<meta name="twitter:description" content="fsutil, dd, truncate और mkfile, हर एक अपने सिस्टम पर मापा गया, और जब टेस्ट को PDF या PNG चाहिए तब इस तरह बनी फ़ाइल क्यों काम नहीं आती।">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - सटीक आकार की असली टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "होम",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/hi/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "सटीक आकार",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/hi\/create-file-exact-size\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">सामग्री पर जाएँ</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/hi/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="मुख्य मेनू">
+      <a href="/hi/">होम</a>
+      <a href="/hi/formats/">फ़ॉर्मैट</a>
+      <a href="/hi/presets/">प्रीसेट</a>
+      <a href="/hi/docs/">दस्तावेज़ीकरण</a>
+      <a href="/hi/use-cases/">उपयोग के मामले</a>
+      <a href="/hi/create-file-exact-size/" aria-current="page">सटीक आकार</a>
+      <a href="/hi/faq/">FAQ</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="भाषा: हिन्दी">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>हिन्दी</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/create-file-exact-size/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/create-file-exact-size/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/datei-bestimmter-groesse-erstellen/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/crear-archivo-de-tamano-exacto/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/creer-fichier-taille-exacte/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/membuat-file-ukuran-tepat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/creare-file-di-dimensione-esatta/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/create-file-exact-size/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/create-file-exact-size/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/bestand-met-exacte-grootte-maken/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/plik-o-zadanym-rozmiarze/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/criar-arquivo-de-tamanho-exato/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/creare-fisier-de-dimensiune-exacta/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/create-file-exact-size/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/create-file-exact-size/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/tam-boyutta-dosya-olusturma/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/create-file-exact-size/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tao-tep-kich-thuoc-chinh-xac/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/create-file-exact-size/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/create-file-exact-size/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>सटीक आकार की फ़ाइल कैसे बनाएँ</h1>
+<p class="lead">
+  हर सिस्टम में इसके लिए एक कमांड है, और तीनों नीचे हैं। वे आपको ठीक सही बाइट संख्या की फ़ाइल देती हैं
+  - और बहुत से टेस्ट के लिए आपको बस यही चाहिए। <strong>इस पेज की हर कमांड प्रकाशित करने से पहले उस
+  सिस्टम पर चलाई गई</strong> जिसकी वह है।
+</p>
+
+<div class="note">
+  <p class="note-title">छोटा जवाब</p>
+  <p>
+    Windows: <code>fsutil file createnew name 10485760</code>। Linux: <code>dd if=/dev/zero of=name
+    bs=1M count=10</code>। macOS: <code>mkfile 10m name</code>। आकार बाइट में होते हैं, और आपके
+    फ़ाइल मैनेजर के गिनने के तरीके से 10 MB यानी 10485760।
+  </p>
+</div>
+
+<section class="section" id="windows">
+  <p class="eyebrow">Windows</p>
+  <h2>fsutil, और बिना किसी अतिरिक्त चीज़ वाला PowerShell रूप</h2>
+  <p>
+    <code>fsutil</code> Windows के साथ आता है। यह आकार <strong>बाइट में</strong> लेता है, इसलिए पहले
+    संख्या निकाल लें - 10 MB यानी 10485760, 100 MB यानी 104857600, 1 GB यानी 1073741824।
+  </p>
+  <pre><code>fsutil file createnew test10mb.bin 10485760</code></pre>
+  <p>
+    Windows 11 पर मापा गया: यह सामान्य प्रॉम्प्ट से चलता है और उन्नत प्रॉम्प्ट नहीं माँगता, और फ़ाइल ठीक
+    10485760 बाइट की बनती है।
+  </p>
+  <p>PowerShell बिना किसी दूसरे प्रोग्राम को बुलाए यही कर सकता है, और इकाइयाँ समझता है:</p>
+  <pre><code>$file = New-Object System.IO.FileStream "test10mb.bin", Create, ReadWrite
+$file.SetLength(10MB)
+$file.Close()</code></pre>
+  <p>
+    PowerShell में <code>10MB</code> का मतलब 10485760 बाइट है, वही 1024 आधारित गिनती जो एक्सप्लोरर
+    इस्तेमाल करता है, इसलिए ऊपर की दोनों कमांड एक ही आकार बनाती हैं।
+  </p>
+</section>
+
+<section class="section" id="linux">
+  <p class="eyebrow">Linux</p>
+  <h2>dd, truncate और fallocate, और वह अंतर जो लोगों को फँसाता है</h2>
+  <p><code>dd</code> वह है जिसे सब जानते हैं। यह बाइट सच में लिखता है:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1M count=10</code></pre>
+  <p>
+    <code>truncate</code> तुरंत होता है, और यही पेंच है। Alpine Linux पर मापने पर फ़ाइल 10485760 बाइट
+    बताती है और <strong>शून्य ब्लॉक</strong> घेरती है - यह एक <strong>स्पार्स फ़ाइल</strong> है। जो
+    भी इसे पढ़ता है उसे दस मेगाबाइट शून्य मिलते हैं, पर डिस्क ने जगह कभी दी ही नहीं:
+  </p>
+  <pre><code>truncate -s 10M test10mb.bin</code></pre>
+  <p>
+    अपलोड सीमा परखने के लिए यह ठीक है और डिस्क कोटा परखने के लिए भ्रामक। जब जगह असली होनी चाहिए तब
+    <code>fallocate</code> की ओर जाएँ:
+  </p>
+  <pre><code>fallocate -l 10M test10mb.bin</code></pre>
+  <p>और जब सामग्री असंपीड्य होनी चाहिए, ताकि कोई आर्काइवर उसे फिर से छोटा न कर सके:</p>
+  <pre><code>head -c 10485760 /dev/urandom &gt; test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="macos">
+  <p class="eyebrow">macOS</p>
+  <h2>mkfile, जो स्पार्स नहीं है, और वे दो जिन्हें आप पहले से जानते हैं</h2>
+  <p>
+    macOS में <code>mkfile</code> आता है। macOS 26.6.2 पर मापा गया: 10485760 बाइट और 20480 ब्लॉक, यानी
+    जगह वादे से नहीं, सच में आवंटित होती है:
+  </p>
+  <pre><code>mkfile 10m test10mb.bin</code></pre>
+  <p><code>dd</code> और <code>truncate</code> भी वहाँ हैं और Linux की तरह ही चलते हैं:</p>
+  <pre><code>dd if=/dev/zero of=test10mb.bin bs=1m count=10
+truncate -s 10M test10mb.bin</code></pre>
+</section>
+
+<section class="section" id="not-enough">
+  <p class="eyebrow">यह कहाँ काम करना बंद कर देता है</p>
+  <h2>सही आकार की फ़ाइल सही क़िस्म की फ़ाइल नहीं होती</h2>
+  <p>
+    ऊपर की सारी चीज़ें आपको शून्यों का एक ब्लॉक देती हैं। जब जाँचा जा रहा हिस्सा सिर्फ़ आकार देखता है -
+    अपलोड सीमा, कोटा, ट्रांसफ़र - तब यह काफ़ी है। जिस पल कोई चीज़ फ़ाइल को <strong>खोलती</strong>
+    है, यह काफ़ी नहीं रहता।
+  </p>
+  <p>
+    मापा गया, और खुद करके देखना लायक है: <code>fsutil</code> से 2 MB की फ़ाइल बनाएँ, उसका नाम
+    <code>photo.png</code> रखें, और किसी इमेज लाइब्रेरी को दें। Pillow जवाब देता है <code>cannot
+    identify image file</code>। यह PNG नहीं है। यह कभी था ही नहीं - सिर्फ़ नाम ऐसा कहता था।
+  </p>
+  <p>
+    यह सुनने में जितना लगता है उससे ज़्यादा मायने रखता है, क्योंकि <strong>टेस्ट फिर किस तरफ़ विफल होता
+    है</strong> यही सवाल है। आपका अपलोड एंडपॉइंट फ़ाइल ठुकरा देता है, आपका टेस्ट हरा हो जाता है, और
+    आप मान लेते हैं कि आकार सीमा काम करती है। उसने फ़ाइल आकार की वजह से नहीं ठुकराई। उसने इसलिए
+    ठुकराई कि बाइट तस्वीर नहीं थे, और जिस नियम को आप जाँचना चाहते थे वह कभी छुआ ही नहीं गया।
+  </p>
+  <ul class="ticks">
+    <li>कोई पार्सर आकार का कोई नियम देखे जाने से पहले ही उसे ठुकरा देता है</li>
+    <li>थंबनेल का चरण विफल होता है और जो त्रुटि आप पढ़ते हैं वह थंबनेल के बारे में होती है</li>
+    <li>कोई एंटीवायरस या सामग्री जाँच उसे तीसरे कारण से मना कर देती है</li>
+    <li>कोई व्यूअर कुछ नहीं दिखाता, और कोई नहीं बता सकता कि यही बग है या नहीं</li>
+  </ul>
+</section>
+
+<section class="section" id="real">
+  <p class="eyebrow">दूसरा रास्ता</p>
+  <h2>उस फ़ॉर्मैट की असली फ़ाइल, ठीक उसी आकार में जो आपने माँगा</h2>
+  <p>
+    Testing Files Generator यही करता है। फ़ाइल अपने फ़ॉर्मैट की सच्ची फ़ाइल है - वह अपने सॉफ़्टवेयर में
+    खुलती है - और उसमें ठीक उतने बाइट हैं जितने आपने माँगे, बाइट तक:
+  </p>
+  <pre><code>tfg generate --format png --size 10mb --out ./fixtures</code></pre>
+  <p>
+    ऐसा आकार माँगें जिस तक कोई फ़ॉर्मैट नहीं पहुँच सकता और आपको न्यूनतम सीमा और उसका कारण बताने वाली
+    त्रुटि मिलती है, गलत आकार की फ़ाइल कभी नहीं। <a href="/hi/formats/">फ़ॉर्मैट पेज</a> हर फ़ॉर्मैट
+    को उसकी सबसे छोटी संभव फ़ाइल के साथ सूचीबद्ध करता है।
+  </p>
+  <p>और एक सीमा एक नहीं, तीन टेस्ट केस होती है, इसलिए टूल तीनों बनाता है:</p>
+  <pre><code>tfg generate --format pdf --boundary 10mb --out ./edges</code></pre>
+  <p>
+    इससे आपको 10485759, 10485760 और 10485761 बाइट की फ़ाइलें मिलती हैं, और एक मैनिफ़ेस्ट जो बताता है कि
+    आपके सिस्टम को किन्हें स्वीकार करना चाहिए और किन्हें अस्वीकार। <a href="/hi/use-cases/">उपयोग के
+    मामलों का पेज</a> इसे और चार दूसरे काम समझाता है जिनके लिए यह बना है।
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">डाउनलोड करें</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">सोर्स कोड देखें</a>
+</div>
+<p class="cta-note">मुफ़्त और ओपन सोर्स, GPL-3.0। साइन अप की ज़रूरत नहीं। Windows और macOS के डाउनलोड हस्ताक्षरित हैं और बिना चेतावनी के शुरू होते हैं।</p>
+</section>
+
+<section class="section" id="which">
+  <h2>तो कौन सा इस्तेमाल करें?</h2>
+  <ul class="cards">
+    <li class="card">
+      <p class="card-title">सिस्टम की कमांड इस्तेमाल करें</p>
+      <p class="muted">
+        जब कुछ भी फ़ाइल नहीं खोलता। ऐसे एंडपॉइंट पर आकार सीमा की जाँच जो पहले आकार देखता है, कोई ट्रांसफ़र,
+        कोटा, डिस्क भरने की स्थिति। यह एक पंक्ति है और पहले से इंस्टॉल है।
+      </p>
+    </li>
+    <li class="card">
+      <p class="card-title">असली जनरेटर इस्तेमाल करें</p>
+      <p class="muted">
+        जब कुछ भी फ़ाइल को पार्स, रेंडर, इंपोर्ट या एक्सट्रैक्ट करता है - और जब आपको कल दूसरी मशीन पर वही
+        फ़िक्स्चर बाइट-दर-बाइट फिर से चाहिए।
+      </p>
+    </li>
+  </ul>
+  <p>
+    दोनों इस पेज पर इसलिए हैं क्योंकि दोनों कभी-कभी सही होते हैं। जिस गलती से बचना है वह है दूसरे की
+    ज़रूरत वाली जगह पहले को इस्तेमाल करना और हरे टेस्ट को सबूत मान लेना।
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">QA के लिए सटीक आकार की टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए।</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">प्रोजेक्ट</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub पर सोर्स कोड</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">डाउनलोड</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">समस्या बताएँ</a></li>
+        <li><a href="https://donislawdev.com/support/">प्रोजेक्ट का समर्थन करें</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">पेज</p>
+      <ul class="plain">
+        <li><a href="/hi/">होम</a></li>
+        <li><a href="/hi/formats/">फ़ॉर्मैट</a></li>
+        <li><a href="/hi/presets/">प्रीसेट</a></li>
+        <li><a href="/hi/docs/">दस्तावेज़ीकरण</a></li>
+        <li><a href="/hi/use-cases/">उपयोग के मामले</a></li>
+        <li><a href="/hi/create-file-exact-size/">सटीक आकार</a></li>
+        <li><a href="/hi/faq/">FAQ</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev। GNU जनरल पब्लिक लाइसेंस, संस्करण 3 के तहत जारी। आपकी बनाई फ़ाइलें आपकी हैं - लाइसेंस टूल पर लागू होता है, उसके आउटपुट पर नहीं।</p>
+    <p class="muted">यह साइट कहीं से भी फ़ॉन्ट, स्क्रिप्ट या ट्रैकर लोड नहीं करती। यह कोई कुकी नहीं लगाती।</p>
+  </div>
+</footer>
+</body>
+</html>

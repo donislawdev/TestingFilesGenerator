@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="th">
+<title>คำถามที่พบบ่อย - เรื่องการสร้างไฟล์ทดสอบ</title>
+<meta name="description" content="ต่างจาก dd และ fsutil อย่างไร คอมมิตไฟล์ได้ปลอดภัยไหม การรันซ้ำได้ไบต์ต่อไบต์ไหม และเกิดอะไรขึ้นเมื่อไปถึงขนาดที่ต้องการไม่ได้">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/th/faq/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/faq/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/faq/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/faq/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/preguntas-frecuentes/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/faq/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/faq/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/faq/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/domande-frequenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/faq/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/faq/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/veelgestelde-vragen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/faq/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/perguntas-frequentes/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/intrebari-frecvente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/faq/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/faq/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/sss/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/faq/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/faq/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/faq/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/faq/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/faq/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="คำถามที่พบบ่อย - เรื่องการสร้างไฟล์ทดสอบ">
+<meta property="og:description" content="ต่างจาก dd และ fsutil อย่างไร คอมมิตไฟล์ได้ปลอดภัยไหม การรันซ้ำได้ไบต์ต่อไบต์ไหม และเกิดอะไรขึ้นเมื่อไปถึงขนาดที่ต้องการไม่ได้">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/th/faq/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - ไฟล์ทดสอบจริงขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="คำถามที่พบบ่อย - เรื่องการสร้างไฟล์ทดสอบ">
+<meta name="twitter:description" content="ต่างจาก dd และ fsutil อย่างไร คอมมิตไฟล์ได้ปลอดภัยไหม การรันซ้ำได้ไบต์ต่อไบต์ไหม และเกิดอะไรขึ้นเมื่อไปถึงขนาดที่ต้องการไม่ได้">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - ไฟล์ทดสอบจริงขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "หน้าแรก",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/th/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "คำถามที่พบบ่อย",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/th\/faq\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">ข้ามไปยังเนื้อหา</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/th/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="เมนูหลัก">
+      <a href="/th/">หน้าแรก</a>
+      <a href="/th/formats/">รูปแบบไฟล์</a>
+      <a href="/th/presets/">พรีเซ็ต</a>
+      <a href="/th/docs/">เอกสาร</a>
+      <a href="/th/use-cases/">กรณีการใช้งาน</a>
+      <a href="/th/create-file-exact-size/">ขนาดแม่นยำ</a>
+      <a href="/th/faq/" aria-current="page">คำถามที่พบบ่อย</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="ภาษา: ไทย">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>ไทย</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/faq/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/faq/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/faq/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/faq/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/preguntas-frecuentes/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/faq/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/faq/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/faq/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/domande-frequenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/faq/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/faq/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/veelgestelde-vragen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/faq/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/intrebari-frecvente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/faq/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/sss/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/faq/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/faq/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/faq/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/faq/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>คำถามที่พบบ่อย</h1>
+<p class="lead">
+  ใบอนุญาต ความเป็นส่วนตัว การทำซ้ำได้ และสิ่งที่ผู้คนตรวจสอบก่อนนำตัวสร้างไปไว้ในไปป์ไลน์บิลด์
+  ถ้าคำถามของคุณไม่อยู่ที่นี่ <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">ตัวติดตามปัญหา</a>เปิดอยู่
+</p>
+
+<div class="faq">
+  <details class="qa">
+    <summary><h2>ต่างจาก dd, fsutil หรือ truncate อย่างไร</h2></summary>
+    <div class="qa-body">
+      <p>คำสั่งเหล่านั้นให้ไฟล์ที่ขนาดถูกต้องแต่เต็มไปด้วยความว่างเปล่า ไฟล์ photo.png ขนาด 2 MB ที่ทำแบบนั้นไม่ใช่ PNG ดังนั้นสิ่งใดที่แยกวิเคราะห์ไฟล์จริงๆ ก็จะปฏิเสธด้วยเหตุผลที่ผิด และการทดสอบของคุณก็ผ่านด้วยเหตุผลที่ผิดเช่นกัน เครื่องมือนี้สร้าง PNG จริงขนาด 2 MB พอดีที่เปิดได้ในโปรแกรมดูภาพ และมาพร้อมคำประกาศว่าระบบของคุณควรปฏิบัติต่อไฟล์นั้นอย่างไร</p>
+      <pre><code>tfg generate --format png --size 2mb --out ./fixtures</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>ฟรีไหม และใช้ที่ทำงานได้หรือไม่</h2></summary>
+    <div class="qa-body">
+      <p>ได้ทั้งสองอย่าง เผยแพร่ภายใต้ GPL-3.0 และไม่มีค่าใช้จ่าย ไม่มีบัญชี ไม่มีคีย์ใบอนุญาต และไม่มีแพ็กเกจเสียเงิน</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>ใช้ไฟล์ที่สร้างในผลิตภัณฑ์ซอร์สปิดได้ไหม</h2></summary>
+    <div class="qa-body">
+      <p>ได้ ใบอนุญาตครอบคลุมโค้ดของเครื่องมือ ไม่ใช่สิ่งที่เครื่องมือสร้างขึ้น ไฟล์ สูตร และแมนิเฟสต์ที่สร้างขึ้นเป็นผลลัพธ์ ไม่ใช่งานดัดแปลง คุณจึงคอมมิตและแจกจ่ายได้โดยไม่มีข้อผูกมัดใดๆ</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>ไฟล์ที่สร้างมีข้อมูลส่วนบุคคลจริงหรือไม่</h2></summary>
+    <div class="qa-body">
+      <p>ไม่มี ทุกอย่างข้างในถูกสังเคราะห์จากซีด ไม่มีการอ่านชุดข้อมูล ไม่มีการติดต่อบริการใด และไม่มีการฝังเนื้อหาของบุคคลที่สาม ให้ถือว่าอีเมลที่สร้างขึ้นเป็นที่ใช้ไม่ได้ ไม่ใช่ที่ยังไม่ได้ใช้ เพราะสตริงสุ่มใดๆ อาจบังเอิญตรงกับของจริงได้</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>ได้ไฟล์เหมือนกันทุกประการบนเครื่องอื่นไหม</h2></summary>
+    <div class="qa-body">
+      <p>ได้ ไบต์ต่อไบต์ เมื่อใช้สูตรและซีดเดียวกัน โครงการทดสอบเรื่องนี้ในทุกการเปลี่ยนแปลง และการทำลายต้องเลื่อนเวอร์ชันหลัก นี่คือสิ่งที่ทำให้คุณคอมมิตสูตรเล็กๆ แทนฟิกซ์เจอร์ไบนารีขนาดใหญ่ได้</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>ต้องใช้อินเทอร์เน็ตไหม</h2></summary>
+    <div class="qa-body">
+      <p>ไม่เลย ไม่มีเทเลเมทรี ไม่มีการตรวจสอบอัปเดต ไม่มีไคลเอนต์คลาวด์ และไบนารีบรรทัดคำสั่งไม่ได้คอมไพล์สแตกเครือข่ายไว้เลย ทำงานได้บนเครื่องที่ไม่มีเครือข่ายและในสภาพแวดล้อมองค์กรที่ปิด</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>จะเกิดอะไรขึ้นถ้าขอขนาดที่รูปแบบนั้นไปไม่ถึง</h2></summary>
+    <div class="qa-body">
+      <p>คุณจะได้ข้อผิดพลาดที่ระบุรูปแบบ ขนาดเล็กที่สุดที่เป็นไปได้ เหตุผลของขีดล่างนั้น และสิ่งที่ควรทำแทน และจะไม่มีไฟล์ถูกเขียน เครื่องมือไม่เคยปัดเศษขนาดอย่างเงียบๆ ขีดล่างทุกค่าแสดงไว้ในหน้ารูปแบบไฟล์</p>
+      <pre><code>tfg formats png</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>สร้างไฟล์ที่เสียหายโดยตั้งใจได้ไหม</h2></summary>
+    <div class="qa-body">
+      <p>ยังไม่ได้ ไฟล์ที่เสียหายและผิดรูปแบบเป็นฟีเจอร์ที่วางแผนไว้ ปัจจุบันทุกไฟล์ที่เครื่องมือเขียนเป็นไฟล์ที่ถูกต้องของรูปแบบนั้น</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>รูปแบบใดจะมาต่อไป</h2></summary>
+    <div class="qa-body">
+      <p>7z, mp3 และ mp4 ตอนนี้ 26 รูปแบบทำงานได้ครบตั้งแต่ต้นจนจบ</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>รันบนระบบใดได้บ้าง</h2></summary>
+    <div class="qa-body">
+      <p>บรรทัดคำสั่งทำงานบน Windows และ Linux ทั้ง Intel และ ARM และบน Mac ที่ใช้ Apple Silicon หน้าต่างเดสก์ท็อปมีให้สำหรับ Windows บน Intel, Linux บน Intel และ Mac ที่ใช้ Apple Silicon ไม่รองรับ Mac แบบ Intel และไม่มีการสร้างบิลด์สำหรับเครื่องเหล่านั้น</p>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>ต้องติดตั้งอะไรไหม</h2></summary>
+    <div class="qa-body">
+      <p>ไม่ ดาวน์โหลดไฟล์บีบอัดสำหรับระบบของคุณ แตกไฟล์ แล้วรันไบนารี ไม่มีตัวติดตั้ง ไม่มีรันไทม์ที่ต้องเพิ่ม และไม่มีไลบรารีที่ต้องแก้ ถ้าคุณมี Go คำสั่ง go install เพียงคำสั่งเดียวก็ใช้ได้เช่นกัน</p>
+      <pre><code>go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+    </div>
+  </details>
+  <details class="qa">
+    <summary><h2>ทำไมการรันกับไฟล์นับพันจึงช้ากว่าบน Windows</h2></summary>
+    <div class="qa-body">
+      <p>เพราะ Windows คิดค่าใช้จ่ายมากกว่าสำหรับทุกพาธที่มันดู และคำสั่งที่วนผ่านไฟล์นับพันก็ดูพาธนับพัน วัดบนเครื่องหนึ่งที่มีไฟล์ขนาด 1 kB จำนวน 3000 ไฟล์ verify ใช้เวลาประมาณ 0.9 วินาทีบน Windows และประมาณ 0.2 วินาทีบน Linux ในคอนเทนเนอร์ พาธเอาต์พุตที่สั้นลงทำให้ตัวเลขบน Windows น้อยลง เพราะทุกโฟลเดอร์เหนือไฟล์เป็นส่วนหนึ่งของสิ่งที่ถูกดู</p>
+    </div>
+  </details>
+</div>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "ต่างจาก dd, fsutil หรือ truncate อย่างไร",
+      "acceptedAnswer": { "@type": "Answer", "text": "คำสั่งเหล่านั้นให้ไฟล์ที่ขนาดถูกต้องแต่เต็มไปด้วยความว่างเปล่า ไฟล์ photo.png ขนาด 2 MB ที่ทำแบบนั้นไม่ใช่ PNG ดังนั้นสิ่งใดที่แยกวิเคราะห์ไฟล์จริงๆ ก็จะปฏิเสธด้วยเหตุผลที่ผิด และการทดสอบของคุณก็ผ่านด้วยเหตุผลที่ผิดเช่นกัน เครื่องมือนี้สร้าง PNG จริงขนาด 2 MB พอดีที่เปิดได้ในโปรแกรมดูภาพ และมาพร้อมคำประกาศว่าระบบของคุณควรปฏิบัติต่อไฟล์นั้นอย่างไร" }
+    },
+    {
+      "@type": "Question",
+      "name": "ฟรีไหม และใช้ที่ทำงานได้หรือไม่",
+      "acceptedAnswer": { "@type": "Answer", "text": "ได้ทั้งสองอย่าง เผยแพร่ภายใต้ GPL-3.0 และไม่มีค่าใช้จ่าย ไม่มีบัญชี ไม่มีคีย์ใบอนุญาต และไม่มีแพ็กเกจเสียเงิน" }
+    },
+    {
+      "@type": "Question",
+      "name": "ใช้ไฟล์ที่สร้างในผลิตภัณฑ์ซอร์สปิดได้ไหม",
+      "acceptedAnswer": { "@type": "Answer", "text": "ได้ ใบอนุญาตครอบคลุมโค้ดของเครื่องมือ ไม่ใช่สิ่งที่เครื่องมือสร้างขึ้น ไฟล์ สูตร และแมนิเฟสต์ที่สร้างขึ้นเป็นผลลัพธ์ ไม่ใช่งานดัดแปลง คุณจึงคอมมิตและแจกจ่ายได้โดยไม่มีข้อผูกมัดใดๆ" }
+    },
+    {
+      "@type": "Question",
+      "name": "ไฟล์ที่สร้างมีข้อมูลส่วนบุคคลจริงหรือไม่",
+      "acceptedAnswer": { "@type": "Answer", "text": "ไม่มี ทุกอย่างข้างในถูกสังเคราะห์จากซีด ไม่มีการอ่านชุดข้อมูล ไม่มีการติดต่อบริการใด และไม่มีการฝังเนื้อหาของบุคคลที่สาม ให้ถือว่าอีเมลที่สร้างขึ้นเป็นที่ใช้ไม่ได้ ไม่ใช่ที่ยังไม่ได้ใช้ เพราะสตริงสุ่มใดๆ อาจบังเอิญตรงกับของจริงได้" }
+    },
+    {
+      "@type": "Question",
+      "name": "ได้ไฟล์เหมือนกันทุกประการบนเครื่องอื่นไหม",
+      "acceptedAnswer": { "@type": "Answer", "text": "ได้ ไบต์ต่อไบต์ เมื่อใช้สูตรและซีดเดียวกัน โครงการทดสอบเรื่องนี้ในทุกการเปลี่ยนแปลง และการทำลายต้องเลื่อนเวอร์ชันหลัก นี่คือสิ่งที่ทำให้คุณคอมมิตสูตรเล็กๆ แทนฟิกซ์เจอร์ไบนารีขนาดใหญ่ได้" }
+    },
+    {
+      "@type": "Question",
+      "name": "ต้องใช้อินเทอร์เน็ตไหม",
+      "acceptedAnswer": { "@type": "Answer", "text": "ไม่เลย ไม่มีเทเลเมทรี ไม่มีการตรวจสอบอัปเดต ไม่มีไคลเอนต์คลาวด์ และไบนารีบรรทัดคำสั่งไม่ได้คอมไพล์สแตกเครือข่ายไว้เลย ทำงานได้บนเครื่องที่ไม่มีเครือข่ายและในสภาพแวดล้อมองค์กรที่ปิด" }
+    },
+    {
+      "@type": "Question",
+      "name": "จะเกิดอะไรขึ้นถ้าขอขนาดที่รูปแบบนั้นไปไม่ถึง",
+      "acceptedAnswer": { "@type": "Answer", "text": "คุณจะได้ข้อผิดพลาดที่ระบุรูปแบบ ขนาดเล็กที่สุดที่เป็นไปได้ เหตุผลของขีดล่างนั้น และสิ่งที่ควรทำแทน และจะไม่มีไฟล์ถูกเขียน เครื่องมือไม่เคยปัดเศษขนาดอย่างเงียบๆ ขีดล่างทุกค่าแสดงไว้ในหน้ารูปแบบไฟล์" }
+    },
+    {
+      "@type": "Question",
+      "name": "สร้างไฟล์ที่เสียหายโดยตั้งใจได้ไหม",
+      "acceptedAnswer": { "@type": "Answer", "text": "ยังไม่ได้ ไฟล์ที่เสียหายและผิดรูปแบบเป็นฟีเจอร์ที่วางแผนไว้ ปัจจุบันทุกไฟล์ที่เครื่องมือเขียนเป็นไฟล์ที่ถูกต้องของรูปแบบนั้น" }
+    },
+    {
+      "@type": "Question",
+      "name": "รูปแบบใดจะมาต่อไป",
+      "acceptedAnswer": { "@type": "Answer", "text": "7z, mp3 และ mp4 ตอนนี้ 26 รูปแบบทำงานได้ครบตั้งแต่ต้นจนจบ" }
+    },
+    {
+      "@type": "Question",
+      "name": "รันบนระบบใดได้บ้าง",
+      "acceptedAnswer": { "@type": "Answer", "text": "บรรทัดคำสั่งทำงานบน Windows และ Linux ทั้ง Intel และ ARM และบน Mac ที่ใช้ Apple Silicon หน้าต่างเดสก์ท็อปมีให้สำหรับ Windows บน Intel, Linux บน Intel และ Mac ที่ใช้ Apple Silicon ไม่รองรับ Mac แบบ Intel และไม่มีการสร้างบิลด์สำหรับเครื่องเหล่านั้น" }
+    },
+    {
+      "@type": "Question",
+      "name": "ต้องติดตั้งอะไรไหม",
+      "acceptedAnswer": { "@type": "Answer", "text": "ไม่ ดาวน์โหลดไฟล์บีบอัดสำหรับระบบของคุณ แตกไฟล์ แล้วรันไบนารี ไม่มีตัวติดตั้ง ไม่มีรันไทม์ที่ต้องเพิ่ม และไม่มีไลบรารีที่ต้องแก้ ถ้าคุณมี Go คำสั่ง go install เพียงคำสั่งเดียวก็ใช้ได้เช่นกัน" }
+    },
+    {
+      "@type": "Question",
+      "name": "ทำไมการรันกับไฟล์นับพันจึงช้ากว่าบน Windows",
+      "acceptedAnswer": { "@type": "Answer", "text": "เพราะ Windows คิดค่าใช้จ่ายมากกว่าสำหรับทุกพาธที่มันดู และคำสั่งที่วนผ่านไฟล์นับพันก็ดูพาธนับพัน วัดบนเครื่องหนึ่งที่มีไฟล์ขนาด 1 kB จำนวน 3000 ไฟล์ verify ใช้เวลาประมาณ 0.9 วินาทีบน Windows และประมาณ 0.2 วินาทีบน Linux ในคอนเทนเนอร์ พาธเอาต์พุตที่สั้นลงทำให้ตัวเลขบน Windows น้อยลง เพราะทุกโฟลเดอร์เหนือไฟล์เป็นส่วนหนึ่งของสิ่งที่ถูกดู" }
+    }
+  ]
+}
+</script>
+
+<section class="section" id="more">
+  <h2>ยังตัดสินใจอยู่หรือ</h2>
+  <p>
+    <a href="/th/use-cases/">หน้ากรณีการใช้งาน</a>แสดงงานที่เครื่องมือนี้สร้างมาเพื่อ
+    และ<a href="/th/formats/">หน้ารูปแบบไฟล์</a>แสดงทุกรูปแบบพร้อมไฟล์เล็กที่สุดที่ทำได้
+    <a href="https://github.com/donislawdev/TestingFilesGenerator">README ในรีโพซิทอรี</a>เป็นข้อมูลอ้างอิงฉบับสมบูรณ์
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">ดาวน์โหลด</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">ดูซอร์สโค้ด</a>
+</div>
+<p class="cta-note">ฟรีและโอเพนซอร์ส GPL-3.0 ไม่ต้องสมัครสมาชิก ไฟล์ดาวน์โหลดของ Windows และ macOS ลงนามแล้วและเริ่มทำงานโดยไม่มีคำเตือน</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">ไฟล์ทดสอบสำหรับ QA ขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">โครงการ</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">ซอร์สโค้ดบน GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">ดาวน์โหลด</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">แจ้งปัญหา</a></li>
+        <li><a href="https://donislawdev.com/support/">สนับสนุนโครงการ</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">หน้าเว็บ</p>
+      <ul class="plain">
+        <li><a href="/th/">หน้าแรก</a></li>
+        <li><a href="/th/formats/">รูปแบบไฟล์</a></li>
+        <li><a href="/th/presets/">พรีเซ็ต</a></li>
+        <li><a href="/th/docs/">เอกสาร</a></li>
+        <li><a href="/th/use-cases/">กรณีการใช้งาน</a></li>
+        <li><a href="/th/create-file-exact-size/">ขนาดแม่นยำ</a></li>
+        <li><a href="/th/faq/">คำถามที่พบบ่อย</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev เผยแพร่ภายใต้ GNU General Public License เวอร์ชัน 3 ไฟล์ที่คุณสร้างเป็นของคุณ - ใบอนุญาตครอบคลุมตัวเครื่องมือ ไม่ใช่ผลลัพธ์ของมัน</p>
+    <p class="muted">เว็บไซต์นี้ไม่โหลดฟอนต์ สคริปต์ หรือตัวติดตามจากที่ใดเลย และไม่ตั้งค่าคุกกี้</p>
+  </div>
+</footer>
+</body>
+</html>

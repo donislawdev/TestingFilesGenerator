@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="th">
+<title>ไฟล์ทดสอบการตรวจสอบอัปโหลด - ประเภท ขนาด และชื่อ</title>
+<meta name="description" content="ไฟล์สำหรับทดสอบฟอร์มอัปโหลด ได้แก่ ประเภทที่อนุญาตและไม่อนุญาต เนื้อหาที่ไม่ตรงกับนามสกุล ขีดจำกัดขนาดทั้งสองด้าน ชื่อที่เป็นอันตราย และการอัปโหลดเป็นกลุ่ม">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/th/presets/upload-validation/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/presets/upload-validation/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/presets/upload-validation/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/predvolby/upload-validation/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/presets/upload-validation/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/presets/upload-validation/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/prereglages/upload-validation/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/presets/upload-validation/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/preset/upload-validation/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/preset/upload-validation/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/presets/upload-validation/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/presets/upload-validation/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/presets/upload-validation/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/presety/upload-validation/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/presets/upload-validation/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/presetari/upload-validation/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/presets/upload-validation/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/presets/upload-validation/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/hazir-ayarlar/upload-validation/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/presets/upload-validation/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/preset/upload-validation/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/presets/upload-validation/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/presets/upload-validation/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/presets/upload-validation/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="ไฟล์ทดสอบการตรวจสอบอัปโหลด - ประเภท ขนาด และชื่อ">
+<meta property="og:description" content="ไฟล์สำหรับทดสอบฟอร์มอัปโหลด ได้แก่ ประเภทที่อนุญาตและไม่อนุญาต เนื้อหาที่ไม่ตรงกับนามสกุล ขีดจำกัดขนาดทั้งสองด้าน ชื่อที่เป็นอันตราย และการอัปโหลดเป็นกลุ่ม">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/th/presets/upload-validation/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - ไฟล์ทดสอบจริงขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ไฟล์ทดสอบการตรวจสอบอัปโหลด - ประเภท ขนาด และชื่อ">
+<meta name="twitter:description" content="ไฟล์สำหรับทดสอบฟอร์มอัปโหลด ได้แก่ ประเภทที่อนุญาตและไม่อนุญาต เนื้อหาที่ไม่ตรงกับนามสกุล ขีดจำกัดขนาดทั้งสองด้าน ชื่อที่เป็นอันตราย และการอัปโหลดเป็นกลุ่ม">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - ไฟล์ทดสอบจริงขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "หน้าแรก",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/th/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "พรีเซ็ต",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/th\/presets\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "การตรวจสอบการอัปโหลด",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/th\/presets\/upload-validation\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">ข้ามไปยังเนื้อหา</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/th/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="เมนูหลัก">
+      <a href="/th/">หน้าแรก</a>
+      <a href="/th/formats/">รูปแบบไฟล์</a>
+      <a href="/th/presets/" aria-current="true">พรีเซ็ต</a>
+      <a href="/th/docs/">เอกสาร</a>
+      <a href="/th/use-cases/">กรณีการใช้งาน</a>
+      <a href="/th/create-file-exact-size/">ขนาดแม่นยำ</a>
+      <a href="/th/faq/">คำถามที่พบบ่อย</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="ภาษา: ไทย">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>ไทย</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/presets/upload-validation/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/presets/upload-validation/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/predvolby/upload-validation/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/presets/upload-validation/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/presets/upload-validation/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/prereglages/upload-validation/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/presets/upload-validation/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/preset/upload-validation/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/preset/upload-validation/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/presets/upload-validation/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/presets/upload-validation/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/presets/upload-validation/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/presety/upload-validation/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/presets/upload-validation/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/presetari/upload-validation/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/presets/upload-validation/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/hazir-ayarlar/upload-validation/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/presets/upload-validation/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/preset/upload-validation/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/presets/upload-validation/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/presets/upload-validation/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+<p class="eyebrow"><a href="/th/presets/">พรีเซ็ต</a></p>
+<h1>การตรวจสอบการอัปโหลด</h1>
+<p class="lead">ฟอร์มอัปโหลดของฉันรับสิ่งที่ควรรับและปฏิเสธที่เหลือหรือไม่</p>
+<p>
+  พรีเซ็ต <code>upload-validation</code> สร้างชุดไฟล์ทดสอบจริงทั้งชุดสำหรับคำถามนี้ด้วยคำสั่งเดียว และมี
+  <code>manifest.json</code> อยู่ข้างๆ ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร
+  ทุกอย่างด้านล่างอ่านจากโปรแกรม ที่ค่าเริ่มต้นของเวอร์ชันนี้
+</p>
+
+
+<section class="section" id="catches">
+  <h2>โดยทั่วไปมันพบอะไร</h2>
+  <ul class="ticks">
+    <li>ขีดจำกัดที่บังคับใช้ในเบราว์เซอร์แต่ไม่ได้บังคับที่เซิร์ฟเวอร์</li>
+    <li>ไฟล์ SVG หรือ HTML ที่ถูกเข้าใจว่าเป็นรูปภาพหรือข้อความธรรมดา ซึ่งเป็นวิธีหนึ่งในการลอบส่งสคริปต์ผ่านฟอร์ม</li>
+    <li>ไฟล์ที่ตรวจจากนามสกุลโดยไม่เคยเปิดดู ทำให้ PDF ที่ตั้งชื่อ .jpg ผ่านไปได้</li>
+    <li>ฟอร์มที่อ่านเนื้อหาทั้งหมดเข้าหน่วยความจำก่อนจะดูว่าใหญ่แค่ไหน</li>
+    <li>การอัปโหลดชื่อ PHOTO.JPG ที่ถูกปฏิเสธขณะที่ photo.jpg ถูกรับ หรือกลับกัน</li>
+    <li>ชื่อที่มีช่องว่าง วงเล็บ หรืออักขระนอก ASCII ที่ถูกเขียนลงดิสก์โดยไม่เปลี่ยนแปลง</li>
+  </ul>
+</section>
+
+
+<section class="section" id="set">
+  <h2>ในชุดมีอะไร</h2>
+  <p>ที่ค่าเริ่มต้น ตามที่ <code>tfg preset show upload-validation</code> รายงาน:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">ไฟล์</th><td>71</td></tr>
+        <tr><th scope="row">target ในสูตรของมัน</th><td>22</td></tr>
+        <tr><th scope="row">ขนาดรวม</th><td>120 639 488 B</td></tr>
+        <tr><th scope="row">รูปแบบ</th><td>html, jpg, pdf, png, svg, txt</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>และสิ่งที่แมนิเฟสต์ของชุดนั้นคาดหวังจากระบบของคุณ:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>ที่คาดหวัง</th><th>ความหมาย</th><th class="num">ไฟล์</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>accept</code></td><td>ระบบของคุณควรยอมรับไฟล์นี้</td><td class="num">56</td></tr>
+        <tr><td><code>reject</code></td><td>ระบบของคุณควรปฏิเสธไฟล์นี้</td><td class="num">10</td></tr>
+        <tr><td><code>unspecified</code></td><td>ขึ้นอยู่กับกฎของระบบของคุณ คุณเป็นผู้ตัดสิน แล้วตรวจสอบว่าสิ่งที่เกิดขึ้นตรงกับที่ตั้งใจ</td><td class="num">5</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>คุณเปลี่ยนอะไรได้บ้าง</h2>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>การตั้งค่า</th><th>รับ</th><th>ค่าเริ่มต้น</th><th>ทำอะไร</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>--limit</code></td>
+          <td>ขนาด เช่น 2mb</td>
+          <td><code>10mb</code></td>
+          <td>ขีดจำกัดขนาดที่ฟอร์มอัปโหลดของคุณประกาศ ชุดนี้ก้าวไปข้างละหนึ่งขั้น - หากต้องการไฟล์ที่ทุกระยะ ให้รันพรีเซ็ต size-boundaries <strong>ค่าเริ่มต้นนี้เป็นค่าชั่วคราวของเรา ไม่ใช่ค่าของระบบคุณ ให้ใส่ค่าของคุณเอง</strong></td>
+        </tr>
+        <tr>
+          <td><code>--allow</code></td>
+          <td>รหัสรูปแบบที่คั่นด้วยจุลภาค</td>
+          <td><code>jpg,png,pdf</code></td>
+          <td>ประเภทที่ฟอร์มของคุณควรรับ แต่ละประเภทจะกลายเป็นไฟล์จริงของประเภทนั้น และเป็นตัวควบคุมเชิงบวกของทั้งชุด</td>
+        </tr>
+        <tr>
+          <td><code>--deny</code></td>
+          <td>นามสกุลที่คั่นด้วยจุลภาค</td>
+          <td><code>svg,html,exe,sh</code></td>
+          <td>นามสกุลที่ฟอร์มของคุณควรปฏิเสธ นามสกุลที่บิลด์นี้ไม่มีรูปแบบรองรับก็ยังได้ไฟล์ชื่อนั้นที่มีข้อความธรรมดา</td>
+        </tr>
+        <tr>
+          <td><code>--far-over</code></td>
+          <td>10x, 2x, off</td>
+          <td><code>2x</code></td>
+          <td>ไฟล์ใหญ่ไฟล์เดียวเกินขีดจำกัดไปไกลแค่ไหน ปิดไว้หากการเขียนหลายเท่าของขีดจำกัดไม่คุ้มกับพื้นที่ดิสก์</td>
+        </tr>
+        <tr>
+          <td><code>--bulk</code></td>
+          <td>0 - 10000 ไฟล์</td>
+          <td><code>50</code></td>
+          <td>การอัปโหลดเป็นกลุ่มมีกี่ไฟล์ ศูนย์จะตัดกลุ่มนั้นออกจากชุดทั้งหมด</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="run">
+  <h2>รันอย่างไร</h2>
+  <p>ดูว่าชุดจะมีต้นทุนเท่าไร สร้างมัน หรือเอาสูตรของมันไปแก้ไข:</p>
+  <pre><code>tfg preset show upload-validation
+tfg generate --preset upload-validation --limit 10mb --out ./upload-validation
+tfg preset eject upload-validation &gt; upload-validation.yaml</code></pre>
+  <p>หรือสร้างต่อยอดจากมันในสูตรของคุณเอง ไว้ข้างการทดสอบของคุณ:</p>
+  <pre><code>version: 1
+extends: preset:upload-validation
+with:
+  limit: 10mb</code></pre>
+</section>
+
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">ไฟล์ทดสอบสำหรับ QA ขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">โครงการ</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">ซอร์สโค้ดบน GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">ดาวน์โหลด</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">แจ้งปัญหา</a></li>
+        <li><a href="https://donislawdev.com/support/">สนับสนุนโครงการ</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">หน้าเว็บ</p>
+      <ul class="plain">
+        <li><a href="/th/">หน้าแรก</a></li>
+        <li><a href="/th/formats/">รูปแบบไฟล์</a></li>
+        <li><a href="/th/presets/">พรีเซ็ต</a></li>
+        <li><a href="/th/docs/">เอกสาร</a></li>
+        <li><a href="/th/use-cases/">กรณีการใช้งาน</a></li>
+        <li><a href="/th/create-file-exact-size/">ขนาดแม่นยำ</a></li>
+        <li><a href="/th/faq/">คำถามที่พบบ่อย</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev เผยแพร่ภายใต้ GNU General Public License เวอร์ชัน 3 ไฟล์ที่คุณสร้างเป็นของคุณ - ใบอนุญาตครอบคลุมตัวเครื่องมือ ไม่ใช่ผลลัพธ์ของมัน</p>
+    <p class="muted">เว็บไซต์นี้ไม่โหลดฟอนต์ สคริปต์ หรือตัวติดตามจากที่ใดเลย และไม่ตั้งค่าคุกกี้</p>
+  </div>
+</footer>
+</body>
+</html>

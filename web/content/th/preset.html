@@ -1,0 +1,91 @@
+{{ with .Preset }}
+<p class="eyebrow"><a href="{{ $.Up.URL }}">{{ $.Up.Label }}</a></p>
+<h1>{{ .Title }}</h1>
+<p class="lead">{{ .Question }}</p>
+<p>
+  พรีเซ็ต <code>{{ .ID }}</code> สร้างชุดไฟล์ทดสอบจริงทั้งชุดสำหรับคำถามนี้ด้วยคำสั่งเดียว และมี
+  <code>manifest.json</code> อยู่ข้างๆ ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร
+  ทุกอย่างด้านล่างอ่านจากโปรแกรม ที่ค่าเริ่มต้นของเวอร์ชันนี้
+</p>
+
+{{ if .Catches }}
+<section class="section" id="catches">
+  <h2>โดยทั่วไปมันพบอะไร</h2>
+  <ul class="ticks">
+  {{- range .Catches }}
+    <li>{{ . }}</li>
+  {{- end }}
+  </ul>
+</section>
+{{ end }}
+
+<section class="section" id="set">
+  <h2>ในชุดมีอะไร</h2>
+  <p>ที่ค่าเริ่มต้น ตามที่ <code>tfg preset show {{ .ID }}</code> รายงาน:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <tbody>
+        <tr><th scope="row">ไฟล์</th><td>{{ .Budget.Files }}</td></tr>
+        <tr><th scope="row">target ในสูตรของมัน</th><td>{{ .Budget.Targets }}</td></tr>
+        <tr><th scope="row">ขนาดรวม</th><td>{{ .Bytes }} B</td></tr>
+        <tr><th scope="row">รูปแบบ</th><td>{{ join .Budget.Formats ", " }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>และสิ่งที่แมนิเฟสต์ของชุดนั้นคาดหวังจากระบบของคุณ:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>ที่คาดหวัง</th><th>ความหมาย</th><th class="num">ไฟล์</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Outcomes }}
+        <tr><td><code>{{ .Name }}</code></td><td>{{ .Meaning }}</td><td class="num">{{ .Count }}</td></tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="settings">
+  <h2>คุณเปลี่ยนอะไรได้บ้าง</h2>
+  {{- if .Settings }}
+  <div class="tablewrap">
+    <table class="data">
+      <thead>
+        <tr><th>การตั้งค่า</th><th>รับ</th><th>ค่าเริ่มต้น</th><th>ทำอะไร</th></tr>
+      </thead>
+      <tbody>
+      {{- range .Settings }}
+        <tr>
+          <td><code>--{{ .Flag }}</code></td>
+          <td>{{ .Takes }}</td>
+          <td><code>{{ .Default }}</code></td>
+          <td>{{ .Detail }}{{ if .Placeholder }} <strong>ค่าเริ่มต้นนี้เป็นค่าชั่วคราวของเรา ไม่ใช่ค่าของระบบคุณ ให้ใส่ค่าของคุณเอง</strong>{{ end }}</td>
+        </tr>
+      {{- end }}
+      </tbody>
+    </table>
+  </div>
+  {{- else }}
+  <p>พรีเซ็ตนี้ไม่มีการตั้งค่า ชุดเป็นแบบเดิมทุกครั้ง</p>
+  {{- end }}
+</section>
+
+<section class="section" id="run">
+  <h2>รันอย่างไร</h2>
+  <p>ดูว่าชุดจะมีต้นทุนเท่าไร สร้างมัน หรือเอาสูตรของมันไปแก้ไข:</p>
+  <pre><code>tfg preset show {{ .ID }}
+tfg generate --preset {{ .ID }}{{ range .Placeholders }} --{{ .Flag }} {{ .Default }}{{ end }} --out ./{{ .ID }}
+tfg preset eject {{ .ID }} &gt; {{ .ID }}.yaml</code></pre>
+  <p>หรือสร้างต่อยอดจากมันในสูตรของคุณเอง ไว้ข้างการทดสอบของคุณ:</p>
+  <pre><code>version: 1
+extends: preset:{{ .ID }}
+{{- with .Placeholders }}
+with:
+{{- range . }}
+  {{ .Flag }}: {{ .Default }}
+{{- end }}
+{{- end }}</code></pre>
+</section>
+{{ end }}

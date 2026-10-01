@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ar">
+<title>التوثيق - الأوامر والوصفات والبيان ورموز الخروج</title>
+<meta name="description" content="كيف تولّد ملفات اختبار من سطر الأوامر أو من وصفة YAML، وما يحتويه البيان، وما معنى كل رمز خروج عند التشغيل في CI.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ar/docs/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/docs/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/dokumentace/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/dokumentation/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/documentacion/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/documentation/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/docs/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/dokumentasi/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/documentazione/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/docs/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/docs/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/documentatie/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/dokumentacja/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/documentacao/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/documentatie/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/docs/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/docs/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dokumantasyon/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/docs/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/tai-lieu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/docs/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/docs/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:title" content="التوثيق - الأوامر والوصفات والبيان ورموز الخروج">
+<meta property="og:description" content="كيف تولّد ملفات اختبار من سطر الأوامر أو من وصفة YAML، وما يحتويه البيان، وما معنى كل رمز خروج عند التشغيل في CI.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ar/docs/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - ملفات اختبار حقيقية بحجم دقيق، مع بيان يحدد كيف يجب أن يتفاعل نظامك مع كل ملف">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="التوثيق - الأوامر والوصفات والبيان ورموز الخروج">
+<meta name="twitter:description" content="كيف تولّد ملفات اختبار من سطر الأوامر أو من وصفة YAML، وما يحتويه البيان، وما معنى كل رمز خروج عند التشغيل في CI.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - ملفات اختبار حقيقية بحجم دقيق، مع بيان يحدد كيف يجب أن يتفاعل نظامك مع كل ملف">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "الرئيسية",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ar/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "التوثيق",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ar\/docs\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ar/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="القائمة الرئيسية">
+      <a href="/ar/">الرئيسية</a>
+      <a href="/ar/formats/">الصيغ</a>
+      <a href="/ar/presets/">الإعدادات المسبقة</a>
+      <a href="/ar/docs/" aria-current="page">التوثيق</a>
+      <a href="/ar/use-cases/">حالات الاستخدام</a>
+      <a href="/ar/create-file-exact-size/">الحجم الدقيق</a>
+      <a href="/ar/faq/">الأسئلة الشائعة</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="اللغة: العربية">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>العربية</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/docs/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/docs/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/docs/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<h1>التوثيق</h1>
+<p class="lead">
+  كل ما تفعله الأداة، مرتبًا على هيئة الأسئلة التي يأتي بها الناس فعلًا. ملف
+  <a href="https://github.com/donislawdev/TestingFilesGenerator">README في المستودع</a> هو المرجع الكامل ويطابق دائمًا الإصدار الذي
+  نزّلته.
+</p>
+
+<section class="section" id="commands">
+  <h2>ما الأوامر المتاحة؟</h2>
+  <p>كل أمر يؤدي مهمة واحدة:</p>
+  <pre><code>tfg generate    توليد ملفات، من وصفة أو من خيارات
+tfg validate    فحص وصفة دون كتابة شيء
+tfg verify      فحص مجلد مقابل بيان
+tfg cleanup     حذف الملفات التي يسردها بيان
+tfg recipe fmt  طباعة وصفة بشكلها المستقر
+tfg preset      بناء مجموعة ملفات من سؤال اختبار مُسمّى
+tfg formats     سرد الصيغ التي يدعمها هذا الإصدار
+tfg damage      سرد الطرق التي يستطيع بها هذا الإصدار إتلاف ملف عمدًا
+tfg tool        أدوات صغيرة للملفات التي لديك بالفعل
+tfg version     طباعة إصدار الأداة
+tfg license     طباعة الرخصة ومعناها للملفات المولَّدة</code></pre>
+</section>
+
+<section class="section" id="one-file">
+  <h2>كيف أولّد ملفًا واحدًا بحجم دقيق؟</h2>
+  <p>
+    حدد الصيغة والحجم ووجهة الملف. تُعدّ الأحجام بالمضاعفات 1024، فـ<code>2mb</code> تساوي 2097152
+    بايتًا. وعدد البايتات المجرد يصلح أيضًا، فـ<code>--size 10485761</code> يطلب هذا العدد بالضبط.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+  <p>الخيارات المفيدة في <code>generate</code>:</p>
+  <div class="tablewrap">
+    <table class="data">
+      <thead><tr><th>الخيار</th><th>ما يفعله</th></tr></thead>
+      <tbody>
+        <tr><td><code>--format &lt;id&gt;</code></td><td>صيغة الملفات، مثل <code>txt</code></td></tr>
+        <tr><td><code>--size &lt;size&gt;</code></td><td>الحجم الدقيق لكل ملف، مثل <code>10mb</code> أو عدد بايتات مجرد</td></tr>
+        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>حجم يُسحب لكل ملف من نطاق، مثل <code>1kb-8kb</code>. يأتي السحب من البذرة</td></tr>
+        <tr><td><code>--boundary &lt;size&gt;</code></td><td>ثلاثة ملفات حول حد: أقل بايتًا واحدًا، والحد نفسه، وأكثر بايتًا واحدًا</td></tr>
+        <tr><td><code>--count &lt;n&gt;</code></td><td>عدد الملفات المراد إنتاجها. الافتراضي <code>1</code></td></tr>
+        <tr><td><code>--name &lt;template&gt;</code></td><td>قالب الاسم، مثل <code>invoice_{index:04}.txt</code></td></tr>
+        <tr><td><code>--out &lt;dir&gt;</code></td><td>المجلد الذي يُكتب فيه</td></tr>
+        <tr><td><code>--seed &lt;n&gt;</code></td><td>بذرة التشغيل. البذرة نفسها تعطي البايتات نفسها</td></tr>
+        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>إعداد صيغة، يمكن تكراره</td></tr>
+        <tr><td><code>--damage &lt;name&gt;</code></td><td>إتلاف الملفات عمدًا، يمكن تكراره ويُطبَّق بالترتيب. شغّل <code>tfg damage</code> للاطلاع على القائمة</td></tr>
+        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code> أو <code>reject</code> أو <code>sanitize</code> أو <code>unspecified</code></td></tr>
+        <tr><td><code>--dry-run</code></td><td>عدّ وأظهر، ولا تكتب شيئًا إطلاقًا</td></tr>
+        <tr><td><code>--json</code></td><td>اكتب البيان إلى المخرج القياسي</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section" id="damage">
+  <h2>كيف أصنع ملفًا تالفًا عمدًا؟</h2>
+  <p>
+    كل ملف آخر تكتبه هذه الأداة صحيح بحكم بنائه، وهذا يجيب عن اثنين من ثلاثة أسئلة يطرحها مدقق الرفع.
+    أما <code>--damage</code> فيجيب عن الثالث: هل يُفتح الملف أصلًا. يُنتَج الملف بشكل طبيعي ثم
+    يُتلف، فيبقى بالحجم الذي طلبته.
+  </p>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <p>
+    تُكتب الإعدادات بعد نقطتين. يمكن تكرار الخيار، وترتيب كتابتها هو ترتيب تطبيقها. يسرد <code>tfg
+    damage</code> ما يستطيعه هذا الإصدار وما يقبله كل نوع.
+  </p>
+  <p>في الوصفة يكون المفتاح قائمة، من أسماء أو من إعدادات:</p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: zero-head
+        bytes: 16</code></pre>
+  <p>
+    يحصل الملف التالف على <code>expected: reject</code> في البيان، مع تسجيل الإتلاف بجانبه. يُرفض أمران
+    قبل كتابة أي شيء، لأن كلًّا منهما كان سيضع على القرص ملفًا يصفه البيان وصفًا خاطئًا:
+  </p>
+  <ul>
+    <li>ملف أصغر مما يحتاجه الإتلاف، لأنه كان سيخرج دون تغيير</li>
+    <li>
+      <code>expected: accept</code> بجانب إتلاف، لأن لا شيء يمكن أن يحققه. اكتب <code>sanitize</code> إن
+      كان المقصود أن يصلح النظام قيد الاختبار الملف، أو <code>unspecified</code> إن كان هذا هو
+      السؤال الذي تطرحه
+    </li>
+  </ul>
+  <p>
+    أما الثالث فلا يمكن معرفته مسبقًا. إذا نُفّذ إتلاف ولم يحرّك أي بايت، يُسقَط ذلك الملف بدل كتابته،
+    ويستمر التشغيل ويذكر أي ملف كان، وينتهي برمز الخروج الجزئي.
+  </p>
+</section>
+
+<section class="section" id="recipes">
+  <h2>كيف تبدو الوصفة؟</h2>
+  <p>
+    الوصفة ملف YAML يصف تشغيلًا كاملًا. أودعها بجانب اختباراتك فتتوقف بيانات الاختبار عن كونها ملفات
+    ثنائية في مستودعك، ويستطيع أي شخص إعادة بنائها، بايتًا ببايت، من ملف بضع مئات من الأحرف.
+  </p>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    يحتاج كل هدف إلى واحد فقط من <code>size</code> أو <code>size-range</code> أو <code>boundary</code>
+    أو <code>contains</code>. اثنان خطأ، وعدم وجود أي منها خطأ كذلك. الوصفة غير الصالحة <strong>لا
+    تكتب أي ملف</strong> وتبلّغ عن كل المشكلات دفعة واحدة لا عن أولها فقط، وتسمّي كل مشكلة الإعداد
+    الذي تخصه.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>كيف أصرّح بما يجب أن يفعله نظامي بملف ما؟</h2>
+  <p>الصيغة القصيرة حين تكفي النتيجة، والطويلة حين يهم السبب:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    النتائج هي <code>accept</code> و<code>reject</code> و<code>sanitize</code>
+    و<code>unspecified</code>. الأسباب قائمة مغلقة ليتمكن التقرير من التجميع بحسبها:
+    <code>content_malformed</code> و<code>count_limit</code> و<code>dimensions_limit</code>
+    و<code>duplicate</code> و<code>encoding_invalid</code> و<code>extension_rule</code>
+    و<code>filename_invalid</code> و<code>filename_too_long</code> و<code>filename_traversal</code>
+    و<code>malware_signature</code> و<code>mime_mismatch</code> و<code>nesting_depth</code>
+    و<code>none</code> و<code>size_limit</code> و<code>size_zero</code>.
+  </p>
+  <p>
+    يسمّي السبب <strong>القاعدة المعنية</strong> لا الحكم. ولهذا يمكن أن يقع السبب نفسه تحت أي من
+    النتيجتين: ملف أقل من الحد بايتًا واحدًا نتيجته <code>accept</code>، والقاعدة المعنية تبقى
+    <code>size_limit</code>.
+  </p>
+</section>
+
+<section class="section" id="manifest">
+  <h2>ماذا يوجد في البيان؟</h2>
+  <p>
+    يُكتب بجانب الملفات في نهاية كل تشغيل، بما في ذلك التشغيل الذي أُوقف. عنصر واحد لكل ملف:
+  </p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "0.4.0" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+  <p>
+    يُضاف <code>recipe_hash</code> حين يأتي التشغيل من وصفة، ويُضاف <code>preset</code> مع
+    <code>overrides</code> حين يأتي من إعداد مسبق، فيمكن دائمًا تتبّع البيان إلى ما أنتجه.
+  </p>
+  <p>
+    يحمل كل عنصر أيضًا <code>target_id</code>، وهو معرّف الهدف في الوصفة الذي أنتج الملف، ويحصي
+    <code>summary.by_target</code> الملفات التي انتهى إليها كل هدف. وهكذا يمكن فحص وصفة متعددة
+    الأهداف هدفًا هدفًا دون قراءة أسماء الملفات.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>ما الإعداد المسبق؟</h2>
+  <p>
+    مجموعة ملفات جاهزة تجيب عن سؤال اختبار شائع، فلا تحتاج إلى تصميم المجموعة بنفسك. الإعدادات المسبقة
+    وصفات عادية في جوهرها، ويطبع <code>eject</code> الوصفة لتعدّلها من هناك. لكل إعداد مسبق
+    <a href="/ar/presets/">صفحة خاصة</a> تذكر ما يكتشفه عادةً، وما في المجموعة، وكل إعداد يقبله.
+  </p>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/ar/presets/empty-and-minimal/">الفارغ والأدنى</a></p>
+    <p class="muted">هل يمر ملف صالح بأصغر حجم تسمح به الصيغة؟</p>
+    <p><code>empty-and-minimal</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ar/presets/filename-handling/">التعامل مع أسماء الملفات</a></p>
+    <p class="muted">هل سيخزّن نظامي ويعرض ويعيد اسم ملف لم يتوقعه؟</p>
+    <p><code>filename-handling</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ar/presets/size-boundaries/">حدود الحجم</a></p>
+    <p class="muted">هل يُطبَّق حد الحجم تمامًا حيث أُعلن عنه؟</p>
+    <p><code>size-boundaries</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ar/presets/tabular-import/">استيراد الجداول</a></p>
+    <p class="muted">هل يصمد استيراد الجداول عندي أمام ما تصدّره الأدوات الحقيقية؟</p>
+    <p><code>tabular-import</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ar/presets/text-encoding/">ترميز النص</a></p>
+    <p class="muted">هل يعرف قارئي ترميز الملف، أم يخمّن؟</p>
+    <p><code>text-encoding</code></p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/ar/presets/upload-validation/">التحقق من الرفع</a></p>
+    <p class="muted">هل يقبل نموذج الرفع عندي ما يجب قبوله ويرفض الباقي؟</p>
+    <p><code>upload-validation</code></p>
+  </li>
+</ul>
+  <pre><code>tfg preset list
+tfg preset show size-boundaries
+tfg generate --preset size-boundaries --limit 10mb --out ./edges
+tfg preset eject size-boundaries &gt; my.yaml</code></pre>
+  <p>
+    يخبرك <code>show</code> بكلفة المجموعة قبل أن تبنيها، ويقول صراحةً حين يكون رقم ما قيمة مؤقتة منا لا
+    حدًّا منك.
+  </p>
+</section>
+
+<section class="section" id="ci">
+  <h2>ما معنى رموز الخروج؟</h2>
+  <p>
+    لكل نهاية رمزها الخاص، وتذهب المخرجات المقروءة آليًا إلى المخرج القياسي، ولا يطبع التشغيل الفاشل
+    شيئًا هناك. الجدول عقد مجمّد، وتغيير معنى رمز يتطلب رفع الإصدار الرئيسي.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th class="num">الرمز</th>
+      <th>المعنى</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num"><code>0</code></td>
+      <td>عمل كل شيء.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>1</code></td>
+      <td>خطأ غير متوقع داخل الأداة.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>2</code></td>
+      <td>أمر أو خيار خاطئ.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>3</code></td>
+      <td>الوصفة غير صالحة.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>4</code></td>
+      <td>لا تستطيع الصيغة فعل ما طُلب منها.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>5</code></td>
+      <td>فشلت قراءة أو كتابة.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>6</code></td>
+      <td>لا توجد مساحة كافية على القرص.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>7</code></td>
+      <td>وجد verify عدم تطابق.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>8</code></td>
+      <td>انتهى التشغيل لكن لم يُنتَج كل شيء.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>130</code></td>
+      <td>أُوقف بواسطة Ctrl&#43;C.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>143</code></td>
+      <td>أوقفته إشارة، وهذا ما يبدو عليه انتهاء مهلة CI.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <pre><code>- name: build the fixtures
+  run: tfg generate fixtures.yaml --out ./fixtures
+
+- name: run the tests
+  run: pytest tests/
+
+- name: nothing moved
+  run: tfg verify ./fixtures/manifest.json</code></pre>
+  <p>
+    التشغيل الموقوف بـ Ctrl+C يترك بيانًا ولا يترك أبدًا ملفًا مكتوبًا نصفه، لذا يمكن للمهمة التالية أن
+    تنظّف مهمة أُلغيت.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>هل توجد نافذة سطح مكتب؟</h2>
+  <p>
+    نعم، المحرك نفسه بنافذة فوقه، للاختبار الذي لا يُكتب له سكربت. وهي ليست نسخة مبتورة: يقارن اختبار
+    الواجهتين ميزةً ميزة، وكل ما تستطيع إحداهما فعله دون الأخرى يجب أن يُعلَن ويُبرَّر بدل أن
+    يتباعدا بصمت.
+  </p>
+  <p>
+    الشاشات هي دفعة واحدة، والإعدادات المسبقة، وعدة دفعات معًا، وحول. تُظهر كلفة التشغيل قبل كتابة أي
+    شيء، وتبلّغ عن التقدم أثناء العمل، ويمكن إلغاؤها في منتصف الطريق دون ترك ملف مكتوب نصفه. لا تفتح
+    ملف وصفة بعد، فالوصفات شأن سطر الأوامر حاليًا، وتبني النافذة دفعاتها في النموذج.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="muted">ملفات اختبار لضمان الجودة بحجم دقيق، مع بيان يحدد كيف يجب أن يتفاعل نظامك مع كل ملف.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">المشروع</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">الشيفرة المصدرية على GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">التنزيلات</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">الإبلاغ عن مشكلة</a></li>
+        <li><a href="https://donislawdev.com/support/">ادعم المشروع</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">الصفحات</p>
+      <ul class="plain">
+        <li><a href="/ar/">الرئيسية</a></li>
+        <li><a href="/ar/formats/">الصيغ</a></li>
+        <li><a href="/ar/presets/">الإعدادات المسبقة</a></li>
+        <li><a href="/ar/docs/">التوثيق</a></li>
+        <li><a href="/ar/use-cases/">حالات الاستخدام</a></li>
+        <li><a href="/ar/create-file-exact-size/">الحجم الدقيق</a></li>
+        <li><a href="/ar/faq/">الأسئلة الشائعة</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. مُصدَر بموجب رخصة جنو العمومية العامة، الإصدار 3. الملفات التي تولّدها ملكك، فالرخصة تشمل الأداة لا مخرجاتها.</p>
+    <p class="muted">لا يحمّل هذا الموقع خطوطًا ولا سكربتات ولا متتبعات من أي مكان. ولا يضبط ملفات تعريف الارتباط.</p>
+  </div>
+</footer>
+</body>
+</html>
