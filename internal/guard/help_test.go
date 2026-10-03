@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/tool"
 )
 
 // Asking for help is not a mistake.
@@ -45,11 +46,25 @@ var commandsTakingHelp = [][]string{
 	{"tool"},
 	{"tool", "list"},
 	{"tool", "show"},
-	{"tool", "checksum"},
+}
+
+// takingHelp is commandsTakingHelp and every tool of the registry after
+// "tfg tool" - read from the registry rather than written here, since a list
+// kept by hand beside one that grows is the list that falls behind. It held
+// "tool checksum" alone until 2026-09-30, the day two more tools arrived.
+func takingHelp() [][]string {
+	out := append([][]string{}, commandsTakingHelp...)
+	for _, id := range tool.Names() {
+		out = append(out, []string{"tool", id})
+	}
+	return out
 }
 
 func TestAskingForHelpIsNotAMistake(t *testing.T) {
-	for _, cmd := range commandsTakingHelp {
+	if len(tool.Names()) == 0 {
+		t.Fatal("the registry of tools is empty here, so no tool would be asked for its help")
+	}
+	for _, cmd := range takingHelp() {
 		for _, flag := range []string{"--help", "-h"} {
 			args := append(append([]string{}, cmd...), flag)
 			name := strings.Join(args, " ")

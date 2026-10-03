@@ -652,9 +652,9 @@ func TestACancelledVerifyStopsInTheWalkToo(t *testing.T) {
 	// durability_test.go. The walk is the part of verify with no upper bound:
 	// the loop above is as long as the manifest, this is as long as whatever
 	// directory somebody pointed at.
-	body := functionSource(t, "internal/audit/audit.go", "walk")
+	body := functionSource(t, "internal/audit/walk.go", "Walk")
 	if !strings.Contains(body, "ctx.Err()") {
-		t.Error("audit.walk never asks whether the run was cancelled, so Ctrl+C during the " +
+		t.Error("audit.Walk never asks whether the run was cancelled, so Ctrl+C during the " +
 			"walk of a large tree does nothing until the walk is over")
 	}
 }

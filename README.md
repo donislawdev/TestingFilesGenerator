@@ -387,6 +387,8 @@ tfg formats <id>         what a single format accepts
 tfg tool list [--json]                          the tools this build has
 tfg tool show <id> [--json]                     what one tool works on and takes
 tfg tool checksum <file> [--algorithm sha256] [--expected <checksum>] [--json]
+tfg tool checksum-write <folder> [--algorithm sha256] [--json]
+tfg tool checksum-check <checksum_file> [--json]
 ```
 
 Small things to do with files you already have, beside the generator. Every tool
@@ -395,6 +397,12 @@ works out the checksum of a file - md5, sha1, sha256, sha512 or crc32, sha256
 unless you ask - and compares it with one you were given, telling the algorithm
 from its length. A checksum that does not match ends with code 7, the same as
 `tfg verify`. crc32 is the one ZIP and PNG use, not the one `cksum` prints.
+
+`checksum-write` writes the checksum of every file in a folder into SHA256SUMS
+beside them, the same bytes `sha256sum` writes, and never over one that is
+there. `checksum-check` checks every file a checksum file lists, in the folder
+the checksum file is in. Files it does not list are not looked at, the same as
+`sha256sum -c`, and a path that leaves that folder is refused rather than read.
 
 ### `tfg damage`
 

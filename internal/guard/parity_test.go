@@ -289,6 +289,13 @@ var reachableFromTheWindow = []string{
 	"tool:checksum.algorithm",
 	"tool:checksum.expected",
 	"tool:checksum.file",
+	// Held by TestTheToolsTabWritesAndChecksAFolder as well, which runs both
+	// from the screen through the pickers.
+	"tool:checksum-check",
+	"tool:checksum-check.checksum_file",
+	"tool:checksum-write",
+	"tool:checksum-write.algorithm",
+	"tool:checksum-write.folder",
 }
 
 // notYetReachable is everything the engine can do that the window cannot.

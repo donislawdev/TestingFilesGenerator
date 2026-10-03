@@ -79,7 +79,7 @@ func Inspect(ctx context.Context, dir string, m *manifest.Manifest) ([]Candidate
 
 	// In order, because this list is what cleanup removes from and what it
 	// printed to a person beforehand.
-	return inOrder(ctx, len(claimed), func(i int, scratch []byte) Candidate {
+	return InOrder(ctx, len(claimed), func(i int, scratch []byte) Candidate {
 		return look(claimed[i], full[i], scratch)
 	})
 }

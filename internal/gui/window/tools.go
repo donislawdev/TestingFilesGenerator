@@ -185,7 +185,7 @@ func (t *Tools) onChosen(question string) {
 		box := entry("", "")
 		t.form.inputs[in.Name] = box
 		t.work.Add(parts.Wide(t.fields.Add(in.Name, text.SettingLabel(in.Name), text.ToolInput(d.ID, in.Name, in.Detail),
-			t.tips.Say(text.ToolInputWrittenAs(d.ID)), chooserFor(box, t.host.ChooseFile))))
+			t.tips.Say(text.ToolInputWrittenAs(d.ID)), chooserFor(box, t.pickerFor(in.Kind)))))
 	}
 	settings, objects := parts.DeclaredFields(text.ToolOwner(d.ID), d.Settings, t.fields, t.tips)
 	t.form.settings = settings
@@ -193,7 +193,16 @@ func (t *Tools) onChosen(question string) {
 		t.work.Add(o)
 	}
 	t.work.Refresh()
-	t.showResult(nil)
+	t.showResult(d, nil)
+}
+
+// pickerFor is the window's picker for what an input names: a folder for a
+// folder, a file for everything else.
+func (t *Tools) pickerFor(kind tool.InputKind) func(func(string)) {
+	if kind == tool.Folder {
+		return t.host.ChooseDirectory
+	}
+	return t.host.ChooseFile
 }
 
 // PressGenerate runs the chosen tool - the name the window's keyboard asks
@@ -215,14 +224,14 @@ func (t *Tools) progressed(done, total int64) {
 	showOn(t.status, text.ToolReading(text.HumanBytes(done), text.HumanBytes(total)))
 }
 
-func (t *Tools) finished(r tool.Result, err error) {
+func (t *Tools) finished(d tool.Descriptor, r tool.Result, err error) {
 	t.busy.set(false, busyFace{})
 	showOn(t.status, "")
 	if err != nil {
 		t.refuse(err)
 		return
 	}
-	t.showResult(&r)
+	t.showResult(d, &r)
 }
 
 // refuse puts a refusal under the box it is about, or at the foot of the
@@ -245,9 +254,9 @@ func (t *Tools) refuse(err error) {
 // The canvas is told once, after the last change - a deferred word to it read
 // as coming before the changes to the guard that holds this
 // (TestABoxThatGainsOrLosesAPieceSaysSo), which cannot see when a defer runs.
-func (t *Tools) showResult(r *tool.Result) {
+func (t *Tools) showResult(d tool.Descriptor, r *tool.Result) {
 	t.result.RemoveAll()
-	for _, o := range t.resultObjects(r) {
+	for _, o := range t.resultObjects(d, r) {
 		t.result.Add(o)
 	}
 	t.result.Refresh()
@@ -255,7 +264,7 @@ func (t *Tools) showResult(r *tool.Result) {
 
 // resultObjects is what a run found, as the section shows it: the rows and the
 // verdict, or a sentence saying nothing has run yet.
-func (t *Tools) resultObjects(r *tool.Result) []fyne.CanvasObject {
+func (t *Tools) resultObjects(d tool.Descriptor, r *tool.Result) []fyne.CanvasObject {
 	if r == nil {
 		return []fyne.CanvasObject{parts.Prose(text.ToolNothingYet())}
 	}
@@ -264,14 +273,51 @@ func (t *Tools) resultObjects(r *tool.Result) []fyne.CanvasObject {
 		rows.Add(t.resultRow(row))
 	}
 	out := []fyne.CanvasObject{rows}
+	for _, n := range r.Notes {
+		out = append(out, noteObjects(d, n)...)
+	}
 	switch r.Verdict.Outcome {
 	case tool.Match:
-		out = append(out, parts.Prose(text.ToolMatches(r.Verdict.About, r.Verdict.Got)))
+		out = append(out, parts.Prose(verdictSaid(r.Verdict)))
 	case tool.Mismatch:
 		verdict := parts.NewErrorArea()
-		verdict.Say(text.ToolDoesNotMatch(r.Verdict.About, r.Verdict.Got, r.Verdict.Wanted))
+		verdict.Say(verdictSaid(r.Verdict))
 		out = append(out, verdict.Object())
 	case tool.Unasked:
+	}
+	return out
+}
+
+// verdictSaid is tool.Verdict.Said in the window's language.
+func verdictSaid(v tool.Verdict) string {
+	switch {
+	case v.Outcome == tool.Match && v.Listed:
+		return text.ToolListMatches(v.About)
+	case v.Outcome == tool.Mismatch && v.Listed:
+		return text.ToolListDoesNotMatch(v.About)
+	case v.Outcome == tool.Match:
+		return text.ToolMatches(v.About, v.Got)
+	}
+	return text.ToolDoesNotMatch(v.About, v.Got, v.Wanted)
+}
+
+// noteObjects is one note of a result as the section shows it: its line and
+// its items, one item on the same line, several under it - and no more of
+// them than NoteItemsShown, with how many were left out and where to see
+// them. Each item goes through core.Shown, the same as on the command line,
+// since an item is usually a file name and a name may hold a line break.
+func noteObjects(d tool.Descriptor, n tool.Noted) []fyne.CanvasObject {
+	says := text.ToolNote(d.ID, n.ID, d.NoteSays(n.ID))
+	if len(n.Items) == 1 {
+		return []fyne.CanvasObject{parts.Prose(says + " " + core.Shown(n.Items[0]))}
+	}
+	out := []fyne.CanvasObject{parts.Prose(says)}
+	for i, item := range n.Items {
+		if i == parts.NoteItemsShown {
+			out = append(out, parts.Prose(text.ToolMoreItems(len(n.Items)-i, d.ID)))
+			break
+		}
+		out = append(out, parts.Prose(core.Shown(item)))
 	}
 	return out
 }
@@ -327,7 +373,7 @@ func startTool(d tool.Descriptor, in tool.Request, screen *Tools) *toolJob {
 	go func() {
 		defer cancel()
 		result, err := d.Start(ctx, in, progress)
-		fyne.Do(func() { screen.finished(result, err) })
+		fyne.Do(func() { screen.finished(d, result, err) })
 		close(job.done)
 	}()
 	return job
