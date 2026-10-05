@@ -2,10 +2,10 @@
 package recipe
 
 import (
-	"fmt"
-
 	"github.com/goccy/go-yaml/lexer"
 	"github.com/goccy/go-yaml/token"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // What a recipe is allowed to cost to read, beyond its size.
@@ -77,10 +77,13 @@ type TooDeepError struct {
 	Depth int
 }
 
-func (e *TooDeepError) Error() string {
-	return fmt.Sprintf(
+func (e *TooDeepError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *TooDeepError) Said() core.Said {
+	return core.Says("recipe.TooDeep",
 		"%s nests lists and mappings %d deep and the limit is %d. Reading a deeply nested document costs memory that grows far faster than the document does, so a small file can exhaust this machine before anything is written. Write the targets out as an ordinary list instead",
-		e.Name, e.Depth, MaxNestingDepth)
+		core.A("Name", e.Name), core.A("Depth", e.Depth), core.A("Limit", MaxNestingDepth))
 }
 
 // nestingDepth is the deepest the collections in src nest, counting both

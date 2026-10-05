@@ -217,10 +217,10 @@ func hashAll(ctx context.Context, dir string, files []audit.Entry, algorithm str
 		return nil, stopped
 	}
 	sums := make([]string, len(answers))
-	var problems []string
+	var problems []core.Said
 	for i, a := range answers {
 		if a.err != nil {
-			problems = append(problems, files[i].Path+" - "+a.err.Error())
+			problems = append(problems, core.Says("checksum.PathProblem", "%s - %v", core.A("Path", files[i].Path), core.A("Error", a.err)))
 		}
 		sums[i] = a.sum
 	}
@@ -231,10 +231,10 @@ func hashAll(ctx context.Context, dir string, files []audit.Entry, algorithm str
 }
 
 // problemsOf is each error as a line of a refusal.
-func problemsOf(errs []error) []string {
-	out := make([]string, 0, len(errs))
+func problemsOf(errs []error) []core.Said {
+	out := make([]core.Said, 0, len(errs))
 	for _, err := range errs {
-		out = append(out, err.Error())
+		out = append(out, core.SaidOf(err))
 	}
 	return out
 }

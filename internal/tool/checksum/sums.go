@@ -4,10 +4,11 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"strings"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // The checksum file: the format GNU coreutils writes and reads, and the one
@@ -96,6 +97,8 @@ type Sums struct {
 	// Unknown are lines of an algorithm this tool does not work out, as
 	// "line N: NAME" - a sha224, a BLAKE2b.
 	Unknown []string
+	// UnknownWords is Unknown as sentences, one for each, for a window.
+	UnknownWords []core.Said `json:"-"`
 }
 
 // ParseSums reads a checksum file, line by line, never keeping more of a line
@@ -129,7 +132,9 @@ func (s *Sums) add(number int, line []byte, tooLong bool) {
 	entry, unknown, ok := readEntry(string(line))
 	switch {
 	case unknown != "":
-		s.Unknown = append(s.Unknown, fmt.Sprintf("line %d: %s", number, unknown))
+		line := core.Says("checksum.UnknownLine", "line %d: %s", core.A("Line", number), core.A("Name", unknown))
+		s.Unknown = append(s.Unknown, line.String())
+		s.UnknownWords = append(s.UnknownWords, line)
 	case ok:
 		entry.Line = number
 		s.Listed = append(s.Listed, entry)

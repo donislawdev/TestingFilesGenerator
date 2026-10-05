@@ -40,7 +40,23 @@ func (r *Refusal) InTheWordsOf(name string) string {
 func (r *Refusal) Said() Said { return r.said }
 
 // AboutSetting is the recipe key this refusal is about, or empty.
-func (r *Refusal) AboutSetting() string { return r.setting }
+//
+// A refusal about no setting of its own that wraps one about a setting answers
+// for the one it wraps - the way fmt.Errorf did, which has no such method and
+// so let errors.As find the one inside. Answering empty would put the refusal
+// at the foot of the form, away from the box it is about.
+func (r *Refusal) AboutSetting() string {
+	if r.setting != "" {
+		return r.setting
+	}
+	for _, w := range r.said.wrapped() {
+		var about interface{ AboutSetting() string }
+		if errors.As(w, &about) {
+			return about.AboutSetting()
+		}
+	}
+	return ""
+}
 
 // Unwrap is every error the layout wraps with %w.
 func (r *Refusal) Unwrap() []error { return r.said.wrapped() }

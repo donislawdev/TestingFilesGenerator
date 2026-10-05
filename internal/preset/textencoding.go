@@ -415,7 +415,7 @@ func idsOf(descs []format.Descriptor) []string {
 func expandTextEncoding(args Args) ([]byte, error) {
 	size, err := core.ParseSize(args[sampleParam])
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", sampleParam, err)
+		return nil, paramCause(sampleParam, err)
 	}
 	// Before the files are laid out, because this refusal is about the value
 	// somebody typed and the one below it is about the set that value asks for.

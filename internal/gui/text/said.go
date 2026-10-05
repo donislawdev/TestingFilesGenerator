@@ -88,10 +88,7 @@ func translated(s core.Said, label string) (string, bool) {
 	if err != nil || out == "" {
 		return "", false
 	}
-	if s.Stopless() {
-		out = strings.TrimSuffix(out, ".")
-	}
-	return out, true
+	return s.Shaped(out), true
 }
 
 // valuesOf is every value of a sentence as the text a translation puts in its
@@ -135,6 +132,12 @@ func valueIn(v any, directive, label string) string {
 			parts[i] = valueIn(s, "%s", label)
 		}
 		return Formats(parts)
+	case core.Lines:
+		parts := make([]string, len(v))
+		for i, s := range v {
+			parts[i] = valueIn(s, "%s", label)
+		}
+		return strings.Join(parts, "\n  ")
 	case core.Choices:
 		names := make([]string, len(v.Values))
 		for i, value := range v.Values {

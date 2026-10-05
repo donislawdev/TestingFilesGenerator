@@ -1,7 +1,6 @@
 package recipe
 
 import (
-	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -172,10 +171,13 @@ type TooLargeError struct {
 	Bytes int64
 }
 
-func (e *TooLargeError) Error() string {
-	return fmt.Sprintf(
+func (e *TooLargeError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *TooLargeError) Said() core.Said {
+	return core.Says("recipe.TooLarge",
 		"%s is %d B and the limit is %d B. A recipe is a document somebody writes, and reading time grows with its size, so an unbounded one is a way to hang a build. Split it into several recipes, or generate the targets with a loop in your own script",
-		e.Name, e.Bytes, MaxBytes)
+		core.A("Name", e.Name), core.A("Bytes", e.Bytes), core.A("Limit", int64(MaxBytes)))
 }
 
 // Parse reads a recipe and returns it only when every check passes.
@@ -288,7 +290,7 @@ func decodeStrict(f *ast.File, raw *rawRecipe) (err error) {
 			// The panic value itself says "invalid memory address", which tells
 			// a person testing an upload form nothing at all. What helps is the
 			// shape of the thing that does it.
-			err = fmt.Errorf("this file could not be read as YAML. Look for a tag or anchor marker such as ! or & with nothing after it")
+			err = core.Refuse(core.Says("recipe.NotYAML", "this file could not be read as YAML. Look for a tag or anchor marker such as ! or & with nothing after it"))
 		}
 	}()
 	// Decoded from the document the one-document check already parsed, rather

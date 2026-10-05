@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"unicode"
+	"unicode/utf8"
 )
 
 // Said is a sentence for a person, kept as its parts until a surface says it.
@@ -37,6 +39,29 @@ type Said struct {
 	// noStop is a sentence said without the full stop it ends with, for a
 	// reader that puts its own after it - see WithoutFullStop.
 	noStop bool
+	// capital is a sentence that starts with a capital letter where it stands -
+	// see Capitalized.
+	capital bool
+}
+
+// Capitalized is this sentence starting with a capital letter, in every
+// language - it stands where a new sentence begins.
+func (s Said) Capitalized() Said {
+	s.capital = true
+	return s
+}
+
+// Shaped is a sentence's text with the full stop and the capital this
+// sentence was asked for, for whichever language the text is in.
+func (s Said) Shaped(text string) string {
+	if s.noStop {
+		text = strings.TrimSuffix(text, ".")
+	}
+	if s.capital && text != "" {
+		r, size := utf8.DecodeRuneInString(text)
+		text = string(unicode.ToUpper(r)) + text[size:]
+	}
+	return text
 }
 
 // WithoutFullStop is this sentence without the full stop at its end, in every
@@ -104,7 +129,7 @@ func settled(layout string, args []Arg) []Arg {
 // keeps is whether a value can be held as it is until the sentence is read.
 func keeps(v any) bool {
 	switch v.(type) {
-	case nil, Said, error, Bytes, Term, Choice, Choices, Joined, Sentences, fmt.Formatter, interface{ Said() Said }:
+	case nil, Said, error, Bytes, Term, Choice, Choices, Joined, Sentences, Lines, fmt.Formatter, interface{ Said() Said }:
 		return true
 	}
 	switch reflect.ValueOf(v).Kind() {
@@ -181,11 +206,7 @@ func (s Said) String() string {
 	if s.countUnsaid() {
 		values = values[:len(values)-1]
 	}
-	out := fmt.Sprintf(withoutWrapVerb(s.Layout()), values...)
-	if s.noStop {
-		return strings.TrimSuffix(out, ".")
-	}
-	return out
+	return s.Shaped(fmt.Sprintf(withoutWrapVerb(s.Layout()), values...))
 }
 
 // countUnsaid is whether the number that chooses the form is not printed -
@@ -359,6 +380,19 @@ func (l Sentences) Format(f fmt.State, verb rune) {
 		parts[i] = s.String()
 	}
 	fmt.Fprintf(f, fmt.FormatString(f, verb), strings.Join(parts, ", "))
+}
+
+// Lines is several sentences said one under another, each on a line of its own
+// and indented by two spaces after the first.
+type Lines []Said
+
+// Format prints the sentences in English, one a line.
+func (l Lines) Format(f fmt.State, verb rune) {
+	parts := make([]string, len(l))
+	for i, s := range l {
+		parts[i] = s.String()
+	}
+	fmt.Fprintf(f, fmt.FormatString(f, verb), strings.Join(parts, "\n  "))
 }
 
 // Choices is several values of one closed list, said as a list - "comma, tab,

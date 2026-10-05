@@ -231,6 +231,6 @@ func (raw rawRecipe) onlyTargets() error {
 	if len(carries) == 0 {
 		return nil
 	}
-	return fmt.Errorf("the preset's recipe carries %s, which a recipe building on it cannot inherit",
-		strings.Join(carries, ", "))
+	return core.Refuse(core.Says("recipe.PresetCarries", "the preset's recipe carries %s, which a recipe building on it cannot inherit",
+		core.A("Keys", strings.Join(carries, ", "))))
 }

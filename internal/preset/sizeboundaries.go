@@ -152,7 +152,7 @@ func parseSpread(raw string) ([]offset, error) {
 func expandSizeBoundaries(args Args) ([]byte, error) {
 	limit, err := core.ParseSize(args["limit"])
 	if err != nil {
-		return nil, fmt.Errorf("limit: %w", err)
+		return nil, paramCause("limit", err)
 	}
 	// The limit leads every file name, so two sets built around different
 	// limits cannot be told apart only by opening the files. Reported from use
@@ -165,9 +165,7 @@ func expandSizeBoundaries(args Args) ([]byte, error) {
 	// source once.
 	limitText := strings.TrimSpace(args["limit"])
 	if bad := firstUnusable(limitText); bad != "" {
-		return nil, fmt.Errorf(
-			"limit: it holds %s, and a limit is written with digits, letters and a dot - "+
-				"such as 10mb, 512 or 1.5gb. Its text becomes part of every file name", bad)
+		return nil, limitUnusable("limit", bad)
 	}
 	spread, err := parseSpread(args["spread"])
 	if err != nil {

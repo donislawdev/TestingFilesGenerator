@@ -130,16 +130,13 @@ func settleUpload(args Args) (uploadSet, error) {
 	var s uploadSet
 	limit, err := core.ParseSize(args[uploadLimitParam])
 	if err != nil {
-		return s, fmt.Errorf("%s: %w", uploadLimitParam, err)
+		return s, paramCause(uploadLimitParam, err)
 	}
 	// The limit leads the names of the files built around it, so its text
 	// reaches a file name and gets the check a distance gets.
 	s.limitText = strings.TrimSpace(args[uploadLimitParam])
 	if bad := firstUnusable(s.limitText); bad != "" {
-		return s, fmt.Errorf(
-			"%s: it holds %s, and a limit is written with digits, letters and a dot - "+
-				"such as 10mb, 512 or 1.5gb. Its text becomes part of every file name",
-			uploadLimitParam, bad)
+		return s, limitUnusable(uploadLimitParam, bad)
 	}
 	s.limit = limit
 
@@ -156,7 +153,8 @@ func settleUpload(args Args) (uploadSet, error) {
 		return s, err
 	}
 	if s.bulk, err = strconv.Atoi(args[bulkParam]); err != nil {
-		return s, fmt.Errorf("%s: %q is not a whole number of files", bulkParam, args[bulkParam])
+		return s, core.Refuse(core.Says("preset.BulkNotWhole", "%s: %q is not a whole number of files",
+			core.A("Param", core.LabelTerm(bulkParam)), core.A("Value", args[bulkParam])))
 	}
 	s.filler, err = format.Get(fillerFormat)
 	return s, err

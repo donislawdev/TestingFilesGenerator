@@ -427,3 +427,111 @@ func fieldsOf(said string, c saidCall, form string) string {
 // said is a sentence a guard makes up, for a refusal built by hand. Its
 // English is the text itself.
 func said(text string) core.Said { return core.Says("guard.Text", "%s", core.A("Text", text)) }
+
+// enginePackages are the packages whose refusals and notes reach a person
+// through both surfaces, and so are said as sentences.
+var enginePackages = []string{"internal/core", "internal/engine", "internal/recipe", "internal/preset",
+	"internal/damage", "internal/format", "internal/tool", "internal/manifest"}
+
+// TestNoRefusalOfTheEngineIsWrittenAsBareText holds the engine to saying every
+// error as a sentence: core.Says, or core.Defect around an error only a fault
+// in the program can produce. An fmt.Errorf or an errors.New anywhere else is
+// a refusal a window can only show in English.
+//
+// One exception, by its shape: the publishing calls wrap errors.ErrUnsupported
+// so the caller can ask errors.Is and fall back. That error is a signal between
+// two functions, and no person reads it.
+func TestNoRefusalOfTheEngineIsWrittenAsBareText(t *testing.T) {
+	root := repoRoot(t)
+	found := 0
+	for _, p := range packages(t) {
+		if !insideAny(p.rel, enginePackages) {
+			continue
+		}
+		for _, path := range p.files {
+			fset := token.NewFileSet()
+			file, err := parser.ParseFile(fset, path, nil, 0)
+			if err != nil {
+				t.Fatalf("parsing %s: %v", path, err)
+			}
+			found++
+			for _, bare := range bareErrors(file) {
+				rel, _ := filepath.Rel(root, path)
+				if strings.HasPrefix(filepath.Base(path), "publish_") && wrapsUnsupported(bare) {
+					continue
+				}
+				t.Errorf("%s:%d builds an error from bare text. Say it with core.Says (core.Refuse, core.RefuseAbout), "+
+					"or wrap it in core.Defect when only a fault in the program can produce it",
+					filepath.ToSlash(rel), fset.Position(bare.Pos()).Line)
+			}
+		}
+	}
+	if found < 50 {
+		t.Fatalf("read %d file(s) of the engine, so the walk did not find it", found)
+	}
+}
+
+func insideAny(rel string, roots []string) bool {
+	rel = filepath.ToSlash(rel)
+	for _, r := range roots {
+		if rel == r || strings.HasPrefix(rel, r+"/") {
+			return true
+		}
+	}
+	return false
+}
+
+// bareErrors is every fmt.Errorf and errors.New in a file that is not the
+// argument of a Defect.
+func bareErrors(file *ast.File) []*ast.CallExpr {
+	inDefect := map[*ast.CallExpr]bool{}
+	var all []*ast.CallExpr
+	ast.Inspect(file, func(n ast.Node) bool {
+		call, ok := n.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+		if calledAs(call, "core", "Defect") || (file.Name.Name == "core" && isIdentCall(call, "Defect")) {
+			for _, a := range call.Args {
+				if inner, ok := a.(*ast.CallExpr); ok {
+					inDefect[inner] = true
+				}
+			}
+		}
+		if calledAs(call, "fmt", "Errorf") || calledAs(call, "errors", "New") {
+			all = append(all, call)
+		}
+		return true
+	})
+	var out []*ast.CallExpr
+	for _, c := range all {
+		if !inDefect[c] {
+			out = append(out, c)
+		}
+	}
+	return out
+}
+
+func calledAs(call *ast.CallExpr, pkg, fn string) bool {
+	sel, ok := call.Fun.(*ast.SelectorExpr)
+	if !ok || sel.Sel.Name != fn {
+		return false
+	}
+	x, ok := sel.X.(*ast.Ident)
+	return ok && x.Name == pkg
+}
+
+func isIdentCall(call *ast.CallExpr, fn string) bool {
+	id, ok := call.Fun.(*ast.Ident)
+	return ok && id.Name == fn
+}
+
+// wrapsUnsupported is fmt.Errorf("%w: %w", errors.ErrUnsupported, ...).
+func wrapsUnsupported(call *ast.CallExpr) bool {
+	if len(call.Args) < 2 {
+		return false
+	}
+	layout, ok := literalText(call.Args[0])
+	sel, isSel := call.Args[1].(*ast.SelectorExpr)
+	return ok && layout == "%w: %w" && isSel && sel.Sel.Name == "ErrUnsupported"
+}

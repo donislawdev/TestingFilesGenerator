@@ -62,6 +62,20 @@ type commaList struct {
 	duplicate func(first string) core.Said
 }
 
+// paramCause is a refusal of one parameter's value from below, with the
+// parameter named in front of it.
+func paramCause(param string, err error) error {
+	return core.Refuse(core.Says("preset.ParamCause", "%s: %w", core.A("Param", core.LabelTerm(param)), core.A("Cause", err)))
+}
+
+// limitUnusable is a limit whose text cannot become part of a file name.
+func limitUnusable(param, bad string) error {
+	return core.Refuse(core.Says("preset.LimitUnusable",
+		"%s: it holds %s, and a limit is written with digits, letters and a dot - "+
+			"such as 10mb, 512 or 1.5gb. Its text becomes part of every file name",
+		core.A("Param", core.LabelTerm(param)), core.A("Bad", bad)))
+}
+
 // refuse is the shape a bad value in a preset parameter takes.
 //
 // The type the format registry raises for a value outside its declaration,

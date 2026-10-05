@@ -27,6 +27,8 @@ import (
 	"sync"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // InputKind is what an input names on the disk.
@@ -129,6 +131,10 @@ type Noted struct {
 	// Items are data - paths, line numbers, a count - shown as they are in
 	// every language.
 	Items []string
+	// Words is the items in words, one for each, where an item is more than
+	// data - "line 3: blake2b" - so a window says it in its own language.
+	// Empty where every item is data.
+	Words []core.Said
 }
 
 // Request is one run of a tool: the paths it works on and the settings it was
@@ -370,7 +376,7 @@ func (d Descriptor) Start(ctx context.Context, in Request, progress Progress) (R
 	// show a key. Refused loudly, as a fault in the build, rather than shown.
 	for _, n := range result.Notes {
 		if d.NoteSays(n.ID) == "" {
-			return Result{}, fmt.Errorf("the tool %s said a note it never declared (%s). This is a fault in the build", d.ID, n.ID)
+			return Result{}, core.Defect(fmt.Errorf("the tool %s said a note it never declared (%s). This is a fault in the build", d.ID, n.ID))
 		}
 	}
 	return result, nil

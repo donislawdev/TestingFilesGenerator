@@ -2,16 +2,18 @@ package tool
 
 import (
 	"errors"
-	"fmt"
 	"strings"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
-// Sentence is a refusal of a tool as one line of the command line: what
-// happened, why, and what to do instead - the shape "PNG cannot be smaller
-// than 74 B - ... Ask for 74 B or more" already has. One function, so every
-// tool refuses in the same shape without each writing it.
-func Sentence(what, why, instead string) string {
-	return what + " - " + why + ". " + strings.ToUpper(instead[:1]) + instead[1:]
+// Said is a refusal of a tool in one sentence: what happened, why, and what to
+// do instead - the shape "PNG cannot be smaller than 74 B - ... Ask for 74 B or
+// more" already has. One function, so every tool refuses in the same shape
+// without each writing it. What to do starts with a capital in every language,
+// because it starts a sentence.
+func Said(what, why, instead core.Said) core.Said {
+	return core.Says("tool.Sentence", "%s - %s. %s", core.A("What", what), core.A("Why", why), core.A("Instead", instead.Capitalized()))
 }
 
 // Class is what kind of mistake a refusal is, which is what the command line
@@ -46,24 +48,27 @@ type UnknownError struct {
 }
 
 // What happened, without the list of names.
-func (e *UnknownError) What() string {
-	return fmt.Sprintf("there is no tool called %q", e.ID)
+func (e *UnknownError) what() core.Said {
+	return core.Says("tool.ThereIsNoToolCalled", "there is no tool called %q", core.A("ID", e.ID))
 }
 
 // Why this is refused rather than guessed at.
-func (e *UnknownError) Why() string {
-	return "a tool is named exactly, and the nearest name to a mistyped one may do something else"
+func (e *UnknownError) why() core.Said {
+	return core.Says("tool.AToolIsNamedExactlyAnd", "a tool is named exactly, and the nearest name to a mistyped one may do something else")
 }
 
 // Instead names what there is, from the registry rather than from a list.
-func (e *UnknownError) Instead() string {
+func (e *UnknownError) instead() core.Said {
 	if len(e.Known) == 0 {
-		return "this build has no tools"
+		return core.Says("tool.ThisBuildHasNoTools", "this build has no tools")
 	}
-	return "use one of: " + strings.Join(e.Known, ", ")
+	return core.Says("tool.UseOneOf", "use one of: %s", core.A("Known", strings.Join(e.Known, ", ")))
 }
 
-func (e *UnknownError) Error() string { return Sentence(e.What(), e.Why(), e.Instead()) }
+func (e *UnknownError) Error() string { return e.Said().String() }
+
+// Said is the whole refusal, for a window that says it in its own language.
+func (e *UnknownError) Said() core.Said { return Said(e.what(), e.why(), e.instead()) }
 
 // Class says this is a mistake in the request.
 func (e *UnknownError) Class() Class { return Asked }
@@ -111,21 +116,36 @@ func (e *MissingInputError) AboutSetting() string { return e.Input.Name }
 // What happened. Worded for both surfaces - a window shows this under the
 // box and the command line prints it - so it names neither a flag nor a
 // button.
-func (e *MissingInputError) What() string {
-	return fmt.Sprintf("no %s was given", e.Input.Kind)
+func (e *MissingInputError) what() core.Said {
+	return core.Says("tool.NoWasGiven", "no %s was given", core.A("Kind", e.Input.Kind))
 }
 
 // Why this is refused rather than started.
-func (e *MissingInputError) Why() string {
-	return "the tool has nothing to read without one"
+func (e *MissingInputError) why() core.Said {
+	return core.Says("tool.TheToolHasNothingToRead", "the tool has nothing to read without one")
 }
 
 // Instead is what to give it.
-func (e *MissingInputError) Instead() string {
-	return fmt.Sprintf("name the %s to work on", e.Input.Kind)
+func (e *MissingInputError) instead() core.Said {
+	return core.Says("tool.NameTheToWorkOn", "name the %s to work on", core.A("Kind", e.Input.Kind))
 }
 
-func (e *MissingInputError) Error() string { return Sentence(e.What(), e.Why(), e.Instead()) }
+func (e *MissingInputError) Error() string { return e.Said().String() }
+
+// Said is the whole refusal, for a window that says it in its own language.
+func (e *MissingInputError) Said() core.Said { return Said(e.what(), e.why(), e.instead()) }
 
 // Class says this is a mistake in the request.
 func (e *MissingInputError) Class() Class { return Asked }
+
+// What, Why and Instead are the parts in English, for a report that lays
+// them out apart.
+func (e *MissingInputError) What() string    { return e.what().String() }
+func (e *MissingInputError) Why() string     { return e.why().String() }
+func (e *MissingInputError) Instead() string { return e.instead().String() }
+
+// What, Why and Instead are the parts in English, for a report that lays
+// them out apart.
+func (e *UnknownError) What() string    { return e.what().String() }
+func (e *UnknownError) Why() string     { return e.why().String() }
+func (e *UnknownError) Instead() string { return e.instead().String() }

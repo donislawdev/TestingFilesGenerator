@@ -2,7 +2,6 @@ package manifest
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 	"runtime"
@@ -527,11 +526,14 @@ func (m *Manifest) Encode(w io.Writer) error {
 // SchemaError is a manifest this build cannot read.
 type SchemaError struct {
 	Path   string
-	Detail string
+	Detail core.Said
 }
 
-func (e *SchemaError) Error() string {
-	return fmt.Sprintf("%s cannot be read as a manifest: %s", e.Path, e.Detail)
+func (e *SchemaError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *SchemaError) Said() core.Said {
+	return core.Says("manifest.Unreadable", "%s cannot be read as a manifest: %s", core.A("Path", e.Path), core.A("Detail", e.Detail))
 }
 
 // MaxBytes is the largest manifest this build will read.
@@ -619,10 +621,13 @@ type TooLargeError struct {
 	Bytes int64
 }
 
-func (e *TooLargeError) Error() string {
-	return fmt.Sprintf(
+func (e *TooLargeError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *TooLargeError) Said() core.Said {
+	return core.Says("manifest.TooLarge",
 		"%s is %d B and the limit is %d B. A manifest is read into memory to be compared against a directory, so an unbounded one is a way to exhaust it. Check that this is a manifest this tool wrote, or split the run it describes",
-		e.Path, e.Bytes, MaxBytes)
+		core.A("Path", e.Path), core.A("Bytes", e.Bytes), core.A("Limit", int64(MaxBytes)))
 }
 
 // Load reads a manifest written by an earlier run.
@@ -642,16 +647,14 @@ func Load(path string) (*Manifest, error) {
 	}
 	var m Manifest
 	if err := json.Unmarshal(raw, &m); err != nil {
-		return nil, &SchemaError{Path: path, Detail: err.Error()}
+		return nil, &SchemaError{Path: path, Detail: core.SaidOf(err)}
 	}
 	if m.ManifestVersion == "" {
-		return nil, &SchemaError{Path: path, Detail: "it carries no manifest_version, so it is not a manifest this tool wrote"}
+		return nil, &SchemaError{Path: path, Detail: core.Says("manifest.ItCarriesNoManifestVersionSo", "it carries no manifest_version, so it is not a manifest this tool wrote")}
 	}
 	got, want := major(m.ManifestVersion), major(Version)
 	if got != want {
-		return nil, &SchemaError{Path: path, Detail: fmt.Sprintf(
-			"it is schema version %s and this build reads %s. Use the version of tfg that wrote it",
-			m.ManifestVersion, Version)}
+		return nil, &SchemaError{Path: path, Detail: core.Says("manifest.ItIsSchemaVersionAndThis", "it is schema version %s and this build reads %s. Use the version of tfg that wrote it", core.A("ManifestVersion", m.ManifestVersion), core.A("Version", Version))}
 	}
 	if err := checkPaths(path, &m); err != nil {
 		return nil, err
@@ -687,22 +690,18 @@ func checkPaths(path string, m *Manifest) error {
 		if problem == "" {
 			continue
 		}
-		return &SchemaError{Path: path, Detail: fmt.Sprintf(
-			"entry %d has the path %q, which lands outside the directory the manifest describes - %s. "+
+		return &SchemaError{Path: path, Detail: core.Says("manifest.EntryHasThePathWhichLands", "entry %d has the path %q, which lands outside the directory the manifest describes - %s. "+
 				"This tool never reads or removes anything outside that directory, so a manifest that asks it to is one it will not act on. "+
-				"Use the manifest the run actually wrote, or correct the path to one inside the directory",
-			i+1, f.Path, problem)}
+				"Use the manifest the run actually wrote, or correct the path to one inside the directory", core.A("I", i+1), core.A("Path", f.Path), core.A("Problem", problem))}
 	}
 	// The instructions are a name beside the manifest and nothing else.
 	// cleanup --with-manifest removes the file this names, so a manifest
 	// carrying a path here would be a manifest that removes something the run
 	// never wrote.
 	if name := m.Run.Instructions; name != "" && !isInstructionsName(name) {
-		return &SchemaError{Path: path, Detail: fmt.Sprintf(
-			"run.instructions is %q, and it can only be the name of a file beside the manifest ending in %s. "+
+		return &SchemaError{Path: path, Detail: core.Says("manifest.RunInstructionsIsAndItCan", "run.instructions is %q, and it can only be the name of a file beside the manifest ending in %s. "+
 				"This tool removes that file with the manifest, so it will not act on one that names anything else. "+
-				"Use the manifest the run actually wrote, or remove the key",
-			name, instructionsSuffix)}
+				"Use the manifest the run actually wrote, or remove the key", core.A("Name", name), core.A("InstructionsSuffix", instructionsSuffix))}
 	}
 	return nil
 }
