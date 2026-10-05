@@ -105,7 +105,7 @@
 																	<rectangle fillColor="inputBackground" radius="6" size="587x26"/>
 																	<rectangle size="0x0"/>
 																	<widget pos="4,3" size="557x20" type="*widget.RichText">
-																		<text pos="2,2" size="219x16">Is this file the one it claims to be?</text>
+																		<text pos="2,2" size="301x16">checksum - Is this file the one it claims to be?</text>
 																	</widget>
 																	<widget pos="561,3" size="20x20" type="*widget.Icon">
 																		<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="primary"/>

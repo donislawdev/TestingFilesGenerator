@@ -194,6 +194,23 @@ func errorArea() Entry {
 	}}
 }
 
+// verdict is the sentence answering a check, both ways it comes out, and a
+// long one to see where it wraps.
+func verdict() Entry {
+	return Entry{Name: "Verdict", Covers: []string{"Tone"}, States: []State{
+		{"a match", func() fyne.CanvasObject {
+			return parts.Verdict(parts.Agrees, "Matches: every file SHA256SUMS lists is what it says.")
+		}},
+		{"not a match", func() fyne.CanvasObject {
+			return parts.Verdict(parts.Disagrees, "Does not match: SHA256SUMS lists files that are not what it says.")
+		}},
+		{"a long match", func() fyne.CanvasObject {
+			return parts.Verdict(parts.Agrees, "Matches: the sha512 is "+
+				"ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f, as expected.")
+		}},
+	}}
+}
+
 func progress() Entry {
 	at := func(value float64) fyne.CanvasObject {
 		p := parts.NewProgress()

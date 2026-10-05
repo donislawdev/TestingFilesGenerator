@@ -105,7 +105,7 @@
 																	<rectangle fillColor="inputBackground" radius="6" size="587x26"/>
 																	<rectangle size="0x0"/>
 																	<widget pos="4,3" size="557x20" type="*widget.RichText">
-																		<text pos="2,2" size="219x16">Is this file the one it claims to be?</text>
+																		<text pos="2,2" size="301x16">checksum - Is this file the one it claims to be?</text>
 																	</widget>
 																	<widget pos="561,3" size="20x20" type="*widget.Icon">
 																		<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="primary"/>
@@ -257,10 +257,10 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,613" size="820x178">
-									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x178" strokeColor="button" strokeWidth="1"/>
-									<container size="820x178">
-										<container pos="16,16" size="788x146">
+								<container pos="0,613" size="820x223">
+									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x223" strokeColor="button" strokeWidth="1"/>
+									<container size="820x223">
+										<container pos="16,16" size="788x191">
 											<container size="788x36">
 												<container pos="-8,0" size="796x36">
 													<container size="792x36">
@@ -283,8 +283,8 @@
 													</container>
 												</container>
 											</container>
-											<container pos="0,52" size="788x93">
-												<container size="788x93">
+											<container pos="0,52" size="788x138">
+												<container size="788x138">
 													<container size="788x60">
 														<container size="788x60">
 															<container size="788x60">
@@ -313,9 +313,18 @@
 													<container pos="0,76" size="788x16">
 														<widget pos="-6,-6" size="800x28" type="*widget.Label">
 															<widget size="800x28" type="*widget.RichText">
-																<text pos="6,6" size="747x16">Matches: the sha256 is ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad, as expected.</text>
+																<text color="success" pos="6,6" size="747x16">Matches: the sha256 is ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad, as expected.</text>
 															</widget>
 														</widget>
+													</container>
+													<container pos="0,109" size="788x28">
+														<container size="67x28">
+															<widget size="67x28" type="*parts.Button">
+																<rectangle pos="-2,-2" radius="6" size="71x32" strokeColor="hyperlink"/>
+																<rectangle fillColor="button" radius="6" size="65x27" strokeColor="inputBorder" strokeWidth="1"/>
+																<text alignment="center" bold pos="6,6" size="55x16">Copy all</text>
+															</widget>
+														</container>
 													</container>
 												</container>
 											</container>
@@ -333,10 +342,15 @@
 									<container pos="16,0" size="788x77">
 										<container size="788x77">
 											<container size="788x28">
-												<widget pos="364,0" size="58x28" type="*parts.Button">
+												<widget pos="302,0" size="58x28" type="*parts.Button">
 													<rectangle pos="-2,-2" radius="6" size="62x32" strokeColor="hyperlink"/>
 													<rectangle fillColor="hyperlink" radius="6" size="58x28"/>
 													<text alignment="center" bold color="foregroundOnError" pos="16,6" size="26x16">Run</text>
+												</widget>
+												<widget pos="372,0" size="112x28" type="*parts.Button">
+													<rectangle pos="-2,-2" radius="6" size="116x32" strokeColor="hyperlink"/>
+													<rectangle fillColor="button" radius="6" size="111x27" strokeColor="inputBorder" strokeWidth="1"/>
+													<text alignment="center" bold pos="16,6" size="80x16">Open folder</text>
 												</widget>
 											</container>
 											<container pos="0,36" size="788x40">

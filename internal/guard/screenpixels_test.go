@@ -22,6 +22,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
+	"github.com/donislawdev/TestingFilesGenerator/internal/tool/checksum"
 )
 
 // What this defends. A screen keeps looking the way somebody last looked at it.
@@ -333,6 +334,17 @@ func screenScenes() []screenScene {
 		{name: "tools-result", tab: text.TabTools(), set: func(t *testing.T, s scene) {
 			fillField(t, s.tab, text.SettingLabel("file"), "testdata/checksum-sample.txt")
 			fillField(t, s.tab, text.SettingLabel("expected"), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+			pressNamed(t, s.tab, text.ButtonRunTool())
+		}},
+		// The two folder tools, since 2026-10-05: checksum-write chosen once
+		// the screen was laid out with checksum, which is how the owner found
+		// its section keeping the height of the tool before - so the picture
+		// is of the change, not of a screen that opened with it. And a check
+		// that matches, its verdict in the colour of a match.
+		{name: "tools-write", tab: text.TabTools(), after: chooseToolIn(checksum.WriteID)},
+		{name: "tools-check-result", tab: text.TabTools(), set: func(t *testing.T, s scene) {
+			chooseToolIn(checksum.CheckID)(t, s)
+			fillField(t, s.tab, text.SettingLabel(checksum.InputChecksumFile), "testdata/checksum-sample.SHA256SUMS")
 			pressNamed(t, s.tab, text.ButtonRunTool())
 		}},
 		{name: "generate", tab: text.TabOneTarget()},

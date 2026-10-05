@@ -73,7 +73,7 @@ func Entries() []Entry {
 	return []Entry{
 		button(), chooser(), entry(), toggle(), segments(),
 		openList(), tabs(),
-		fields(), propertyField(), byteCount(), tips(), errorArea(), progress(), folding(),
+		fields(), propertyField(), byteCount(), tips(), errorArea(), verdict(), progress(), folding(),
 		textRanks(), structure(), swatch(),
 	}
 }

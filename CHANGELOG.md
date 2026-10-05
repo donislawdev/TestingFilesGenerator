@@ -102,8 +102,18 @@ because it turns other people's test suites red.
   from the size" when leaving it empty means going without - the password
   of an archive, the author of a PDF. What that means for the file is in the
   sentence beside the box.
+- **The Tools tab names each tool and says more after a run.** The menu
+  starts every line with the tool's name on the command line, such as
+  `checksum-write`. A result that matches is green. Copy all puts the whole
+  result on the clipboard, every file of a long list included, and Open
+  folder shows the folder the tool worked in.
 
 ### Fixed
+
+- **Choosing another tool on the Tools tab left the boxes in the wrong
+  place.** The section kept the height of the tool chosen before, so a
+  setting could stand under it with its list hidden, or an empty band was
+  left. The screen is now laid out again each time.
 
 - **The FAQ on the website said a deliberately broken file was not possible
   yet.** `tfg damage` has been in the tool since 0.3.0, and the answer still
