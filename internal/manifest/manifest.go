@@ -494,6 +494,13 @@ func (n *noteGroups) add(detail, name string) {
 	}
 }
 
+// AsHeld is the group's note said as the manifest holds it, for a window
+// given a note the run did not keep as a sentence. There is none today, and
+// one would reach a window in English rather than not at all.
+func (g NoteGroup) AsHeld() core.Said {
+	return core.Says("manifest.NoteText", "%s", core.A("Text", g.Detail))
+}
+
 // line renders one group for a person to read.
 //
 // A group of one keeps the shape it always had - the file name in front - so

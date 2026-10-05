@@ -112,6 +112,9 @@ func valuesOf(s core.Said, label string) map[string]any {
 // screen and may carry a character that turns the text around it - the foot
 // of the form did that before, and the line under a box did not.
 func valueIn(v any, directive, label string) string {
+	if out, several := severalIn(v, label); several {
+		return out
+	}
 	switch v := v.(type) {
 	case core.Said:
 		if out, ok := translated(v, label); ok {
@@ -124,32 +127,6 @@ func valueIn(v any, directive, label string) string {
 		return ChoiceName(v.Of, v.Value)
 	case core.Term:
 		return lookup(v.Key, v.Text)
-	case core.Joined:
-		return Joined(v.Items, v.And)
-	case core.Sentences:
-		parts := make([]string, len(v))
-		for i, s := range v {
-			parts[i] = valueIn(s, "%s", label)
-		}
-		return Formats(parts)
-	case core.Conjoined:
-		parts := make([]string, len(v))
-		for i, s := range v {
-			parts[i] = valueIn(s, "%s", label)
-		}
-		return Joined(parts, true)
-	case core.Lines:
-		parts := make([]string, len(v))
-		for i, s := range v {
-			parts[i] = valueIn(s, "%s", label)
-		}
-		return strings.Join(parts, "\n  ")
-	case core.Choices:
-		names := make([]string, len(v.Values))
-		for i, value := range v.Values {
-			names[i] = ChoiceName(v.Of, value)
-		}
-		return Formats(names)
 	case error:
 		return Refusal(v, label)
 	case interface{ Said() core.Said }:
@@ -158,19 +135,56 @@ func valueIn(v any, directive, label string) string {
 	return core.ShownText(fmt.Sprintf(strings.Replace(directive, "w", "v", 1), v))
 }
 
+// severalIn is a value holding several things, joined the way this language
+// joins them, and false for a value holding one.
+func severalIn(v any, label string) (string, bool) {
+	switch v := v.(type) {
+	case core.Joined:
+		return Joined(v.Items, v.And), true
+	case core.Sentences:
+		return Formats(eachIn(v, label)), true
+	case core.Conjoined:
+		return Joined(eachIn(v, label), true), true
+	case core.Lines:
+		return strings.Join(eachIn(v, label), "\n  "), true
+	case core.Choices:
+		names := make([]string, len(v.Values))
+		for i, value := range v.Values {
+			names[i] = ChoiceName(v.Of, value)
+		}
+		return Formats(names), true
+	}
+	return "", false
+}
+
+// eachIn is every sentence of a list as a field shows it.
+func eachIn(list []core.Said, label string) []string {
+	out := make([]string, len(list))
+	for i, s := range list {
+		out[i] = valueIn(s, "%s", label)
+	}
+	return out
+}
+
 // countOf is the number that chooses the form of a sentence.
 func countOf(s core.Said) int64 {
 	for _, a := range s.Args() {
-		if a.Name == core.CountArg {
-			if n, ok := a.Value.(int); ok {
-				return int64(n)
-			}
-			if n, ok := a.Value.(int64); ok {
-				return n
-			}
+		if n, whole := wholeCount(a.Value); whole && a.Name == core.CountArg {
+			return n
 		}
 	}
 	return 0
+}
+
+// wholeCount is a count given as either width of whole number.
+func wholeCount(v any) (int64, bool) {
+	switch n := v.(type) {
+	case int:
+		return int64(n), true
+	case int64:
+		return n, true
+	}
+	return 0, false
 }
 
 // systemIn is an error from the system or from a library, with the system's

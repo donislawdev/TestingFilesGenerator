@@ -92,9 +92,12 @@ func TestEveryListSaysEachValueOnceInEveryLanguage(t *testing.T) {
 }
 
 // valueWord is a value written on its own in a sentence, not part of a longer
-// word, a key, a flag or a path.
+// word, a key, a flag or a path - in any case, because a value opening a
+// sentence is written with a capital (the first version matched lower case
+// only and passed four Polish sentences opening with Mixed, Fixed and
+// Realistic, 2026-10-06).
 func valueWord(value string) *regexp.Regexp {
-	return regexp.MustCompile(`(?:^|[^\w.\-=:/])` + regexp.QuoteMeta(value) + `(?:$|[^\w\-=:/])`)
+	return regexp.MustCompile(`(?i)(?:^|[^\w.\-=:/])` + regexp.QuoteMeta(value) + `(?:$|[^\w\-=:/])`)
 }
 
 // TestNoTranslationNamesAListValueTheListCallsOtherwise holds the sentence
@@ -224,7 +227,7 @@ func TestTheEnginesRefusalsReachThePolishWindowInPolish(t *testing.T) {
 		t.Fatalf("Polish would not load: %v", err)
 	}
 	for what, err := range refusals {
-		for _, one := range spreadAll(err) {
+		for _, one := range spreadAll(t, err) {
 			said := text.Refusal(one, "")
 			if said == one.Error() {
 				t.Errorf("the %s refusal reached the Polish window in English: %q", what, said)
@@ -245,7 +248,9 @@ func TestTheEnginesRefusalsReachThePolishWindowInPolish(t *testing.T) {
 		if f.Value() != "portrait" {
 			t.Errorf("the orientation menu hands back %q, and a recipe needs portrait", f.Value())
 		}
-		if shown := textIn(menu); !strings.Contains(shown, text.ChoiceName("orientation", "portrait")) || strings.Contains(shown, "portrait") {
+		// Read off the words the box draws, not off the menu: the menu's
+		// Selected is the value, and it is meant to stay the value.
+		if shown := wordsInTheBox(t, menu).Text; shown != text.ChoiceName("orientation", "portrait") {
 			t.Errorf("the orientation menu shows %q, and the Polish window calls portrait %q", shown, text.ChoiceName("orientation", "portrait"))
 		}
 		return
@@ -254,12 +259,19 @@ func TestTheEnginesRefusalsReachThePolishWindowInPolish(t *testing.T) {
 }
 
 // spreadAll opens a refusal carrying several into the ones it carries, the
-// way the window does before it says them.
-func spreadAll(err error) []error {
+// way the window does before it says them. Every refusal opens into one at
+// least, and a guard is failed by one that opens into none: until 2026-10-06
+// a refusal unwrapped to the list of what it wrapped, empty for most, so the
+// window marked no box for them and the guards above asked them nothing.
+func spreadAll(t *testing.T, err error) []error {
+	t.Helper()
 	if joined, several := err.(interface{ Unwrap() []error }); several {
 		var out []error
 		for _, one := range joined.Unwrap() {
-			out = append(out, spreadAll(one)...)
+			out = append(out, spreadAll(t, one)...)
+		}
+		if len(out) == 0 {
+			t.Errorf("%q opens into no refusal at all, so a window would say nothing of it", err)
 		}
 		return out
 	}
@@ -280,7 +292,7 @@ func TestNoSentenceOfTheEngineReachesTheWindowUndisguised(t *testing.T) {
 		t.Fatalf("the pseudo language would not load: %v", err)
 	}
 	for what, err := range refusals {
-		for _, one := range spreadAll(err) {
+		for _, one := range spreadAll(t, err) {
 			said := text.Refusal(one, "")
 			if !strings.HasPrefix(said, "[") || strings.Contains(said, one.Error()) {
 				t.Errorf("the %s refusal reached the window undisguised: %q", what, said)

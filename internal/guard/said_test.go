@@ -227,10 +227,21 @@ func laidOutForTranslation(c saidCall) string {
 		if len(directives) != len(c.names) && !unsaid {
 			return "the layout takes " + strconv.Itoa(len(directives)) + " value(s) and is given " + strconv.Itoa(len(c.names))
 		}
+		wraps := 0
 		for _, d := range directives {
 			if strings.ContainsAny(d, "*[") {
 				return "the layout takes a width or a position from a value: " + d
 			}
+			if strings.HasSuffix(d, "w") {
+				wraps++
+			}
+		}
+		// A refusal unwraps to the one error it wraps, the way fmt.Errorf
+		// with one %w does. Two would be two refusals to a window that
+		// spreads an error carrying several, and the sentence round them
+		// would be lost (core.Refusal.Unwrap).
+		if wraps > 1 {
+			return "the layout wraps " + strconv.Itoa(wraps) + " errors with %w, and a sentence wraps one at most"
 		}
 	}
 	return ""

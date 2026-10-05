@@ -146,6 +146,17 @@ var ownWork = map[string]bool{
 	// the same sentences in Polish, translated for this project on 2026-09-29.
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text locale/registry/en.json": true,
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text locale/registry/pl.json": true,
+	// The engine's sentences, written out of its code for a translator, and
+	// the same sentences in Polish, translated for this project on 2026-10-05.
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text locale/said/en.json": true,
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text locale/said/pl.json": true,
+	// The words the toolkit asks for, given back in the window's language. A
+	// key is the id the toolkit's code passes to lang.L - an interface's name,
+	// the way a setting's key is - and nothing is taken from the toolkit's own
+	// translation files: the descriptions and the Polish were written for this
+	// project on 2026-10-05.
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text locale/toolkit/en.json": true,
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text locale/toolkit/pl.json": true,
 }
 
 // accountFor requires exactly one registry entry to claim a file. None means

@@ -3,8 +3,6 @@ package window
 import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
-
-	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // What a finished run says about itself.
@@ -38,7 +36,7 @@ func notesOf(res *engine.Result) []string {
 	for _, g := range groups {
 		note, known := res.NotesSaid[g.Detail]
 		if !known {
-			note = core.Says("manifest.NoteText", "%s", core.A("Text", g.Detail))
+			note = g.AsHeld()
 		}
 		out = append(out, text.Sentence(g.Line(note)))
 	}

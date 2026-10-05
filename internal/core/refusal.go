@@ -58,8 +58,18 @@ func (r *Refusal) AboutSetting() string {
 	return ""
 }
 
-// Unwrap is every error the layout wraps with %w.
-func (r *Refusal) Unwrap() []error { return r.said.wrapped() }
+// Unwrap is the error the layout wraps with %w, or nil - one at most, the way
+// fmt.Errorf with one %w gives one. Not every error it wraps: a window opens
+// an error that unwraps to several into separate refusals, one per box
+// (spread in internal/gui/window), and this sentence is one refusal whatever
+// it carries. It unwrapped to a list until 2026-10-06, and a refusal wrapping
+// nothing spread into no refusal at all, so a box typed wrong stayed unmarked.
+func (r *Refusal) Unwrap() error {
+	if wrapped := r.said.wrapped(); len(wrapped) > 0 {
+		return wrapped[0]
+	}
+	return nil
+}
 
 // InTheWordsOf is String with the setting slots of the layout filled first, so
 // a value somebody typed as "{setting}" is printed as typed rather than read as
