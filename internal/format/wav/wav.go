@@ -505,9 +505,9 @@ func intProperty(props map[string]string, key string, fallback, min, max int) (i
 	return n, nil
 }
 
-func labelHint(label bool) string {
+func labelHint(label bool) core.Said {
 	if label {
-		return ", or drop the label"
+		return core.Says("wav.DropTheLabel", ", or drop the label")
 	}
-	return ""
+	return core.Said{}
 }

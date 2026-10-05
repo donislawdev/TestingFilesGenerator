@@ -89,7 +89,8 @@ func readOptions(props map[string]string) (options, error) {
 	}
 	if raw := props["orientation"]; raw != "" {
 		if raw == mixed && pages < 2 {
-			return options{}, needsTwoPages("orientation", "choose portrait or landscape")
+			return options{}, needsTwoPages("orientation", core.Says("pdf.ChooseOneWay", "choose %s or %s",
+				core.A("Portrait", core.Choice{Of: "orientation", Value: orientPortrait}), core.A("Landscape", core.Choice{Of: "orientation", Value: orientLandscape})))
 		}
 		o.orientation = raw
 	}
@@ -129,7 +130,7 @@ func paperSizes(props map[string]string, pages int) ([]pageSize, string, error) 
 	}
 	if raw == mixed {
 		if pages < 2 {
-			return nil, "", needsTwoPages("page_size", "choose one size such as a4")
+			return nil, "", needsTwoPages("page_size", core.Says("pdf.ChooseOneSize", "choose one size such as a4"))
 		}
 		cycle := make([]pageSize, 0, len(mixedSizes))
 		for _, k := range mixedSizes {
@@ -154,7 +155,7 @@ func paperSizes(props map[string]string, pages int) ([]pageSize, string, error) 
 // size and one way up, with a manifest saying it is mixed. Somebody testing how
 // a reader copes with pages that differ would get a pass from a document where
 // nothing differs.
-func needsTwoPages(key, other string) *format.PropertyValueError {
+func needsTwoPages(key string, other core.Said) *format.PropertyValueError {
 	return &format.PropertyValueError{
 		Format: "pdf",
 		Key:    key,

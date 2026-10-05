@@ -237,7 +237,7 @@ func (e *NothingToListError) AboutSetting() string { return InputFolder }
 // What happened.
 func (e *NothingToListError) what() core.Said {
 	if e.LeftOut > 0 {
-		return core.Says("checksum.HoldsNoFileToListOnly", "%s holds no file to list, only %s that are not files", core.A("Folder", e.Folder), core.A("Count", core.Count(e.LeftOut, "name", "names")))
+		return core.Says("checksum.HoldsNoFileToListOnly", "%s holds no file to list, only %s that are not files", core.A("Folder", e.Folder), core.A("Names", core.SaysN("checksum.Names", "%d name", "%d names", core.A("Count", e.LeftOut))))
 	}
 	return core.Says("checksum.HoldsNoFileToList", "%s holds no file to list", core.A("Folder", e.Folder))
 }

@@ -148,6 +148,42 @@ func PresetNote(preset, about, english string) string {
 	return lookup(NoteKey(preset, about), english)
 }
 
+// FormatNameKey, TitleKey and LicenceKey are the keys of a format's name, a
+// preset's title and one paragraph of the licence notice.
+func FormatNameKey(id string) string { return "Format." + id }
+func TitleKey(preset string) string  { return "Title." + preset }
+func LicenceKey(n int) string        { return "Licence." + strconv.Itoa(n) }
+
+// FormatName is what a format is called, beside its id in a list of formats.
+// Most are the names of standards and stay as they are in every language.
+func FormatName(id, english string) string { return lookup(FormatNameKey(id), english) }
+
+// PresetTitle is what a preset is called, beside its id in a list of presets.
+func PresetTitle(id, english string) string { return lookup(TitleKey(id), english) }
+
+// LicenceParagraphs is the licence notice split into the paragraphs a
+// translation keys, in the order they stand. The first is the name and the
+// copyright line, which no language translates.
+func LicenceParagraphs(notice string) []string {
+	return strings.Split(strings.TrimSpace(notice), "\n\n")
+}
+
+// Licence is the licence notice in the window's language, paragraph by
+// paragraph, and a sentence after it saying that the English text binds where
+// the window speaks another language. The sentence is empty in English, so an
+// English window shows the notice as it always has.
+func Licence(notice string) string {
+	paras := LicenceParagraphs(notice)
+	out := make([]string, len(paras))
+	for i, p := range paras {
+		out[i] = lookup(LicenceKey(i+1), p)
+	}
+	if binds := LicenceBinds(); binds != "" {
+		out = append(out, binds)
+	}
+	return strings.Join(out, "\n\n")
+}
+
 // ChoiceName is what a list shows for one of its values. The value itself is
 // what a recipe, the command line and the manifest write, and what the list
 // hands back - only the words on the screen are the window's.

@@ -132,6 +132,12 @@ func valueIn(v any, directive, label string) string {
 			parts[i] = valueIn(s, "%s", label)
 		}
 		return Formats(parts)
+	case core.Conjoined:
+		parts := make([]string, len(v))
+		for i, s := range v {
+			parts[i] = valueIn(s, "%s", label)
+		}
+		return Joined(parts, true)
 	case core.Lines:
 		parts := make([]string, len(v))
 		for i, s := range v {

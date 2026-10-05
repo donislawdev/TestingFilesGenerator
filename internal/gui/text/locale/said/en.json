@@ -59,6 +59,217 @@
     "hash": "sha256-ff69f6fa9b64",
     "other": "a {{.Width}}x{{.Height}} picture at quality {{.Quality}} codes to {{.Coded}} B, and the file always carries a free box, which costs {{.Box}} B even when it holds nothing"
   },
+  "checksum.AChecksumDigitsLongIsNot": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Digits}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-0dcdc03bd2f7",
+    "other": "a checksum {{.Digits}} digits long is not one this tool works out"
+  },
+  "checksum.AChecksumFileIsNeverWritten": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-49681362425b",
+    "other": "a checksum file is never written over, since it may be the only record of what the folder held"
+  },
+  "checksum.AChecksumFilePromisesEveryFile": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-354be45714f3",
+    "other": "a checksum file promises every file in the folder, and one with a gap in it would not say where the gap is"
+  },
+  "checksum.AChecksumFileWithoutALine": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-fcc3b0268478",
+    "other": "a checksum file without a line in it is refused by sha256sum -c, so it would check nothing"
+  },
+  "checksum.AChecksumLineIsAChecksum": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-acbe4fd99bc0",
+    "other": "a checksum line is a checksum and a path, written as hex  path or as SHA256 (path) = hex, and without one there is nothing to check"
+  },
+  "checksum.AChecksumOfAFileBeing": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-3992fc15f6b5",
+    "other": "a checksum of a file being written is the checksum of no version of it"
+  },
+  "checksum.ADirectoryHasNoBytesOf": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-c5451d4ddaae",
+    "other": "a directory has no bytes of its own to work a checksum out of"
+  },
+  "checksum.AnAlgorithmIsNamedExactlyBecause": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-5c67b39f12b3",
+    "other": "an algorithm is named exactly, because two that sound alike give different checksums"
+  },
+  "checksum.ChangedWhileItWasBeingRead": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-7b323b86f3c7",
+    "other": "{{.Path}} changed while it was being read"
+  },
+  "checksum.CheckTheFolderAgainstItWith": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-f2f1b7172ace",
+    "other": "check the folder against it with tfg tool checksum-check, or move it away and run this again"
+  },
+  "checksum.CheckTheFolderInPartsEach": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-e9771dc952f5",
+    "other": "check the folder in parts, each with a checksum file of its own"
+  },
+  "checksum.FolderUnreadable": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Sentence}}, {{.Problems}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-07ba49413258",
+    "other": "{{.Sentence}}:\n  {{.Problems}}"
+  },
+  "checksum.FreeSomeSpaceOnThatDisk": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-0e09b5bc8590",
+    "other": "free some space on that disk and run this again"
+  },
+  "checksum.HoldsNoChecksumLine": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-073a243f0ed8",
+    "other": "{{.Path}} holds no checksum line"
+  },
+  "checksum.HoldsNoFileToList": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Folder}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-8f2183b75bf4",
+    "other": "{{.Folder}} holds no file to list"
+  },
+  "checksum.HoldsNoFileToListOnly": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Folder}}, {{.Names}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-9f4a648b05cc",
+    "other": "{{.Folder}} holds no file to list, only {{.Names}} that are not files"
+  },
+  "checksum.IsADirectoryAndThisReads": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-0af9eb952a74",
+    "other": "{{.Path}} is a directory and this reads one checksum file"
+  },
+  "checksum.IsADirectoryAndThisWorks": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-3cba141e419e",
+    "other": "{{.Path}} is a directory and this works out the checksum of one file"
+  },
+  "checksum.IsAFileAndThisLists": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-e43a949bd38b",
+    "other": "{{.Path}} is a file and this lists a folder"
+  },
+  "checksum.IsAlreadyThereSoNothingWas": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-f3786e37e4f3",
+    "other": "{{.Path}} is already there, so nothing was written"
+  },
+  "checksum.IsLargerThanAChecksumFile": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, {{.Bytes}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-aead292e6e34",
+    "other": "{{.Path}} is {{.Bytes}}, larger than a checksum file this reads"
+  },
+  "checksum.IsNotAChecksumWrittenIn": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Given}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-a48e593200f8",
+    "other": "{{.Given}} is not a checksum written in hexadecimal"
+  },
+  "checksum.IsNotAFileButA": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-28957d41213f",
+    "other": "{{.Path}} is not a file but a device, a pipe or a socket"
+  },
+  "checksum.ItTakesAndTheDiskHas": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Need}}, {{.Have}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-c053efc918f1",
+    "other": "it takes {{.Need}} and the disk has {{.Have}} free"
+  },
+  "checksum.MakeTheseReadableOrMoveThem": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-0d223d82147d",
+    "other": "make these readable or move them out of the folder, and run this again"
+  },
+  "checksum.NameAFolderWithAtLeast": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-5a322343ecd1",
+    "other": "name a folder with at least one file in it"
+  },
+  "checksum.NameOneFile": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-74c2c0a6f263",
+    "other": "name one file"
+  },
+  "checksum.NameTheChecksumFileItselfSuch": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-c75ab67b49df",
+    "other": "name the checksum file itself, such as SHA256SUMS, rather than a page or a signature beside it"
+  },
+  "checksum.NameTheFolderOrUseTfg": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-9457caf28208",
+    "other": "name the folder, or use tfg tool checksum for the one file"
+  },
+  "checksum.Names": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-1b28298a4324",
+    "one": "{{.Count}} name",
+    "other": "{{.Count}} names"
+  },
+  "checksum.NotEverythingUnderCouldBeRead": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Folder}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-7d3694b98961",
+    "other": "not everything under {{.Folder}} could be read, so nothing was written"
+  },
+  "checksum.PasteAlone": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Lengths}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-c174b1551cbd",
+    "other": "paste the checksum alone, without the file name. The lengths are: {{.Lengths}}"
+  },
+  "checksum.PathProblem": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, {{.Error}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-8bcdf2cccf02",
+    "other": "{{.Path}} - {{.Error}}"
+  },
+  "checksum.ReadingOneMayNeverEndSo": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-9055c322986c",
+    "other": "reading one may never end, so it is not started"
+  },
+  "checksum.TheChecksumFileIsWrittenBeside": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-a62cd68c242f",
+    "other": "the checksum file is written beside the files it lists, so it needs the folder they are in"
+  },
+  "checksum.TheLengthOfAChecksumSays": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-4add58be1e11",
+    "other": "the length of a checksum says which algorithm made it, and that is the one worked out to compare"
+  },
+  "checksum.TheMostIsAboutHalfA": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.SumsMostBytes}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-7cc63fb0d3f6",
+    "other": "the most is {{.SumsMostBytes}}, about half a million files, and a larger file is more likely not a checksum file at all"
+  },
+  "checksum.ThereIsNoAlgorithmCalled": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Name}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-6de5decc9e2d",
+    "other": "there is no algorithm called {{.Name}}"
+  },
+  "checksum.ThereIsNoRoomForSo": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-dfaa099cc3ba",
+    "other": "there is no room for {{.Path}}, so nothing was written"
+  },
+  "checksum.UnknownLine": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Line}}, {{.Name}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-a8662d5c6650",
+    "other": "line {{.Line}}: {{.Name}}"
+  },
+  "checksum.UseAlgorithms": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Algorithms}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-34a4c307745f",
+    "other": "use {{.Algorithms}}, several separated by commas, or all on its own"
+  },
+  "checksum.WaitUntilWhateverIsWritingIt": {
+    "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-161d36039e9c",
+    "other": "wait until whatever is writing it has finished, and run this again"
+  },
   "core.BoundaryTooLarge": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-7c6185922a32",
@@ -269,6 +480,12 @@
     "hash": "sha256-f2720ea32a8a",
     "other": "a damage has to be one this build knows, and one it does not would leave the file intact while the manifest called it broken"
   },
+  "docx.Paragraphs": {
+    "description": "Said by internal/format/docx - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-45316182b77a",
+    "one": "{{.Count}} paragraph",
+    "other": "{{.Count}} paragraphs"
+  },
   "engine.CannotCreateOutDir": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Dir}}, {{.Cause}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-324037f71709",
@@ -325,6 +542,12 @@
     "other": "writing {{.File}}"
   },
   "engine.Files": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-83589d643302",
+    "one": "{{.Count}} file",
+    "other": "{{.Count}} files"
+  },
+  "engine.FilesSoFar": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-83589d643302",
     "one": "{{.Count}} file",
@@ -702,9 +925,9 @@
     "other": "a rate says how fast entries arrive and timestamps=fixed puts them all at one instant"
   },
   "format.ASheetOfByAlreadyPackages": {
-    "description": "Said by internal/format/xlsx - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, {{.Count2}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-5b2d7226bda3",
-    "other": "a sheet of {{.Count}} by {{.Count2}} already packages to that much, and a workbook cannot leave out its content types or its relationships"
+    "description": "Said by internal/format/xlsx - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Rows}}, {{.Columns}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-4246af222774",
+    "other": "a sheet of {{.Rows}} by {{.Columns}} already packages to that much, and a workbook cannot leave out its content types or its relationships"
   },
   "format.ATIFFLocatesItsPixelsWith": {
     "description": "Said by internal/format/tiff - a refusal under the box it is about or at the foot of the form, or a note after a run.",
@@ -1000,6 +1223,17 @@
     "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Number}}, {{.Unit}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-8efd2508206c",
     "other": "{{.Number}} {{.Unit}}"
+  },
+  "format.GroupOf": {
+    "description": "Said by internal/format/zip - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, {{.Kind}}, {{.Bytes}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-72d3bb0ede42",
+    "one": "{{.Count}} {{.Kind}} file of {{.Bytes}} B",
+    "other": "{{.Count}} {{.Kind}} files of {{.Bytes}} B"
+  },
+  "format.Groups": {
+    "description": "Said by internal/format/zip - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Groups}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-211cf5f97e38",
+    "other": "{{.Groups}}"
   },
   "format.HasToBeWholeNumberOf": {
     "description": "Said by internal/format/imagedim - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Unit}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -1461,11 +1695,26 @@
     "hash": "sha256-24f6ca4ac678",
     "other": "the {{.Shape}} shape carries no severity"
   },
+  "manifest.EntryHasThePathWhichLands": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.I}}, {{.Path}}, {{.Problem}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-79cbc1e59f3f",
+    "other": "entry {{.I}} has the path {{.Path}}, which lands outside the directory the manifest describes - {{.Problem}}. This tool never reads or removes anything outside that directory, so a manifest that asks it to is one it will not act on. Use the manifest the run actually wrote, or correct the path to one inside the directory"
+  },
   "manifest.Files": {
     "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-83589d643302",
     "one": "{{.Count}} file",
     "other": "{{.Count}} files"
+  },
+  "manifest.ItCarriesNoManifestVersionSo": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-00841a615039",
+    "other": "it carries no manifest_version, so it is not a manifest this tool wrote"
+  },
+  "manifest.ItIsSchemaVersionAndThis": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.ManifestVersion}}, {{.Version}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-57828974a0e1",
+    "other": "it is schema version {{.ManifestVersion}} and this build reads {{.Version}}. Use the version of tfg that wrote it"
   },
   "manifest.NoteMany": {
     "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Files}}, {{.Note}}, {{.Named}}, {{.Hidden}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -1487,6 +1736,97 @@
     "hash": "sha256-e75b463d20f0",
     "other": "{{.Text}}"
   },
+  "manifest.RunInstructionsIsAndItCan": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Name}}, {{.InstructionsSuffix}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-1c92a916a2de",
+    "other": "run.instructions is {{.Name}}, and it can only be the name of a file beside the manifest ending in {{.InstructionsSuffix}}. This tool removes that file with the manifest, so it will not act on one that names anything else. Use the manifest the run actually wrote, or remove the key"
+  },
+  "manifest.TooLarge": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, {{.Bytes}}, {{.Limit}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-e12fe7ac5071",
+    "other": "{{.Path}} is {{.Bytes}} B and the limit is {{.Limit}} B. A manifest is read into memory to be compared against a directory, so an unbounded one is a way to exhaust it. Check that this is a manifest this tool wrote, or split the run it describes"
+  },
+  "manifest.Unreadable": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, {{.Detail}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-bb90fafec850",
+    "other": "{{.Path}} cannot be read as a manifest: {{.Detail}}"
+  },
+  "pdf.Carrying": {
+    "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.What}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-83e9af0cb805",
+    "other": " carrying {{.What}}"
+  },
+  "pdf.ChooseOneSize": {
+    "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-61da6826cc02",
+    "other": "choose one size such as a4"
+  },
+  "pdf.ChooseOneWay": {
+    "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Portrait}}, {{.Landscape}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-5f59b0be4c6d",
+    "other": "choose {{.Portrait}} or {{.Landscape}}"
+  },
+  "pdf.Document": {
+    "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Pages}}, {{.Size}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-17da9045f3c4",
+    "other": "{{.Pages}} page {{.Size}} document"
+  },
+  "pdf.DocumentLandscape": {
+    "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Pages}}, {{.Size}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-46b233374a70",
+    "other": "{{.Pages}} page {{.Size}} landscape document"
+  },
+  "pdf.DocumentMixed": {
+    "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Pages}}, {{.Size}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-5f511b4e2ed1",
+    "other": "{{.Pages}} page {{.Size}} upright and landscape document"
+  },
+  "pdf.HintAll": {
+    "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-447a5ca57f7b",
+    "other": ", ask for fewer pages by setting pages to 1, shorten the document properties, or drop the label"
+  },
+  "pdf.HintLabel": {
+    "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-142534ffd01d",
+    "other": ", ask for fewer pages by setting pages to 1, or drop the label"
+  },
+  "pdf.HintPages": {
+    "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-6f80cbb77708",
+    "other": " or ask for fewer pages by setting pages to 1"
+  },
+  "pdf.HintProperties": {
+    "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-4ac9a00fbf06",
+    "other": ", ask for fewer pages by setting pages to 1, or shorten the document properties"
+  },
+  "pdf.MixedSize": {
+    "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-20964137735f",
+    "other": "mixed size"
+  },
+  "pdf.Size": {
+    "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Size}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-a7df568dcb25",
+    "other": "{{.Size}}"
+  },
+  "pdf.TheLabel": {
+    "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-a51c21f8bbe2",
+    "other": "the self describing label"
+  },
+  "pdf.TheProperties": {
+    "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-a566d1539507",
+    "other": "the document properties that were set"
+  },
+  "pptx.Slides": {
+    "description": "Said by internal/format/pptx - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-05da85d44c19",
+    "one": "{{.Count}} slide",
+    "other": "{{.Count}} slides"
+  },
   "preset.ADistanceFromTheLimitHas": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-3fad7b38f5ae",
@@ -1506,6 +1846,11 @@
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.TrimPrefix}}, {{.Item}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-098698484a13",
     "other": "an extension is written without its dot, so {{.TrimPrefix}} rather than {{.Item}}"
+  },
+  "preset.BulkNotWhole": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Param}}, {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-8dd30727905b",
+    "other": "{{.Param}}: {{.Value}} is not a whole number of files"
   },
   "preset.BulkNought": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run.",
@@ -1619,6 +1964,11 @@
     "hash": "sha256-f3020fe59d49",
     "other": "{{.Format}} as {{.As}} ({{.Why}})"
   },
+  "preset.LimitUnusable": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Param}}, {{.Bad}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-5cf12375b81f",
+    "other": "{{.Param}}: it holds {{.Bad}}, and a limit is written with digits, letters and a dot - such as 10mb, 512 or 1.5gb. Its text becomes part of every file name"
+  },
   "preset.NoDistancesWereGivenSoThere": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-5493a98292c6",
@@ -1658,6 +2008,11 @@
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-bbfaa4682425",
     "other": "only one type is allowed, so the set holds no file named as one allowed type and filled with another - that needs two."
+  },
+  "preset.ParamCause": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Param}}, {{.Cause}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-db5c6acdbb8d",
+    "other": "{{.Param}}: {{.Cause}}"
   },
   "preset.RaiseTheSettingAboveBNarrow": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Floor}}, {{.Limit}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -2225,6 +2580,11 @@
     "hash": "sha256-72cc91016a21",
     "other": "{{.At}} names a damage that is not a word"
   },
+  "recipe.NotYAML": {
+    "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-4f98e4e1591a",
+    "other": "this file could not be read as YAML. Look for a tag or anchor marker such as ! or & with nothing after it"
+  },
   "recipe.NotYet": {
     "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Key}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-40d28c193ca6",
@@ -2239,6 +2599,11 @@
     "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-47db418b9d1b",
     "other": "one names an exact {{.Setting}} and the other draws one, so together they say two different things"
+  },
+  "recipe.PresetCarries": {
+    "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Keys}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-b5289d7e61ab",
+    "other": "the preset's recipe carries {{.Keys}}, which a recipe building on it cannot inherit"
   },
   "recipe.PresetTarget": {
     "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Target}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -2506,6 +2871,16 @@
     "hash": "sha256-342b49446a29",
     "other": "this setting is one value, written beside its name rather than indented under it"
   },
+  "recipe.TooDeep": {
+    "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Name}}, {{.Depth}}, {{.Limit}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-0d47280182a1",
+    "other": "{{.Name}} nests lists and mappings {{.Depth}} deep and the limit is {{.Limit}}. Reading a deeply nested document costs memory that grows far faster than the document does, so a small file can exhaust this machine before anything is written. Write the targets out as an ordinary list instead"
+  },
+  "recipe.TooLarge": {
+    "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Name}}, {{.Bytes}}, {{.Limit}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-c0e7fdfe5e2a",
+    "other": "{{.Name}} is {{.Bytes}} B and the limit is {{.Limit}} B. A recipe is a document somebody writes, and reading time grows with its size, so an unbounded one is a way to hang a build. Split it into several recipes, or generate the targets with a loop in your own script"
+  },
   "recipe.UnitsCountIn1024sSo10mb": {
     "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-6583bf42dc24",
@@ -2681,10 +3056,67 @@
     "hash": "sha256-cf8214cf1fa6",
     "other": "it has to be {{.UTF8}}, {{.UTF16LE}} or {{.UTF16BE}}"
   },
+  "tool.AToolIsNamedExactlyAnd": {
+    "description": "Said by internal/tool - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-756a78c6f204",
+    "other": "a tool is named exactly, and the nearest name to a mistyped one may do something else"
+  },
+  "tool.NameTheToWorkOn": {
+    "description": "Said by internal/tool - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Kind}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-3dac06c6319b",
+    "other": "name the {{.Kind}} to work on"
+  },
+  "tool.NoWasGiven": {
+    "description": "Said by internal/tool - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Kind}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-c984aa47e200",
+    "other": "no {{.Kind}} was given"
+  },
+  "tool.Sentence": {
+    "description": "Said by internal/tool - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.What}}, {{.Why}}, {{.Instead}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-d9a59b987ed3",
+    "other": "{{.What}} - {{.Why}}. {{.Instead}}"
+  },
+  "tool.TheToolHasNothingToRead": {
+    "description": "Said by internal/tool - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-8b5043abfb15",
+    "other": "the tool has nothing to read without one"
+  },
+  "tool.ThereIsNoToolCalled": {
+    "description": "Said by internal/tool - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.ID}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-151e818f434e",
+    "other": "there is no tool called {{.ID}}"
+  },
+  "tool.ThisBuildHasNoTools": {
+    "description": "Said by internal/tool - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-42b26a93974c",
+    "other": "this build has no tools"
+  },
+  "tool.UseOneOf": {
+    "description": "Said by internal/tool - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Known}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-a53588601259",
+    "other": "use one of: {{.Known}}"
+  },
+  "wav.DropTheLabel": {
+    "description": "Said by internal/format/wav - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-b8bfddcdab7d",
+    "other": ", or drop the label"
+  },
+  "xlsx.Columns": {
+    "description": "Said by internal/format/xlsx - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-5a53b3c96cb2",
+    "one": "{{.Count}} column",
+    "other": "{{.Count}} columns"
+  },
   "xlsx.JointFewer": {
     "description": "Said by internal/format/xlsx - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Why}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-15c3bae806db",
     "other": "{{.Why}}. Ask for fewer rows or fewer columns"
+  },
+  "xlsx.Rows": {
+    "description": "Said by internal/format/xlsx - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-244cc1fe9311",
+    "one": "{{.Count}} row",
+    "other": "{{.Count}} rows"
   },
   "xml.NeedsBOM": {
     "description": "Said by internal/format/xmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Encoding}}, {{.UTF8}}, written the way the program writes them - keep each spelled exactly that way.",

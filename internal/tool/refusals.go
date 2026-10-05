@@ -117,7 +117,7 @@ func (e *MissingInputError) AboutSetting() string { return e.Input.Name }
 // box and the command line prints it - so it names neither a flag nor a
 // button.
 func (e *MissingInputError) what() core.Said {
-	return core.Says("tool.NoWasGiven", "no %s was given", core.A("Kind", e.Input.Kind))
+	return core.Says("tool.NoWasGiven", "no %s was given", core.A("Kind", core.Term{Key: core.KindKey(string(e.Input.Kind)), Text: string(e.Input.Kind)}))
 }
 
 // Why this is refused rather than started.
@@ -127,7 +127,7 @@ func (e *MissingInputError) why() core.Said {
 
 // Instead is what to give it.
 func (e *MissingInputError) instead() core.Said {
-	return core.Says("tool.NameTheToWorkOn", "name the %s to work on", core.A("Kind", e.Input.Kind))
+	return core.Says("tool.NameTheToWorkOn", "name the %s to work on", core.A("Kind", core.Term{Key: core.KindKey(string(e.Input.Kind)), Text: string(e.Input.Kind)}))
 }
 
 func (e *MissingInputError) Error() string { return e.Said().String() }

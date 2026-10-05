@@ -129,7 +129,7 @@ func settled(layout string, args []Arg) []Arg {
 // keeps is whether a value can be held as it is until the sentence is read.
 func keeps(v any) bool {
 	switch v.(type) {
-	case nil, Said, error, Bytes, Term, Choice, Choices, Joined, Sentences, Lines, fmt.Formatter, interface{ Said() Said }:
+	case nil, Said, error, Bytes, Term, Choice, Choices, Joined, Sentences, Conjoined, Lines, fmt.Formatter, interface{ Said() Said }:
 		return true
 	}
 	switch reflect.ValueOf(v).Kind() {
@@ -327,6 +327,9 @@ func UnitTerm(unit string) Term { return Term{Key: UnitKey(unit), Text: unit} }
 func UnitKey(unit string) string        { return "Unit." + unit }
 func ChoiceKey(of, value string) string { return "Choice." + of + "." + value }
 
+// KindKey is the key of the word for what a tool works on - file, folder.
+func KindKey(kind string) string { return "Kind." + kind }
+
 // Choice is a value of a closed list, as a value of a sentence.
 //
 // The command line prints the value as the layout says - "accept", quoted
@@ -367,6 +370,19 @@ func (j Joined) Format(f fmt.State, verb rune) {
 		joined = strings.Join(j.Items[:len(j.Items)-1], ", ") + " " + word + " " + j.Items[len(j.Items)-1]
 	}
 	fmt.Fprintf(f, fmt.FormatString(f, verb), joined)
+}
+
+// Conjoined is several sentences joined with "and" - "2 PDF files of 10 B and
+// 1 TXT file of 4 B" - which a window joins the way its language does.
+type Conjoined []Said
+
+// Format prints the sentences in English, each pair joined with "and".
+func (c Conjoined) Format(f fmt.State, verb rune) {
+	parts := make([]string, len(c))
+	for i, s := range c {
+		parts[i] = s.String()
+	}
+	fmt.Fprintf(f, fmt.FormatString(f, verb), strings.Join(parts, " and "))
 }
 
 // Sentences is several sentences said as a list, one after another with a

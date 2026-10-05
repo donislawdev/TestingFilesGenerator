@@ -182,7 +182,7 @@ func (p *planMemory) account(targetIndex, filesSoFar int) error {
 		Setting: core.TargetAddress(targetIndex, SettingCount),
 		Detail: core.Says("engine.PlanTooLarge", "the plan for this run has reached %s after %s and the ceiling is %s",
 			core.A("Used", core.Bytes(used)),
-			core.A("Files", core.SaysN("engine.Files", "%d file", "%d files", core.A("Count", filesSoFar))),
+			core.A("Files", core.SaysN("engine.FilesSoFar", "%d file", "%d files", core.A("Count", filesSoFar))),
 			core.A("Ceiling", core.Bytes(p.ceiling))),
 		Because: core.PlanTooLargeWhy,
 		Remedy:  core.PlanTooLargeFix,

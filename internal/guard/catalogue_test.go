@@ -199,6 +199,16 @@ func TestEveryTranslationObeysThePunctuationRule(t *testing.T) {
 		t.Fatal("no file of registry words was found, so half of this guard asserts about nothing")
 	}
 	files = append(files, registry...)
+	// And the engine's sentences, since 2026-10-05 - a refusal is read in the
+	// window as surely as a label (docs/OKNO-PO-POLSKU-2026-10-05.md).
+	said, err := filepath.Glob(filepath.Join(localeDir, text.SaidFolder, "*.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(said) == 0 {
+		t.Fatal("no file of the engine's sentences was found, so a third of this guard asserts about nothing")
+	}
+	files = append(files, said...)
 	if len(files) == 0 {
 		t.Fatal("no translation file was found, so this guard is asserting about nothing")
 	}

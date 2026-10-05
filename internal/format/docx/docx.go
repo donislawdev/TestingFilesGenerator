@@ -151,7 +151,7 @@ func refusal(err error, want int64, shape opc.Shape, paragraphs int) error {
 		Format:    "DOCX",
 		Requested: want,
 		Minimum:   shape.Bare,
-		Reason:    core.Says("format.ADocumentOfAlreadyPackagesTo", "a document of %s already packages to that much, and a Word file cannot leave out its content types or its relationships", core.A("Count", core.Count(paragraphs, "paragraph", "paragraphs"))),
+		Reason:    core.Says("format.ADocumentOfAlreadyPackagesTo", "a document of %s already packages to that much, and a Word file cannot leave out its content types or its relationships", core.A("Count", core.SaysN("docx.Paragraphs", "%d paragraph", "%d paragraphs", core.A("Count", paragraphs)))),
 		Hint:      core.Says("format.AskForBOrMoreOr3", "Ask for %d B or more, or set fewer paragraphs", core.A("Bare", shape.Bare)),
 	}
 }

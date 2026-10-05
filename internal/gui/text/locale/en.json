@@ -1,4 +1,8 @@
 {
+  "AboutLicenceBinds": {
+    "description": "Shown on the About screen.",
+    "other": ""
+  },
   "AboutTagline": {
     "description": "Shown on the About screen.",
     "other": "Generate test files, and know how the system under test should react to them."
@@ -138,6 +142,10 @@
   "DecimalMark": {
     "description": "What this language writes between the whole part of a number and its tenths, as in 10.0 MB. One character.",
     "other": "."
+  },
+  "Defect": {
+    "description": "Shown in the window. Carries one value, {{.Detail}}, which has to stay spelled exactly that way.",
+    "other": "Something inside the program went wrong, and it should not have. Report it with this description: {{.Detail}}"
   },
   "DetailBasePreset": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -416,6 +424,14 @@
   "ListHeadingCount": {
     "description": "Shown inside an open list somebody chooses from. Carries these values, each of which has to stay spelled exactly that way: {{.Kind}}, {{.Count}}.",
     "other": "{{.Kind}} · {{.Count}}"
+  },
+  "ListJoinedAnd": {
+    "description": "Shown inside an open list somebody chooses from. Carries these values, each of which has to stay spelled exactly that way: {{.Head}}, {{.Last}}.",
+    "other": "{{.Head}} and {{.Last}}"
+  },
+  "ListJoinedOr": {
+    "description": "Shown inside an open list somebody chooses from. Carries these values, each of which has to stay spelled exactly that way: {{.Head}}, {{.Last}}.",
+    "other": "{{.Head}} or {{.Last}}"
   },
   "ListKindArchives": {
     "description": "A heading inside an open list of formats, over the formats of one kind of file.",
@@ -704,6 +720,26 @@
   "SubtitleTools": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
     "other": "Small things to do with files you already have. Every tool here is on the command line too, as tfg tool."
+  },
+  "SystemAlreadyThere": {
+    "description": "Shown in the window. Carries one value, {{.Number}}, which has to stay spelled exactly that way.",
+    "other": "something is already there (system error {{.Number}})"
+  },
+  "SystemFailure": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Path}}, {{.Reason}}.",
+    "other": "{{.Path}}: {{.Reason}}"
+  },
+  "SystemNoPermission": {
+    "description": "Shown in the window. Carries one value, {{.Number}}, which has to stay spelled exactly that way.",
+    "other": "the system refused permission (system error {{.Number}})"
+  },
+  "SystemNothingThere": {
+    "description": "Shown in the window. Carries one value, {{.Number}}, which has to stay spelled exactly that way.",
+    "other": "there is nothing at that path (system error {{.Number}})"
+  },
+  "SystemRefused": {
+    "description": "Shown in the window. Carries one value, {{.Number}}, which has to stay spelled exactly that way.",
+    "other": "the system refused it (system error {{.Number}})"
   },
   "TabAbout": {
     "description": "The name of a tab along the top of the window.",

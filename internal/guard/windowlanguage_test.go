@@ -192,6 +192,9 @@ func TestEveryLetterEveryLanguageSaysIsInTheTypeface(t *testing.T) {
 	for tag, entries := range registryFiles(t) {
 		languages[tag+" "+text.RegistryFolder] = entries
 	}
+	for tag, entries := range catalogueFilesIn(t, saidDir) {
+		languages[tag+" "+text.SaidFolder] = entries
+	}
 	for tag, entries := range languages {
 		missing := map[string][]string{}
 		for id, entry := range entries {

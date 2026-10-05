@@ -153,7 +153,7 @@ func refusal(err error, want int64, shape opc.Shape, slides int) error {
 		Format:    "PPTX",
 		Requested: want,
 		Minimum:   shape.Bare,
-		Reason:    core.Says("format.ADeckOfAlreadyPackagesTo", "a deck of %s already packages to that much - a presentation needs a master, a layout and a theme whether it shows them or not", core.A("Count", core.Count(slides, "slide", "slides"))),
+		Reason:    core.Says("format.ADeckOfAlreadyPackagesTo", "a deck of %s already packages to that much - a presentation needs a master, a layout and a theme whether it shows them or not", core.A("Count", core.SaysN("pptx.Slides", "%d slide", "%d slides", core.A("Count", slides)))),
 		Hint:      core.Says("format.AskForBOrMoreOr5", "Ask for %d B or more, or set fewer slides", core.A("Bare", shape.Bare)),
 	}
 }

@@ -381,13 +381,13 @@ func contentSummary(groups []format.Content) []map[string]any {
 }
 
 // describeGroups is the same thing for a person reading an error.
-func describeGroups(groups []format.Content) string {
-	parts := make([]string, 0, len(groups))
+func describeGroups(groups []format.Content) core.Said {
+	parts := make(core.Conjoined, 0, len(groups))
 	for _, g := range groups {
-		kind := strings.ToUpper(g.Format)
-		parts = append(parts, fmt.Sprintf("%s of %d B", core.Count(g.Count, kind+" file", kind+" files"), g.Bytes))
+		parts = append(parts, core.SaysN("format.GroupOf", "%d %s file of %d B", "%d %s files of %d B",
+			core.A("Count", g.Count), core.A("Kind", strings.ToUpper(g.Format)), core.A("Bytes", g.Bytes)))
 	}
-	return strings.Join(parts, " and ")
+	return core.Says("format.Groups", "%s", core.A("Groups", parts))
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {

@@ -203,7 +203,7 @@ func refusal(err error, want int64, shape opc.Shape, rows, columns int) error {
 		Format:    "XLSX",
 		Requested: want,
 		Minimum:   shape.Bare,
-		Reason:    core.Says("format.ASheetOfByAlreadyPackages", "a sheet of %s by %s already packages to that much, and a workbook cannot leave out its content types or its relationships", core.A("Count", core.Count(rows, "row", "rows")), core.A("Count2", core.Count(columns, "column", "columns"))),
+		Reason:    core.Says("format.ASheetOfByAlreadyPackages", "a sheet of %s by %s already packages to that much, and a workbook cannot leave out its content types or its relationships", core.A("Rows", core.SaysN("xlsx.Rows", "%d row", "%d rows", core.A("Count", rows))), core.A("Columns", core.SaysN("xlsx.Columns", "%d column", "%d columns", core.A("Count", columns)))),
 		Hint:      core.Says("format.AskForBOrMoreOr9", "Ask for %d B or more, or set fewer rows", core.A("Bare", shape.Bare)),
 	}
 }

@@ -457,6 +457,10 @@ func SettingKey(key string) string {
 // TooManyFiles refuses a run before the list is built, because building it is
 // the failure. The reason comes from core, so the window and the command line
 // do not hold two opinions about how many files is too many.
+// LicenceBinds follows a translated licence notice. Empty in English on
+// purpose - there is nothing to say where the notice is the one that binds.
+func LicenceBinds() string { return say("AboutLicenceBinds", "") }
+
 func TooManyFiles(count int64, reason string) string {
 	return sayf("TooManyFiles", "this run asks for {{.Count}} files - {{.Reason}}",
 		map[string]any{"Count": count, "Reason": reason})
