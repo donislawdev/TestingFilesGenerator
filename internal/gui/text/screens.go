@@ -903,12 +903,34 @@ func DetailTool() string {
 	return say("DetailTool", "What the tool works on and its settings change with the tool chosen.")
 }
 
+// ToolChoice is one line of the menu of tools: the name the tool has after
+// tfg tool, then the question it answers. The name first since 2026-10-05 -
+// choosing among three questions, the owner could not tell that all three
+// were about checksums - and it is the word typed on the command line, so the
+// menu teaches it.
+func ToolChoice(id, question string) string {
+	return sayf("ToolChoice", "{{.Tool}} - {{.Question}}", map[string]any{"Tool": id, "Question": ToolQuestion(id, question)})
+}
+
 // ButtonRunTool starts the tool chosen. One word for every tool, because the
 // question over it already says what it will do.
 func ButtonRunTool() string { return say("ButtonRunTool", "Run") }
 
 // ButtonCopy puts one value of a result on the clipboard.
 func ButtonCopy() string { return say("ButtonCopy", "Copy") }
+
+// ButtonCopyAll puts the whole result on the clipboard, as the section shows
+// it - five checksums of one file, or every line a check found.
+func ButtonCopyAll() string { return say("ButtonCopyAll", "Copy all") }
+
+// ToolResultLine is one row of a result as Copy all writes it: the name and
+// the value two spaces apart, the way tfg tool prints a table.
+func ToolResultLine(name, value string) string {
+	return sayf("ToolResultLine", "{{.Name}}  {{.Value}}", map[string]any{"Name": name, "Value": value})
+}
+
+// ToolCopiedAll says the whole result is on the clipboard.
+func ToolCopiedAll() string { return say("ToolCopiedAll", "The whole result is on the clipboard.") }
 
 // ToolNothingYet is the result before the first run, so the section says what
 // will appear there rather than standing empty.

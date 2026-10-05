@@ -472,7 +472,7 @@ func TestALongValueTakesTheRowAndOnTheToolsTabNothingElseButAPathDoes(t *testing
 	half := float32(parts.ColumnWidth) / 2
 	long, short := 0, 0
 	for _, d := range tool.All() {
-		menu.SetSelected(text.ToolQuestion(d.ID, d.Question))
+		menu.SetSelected(text.ToolChoice(d.ID, d.Question))
 		layOut()
 		mayTakeTheRow := map[fyne.CanvasObject]bool{}
 		allowed := func(label string) {

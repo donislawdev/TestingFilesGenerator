@@ -184,7 +184,7 @@ func TestTheToolsScreenOffersEveryToolWithEveryBox(t *testing.T) {
 		t.Fatal("the registry holds no tool, so this guard would pass against an empty screen")
 	}
 	for _, d := range all {
-		question := text.ToolQuestion(d.ID, d.Question)
+		question := text.ToolChoice(d.ID, d.Question)
 		menu.SetSelected(question)
 		if menu.Selected != question {
 			t.Errorf("the menu does not offer %s (%q)", d.ID, question)

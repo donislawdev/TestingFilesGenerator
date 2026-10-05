@@ -1,7 +1,7 @@
-<canvas padded size="1100x16450">
+<canvas padded size="1100x16715">
 	<content>
-		<container pos="4,4" size="1092x16442">
-			<container pos="136,0" size="820x16442">
+		<container pos="4,4" size="1092x16707">
+			<container pos="136,0" size="820x16707">
 				<container size="820x49">
 					<container pos="16,0" size="788x49">
 						<container size="788x24">
@@ -2944,7 +2944,67 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,8503" size="820x180">
+				<container pos="0,8503" size="820x240">
+					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x240" strokeColor="button" strokeWidth="1"/>
+					<container size="820x240">
+						<container pos="16,16" size="788x208">
+							<text bold size="788x20" textSize="17">Verdict</text>
+							<container pos="0,36" size="788x172">
+								<container size="788x35">
+									<widget size="788x14" type="*parts.QuietText">
+										<container size="788x14">
+											<widget pos="-6,-6" size="800x26" type="*widget.RichText">
+												<text color="placeholder" pos="6,6" size="45x14" textSize="12">a match</text>
+											</widget>
+										</container>
+									</widget>
+									<container pos="0,18" size="788x16">
+										<widget pos="-6,-6" size="800x28" type="*widget.Label">
+											<widget size="800x28" type="*widget.RichText">
+												<text color="success" pos="6,6" size="357x16">Matches: every file SHA256SUMS lists is what it says.</text>
+											</widget>
+										</widget>
+									</container>
+								</container>
+								<container pos="0,51" size="788x35">
+									<widget size="788x14" type="*parts.QuietText">
+										<container size="788x14">
+											<widget pos="-6,-6" size="800x26" type="*widget.RichText">
+												<text color="placeholder" pos="6,6" size="66x14" textSize="12">not a match</text>
+											</widget>
+										</container>
+									</widget>
+									<container pos="0,18" size="788x16">
+										<widget pos="-6,-6" size="800x28" type="*widget.Label">
+											<widget size="800x28" type="*widget.RichText">
+												<text color="error" pos="6,6" size="435x16">Does not match: SHA256SUMS lists files that are not what it says.</text>
+											</widget>
+										</widget>
+									</container>
+								</container>
+								<container pos="0,102" size="788x69">
+									<widget size="788x14" type="*parts.QuietText">
+										<container size="788x14">
+											<widget pos="-6,-6" size="800x26" type="*widget.RichText">
+												<text color="placeholder" pos="6,6" size="73x14" textSize="12">a long match</text>
+											</widget>
+										</container>
+									</widget>
+									<container pos="0,18" size="788x50">
+										<widget pos="-6,-6" size="800x62" type="*widget.Label">
+											<widget size="800x62" type="*widget.RichText">
+												<text color="success" pos="6,6" size="150x16">Matches: the sha512 is</text>
+												<text color="success" pos="6,22" size="787x16">ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd45</text>
+												<text color="success" pos="6,39" size="341x16">4d4423643ce80e2a9ac94fa54ca49f, as expected.</text>
+											</widget>
+										</widget>
+									</container>
+								</container>
+							</container>
+						</container>
+					</container>
+				</container>
+				<container pos="0,8768" size="820x180">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x180" strokeColor="button" strokeWidth="1"/>
 					<container size="820x180">
 						<container pos="16,16" size="788x148">
@@ -2993,7 +3053,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,8707" size="820x1119">
+				<container pos="0,8972" size="820x1119">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x1119" strokeColor="button" strokeWidth="1"/>
 					<container size="820x1119">
 						<container pos="16,16" size="788x1087">
@@ -3414,7 +3474,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,9851" size="820x1038">
+				<container pos="0,10116" size="820x1038">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x1038" strokeColor="button" strokeWidth="1"/>
 					<container size="820x1038">
 						<container pos="16,16" size="788x1006">
@@ -3754,7 +3814,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,10913" size="820x1078">
+				<container pos="0,11178" size="820x1078">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x1078" strokeColor="button" strokeWidth="1"/>
 					<container size="820x1078">
 						<container pos="16,16" size="788x1046">
@@ -4265,7 +4325,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,12016" size="820x385">
+				<container pos="0,12281" size="820x385">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x385" strokeColor="button" strokeWidth="1"/>
 					<container size="820x385">
 						<container pos="16,16" size="788x353">
@@ -4335,7 +4395,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,12425" size="820x1620">
+				<container pos="0,12690" size="820x1620">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x1620" strokeColor="button" strokeWidth="1"/>
 					<container size="820x1620">
 						<container pos="16,16" size="788x1588">
@@ -4919,7 +4979,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,14070" size="820x1620">
+				<container pos="0,14335" size="820x1620">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x1620" strokeColor="button" strokeWidth="1"/>
 					<container size="820x1620">
 						<container pos="16,16" size="788x1588">
@@ -5503,7 +5563,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,15715" size="820x290">
+				<container pos="0,15980" size="820x290">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x290" strokeColor="button" strokeWidth="1"/>
 					<container size="820x290">
 						<container pos="16,16" size="788x258">
@@ -5616,7 +5676,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,16030" size="820x420">
+				<container pos="0,16294" size="820x420">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x420" strokeColor="button" strokeWidth="1"/>
 					<container size="820x420">
 						<container pos="16,16" size="788x388">

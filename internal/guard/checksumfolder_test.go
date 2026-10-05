@@ -449,7 +449,7 @@ func TestTheToolsTabWritesAndChecksAFolder(t *testing.T) {
 	menu := chooserUnder(t, screen, text.FieldTool())
 
 	write, _ := tool.Get(checksum.WriteID)
-	menu.SetSelected(text.ToolQuestion(write.ID, write.Question))
+	menu.SetSelected(text.ToolChoice(write.ID, write.Question))
 	pressNamed(t, screen, text.ButtonChoose())
 	if host.asked == 0 {
 		t.Fatal("the browse button of checksum-write asked nobody for a folder")
@@ -468,7 +468,7 @@ func TestTheToolsTabWritesAndChecksAFolder(t *testing.T) {
 	}
 
 	check, _ := tool.Get(checksum.CheckID)
-	menu.SetSelected(text.ToolQuestion(check.ID, check.Question))
+	menu.SetSelected(text.ToolChoice(check.ID, check.Question))
 	host.pickedFile = sums
 	pressNamed(t, screen, text.ButtonChoose())
 	pressNamed(t, screen, text.ButtonRunTool())
@@ -507,7 +507,7 @@ func TestTheToolsTabCutsALongListShort(t *testing.T) {
 	window.Open(host)
 	screen := selectTab(t, host.content, text.TabTools())
 	check, _ := tool.Get(checksum.CheckID)
-	chooserUnder(t, screen, text.FieldTool()).SetSelected(text.ToolQuestion(check.ID, check.Question))
+	chooserUnder(t, screen, text.FieldTool()).SetSelected(text.ToolChoice(check.ID, check.Question))
 	pressNamed(t, screen, text.ButtonChoose())
 	pressNamed(t, screen, text.ButtonRunTool())
 	host.waitForWork()

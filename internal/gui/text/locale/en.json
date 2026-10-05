@@ -67,6 +67,10 @@
     "description": "The words on a button.",
     "other": "Copy"
   },
+  "ButtonCopyAll": {
+    "description": "The words on a button.",
+    "other": "Copy all"
+  },
   "ButtonDonate": {
     "description": "The words on a button.",
     "other": "Donate"
@@ -733,9 +737,17 @@
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Count}}, {{.Reason}}.",
     "other": "this run asks for {{.Count}} files - {{.Reason}}"
   },
+  "ToolChoice": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Tool}}, {{.Question}}.",
+    "other": "{{.Tool}} - {{.Question}}"
+  },
   "ToolCopied": {
     "description": "Shown in the window. Carries one value, {{.What}}, which has to stay spelled exactly that way.",
     "other": "The {{.What}} is on the clipboard."
+  },
+  "ToolCopiedAll": {
+    "description": "Shown in the window.",
+    "other": "The whole result is on the clipboard."
   },
   "ToolDoesNotMatch": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.About}}, {{.Got}}, {{.Wanted}}.",
@@ -772,6 +784,10 @@
   "ToolReading": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Done}}, {{.Total}}.",
     "other": "Read {{.Done}} of {{.Total}}."
+  },
+  "ToolResultLine": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Name}}, {{.Value}}.",
+    "other": "{{.Name}}  {{.Value}}"
   },
   "ToolStopped": {
     "description": "Shown in the window.",
