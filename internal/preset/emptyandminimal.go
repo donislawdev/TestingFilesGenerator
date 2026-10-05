@@ -7,6 +7,8 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 const (
@@ -72,16 +74,14 @@ func init() {
 var formatsList = commaList{
 	preset:    minimalID,
 	param:     "formats",
-	empty:     "no formats were given, so there is nothing to build the set from",
+	empty:     core.Says("preset.NoFormatsWereGivenSoThere", "no formats were given, so there is nothing to build the set from"),
 	check:     checkSetFormat,
 	keep:      lower,
 	duplicate: repeatedFormat,
 }
 
-func repeatedFormat(first string) string {
-	return fmt.Sprintf(
-		"it is the same format as %q and the set would hold that file twice. Every format appears once, because each one stands for one path through your reader",
-		first)
+func repeatedFormat(first string) core.Said {
+	return core.Says("preset.ItIsTheSameFormatAs", "it is the same format as %q and the set would hold that file twice. Every format appears once, because each one stands for one path through your reader", core.A("First", first))
 }
 
 // checkSetFormat lets the keyword through and asks the registry about the rest.
@@ -91,9 +91,9 @@ func repeatedFormat(first string) string {
 // wrong for "all," - a trailing comma leaves one item, the keyword is alone,
 // and a refusal saying it cannot stand beside a named format would be about a
 // format nobody wrote.
-func checkSetFormat(item string) string {
+func checkSetFormat(item string) core.Said {
 	if strings.EqualFold(item, everyFormat) {
-		return ""
+		return core.Said{}
 	}
 	return knownFormat(item)
 }
@@ -159,9 +159,7 @@ func spelledOut(ids []string) ([]string, error) {
 	}
 	for _, id := range ids {
 		if id == everyFormat {
-			return nil, formatsList.refuse(everyFormat, fmt.Sprintf(
-				"%q already means every format, so it cannot stand beside a named one. Write it on its own, or name only the formats you want",
-				everyFormat))
+			return nil, formatsList.refuse(everyFormat, core.Says("preset.AlreadyMeansEveryFormatSoIt", "%q already means every format, so it cannot stand beside a named one. Write it on its own, or name only the formats you want", core.A("EveryFormat", everyFormat)))
 		}
 	}
 	return ids, nil
@@ -276,7 +274,7 @@ func smallest(d format.Descriptor) int64 {
 // Nothing is said about the other direction. A set that is ALL empty files
 // cannot happen, because every format has a smallest legal file and this set
 // always holds it.
-func saidAboutTheMinimalSet(args Args) []string {
+func saidAboutTheMinimalSet(args Args) []core.Said {
 	descs, err := chosenFormats(args["formats"])
 	if err != nil {
 		// Expand is about to refuse these same values with a message that names
@@ -288,9 +286,9 @@ func saidAboutTheMinimalSet(args Args) []string {
 			return nil
 		}
 	}
-	return []string{fmt.Sprintf(
+	return []core.Said{core.Says("preset.NoEmptyForm",
 		"no format in this set has a legal empty form, so the set holds no empty files - only the smallest valid one of each. The formats that go down to nought bytes in this build: %s.",
-		strings.Join(zeroCapable(), ", "))}
+		core.A("Formats", strings.Join(zeroCapable(), ", ")))}
 }
 
 // zeroCapable is every format whose smallest legal file is nought bytes.

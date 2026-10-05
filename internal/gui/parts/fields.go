@@ -1,10 +1,11 @@
 package parts
 
 import (
-	"errors"
 	"strings"
 
 	"fyne.io/fyne/v2"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // Field is one labelled control that can say it was the one refused.
@@ -554,14 +555,12 @@ func (s *Fields) Mark(setting string, err error) bool {
 // says where its own name goes instead, and anything without a slot is shown
 // exactly as the engine wrote it, which is the state this window was in before
 // the labels and is merely plain rather than wrong. See core.SettingSlot.
+//
+// Since 2026-10-05 it is asked in the window's language as well - see
+// text.Refusal, which answers in English exactly as this did before whenever
+// the window speaks English or has no words for the refusal.
 func inTheWordsOnScreen(f *Field, err error) string {
-	var reworded interface {
-		InTheWordsOf(string) string
-	}
-	if f.Label != "" && errors.As(err, &reworded) {
-		return reworded.InTheWordsOf(f.Label)
-	}
-	return err.Error()
+	return text.Refusal(err, f.Label)
 }
 
 // Clear takes back whatever one field was complaining about.

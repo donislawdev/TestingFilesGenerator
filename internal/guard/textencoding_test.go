@@ -249,10 +249,10 @@ func TestAWideEncodingRefusesAnOddSizeAndNamesOneItCanWrite(t *testing.T) {
 						id, c, size, below.Minimum, err)
 				}
 				// The four parts every refusal in this tool carries.
-				if !strings.Contains(below.Reason, "two bytes") {
+				if !strings.Contains(below.Reason.String(), "two bytes") {
 					t.Errorf("%s %v: the reason does not say why an odd size cannot exist: %q", id, c, below.Reason)
 				}
-				if !strings.Contains(below.Hint, fmt.Sprintf("%d B", size-1)) {
+				if !strings.Contains(below.Hint.String(), fmt.Sprintf("%d B", size-1)) {
 					t.Errorf("%s %v: the hint does not offer the size below: %q", id, c, below.Hint)
 				}
 			}
@@ -356,10 +356,10 @@ func TestALabelThatWillNotFitSaysWhatItWouldCost(t *testing.T) {
 		if note == nil {
 			t.Fatalf("%s: the label does not fit and nothing said so - silence is banned", id)
 		}
-		if !strings.Contains(note.Detail, fmt.Sprintf("needs %d B", wide)) {
+		if !strings.Contains(note.Detail.String(), fmt.Sprintf("needs %d B", wide)) {
 			t.Errorf("%s: the note should say the label needs %d B in this encoding: %q", id, wide, note.Detail)
 		}
-		if strings.Contains(note.Detail, fmt.Sprintf("needs %d B", narrow)) {
+		if strings.Contains(note.Detail.String(), fmt.Sprintf("needs %d B", narrow)) {
 			t.Errorf("%s: the note reports what the label costs in UTF-8, not in the encoding asked for: %q",
 				id, note.Detail)
 		}

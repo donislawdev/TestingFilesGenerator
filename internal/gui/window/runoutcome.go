@@ -3,6 +3,8 @@ package window
 import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // What a finished run says about itself.
@@ -24,9 +26,21 @@ func outcomeText(res *engine.Result, runErr error) string {
 	return text.Written(written)
 }
 
+// notesOf is what a run says about its files, in the window's language. A
+// note the run did not remember as a sentence - there is none today - is said
+// as the manifest holds it.
 func notesOf(res *engine.Result) []string {
 	if res == nil || res.Manifest == nil {
 		return nil
 	}
-	return res.Manifest.Notes()
+	groups := res.Manifest.NoteGroups()
+	out := make([]string, 0, len(groups))
+	for _, g := range groups {
+		note, known := res.NotesSaid[g.Detail]
+		if !known {
+			note = core.Says("manifest.NoteText", "%s", core.A("Text", g.Detail))
+		}
+		out = append(out, text.Sentence(g.Line(note)))
+	}
+	return out
 }

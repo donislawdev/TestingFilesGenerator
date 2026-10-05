@@ -426,6 +426,25 @@ const noteExamples = 3
 // Names are not sorted here and the count is kept rather than the names, so a
 // million entry run no longer sorts a million strings to print sixteen lines.
 func (m *Manifest) Notes() []string {
+	groups := m.NoteGroups()
+	out := make([]string, 0, len(groups))
+	for _, g := range groups {
+		out = append(out, g.Line(core.Says("manifest.NoteText", "%s", core.A("Text", g.Detail))).String())
+	}
+	return out
+}
+
+// NoteGroup is one sentence of the notes and the files that carry it, for a
+// reader that words the line in its own language - see Line.
+type NoteGroup struct {
+	Detail string
+	Count  int
+	First  []string
+}
+
+// NoteGroups is the notes grouped by their sentence, in the order Notes prints
+// them.
+func (m *Manifest) NoteGroups() []NoteGroup {
 	groups := noteGroups{byDetail: map[string]*noteGroup{}}
 	for _, f := range m.Files {
 		for _, n := range f.Notes {
@@ -434,9 +453,10 @@ func (m *Manifest) Notes() []string {
 	}
 	sort.Strings(groups.order)
 
-	out := make([]string, 0, len(groups.order))
+	out := make([]NoteGroup, 0, len(groups.order))
 	for _, detail := range groups.order {
-		out = append(out, groups.byDetail[detail].line(detail))
+		g := groups.byDetail[detail]
+		out = append(out, NoteGroup{Detail: detail, Count: g.count, First: g.first})
 	}
 	return out
 }
@@ -480,18 +500,21 @@ func (n *noteGroups) add(detail, name string) {
 // A group of one keeps the shape it always had - the file name in front - so
 // the common case of one file with something to say about it does not get worse
 // to make the large case better.
-func (g *noteGroup) line(detail string) string {
-	if g.count == 1 {
-		return fmt.Sprintf("%s: %s", core.Shown(g.first[0]), detail)
+//
+// The note is handed in as a sentence, so the command line gives the English
+// the manifest holds and a window gives the same note in its own language.
+func (g NoteGroup) Line(note core.Said) core.Said {
+	if g.Count == 1 {
+		return core.Says("manifest.NoteOne", "%s: %s", core.A("File", core.Shown(g.First[0])), core.A("Note", note))
 	}
-	named := strings.Join(core.ShownEach(g.first), ", ")
-	if hidden := g.count - len(g.first); hidden > 0 {
-		return fmt.Sprintf("%s: %s Named: %s. %s not named here.",
-			core.Count(g.count, "file", "files"), detail, named,
-			core.Count(hidden, "file", "files"))
+	named := strings.Join(core.ShownEach(g.First), ", ")
+	files := core.SaysN("manifest.Files", "%d file", "%d files", core.A("Count", g.Count))
+	if hidden := g.Count - len(g.First); hidden > 0 {
+		return core.Says("manifest.NoteMany", "%s: %s Named: %s. %s not named here.",
+			core.A("Files", files), core.A("Note", note), core.A("Named", named),
+			core.A("Hidden", core.SaysN("manifest.Files", "%d file", "%d files", core.A("Count", hidden))))
 	}
-	return fmt.Sprintf("%s: %s Named: %s.",
-		core.Count(g.count, "file", "files"), detail, named)
+	return core.Says("manifest.NoteSeveral", "%s: %s Named: %s.", core.A("Files", files), core.A("Note", note), core.A("Named", named))
 }
 
 // Encode renders the manifest as JSON.

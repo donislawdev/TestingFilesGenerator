@@ -205,14 +205,16 @@ func ReadLock(id string, props map[string]string) (Lock, error) {
 	case password != "" && !locked:
 		return Lock{}, &format.PropertyValueError{
 			Format: id, Key: Encryption, Value: NoEncryption,
-			Reason: "a password was given and this says the archive is not locked, so one of the two is not what you meant",
-			Remedy: "Set encryption to " + AES256 + " to lock the archive, or remove the password to leave it open.",
+			Reason: core.Says("format.APasswordWasGivenAndThis", "a password was given and this says the archive is not locked, so one of the two is not what you meant"),
+			Remedy: core.Says("archive.SetEncryption", "Set encryption to %s to lock the archive, or remove the password to leave it open.",
+				core.A("Method", core.Choice{Of: Encryption, Value: AES256})),
 		}
 	case password == "" && locked:
 		return Lock{}, &format.PropertyValueError{
 			Format: id, Key: Password, Value: "",
-			Reason: "the archive is set to be locked with " + method + " and there is no password to lock it with",
-			Remedy: "Give a password, or set encryption to " + NoEncryption + ".",
+			Reason: core.Says("archive.LockedWithoutPassword", "the archive is set to be locked with %s and there is no password to lock it with",
+				core.A("Method", core.Choice{Of: Encryption, Value: method})),
+			Remedy: core.Says("archive.GiveAPassword", "Give a password, or set encryption to %s.", core.A("None", core.Choice{Of: Encryption, Value: NoEncryption})),
 		}
 	}
 	return Lock{Method: method, Password: password}, nil
@@ -235,16 +237,16 @@ func (l Lock) NewEntryWriter(w io.Writer, seed uint64, index int, crc uint32) (i
 		return l.newZipCryptoWriter(w, seed, index, crc)
 	}
 	if l.keyLen() == 0 {
-		return nil, fmt.Errorf("archive: %q is not an encryption this build can write", l.Method)
+		return nil, core.Defect(fmt.Errorf("archive: %q is not an encryption this build can write", l.Method))
 	}
 	salt := l.saltFor(seed, index)
 	material, err := pbkdf2.Key(sha1.New, l.Password, salt, iterations, l.keyLen()*2+pwvLen)
 	if err != nil {
-		return nil, fmt.Errorf("archive: the key could not be derived: %w", err)
+		return nil, core.Defect(fmt.Errorf("archive: the key could not be derived: %w", err))
 	}
 	block, err := aes.NewCipher(material[:l.keyLen()])
 	if err != nil {
-		return nil, fmt.Errorf("archive: the cipher could not be built: %w", err)
+		return nil, core.Defect(fmt.Errorf("archive: the cipher could not be built: %w", err))
 	}
 	if _, err := w.Write(salt); err != nil {
 		return nil, err

@@ -1,0 +1,19 @@
+{
+  "damage.Conflict": { "hash": "sha256-6749ebcea05d", "other": "{{.What}}. {{.Instead}}" },
+  "damage.ConflictInstead": { "hash": "sha256-e4ac08c1d195", "other": "pomiń oczekiwany wynik, a będzie nim odrzucenie, albo wybierz oczyszczenie, jeśli system pod testem ma naprawić plik, albo nieokreślony, jeśli właśnie o to pytasz" },
+  "damage.ConflictWhat": { "hash": "sha256-a9099dc25467", "other": "ta partia uszkadza plik, a jako oczekiwany wynik ma {{.Outcome}}" },
+  "damage.ConflictWhy": { "hash": "sha256-b90221bf868f", "other": "uszkodzony plik to taki, który sędzia odrzucał w pomiarze, więc oczekiwanie, że zostanie przyjęty, jest oczekiwaniem, którego nic nie spełni" },
+  "damage.NoChange": { "hash": "sha256-14c3ed651919", "other": "{{.What}}. {{.Why}}" },
+  "damage.NoChangeInstead": { "hash": "sha256-7b4599e7c06c", "other": "daj uszkodzeniu większy plik albo inne ustawienia, albo zdejmij je z tej partii" },
+  "damage.NoChangeWhat": { "hash": "sha256-4f2698e2b793", "other": "{{.Damage}} nie zmieniło niczego w {{.File}}" },
+  "damage.NoChangeWhy": { "hash": "sha256-c7feb2a26728", "other": "każdy czytnik przyjąłby ten plik, a manifest nazywałby go uszkodzonym, więc przebieg się zatrzymuje, zamiast go zapisać" },
+  "damage.TooSmall": { "hash": "sha256-6749ebcea05d", "other": "{{.What}}. {{.Instead}}" },
+  "damage.TooSmallInstead": { "hash": "sha256-cfc27ac4d05a", "other": "Poproś o {{.Floor}} albo więcej albo zdejmij uszkodzenie z tej partii." },
+  "damage.TooSmallWhat": { "hash": "sha256-1b4679cf4415", "other": "{{.Damage}} potrzebuje co najmniej {{.Floor}}, a plik ma {{.Requested}}" },
+  "damage.TooSmallWhy": { "hash": "sha256-17c864ed0120", "other": "plik mniejszy niż uszkodzenie wyszedłby niezmieniony, a niezmieniony plik opisany jako uszkodzony to jedyne, czego to narzędzie nie może zapisać" },
+  "damage.Unknown": { "hash": "sha256-8ac340989b2f", "other": "{{.What}}. Ta wersja ma: {{.Known}}" },
+  "damage.UnknownInstead": { "hash": "sha256-a53588601259", "other": "użyj jednego z: {{.Known}}" },
+  "damage.UnknownInsteadRemove": { "hash": "sha256-0e2033823316", "other": "usuń linię z uszkodzeniem" },
+  "damage.UnknownWhat": { "hash": "sha256-cfd2875327a9", "other": "nie ma uszkodzenia o nazwie {{.Damage}}" },
+  "damage.UnknownWhy": { "hash": "sha256-f2720ea32a8a", "other": "uszkodzenie musi być znane tej wersji, a nieznane zostawiłoby plik nienaruszony, podczas gdy manifest nazywałby go uszkodzonym" }
+}

@@ -333,7 +333,7 @@ func TestEveryRefusalAboutThePresetSideOfARecipeNamesItsLine(t *testing.T) {
 				t.Errorf("no problem is addressed to %q saying %q. The problems are:\n%v", c.at, c.says, err)
 			}
 			for _, p := range invalid.Problems {
-				if p.Why == "" || p.Fix == "" {
+				if p.Why.IsZero() || p.Fix.IsZero() {
 					t.Errorf("the problem %q arrives without all four parts (D6): why=%q fix=%q", p.What, p.Why, p.Fix)
 				}
 			}

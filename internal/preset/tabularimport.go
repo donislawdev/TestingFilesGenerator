@@ -281,7 +281,7 @@ func refusedTable(f setFile) error {
 		// No hint of our own. The sheet's refusal ends with what to do about it
 		// and says it better than a general sentence could, because it knows
 		// which of the two counts it was and by how much.
-		Detail: strings.TrimPrefix(err.Error(), f.desc.ID+": "),
+		Detail: withoutFormat(err, f.desc.ID),
 	}
 }
 

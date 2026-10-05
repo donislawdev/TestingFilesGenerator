@@ -144,8 +144,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "XML",
 			Requested: r.Bytes,
 			Minimum:   min,
-			Reason:    "a document holds a declaration, a root element and whole records, and one of each needs that much",
-			Hint:      fmt.Sprintf("Ask for %d B or more.", min),
+			Reason:    core.Says("format.ADocumentHoldsADeclarationA", "a document holds a declaration, a root element and whole records, and one of each needs that much"),
+			Hint:      core.Says("format.AskForBOrMore", "Ask for %d B or more.", core.A("Min", min)),
 		}
 	}
 	// Half of all sizes are unreachable in UTF-16, and a refusal has to name
@@ -181,10 +181,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			m.comment = line
 		} else {
 			p.Notes = append(p.Notes, format.Note{
-				Code: "label_omitted",
-				Detail: fmt.Sprintf(
-					"The label comment needs %d B and this file has no room for it beside a whole record. Its name and the manifest still identify it.",
-					codec.Cost(int64(len(line)))),
+				Code:   "label_omitted",
+				Detail: core.Says("format.TheLabelCommentNeedsBAnd", "The label comment needs %d B and this file has no room for it beside a whole record. Its name and the manifest still identify it.", core.A("Length", codec.Cost(int64(len(line))))),
 			})
 		}
 	}
@@ -197,7 +195,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("xml: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("xml: the plan was not produced by this generator"))
 	}
 
 	// The mark is bytes rather than text, so it goes out as itself. Everything
@@ -359,7 +357,8 @@ func checkMark(c textenc.Codec) error {
 		Format: "xml",
 		Key:    textenc.SettingBOM,
 		Value:  "false",
-		Reason: "XML in " + c.Name() + " has to open with a byte order mark, so this needs bom=true or encoding=" + textenc.UTF8,
+		Reason: core.Says("xml.NeedsBOM", "XML in %s has to open with a byte order mark, so this needs bom=true or encoding=%s",
+			core.A("Encoding", c.Name()), core.A("UTF8", textenc.UTF8)),
 	}
 }
 

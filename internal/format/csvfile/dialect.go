@@ -15,11 +15,12 @@ package csvfile
 
 import (
 	"bytes"
-	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Setting names. Public names, so they are spelled once.
@@ -215,7 +216,7 @@ func parseDialect(props map[string]string) (dialect, error) {
 		sep, known := delimiters[v]
 		if !known {
 			return dialect{}, badValue(Delimiter, v,
-				"it has to be "+strings.Join(delimiterIDs, ", "))
+				core.Says("csv.HasToBeOneOf", "it has to be %s", core.A("Values", core.Choices{Of: Delimiter, Values: delimiterIDs})))
 		}
 		d.delimiterID, d.sep = v, sep
 	}
@@ -223,7 +224,7 @@ func parseDialect(props map[string]string) (dialect, error) {
 	if v, ok := props[LineEnding]; ok && v != "" {
 		eol, known := lineEndings[v]
 		if !known {
-			return dialect{}, badValue(LineEnding, v, "it has to be lf or crlf")
+			return dialect{}, badValue(LineEnding, v, core.Says("format.ItHasToBeLfOr", "it has to be lf or crlf"))
 		}
 		d.lineEndingID, d.eol = v, eol
 	}
@@ -235,7 +236,7 @@ func parseDialect(props map[string]string) (dialect, error) {
 		case "false":
 			d.header = false
 		default:
-			return dialect{}, badValue(Header, v, "it has to be true or false")
+			return dialect{}, badValue(Header, v, core.Says("format.ItHasToBeTrueOr", "it has to be true or false"))
 		}
 	}
 
@@ -243,7 +244,7 @@ func parseDialect(props map[string]string) (dialect, error) {
 		q, known := quoteStyles[v]
 		if !known {
 			return dialect{}, badValue(QuoteStyle, v,
-				"it has to be "+strings.Join(quoteStyleIDs, ", "))
+				core.Says("csv.HasToBeOneOf", "it has to be %s", core.A("Values", core.Choices{Of: QuoteStyle, Values: quoteStyleIDs})))
 		}
 		d.quotes = q
 	}
@@ -271,16 +272,16 @@ func columnsFrom(props map[string]string, fallback int) (int, error) {
 	}
 	n, err := strconv.Atoi(v)
 	if err != nil {
-		return 0, badValue(Columns, v, "it has to be a whole number")
+		return 0, badValue(Columns, v, core.Says("format.ItHasToBeAWhole", "it has to be a whole number"))
 	}
 	if n < minColumns || n > maxColumns {
 		return 0, badValue(Columns, v,
-			fmt.Sprintf("it has to be between %d and %d", minColumns, maxColumns))
+			core.Says("format.ItHasToBeBetweenAnd", "it has to be between %d and %d", core.A("MinColumns", minColumns), core.A("MaxColumns", maxColumns)))
 	}
 	return n, nil
 }
 
-func badValue(key, val, why string) error {
+func badValue(key, val string, why core.Said) error {
 	return &format.PropertyValueError{Format: "csv", Key: key, Value: val, Reason: why}
 }
 

@@ -218,7 +218,7 @@ func refusedInTheRegistrysWords(t *testing.T, err error, key, bad string) {
 	// that rather than letting it happen: a test whose evidence has evaporated
 	// reports success in exactly the same words as a test that worked.
 	want := p.Allows(bad)
-	if want == "" {
+	if want.IsZero() {
 		t.Fatalf("%s=%q is a value the declaration now allows, so this test no longer has "+
 			"a refusal to read. Pick a value the declaration does not contain.", key, bad)
 	}
@@ -233,7 +233,7 @@ func refusedInTheRegistrysWords(t *testing.T, err error, key, bad string) {
 			"so nothing downstream can say which field to point at: %v", key, bad, err, err)
 	}
 
-	if value.Reason != want {
+	if value.Reason.String() != want.String() {
 		t.Errorf("%s=%q is refused in words of its own rather than the declaration's.\n"+
 			"  refusal says:      %q\n"+
 			"  declaration says:  %q\n"+

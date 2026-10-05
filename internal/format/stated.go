@@ -46,7 +46,7 @@ func statedProblem(owner string, known map[string]Property, names []string, key,
 	if value == "" {
 		return nil
 	}
-	if why := p.Allows(value); why != "" {
+	if why := p.Allows(value); !why.IsZero() {
 		return &PropertyValueError{Format: owner, Key: key, Value: value, Reason: why, Remedy: p.Instead()}
 	}
 	return nil

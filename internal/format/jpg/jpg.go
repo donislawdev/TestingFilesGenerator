@@ -159,11 +159,12 @@ func checkJointLimits(w, h int) error {
 		return err
 	}
 	for _, j := range d.JointLimits {
-		if bad := j.Allows(int64(w), int64(h)); bad != "" {
+		if bad := j.Allows("jpg", int64(w), int64(h)); !bad.IsZero() {
 			return &format.PropertyValueError{
-				Format: "jpg", Key: j.Of + " and " + j.By,
-				Value:  fmt.Sprintf("%dx%d", w, h),
-				Reason: bad + fmt.Sprintf(". Each side may go up to %d, but not both at once - ask for a smaller pair", maxDimension),
+				Format: "jpg", Key: j.Of + " and " + j.By, Subject: j.Subject(),
+				Value: fmt.Sprintf("%dx%d", w, h),
+				Reason: core.Says("format.JointEachSide", "%s. Each side may go up to %d, but not both at once - ask for a smaller pair",
+					core.A("Why", bad), core.A("Most", maxDimension)),
 			}
 		}
 	}
@@ -238,20 +239,16 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "JPG",
 			Requested: r.Bytes,
 			Minimum:   floor,
-			Reason: fmt.Sprintf(
-				"a %dx%d picture at quality %d encodes to %d B and always carries a comment segment, which costs %d B even when empty",
-				w, h, quality, bare, comOverhead),
-			Hint: fmt.Sprintf("Ask for %d B or more, or set a smaller width and height, or a lower quality", floor),
+			Reason:    core.Says("format.AXPictureAtQualityEncodes", "a %dx%d picture at quality %d encodes to %d B and always carries a comment segment, which costs %d B even when empty", core.A("W", w), core.A("H", h), core.A("Quality", quality), core.A("Bare", bare), core.A("ComOverhead", comOverhead)),
+			Hint:      core.Says("format.AskForBOrMoreOr", "Ask for %d B or more, or set a smaller width and height, or a lower quality", core.A("Floor", floor)),
 		}
 	}
 	m.segments, m.padPayload = segmentsFor(r.Bytes - bare)
 
 	if r.Label && !imagelabel.Fits(w, len(label)) {
 		p.Notes = append(p.Notes, format.Note{
-			Code: "label_omitted",
-			Detail: fmt.Sprintf(
-				"The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.",
-				w),
+			Code:   "label_omitted",
+			Detail: core.Says("format.ThePictureIsPxWideAnd", "The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("Width", w)),
 		})
 	}
 	p.Properties[format.PropertyLabelEmbedded] = r.Label && imagelabel.Fits(w, len(label))
@@ -262,7 +259,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("jpg: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("jpg: the plan was not produced by this generator"))
 	}
 
 	select {
@@ -289,8 +286,8 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return err
 	}
 	if skip.written+soiSize != m.body {
-		return fmt.Errorf("jpg: the picture encoded to %d B where planning said %d B",
-			skip.written+soiSize, m.body)
+		return core.Defect(fmt.Errorf("jpg: the picture encoded to %d B where planning said %d B",
+			skip.written+soiSize, m.body))
 	}
 	return nil
 }
@@ -355,10 +352,10 @@ func qualityOf(props map[string]string) (int, error) {
 	}
 	n, err := strconv.Atoi(raw)
 	if err != nil {
-		return 0, fmt.Errorf("jpg: quality must be a whole number, got %q", raw)
+		return 0, core.Defect(fmt.Errorf("jpg: quality must be a whole number, got %q", raw))
 	}
 	if n < minQuality || n > maxQuality {
-		return 0, fmt.Errorf("jpg: quality must be between %d and %d, got %d", minQuality, maxQuality, n)
+		return 0, core.Defect(fmt.Errorf("jpg: quality must be between %d and %d, got %d", minQuality, maxQuality, n))
 	}
 	return n, nil
 }
@@ -503,7 +500,7 @@ func writeComments(ctx context.Context, w io.Writer, seed uint64, segments int, 
 			n++
 		}
 		if n > maxCOMPayload {
-			return fmt.Errorf("jpg: a comment segment of %d B was planned and the format allows %d", n, maxCOMPayload)
+			return core.Defect(fmt.Errorf("jpg: a comment segment of %d B was planned and the format allows %d", n, maxCOMPayload))
 		}
 
 		head[2] = byte((n + 2) >> 8)
@@ -575,7 +572,7 @@ func (h *headSkipper) Write(p []byte) (int, error) {
 
 func (h *headSkipper) check() error {
 	if len(h.head) != soiSize || h.head[0] != 0xFF || h.head[1] != 0xD8 {
-		return fmt.Errorf("jpg: the encoder did not begin with the start of image marker, got % x", h.head)
+		return core.Defect(fmt.Errorf("jpg: the encoder did not begin with the start of image marker, got % x", h.head))
 	}
 	return nil
 }

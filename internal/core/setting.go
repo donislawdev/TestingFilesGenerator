@@ -98,37 +98,11 @@ const SettingSize = "size"
 // engine.
 const SettingSizeRange = "size-range"
 
-// SettingErrorf is a refusal that names the setting it is about through a slot,
-// so each surface reads it in its own words.
-//
-// The format string is kept unrendered rather than the finished message,
-// because the values put into it come from whoever ran the tool. A size typed
-// as "{setting}" would otherwise be read back as a slot and answered with the
-// name of the box, which is the shape of defect this whole mechanism exists to
-// remove rather than to move somewhere quieter.
-func SettingErrorf(setting, format string, a ...any) error {
-	return &settingError{setting: setting, format: format, args: a}
-}
-
-type settingError struct {
-	setting string
-	format  string
-	args    []any
-}
-
-func (e *settingError) Error() string { return e.InTheWordsOf(e.setting) }
-
-func (e *settingError) InTheWordsOf(name string) string {
-	if name == "" {
-		name = e.setting
-	}
-	return fmt.Sprintf(InTheWordsOf(e.format, name), e.args...)
-}
-
-// AboutSetting lets a window put this refusal beside the box it came from,
-// through the same interface the engine, the format registry and the preset
-// package already answer.
-func (e *settingError) AboutSetting() string { return e.setting }
+// A refusal that names its setting through a slot is RefuseAbout since
+// 2026-10-05 (refusal.go). It keeps the layout unrendered for the reason this
+// file gave for SettingErrorf, which it replaced: the values put into it come
+// from whoever ran the tool, and a size typed as "{setting}" would otherwise be
+// read back as a slot and answered with the name of the box.
 
 // KeyTargets and KeyContains are the two list names a settings address is built
 // from. The rest of the vocabulary lives in internal/recipe, with the reader

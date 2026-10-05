@@ -12,6 +12,7 @@
 package preset
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -123,7 +124,7 @@ type Preset struct {
 	// wiring to remember.
 	//
 	// Nil for a preset whose set is the same shape whatever it is given.
-	Says func(Args) []string
+	Says func(Args) []core.Said
 
 	// Expand builds the recipe. It returns source rather than a structure, so
 	// what a run consumes is what eject prints.
@@ -173,7 +174,7 @@ func (p Preset) Check(args Args) error {
 			return &UnknownParameterError{Preset: p.ID, Name: name, Known: p.ParameterNames()}
 		}
 		if raw := args[name]; raw != "" {
-			if bad := param.Allows(raw); bad != "" {
+			if bad := param.Allows(raw); !bad.IsZero() {
 				// The remedy comes from the declaration, as it does for a
 				// format's property. Error leaves it out, so the command
 				// line reads as it always did, and a form gets the fourth
@@ -265,12 +266,16 @@ type UnknownParameterError struct {
 	Known  []string
 }
 
-func (e *UnknownParameterError) Error() string {
+func (e *UnknownParameterError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *UnknownParameterError) Said() core.Said {
 	if len(e.Known) == 0 {
-		return fmt.Sprintf("the preset %s takes no parameters, so %q is not one of them", e.Preset, e.Name)
+		return core.Says("preset.TakesNoParameters", "the preset %s takes no parameters, so %q is not one of them",
+			core.A("Preset", e.Preset), core.A("Name", e.Name))
 	}
-	return fmt.Sprintf("the preset %s does not have a parameter called %q. It takes: %s",
-		e.Preset, e.Name, strings.Join(e.Known, ", "))
+	return core.Says("preset.NoSuchParameter", "the preset %s does not have a parameter called %q. It takes: %s",
+		core.A("Preset", e.Preset), core.A("Name", e.Name), core.A("Known", strings.Join(e.Known, ", ")))
 }
 
 // UnknownPresetError is a request for a preset nobody registered.
@@ -279,11 +284,14 @@ type UnknownPresetError struct {
 	Known []string
 }
 
-func (e *UnknownPresetError) Error() string {
+func (e *UnknownPresetError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *UnknownPresetError) Said() core.Said {
 	if len(e.Known) == 0 {
-		return fmt.Sprintf("unknown preset %q, and this build registers none", e.ID)
+		return core.Says("preset.UnknownNone", "unknown preset %q, and this build registers none", core.A("Preset", e.ID))
 	}
-	return fmt.Sprintf("unknown preset %q. This build has: %s", e.ID, strings.Join(e.Known, ", "))
+	return core.Says("preset.Unknown", "unknown preset %q. This build has: %s", core.A("Preset", e.ID), core.A("Known", strings.Join(e.Known, ", ")))
 }
 
 // ImpossibleError is parameters that describe a set this build cannot produce.
@@ -293,8 +301,8 @@ func (e *UnknownPresetError) Error() string {
 // are missing are the ones the run was about.
 type ImpossibleError struct {
 	Preset string
-	Detail string
-	Hint   string
+	Detail core.Said
+	Hint   core.Said
 
 	// Setting is which parameter of the preset the refusal is about, where it
 	// is about one. Named the way the parameter is declared, which is what
@@ -306,13 +314,21 @@ type ImpossibleError struct {
 // What happened, why, and what to do instead - the three parts a report keeps
 // apart, on the refusal a preset can produce. Error still assembles the one
 // sentence the command line has always printed.
-func (e *ImpossibleError) What() string {
-	return fmt.Sprintf("the preset %s cannot build this set", e.Preset)
+func (e *ImpossibleError) What() string { return e.what().String() }
+
+func (e *ImpossibleError) what() core.Said {
+	return core.Says("preset.CannotBuild", "the preset %s cannot build this set", core.A("Preset", e.Preset))
 }
 
-func (e *ImpossibleError) Why() string { return e.Detail }
+func (e *ImpossibleError) Why() string { return e.Detail.String() }
 
-func (e *ImpossibleError) Instead() string { return e.Hint }
+func (e *ImpossibleError) Instead() string { return e.Hint.String() }
+
+// Parts is what happened, why and what to do instead, for a reader that lays
+// them out apart and in its own language.
+func (e *ImpossibleError) Parts() (what, why, instead core.Said) {
+	return e.what(), e.Detail, e.Hint
+}
 
 func (e *ImpossibleError) Error() string {
 	return e.InTheWordsOf(e.Setting)
@@ -325,16 +341,23 @@ func (e *ImpossibleError) InTheWordsOf(name string) string {
 	if name == "" {
 		name = e.Setting
 	}
-	said := fmt.Sprintf("the preset %s cannot build this set - %s", e.Preset, e.Detail)
-	// A refusal that came up from the registry already ends with what to do
-	// about it, and a second sentence after that one is worse than no second
-	// sentence: "Ask for fewer rows or fewer columns. Ask for a set the rows
-	// can carry" is the tool saying the same thing twice and vaguer the second
-	// time. Seen on 2026-09-22 while the tabular set was being wired up.
-	if e.Hint == "" {
-		return core.InTheWordsOf(said+".", name)
+	return core.InTheWordsOf(e.Said().String(), name)
+}
+
+// Said is the whole refusal, for a window that says it in its own language,
+// with the setting slot left for the window to fill.
+//
+// A refusal that came up from the registry already ends with what to do
+// about it, and a second sentence after that one is worse than no second
+// sentence: "Ask for fewer rows or fewer columns. Ask for a set the rows
+// can carry" is the tool saying the same thing twice and vaguer the second
+// time. Seen on 2026-09-22 while the tabular set was being wired up.
+func (e *ImpossibleError) Said() core.Said {
+	if e.Hint.IsZero() {
+		return core.Says("preset.ImpossibleWhy", "the preset %s cannot build this set - %s.", core.A("Preset", e.Preset), core.A("Why", e.Detail))
 	}
-	return core.InTheWordsOf(said+". "+e.Hint, name)
+	return core.Says("preset.ImpossibleWhyFix", "the preset %s cannot build this set - %s. %s",
+		core.A("Preset", e.Preset), core.A("Why", e.Detail), core.A("Fix", e.Hint))
 }
 
 // AboutSetting lets a window put this message beside the box that caused it,
@@ -342,6 +365,19 @@ func (e *ImpossibleError) InTheWordsOf(name string) string {
 // error came from - O73, where it sat at the foot of the form under every
 // other field. Empty means the refusal is about the set rather than one value.
 func (e *ImpossibleError) AboutSetting() string { return e.Setting }
+
+// withoutFormat is a refusal from planning one file of a set, without the
+// format's name in front - the set names the file another way. A value the
+// declaration refuses says itself in parts, and anything else is said as it
+// came.
+func withoutFormat(err error, id string) core.Said {
+	bare := strings.TrimPrefix(err.Error(), id+": ")
+	var value *format.PropertyValueError
+	if errors.As(err, &value) && value.Bare().String() == bare {
+		return value.Bare()
+	}
+	return core.Says("preset.Refused", "%s", core.A("Text", bare))
+}
 
 // registry holds what this build knows, written at init and read after.
 //

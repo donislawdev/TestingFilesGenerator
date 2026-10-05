@@ -390,7 +390,11 @@ func notesIn(e *preset.Expansion) []string {
 	spoken := e.Spoken()
 	out := make([]string, 0, len(spoken))
 	for _, n := range spoken {
-		out = append(out, text.PresetNote(e.Preset.ID, n.About, n.Said))
+		if n.About == "" {
+			out = append(out, text.Sentence(n.Said))
+			continue
+		}
+		out = append(out, text.PresetNote(e.Preset.ID, n.About, n.Said.String()))
 	}
 	return out
 }

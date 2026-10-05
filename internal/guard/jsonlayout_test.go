@@ -156,7 +156,7 @@ func TestEachJSONLayoutAnswersForItsOwnMinimum(t *testing.T) {
 		}
 		// The refusal says which layout it is about, because the same size is
 		// legal in another one and a person reading it needs to know that.
-		if !strings.Contains(below.Reason, layout) {
+		if !strings.Contains(below.Reason.String(), layout) {
 			t.Errorf("%s: the refusal does not name the layout it is about: %q", layout, below.Reason)
 		}
 	}

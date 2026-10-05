@@ -88,7 +88,9 @@ func structureOf(props map[string]string) (string, error) {
 	}
 	return "", &format.PropertyValueError{
 		Format: "html", Key: settingStructure, Value: v,
-		Reason: "it has to be " + structureDocument + " or " + structureFragment,
+		Reason: core.Says("html.HasToBeStructure", "it has to be %s or %s",
+			core.A("Document", core.Choice{Of: settingStructure, Value: structureDocument}),
+			core.A("Fragment", core.Choice{Of: settingStructure, Value: structureFragment})),
 	}
 }
 
@@ -169,16 +171,16 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 
 	min := minimumFor(shape)
 	if r.Bytes < min {
-		reason := "a page holds a head, a body and whole blocks, and one of each needs that much"
+		reason := core.Says("html.MinimumPage", "a page holds a head, a body and whole blocks, and one of each needs that much")
 		if shape == structureFragment {
-			reason = "a fragment holds whole blocks, and one of them needs that much"
+			reason = core.Says("html.MinimumFragment", "a fragment holds whole blocks, and one of them needs that much")
 		}
 		return format.Plan{}, &format.BelowMinimumError{
 			Format:    "HTML",
 			Requested: r.Bytes,
 			Minimum:   min,
 			Reason:    reason,
-			Hint:      fmt.Sprintf("Ask for %d B or more.", min),
+			Hint:      core.Says("format.AskForBOrMore", "Ask for %d B or more.", core.A("Min", min)),
 		}
 	}
 
@@ -240,17 +242,15 @@ func labelledHead(shape string, r format.Request, min int64) (head, heading stri
 		return head, heading, nil
 	}
 	return prologueFor(shape), "", &format.Note{
-		Code: "label_omitted",
-		Detail: fmt.Sprintf(
-			"The label needs %d B and this file has no room for it beside a whole block. Its name and the manifest still identify it.",
-			len(heading)),
+		Code:   "label_omitted",
+		Detail: core.Says("format.TheLabelNeedsBAndThis", "The label needs %d B and this file has no room for it beside a whole block. Its name and the manifest still identify it.", core.A("Length", len(heading))),
 	}
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("html: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("html: the plan was not produced by this generator"))
 	}
 
 	head := m.head + m.labelLine

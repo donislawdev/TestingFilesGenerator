@@ -134,10 +134,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "BMP",
 			Requested: r.Bytes,
 			Minimum:   bare,
-			Reason: fmt.Sprintf(
-				"a %dx%d picture is %d B of pixels once each row is rounded up to four bytes, and the %d B header sits in front of it",
-				w, h, pixelBytes(w, h), headers),
-			Hint: fmt.Sprintf("Ask for %d B or more, or set a smaller width and height", bare),
+			Reason:    core.Says("format.AXPictureIsBOf", "a %dx%d picture is %d B of pixels once each row is rounded up to four bytes, and the %d B header sits in front of it", core.A("W", w), core.A("H", h), core.A("PixelBytes", pixelBytes(w, h)), core.A("Headers", headers)),
+			Hint:      core.Says("format.AskForBOrMoreOr2", "Ask for %d B or more, or set a smaller width and height", core.A("Bare", bare)),
 		}
 	}
 	if r.Bytes > maxFileBytes {
@@ -145,8 +143,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "BMP",
 			Requested: r.Bytes,
 			Maximum:   maxFileBytes,
-			Reason:    "a BMP states its own size in a four byte field, so the format cannot describe a file this large",
-			Hint:      "Ask for 4 GiB or less, or pick a format with no size field of its own such as gif.",
+			Reason:    core.Says("format.ABMPStatesItsOwnSize", "a BMP states its own size in a four byte field, so the format cannot describe a file this large"),
+			Hint:      core.Says("format.AskFor4GiBOrLess", "Ask for 4 GiB or less, or pick a format with no size field of its own such as gif."),
 		}
 	}
 
@@ -168,10 +166,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	labelled := r.Label && imagelabel.Fits(w, len(label))
 	if r.Label && !labelled {
 		p.Notes = append(p.Notes, format.Note{
-			Code: "label_omitted",
-			Detail: fmt.Sprintf(
-				"The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.",
-				w),
+			Code:   "label_omitted",
+			Detail: core.Says("format.ThePictureIsPxWideAnd", "The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("Width", w)),
 		})
 	}
 	p.Properties[format.PropertyLabelEmbedded] = labelled
@@ -282,7 +278,7 @@ func isqrt(n uint64) uint64 {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("bmp: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("bmp: the plan was not produced by this generator"))
 	}
 
 	select {

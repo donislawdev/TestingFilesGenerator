@@ -143,9 +143,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "LOG",
 			Requested: r.Bytes,
 			Minimum:   min,
-			Reason: fmt.Sprintf(
-				"a log holds whole entries and one entry in the %s shape needs that much", opt.shape.id),
-			Hint: fmt.Sprintf("Ask for %d B or more, or choose a shorter entry_format.", min),
+			Reason:    core.Says("format.ALogHoldsWholeEntriesAnd", "a log holds whole entries and one entry in the %s shape needs that much", core.A("ID", opt.shape.id)),
+			Hint:      core.Says("format.AskForBOrMoreOr4", "Ask for %d B or more, or choose a shorter entry_format.", core.A("Min", min)),
 		}
 	}
 
@@ -192,10 +191,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			m.labelLine = line
 		} else {
 			p.Notes = append(p.Notes, format.Note{
-				Code: "label_omitted",
-				Detail: fmt.Sprintf(
-					"The label line needs %d B and this file has no room for it beside a whole entry. Its name and the manifest still identify it.",
-					len(line)),
+				Code:   "label_omitted",
+				Detail: core.Says("format.TheLabelLineNeedsBAnd", "The label line needs %d B and this file has no room for it beside a whole entry. Its name and the manifest still identify it.", core.A("Length", len(line))),
 			})
 		}
 	}
@@ -208,7 +205,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("log: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("log: the plan was not produced by this generator"))
 	}
 
 	remaining := p.Bytes

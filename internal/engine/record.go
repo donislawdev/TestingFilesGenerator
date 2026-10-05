@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -28,8 +27,12 @@ type InstructionsError struct {
 	Err  error
 }
 
-func (e *InstructionsError) Error() string {
-	return fmt.Sprintf("cannot write the instructions to %s: %v", core.Shown(e.Path), e.Err)
+func (e *InstructionsError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *InstructionsError) Said() core.Said {
+	return core.Says("engine.InstructionsNotWritten", "cannot write the instructions to %s: %v",
+		core.A("Path", core.Shown(e.Path)), core.A("Cause", e.Err))
 }
 
 func (e *InstructionsError) Unwrap() error { return e.Err }

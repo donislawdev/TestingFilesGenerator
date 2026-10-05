@@ -222,9 +222,15 @@ func Load(fsys fs.FS, dir string, prefer ...string) error {
 	// translator, and the English on screen comes from the registries
 	// themselves - a copy one commit behind them must not be able to answer
 	// for them.
-	err := loadFiles(bundle, fsys, path.Join(dir, RegistryFolder), English+".json")
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return err
+	//
+	// The engine's sentences the same way, and for the same reason: their
+	// English is in the code that refuses, and en.json beside them is a copy for
+	// a translator - see said.go.
+	for _, folder := range []string{RegistryFolder, SaidFolder} {
+		err := loadFiles(bundle, fsys, path.Join(dir, folder), English+".json")
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
 	}
 
 	localiser = i18n.NewLocalizer(bundle, append(prefer, English)...)

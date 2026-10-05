@@ -143,11 +143,12 @@ func checkJointLimits(w, h int) error {
 		return err
 	}
 	for _, j := range d.JointLimits {
-		if bad := j.Allows(int64(w), int64(h)); bad != "" {
+		if bad := j.Allows("png", int64(w), int64(h)); !bad.IsZero() {
 			return &format.PropertyValueError{
-				Format: "png", Key: j.Of + " and " + j.By,
-				Value:  fmt.Sprintf("%dx%d", w, h),
-				Reason: bad + fmt.Sprintf(". Each side may go up to %d, but not both at once - ask for a smaller pair", maxDimension),
+				Format: "png", Key: j.Of + " and " + j.By, Subject: j.Subject(),
+				Value: fmt.Sprintf("%dx%d", w, h),
+				Reason: core.Says("format.JointEachSide", "%s. Each side may go up to %d, but not both at once - ask for a smaller pair",
+					core.A("Why", bad), core.A("Most", maxDimension)),
 			}
 		}
 	}
@@ -201,8 +202,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "PNG",
 			Requested: r.Bytes,
 			Minimum:   bare,
-			Reason:    fmt.Sprintf("a %dx%d picture already encodes to that much before any padding", w, h),
-			Hint:      fmt.Sprintf("Ask for %d B or more, or set a smaller width and height", bare),
+			Reason:    core.Says("format.AXPictureAlreadyEncodesTo", "a %dx%d picture already encodes to that much before any padding", core.A("Width", w), core.A("Height", h)),
+			Hint:      core.Says("format.AskForBOrMoreOr2", "Ask for %d B or more, or set a smaller width and height", core.A("Bare", bare)),
 		}
 
 	case r.Bytes < bare+chunkOverhead:
@@ -213,10 +214,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "PNG",
 			Requested: r.Bytes,
 			Minimum:   bare + chunkOverhead,
-			Reason: fmt.Sprintf(
-				"a %dx%d picture encodes to exactly %d B, and the padding chunk that makes up any difference costs %d B on its own, so nothing between those two is reachable",
-				w, h, bare, chunkOverhead),
-			Hint: fmt.Sprintf("Ask for exactly %d B or for %d B or more.", bare, bare+chunkOverhead),
+			Reason:    core.Says("format.AXPictureEncodesToExactly2", "a %dx%d picture encodes to exactly %d B, and the padding chunk that makes up any difference costs %d B on its own, so nothing between those two is reachable", core.A("W", w), core.A("H", h), core.A("Bare", bare), core.A("ChunkOverhead", chunkOverhead)),
+			Hint:      core.Says("format.AskForExactlyBOrFor", "Ask for exactly %d B or for %d B or more.", core.A("Bare", bare), core.A("Bare2", bare+chunkOverhead)),
 		}
 
 	default:
@@ -232,18 +231,16 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 				// reachable total rather than as the chunk limit is what makes
 				// the hint below something a person can act on.
 				Maximum: bare + chunkOverhead + maxChunkData,
-				Reason:  "the padding needed is larger than one chunk can carry, and this generator writes only one",
-				Hint:    "Ask for a smaller size, or set larger dimensions so the picture itself carries more of it.",
+				Reason:  core.Says("format.ThePaddingNeededIsLargerThan", "the padding needed is larger than one chunk can carry, and this generator writes only one"),
+				Hint:    core.Says("format.AskForASmallerSizeOr", "Ask for a smaller size, or set larger dimensions so the picture itself carries more of it."),
 			}
 		}
 	}
 
 	if r.Label && !imagelabel.Fits(w, len(label)) {
 		p.Notes = append(p.Notes, format.Note{
-			Code: "label_omitted",
-			Detail: fmt.Sprintf(
-				"The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.",
-				w),
+			Code:   "label_omitted",
+			Detail: core.Says("format.ThePictureIsPxWideAnd", "The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("Width", w)),
 		})
 	}
 	p.Properties[format.PropertyLabelEmbedded] = r.Label && imagelabel.Fits(w, len(label))
@@ -254,7 +251,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("png: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("png: the plan was not produced by this generator"))
 	}
 
 	select {
@@ -281,15 +278,15 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		if m.padData < 0 || m.padData > maxChunkData {
 			// Unreachable unless ladderCeiling is wrong, and then it is better
 			// to say so than to write a file of the wrong length.
-			return fmt.Errorf(
+			return core.Defect(fmt.Errorf(
 				"png: the picture encoded to %d B, which leaves %d B of padding for a %d B file - ladderCeiling is wrong",
-				m.body, m.padData, p.Bytes)
+				m.body, m.padData, p.Bytes))
 		}
 	} else if holder.written != m.body {
-		return fmt.Errorf("png: the picture encoded to %d B where planning said %d B", holder.written, m.body)
+		return core.Defect(fmt.Errorf("png: the picture encoded to %d B where planning said %d B", holder.written, m.body))
 	}
 	if string(holder.tail[4:8]) != "IEND" {
-		return fmt.Errorf("png: the encoded stream does not end with IEND")
+		return core.Defect(fmt.Errorf("png: the encoded stream does not end with IEND"))
 	}
 
 	if m.withPad {

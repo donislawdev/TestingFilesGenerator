@@ -1,12 +1,13 @@
 package preset
 
 import (
-	"fmt"
 	"strings"
 
 	"golang.org/x/text/unicode/norm"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 const (
@@ -236,7 +237,7 @@ func (c nameCase) name(desc format.Descriptor) (string, error) {
 		copies := (c.bytes - len(ext)) / len(c.fill)
 		if copies < 1 {
 			return "", &format.PropertyValueError{Format: namesID, Key: "format", Value: desc.ID,
-				Reason: fmt.Sprintf("its extension %s is too long for a name of %d bytes, which the file %s is about. Choose a format with a shorter extension", ext, c.bytes, c.id)}
+				Reason: core.Says("preset.ItsExtensionIsTooLongFor", "its extension %s is too long for a name of %d bytes, which the file %s is about. Choose a format with a shorter extension", core.A("Ext", ext), core.A("Bytes", c.bytes), core.A("ID", c.id))}
 		}
 		stem = strings.Repeat(c.fill, copies)
 	}

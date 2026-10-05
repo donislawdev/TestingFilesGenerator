@@ -162,11 +162,11 @@ func checkJointLimits(rows, columns int) error {
 		return err
 	}
 	for _, j := range d.JointLimits {
-		if bad := j.Allows(int64(rows), int64(columns)); bad != "" {
+		if bad := j.Allows("xlsx", int64(rows), int64(columns)); !bad.IsZero() {
 			return &format.PropertyValueError{
 				Format: "xlsx", Key: j.Of + " and " + j.By,
 				Value:  fmt.Sprintf("%dx%d", rows, columns),
-				Reason: bad + ". Ask for fewer rows or fewer columns",
+				Reason: core.Says("xlsx.JointFewer", "%s. Ask for fewer rows or fewer columns", core.A("Why", bad)),
 			}
 		}
 	}
@@ -182,9 +182,9 @@ func refusal(err error, want int64, shape opc.Shape, rows, columns int) error {
 			Format:    "XLSX",
 			Requested: big.Want,
 			Maximum:   big.Ceiling,
-			Reason: "an Office file is a ZIP archive, and this build works out its size before it writes it " +
-				"in a way that cannot account for the zip64 records a larger one needs",
-			Hint: "Ask for less than 4 GiB, or split the content across several files.",
+			Reason: core.Says("format.AnOfficeFileIsAZIP", "an Office file is a ZIP archive, and this build works out its size before it writes it "+
+				"in a way that cannot account for the zip64 records a larger one needs"),
+			Hint: core.Says("format.AskForLessThan4GiB", "Ask for less than 4 GiB, or split the content across several files."),
 		}
 	}
 	var gap *opc.Unreachable
@@ -195,27 +195,23 @@ func refusal(err error, want int64, shape opc.Shape, rows, columns int) error {
 			Format:    "XLSX",
 			Requested: want,
 			Minimum:   gap.Above,
-			Reason: fmt.Sprintf(
-				"the archive comment carries at most %d B and the smallest extra part costs %d B, so nothing between those two is reachable",
-				opc.CommentLimit, shape.FillerOverhead),
-			Hint: fmt.Sprintf("Ask for %d B or less, or %d B or more.", gap.Below, gap.Above),
+			Reason:    core.Says("format.TheArchiveCommentCarriesAtMost", "the archive comment carries at most %d B and the smallest extra part costs %d B, so nothing between those two is reachable", core.A("CommentLimit", opc.CommentLimit), core.A("FillerOverhead", shape.FillerOverhead)),
+			Hint:      core.Says("format.AskForBOrLessOr", "Ask for %d B or less, or %d B or more.", core.A("Below", gap.Below), core.A("Above", gap.Above)),
 		}
 	}
 	return &format.BelowMinimumError{
 		Format:    "XLSX",
 		Requested: want,
 		Minimum:   shape.Bare,
-		Reason: fmt.Sprintf(
-			"a sheet of %s by %s already packages to that much, and a workbook cannot leave out its content types or its relationships",
-			core.Count(rows, "row", "rows"), core.Count(columns, "column", "columns")),
-		Hint: fmt.Sprintf("Ask for %d B or more, or set fewer rows", shape.Bare),
+		Reason:    core.Says("format.ASheetOfByAlreadyPackages", "a sheet of %s by %s already packages to that much, and a workbook cannot leave out its content types or its relationships", core.A("Count", core.Count(rows, "row", "rows")), core.A("Count2", core.Count(columns, "column", "columns"))),
+		Hint:      core.Says("format.AskForBOrMoreOr9", "Ask for %d B or more, or set fewer rows", core.A("Bare", shape.Bare)),
 	}
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("xlsx: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("xlsx: the plan was not produced by this generator"))
 	}
 	return opc.Write(ctx, w, m.pkg)
 }
@@ -285,10 +281,10 @@ func intProperty(props map[string]string, key string, fallback, min, max int) (i
 	}
 	n, err := strconv.Atoi(raw)
 	if err != nil {
-		return 0, fmt.Errorf("xlsx: %s must be a whole number, got %q", key, raw)
+		return 0, core.Defect(fmt.Errorf("xlsx: %s must be a whole number, got %q", key, raw))
 	}
 	if n < min || n > max {
-		return 0, fmt.Errorf("xlsx: %s must be between %d and %d, got %d", key, min, max, n)
+		return 0, core.Defect(fmt.Errorf("xlsx: %s must be between %d and %d, got %d", key, min, max, n))
 	}
 	return n, nil
 }

@@ -155,10 +155,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	labelled := label != "" && imagelabel.Fits(w, len(label))
 	if r.Label && !labelled {
 		p.Notes = append(p.Notes, format.Note{
-			Code: "label_omitted",
-			Detail: fmt.Sprintf(
-				"The icon is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.",
-				w),
+			Code:   "label_omitted",
+			Detail: core.Says("format.TheIconIsPxWideAnd", "The icon is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("W", w)),
 		})
 	}
 	p.Properties[format.PropertyLabelEmbedded] = labelled
@@ -174,10 +172,8 @@ func reachable(want, bare int64, w, h int, embed string, picture int) error {
 			Format:    "ICO",
 			Requested: want,
 			Minimum:   bare,
-			Reason: fmt.Sprintf(
-				"a %dx%d icon holding a %s is %d B of picture, and the %d B directory sits in front of it",
-				w, h, embed, picture, preamble),
-			Hint: fmt.Sprintf("Ask for %d B or more, set a smaller width and height, or set embed=%s", bare, embedPNG),
+			Reason:    core.Says("format.AXIconHoldingAIs", "a %dx%d icon holding a %s is %d B of picture, and the %d B directory sits in front of it", core.A("W", w), core.A("H", h), core.A("Embed", embed), core.A("Picture", picture), core.A("Preamble", preamble)),
+			Hint:      core.Says("format.AskForBOrMoreSet", "Ask for %d B or more, set a smaller width and height, or set embed=%s", core.A("Bare", bare), core.A("EmbedPNG", embedPNG)),
 		}
 	}
 	if want > maxFileBytes {
@@ -185,8 +181,8 @@ func reachable(want, bare int64, w, h int, embed string, picture int) error {
 			Format:    "ICO",
 			Requested: want,
 			Maximum:   maxFileBytes,
-			Reason:    "an icon states where its picture starts in a four byte field, so the format cannot describe a file this large",
-			Hint:      "Ask for 4 GiB or less, or pick a format with no offset field of its own such as gif.",
+			Reason:    core.Says("format.AnIconStatesWhereItsPicture", "an icon states where its picture starts in a four byte field, so the format cannot describe a file this large"),
+			Hint:      core.Says("format.AskFor4GiBOrLess2", "Ask for 4 GiB or less, or pick a format with no offset field of its own such as gif."),
 		}
 	}
 	return nil
@@ -203,7 +199,7 @@ func embedding(props map[string]string) (string, error) {
 	}
 	return "", &format.PropertyValueError{
 		Format: "ico", Key: "embed", Value: raw,
-		Reason: fmt.Sprintf("it has to be %s or %s", embedBMP, embedPNG),
+		Reason: core.Says("format.ItHasToBeOr", "it has to be %s or %s", core.A("EmbedBMP", embedBMP), core.A("EmbedPNG", embedPNG)),
 	}
 }
 
@@ -243,7 +239,7 @@ func chooseSize(r format.Request, label, embed string) (int, int, error) {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("ico: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("ico: the plan was not produced by this generator"))
 	}
 
 	select {

@@ -677,7 +677,7 @@ func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 	// defect as reading a number out of a box and losing the subject.
 	case count > core.MaxFilesPerRun:
 		bad = append(bad, saying(engine.SettingCount,
-			errors.New(text.TooManyFiles(count, core.ErrTooManyFiles))))
+			errors.New(text.TooManyFiles(count, text.Refusal(core.ErrTooManyFiles, "")))))
 	default:
 		files = int(count)
 	}

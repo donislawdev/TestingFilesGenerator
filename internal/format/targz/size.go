@@ -185,8 +185,8 @@ func pad(m *memo, p *format.Plan, target int64, label string, groups []format.Co
 			Format:    "TAR.GZ",
 			Requested: target,
 			Minimum:   bare,
-			Reason:    fmt.Sprintf("an archive holding %s already needs that much, and nothing is compressed", describeGroups(groups)),
-			Hint:      fmt.Sprintf("Ask for %d B or more, or hold fewer or smaller files.", bare),
+			Reason:    core.Says("format.AnArchiveHoldingAlreadyNeedsThat", "an archive holding %s already needs that much, and nothing is compressed", core.A("Groups", describeGroups(groups))),
+			Hint:      core.Says("format.AskForBOrMoreOr6", "Ask for %d B or more, or hold fewer or smaller files.", core.A("Bare", bare)),
 		}
 	}
 
@@ -203,9 +203,9 @@ func pad(m *memo, p *format.Plan, target int64, label string, groups []format.Co
 				Format:    "TAR.GZ",
 				Requested: target,
 				Minimum:   bare + 2,
-				Reason: "the padding that would make up the difference cannot be one byte long, " +
-					"so this size sits in a gap just above the smallest archive",
-				Hint: fmt.Sprintf("Ask for %d B or more, or keep the label on and any size from %d B works.", bare+2, bare),
+				Reason: core.Says("format.ThePaddingThatWouldMakeUp", "the padding that would make up the difference cannot be one byte long, "+
+					"so this size sits in a gap just above the smallest archive"),
+				Hint: core.Says("format.AskForBOrMoreOr7", "Ask for %d B or more, or keep the label on and any size from %d B works.", core.A("Bare", bare+2), core.A("Bare2", bare)),
 			}
 		}
 		m.comment, m.withExtra, m.extraLen = comment, withExtra, extra
@@ -217,7 +217,7 @@ func pad(m *memo, p *format.Plan, target int64, label string, groups []format.Co
 	// exact size by itself - the comment closes the last few bytes.
 	size, header, ok := solveFiller(tarLength(*m), target, label)
 	if !ok {
-		return fmt.Errorf("targz: no arrangement of padding reaches exactly %d B", target)
+		return core.Defect(fmt.Errorf("targz: no arrangement of padding reaches exactly %d B", target))
 	}
 	m.withFiller = true
 	m.fillerSize = size
@@ -285,7 +285,7 @@ func solveFiller(base, target int64, label string) (size int64, header headerPad
 func build(ctx context.Context, w io.Writer, m memo) error {
 	zw, err := gzip.NewWriterLevel(w, m.squeeze.Level)
 	if err != nil {
-		return fmt.Errorf("targz: the archive could not be started: %w", err)
+		return core.Defect(fmt.Errorf("targz: the archive could not be started: %w", err))
 	}
 	zw.Comment = m.comment
 	// The extra field is where padding rides. It precedes everything, like
@@ -306,7 +306,7 @@ func build(ctx context.Context, w io.Writer, m memo) error {
 			return err
 		}
 		if err := writeDirectory(tw, dir, m.own); err != nil {
-			return fmt.Errorf("targz: the directory %q could not be named: %w", dir, err)
+			return core.Defect(fmt.Errorf("targz: the directory %q could not be named: %w", dir, err))
 		}
 	}
 
@@ -318,7 +318,7 @@ func build(ctx context.Context, w io.Writer, m memo) error {
 			func(dst io.Writer) error {
 				return c.desc.Generator.Write(ctx, dst, c.plan)
 			}); err != nil {
-			return fmt.Errorf("targz: the %s file inside could not be written: %w", c.desc.ID, err)
+			return core.Defect(fmt.Errorf("targz: the %s file inside could not be written: %w", c.desc.ID, err))
 		}
 	}
 

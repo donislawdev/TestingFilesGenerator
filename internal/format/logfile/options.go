@@ -14,6 +14,8 @@ import (
 	"strconv"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 const (
@@ -115,7 +117,7 @@ func readShape(props map[string]string, o *options) error {
 	}
 	s, known := shapes[v]
 	if !known {
-		return badValue("entry_format", v, "it is not one of the shapes this format writes")
+		return badValue("entry_format", v, core.Says("format.ItIsNotOneOfThe", "it is not one of the shapes this format writes"))
 	}
 	o.shape = s
 	return nil
@@ -132,7 +134,7 @@ func readLineEnding(props map[string]string, o *options) error {
 	case "crlf":
 		o.eol = "\r\n"
 	default:
-		return badValue("line_ending", v, "it has to be lf or crlf")
+		return badValue("line_ending", v, core.Says("format.ItHasToBeLfOr", "it has to be lf or crlf"))
 	}
 	o.lineEnding = v
 	return nil
@@ -144,7 +146,7 @@ func readTimestamps(props map[string]string, o *options) error {
 		return nil
 	}
 	if v != "advancing" && v != "fixed" {
-		return badValue("timestamps", v, "it has to be advancing or fixed")
+		return badValue("timestamps", v, core.Says("format.ItHasToBeAdvancingOr", "it has to be advancing or fixed"))
 	}
 	o.timestamps = v
 	o.advancing = v == "advancing"
@@ -158,17 +160,17 @@ func readRate(props map[string]string, o *options) error {
 	}
 	n, err := strconv.Atoi(v)
 	if err != nil {
-		return fmt.Errorf("log: rate must be a whole number of entries per second, got %q", v)
+		return core.Defect(fmt.Errorf("log: rate must be a whole number of entries per second, got %q", v))
 	}
 	if n < minRate || n > maxRate {
-		return fmt.Errorf("log: rate must be between %d and %d entries per second, got %d", minRate, maxRate, n)
+		return core.Defect(fmt.Errorf("log: rate must be between %d and %d entries per second, got %d", minRate, maxRate, n))
 	}
 	// A rate somebody CHOSE while the clock is held still would change nothing
 	// at all, so it is said out loud rather than ignored. A rate sitting at its
 	// default was not chosen - see asked.
 	if _, chosen := asked(props, "rate", strconv.Itoa(defaultRate)); chosen && !o.advancing {
-		return conflict("rate and timestamps", v,
-			"a rate says how fast entries arrive and timestamps=fixed puts them all at one instant")
+		return conflict("rate", "timestamps", v,
+			core.Says("format.ARateSaysHowFastEntries", "a rate says how fast entries arrive and timestamps=fixed puts them all at one instant"))
 	}
 	o.rate = n
 	return nil
@@ -181,9 +183,9 @@ func readMethods(props map[string]string, o *options) error {
 	}
 	set, known := methodSets[v]
 	if !known {
-		return badValue("methods", v, "it has to be get, read or mixed")
+		return badValue("methods", v, core.Says("format.ItHasToBeGetRead", "it has to be get, read or mixed"))
 	}
-	if err := refuseUnlessWeb(props, o.shape, "methods", "get", v, "request method"); err != nil {
+	if err := refuseUnlessWeb(props, o.shape, "methods", "get", v, core.Says("log.RequestMethod", "request method")); err != nil {
 		return err
 	}
 	o.methodMix, o.methods = v, set
@@ -197,14 +199,14 @@ func readStatusMix(props map[string]string, o *options) error {
 	}
 	set, known := statusSets[v]
 	if !known {
-		return badValue("status_mix", v, "it has to be realistic, success, client-errors or server-errors")
+		return badValue("status_mix", v, core.Says("format.ItHasToBeRealisticSuccess", "it has to be realistic, success, client-errors or server-errors"))
 	}
 	// JSON lines carry a status of their own, so this one applies there too - it
 	// is the address and the method that have no place outside a web shape.
 	if _, chosen := asked(props, "status_mix", "realistic"); chosen &&
 		!o.shape.web && o.shape.id != "json-lines" {
-		return conflict("status_mix and entry_format", v,
-			"the "+o.shape.id+" shape carries no response code")
+		return conflict("status_mix", "entry_format", v,
+			core.Says("log.ShapeNoResponseCode", "the %s shape carries no response code", core.A("Shape", core.Choice{Of: "entry_format", Value: o.shape.id})))
 	}
 	o.statusMix, o.statuses = v, set
 	return nil
@@ -224,15 +226,15 @@ func readLevelMix(props map[string]string, o *options) error {
 	}
 	set, known := levelSets[v]
 	if !known {
-		return badValue("level_mix", v, "it has to be realistic, quiet, errors or debug")
+		return badValue("level_mix", v, core.Says("format.ItHasToBeRealisticQuiet", "it has to be realistic, quiet, errors or debug"))
 	}
 	// Only a real choice can disagree with the shape - see asked. A window
 	// sends this key on every run, so refusing whenever it arrived would put
 	// the four shapes without a level out of reach from the window entirely,
 	// which is the defect reported from a screenshot on 2026-08-31.
 	if _, chosen := asked(props, "level_mix", "realistic"); chosen && !o.shape.levelled {
-		return conflict("level_mix and entry_format", v,
-			"the "+o.shape.id+" shape carries no severity")
+		return conflict("level_mix", "entry_format", v,
+			core.Says("log.ShapeNoSeverity", "the %s shape carries no severity", core.A("Shape", core.Choice{Of: "entry_format", Value: o.shape.id})))
 	}
 	o.levelMix, o.levels = v, set
 	return nil
@@ -250,9 +252,9 @@ func readIPVersion(props map[string]string, o *options) error {
 	case "mixed":
 		o.ipMixed = true
 	default:
-		return badValue("ip_version", v, "it has to be v4, v6 or mixed")
+		return badValue("ip_version", v, core.Says("format.ItHasToBeV4V6", "it has to be v4, v6 or mixed"))
 	}
-	if err := refuseUnlessWeb(props, o.shape, "ip_version", "v4", v, "client address"); err != nil {
+	if err := refuseUnlessWeb(props, o.shape, "ip_version", "v4", v, core.Says("log.ClientAddress", "client address")); err != nil {
 		return err
 	}
 	o.ipVersion = v
@@ -262,7 +264,7 @@ func readIPVersion(props map[string]string, o *options) error {
 // refuseUnlessWeb refuses a CHOSEN setting that only means something for a
 // shape carrying a request. A value left at its default was not chosen and so
 // cannot disagree with anything - see asked.
-func refuseUnlessWeb(props map[string]string, s *shape, key, def, val, what string) error {
+func refuseUnlessWeb(props map[string]string, s *shape, key, def, val string, what core.Said) error {
 	if _, chosen := asked(props, key, def); !chosen {
 		return nil
 	}
@@ -271,11 +273,12 @@ func refuseUnlessWeb(props map[string]string, s *shape, key, def, val, what stri
 
 // needsWeb refuses a setting that only means something for a shape carrying a
 // request.
-func needsWeb(s *shape, key, val, what string) error {
+func needsWeb(s *shape, key, val string, what core.Said) error {
 	if s.web {
 		return nil
 	}
-	return conflict(key+" and entry_format", val, "the "+s.id+" shape carries no "+what)
+	return conflict(key, "entry_format", val, core.Says("log.ShapeCarriesNo", "the %s shape carries no %s",
+		core.A("Shape", core.Choice{Of: "entry_format", Value: s.id}), core.A("What", what)))
 }
 
 func value(props map[string]string, key string) (string, bool) {
@@ -311,15 +314,16 @@ func asked(props map[string]string, key, def string) (string, bool) {
 	return v, true
 }
 
-func badValue(key, val, why string) error {
+func badValue(key, val string, why core.Said) error {
 	return &format.PropertyValueError{Format: "log", Key: key, Value: val, Reason: why}
 }
 
 // conflict names both settings, because naming one of a pair leaves the reader
 // to guess which of the two to change.
-func conflict(keys, val, why string) error {
+func conflict(one, other, val string, why core.Said) error {
 	return &format.PropertyValueError{
-		Format: "log", Key: keys, Value: val,
-		Reason: why + ". Drop one of the two, or change the other",
+		Format: "log", Key: one + " and " + other, Value: val,
+		Subject: core.Says("format.TwoSettings", "%s and %s", core.A("Of", core.LabelTerm(one)), core.A("By", core.LabelTerm(other))),
+		Reason:  core.Says("log.ConflictDrop", "%s. Drop one of the two, or change the other", core.A("Why", why)),
 	}
 }

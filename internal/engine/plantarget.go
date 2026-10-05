@@ -58,7 +58,7 @@ func (pl *planning) files(ctx context.Context, t *Target, desc format.Descriptor
 		if idx < len(t.SizeMoved) && t.SizeMoved[idx] {
 			p.Notes = append(p.Notes, format.Note{
 				Code:   "size_moved",
-				Detail: "A size drawn from the range is not one this format can write, so the nearest size it can write was used instead. The file is still inside the range that was asked for.",
+				Detail: core.Says("engine.SizeMoved", "A size drawn from the range is not one this format can write, so the nearest size it can write was used instead. The file is still inside the range that was asked for."),
 			})
 		}
 
@@ -115,8 +115,8 @@ func (pl *planning) files(ctx context.Context, t *Target, desc format.Descriptor
 			// change belongs to a target.
 			return &RecipeError{
 				Setting: core.TargetAddress(position, format.SettingSize),
-				Detail:  fmt.Sprintf("target %q brings the run to a size that is too large to measure", t.ID),
-				Because: err.Error()}
+				Detail:  core.Says("engine.RunTooLarge", "target %q brings the run to a size that is too large to measure", core.A("Target", t.ID)),
+				Because: core.SaidOf(err)}
 		}
 
 		pl.out = append(pl.out, PlannedFile{

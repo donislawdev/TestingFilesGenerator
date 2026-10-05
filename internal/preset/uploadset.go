@@ -32,7 +32,7 @@ import (
 var allowList = commaList{
 	preset:    uploadID,
 	param:     allowParam,
-	empty:     "no types were allowed, so the set has no positive control and no file to name wrongly",
+	empty:     core.Says("preset.NoTypesWereAllowedSoThe", "no types were allowed, so the set has no positive control and no file to name wrongly"),
 	check:     knownFormat,
 	keep:      lower,
 	duplicate: repeatedAllowed,
@@ -41,22 +41,18 @@ var allowList = commaList{
 var denyList = commaList{
 	preset:    uploadID,
 	param:     denyParam,
-	empty:     "no extensions were denied, so there is nothing for the form to turn away",
+	empty:     core.Says("preset.NoExtensionsWereDeniedSoThere", "no extensions were denied, so there is nothing for the form to turn away"),
 	check:     checkExtension,
 	keep:      lower,
 	duplicate: repeatedDenied,
 }
 
-func repeatedAllowed(first string) string {
-	return fmt.Sprintf(
-		"it is the same type as %q and the set would hold that file twice. Every allowed type appears once, because each one stands for one path through your form",
-		first)
+func repeatedAllowed(first string) core.Said {
+	return core.Says("preset.ItIsTheSameTypeAs", "it is the same type as %q and the set would hold that file twice. Every allowed type appears once, because each one stands for one path through your form", core.A("First", first))
 }
 
-func repeatedDenied(first string) string {
-	return fmt.Sprintf(
-		"it is the same extension as %q and the set would hold that file twice. Every denied extension appears once, because each one stands for one rule your form has",
-		first)
+func repeatedDenied(first string) core.Said {
+	return core.Says("preset.ItIsTheSameExtensionAs", "it is the same extension as %q and the set would hold that file twice. Every denied extension appears once, because each one stands for one rule your form has", core.A("First", first))
 }
 
 // checkExtension answers why a piece of the deny list is not an extension.
@@ -65,20 +61,17 @@ func repeatedDenied(first string) string {
 // value reaches a file name, so it is made of what a name is made of and
 // nothing else - the same defence the boundary set's distances get, and for the
 // same reason rather than by analogy.
-func checkExtension(item string) string {
+func checkExtension(item string) core.Said {
 	if strings.HasPrefix(item, ".") {
-		return fmt.Sprintf("an extension is written without its dot, so %q rather than %q",
-			strings.TrimPrefix(item, "."), item)
+		return core.Says("preset.AnExtensionIsWrittenWithoutIts", "an extension is written without its dot, so %q rather than %q", core.A("TrimPrefix", strings.TrimPrefix(item, ".")), core.A("Item", item))
 	}
 	if len(item) > longestExtension {
-		return fmt.Sprintf("it is %d characters long and an extension here is at most %d",
-			len(item), longestExtension)
+		return core.Says("preset.ItIsCharactersLongAndAn", "it is %d characters long and an extension here is at most %d", core.A("Length", len(item)), core.A("LongestExtension", longestExtension))
 	}
 	if bad := firstNotAlphanumeric(item); bad != "" {
-		return fmt.Sprintf(
-			"it holds %s, and an extension is written with letters and digits - such as exe, sh or svg. Its text becomes the end of a file name", bad)
+		return core.Says("preset.ItHoldsAndAnExtensionIs", "it holds %s, and an extension is written with letters and digits - such as exe, sh or svg. Its text becomes the end of a file name", core.A("Bad", bad))
 	}
-	return ""
+	return core.Said{}
 }
 
 // firstNotAlphanumeric names the first character that cannot appear in an
@@ -193,11 +186,8 @@ func listsAgree(allowed []format.Descriptor, denied []deniedEntry) error {
 		}
 		return &ImpossibleError{
 			Preset: uploadID, Setting: denyParam,
-			Detail: fmt.Sprintf(
-				"%s is allowed and %s is denied, and both name a file ending %s - so the set would hold one of them to be taken and one to be turned away",
-				desc.ID, written, desc.Extension),
-			Hint: fmt.Sprintf("Take %s out of the %s list, or %s out of the %s list.",
-				desc.ID, allowParam, written, denyParam),
+			Detail: core.Says("preset.IsAllowedAndIsDeniedAnd", "%s is allowed and %s is denied, and both name a file ending %s - so the set would hold one of them to be taken and one to be turned away", core.A("ID", desc.ID), core.A("Written", written), core.A("Extension", desc.Extension)),
+			Hint:   core.Says("preset.TakeOutOfTheListOr", "Take %s out of the %s list, or %s out of the %s list.", core.A("ID", desc.ID), core.A("AllowParam", allowParam), core.A("Written", written), core.A("DenyParam", denyParam)),
 		}
 	}
 	return nil
@@ -261,7 +251,7 @@ func farOverTimes(raw string) (int64, error) {
 	if err != nil || times < 2 {
 		return 0, &format.PropertyValueError{
 			Format: uploadID, Key: farOverParam, Value: raw,
-			Reason: "it has to be a number of times the limit, written with an x - 2x or 10x - or off",
+			Reason: core.Says("preset.ItHasToBeANumber", "it has to be a number of times the limit, written with an x - 2x or 10x - or off"),
 		}
 	}
 	return times, nil
@@ -381,7 +371,7 @@ func (s uploadSet) shortfallOf(f setFile) (shortfall, error) {
 	if !errors.As(err, &below) {
 		return shortfall{}, &ImpossibleError{
 			Preset: uploadID, Setting: uploadLimitParam,
-			Detail: strings.TrimPrefix(err.Error(), f.desc.ID+": "),
+			Detail: withoutFormat(err, f.desc.ID),
 		}
 	}
 	return shortfall{
@@ -397,11 +387,8 @@ func (s uploadSet) cannotReach(short shortfall) error {
 		// Splicing the format's own reason in instead read as a contradiction:
 		// it ends "already needs that much", and after "would be 1024 B" the
 		// words pointed at the wrong number.
-		Detail: fmt.Sprintf("%s would be %d B and the smallest %s this build makes is %d B",
-			short.file.id, short.file.bytes(), strings.ToUpper(short.file.desc.ID), short.floor),
-		Hint: fmt.Sprintf(
-			"Raise the {setting} to %d B or more, or take %s out of the allowed types. The {setting} asked for was %d B.",
-			short.need, short.file.desc.ID, s.limit),
+		Detail: core.Says("preset.WouldBeBAndTheSmallest", "%s would be %d B and the smallest %s this build makes is %d B", core.A("ID", short.file.id), core.A("Bytes", short.file.bytes()), core.A("ID2", strings.ToUpper(short.file.desc.ID)), core.A("Floor", short.floor)),
+		Hint:   core.Says("preset.RaiseTheSettingToBOr", "Raise the {setting} to %d B or more, or take %s out of the allowed types. The {setting} asked for was %d B.", core.A("Need", short.need), core.A("ID", short.file.desc.ID), core.A("Limit", s.limit)),
 	}
 }
 

@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -107,12 +106,12 @@ func inOurWords(err error) string {
 // beside it. The number is the part that survives translation.
 func systemReason(errno syscall.Errno) string {
 	reason := "the system refused it"
-	switch {
-	case errors.Is(errno, fs.ErrNotExist):
+	switch core.SystemKindOf(errno) {
+	case core.SystemNothingThere:
 		reason = "there is nothing at that path"
-	case errors.Is(errno, fs.ErrPermission):
+	case core.SystemNoPermission:
 		reason = "the system refused permission"
-	case errors.Is(errno, fs.ErrExist):
+	case core.SystemAlreadyThere:
 		reason = "something is already there"
 	}
 	return fmt.Sprintf("%s (system error %d)", reason, uintptr(errno))

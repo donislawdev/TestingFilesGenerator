@@ -127,7 +127,7 @@ func TestAskingForDirectoryEntriesInAFlatArchiveNamesBothSettings(t *testing.T) 
 	if !errors.As(err, &refusal) {
 		t.Fatalf("the refusal is %T, so it does not carry the four things a refusal owes a reader", err)
 	}
-	said := refusal.Reason + " " + refusal.Remedy
+	said := refusal.Reason.String() + " " + refusal.Remedy.String()
 	for _, half := range []string{archive.Depth, archive.DirectoryEntries} {
 		if !strings.Contains(said, half) {
 			t.Errorf("the refusal never names %q, so a reader cannot tell which half to change:\n  %s",

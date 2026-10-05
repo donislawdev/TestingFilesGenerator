@@ -268,7 +268,7 @@ func Groups(id string, r format.Request) ([]format.Content, error) {
 	if r.SizeFromContents {
 		// Only reachable if a caller sets the flag without contents. Saying so
 		// beats producing an empty archive and calling it the answer.
-		return nil, fmt.Errorf("%s: the size was left to the contents and there are none", id)
+		return nil, core.Defect(fmt.Errorf("%s: the size was left to the contents and there are none", id))
 	}
 
 	entries, err := intProperty(id, r.Properties, Entries, defaultEntries, 0, maxEntries)
@@ -333,8 +333,8 @@ func tooMany(id, key string, asked int) *format.PropertyValueError {
 		Format: id,
 		Key:    key,
 		Value:  strconv.Itoa(asked),
-		Reason: fmt.Sprintf("it takes a whole number from 0 to %d", maxEntries),
-		Remedy: fmt.Sprintf("Ask for %d entries or fewer.", maxEntries),
+		Reason: core.Says("format.ItTakesAWholeNumberFrom", "it takes a whole number from 0 to %d", core.A("MaxEntries", maxEntries)),
+		Remedy: core.Says("format.AskForEntriesOrFewer", "Ask for %d entries or fewer.", core.A("MaxEntries", maxEntries)),
 	}
 }
 
@@ -346,7 +346,7 @@ func sizeProperty(id string, props map[string]string, key string, fallback int64
 	}
 	n, err := core.ParseSize(raw)
 	if err != nil {
-		return 0, fmt.Errorf("%s: %s: %w", id, key, err)
+		return 0, core.Defect(fmt.Errorf("%s: %s: %w", id, key, err))
 	}
 	return n, nil
 }
@@ -358,10 +358,10 @@ func intProperty(id string, props map[string]string, key string, fallback, min, 
 	}
 	n, err := strconv.Atoi(raw)
 	if err != nil {
-		return 0, fmt.Errorf("%s: %s must be a whole number, got %q", id, key, raw)
+		return 0, core.Defect(fmt.Errorf("%s: %s must be a whole number, got %q", id, key, raw))
 	}
 	if n < min || n > max {
-		return 0, fmt.Errorf("%s: %s must be between %d and %d, got %d", id, key, min, max, n)
+		return 0, core.Defect(fmt.Errorf("%s: %s must be between %d and %d, got %d", id, key, min, max, n))
 	}
 	return n, nil
 }

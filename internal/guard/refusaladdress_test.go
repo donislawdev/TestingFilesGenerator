@@ -260,18 +260,18 @@ targets:
 					continue
 				}
 				got = append(got, p.At)
-				assertAddressResolves(t, known, p.At, p.What)
+				assertAddressResolves(t, known, p.At, p.What.String())
 				// And it carries the parts a refusal in this tool is made of -
 				// what happened, why, what to do instead (D6). Asked of every
 				// case here rather than of one recipe, because a path that
 				// leaves one of them empty prints a bare dash where the reason
 				// should be, and that is exactly what the first version of the
 				// property check did on 2026-08-25.
-				if p.Why == "" || p.Fix == "" {
+				if p.Why.IsZero() || p.Fix.IsZero() {
 					t.Errorf("the refusal %q at %s has no %s.\n"+
 						"A refusal here says what happened, why, and what to do instead - a missing\n"+
 						"part prints as a bare dash rather than as nothing.",
-						p.What, p.At, missingPart(p.Why, p.Fix))
+						p.What, p.At, missingPart(p.Why.String(), p.Fix.String()))
 				}
 			}
 
@@ -415,7 +415,7 @@ targets:
 	// the command line prints - so the two are only comparable once both are
 	// in the same vocabulary. See core.SettingSlot.
 	for _, p := range bad.Problems {
-		what := core.InTheWordsOf(p.What, core.LastSettingSegment(p.At))
+		what := core.InTheWordsOf(p.What.String(), core.LastSettingSegment(p.At))
 		if !strings.Contains(err.Error(), what) {
 			t.Errorf("the message of the whole refusal no longer mentions %q", what)
 		}

@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -24,16 +23,16 @@ import (
 // Both separators are refused on every system, not just the local one. A name
 // holding a backslash is legal on Linux and cannot exist on Windows, and a
 // recipe that only works on the machine it was written on is not portable.
-func checkFileName(setting, where, name string) error {
+func checkFileName(setting string, where core.Said, name string) error {
 	switch {
 	case name == "":
-		return &RecipeError{Setting: setting, Detail: fmt.Sprintf("%s produces a file with no name", where)}
+		return &RecipeError{Setting: setting, Detail: core.Says("engine.NameEmpty", "%s produces a file with no name", core.A("Where", where))}
 
 	case strings.ContainsAny(name, `/\`):
 		return &RecipeError{Setting: setting,
-			Detail:  fmt.Sprintf("%s produces the name %q, which is a path rather than a file name", where, name),
-			Because: "names stay inside the output directory, and a separator is refused on every system so that a recipe works everywhere",
-			Remedy:  "Choose the directory with the output setting instead"}
+			Detail:  core.Says("engine.NameIsAPath", "%s produces the name %q, which is a path rather than a file name", core.A("Where", where), core.A("Name", name)),
+			Because: core.Says("engine.NameIsAPathWhy", "names stay inside the output directory, and a separator is refused on every system so that a recipe works everywhere"),
+			Remedy:  chooseTheDirectory()}
 
 	// A colon, on every system, for the same reason as a separator.
 	//
@@ -51,9 +50,9 @@ func checkFileName(setting, where, name string) error {
 	// somebody else's is worse than one refused on all of them.
 	case strings.Contains(name, ":"):
 		return &RecipeError{Setting: setting,
-			Detail:  fmt.Sprintf("%s produces the name %q, which holds a colon", where, name),
-			Because: "Windows reads that as a drive or as an alternate data stream rather than as part of the name, so the file arrives called something else or not at all. It is refused on every system so that a recipe means one thing everywhere",
-			Remedy:  "Take the colon out, or ask for the file inside an archive where the name survives"}
+			Detail:  core.Says("engine.NameColon", "%s produces the name %q, which holds a colon", core.A("Where", where), core.A("Name", name)),
+			Because: core.Says("engine.NameColonWhy", "Windows reads that as a drive or as an alternate data stream rather than as part of the name, so the file arrives called something else or not at all. It is refused on every system so that a recipe means one thing everywhere"),
+			Remedy:  core.Says("engine.NameColonFix", "Take the colon out, or ask for the file inside an archive where the name survives")}
 
 	// Characters Windows will not put in a file name, refused on every system
 	// for the same reason as the separator and the colon above.
@@ -76,9 +75,10 @@ func checkFileName(setting, where, name string) error {
 	case firstForbidden(name) != 0:
 		bad := firstForbidden(name)
 		return &RecipeError{Setting: setting,
-			Detail:  fmt.Sprintf("%s produces the name %q, which holds %s", where, name, describeForbidden(bad)),
-			Because: "Windows refuses that character in a file name, so the file is not written there at all. It is refused on every system so that a recipe means one thing everywhere",
-			Remedy:  "Take the character out, or ask for the file inside an archive where the name survives"}
+			Detail: core.Says("engine.NameForbidden", "%s produces the name %q, which holds %s",
+				core.A("Where", where), core.A("Name", name), core.A("Character", describeForbidden(bad))),
+			Because: core.Says("engine.NameForbiddenWhy", "Windows refuses that character in a file name, so the file is not written there at all. It is refused on every system so that a recipe means one thing everywhere"),
+			Remedy:  core.Says("engine.NameForbiddenFix", "Take the character out, or ask for the file inside an archive where the name survives")}
 
 	// Longer than every system this runs on will store, refused on every
 	// system for the same reason as the characters above.
@@ -92,10 +92,12 @@ func checkFileName(setting, where, name string) error {
 	// bytes is the one that holds on all three (O239).
 	case len(name) > core.MaxNameBytes:
 		return &RecipeError{Setting: setting,
-			Detail: fmt.Sprintf("%s produces the name %q, which is %d bytes long", where, name, len(name)),
-			Because: fmt.Sprintf("Linux stores at most %d bytes in a file name, and a letter outside ASCII takes two to four of them. "+
-				"It is refused on every system so that a recipe means one thing everywhere", core.MaxNameBytes),
-			Remedy: fmt.Sprintf("Shorten it to %d bytes or fewer, or ask for the file inside an archive where the name survives", core.MaxNameBytes)}
+			Detail: core.Says("engine.NameTooLong", "%s produces the name %q, which is %d bytes long",
+				core.A("Where", where), core.A("Name", name), core.A("Length", len(name))),
+			Because: core.Says("engine.NameTooLongWhy", "Linux stores at most %d bytes in a file name, and a letter outside ASCII takes two to four of them. "+
+				"It is refused on every system so that a recipe means one thing everywhere", core.A("Most", core.MaxNameBytes)),
+			Remedy: core.Says("engine.NameTooLongFix", "Shorten it to %d bytes or fewer, or ask for the file inside an archive where the name survives",
+				core.A("Most", core.MaxNameBytes))}
 
 	// One reserved device name, and one only.
 	//
@@ -119,13 +121,13 @@ func checkFileName(setting, where, name string) error {
 	// describes either.
 	case strings.EqualFold(name, "nul"):
 		return &RecipeError{Setting: setting,
-			Detail:  fmt.Sprintf("%s produces the name %q, which names the null device on Windows rather than a file", where, name),
-			Because: "writing there succeeds and the bytes go nowhere, so the run would record a file that is not on the disk. It is refused on every system so that a recipe means one thing everywhere",
-			Remedy:  "Give it an extension, nul.txt is an ordinary name, or choose another one"}
+			Detail:  core.Says("engine.NameNul", "%s produces the name %q, which names the null device on Windows rather than a file", core.A("Where", where), core.A("Name", name)),
+			Because: core.Says("engine.NameNulWhy", "writing there succeeds and the bytes go nowhere, so the run would record a file that is not on the disk. It is refused on every system so that a recipe means one thing everywhere"),
+			Remedy:  core.Says("engine.NameNulFix", "Give it an extension, nul.txt is an ordinary name, or choose another one")}
 
 	case name == "." || name == "..":
-		return &RecipeError{Setting: setting, Detail: fmt.Sprintf(
-			"%s produces the name %q, which names a directory rather than a file", where, name)}
+		return &RecipeError{Setting: setting, Detail: core.Says("engine.NameIsADirectory",
+			"%s produces the name %q, which names a directory rather than a file", core.A("Where", where), core.A("Name", name))}
 
 	// A name Windows stores under a different name than the one it was given.
 	// Refused on every system for the same reason a separator is: a recipe that
@@ -142,9 +144,9 @@ func checkFileName(setting, where, name string) error {
 	// host filesystem for exactly this reason. See D10.
 	case strings.HasSuffix(name, ".") || strings.HasSuffix(name, " "):
 		return &RecipeError{Setting: setting,
-			Detail:  fmt.Sprintf("%s produces the name %q, which ends in a dot or a space", where, name),
-			Because: "Windows stores such a name without it, so the file on disk would not be the file the manifest describes and verify would report both",
-			Remedy:  "Take the last character off, or ask for the file inside an archive where the name survives"}
+			Detail:  core.Says("engine.NameTrailing", "%s produces the name %q, which ends in a dot or a space", core.A("Where", where), core.A("Name", name)),
+			Because: core.Says("engine.NameTrailingWhy", "Windows stores such a name without it, so the file on disk would not be the file the manifest describes and verify would report both"),
+			Remedy:  core.Says("engine.NameTrailingFix", "Take the last character off, or ask for the file inside an archive where the name survives")}
 
 	// Judged the same way on every system, like the separator above. Using
 	// filepath here asks the machine this build runs on, and the answer
@@ -154,11 +156,16 @@ func checkFileName(setting, where, name string) error {
 	// prevent, arriving through the rule itself.
 	case filepath.IsAbs(name) || core.HasVolumeName(name):
 		return &RecipeError{Setting: setting,
-			Detail:  fmt.Sprintf("%s produces the absolute path %q", where, name),
-			Because: "a recipe carries no absolute paths, because then it only works on the machine it was written on",
-			Remedy:  "Choose the directory with the output setting instead"}
+			Detail:  core.Says("engine.NameAbsolute", "%s produces the absolute path %q", core.A("Where", where), core.A("Name", name)),
+			Because: core.Says("engine.NameAbsoluteWhy", "a recipe carries no absolute paths, because then it only works on the machine it was written on"),
+			Remedy:  chooseTheDirectory()}
 	}
 	return nil
+}
+
+// chooseTheDirectory is the way out of a name that tries to be a place.
+func chooseTheDirectory() core.Said {
+	return core.Says("engine.ChooseTheDirectory", "Choose the directory with the output setting instead")
 }
 
 // forbiddenChars are the printable characters Windows refuses in a file name.
@@ -190,9 +197,9 @@ func firstForbidden(name string) rune {
 // describeForbidden names a character in a way somebody can act on. A control
 // character has nothing to show, so it is given as its number instead of being
 // printed into the middle of a sentence where it would do what it says.
-func describeForbidden(r rune) string {
+func describeForbidden(r rune) core.Said {
 	if r < 0x20 {
-		return fmt.Sprintf("a control character, U+%04X", r)
+		return core.Says("engine.ControlCharacter", "a control character, U+%04X", core.A("Code", r))
 	}
-	return fmt.Sprintf("the character %q", string(r))
+	return core.Says("engine.Character", "the character %q", core.A("Character", string(r)))
 }

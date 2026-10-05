@@ -453,7 +453,7 @@ func TestThePolishWindowSaysTheRegistriesInPolish(t *testing.T) {
 			continue
 		}
 		about++
-		if got, want := text.PresetNote(expanded.Preset.ID, n.About, n.Said), polish[text.NoteKey(expanded.Preset.ID, n.About)]["other"]; got != want {
+		if got, want := text.PresetNote(expanded.Preset.ID, n.About, n.Said.String()), polish[text.NoteKey(expanded.Preset.ID, n.About)]["other"]; got != want {
 			t.Errorf("the note about %s reads %q in the Polish window, and %q was translated", n.About, got, want)
 		}
 	}

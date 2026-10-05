@@ -256,7 +256,7 @@ func assertNamesBothHalves(t *testing.T, id string, err error, halves ...string)
 			id, err, err)
 		return
 	}
-	said := refusal.Reason + " " + refusal.Remedy
+	said := refusal.Reason.String() + " " + refusal.Remedy.String()
 	for _, half := range halves {
 		if !strings.Contains(said, half) {
 			t.Errorf("%s: the refusal never names %q, so a reader cannot tell which half to change:\n  %s",

@@ -2,11 +2,12 @@ package targz
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/archive"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Settling the padding of a COMPRESSED archive, which cannot be done by
@@ -91,9 +92,8 @@ func settleCompressed(ctx context.Context, m memo) (memo, error) {
 // depth to worry about.
 func settleRound(ctx context.Context, bare memo, target, filler int64, left int) (memo, error) {
 	if left == 0 {
-		return bare, fmt.Errorf(
-			"targz: the padding of this compressed archive does not settle after %d rounds. "+
-				"Ask for a different size, or for compression: none", solveRounds)
+		return bare, core.Refuse(core.Says("format.TargzThePaddingOfThisCompressed", "targz: the padding of this compressed archive does not settle after %d rounds. "+
+			"Ask for a different size, or for compression: none", core.A("SolveRounds", solveRounds)))
 	}
 	if err := ctx.Err(); err != nil {
 		return bare, err
@@ -191,8 +191,8 @@ func belowMinimum(target, floor int64) error {
 		Format:    "TAR.GZ",
 		Requested: target,
 		Minimum:   floor,
-		Reason:    "that is what the contents come to once they are compressed, so nothing can be taken away",
-		Hint:      fmt.Sprintf("Ask for %d B or more, or hold fewer or smaller files.", floor),
+		Reason:    core.Says("format.ThatIsWhatTheContentsCome", "that is what the contents come to once they are compressed, so nothing can be taken away"),
+		Hint:      core.Says("format.AskForBOrMoreOr11", "Ask for %d B or more, or hold fewer or smaller files.", core.A("Floor", floor)),
 	}
 }
 

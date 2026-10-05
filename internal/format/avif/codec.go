@@ -7,6 +7,8 @@ import (
 	"image"
 
 	"github.com/gen2brain/gav1d/avif"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 const (
@@ -36,7 +38,7 @@ func encode(m image.Image, quality int) ([]byte, error) {
 		Speed:        encodeSpeed,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("avif: the encoder could not code the picture: %w", err)
+		return nil, core.Defect(fmt.Errorf("avif: the encoder could not code the picture: %w", err))
 	}
 	return buf.Bytes(), nil
 }

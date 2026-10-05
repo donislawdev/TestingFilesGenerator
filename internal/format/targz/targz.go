@@ -134,14 +134,14 @@ func init() {
 		Unsupported: []format.UnsupportedSetting{
 			{
 				Name: archive.Password,
-				Why: "neither tar nor gzip has any encryption in it, so there is no field in either " +
-					"one to put a password in",
-				Instead: "Use zip for an archive with a password, or leave this one open.",
+				Why: core.Says("format.NeitherTarNorGzipHasAny", "neither tar nor gzip has any encryption in it, so there is no field in either "+
+					"one to put a password in"),
+				Instead: core.Says("format.UseZipForAnArchiveWith", "Use zip for an archive with a password, or leave this one open."),
 			},
 			{
 				Name:    archive.Encryption,
-				Why:     "neither tar nor gzip has any encryption in it, so there is nothing to choose between",
-				Instead: "Use zip for an archive with a password, or leave this one open.",
+				Why:     core.Says("format.NeitherTarNorGzipHasAny2", "neither tar nor gzip has any encryption in it, so there is nothing to choose between"),
+				Instead: core.Says("format.UseZipForAnArchiveWith", "Use zip for an archive with a password, or leave this one open."),
 			},
 		},
 		Container:        true,
@@ -273,7 +273,7 @@ func planChildren(r format.Request, groups []format.Content, layout archive.Layo
 				Label: r.Label,
 			})
 			if err != nil {
-				return nil, fmt.Errorf("targz: the %s file inside cannot be made: %w", g.Format, err)
+				return nil, core.Defect(fmt.Errorf("targz: the %s file inside cannot be made: %w", g.Format, err))
 			}
 			numbered[g.Format]++
 			out = append(out, child{
@@ -320,8 +320,8 @@ func settleSize(m *memo, r format.Request) (target int64, label string, err erro
 		}
 		size = measured
 	}
-	return 0, "", fmt.Errorf(
-		"targz: the size of this archive and the size written in its label do not settle. Give an explicit size")
+	return 0, "", core.Defect(fmt.Errorf(
+		"targz: the size of this archive and the size written in its label do not settle. Give an explicit size"))
 }
 
 // describe builds the plan and the properties that reach the manifest.
@@ -393,7 +393,7 @@ func describeGroups(groups []format.Content) string {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("targz: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("targz: the plan was not produced by this generator"))
 	}
 	if m.squeeze.On() {
 		return writeCompressed(ctx, w, m)

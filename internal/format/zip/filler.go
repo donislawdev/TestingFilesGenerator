@@ -3,10 +3,11 @@ package zip
 import (
 	stdzip "archive/zip"
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // writeFillerEntry puts the padding entry into the archive.
@@ -105,9 +106,9 @@ func writeCompressedFiller(ctx context.Context, zw *stdzip.Writer, m memo, withC
 			Format:    "ZIP",
 			Requested: m.target,
 			Minimum:   m.target - size,
-			Reason: "these contents come out of the compressor larger than they went in, " +
-				"so the archive cannot be made this small once they are squeezed",
-			Hint: fmt.Sprintf("Ask for %d B or more, or ask for compression: none.", m.target-size),
+			Reason: core.Says("format.TheseContentsComeOutOfThe", "these contents come out of the compressor larger than they went in, "+
+				"so the archive cannot be made this small once they are squeezed"),
+			Hint: core.Says("format.AskForBOrMoreOr10", "Ask for %d B or more, or ask for compression: none.", core.A("Target", m.target-size)),
 		}
 	}
 	if err := writeFiller(ctx, entry, m.seed, size); err != nil {

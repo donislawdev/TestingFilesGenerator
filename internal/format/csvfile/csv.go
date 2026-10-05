@@ -158,7 +158,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Requested: r.Bytes,
 			Minimum:   min,
 			Reason:    reasonForMinimum(d),
-			Hint:      fmt.Sprintf("Ask for %d B or more.", min),
+			Hint:      core.Says("format.AskForBOrMore", "Ask for %d B or more.", core.A("Min", min)),
 		}
 	}
 
@@ -189,17 +189,17 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 // reasonForMinimum says what the floor is made of, which changes with the
 // dialect. A file with no header pays for rows alone, and saying "a header and
 // whole rows" there would name something the file does not have.
-func reasonForMinimum(d dialect) string {
+func reasonForMinimum(d dialect) core.Said {
 	if !d.header {
-		return "a table holds whole rows, and one of them needs that much"
+		return core.Says("csv.MinimumRows", "a table holds whole rows, and one of them needs that much")
 	}
-	return "a table holds a header and whole rows, and one of each needs that much"
+	return core.Says("csv.MinimumHeader", "a table holds a header and whole rows, and one of each needs that much")
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("csv: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("csv: the plan was not produced by this generator"))
 	}
 
 	if m.dia.header {

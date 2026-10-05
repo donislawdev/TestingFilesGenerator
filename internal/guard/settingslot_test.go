@@ -155,7 +155,7 @@ func TestNoRefusalEverShowsASlotToAPerson(t *testing.T) {
 	// sentence rather than writing it out.
 	value := &format.PropertyValueError{
 		Format: "png", Key: "width", Value: "99999",
-		Reason: "it takes a whole number of pixels from 1 to 20000",
+		Reason: said("it takes a whole number of pixels from 1 to 20000"),
 	}
 	leaks(t, "the command line", value.Error())
 	leaks(t, "a window", value.InTheWordsOf("Width"))

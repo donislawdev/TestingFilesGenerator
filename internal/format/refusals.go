@@ -16,7 +16,6 @@ package format
 // but says something different about what to do next.
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -47,10 +46,10 @@ type UnsupportedSetting struct {
 	Name string
 	// Why is the reason, in the words the refusal uses. It is about the file
 	// format, not about this build.
-	Why string
+	Why core.Said
 	// Instead is what to do about it, and it is allowed to be empty when there
 	// is genuinely nothing else to do.
-	Instead string
+	Instead core.Said
 }
 
 // UnsupportedSettingError is a declared setting this format cannot carry.
@@ -63,26 +62,38 @@ type UnsupportedSetting struct {
 type UnsupportedSettingError struct {
 	Format string
 	Key    string
-	Reason string
-	Remedy string
+	Reason core.Said
+	Remedy core.Said
 }
 
 // AboutSetting is the key this refusal is about, so a form can mark the box.
 func (e *UnsupportedSettingError) AboutSetting() string { return e.Key }
 
-func (e *UnsupportedSettingError) What() string {
-	return fmt.Sprintf("%s cannot take %q", e.Format, e.Key)
+func (e *UnsupportedSettingError) What() string { return e.what().String() }
+
+func (e *UnsupportedSettingError) what() core.Said {
+	return core.Says("format.CannotTake", "%s cannot take %q", core.A("Format", e.Format), core.A("Key", e.Key))
 }
 
-func (e *UnsupportedSettingError) Why() string { return e.Reason }
+func (e *UnsupportedSettingError) Why() string { return e.Reason.String() }
 
-func (e *UnsupportedSettingError) Instead() string { return e.Remedy }
+func (e *UnsupportedSettingError) Instead() string { return e.Remedy.String() }
 
-func (e *UnsupportedSettingError) Error() string {
-	if e.Remedy == "" {
-		return e.What() + " - " + e.Reason
+// Parts is what happened, why and what to do instead, for a reader that lays
+// them out apart and in its own language.
+func (e *UnsupportedSettingError) Parts() (what, why, instead core.Said) {
+	return e.what(), e.Reason, e.Remedy
+}
+
+func (e *UnsupportedSettingError) Error() string { return e.Said().String() }
+
+// Said is the whole refusal, for a window that says it in its own language.
+func (e *UnsupportedSettingError) Said() core.Said {
+	if e.Remedy.IsZero() {
+		return core.Says("format.CannotTakeWhy", "%s - %s", core.A("What", e.what()), core.A("Why", e.Reason))
 	}
-	return e.What() + " - " + e.Reason + ". " + e.Remedy
+	return core.Says("format.CannotTakeWhyFix", "%s - %s. %s",
+		core.A("What", e.what()), core.A("Why", e.Reason), core.A("Fix", e.Remedy))
 }
 
 // cannotCarry says whether this format has declared the key as one it cannot
@@ -112,35 +123,51 @@ type UnknownPropertyError struct {
 func (e *UnknownPropertyError) AboutSetting() string { return e.Key }
 
 // Why this is refused, for a report that keeps the four parts of D6 apart.
-func (e *UnknownPropertyError) Why() string {
-	return "a format takes only the settings it declares, and one it does not know would be dropped on the way"
+func (e *UnknownPropertyError) Why() string { return e.why().String() }
+
+func (e *UnknownPropertyError) why() core.Said {
+	return core.Says("format.UnknownPropertyWhy", "a format takes only the settings it declares, and one it does not know would be dropped on the way")
 }
 
 // Instead is what to do about it, named from the declaration.
-func (e *UnknownPropertyError) Instead() string {
+func (e *UnknownPropertyError) Instead() string { return e.instead().String() }
+
+func (e *UnknownPropertyError) instead() core.Said {
 	if len(e.Known) == 0 {
-		return "remove the line"
+		return core.Says("format.RemoveTheLine", "remove the line")
 	}
-	return "use one of: " + strings.Join(e.Known, ", ")
+	return core.Says("format.UseOneOf", "use one of: %s", core.A("Known", strings.Join(e.Known, ", ")))
 }
 
 // What happened, without the list of names. Kept apart from Error so a report
 // with four parts does not print the names twice - once in the sentence and
 // again in what to do instead.
-func (e *UnknownPropertyError) What() string {
+func (e *UnknownPropertyError) What() string { return e.what().String() }
+
+func (e *UnknownPropertyError) what() core.Said {
 	if len(e.Known) == 0 {
-		return fmt.Sprintf("%s takes no properties, so %q is not one of them", e.Format, e.Key)
+		return core.Says("format.TakesNoProperties", "%s takes no properties, so %q is not one of them",
+			core.A("Format", e.Format), core.A("Key", e.Key))
 	}
-	return fmt.Sprintf("%s does not have a property called %q", e.Format, e.Key)
+	return core.Says("format.NoSuchProperty", "%s does not have a property called %q", core.A("Format", e.Format), core.A("Key", e.Key))
+}
+
+// Parts is what happened, why and what to do instead, for a reader that lays
+// them out apart and in its own language.
+func (e *UnknownPropertyError) Parts() (what, why, instead core.Said) {
+	return e.what(), e.why(), e.instead()
 }
 
 // Error is the whole thing in one sentence, unchanged to the character - it is
 // what the one-target path from the command line flags prints.
-func (e *UnknownPropertyError) Error() string {
+func (e *UnknownPropertyError) Error() string { return e.Said().String() }
+
+// Said is the whole refusal, for a window that says it in its own language.
+func (e *UnknownPropertyError) Said() core.Said {
 	if len(e.Known) == 0 {
-		return e.What()
+		return e.what()
 	}
-	return e.What() + ". It takes: " + strings.Join(e.Known, ", ")
+	return core.Says("format.NoSuchPropertyKnown", "%s. It takes: %s", core.A("What", e.what()), core.A("Known", strings.Join(e.Known, ", ")))
 }
 
 // PropertyValueError is a declared key given a value the declaration forbids.
@@ -155,7 +182,7 @@ type PropertyValueError struct {
 	Format string
 	Key    string
 	Value  string
-	Reason string
+	Reason core.Said
 	// Remedy is what to do about it, built from the declaration. It is carried
 	// here rather than worked out by whoever reports this, because a refusal in
 	// this tool has four parts - what happened, why, what is allowed, what to do
@@ -166,7 +193,11 @@ type PropertyValueError struct {
 	// Named Remedy rather than Instead because the accessor below has to be
 	// called Instead - that is the name the other refusals in this package use
 	// for the same part, and the reader that asks for all three asks by name.
-	Remedy string
+	Remedy core.Said
+	// Subject is the setting named as a sentence, where the key is not one
+	// setting a window has a box for - a pair whose product has a ceiling is
+	// keyed "width and height". Zero means the key names it.
+	Subject core.Said
 }
 
 // What happened, why the declaration forbids it, and what to do instead.
@@ -174,13 +205,47 @@ type PropertyValueError struct {
 // Instead is the part Error leaves out on purpose - see the field - so this is
 // the only way a report gets all four parts of D6 for the refusal a person hits
 // most often, by typing a number.
-func (e *PropertyValueError) What() string {
-	return fmt.Sprintf("%s: %s cannot be %q", e.Format, e.Key, e.Value)
+func (e *PropertyValueError) What() string { return e.what().String() }
+
+func (e *PropertyValueError) what() core.Said {
+	return core.Says("format.CannotBe", "%s: %s cannot be %q", core.A("Format", e.Format), core.A("Key", e.Key), core.A("Value", e.Value))
 }
 
-func (e *PropertyValueError) Why() string { return core.InTheWordsOf(e.Reason, e.Key) }
+func (e *PropertyValueError) Why() string { return core.InTheWordsOf(e.Reason.String(), e.Key) }
 
-func (e *PropertyValueError) Instead() string { return e.Remedy }
+func (e *PropertyValueError) Instead() string { return e.Remedy.String() }
+
+// Parts is what happened, why and what to do instead, for a reader that lays
+// them out apart and in its own language.
+func (e *PropertyValueError) Parts() (what, why, instead core.Said) {
+	return e.what(), e.Reason, e.Remedy
+}
+
+// Said is the refusal, for a window that says it in its own language. The
+// setting is the slot, so the window names it by the label above its box.
+func (e *PropertyValueError) Said() core.Said { return e.said(e.Reason) }
+
+func (e *PropertyValueError) said(why any) core.Said {
+	return core.Says("format.ValueRefused", "%s: {setting} cannot be %q - %s",
+		core.A("Format", e.Format), core.A("Value", e.Value), core.A("Why", why))
+}
+
+// Bare is the refusal without the format in front of it, for a reader that
+// names the format another way - the text the command line prints after
+// "format: ".
+func (e *PropertyValueError) Bare() core.Said {
+	return core.Says("format.ValueRefusedBare", "%s cannot be %q - %s",
+		core.A("Subject", e.SettingSaid()), core.A("Value", e.Value), core.A("Why", e.Reason))
+}
+
+// SettingSaid is the setting this refusal is about, named for a window that
+// has no box to put it under.
+func (e *PropertyValueError) SettingSaid() core.Said {
+	if !e.Subject.IsZero() {
+		return e.Subject
+	}
+	return core.Says("format.Setting", "%s", core.A("Name", core.LabelTerm(e.Key)))
+}
 
 func (e *PropertyValueError) Error() string {
 	return e.InTheWordsOf(e.Key)
@@ -198,8 +263,7 @@ func (e *PropertyValueError) InTheWordsOf(name string) string {
 	if name == "" {
 		name = e.Key
 	}
-	return fmt.Sprintf("%s: %s cannot be %q - %s",
-		e.Format, name, e.Value, core.InTheWordsOf(e.Reason, name))
+	return e.said(core.InTheWordsOf(e.Reason.String(), name)).InTheWordsOf(name)
 }
 
 // AboutSetting is the property this refusal is about, so a window can put the

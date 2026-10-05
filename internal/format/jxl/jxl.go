@@ -248,10 +248,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	carries := labelled(m.width, label)
 	if r.Label && !carries {
 		p.Notes = append(p.Notes, format.Note{
-			Code: "label_omitted",
-			Detail: fmt.Sprintf(
-				"The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.",
-				m.width),
+			Code:   "label_omitted",
+			Detail: core.Says("format.ThePictureIsPxWideAnd", "The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("Width", m.width)),
 		})
 	}
 	p.Properties[format.PropertyLabelEmbedded] = carries
@@ -267,9 +265,9 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 // size is the floor that applies.
 func checkFits(want int64, m memo) error {
 	floor := int64(minimumBytes)
-	reason := fmt.Sprintf(
+	reason := core.Says("jxl.MinimumReason",
 		"the smallest picture this format draws codes to %d B at worst, the container around it costs %d B, and the file always carries a free box, which costs %d B even when it holds nothing",
-		minimumBytes-containerOverhead-boxHeader, containerOverhead, boxHeader)
+		core.A("Coded", minimumBytes-containerOverhead-boxHeader), core.A("Container", containerOverhead), core.A("Box", boxHeader))
 
 	// A picture named by hand can be larger than the smallest one, and then its
 	// own size is the floor that applies - which is known here, because naming
@@ -277,9 +275,10 @@ func checkFits(want int64, m memo) error {
 	if m.coded != nil {
 		if own := int64(len(m.coded) + containerOverhead + boxHeader); own > floor {
 			floor = own
-			reason = fmt.Sprintf(
+			reason = core.Says("jxl.MinimumReasonOwn",
 				"a %dx%d picture at quality %d codes to %d B, the container around it costs %d B, and the file always carries a free box, which costs %d B even when it holds nothing",
-				m.width, m.height, m.quality, len(m.coded), containerOverhead, boxHeader)
+				core.A("Width", m.width), core.A("Height", m.height), core.A("Quality", m.quality), core.A("Coded", len(m.coded)),
+				core.A("Container", containerOverhead), core.A("Box", boxHeader))
 		}
 	}
 
@@ -291,7 +290,7 @@ func checkFits(want int64, m memo) error {
 		Requested: want,
 		Minimum:   floor,
 		Reason:    reason,
-		Hint:      fmt.Sprintf("Ask for %d B or more, or set a smaller width and height, or a lower quality", floor),
+		Hint:      core.Says("format.AskForBOrMoreOr", "Ask for %d B or more, or set a smaller width and height, or a lower quality", core.A("Floor", floor)),
 	}
 }
 
@@ -416,11 +415,11 @@ func checkJointLimits(w, h int) error {
 		return err
 	}
 	for _, j := range d.JointLimits {
-		if bad := j.Allows(int64(w), int64(h)); bad != "" {
+		if bad := j.Allows("jxl", int64(w), int64(h)); !bad.IsZero() {
 			return &format.PropertyValueError{
-				Format: "jxl", Key: j.Of + " and " + j.By,
+				Format: "jxl", Key: j.Of + " and " + j.By, Subject: j.Subject(),
 				Value:  fmt.Sprintf("%dx%d", w, h),
-				Reason: bad + ". Ask for a smaller pair",
+				Reason: core.Says("format.JointSmallerPair", "%s. Ask for a smaller pair", core.A("Why", bad)),
 			}
 		}
 	}
@@ -434,10 +433,10 @@ func quality(props map[string]string) (int, error) {
 	}
 	n, err := strconv.Atoi(raw)
 	if err != nil {
-		return 0, fmt.Errorf("jxl: quality must be a whole number, got %q", raw)
+		return 0, core.Defect(fmt.Errorf("jxl: quality must be a whole number, got %q", raw))
 	}
 	if n < minQuality || n > maxQuality {
-		return 0, fmt.Errorf("jxl: quality must be between %d and %d, got %d", minQuality, maxQuality, n)
+		return 0, core.Defect(fmt.Errorf("jxl: quality must be between %d and %d, got %d", minQuality, maxQuality, n))
 	}
 	return n, nil
 }
@@ -445,7 +444,7 @@ func quality(props map[string]string) (int, error) {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("jxl: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("jxl: the plan was not produced by this generator"))
 	}
 
 	select {
@@ -469,8 +468,8 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	if pad < boxHeader {
 		// The ladder's ceiling for this picture was too low. Said out loud
 		// rather than written short, because a short file is a wrong file.
-		return fmt.Errorf("jxl: a %dx%d picture coded to %d B, the container costs %d B and the file was to be %d B, which leaves no room for the free box every one of these carries",
-			m.width, m.height, len(coded), containerOverhead, m.total)
+		return core.Defect(fmt.Errorf("jxl: a %dx%d picture coded to %d B, the container costs %d B and the file was to be %d B, which leaves no room for the free box every one of these carries",
+			m.width, m.height, len(coded), containerOverhead, m.total))
 	}
 
 	if _, err := w.Write(signature[:]); err != nil {

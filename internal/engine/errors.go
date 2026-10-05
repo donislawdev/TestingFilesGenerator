@@ -2,7 +2,6 @@ package engine
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
@@ -24,9 +23,9 @@ type RecipeError struct {
 	// reading it does not have to take a sentence written for a person back to
 	// pieces. Both may be empty, and then the whole refusal is in Detail and
 	// reads exactly as it did before either field existed.
-	Detail  string
-	Because string
-	Remedy  string
+	Detail  core.Said
+	Because core.Said
+	Remedy  core.Said
 
 	// Setting is which setting the refusal is about, where it is about one.
 	//
@@ -64,14 +63,22 @@ func (e *RecipeError) InTheWordsOf(name string) string {
 	if name == "" {
 		name = core.LastSettingSegment(e.Setting)
 	}
-	message := e.Detail
-	if e.Because != "" {
-		message += " - " + e.Because
+	return core.InTheWordsOf(e.Said().String(), name)
+}
+
+// Said is the whole refusal, for a window that says it in its own language,
+// with the setting slot left for the window to fill.
+func (e *RecipeError) Said() core.Said {
+	switch {
+	case !e.Because.IsZero() && !e.Remedy.IsZero():
+		return core.Says("engine.RefusalWhyFix", "%s - %s. %s",
+			core.A("What", e.Detail), core.A("Why", e.Because), core.A("Fix", e.Remedy))
+	case !e.Because.IsZero():
+		return core.Says("engine.RefusalWhy", "%s - %s", core.A("What", e.Detail), core.A("Why", e.Because))
+	case !e.Remedy.IsZero():
+		return core.Says("engine.RefusalFix", "%s. %s", core.A("What", e.Detail), core.A("Fix", e.Remedy))
 	}
-	if e.Remedy != "" {
-		message += ". " + e.Remedy
-	}
-	return core.InTheWordsOf(message, name)
+	return e.Detail
 }
 
 // The three parts a report keeps apart, answering the same names the format and
@@ -82,15 +89,15 @@ func (e *RecipeError) InTheWordsOf(name string) string {
 // spoken here - UnknownPropertyError has answered to them since the recipe
 // reader started reporting four parts.
 func (e *RecipeError) What() string {
-	return core.InTheWordsOf(e.Detail, core.LastSettingSegment(e.Setting))
+	return core.InTheWordsOf(e.Detail.String(), core.LastSettingSegment(e.Setting))
 }
 
 func (e *RecipeError) Why() string {
-	return core.InTheWordsOf(e.Because, core.LastSettingSegment(e.Setting))
+	return core.InTheWordsOf(e.Because.String(), core.LastSettingSegment(e.Setting))
 }
 
 func (e *RecipeError) Instead() string {
-	return core.InTheWordsOf(e.Remedy, core.LastSettingSegment(e.Setting))
+	return core.InTheWordsOf(e.Remedy.String(), core.LastSettingSegment(e.Setting))
 }
 
 // AboutSetting lets a window place this message without knowing this type.
@@ -202,10 +209,13 @@ type SpaceError struct {
 	Path      string
 }
 
-func (e *SpaceError) Error() string {
-	return fmt.Sprintf(
+func (e *SpaceError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *SpaceError) Said() core.Said {
+	return core.Says("engine.NoSpace",
 		"this run needs %d B and %s has %d B free - nothing was written. Ask for fewer files or a smaller size, or write to another disk by changing the output directory",
-		e.Needed, core.Shown(e.Path), e.Available)
+		core.A("Needed", e.Needed), core.A("Dir", core.Shown(e.Path)), core.A("Free", e.Available))
 }
 
 // RunInProgressError is refusing to start because another run holds this
@@ -225,10 +235,13 @@ type RunInProgressError struct {
 	Dir  string
 }
 
-func (e *RunInProgressError) Error() string {
-	return fmt.Sprintf(
+func (e *RunInProgressError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *RunInProgressError) Said() core.Said {
+	return core.Says("engine.RunInProgress",
 		"another run is already writing into %s, so this one will not start. Two runs writing into one directory can write over each other's files without either of them saying so. Wait for it to finish, or generate into a different directory. If nothing is running, that run was killed before it could tidy up - remove %s and try again",
-		core.Shown(e.Dir), core.Shown(e.Path))
+		core.A("Dir", core.Shown(e.Dir)), core.A("Lock", core.Shown(e.Path)))
 }
 
 // CollisionError is refusing to write over something that is already there.
@@ -248,18 +261,21 @@ type CollisionError struct {
 	Instructions bool
 }
 
-func (e *CollisionError) Error() string {
+func (e *CollisionError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *CollisionError) Said() core.Said {
 	if e.Instructions {
-		return fmt.Sprintf(
+		return core.Says("engine.CollisionInstructions",
 			"%s already exists and this run will not write over it. It says what the files of an earlier run are for. Generate into an empty directory, or name this run's manifest something else",
-			core.Shown(e.Path))
+			core.A("Path", core.Shown(e.Path)))
 	}
 	if e.Manifest {
-		return fmt.Sprintf(
+		return core.Says("engine.CollisionManifest",
 			"%s already exists and this run will not write over it. It is the only record of what an earlier run wrote, so replacing it would leave those files with nothing to remove them by. Generate into an empty directory, or move the old manifest aside",
-			core.Shown(e.Path))
+			core.A("Path", core.Shown(e.Path)))
 	}
-	return fmt.Sprintf(
+	return core.Says("engine.Collision",
 		"%s already exists and this run will not write over it. Generate into an empty directory, or remove the file first",
-		core.Shown(e.Path))
+		core.A("Path", core.Shown(e.Path)))
 }

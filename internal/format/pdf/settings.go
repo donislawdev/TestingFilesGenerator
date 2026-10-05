@@ -9,6 +9,8 @@ import (
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 const (
@@ -110,10 +112,10 @@ func pageCount(props map[string]string) (int, error) {
 	}
 	n, err := strconv.Atoi(raw)
 	if err != nil {
-		return 0, fmt.Errorf("pdf: pages must be a whole number, got %q", raw)
+		return 0, core.Defect(fmt.Errorf("pdf: pages must be a whole number, got %q", raw))
 	}
 	if n < 1 || n > maxPages {
-		return 0, fmt.Errorf("pdf: pages must be between 1 and %d, got %d", maxPages, n)
+		return 0, core.Defect(fmt.Errorf("pdf: pages must be between 1 and %d, got %d", maxPages, n))
 	}
 	return n, nil
 }
@@ -141,7 +143,7 @@ func paperSizes(props map[string]string, pages int) ([]pageSize, string, error) 
 		for k := range pageSizes {
 			names = append(names, k)
 		}
-		return nil, "", fmt.Errorf("pdf: page_size %q is not one of: %s", raw, strings.Join(sorted(names), ", "))
+		return nil, "", core.Defect(fmt.Errorf("pdf: page_size %q is not one of: %s", raw, strings.Join(sorted(names), ", ")))
 	}
 	return []pageSize{s}, s.name, nil
 }
@@ -157,8 +159,8 @@ func needsTwoPages(key, other string) *format.PropertyValueError {
 		Format: "pdf",
 		Key:    key,
 		Value:  mixed,
-		Reason: "mixed pages need at least two pages and this document has one",
-		Remedy: fmt.Sprintf("Set pages to 2 or more, or %s.", other),
+		Reason: core.Says("format.MixedPagesNeedAtLeastTwo", "mixed pages need at least two pages and this document has one"),
+		Remedy: core.Says("format.SetPagesTo2OrMore", "Set pages to 2 or more, or %s.", core.A("Other", other)),
 	}
 }
 
@@ -172,7 +174,7 @@ func rotation(props map[string]string) (int, error) {
 	case "0", "90", "180", "270":
 		return strconv.Atoi(raw)
 	}
-	return 0, fmt.Errorf("pdf: rotate %q is not one of: 0, 90, 180, 270", raw)
+	return 0, core.Defect(fmt.Errorf("pdf: rotate %q is not one of: 0, 90, 180, 270", raw))
 }
 
 func sorted(in []string) []string {

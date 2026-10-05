@@ -115,10 +115,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "JSON",
 			Requested: r.Bytes,
 			Minimum:   min,
-			Reason: fmt.Sprintf(
-				"a document holds whole records, and one %s record with every value type needs that much",
-				s.name),
-			Hint: fmt.Sprintf("Ask for %d B or more.", min),
+			Reason:    core.Says("format.ADocumentHoldsWholeRecordsAnd", "a document holds whole records, and one %s record with every value type needs that much", core.A("Name", s.name)),
+			Hint:      core.Says("format.AskForBOrMore", "Ask for %d B or more.", core.A("Min", min)),
 		}
 	}
 
@@ -142,7 +140,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("json: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("json: the plan was not produced by this generator"))
 	}
 
 	if err := core.WriteAll(w, []byte(m.s.prologue)); err != nil {

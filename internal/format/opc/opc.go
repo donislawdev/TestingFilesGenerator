@@ -206,7 +206,7 @@ func Settle(parts []Part, shape Shape, want int64) (Package, error) {
 	case delta == 0:
 		return p, nil
 	case delta < 0:
-		return Package{}, fmt.Errorf("opc: %d B is below the %d B floor", want, shape.Bare)
+		return Package{}, core.Defect(fmt.Errorf("opc: %d B is below the %d B floor", want, shape.Bare))
 	case delta <= CommentLimit:
 		p.Comment = int(delta)
 		return p, nil
@@ -237,10 +237,10 @@ func write(ctx context.Context, w io.Writer, p Package, withPadding bool) error 
 	zw := zip.NewWriter(w)
 	if p.Comment > 0 {
 		if p.Comment > CommentLimit {
-			return fmt.Errorf("opc: a comment of %d B is past the %d B a reader accepts", p.Comment, CommentLimit)
+			return core.Defect(fmt.Errorf("opc: a comment of %d B is past the %d B a reader accepts", p.Comment, CommentLimit))
 		}
 		if err := zw.SetComment(comment(p.Comment)); err != nil {
-			return fmt.Errorf("opc: the archive comment was refused: %w", err)
+			return core.Defect(fmt.Errorf("opc: the archive comment was refused: %w", err))
 		}
 	}
 

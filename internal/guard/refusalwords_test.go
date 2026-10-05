@@ -36,7 +36,7 @@ func TestASettingIsDescribedTheSameWayEmptyOrRefused(t *testing.T) {
 				want = want[:cut]
 			}
 			got := p.Allows("this is not a size")
-			if got != "it takes "+want {
+			if got.String() != "it takes "+want {
 				t.Errorf("%s.%s is described two ways.\n"+
 					"  empty field:  %q\n"+
 					"  after a typo: %q\n"+

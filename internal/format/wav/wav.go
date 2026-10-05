@@ -162,7 +162,7 @@ func readProperties(r format.Request) (memo, error) {
 	switch m.bits {
 	case 8, 16, 24, 32:
 	default:
-		return memo{}, fmt.Errorf("wav: bit_depth must be 8, 16, 24 or 32, got %d", m.bits)
+		return memo{}, core.Defect(fmt.Errorf("wav: bit_depth must be 8, 16, 24 or 32, got %d", m.bits))
 	}
 
 	m.content = "tone"
@@ -171,7 +171,7 @@ func readProperties(r format.Request) (memo, error) {
 		case "tone", "silence", "noise", "sweep":
 			m.content = v
 		default:
-			return memo{}, fmt.Errorf("wav: content must be tone, silence, noise or sweep, got %q", v)
+			return memo{}, core.Defect(fmt.Errorf("wav: content must be tone, silence, noise or sweep, got %q", v))
 		}
 	}
 	return m, nil
@@ -208,10 +208,8 @@ func layout(m *memo, r format.Request, fixed int64) error {
 				Format:    "WAV",
 				Requested: r.Bytes,
 				Minimum:   fixed + chunkHeader,
-				Reason: fmt.Sprintf(
-					"this size needs a padding chunk and the smallest one costs %d B, so nothing between %d and %d B can be reached",
-					chunkHeader, fixed, fixed+chunkHeader),
-				Hint: fmt.Sprintf("Ask for exactly %d B or for %d B or more.", fixed, fixed+chunkHeader),
+				Reason:    core.Says("format.ThisSizeNeedsAPaddingChunk", "this size needs a padding chunk and the smallest one costs %d B, so nothing between %d and %d B can be reached", core.A("ChunkHeader", chunkHeader), core.A("Fixed", fixed), core.A("Fixed2", fixed+chunkHeader)),
+				Hint:      core.Says("format.AskForExactlyBOrFor", "Ask for exactly %d B or for %d B or more.", core.A("Bare", fixed), core.A("Bare2", fixed+chunkHeader)),
 			}
 		}
 		return nil
@@ -242,8 +240,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "WAV",
 			Requested: r.Bytes,
 			Minimum:   fixed,
-			Reason:    "a WAV needs its RIFF header, its format chunk and a data chunk header before a single sample",
-			Hint:      fmt.Sprintf("Ask for %d B or more%s.", fixed, labelHint(r.Label)),
+			Reason:    core.Says("format.AWAVNeedsItsRIFFHeader", "a WAV needs its RIFF header, its format chunk and a data chunk header before a single sample"),
+			Hint:      core.Says("format.AskForBOrMore2", "Ask for %d B or more%s.", core.A("Floor", fixed), core.A("CleanHint", labelHint(r.Label))),
 		}
 	}
 
@@ -252,8 +250,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "WAV",
 			Requested: r.Bytes,
 			Maximum:   maxFileBytes,
-			Reason:    "a RIFF file states its own length in a four byte field, so the format cannot describe a file this large",
-			Hint:      "Ask for 4 GiB or less, or pick a format with no length field of its own such as txt.",
+			Reason:    core.Says("format.ARIFFFileStatesItsOwn", "a RIFF file states its own length in a four byte field, so the format cannot describe a file this large"),
+			Hint:      core.Says("format.AskFor4GiBOrLess4", "Ask for 4 GiB or less, or pick a format with no length field of its own such as txt."),
 		}
 	}
 
@@ -280,10 +278,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	}
 	if m.frames == 0 {
 		p.Notes = append(p.Notes, format.Note{
-			Code: "no_audio_frames",
-			Detail: fmt.Sprintf(
-				"At %d B this file has room for the headers but not for a single audio frame, so it holds no sound. It is still a valid WAV.",
-				r.Bytes),
+			Code:   "no_audio_frames",
+			Detail: core.Says("format.AtBThisFileHasRoom", "At %d B this file has room for the headers but not for a single audio frame, so it holds no sound. It is still a valid WAV.", core.A("Bytes", r.Bytes)),
 		})
 	}
 	return p, nil
@@ -292,7 +288,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("wav: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("wav: the plan was not produced by this generator"))
 	}
 
 	total := p.Bytes
@@ -399,7 +395,7 @@ func (m memo) writeSamples(ctx context.Context, w io.Writer) error {
 		}
 	}
 	if written != m.dataLen {
-		return fmt.Errorf("wav: wrote %d B of audio where the plan said %d B", written, m.dataLen)
+		return core.Defect(fmt.Errorf("wav: wrote %d B of audio where the plan said %d B", written, m.dataLen))
 	}
 	return nil
 }
@@ -501,10 +497,10 @@ func intProperty(props map[string]string, key string, fallback, min, max int) (i
 	}
 	n, err := strconv.Atoi(raw)
 	if err != nil {
-		return 0, fmt.Errorf("wav: %s must be a whole number, got %q", key, raw)
+		return 0, core.Defect(fmt.Errorf("wav: %s must be a whole number, got %q", key, raw))
 	}
 	if n < min || n > max {
-		return 0, fmt.Errorf("wav: %s must be between %d and %d, got %d", key, min, max, n)
+		return 0, core.Defect(fmt.Errorf("wav: %s must be between %d and %d, got %d", key, min, max, n))
 	}
 	return n, nil
 }

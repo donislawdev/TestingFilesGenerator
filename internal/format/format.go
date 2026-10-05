@@ -263,14 +263,23 @@ type JointLimit struct {
 // is nine orders of magnitude below the range of the type. A guard here would
 // be a branch nothing could ever reach, and an unreachable branch reads as a
 // protection somebody is relying on.
-func (j JointLimit) Allows(of, by int64) (bad string) {
+//
+// The format is whose limit it is, so a window finds the reason in its own
+// words under the key it keeps it by.
+func (j JointLimit) Allows(format string, of, by int64) (bad core.Said) {
 	got := of * by
 	if got <= j.Max {
-		return ""
+		return core.Said{}
 	}
 	asked, allowed := j.readably(got)
-	return fmt.Sprintf("together they come to %s and the limit is %s, because %s",
-		asked, allowed, j.Why)
+	return core.Says("format.JointTooMuch", "together they come to %s and the limit is %s, because %s",
+		core.A("Asked", asked), core.A("Limit", allowed),
+		core.A("Why", core.Term{Key: core.JointKey(core.FormatOwner(format), j.Of, j.By), Text: j.Why}))
+}
+
+// Subject is the pair of settings this limit binds, named for a refusal.
+func (j JointLimit) Subject() core.Said {
+	return core.Says("format.TwoSettings", "%s and %s", core.A("Of", core.LabelTerm(j.Of)), core.A("By", core.LabelTerm(j.By)))
 }
 
 // readably is the pair of counts as a person reads them, and it never puts two
@@ -289,12 +298,13 @@ func (j JointLimit) Allows(of, by int64) (bad string) {
 //
 // Adding decimal places was the other way out and it does not work: 40 000 001
 // against 40 000 000 collides at every fixed number of places.
-func (j JointLimit) readably(got int64) (asked, allowed string) {
+func (j JointLimit) readably(got int64) (asked, allowed core.Said) {
 	if j.per() > 1 && got/j.per() != j.Max/j.per() {
-		return fmt.Sprintf("%d %s", got/j.per(), j.Unit),
-			fmt.Sprintf("%d %s", j.Max/j.per(), j.Unit)
+		return core.Says("format.CountOf", "%d %s", core.A("Number", got/j.per()), core.A("Unit", core.UnitTerm(j.Unit))),
+			core.Says("format.CountOf", "%d %s", core.A("Number", j.Max/j.per()), core.A("Unit", core.UnitTerm(j.Unit)))
 	}
-	return core.Exactly(got) + " " + j.Base, core.Exactly(j.Max) + " " + j.Base
+	return core.Says("format.ExactlyOf", "%s %s", core.A("Number", core.Exactly(got)), core.A("Unit", core.UnitTerm(j.Base))),
+		core.Says("format.ExactlyOf", "%s %s", core.A("Number", core.Exactly(j.Max)), core.A("Unit", core.UnitTerm(j.Base)))
 }
 
 // Describe is the rule as one sentence, for the format list and for a window.
@@ -396,20 +406,35 @@ type NotAContainerError struct {
 }
 
 // What happened, what can do it instead, and what to do about it.
-func (e *NotAContainerError) What() string {
-	return fmt.Sprintf("%s holds no other files, so it cannot take contains", e.Format)
+func (e *NotAContainerError) What() string { return e.what().String() }
+
+func (e *NotAContainerError) what() core.Said {
+	return core.Says("format.NotAContainer", "%s holds no other files, so it cannot take contains", core.A("Format", e.Format))
 }
 
-func (e *NotAContainerError) Why() string {
-	return "the formats that can are " + strings.Join(e.Containers, ", ")
+func (e *NotAContainerError) Why() string { return e.why().String() }
+
+func (e *NotAContainerError) why() core.Said {
+	return core.Says("format.NotAContainerWhy", "the formats that can are %s", core.A("Containers", strings.Join(e.Containers, ", ")))
 }
 
-func (e *NotAContainerError) Instead() string { return "Drop contains, or change the format" }
+func (e *NotAContainerError) Instead() string { return e.instead().String() }
 
-func (e *NotAContainerError) Error() string {
-	return fmt.Sprintf(
-		"%s holds no other files, so it cannot take contains - the formats that can are %s. Drop contains, or change the format",
-		e.Format, strings.Join(e.Containers, ", "))
+func (e *NotAContainerError) instead() core.Said {
+	return core.Says("format.NotAContainerFix", "Drop contains, or change the format")
+}
+
+// Parts is what happened, why and what to do instead, for a reader that lays
+// them out apart and in its own language.
+func (e *NotAContainerError) Parts() (what, why, instead core.Said) {
+	return e.what(), e.why(), e.instead()
+}
+
+func (e *NotAContainerError) Error() string { return e.Said().String() }
+
+// Said is the whole refusal, for a window that says it in its own language.
+func (e *NotAContainerError) Said() core.Said {
+	return core.Says("format.NotAContainerWhole", "%s - %s. %s", core.A("What", e.what()), core.A("Why", e.why()), core.A("Fix", e.instead()))
 }
 
 // ContentsConflictError is contains stated beside format properties saying the
@@ -420,10 +445,18 @@ type ContentsConflictError struct {
 	Keys   []string
 }
 
-func (e *ContentsConflictError) Error() string {
-	return fmt.Sprintf(
-		"%s: contains and the %s propert%s both say what the archive holds. Keep contains and drop the properties, or the other way round",
-		e.Format, strings.Join(e.Keys, ", "), plural(len(e.Keys)))
+func (e *ContentsConflictError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *ContentsConflictError) Said() core.Said {
+	if len(e.Keys) == 1 {
+		return core.Says("format.ContentsConflictOne",
+			"%s: contains and the %s property both say what the archive holds. Keep contains and drop the properties, or the other way round",
+			core.A("Format", e.Format), core.A("Key", e.Keys[0]))
+	}
+	return core.Says("format.ContentsConflict",
+		"%s: contains and the %s properties both say what the archive holds. Keep contains and drop the properties, or the other way round",
+		core.A("Format", e.Format), core.A("Keys", strings.Join(e.Keys, ", ")))
 }
 
 // NestingUnsupportedError is a container asked to hold its own format.
@@ -434,17 +467,13 @@ type NestingUnsupportedError struct {
 	Format string
 }
 
-func (e *NestingUnsupportedError) Error() string {
-	return fmt.Sprintf(
-		"%s cannot hold %s yet - an archive inside an archive needs a depth limit first. Hold a different format, or build the inner archive as its own target",
-		e.Format, e.Format)
-}
+func (e *NestingUnsupportedError) Error() string { return e.Said().String() }
 
-func plural(n int) string {
-	if n == 1 {
-		return "y"
-	}
-	return "ies"
+// Said is the refusal, for a window that says it in its own language.
+func (e *NestingUnsupportedError) Said() core.Said {
+	return core.Says("format.NestingUnsupported",
+		"%s cannot hold %s yet - an archive inside an archive needs a depth limit first. Hold a different format, or build the inner archive as its own target",
+		core.A("Format", e.Format), core.A("Inner", e.Format))
 }
 
 // Containers lists the formats that accept contains, for a message that tells
@@ -468,17 +497,16 @@ func Containers() []string {
 // The sentence is built from the declaration, so every format refuses in the
 // same words and a new format gets the wording by declaring rather than by
 // writing it again.
-func (p Property) Allows(raw string) (bad string) {
+func (p Property) Allows(raw string) (bad core.Said) {
 	switch p.Kind {
 	case PropertyInt:
 		n, err := strconv.ParseInt(raw, 10, 64)
 		if err != nil {
-			return "it takes a whole number" + p.unitSuffix()
+			return p.takesWholeNumber()
 		}
 		if p.Min != 0 || p.Max != 0 {
 			if n < p.Min || n > p.Max {
-				return fmt.Sprintf("it takes a whole number%s from %d to %d",
-					p.unitSuffix(), p.Min, p.Max)
+				return p.takesRange()
 			}
 		}
 	case PropertyChoice:
@@ -494,10 +522,10 @@ func (p Property) Allows(raw string) (bad string) {
 		// declaring the set here.
 		for _, c := range p.Choices {
 			if raw == c {
-				return ""
+				return core.Said{}
 			}
 		}
-		return "it takes one of: " + strings.Join(p.Choices, ", ")
+		return core.Says("format.TakesOneOf", "it takes one of: %s", core.A("Values", strings.Join(p.Choices, ", ")))
 	case PropertyBool:
 		// Exact for the same reason, and it costs a user nothing: a recipe
 		// writing `header: True` arrives as "true" already, because the reader
@@ -506,18 +534,35 @@ func (p Property) Allows(raw string) (bad string) {
 		switch raw {
 		case "true", "false":
 		default:
-			return "it takes true or false"
+			return core.Says("format.TakesTrueOrFalse", "it takes true or false")
 		}
 	case PropertySize:
 		if _, err := core.ParseSize(raw); err != nil {
-			return "it takes " + sizePhrase
+			return core.Says("format.TakesSize", "it takes a size such as 2mb, or a plain byte count")
 		}
 	case PropertyText:
 		// Named rather than left out. Free text has no shape to check, so
 		// anything is allowed - and a kind added later reddens the linter
 		// instead of arriving here and being accepted without a word.
 	}
-	return ""
+	return core.Said{}
+}
+
+// takesWholeNumber and takesRange are what a whole number setting takes, with
+// what it counts when the declaration says.
+func (p Property) takesWholeNumber() core.Said {
+	if p.Unit == "" {
+		return core.Says("format.TakesWholeNumber", "it takes a whole number")
+	}
+	return core.Says("format.TakesWholeNumberOf", "it takes a whole number of %s", core.A("Unit", core.UnitTerm(p.Unit)))
+}
+
+func (p Property) takesRange() core.Said {
+	if p.Unit == "" {
+		return core.Says("format.TakesRange", "it takes a whole number from %d to %d", core.A("Least", p.Min), core.A("Most", p.Max))
+	}
+	return core.Says("format.TakesRangeOf", "it takes a whole number of %s from %d to %d",
+		core.A("Unit", core.UnitTerm(p.Unit)), core.A("Least", p.Min), core.A("Most", p.Max))
 }
 
 // sizePhrase is what a size setting takes, written once.
@@ -693,7 +738,7 @@ func (d Descriptor) CheckEachProperty(props map[string]string) []error {
 		// because that is what an unset flag and an empty recipe entry both
 		// look like by the time they arrive here.
 		if raw := props[k]; raw != "" {
-			if why := p.Allows(raw); why != "" {
+			if why := p.Allows(raw); !why.IsZero() {
 				bad = append(bad, &PropertyValueError{
 					Format: d.ID, Key: k, Value: raw, Reason: why, Remedy: p.Instead(),
 				})
@@ -712,11 +757,11 @@ func (d Descriptor) CheckEachProperty(props map[string]string) []error {
 // today. The wording stops at "works it out" rather than naming the size,
 // because a property added tomorrow may work it out from something else and
 // the sentence has to stay true without anybody checking it.
-func (p Property) Instead() string {
+func (p Property) Instead() core.Said {
 	if p.Default != "" {
-		return fmt.Sprintf("write a value it takes, such as %s, or leave the line out", p.Default)
+		return core.Says("format.WriteAValueSuchAs", "write a value it takes, such as %s, or leave the line out", core.A("Default", p.Default))
 	}
-	return "write a value it takes, or leave the line out and the format works it out"
+	return core.Says("format.WriteAValue", "write a value it takes, or leave the line out and the format works it out")
 }
 
 // CheckProperties refuses any key the format does not declare, and any value
@@ -779,8 +824,9 @@ type Request struct {
 type Note struct {
 	// Code is the machine readable reason, for the manifest.
 	Code string
-	// Detail is one English sentence, for a person.
-	Detail string
+	// Detail is one sentence for a person. The manifest carries its English,
+	// and a window says it in its own language.
+	Detail core.Said
 }
 
 // Plan is the answer to "what exactly will be produced", worked out without
@@ -848,8 +894,8 @@ type BelowMinimumError struct {
 	Format    string
 	Requested int64
 	Minimum   int64
-	Reason    string
-	Hint      string
+	Reason    core.Said
+	Hint      core.Said
 }
 
 // What happened, why the minimum exists, and what to do instead.
@@ -861,16 +907,21 @@ type BelowMinimumError struct {
 // for belongs beside the minimum rather than after the reason. A guard asks
 // that the sentence still carries the why and the fix, so the two cannot drift.
 func (e *BelowMinimumError) What() string {
-	return fmt.Sprintf("%s cannot be smaller than %d B. Requested: %d B", e.Format, e.Minimum, e.Requested)
+	return core.Says("format.BelowMinimumWhat", "%s cannot be smaller than %d B. Requested: %d B",
+		core.A("Format", e.Format), core.A("Minimum", e.Minimum), core.A("Requested", e.Requested)).String()
 }
 
-func (e *BelowMinimumError) Why() string { return e.Reason }
+func (e *BelowMinimumError) Why() string { return e.Reason.String() }
 
-func (e *BelowMinimumError) Instead() string { return e.Hint }
+func (e *BelowMinimumError) Instead() string { return e.Hint.String() }
 
-func (e *BelowMinimumError) Error() string {
-	return fmt.Sprintf("%s cannot be smaller than %d B - %s. Requested: %d B. %s",
-		e.Format, e.Minimum, e.Reason, e.Requested, e.Hint)
+func (e *BelowMinimumError) Error() string { return e.Said().String() }
+
+// Said is the whole refusal, for a window that says it in its own language.
+func (e *BelowMinimumError) Said() core.Said {
+	return core.Says("format.BelowMinimum", "%s cannot be smaller than %d B - %s. Requested: %d B. %s",
+		core.A("Format", e.Format), core.A("Minimum", e.Minimum), core.A("Why", e.Reason),
+		core.A("Requested", e.Requested), core.A("Fix", e.Hint))
 }
 
 // SettingSize is the recipe key this refusal is about.
@@ -910,21 +961,26 @@ type AboveMaximumError struct {
 	Format    string
 	Requested int64
 	Maximum   int64
-	Reason    string
-	Hint      string
+	Reason    core.Said
+	Hint      core.Said
 }
 
 func (e *AboveMaximumError) What() string {
-	return fmt.Sprintf("%s cannot be larger than %d B. Requested: %d B", e.Format, e.Maximum, e.Requested)
+	return core.Says("format.AboveMaximumWhat", "%s cannot be larger than %d B. Requested: %d B",
+		core.A("Format", e.Format), core.A("Maximum", e.Maximum), core.A("Requested", e.Requested)).String()
 }
 
-func (e *AboveMaximumError) Why() string { return e.Reason }
+func (e *AboveMaximumError) Why() string { return e.Reason.String() }
 
-func (e *AboveMaximumError) Instead() string { return e.Hint }
+func (e *AboveMaximumError) Instead() string { return e.Hint.String() }
 
-func (e *AboveMaximumError) Error() string {
-	return fmt.Sprintf("%s cannot be larger than %d B - %s. Requested: %d B. %s",
-		e.Format, e.Maximum, e.Reason, e.Requested, e.Hint)
+func (e *AboveMaximumError) Error() string { return e.Said().String() }
+
+// Said is the whole refusal, for a window that says it in its own language.
+func (e *AboveMaximumError) Said() core.Said {
+	return core.Says("format.AboveMaximum", "%s cannot be larger than %d B - %s. Requested: %d B. %s",
+		core.A("Format", e.Format), core.A("Maximum", e.Maximum), core.A("Why", e.Reason),
+		core.A("Requested", e.Requested), core.A("Fix", e.Hint))
 }
 
 func (e *AboveMaximumError) AboutSetting() string { return SettingSize }
@@ -935,6 +991,9 @@ type UnknownFormatError struct {
 	Known []string
 }
 
-func (e *UnknownFormatError) Error() string {
-	return fmt.Sprintf("unknown format %q. Known formats: %v", e.ID, e.Known)
+func (e *UnknownFormatError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *UnknownFormatError) Said() core.Said {
+	return core.Says("format.Unknown", "unknown format %q. Known formats: %v", core.A("Format", e.ID), core.A("Known", e.Known))
 }

@@ -506,7 +506,7 @@ func restartInstead(args []string, errOut io.Writer) {
 	if err == nil {
 		return
 	}
-	sentence := text.PreferencesRestartFailed(err.Error())
+	sentence := text.PreferencesRestartFailed(text.Refusal(err, ""))
 	fmt.Fprintln(errOut, sentence)
 	sayInADialog(text.WindowTitle(version.Version), sentence)
 }

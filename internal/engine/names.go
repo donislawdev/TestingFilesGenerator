@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"strings"
 
 	"golang.org/x/text/unicode/norm"
@@ -52,19 +51,19 @@ func claimFileName(names map[string]nameOwner, position int, id, name string) er
 	if owner.manifest {
 		return &RecipeError{
 			Setting: core.TargetAddress(position, SettingName),
-			Detail: fmt.Sprintf("target %q produces a file named %s, and that is the name this run gives its manifest",
-				id, core.Shown(name)),
-			Because: "both are written into the output directory, so the file would take the name the manifest needs and the run would end with files and nothing to remove them by",
-			Remedy:  "Give the target a name template containing " + indexToken + ", or name the manifest something else",
+			Detail: core.Says("engine.NameIsTheManifest", "target %q produces a file named %s, and that is the name this run gives its manifest",
+				core.A("Target", id), core.A("Name", core.Shown(name))),
+			Because: core.Says("engine.NameIsTheManifestWhy", "both are written into the output directory, so the file would take the name the manifest needs and the run would end with files and nothing to remove them by"),
+			Remedy:  nameTheManifestElse(),
 		}
 	}
 	if owner.instructions {
 		return &RecipeError{
 			Setting: core.TargetAddress(position, SettingName),
-			Detail: fmt.Sprintf("target %q produces a file named %s, and that is the name this run gives the instructions beside its manifest",
-				id, core.Shown(name)),
-			Because: "both are written into the output directory, and the instructions say what every file of the run is for, so one of the two would be lost",
-			Remedy:  "Give the target a name template containing " + indexToken + ", or name the manifest something else",
+			Detail: core.Says("engine.NameIsTheInstructions", "target %q produces a file named %s, and that is the name this run gives the instructions beside its manifest",
+				core.A("Target", id), core.A("Name", core.Shown(name))),
+			Because: core.Says("engine.NameIsTheInstructionsWhy", "both are written into the output directory, and the instructions say what every file of the run is for, so one of the two would be lost"),
+			Remedy:  nameTheManifestElse(),
 		}
 	}
 	// No address, deliberately, and this is the one refusal here that keeps it.
@@ -74,7 +73,14 @@ func claimFileName(names map[string]nameOwner, position int, id, name string) er
 	// needs and what a window cannot place either way.
 	return &RecipeError{
 		Detail: collisionDetail(owner, id, name),
-		Remedy: "Give one of them a name template containing " + indexToken}
+		Remedy: core.Says("engine.NamesClashFix", "Give one of them a name template containing %s", core.A("Placeholder", indexToken))}
+}
+
+// nameTheManifestElse is the way out of a file that takes a name the record
+// of the run needs.
+func nameTheManifestElse() core.Said {
+	return core.Says("engine.NameTheManifestElse", "Give the target a name template containing %s, or name the manifest something else",
+		core.A("Placeholder", indexToken))
 }
 
 // collisionKey is the spelling two names are compared under. Two names sharing
@@ -144,16 +150,17 @@ func collisionKey(name string) string {
 // collide can print identically on screen, so a refusal that only shows them is
 // one the reader cannot act on. A refusal has to say what is wrong, what is
 // allowed and what to do instead.
-func collisionDetail(owner nameOwner, id, name string) string {
+func collisionDetail(owner nameOwner, id, name string) core.Said {
 	switch {
 	case owner.name == name:
-		return fmt.Sprintf("targets %q and %q both produce a file named %s", owner.id, id, core.Shown(name))
+		return core.Says("engine.NamesClash", "targets %q and %q both produce a file named %s",
+			core.A("First", owner.id), core.A("Second", id), core.A("Name", core.Shown(name)))
 	// Spelling before case, because normalising does not touch case and so a
 	// pair that survives this one really is a difference of case.
 	case norm.NFC.String(owner.name) == norm.NFC.String(name):
-		return fmt.Sprintf(
+		return core.Says("engine.NamesClashSpelling",
 			"targets %q and %q produce the names %s and %s. Those print the same because they are one name spelled two ways, an accented letter against the plain letter with its accent as a separate character. macOS stores both under one name, so one file would be written over the other and the manifest would describe both",
-			owner.id, id, core.Shown(owner.name), core.Shown(name))
+			core.A("First", owner.id), core.A("Second", id), core.A("FirstName", core.Shown(owner.name)), core.A("SecondName", core.Shown(name)))
 	// Lowercasing rather than strings.EqualFold, and a guard caught the
 	// difference on 2026-08-26. EqualFold folds simply, which puts the LONG s
 	// in the same orbit as s - so "maſs.txt" against "mass.txt" was answered
@@ -163,17 +170,17 @@ func collisionDetail(owner nameOwner, id, name string) string {
 	//
 	//lint:ignore SA6005 EqualFold is the faster comparison and the wrong one here. It folds simply, which is a wider question than the one this branch asks, and the sentence it leads to would then be false about two names that are not one name in two sizes.
 	case strings.ToLower(norm.NFC.String(owner.name)) == strings.ToLower(norm.NFC.String(name)):
-		return fmt.Sprintf(
+		return core.Says("engine.NamesClashCase",
 			"targets %q and %q produce the names %s and %s, which differ only in case. Most filesystems treat those as one file, so one would be written over the other and the manifest would describe both",
-			owner.id, id, core.Shown(owner.name), core.Shown(name))
+			core.A("First", owner.id), core.A("Second", id), core.A("FirstName", core.Shown(owner.name)), core.A("SecondName", core.Shown(name)))
 	default:
 		// The fourth kind, unreachable until collisionKey started folding on
 		// 2026-08-26. It is not a difference of case and not a difference of
 		// spelling, so both sentences above would have been false about it -
 		// and the one it would have fallen into says the two names differ by an
 		// accent, which is worse than saying nothing.
-		return fmt.Sprintf(
+		return core.Says("engine.NamesClashFolded",
 			"targets %q and %q produce the names %s and %s. Those are different letters that mean the same one - the sharp s against ss, the long s against s, a ligature against the letters in it. macOS stores both under one name, so one file would be written over the other and the manifest would describe both",
-			owner.id, id, core.Shown(owner.name), core.Shown(name))
+			core.A("First", owner.id), core.A("Second", id), core.A("FirstName", core.Shown(owner.name)), core.A("SecondName", core.Shown(name)))
 	}
 }

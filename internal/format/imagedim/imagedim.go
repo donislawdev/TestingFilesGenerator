@@ -31,10 +31,11 @@
 package imagedim
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Setting names. Public names, so they are spelled once.
@@ -109,13 +110,13 @@ func Value(formatID, key string, props map[string]string, largest, fallback int)
 	if err != nil {
 		return 0, &format.PropertyValueError{
 			Format: formatID, Key: key, Value: raw,
-			Reason: "it has to be a whole number of " + Unit,
+			Reason: core.Says("format.HasToBeWholeNumberOf", "it has to be a whole number of %s", core.A("Unit", core.UnitTerm(Unit))),
 		}
 	}
 	if n < Smallest || n > largest {
 		return 0, &format.PropertyValueError{
 			Format: formatID, Key: key, Value: raw,
-			Reason: fmt.Sprintf("it has to be between %d and %d", Smallest, largest),
+			Reason: core.Says("format.ItHasToBeBetweenAnd", "it has to be between %d and %d", core.A("MinColumns", Smallest), core.A("MaxColumns", largest)),
 		}
 	}
 	return n, nil
