@@ -33,9 +33,9 @@ func (t *Tools) showResult(d tool.Descriptor, r *tool.Result) {
 // next one, and an empty band after a tool with fewer boxes.
 //
 // The view is told rather than the page under it. Measured in the real window
-// the same day, three changes of tool with each build: as it was, all three
-// drawn with the old heights; with the view told, or with the page told, all
-// three right. The view, because it is also what grows the room to scroll
+// the same day, three changes of tool with each build. As it was, all three
+// were drawn with the old heights. With the view told, or with the page told,
+// all three were right. The view, because it is also what grows the room to scroll
 // when a page comes out longer than the window.
 func (t *Tools) relay() {
 	if t.view.scroll == nil {
