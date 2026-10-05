@@ -138,8 +138,10 @@ func newBatchNotes() batchNotes {
 	// has to stay unstated - manifest rule MF5, because an invented expectation
 	// produces false failures in somebody else's test run.
 	n.expected = parts.NewChooser(recipe.Outcomes(), nil)
+	n.expected.ShownAs = outcomeName
 	n.expected.PlaceHolder = text.PlaceholderNotStated()
 	n.reason = parts.NewChooser(recipe.Reasons(), nil)
+	n.reason.ShownAs = reasonName
 	n.reason.PlaceHolder = text.PlaceholderNotStated()
 	return n
 }
@@ -198,7 +200,23 @@ func (b *batch) settingsSaid() string {
 
 // said is what the manifest notes say while they are away.
 func (n *batchNotes) said() string {
-	return text.FoldedSummary(n.group.Text, n.purpose.Text, n.expected.Selected, n.reason.Selected)
+	return text.FoldedSummary(n.group.Text, n.purpose.Text, outcomeName(n.expected.Selected), reasonName(n.reason.Selected))
+}
+
+// outcomeName and reasonName are a value of the two lists as the window says
+// it. The manifest writes the value.
+func outcomeName(v string) string {
+	if v == "" {
+		return ""
+	}
+	return text.ChoiceName(recipe.KeyExpected, v)
+}
+
+func reasonName(v string) string {
+	if v == "" {
+		return ""
+	}
+	return text.ChoiceName(recipe.KeyExpectedReason, v)
 }
 
 // openFoldHolding opens everything a box has been put away inside.

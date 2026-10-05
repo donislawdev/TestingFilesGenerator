@@ -40,6 +40,9 @@ package text
 import (
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Buttons on the run controls, in the order G6 puts them: preview before the
@@ -252,6 +255,20 @@ func Progress(filesDone, filesTotal int, bytesDone, bytesTotal string, percent i
 	return sayf("Progress", "{{.Done}}/{{.Total}} files  {{.BytesDone}} of {{.BytesTotal}}  {{.Percent}}%",
 		map[string]any{"Done": filesDone, "Total": filesTotal,
 			"BytesDone": bytesDone, "BytesTotal": bytesTotal, "Percent": percent})
+}
+
+// Roughly is core.Roughly with the units of the window's language - "3m" is
+// three metres to a Polish reader. The rounding is core's, so the two
+// surfaces round alike.
+func Roughly(d time.Duration) string {
+	r := core.Rough(d)
+	switch r.Unit {
+	case 's':
+		return sayf("TimeSeconds", "{{.Seconds}}s", map[string]any{"Seconds": r.Seconds})
+	case 'm':
+		return sayf("TimeMinutes", "{{.Minutes}}m", map[string]any{"Minutes": r.Minutes})
+	}
+	return sayf("TimeHours", "{{.Hours}}h{{.Minutes}}m", map[string]any{"Hours": r.Hours, "Minutes": r.Minutes})
 }
 
 // TimeLeft is appended to Progress once the estimate is worth showing.

@@ -691,8 +691,8 @@ func checkPaths(path string, m *Manifest) error {
 			continue
 		}
 		return &SchemaError{Path: path, Detail: core.Says("manifest.EntryHasThePathWhichLands", "entry %d has the path %q, which lands outside the directory the manifest describes - %s. "+
-				"This tool never reads or removes anything outside that directory, so a manifest that asks it to is one it will not act on. "+
-				"Use the manifest the run actually wrote, or correct the path to one inside the directory", core.A("I", i+1), core.A("Path", f.Path), core.A("Problem", problem))}
+			"This tool never reads or removes anything outside that directory, so a manifest that asks it to is one it will not act on. "+
+			"Use the manifest the run actually wrote, or correct the path to one inside the directory", core.A("I", i+1), core.A("Path", f.Path), core.A("Problem", problem))}
 	}
 	// The instructions are a name beside the manifest and nothing else.
 	// cleanup --with-manifest removes the file this names, so a manifest
@@ -700,8 +700,8 @@ func checkPaths(path string, m *Manifest) error {
 	// never wrote.
 	if name := m.Run.Instructions; name != "" && !isInstructionsName(name) {
 		return &SchemaError{Path: path, Detail: core.Says("manifest.RunInstructionsIsAndItCan", "run.instructions is %q, and it can only be the name of a file beside the manifest ending in %s. "+
-				"This tool removes that file with the manifest, so it will not act on one that names anything else. "+
-				"Use the manifest the run actually wrote, or remove the key", core.A("Name", name), core.A("InstructionsSuffix", instructionsSuffix))}
+			"This tool removes that file with the manifest, so it will not act on one that names anything else. "+
+			"Use the manifest the run actually wrote, or remove the key", core.A("Name", name), core.A("InstructionsSuffix", instructionsSuffix))}
 	}
 	return nil
 }

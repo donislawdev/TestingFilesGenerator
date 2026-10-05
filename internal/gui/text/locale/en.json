@@ -1,868 +1,1104 @@
 {
   "AboutLicenceBinds": {
     "description": "Shown on the About screen.",
+    "hash": "sha256-e3b0c44298fc",
     "other": ""
   },
   "AboutTagline": {
     "description": "Shown on the About screen.",
+    "hash": "sha256-3677496ffba0",
     "other": "Generate test files, and know how the system under test should react to them."
   },
   "AllowedDefault": {
     "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are. Carries one value, {{.Default}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-22ad56774302",
     "other": "default {{.Default}}"
   },
   "AllowedJointly": {
     "description": "A note under two settings of a format whose product has a ceiling. Of and By are the names a recipe writes and stay as they are. Carries these values, each of which has to stay spelled exactly that way: {{.Of}}, {{.By}}, {{.Max}}, {{.Unit}}, {{.Why}}.",
+    "hash": "sha256-890007fb5262",
     "other": "{{.Of}} times {{.By}} cannot pass {{.Max}} {{.Unit}}, because {{.Why}}"
   },
   "AllowedOneOf": {
     "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are. Carries one value, {{.Values}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-96a180377b5d",
     "other": "one of: {{.Values}}"
   },
   "AllowedRange": {
     "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are. Carries these values, each of which has to stay spelled exactly that way: {{.Min}}, {{.Max}}.",
+    "hash": "sha256-430416192be6",
     "other": "whole number from {{.Min}} to {{.Max}}"
   },
   "AllowedRangeOf": {
     "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are. Carries these values, each of which has to stay spelled exactly that way: {{.Unit}}, {{.Min}}, {{.Max}}.",
+    "hash": "sha256-f52248fe6440",
     "other": "whole number of {{.Unit}} from {{.Min}} to {{.Max}}"
   },
   "AllowedSize": {
     "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are.",
+    "hash": "sha256-ab006a92eb28",
     "other": "a size such as 2mb, or a plain byte count"
   },
   "AllowedTrueOrFalse": {
     "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are.",
+    "hash": "sha256-ed50d4017aaf",
     "other": "true or false"
   },
   "AllowedWholeNumber": {
     "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are.",
+    "hash": "sha256-24c327302769",
     "other": "whole number"
   },
   "AllowedWholeNumberOf": {
     "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are. Carries one value, {{.Unit}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-3d353f1038c7",
     "other": "whole number of {{.Unit}}"
   },
   "AllowedWithDefault": {
     "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are. Carries these values, each of which has to stay spelled exactly that way: {{.What}}, {{.Default}}.",
+    "hash": "sha256-a8076abaa30c",
     "other": "{{.What}}, default {{.Default}}"
   },
   "BatchHeading": {
     "description": "Shown in the window. Carries one value, {{.Number}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-f26edb187ab1",
     "other": "Batch {{.Number}}"
   },
   "ButtonAddBatch": {
     "description": "The words on a button.",
+    "hash": "sha256-cf795e51114f",
     "other": "Add a batch"
   },
   "ButtonAddContents": {
     "description": "The words on a button.",
+    "hash": "sha256-4b12027a5240",
     "other": "Add files inside"
   },
   "ButtonCancel": {
     "description": "The words on a button.",
+    "hash": "sha256-19766ed6ccb2",
     "other": "Cancel"
   },
   "ButtonChoose": {
     "description": "The words on a button.",
+    "hash": "sha256-895ba517a993",
     "other": "Choose..."
   },
   "ButtonCopy": {
     "description": "The words on a button.",
+    "hash": "sha256-e21f935f11d7",
     "other": "Copy"
   },
   "ButtonCopyAll": {
     "description": "The words on a button.",
+    "hash": "sha256-96e3f09a5f16",
     "other": "Copy all"
   },
   "ButtonDonate": {
     "description": "The words on a button.",
+    "hash": "sha256-c91ee0f2799d",
     "other": "Donate"
   },
   "ButtonDuplicateBatch": {
     "description": "The words on a button.",
+    "hash": "sha256-02cdaabfca80",
     "other": "Duplicate"
   },
   "ButtonForget": {
     "description": "The words on a button.",
+    "hash": "sha256-a6bd489d9550",
     "other": "Forget"
   },
   "ButtonGenerate": {
     "description": "The words on a button.",
+    "hash": "sha256-49e49bb4401e",
     "other": "Generate"
   },
   "ButtonOpenFolder": {
     "description": "The words on a button.",
+    "hash": "sha256-6a9084025c4b",
     "other": "Open folder"
   },
   "ButtonOpenInstructions": {
     "description": "The words on a button.",
+    "hash": "sha256-d5ca5d9e594b",
     "other": "Open instructions"
   },
   "ButtonOpenManifest": {
     "description": "The words on a button.",
+    "hash": "sha256-520b7632c1e9",
     "other": "Open manifest"
   },
   "ButtonPreview": {
     "description": "The words on a button.",
+    "hash": "sha256-324b134f57c7",
     "other": "Preview"
   },
   "ButtonRemoveBatch": {
     "description": "The words on a button.",
+    "hash": "sha256-c3812fc4acb8",
     "other": "Remove"
   },
   "ButtonRemoveContents": {
     "description": "The words on a button.",
+    "hash": "sha256-c3812fc4acb8",
     "other": "Remove"
   },
   "ButtonRestart": {
     "description": "The words on a button.",
+    "hash": "sha256-09af1002abaf",
     "other": "Restart now"
   },
   "ButtonRunTool": {
     "description": "The words on a button.",
+    "hash": "sha256-00d60e31a4e6",
     "other": "Run"
   },
   "ChoiceSameAsSystem": {
     "description": "An entry in a list somebody chooses from. Carries one value, {{.Language}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-bb58ca050419",
     "other": "Same as the system ({{.Language}})"
   },
   "ContentsHeading": {
     "description": "Shown where an archive says what it holds.",
+    "hash": "sha256-5aa71ee1325d",
     "other": "Files inside each archive"
   },
   "DamageNone": {
     "description": "Shown in the window.",
+    "hash": "sha256-140bedbf9c3f",
     "other": "none"
   },
   "DamageSettingsFor": {
     "description": "Shown in the window. Carries one value, {{.Damage}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-ef202c268786",
     "other": "Settings for {{.Damage}}"
   },
   "DecimalMark": {
     "description": "What this language writes between the whole part of a number and its tenths, as in 10.0 MB. One character.",
+    "hash": "sha256-cdb4ee2aea69",
     "other": "."
   },
   "Defect": {
     "description": "Shown in the window. Carries one value, {{.Detail}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-2241be2ea8a6",
     "other": "Something inside the program went wrong, and it should not have. Report it with this description: {{.Detail}}"
   },
   "DetailBasePreset": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-e04b69a605dc",
     "other": "The settings under it are the preset's own. One left empty takes its default, and the manifest records which ones did."
   },
   "DetailBoundary": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-eaf5b74b1f70",
     "other": "Give the limit your system declares, as 10mb. Units count in 1024s, and the run prints the number it used."
   },
   "DetailBuildOnPreset": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-5f88fed7a993",
     "other": "Unticked, the batches below are the whole recipe. Ticked, the chosen preset's files come first and the batches are added after them."
   },
   "DetailDamage": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-96921213f617",
     "other": "The files come out the size you asked for and no reader will accept them, which is what a validator has to reject. The manifest records what was broken and says the file is expected to be rejected."
   },
   "DetailDonate": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-8531eb297aaa",
     "other": "Opens the support page in your browser. The tool is free and stays free - this pays for the time that goes into it."
   },
   "DetailExpected": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-7923af561fdd",
     "other": "It reaches the manifest and nothing else reads it. Leave it alone where the right answer depends on the application's own policy."
   },
   "DetailGroup": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-37e7791bbda7",
     "other": "It reaches the manifest, so a test can assert about a whole class of case at once."
   },
   "DetailLabel": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-aeb24fe1804e",
     "other": "Writes into the file what it is and how big it was meant to be. Turn it off for a file that has to hold nothing but its content."
   },
   "DetailManifest": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-98009d7dd5ba",
     "other": "It goes in the output directory beside the files."
   },
   "DetailNameTemplate": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-3e64e80529fb",
     "other": "Left empty, the files are named after the batch and numbered, like invoices_0001.pdf. Fill it in and the name is used exactly as written, extension and all. The one placeholder is {index:04}, which becomes 0001, 0002 and so on, and a batch of more than one file needs it."
   },
   "DetailOutputDir": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-55317cd71eaa",
     "other": "It is created if it is not there."
   },
   "DetailPreset": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-9c28266cd16b",
     "other": "The set is worked out from the answer."
   },
   "DetailPurpose": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-d3b3309352dc",
     "other": "It is written into the manifest and into the instructions beside it, which say what every file of the run is for. It changes no byte of any file."
   },
   "DetailReason": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-d7f3c443d829",
     "other": "From a closed list, so a report can group by reason. It names the rule in play whatever the outcome is - a file a byte under a size limit is expected to be accepted, and the rule in play is still the size limit. A reason needs an outcome beside it."
   },
   "DetailSeed": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-823564b2ed53",
     "other": "On any machine and in any build of this tool. 0 is the seed a run uses when nobody asks for another one. It is a seed like any other rather than a request for random files, which this tool never produces."
   },
   "DetailSize": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-794528f6abe6",
     "other": "Units count in 1024s, so 10mb is 10485760 bytes. A plain number is a count of bytes."
   },
   "DetailSizeRange": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-421d366dbd3e",
     "other": "Two sizes with a hyphen, as 1kb-8kb. Each file gets its own size, drawn from the seed, so the run repeats."
   },
   "DetailSizeWay": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-b65673254620",
     "other": "One size gives every file the same size. A range draws a different size for each file. Around a limit makes three files: one byte under the limit, one on it, one over."
   },
   "DetailTargetID": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-1a2680483a4d",
     "other": "It reaches the manifest and the file names, so a test can tell these files from the rest of the run. The seeds are derived from it, so changing it changes the bytes."
   },
   "DetailTool": {
     "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-1fdd99516e02",
     "other": "What the tool works on and its settings change with the tool chosen."
   },
   "DirectoryWithFreeSpace": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Directory}}, {{.Free}}.",
+    "hash": "sha256-3e96ff18edeb",
     "other": "{{.Directory}} ({{.Free}} free)"
   },
   "FieldBasePreset": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-6daf826260dd",
     "other": "Preset to build on"
   },
   "FieldBoundary": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-0db0580b20bd",
     "other": "Limit to test"
   },
   "FieldBuildOnPreset": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-765fe22ce5d4",
     "other": "Start from a preset"
   },
   "FieldCount": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-5369b7db3d69",
     "other": "How many files"
   },
   "FieldDamage": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-0c874f581a45",
     "other": "Damage"
   },
   "FieldExpected": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-08159997039d",
     "other": "Expected outcome"
   },
   "FieldFormat": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-2f343666aaa8",
     "other": "Format"
   },
   "FieldGroup": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-6f87ee9cb9dc",
     "other": "Kind of case"
   },
   "FieldLabel": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-98e8b12087c4",
     "other": "Label in each file"
   },
   "FieldLanguage": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-703df606ae88",
     "other": "Window language"
   },
   "FieldManifest": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-882e40f5910b",
     "other": "Manifest file name"
   },
   "FieldNameTemplate": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-6d00d6e32977",
     "other": "File names"
   },
   "FieldOutputDir": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-c94c0d681c64",
     "other": "Output directory"
   },
   "FieldPreset": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-7252e7ce0085",
     "other": "Preset"
   },
   "FieldPurpose": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-d4e8830a71c7",
     "other": "Purpose"
   },
   "FieldReason": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-d697fea77188",
     "other": "Rule being tested"
   },
   "FieldSeed": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-367ef06b8fbf",
     "other": "Seed"
   },
   "FieldSize": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-1af851907331",
     "other": "Size"
   },
   "FieldSizeRange": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-131fb459b1a7",
     "other": "Size range"
   },
   "FieldSizeWay": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-8ab998e87d55",
     "other": "How the size is given"
   },
   "FieldTargetID": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-cb719956a85c",
     "other": "Batch name"
   },
   "FieldTool": {
     "description": "The name above a box somebody fills in.",
+    "hash": "sha256-2e53bdcd0740",
     "other": "Tool"
   },
   "Files": {
     "description": "Shown in the window. One form per number, and a language may need more than the two English has - add them beside these. Carries one value, {{.Count}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-70212ca62bcd",
     "one": "1 file",
     "other": "{{.Count}} files"
   },
   "FormatCount": {
     "description": "Shown in the window. One form per number, and a language may need more than the two English has - add them beside these. Carries one value, {{.Count}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-12de0241f4a5",
     "one": "1 format",
     "other": "{{.Count}} formats"
   },
   "HintBasePreset": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-d75c8b442fd9",
     "other": "Its files come first."
   },
   "HintBoundary": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-3ef02abcdddf",
     "other": "Three files: one byte under the limit, one on it, one over."
   },
   "HintDamage": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-67e5c4c4940a",
     "other": "Break the files on purpose."
   },
   "HintExpected": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-a1b4f34d2e0e",
     "other": "What the system under test should do with these files."
   },
   "HintFormat": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-f5616fe5a139",
     "other": "What kind of file to produce."
   },
   "HintGroup": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-e95a20274902",
     "other": "Marks several batches as one kind of case."
   },
   "HintManifest": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-986221f924c6",
     "other": "The record of what this run produced."
   },
   "HintNameTemplate": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-c92ff0a07510",
     "other": "What every file in this batch is called."
   },
   "HintOutputDir": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-35dfac65eb8a",
     "other": "Where the files and the manifest go."
   },
   "HintPreset": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-e86685eae6f6",
     "other": "What you are testing."
   },
   "HintPurpose": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-ff421b5abcc8",
     "other": "What these files are and why they are in the set."
   },
   "HintReason": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-6307e1666cea",
     "other": "Which rule this is about."
   },
   "HintSeed": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-5cd4cde003a4",
     "other": "The same seed gives the same bytes."
   },
   "HintSize": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-70aad1580c12",
     "other": "Exact size of every file."
   },
   "HintSizeExact": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-ee94fadda67a",
     "other": "One size for every file."
   },
   "HintSizeRange": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-a7f91764d39d",
     "other": "A different size for every file."
   },
   "HintTargetID": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-16b346acd09e",
     "other": "A short name for this batch."
   },
   "HintTool": {
     "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-6a3014a90ca2",
     "other": "What you want to find out."
   },
   "HowToUseChoose": {
     "description": "Shown in the window.",
+    "hash": "sha256-d3826a08883e",
     "other": "Choose a preset, or fill in one batch on the first screen."
   },
   "HowToUsePress": {
     "description": "Shown in the window.",
+    "hash": "sha256-efe55efa1794",
     "other": "Press Generate. The files and a manifest land in the output folder."
   },
   "HowToUseRead": {
     "description": "Shown in the window.",
+    "hash": "sha256-ef0d5f7632c8",
     "other": "Point your test at the manifest. For every file it says what the system under test should do with it - accept it, reject it or sanitize it - or records the outcome as unspecified, where the right answer belongs to the application's own policy."
   },
   "InstructionsNotSaved": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Path}}, {{.Cause}}.",
+    "hash": "sha256-bfb2e6c568e3",
     "other": "The instructions could not be saved to {{.Path}} ({{.Cause}}). The manifest was saved and holds the same facts."
   },
   "LanguageName": {
     "description": "The name of the language this file is written in, written in that language: Polski, not Polish. It is how the language is listed on the Preferences screen.",
+    "hash": "sha256-ba118bf7fc9c",
     "other": "English"
   },
   "ListHeadingCount": {
     "description": "Shown inside an open list somebody chooses from. Carries these values, each of which has to stay spelled exactly that way: {{.Kind}}, {{.Count}}.",
+    "hash": "sha256-058722bef091",
     "other": "{{.Kind}} · {{.Count}}"
   },
   "ListJoinedAnd": {
     "description": "Shown inside an open list somebody chooses from. Carries these values, each of which has to stay spelled exactly that way: {{.Head}}, {{.Last}}.",
+    "hash": "sha256-40953da1c535",
     "other": "{{.Head}} and {{.Last}}"
   },
   "ListJoinedOr": {
     "description": "Shown inside an open list somebody chooses from. Carries these values, each of which has to stay spelled exactly that way: {{.Head}}, {{.Last}}.",
+    "hash": "sha256-c9be11158971",
     "other": "{{.Head}} or {{.Last}}"
   },
   "ListKindArchives": {
     "description": "A heading inside an open list of formats, over the formats of one kind of file.",
+    "hash": "sha256-e404aa80d8df",
     "other": "Archives"
   },
   "ListKindDocuments": {
     "description": "A heading inside an open list of formats, over the formats of one kind of file.",
+    "hash": "sha256-b4e929d8bcfe",
     "other": "Documents"
   },
   "ListKindPictures": {
     "description": "A heading inside an open list of formats, over the formats of one kind of file.",
+    "hash": "sha256-1e6245009d67",
     "other": "Pictures"
   },
   "ListKindSound": {
     "description": "A heading inside an open list of formats, over the formats of one kind of file.",
+    "hash": "sha256-46124e023603",
     "other": "Sound"
   },
   "ListKindText": {
     "description": "A heading inside an open list of formats, over the formats of one kind of file.",
+    "hash": "sha256-c04c0f52d26a",
     "other": "Text and data"
   },
   "ListKindVideo": {
     "description": "A heading inside an open list of formats, over the formats of one kind of file.",
+    "hash": "sha256-d534be829e32",
     "other": "Video"
   },
   "ListNothingMatches": {
     "description": "Shown inside an open list somebody chooses from.",
+    "hash": "sha256-7b2c3b9853ac",
     "other": "No format matches - clear the box to see all"
   },
   "ManifestNamed": {
     "description": "Shown in the window. Carries one value, {{.Name}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-f9540bb6e465",
     "other": "Manifest: {{.Name}}"
   },
   "ManifestNotSaved": {
     "description": "Shown in the window. Carries one value, {{.Path}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-bb722052cb9e",
     "other": "the files were written and the manifest could not be saved to {{.Path}}"
   },
   "ManifestTooLargeToRead": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Size}}, {{.Limit}}.",
+    "hash": "sha256-0b5d14c5fc58",
     "other": "this run's record is about {{.Size}} and this build reads at most {{.Limit}}, so Verify and Clean up will not be able to read it. Split the run to keep each record readable."
   },
   "NotAWholeNumber": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Field}}, {{.Value}}.",
+    "hash": "sha256-2537ac57d3c7",
     "other": "{{.Field}} is {{.Value}}, which is not a whole number. Write the digits out, such as 1 or 500"
   },
   "NoteBase": {
     "description": "Shown in the window.",
+    "hash": "sha256-e48510060140",
     "other": "With the box ticked, the chosen preset's files come first and the batches below are added after them. Without it, the batches are the whole recipe."
   },
   "NoteManifestOnly": {
     "description": "Shown in the window.",
+    "hash": "sha256-794d5d9e2043",
     "other": "These describe the case. They go into the manifest and change nothing in the files."
   },
   "NothingProduced": {
     "description": "Shown in the window.",
+    "hash": "sha256-7d90c4a68d2c",
     "other": "Nothing was produced."
+  },
+  "PlaceholderChooseOne": {
+    "description": "Stands in an empty box, in a quieter colour than a value.",
+    "hash": "sha256-fdfe6bf17ea5",
+    "other": "(Select one)"
   },
   "PlaceholderFilter": {
     "description": "Stands in an empty box, in a quieter colour than a value.",
+    "hash": "sha256-7647095cb6a8",
     "other": "type to filter"
   },
   "PlaceholderLeftEmpty": {
     "description": "Stands in an empty box, in a quieter colour than a value. Carries one value, {{.Value}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-aaa21a9c2770",
     "other": "default: {{.Value}}"
   },
   "PlaceholderNotSet": {
     "description": "Stands in an empty box, in a quieter colour than a value.",
+    "hash": "sha256-1aef93991721",
     "other": "not set"
   },
   "PlaceholderNotStated": {
     "description": "Stands in an empty box, in a quieter colour than a value.",
+    "hash": "sha256-109df22c5a75",
     "other": "not stated"
   },
   "PlaceholderWorkedOut": {
     "description": "Stands in an empty box, in a quieter colour than a value.",
+    "hash": "sha256-195191b2dc3a",
     "other": "worked out from the size"
   },
   "PreferencesForgetWhat": {
     "description": "Shown on the Preferences screen.",
+    "hash": "sha256-f7c12f863d64",
     "other": "Forget clears the three things above. This window then keeps nothing when it closes, and the next one opens the way the first one did."
   },
   "PreferencesForgotten": {
     "description": "Shown on the Preferences screen.",
+    "hash": "sha256-8e950dfcda31",
     "other": "Forgotten. The next window opens the way the first one did."
   },
   "PreferencesKept": {
     "description": "Shown on the Preferences screen.",
+    "hash": "sha256-896c43e06cdb",
     "other": "Between runs this window keeps three things: the output directory, the size of the window, and the language chosen above. The folder picker also keeps the last folder it showed. Nothing leaves this computer."
   },
   "PreferencesKeptIn": {
     "description": "Shown on the Preferences screen.",
+    "hash": "sha256-65ceb0c15ff4",
     "other": "They are kept in this folder:"
   },
   "PreferencesLanguageScope": {
     "description": "Shown on the Preferences screen.",
+    "hash": "sha256-bc4174717ca7",
     "other": "Only the window changes language. The files it makes, recipes, manifests and the command line do not."
   },
   "PreferencesMissing": {
     "description": "Shown on the Preferences screen. Carries one value, {{.Tag}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-7679a7684a73",
     "other": "The language chosen before, {{.Tag}}, is not in this version. The window follows the system until you choose again."
   },
   "PreferencesNextStart": {
     "description": "Shown on the Preferences screen.",
+    "hash": "sha256-6fee24596599",
     "other": "The window speaks the chosen language from the next time it opens."
   },
   "PreferencesRestartBusy": {
     "description": "Shown on the Preferences screen.",
+    "hash": "sha256-1d940383b3e9",
     "other": "Files are being made. Restart once they are done."
   },
   "PreferencesRestartClears": {
     "description": "Shown on the Preferences screen.",
+    "hash": "sha256-29776eba6622",
     "other": "Restarting closes this window and opens it again. Anything typed on the other tabs is cleared."
   },
   "PreferencesRestartFailed": {
     "description": "Shown on the Preferences screen. Carries one value, {{.Reason}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-8d92a5a49edb",
     "other": "The window could not start again: {{.Reason}}. The language chosen is saved. Open the program again to see it."
   },
   "PresetCatchesHeading": {
     "description": "Shown on the preset screen.",
+    "hash": "sha256-110703eac5e9",
     "other": "Typically finds:"
   },
   "PreviewNothingWritten": {
     "description": "Shown after a preview and before anything is written.",
+    "hash": "sha256-9aea7a90a504",
     "other": "nothing written yet"
   },
   "Progress": {
     "description": "Shown while a run is going. Carries these values, each of which has to stay spelled exactly that way: {{.Done}}, {{.Total}}, {{.BytesDone}}, {{.BytesTotal}}, {{.Percent}}.",
+    "hash": "sha256-a9de146c2bba",
     "other": "{{.Done}}/{{.Total}} files  {{.BytesDone}} of {{.BytesTotal}}  {{.Percent}}%"
   },
   "RefusedBeforeWriting": {
     "description": "Shown in the window.",
+    "hash": "sha256-531c1a087f5f",
     "other": "Nothing was written. Check the settings marked above."
   },
   "RendererDidNotHelp": {
     "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does.",
+    "hash": "sha256-cb20cd3fbbee",
     "other": "The software renderer shipped beside the program was loaded, and the graphics toolkit still could not open a window with it."
   },
   "RendererDrawing": {
     "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does.",
+    "hash": "sha256-b94c25a817e3",
     "other": "This window is drawn by the software renderer shipped beside the program (Mesa llvmpipe), not by the graphics driver. Everything works. Drawing is slower than with a driver that provides OpenGL 2.1."
   },
   "RendererNotBeside": {
     "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does. Carries one value, {{.Path}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-b0e260ef6617",
     "other": "The software renderer that ships with the Windows archive was not found beside the program - {{.Path}} is missing. Put the opengl folder from the archive back next to tfg-gui.exe, or use a graphics driver that provides OpenGL 2.1."
   },
   "RendererNotLoaded": {
     "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does. Carries one value, {{.Error}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-55832142c3eb",
     "other": "The software renderer shipped beside the program could not be loaded: {{.Error}}."
   },
   "RendererNotReadable": {
     "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does. Carries one value, {{.Error}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-453a6da2bea7",
     "other": "A file of the software renderer beside the program could not be read: {{.Error}}. Check who may read the opengl folder next to tfg-gui.exe, or use a graphics driver that provides OpenGL 2.1."
   },
   "RendererNotShipped": {
     "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does.",
+    "hash": "sha256-bfadaecbdd36",
     "other": "No software renderer ships for this system, so this flag changes nothing here."
   },
   "RendererStartFailed": {
     "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does. Carries one value, {{.Error}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-3540e225c773",
     "other": "Starting the program again with the software renderer did not work: {{.Error}}."
   },
   "RendererStartingAgain": {
     "description": "About the software renderer shipped beside the program on Windows: in the system dialog and on standard error when the window could not be opened even so, on standard error when a window starts drawing with it, and on the About screen while it does.",
+    "hash": "sha256-86c4b674d84e",
     "other": "The first attempt to open a window did not succeed - usually a graphics driver without OpenGL 2.1. Starting again with the software renderer shipped beside the program."
   },
   "SectionBase": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-cbef193cc958",
     "other": "Build on a preset"
   },
   "SectionCarriedBeside": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-4cc79104fe33",
     "other": "Shipped beside the program on Windows"
   },
   "SectionCarriedCode": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-b0f1aba6039b",
     "other": "Third party code compiled in"
   },
   "SectionCarriedFiles": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-81da952490ec",
     "other": "Files compiled in that are not code"
   },
   "SectionConfiguration": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-b8c1cc7e0ce4",
     "other": "File configuration"
   },
   "SectionHowToUse": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-ffa04c25b105",
     "other": "How to use it"
   },
   "SectionLanguage": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-a4fe65264ef7",
     "other": "Language"
   },
   "SectionLicence": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-f3ec8e880a46",
     "other": "Licence"
   },
   "SectionManifestNotes": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-524730d883af",
     "other": "Notes for the manifest"
   },
   "SectionOutput": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-b2439bcb8dee",
     "other": "Output"
   },
   "SectionPreset": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-ed65b5dde19f",
     "other": "The question"
   },
   "SectionRemembered": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-3969bfb60b8d",
     "other": "What this window remembers"
   },
   "SectionSettings": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-74a883a037bc",
     "other": "Settings"
   },
   "SectionSupport": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-be91940b79f4",
     "other": "Support"
   },
   "SectionTool": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-ed65b5dde19f",
     "other": "The question"
   },
   "SectionToolInput": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-4f8655e48218",
     "other": "What it works on"
   },
   "SectionToolResult": {
     "description": "The heading over a group of fields.",
+    "hash": "sha256-6e7d50e84f47",
     "other": "Result"
   },
   "SettingKey": {
     "description": "Shown in the window. Carries one value, {{.Key}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-3cd70f268cbd",
     "other": "Written as {{.Key}} in a recipe."
   },
   "SettingsFor": {
     "description": "Shown in the window. Carries one value, {{.Format}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-234ec8849d74",
     "other": "Settings for {{.Format}}"
   },
   "SizeAndBytes": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Human}}, {{.Exact}}.",
+    "hash": "sha256-7d36ca31e3e6",
     "other": "{{.Human}} ({{.Exact}})"
   },
   "SizeBetween": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Least}}, {{.Most}}.",
+    "hash": "sha256-d5d1a79f10e9",
     "other": "between {{.Least}} and {{.Most}}"
   },
   "SizeFromContents": {
     "description": "Shown in the window.",
+    "hash": "sha256-fc3aa1e2b2c3",
     "other": "decided by the files inside, known after Preview"
   },
   "SizeWayBoundary": {
     "description": "Shown in the window.",
+    "hash": "sha256-6cea6d4c9fee",
     "other": "Around a limit"
   },
   "SizeWayExact": {
     "description": "Shown in the window.",
+    "hash": "sha256-225cdeb34c4b",
     "other": "One size"
   },
   "SizeWayRange": {
     "description": "Shown in the window.",
+    "hash": "sha256-8879adb25c7d",
     "other": "A range"
   },
   "StoppedAfter": {
     "description": "Shown in the window. Carries one value, {{.Files}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-f08278015581",
     "other": "Stopped after {{.Files}}. The manifest describes exactly those."
   },
   "SubtitleGenerate": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
+    "hash": "sha256-e7dcd4001e28",
     "other": "Files of one format and one size, with a manifest that says how the system under test should react to them."
   },
   "SubtitlePreferences": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
+    "hash": "sha256-0e310c7f4078",
     "other": "How this window speaks, and what it keeps between runs. Nothing here changes the files it makes."
   },
   "SubtitlePreset": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
+    "hash": "sha256-7962df9b6a39",
     "other": "Ready-made sets of files, each built to answer one question about the system under test."
   },
   "SubtitleRecipe": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
+    "hash": "sha256-784e4d30ec24",
     "other": "Batches of different formats and sizes, generated together in one run."
   },
   "SubtitleTools": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
+    "hash": "sha256-53bdfa16d586",
     "other": "Small things to do with files you already have. Every tool here is on the command line too, as tfg tool."
   },
   "SystemAlreadyThere": {
     "description": "Shown in the window. Carries one value, {{.Number}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-5907673e30cf",
     "other": "something is already there (system error {{.Number}})"
   },
   "SystemFailure": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Path}}, {{.Reason}}.",
+    "hash": "sha256-1f0b47895b42",
     "other": "{{.Path}}: {{.Reason}}"
   },
   "SystemNoPermission": {
     "description": "Shown in the window. Carries one value, {{.Number}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-cbe9b67f544e",
     "other": "the system refused permission (system error {{.Number}})"
   },
   "SystemNothingThere": {
     "description": "Shown in the window. Carries one value, {{.Number}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-1d328ea28fdf",
     "other": "there is nothing at that path (system error {{.Number}})"
   },
   "SystemRefused": {
     "description": "Shown in the window. Carries one value, {{.Number}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-67f5a8f55d87",
     "other": "the system refused it (system error {{.Number}})"
   },
   "TabAbout": {
     "description": "The name of a tab along the top of the window.",
+    "hash": "sha256-4efca0d10c5f",
     "other": "About"
   },
   "TabOneTarget": {
     "description": "The name of a tab along the top of the window.",
+    "hash": "sha256-3daaa5676f79",
     "other": "Single batch"
   },
   "TabPreferences": {
     "description": "The name of a tab along the top of the window.",
+    "hash": "sha256-66962f72a088",
     "other": "Preferences"
   },
   "TabPresets": {
     "description": "The name of a tab along the top of the window.",
+    "hash": "sha256-954f93fe1c66",
     "other": "Presets"
   },
   "TabRecipe": {
     "description": "The name of a tab along the top of the window.",
+    "hash": "sha256-354aa55e37ba",
     "other": "Several batches"
   },
   "TabTools": {
     "description": "The name of a tab along the top of the window.",
+    "hash": "sha256-ea93d6a262ec",
     "other": "Tools"
+  },
+  "TimeHours": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Hours}}, {{.Minutes}}.",
+    "hash": "sha256-a8b56babab0f",
+    "other": "{{.Hours}}h{{.Minutes}}m"
   },
   "TimeLeft": {
     "description": "Shown in the window. Carries one value, {{.Roughly}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-635fa180859f",
     "other": "{{.Roughly}} left"
+  },
+  "TimeMinutes": {
+    "description": "Shown in the window. Carries one value, {{.Minutes}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-c41f2cfc6d02",
+    "other": "{{.Minutes}}m"
+  },
+  "TimeSeconds": {
+    "description": "Shown in the window. Carries one value, {{.Seconds}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-1a952843df91",
+    "other": "{{.Seconds}}s"
   },
   "TooManyFiles": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Count}}, {{.Reason}}.",
+    "hash": "sha256-8c9c48f84a9d",
     "other": "this run asks for {{.Count}} files - {{.Reason}}"
   },
   "ToolChoice": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Tool}}, {{.Question}}.",
+    "hash": "sha256-d1b261482ceb",
     "other": "{{.Tool}} - {{.Question}}"
   },
   "ToolCopied": {
     "description": "Shown in the window. Carries one value, {{.What}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-a2fde6f3d590",
     "other": "The {{.What}} is on the clipboard."
   },
   "ToolCopiedAll": {
     "description": "Shown in the window.",
+    "hash": "sha256-3f2e59dcb582",
     "other": "The whole result is on the clipboard."
   },
   "ToolDoesNotMatch": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.About}}, {{.Got}}, {{.Wanted}}.",
+    "hash": "sha256-c31d578f1544",
     "other": "Does not match: the {{.About}} is {{.Got}} and {{.Wanted}} was expected."
   },
   "ToolFlag": {
     "description": "Shown in the window. Carries one value, {{.Key}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-841ea229d74b",
     "other": "Written as --{{.Key}} after tfg tool on the command line."
   },
   "ToolInputWrittenAs": {
     "description": "Shown in the window. Carries one value, {{.Tool}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-75e45e99f51f",
     "other": "Written as the path after tfg tool {{.Tool}} on the command line."
   },
   "ToolListDoesNotMatch": {
     "description": "Shown in the window. Carries one value, {{.About}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-bc5aeb5346c9",
     "other": "Does not match: {{.About}} lists files that are not what it says."
   },
   "ToolListMatches": {
     "description": "Shown in the window. Carries one value, {{.About}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-5a4ebb280d05",
     "other": "Matches: every file {{.About}} lists is what it says."
   },
   "ToolMatches": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.About}}, {{.Got}}.",
+    "hash": "sha256-7964a2497450",
     "other": "Matches: the {{.About}} is {{.Got}}, as expected."
   },
   "ToolMoreItems": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.More}}, {{.Tool}}.",
+    "hash": "sha256-16093fa01b04",
     "other": "And {{.More}} more. tfg tool {{.Tool}} lists them all."
   },
   "ToolNothingYet": {
     "description": "Shown in the window.",
+    "hash": "sha256-6184988bdded",
     "other": "Nothing worked out yet. Choose what to work on and press Run."
   },
   "ToolReading": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Done}}, {{.Total}}.",
+    "hash": "sha256-d0e0b4b2b81f",
     "other": "Read {{.Done}} of {{.Total}}."
   },
   "ToolResultLine": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Name}}, {{.Value}}.",
+    "hash": "sha256-c8b9b00643c2",
     "other": "{{.Name}}  {{.Value}}"
   },
   "ToolStopped": {
     "description": "Shown in the window.",
+    "hash": "sha256-1da20fb189f8",
     "other": "Stopped before it finished. Nothing was written or changed."
   },
   "UseSmallestSize": {
     "description": "Shown in the window. Carries one value, {{.Size}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-c42521834dd8",
     "other": "Use the smallest size, {{.Size}}"
   },
   "WillGoTo": {
     "description": "Shown in the window. Carries one value, {{.Directory}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-88a5bdf9be0b",
     "other": "will go to {{.Directory}}"
   },
   "WindowRefused": {
     "description": "Shown in a system dialog and on standard error when the toolkit could not open the window at all, so there is no window to show it in. Carries one value, {{.Cause}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-1b746ceec688",
     "other": "The window could not be opened. It draws through OpenGL 2.1, and the graphics toolkit could not get that from the driver on this computer. The toolkit said: {{.Cause}}. Everything the window does is also on the command line - run \"tfg --help\" - and that needs no graphics driver. To get the window, use a graphics driver that provides OpenGL 2.1."
   },
   "WindowRefusedNoCause": {
     "description": "Shown in a system dialog and on standard error when the toolkit could not open the window at all, so there is no window to show it in.",
+    "hash": "sha256-413b5a197004",
     "other": "The window could not be opened. It draws through OpenGL 2.1, and the graphics toolkit could not get that from the driver on this computer. Everything the window does is also on the command line - run \"tfg --help\" - and that needs no graphics driver. To get the window, use a graphics driver that provides OpenGL 2.1."
   },
   "WindowRefusedTitle": {
     "description": "Shown in a system dialog and on standard error when the toolkit could not open the window at all, so there is no window to show it in.",
+    "hash": "sha256-304b31204244",
     "other": "Testing Files Generator could not open its window"
   },
   "WorkingOutTheCost": {
     "description": "Shown in the window.",
+    "hash": "sha256-76988f639628",
     "other": "Working out what this would cost..."
   },
   "WritingTo": {
     "description": "Shown in the window. Carries one value, {{.Directory}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-57f16f2a6428",
     "other": "Files will go to {{.Directory}}"
   },
   "Written": {
     "description": "Shown in the window. Carries one value, {{.Files}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-951270031dfe",
     "other": "{{.Files}} written."
   },
   "WrittenWithFailures": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Files}}, {{.Failed}}.",
+    "hash": "sha256-32d2d6f1006a",
     "other": "{{.Files}} written, {{.Failed}} could not be produced."
   }
 }

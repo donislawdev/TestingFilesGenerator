@@ -197,6 +197,13 @@ type Chooser struct {
 	// searched by its filter - set on the same one menu, and making its list
 	// wider than the box it drops from. See listWidth.
 	NameOf func(string) string
+	// ShownAs is the words a value is drawn as, in the box and in the list,
+	// where they are not the value itself: the values of a declared setting
+	// are what a recipe writes, and the window shows them in its own language
+	// (the owner's decision of 2026-10-05). The menu still holds and hands
+	// back the value - Selected, OnChanged and SetSelected all speak values -
+	// so nothing that reads a menu reads a translation. Nil draws the values.
+	ShownAs func(string) string
 	// opened is the list this menu last dropped down, and it is here for a
 	// guard: the canvas says whether a list appeared, and this says what was
 	// in it. Neither alone is worth anything - a list built correctly and never
@@ -205,6 +212,23 @@ type Chooser struct {
 	// reports is the address a choice is told to the screen under - see
 	// wiredOnce in fields.go.
 	reports wiredOnce[string]
+}
+
+// shown is the words one value is drawn as - see ShownAs.
+func (c *Chooser) shown(v string) string {
+	if c.ShownAs == nil || v == "" {
+		return v
+	}
+	return c.ShownAs(v)
+}
+
+// shownAll is every value as it is drawn, for measuring.
+func shownAll(c *Chooser) []string {
+	out := make([]string, len(c.Options))
+	for i, v := range c.Options {
+		out[i] = c.shown(v)
+	}
+	return out
 }
 
 // Opened is the list this menu last dropped down, or nil if it never has.
@@ -236,6 +260,9 @@ func NewChooser(options []string, changed func(string)) *Chooser {
 	c := &Chooser{}
 	c.Options = options
 	c.OnChanged = changed
+	// The words of an empty menu, from the window's catalogue. The toolkit
+	// puts "(Select one)" in otherwise, in English whatever the window speaks.
+	c.PlaceHolder = text.PlaceholderChooseOne()
 	if IsEveryFormat(options) {
 		c.KindOf = KindOfFile
 		// Grouped and filtered for the same reason and on the same test as
@@ -314,7 +341,7 @@ func menuWidth(c *Chooser) float32 {
 	style := fyne.TextStyle{Bold: c.Filtered}
 	var widest float32
 	for _, option := range c.Options {
-		if w := fyne.MeasureText(option, size, style).Width; w > widest {
+		if w := fyne.MeasureText(c.shown(option), size, style).Width; w > widest {
 			widest = w
 		}
 	}
@@ -425,7 +452,7 @@ func listWidth(c *Chooser, box float32) float32 {
 		// Every name after the column the values stand in, each measured in
 		// bold: the filter draws what matched in bold, and a name typed in
 		// full is the widest it is ever drawn.
-		column := widestValue(c.Options)
+		column := widestValue(shownAll(c))
 		for _, option := range c.Options {
 			name := fyne.MeasureText(c.NameOf(option), theme.TextSize(), fyne.TextStyle{Bold: true}).Width
 			widest = fyne.Max(widest, RowWidthFor(column+listNameGap+name, c.KindOf != nil))
@@ -576,6 +603,9 @@ func (c *Chooser) drop(surface fyne.Canvas) {
 	}
 	if c.Filtered {
 		list.WithFilter()
+	}
+	if c.ShownAs != nil {
+		list.ShowEach(c.ShownAs)
 	}
 	if c.NameOf != nil {
 		list.NameEach(c.NameOf)
@@ -776,7 +806,7 @@ func (c *Chooser) TypedRune(r rune) {
 		if at < 0 {
 			at += len(c.Options)
 		}
-		if strings.HasPrefix(strings.ToLower(c.Options[at]), want) {
+		if strings.HasPrefix(strings.ToLower(c.shown(c.Options[at])), want) {
 			c.SetSelectedIndex(at)
 			return
 		}

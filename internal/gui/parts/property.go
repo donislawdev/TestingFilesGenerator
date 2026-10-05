@@ -116,6 +116,7 @@ func FromProperty(p format.Property) PropertyField {
 // manifest as defaulted. Measured in the same run.
 func choiceField(p format.Property) PropertyField {
 	sel := NewChooser(p.Choices, nil)
+	sel.ShownAs = func(v string) string { return text.ChoiceName(p.Name, v) }
 	sel.PlaceHolder = leftAlone(p)
 	if p.Default != "" {
 		sel.SetSelected(p.Default)
@@ -173,6 +174,9 @@ func textField(p format.Property) PropertyField {
 // format's to say, in the sentence beside the box.
 func leftAlone(p format.Property) string {
 	switch {
+	case p.Default != "" && len(p.Choices) > 0:
+		// A value of a list is said the way the list says it.
+		return text.PlaceholderLeftEmpty(text.ChoiceName(p.Name, p.Default))
 	case p.Default != "":
 		return text.PlaceholderLeftEmpty(p.Default)
 	case p.Kind == format.PropertyText:

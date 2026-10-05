@@ -106,7 +106,7 @@ func NameOfFormat(id string) string {
 	if err != nil {
 		return ""
 	}
-	return d.Name
+	return text.FormatName(id, d.Name)
 }
 
 type fileKind int

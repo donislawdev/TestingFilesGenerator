@@ -20,6 +20,7 @@ const localeDir = "../gui/text/locale"
 // entryInCatalogue is one message as a translation file carries it.
 type entryInCatalogue struct {
 	Description string `json:"description"`
+	Hash        string `json:"hash"`
 	Other       string `json:"other"`
 	One         string `json:"one"`
 	Few         string `json:"few"`
@@ -159,6 +160,17 @@ func TestTheEnglishCatalogueSaysWhatTheCodeSays(t *testing.T) {
 		if one, plural := singular[id]; plural && entry.One != one {
 			t.Errorf("%s says %q in the singular in the code and %q in the English catalogue.\n"+
 				"Run: python tools/gen-locale.py", id, one, entry.One)
+		}
+		// The hash every other language is held to, worked out the way
+		// tools/gen-locale.py works it out - the two have to agree, or every
+		// translation would read as stale or none would.
+		hashed := english
+		if one, plural := singular[id]; plural {
+			hashed = one + "\n" + english
+		}
+		if entry.Hash != englishHash(hashed) {
+			t.Errorf("%s carries hash %q in the English catalogue and its English hashes to %q.\n"+
+				"Run: python tools/gen-locale.py", id, entry.Hash, englishHash(hashed))
 		}
 	}
 	for id := range have {

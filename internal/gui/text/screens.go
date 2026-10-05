@@ -257,6 +257,10 @@ func PlaceholderWorkedOut() string { return say("PlaceholderWorkedOut", "worked 
 // means for the file is said in the sentence beside the box.
 func PlaceholderNotSet() string { return say("PlaceholderNotSet", "not set") }
 
+// PlaceholderChooseOne stands in a menu nothing has been chosen in yet. The
+// words are the toolkit's own, which it puts in every empty menu in English.
+func PlaceholderChooseOne() string { return say("PlaceholderChooseOne", "(Select one)") }
+
 // PlaceholderFilter stands in the box at the top of an open list of formats,
 // where typing narrows the list to the formats whose identifier holds what was
 // typed, or whose name or kind has a word starting with it.
