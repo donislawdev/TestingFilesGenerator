@@ -380,7 +380,7 @@
   "preset.ImpossibleWhy": { "hash": "sha256-1bf156d5da79", "other": "preset {{.Preset}} nie może zbudować tego zestawu - {{.Why}}." },
   "preset.ImpossibleWhyFix": { "hash": "sha256-568852ea20d3", "other": "preset {{.Preset}} nie może zbudować tego zestawu - {{.Why}}. {{.Fix}}" },
   "preset.IsAllowedAndIsDeniedAnd": { "hash": "sha256-ea49ead8ea31", "other": "{{.ID}} jest dozwolony, a {{.Written}} odrzucany, i oba oznaczają plik kończący się na {{.Extension}} - więc zestaw zawierałby jeden do przyjęcia i jeden do odrzucenia" },
-  "preset.ItHasToBeANumber": { "hash": "sha256-d6de05796906", "other": "musi to być krotność limitu zapisana z x - 2x albo 10x - albo off" },
+  "preset.ItHasToBeANumber": { "hash": "sha256-d6de05796906", "other": "musi to być krotność limitu zapisana z x - 2x albo 10x - albo wyłączone" },
   "preset.ItHoldsAndADistanceIs": { "hash": "sha256-e721e19decc5", "other": "zawiera {{.Bad}}, a odległość zapisuje się cyframi, literami i kropką - na przykład 1kb, 512 albo 1.5mb. Jej tekst staje się nazwą pliku" },
   "preset.ItHoldsAndAnExtensionIs": { "hash": "sha256-15909d4361fa", "other": "zawiera {{.Bad}}, a rozszerzenie zapisuje się literami i cyframi - na przykład exe, sh albo svg. Jego tekst staje się końcem nazwy pliku" },
   "preset.ItIsCharactersLongAndAn": { "hash": "sha256-78d81ba1a16a", "other": "ma {{.Length}} znaków, a rozszerzenie ma tu najwyżej {{.LongestExtension}}" },
