@@ -71,32 +71,38 @@ func checkedJSON(t *testing.T, sums string) (int, checksum.Checked) {
 	return code, got
 }
 
-// coreutilsMajor is the major version of the sha256sum on this machine, or
-// nought when there is none. A carriage return in a name is escaped only from
-// coreutils 9 (measured on 2026-09-30), so the guard below asks.
-func coreutilsMajor(t *testing.T) (string, int) {
+// sha256sumHere is the sha256sum on this machine - its path, or nothing when
+// there is none - whether it is the one GNU coreutils ships, and the major
+// version it says it is.
+//
+// Both are asked because the escaping of a name is GNU's own. A backslash and
+// a line break are escaped by every coreutils, a carriage return only from 9
+// (measured on 2026-09-30). The sha256sum macOS ships writes every name as it
+// is, and its -c calls an escaped line improperly formatted - found on the
+// macos-26 runner on 2026-09-30, where this guard held the file to it as if it
+// were GNU and went red.
+func sha256sumHere(t *testing.T) (program string, gnu bool, major int) {
 	t.Helper()
 	program, err := exec.LookPath("sha256sum")
 	if err != nil {
-		return "", 0
+		return "", false, 0
 	}
 	out, err := exec.Command(program, "--version").Output()
 	if err != nil {
-		return "", 0
+		return program, false, 0
 	}
 	first, _, _ := strings.Cut(string(out), "\n")
 	fields := strings.Fields(first)
 	if len(fields) == 0 {
-		return program, 0
+		return program, false, 0
 	}
-	major := 0
 	for _, c := range fields[len(fields)-1] {
 		if c < '0' || c > '9' {
 			break
 		}
 		major = major*10 + int(c-'0')
 	}
-	return program, major
+	return program, strings.Contains(first, "GNU coreutils"), major
 }
 
 // TestTheChecksumFileIsTheOneSha256sumWrites writes a checksum file of a
@@ -107,20 +113,26 @@ func coreutilsMajor(t *testing.T) (string, int) {
 // Byte for byte rather than "sha256sum -c passes", because -c passes lines it
 // cannot read over with a warning and still ends with success (measured, 8.32
 // and 9.7), so a wrong escape could pass it. A name with a backslash or a line
-// break exists only where the system allows one, which Windows does not. A
-// carriage return is added where coreutils is 9 or later, the first to escape
-// one.
+// break exists only where the system allows one, which Windows does not, and
+// is held only to a GNU sha256sum, the one whose escaping this file follows -
+// a Linux runner has to have one. A carriage return is added where coreutils
+// is 9 or later, the first to escape one.
 func TestTheChecksumFileIsTheOneSha256sumWrites(t *testing.T) {
 	files := map[string]string{
 		"plain.txt": "abc", "with space.txt": "b", " leading space": "c",
 		"zażółć.txt": "d", "sub/inner.txt": "e", "empty": "",
 	}
-	program, major := coreutilsMajor(t)
+	program, gnu, major := sha256sumHere(t)
+	if program != "" && !gnu && runtime.GOOS == "linux" && os.Getenv("CI") != "" {
+		t.Fatalf("the sha256sum of a Linux runner, %s, is not GNU, so the escaped names were held to nothing", program)
+	}
 	if runtime.GOOS != "windows" {
 		files["*star"] = "f"
-		files[`back\slash`] = "g"
-		files["new\nline"] = "h"
-		if major >= 9 {
+		if gnu {
+			files[`back\slash`] = "g"
+			files["new\nline"] = "h"
+		}
+		if gnu && major >= 9 {
 			files["carriage\rreturn"] = "i"
 		}
 	}
@@ -163,7 +175,7 @@ func TestTheChecksumFileIsTheOneSha256sumWrites(t *testing.T) {
 	if said, err := check.CombinedOutput(); err != nil {
 		t.Errorf("sha256sum -c --strict does not pass the checksum file: %v\n%s", err, said)
 	}
-	t.Logf("%d names held to sha256sum %d", len(names), major)
+	t.Logf("%d names held to sha256sum %d at %s, GNU %v", len(names), major, program, gnu)
 }
 
 // The lines a checksum file may hold, as the tools people use write them -
@@ -209,24 +221,14 @@ func TestTheCheckReadsTheLinesOtherToolsWrite(t *testing.T) {
 	if got.Checked != 7 || got.Matched != 7 {
 		t.Errorf("seven checksum lines were written and %d were checked, %d matched", got.Checked, got.Matched)
 	}
-	if want := []int{2, 3, 4, 11, 12, 15}; !equalInts(got.NotChecked.NotChecksums, want) {
+	// Ranges, so lines one after another are one entry rather than a number
+	// each - the review of #158 measured two gigabytes for a file of blank lines.
+	if want := []checksum.LineRange{{From: 2, To: 4}, {From: 11, To: 12}, {From: 15, To: 15}}; fmt.Sprint(got.NotChecked.NotChecksums) != fmt.Sprint(want) {
 		t.Errorf("the lines that are not checksums are %v and the check named %v", want, got.NotChecked.NotChecksums)
 	}
 	if want := []string{"line 13: sha224", "line 14: SHA3-256"}; strings.Join(got.NotChecked.Unknown, "|") != strings.Join(want, "|") {
 		t.Errorf("the lines of other algorithms are %q and the check named %q", want, got.NotChecked.Unknown)
 	}
-}
-
-func equalInts(a, b []int) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
 }
 
 // TestTheCheckUndoesTheEscapingOfANameAndKeepsItInTheFolder reads the lines
@@ -271,11 +273,12 @@ func TestTheCheckUndoesTheEscapingOfANameAndKeepsItInTheFolder(t *testing.T) {
 }
 
 // FuzzChecksumFile hands the parser of checksum files whatever the fuzzer
-// makes, and asks two things of every answer. Every line is filed under
+// makes, and asks three things of every answer. Every line is filed under
 // exactly one of checked, not a checksum and another algorithm - nothing lost,
-// nothing twice. And a name written by SumsLine reads back as the same name,
-// whatever it holds: an escape that loses a byte is a checksum file that
-// checks a file nobody listed.
+// nothing twice. Lines that are not checksums are ranges that never touch, so
+// a run of them is one entry however long it is. And a name written by
+// SumsLine reads back as the same name, whatever it holds: an escape that
+// loses a byte is a checksum file that checks a file nobody listed.
 func FuzzChecksumFile(f *testing.F) {
 	for _, seed := range []string{
 		abcSHA256 + "  a.txt\n", `\` + abcSHA256 + `  back\\slash` + "\n", "SHA256 (x) = " + abcSHA256 + "\n",
@@ -293,15 +296,22 @@ func FuzzChecksumFile(f *testing.F) {
 		for _, l := range parsed.Listed {
 			filed[l.Line]++
 		}
-		for _, n := range parsed.NotSums {
-			filed[n]++
+		notSums := 0
+		for i, r := range parsed.NotSums {
+			if r.From > r.To || i > 0 && r.From <= parsed.NotSums[i-1].To+1 {
+				t.Fatalf("the lines that are not checksums came back as %v, which are not ranges apart from each other", parsed.NotSums)
+			}
+			for n := r.From; n <= r.To; n++ {
+				filed[n]++
+				notSums++
+			}
 		}
 		lines := strings.Count(input, "\n")
 		if input != "" && !strings.HasSuffix(input, "\n") {
 			lines++
 		}
-		if len(parsed.Listed)+len(parsed.NotSums)+len(parsed.Unknown) != lines {
-			t.Fatalf("%d lines came back as %d checked, %d not checksums and %d unknown", lines, len(parsed.Listed), len(parsed.NotSums), len(parsed.Unknown))
+		if len(parsed.Listed)+notSums+len(parsed.Unknown) != lines {
+			t.Fatalf("%d lines came back as %d checked, %d not checksums and %d unknown", lines, len(parsed.Listed), notSums, len(parsed.Unknown))
 		}
 		for n, times := range filed {
 			if times != 1 || n < 1 || n > lines {

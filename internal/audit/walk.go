@@ -92,7 +92,14 @@ func Walk(ctx context.Context, dir string) (Found, error) {
 		found.Entries = append(found.Entries, Entry{Path: filepath.ToSlash(rel), Kind: kindOf(d), found: d})
 		return nil
 	})
-	return found, err
+	// A walk stopped half way says only that it stopped. What it found by then
+	// - a directory it could not list, say - would otherwise be the answer of a
+	// caller that looks at it first, and a Ctrl+C would end as a refusal of
+	// the folder rather than as an interruption (review of #158).
+	if err != nil {
+		return Found{}, err
+	}
+	return found, nil
 }
 
 // pastIt is how the walk carries on after a directory it could not list: it
@@ -122,11 +129,11 @@ func kindOf(d fs.DirEntry) EntryKind {
 // gave before the walk learned to go past one.
 func walk(ctx context.Context, dir string) ([]string, error) {
 	found, err := Walk(ctx, dir)
-	if len(found.Unreadable) > 0 {
-		return nil, found.Unreadable[0]
-	}
 	if err != nil {
 		return nil, err
+	}
+	if len(found.Unreadable) > 0 {
+		return nil, found.Unreadable[0]
 	}
 	out := make([]string, 0, len(found.Entries))
 	for _, e := range found.Entries {

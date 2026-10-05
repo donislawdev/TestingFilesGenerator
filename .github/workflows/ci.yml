@@ -816,7 +816,7 @@ jobs:
         # this refuses. A key that does not exist, or a value outside what the
         # schema allows, is otherwise ignored in silence - and a linter reading
         # a setting nobody applied is a gate that reports what it feels like.
-        run: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2 config verify
+        run: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.14.0 config verify
 
       - name: golangci-lint
         # Run rather than imported, so it never enters go.mod and the
@@ -830,7 +830,7 @@ jobs:
         # .golangci.yml. Measured before switching this on: zero findings from
         # ineffassign and one from misspell, which turned out to be a comment
         # written in the wrong language rather than a typo.
-        run: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2 run --build-tags "$(cat .github/build-tags)" ./...
+        run: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.14.0 run --build-tags "$(cat .github/build-tags)" ./...
 
   semgrep:
     name: semgrep
@@ -1382,7 +1382,7 @@ jobs:
         # next search starts from nothing.
         run: |
           set -euo pipefail
-          for target in FuzzParseSize FuzzParseRecipe FuzzNameTemplate FuzzCanonicalRecipe; do
+          for target in FuzzParseSize FuzzParseRecipe FuzzNameTemplate FuzzCanonicalRecipe FuzzPresetExpansion FuzzChecksumFile; do
             echo "=== $target ==="
             go test -tags "$(cat .github/build-tags)" ./internal/guard/ -run "^$" -fuzz "^${target}$" -fuzztime 5m
           done

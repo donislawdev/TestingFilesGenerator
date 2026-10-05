@@ -90,17 +90,22 @@ type Problem struct {
 
 // NotChecked are the lines of a checksum file named without failing a check.
 type NotChecked struct {
-	Itself       []string `json:"itself"`
-	Twice        []string `json:"twice"`
-	NotChecksums []int    `json:"not_checksums"`
-	Unknown      []string `json:"unknown"`
+	Itself []string `json:"itself"`
+	Twice  []string `json:"twice"`
+	// NotChecksums are ranges of lines, so a script reads "from" and "to"
+	// rather than a number a line.
+	NotChecksums []LineRange `json:"not_checksums"`
+	Unknown      []string    `json:"unknown"`
 }
 
 // target is one listed file on its way to being read: where it is on the
-// disk, or why it is not read at all.
+// disk and how large, or why it is not read at all.
 type target struct {
 	entry Listed
 	full  string
+	// size is what the bar counts on reading, nought for anything that is not
+	// a file there to be read.
+	size int64
 	// refused is the note a path gets without being read - outside, or the
 	// checksum file itself - and why.
 	refused, why string
@@ -118,13 +123,14 @@ func runCheck(ctx context.Context, in tool.Request, progress tool.Progress) (too
 		return tool.Result{}, err
 	}
 	dir := filepath.Dir(sumsPath)
-	targets := placeAll(core.NewBoundary(dir), sumsPath, parsed.Listed)
+	targets, stopped := placeAll(ctx, core.NewBoundary(dir), sumsPath, parsed.Listed)
+	if stopped != nil {
+		return tool.Result{}, stopped
+	}
 
 	var total int64
 	for _, t := range targets {
-		if info, statErr := os.Stat(t.full); t.refused == "" && statErr == nil {
-			total += info.Size()
-		}
+		total += t.size
 	}
 	tally := audit.NewTally(func(done int64) { progress(done, total) })
 	answers, stopped := audit.InOrder(ctx, len(targets), func(i int, scratch []byte) Problem {
@@ -136,32 +142,49 @@ func runCheck(ctx context.Context, in tool.Request, progress tool.Progress) (too
 	return checkResult(sumsPath, parsed, targets, answers), nil
 }
 
-// placeAll is where each listed file is on the disk, settled in order on one
-// goroutine before anything is read - the same rule verify keeps, for the
-// same reason (audit.InOrder): the workers are never handed a refusal.
-func placeAll(b core.Boundary, sumsPath string, all []Listed) []target {
-	out := make([]target, 0, len(all))
-	for _, e := range all {
-		t := target{entry: e}
-		if problem := core.ContainmentProblem(e.Path); problem != "" {
-			t.refused, t.why = noteOutside, problem
-			out = append(out, t)
-			continue
-		}
-		t.full = filepath.Join(b.Dir(), filepath.FromSlash(e.Path))
-		switch {
-		case b.Escapes(t.full):
-			// Said as what is known. A junction on Windows is refused here
-			// even when it points inside, because the system gives no way to
-			// follow one (measured on 2026-09-30, O265), so "leads out" would
-			// claim more than was found.
-			t.refused, t.why = noteOutside, "a link or a junction on the way leads out of the folder, or cannot be followed to tell"
-		case filepath.Clean(t.full) == filepath.Clean(sumsPath):
-			t.refused = noteItself
-		}
-		out = append(out, t)
+// placeAll is where each listed file is on the disk and how large it is,
+// settled before anything is read, so the bar has a total to go up to.
+//
+// Several lines at once, asking about Ctrl+C at every one, because this is not
+// cheap: each line follows the links on its way and asks a size. On one
+// goroutine and without asking, a checksum file of 770 000 lines spent about
+// four minutes here on Windows that nothing could stop, and several at once is
+// about three times faster - 20 000 files, 4.9 s against 1.6 s, three runs
+// each, taken in turn (measured on 2026-10-05, after the review of #158). A
+// path that leaves the folder is the answer of its own line rather than a
+// stop, so the workers of audit.InOrder are still never handed a reason to
+// fail.
+func placeAll(ctx context.Context, b core.Boundary, sumsPath string, all []Listed) ([]target, error) {
+	return audit.InOrder(ctx, len(all), func(i int, _ []byte) target {
+		return place(b, sumsPath, all[i])
+	})
+}
+
+// place is where one listed file is, or why it is not read at all. Only a
+// file that is going to be read is asked its size, so nothing is looked up at
+// the end of a path that leaves the folder.
+func place(b core.Boundary, sumsPath string, e Listed) target {
+	t := target{entry: e}
+	if problem := core.ContainmentProblem(e.Path); problem != "" {
+		t.refused, t.why = noteOutside, problem
+		return t
 	}
-	return out
+	t.full = filepath.Join(b.Dir(), filepath.FromSlash(e.Path))
+	switch {
+	case b.Escapes(t.full):
+		// Said as what is known. A junction on Windows is refused here even
+		// when it points inside, because the system gives no way to follow
+		// one (measured on 2026-09-30, O265), so "leads out" would claim more
+		// than was found.
+		t.refused, t.why = noteOutside, "a link or a junction on the way leads out of the folder, or cannot be followed to tell"
+	case filepath.Clean(t.full) == filepath.Clean(sumsPath):
+		t.refused = noteItself
+	default:
+		if info, err := os.Stat(t.full); err == nil && info.Mode().IsRegular() {
+			t.size = info.Size()
+		}
+	}
+	return t
 }
 
 // checkOne reads one listed file and says what it came to. The zero Kind is a
@@ -218,7 +241,7 @@ func checkResult(sumsPath string, parsed Sums, targets []target, answers []Probl
 	}
 	notes = appendNote(notes, noteItself, data.NotChecked.Itself)
 	notes = appendNote(notes, noteTwice, data.NotChecked.Twice)
-	notes = appendNote(notes, noteNotChecksums, numbers(data.NotChecked.NotChecksums))
+	notes = appendNote(notes, noteNotChecksums, ranges(data.NotChecked.NotChecksums))
 	notes = appendNote(notes, noteUnknown, data.NotChecked.Unknown)
 
 	verdict := tool.Verdict{Outcome: tool.Match, About: filepath.Base(sumsPath), Listed: true}
@@ -242,7 +265,7 @@ func shownProblem(p Problem) string {
 func notChecked(parsed Sums, targets []target) NotChecked {
 	out := NotChecked{Itself: []string{}, Twice: []string{}, NotChecksums: parsed.NotSums, Unknown: parsed.Unknown}
 	if out.NotChecksums == nil {
-		out.NotChecksums = []int{}
+		out.NotChecksums = []LineRange{}
 	}
 	if out.Unknown == nil {
 		out.Unknown = []string{}
@@ -261,11 +284,16 @@ func notChecked(parsed Sums, targets []target) NotChecked {
 	return out
 }
 
-// numbers is a list of line numbers as items of a note.
-func numbers(lines []int) []string {
+// ranges are ranges of lines as items of a note: "4" for one line, "7-9"
+// for three.
+func ranges(lines []LineRange) []string {
 	out := make([]string, 0, len(lines))
-	for _, n := range lines {
-		out = append(out, strconv.Itoa(n))
+	for _, r := range lines {
+		item := strconv.Itoa(r.From)
+		if r.To != r.From {
+			item += "-" + strconv.Itoa(r.To)
+		}
+		out = append(out, item)
 	}
 	return out
 }

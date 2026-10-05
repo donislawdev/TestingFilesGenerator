@@ -73,6 +73,12 @@ type Listed struct {
 	Path string
 }
 
+// LineRange is lines that follow one another, both ends counted from one.
+type LineRange struct {
+	From int `json:"from"`
+	To   int `json:"to"`
+}
+
 // Sums is what a checksum file came to.
 type Sums struct {
 	Listed []Listed
@@ -80,7 +86,13 @@ type Sums struct {
 	// comment, the armour of a signature, a checksum a digit short. Named
 	// rather than failed, the owner's decision of 2026-09-30: sha256sum -c
 	// passes over them, and a signed checksum file is full of them.
-	NotSums []int
+	//
+	// As ranges, so lines one after another are one entry. A number a line
+	// made a checksum file of 64 MiB of line breaks into 67 million numbers
+	// and over two gigabytes before anything was shown (measured on
+	// 2026-10-05, the review of #158). Now the most there can be is one more
+	// than the checksum lines between them, which are kept anyway.
+	NotSums []LineRange
 	// Unknown are lines of an algorithm this tool does not work out, as
 	// "line N: NAME" - a sha224, a BLAKE2b.
 	Unknown []string
@@ -111,7 +123,7 @@ func ParseSums(r io.Reader) (Sums, error) {
 // add files one line under what it turned out to be.
 func (s *Sums) add(number int, line []byte, tooLong bool) {
 	if tooLong {
-		s.NotSums = append(s.NotSums, number)
+		s.notSum(number)
 		return
 	}
 	entry, unknown, ok := readEntry(string(line))
@@ -122,8 +134,18 @@ func (s *Sums) add(number int, line []byte, tooLong bool) {
 		entry.Line = number
 		s.Listed = append(s.Listed, entry)
 	default:
-		s.NotSums = append(s.NotSums, number)
+		s.notSum(number)
 	}
+}
+
+// notSum files a line that is not a checksum line, as the end of the range
+// before it when it follows that range.
+func (s *Sums) notSum(number int) {
+	if last := len(s.NotSums) - 1; last >= 0 && s.NotSums[last].To == number-1 {
+		s.NotSums[last].To = number
+		return
+	}
+	s.NotSums = append(s.NotSums, LineRange{From: number, To: number})
 }
 
 // readLine is the next line without its line break. tooLong says it was longer

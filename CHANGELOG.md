@@ -25,7 +25,7 @@ because it turns other people's test suites red.
   `tfg verify`. The file is only read. `tfg tool list` and `tfg tool show
   <id>` say what there is, both with `--json`.
 - **Checksums of a whole folder.** `tfg tool checksum-write <folder>` writes
-  SHA256SUMS beside the files, byte for byte what `sha256sum` writes, so
+  SHA256SUMS beside the files, byte for byte what GNU `sha256sum` writes, so
   `sha256sum -c` checks it later. It never writes over a checksum file that is
   there, and a folder with anything in it that cannot be read gets no checksum
   file at all, with everything that could not be read named. `tfg tool

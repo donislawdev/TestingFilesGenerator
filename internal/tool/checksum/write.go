@@ -86,17 +86,24 @@ type LeftOut struct {
 // of its own first (core.WriteNew) - so a run stopped anywhere leaves either
 // no checksum file or a whole one, and never writes over one somebody has.
 func runWrite(ctx context.Context, in tool.Request, progress tool.Progress) (tool.Result, error) {
-	dir := in.Inputs[InputFolder]
+	named := in.Inputs[InputFolder]
 	algorithm := in.Values[SettingAlgorithm]
-	target := filepath.Join(dir, sumsName(algorithm))
-	if err := mustBeFolder(dir); err != nil {
+	if err := mustBeFolder(named); err != nil {
 		return tool.Result{}, err
 	}
+	// The folder is looked up once, and the walk, the reading and the writing
+	// all work in what that look found. Each followed the name on its own
+	// until the review of #158, so a link pointed at another folder half way
+	// had the files of one folder read and the checksum file land in the
+	// other. Said as it was named, which is what the person typed - a folder
+	// under /var on macOS is under /private/var once followed.
+	dir := followed(named)
+	target, shown := filepath.Join(dir, sumsName(algorithm)), filepath.Join(named, sumsName(algorithm))
 	// Asked before a byte is read, so a folder of gigabytes is not read to be
 	// refused at the end. Asked again, by the system, when the file is given
 	// its name - somebody may write one in the meantime.
 	if _, err := os.Lstat(target); err == nil {
-		return tool.Result{}, &SumsExistError{Path: target}
+		return tool.Result{}, &SumsExistError{Path: shown}
 	}
 
 	found, err := audit.Walk(ctx, dir)
@@ -108,27 +115,43 @@ func runWrite(ctx context.Context, in tool.Request, progress tool.Progress) (too
 	// checksum file promises every file. Refused before anything is read - the
 	// owner's decision of 2026-09-29 - naming every one.
 	if len(found.Unreadable) > 0 {
-		return tool.Result{}, &FolderUnreadableError{Folder: dir, Problems: problemsOf(found.Unreadable)}
+		return tool.Result{}, &FolderUnreadableError{Folder: named, Problems: problemsOf(found.Unreadable)}
 	}
 	if len(plan.files) == 0 {
-		return tool.Result{}, &NothingToListError{Folder: dir, LeftOut: plan.leftOut.count()}
+		return tool.Result{}, &NothingToListError{Folder: named, LeftOut: plan.leftOut.count()}
 	}
 
 	sums, err := hashAll(ctx, dir, plan.files, algorithm, progress)
 	if err != nil {
+		var unreadable *FolderUnreadableError
+		if errors.As(err, &unreadable) {
+			unreadable.Folder = named
+		}
 		return tool.Result{}, err
 	}
 	content := sumsContent(plan.files, sums)
-	if err := roomFor(dir, target, len(content)); err != nil {
+	if err := roomFor(dir, shown, len(content)); err != nil {
 		return tool.Result{}, err
 	}
 	if _, err := core.WriteNew(target, []byte(content), 0o644); err != nil {
 		if errors.Is(err, fs.ErrExist) {
-			return tool.Result{}, &SumsExistError{Path: target}
+			return tool.Result{}, &SumsExistError{Path: shown}
 		}
 		return tool.Result{}, err
 	}
-	return writeResult(dir, target, algorithm, plan), nil
+	return writeResult(named, shown, algorithm, plan), nil
+}
+
+// followed is a folder with the links on the way to it followed, or as it was
+// named when they cannot be, the way the walk takes it. A junction on Windows
+// is not followed (O265), and the walk then finds a name that is not a folder
+// rather than the files behind it - measured on 2026-10-05, a refusal saying
+// there is nothing to list (O267).
+func followed(dir string) string {
+	if resolved, err := filepath.EvalSymlinks(dir); err == nil {
+		return resolved
+	}
+	return dir
 }
 
 // writePlan is a folder sorted into what goes in the checksum file and what is
