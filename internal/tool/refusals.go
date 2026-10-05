@@ -1,6 +1,7 @@
 package tool
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -19,13 +20,17 @@ func Sentence(what, why, instead string) string {
 // tomorrow refuses with the right code without anybody editing a list.
 type Class int
 
-// The two kinds a tool refuses with.
+// The kinds a tool refuses with.
 const (
 	// Asked is a request that cannot be run as written - a wrong setting, a
 	// missing file name, a directory where a file goes.
 	Asked Class = iota + 1
 	// Reading is a request that was fine and a disk that did not cooperate.
 	Reading
+	// Room is a file a tool would write and a disk without the space for it -
+	// its own class because the frozen table gives it its own code, and CI
+	// has to tell "give it a bigger disk" from "fix the permissions".
+	Room
 )
 
 // Classified is a refusal that says what kind it is.
@@ -62,6 +67,36 @@ func (e *UnknownError) Error() string { return Sentence(e.What(), e.Why(), e.Ins
 
 // Class says this is a mistake in the request.
 func (e *UnknownError) Class() Class { return Asked }
+
+// SettingError is a setting of a tool its declaration refuses: the refusal the
+// registry words for every declared setting, classed as a mistake in the
+// request.
+//
+// Wrapped because on its own that refusal ends a run with FORMAT, the code for
+// a file a format cannot make, and a tool makes no file of any format. A wrong
+// algorithm chosen for checksum-write ended with 4 until 2026-09-30 - the day
+// the first tool declared a closed set of values, which is when
+// docs/NARZEDZIA-SUMY-2026-09-29.md §13.3 said this would become reachable.
+type SettingError struct {
+	Err error
+}
+
+func (e *SettingError) Error() string { return e.Err.Error() }
+
+// Unwrap is the registry's own refusal, for a caller asking what it was.
+func (e *SettingError) Unwrap() error { return e.Err }
+
+// AboutSetting is the setting refused, so a form marks its box.
+func (e *SettingError) AboutSetting() string {
+	var about interface{ AboutSetting() string }
+	if errors.As(e.Err, &about) {
+		return about.AboutSetting()
+	}
+	return ""
+}
+
+// Class says this is a mistake in the request.
+func (e *SettingError) Class() Class { return Asked }
 
 // MissingInputError is a request without something the tool works on.
 type MissingInputError struct {

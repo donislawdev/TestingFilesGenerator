@@ -187,6 +187,8 @@ func classifyTool(err error) (int, bool) {
 		return ExitUsage, true
 	case tool.Reading:
 		return ExitIO, true
+	case tool.Room:
+		return ExitSpace, true
 	}
 	return 0, false
 }

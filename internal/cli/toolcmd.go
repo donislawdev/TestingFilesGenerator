@@ -8,6 +8,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/tool"
 )
@@ -93,7 +94,7 @@ func toolUsage(w io.Writer) {
 Usage:
   tfg tool list                    the tools this build has
   tfg tool show <id>               what one tool works on and takes
-  tfg tool <id> <file> [flags]     run it
+  tfg tool <id> <path> [flags]     run it
 
 Every tool is also on the Tools tab of the window, with the same settings.
 `)
@@ -310,7 +311,10 @@ func renderToolResult(d tool.Descriptor, r tool.Result, asJSON bool, out, errOut
 			return code
 		}
 	} else {
-		printToolTable(d.Columns, r.Rows, w)
+		if len(r.Rows) > 0 {
+			printToolTable(d.Columns, r.Rows, w)
+		}
+		printNotes(d, r.Notes, w)
 		if said := r.Verdict.Said(); said != "" {
 			fmt.Fprintf(w, "\n%s\n", said)
 		}
@@ -319,6 +323,27 @@ func renderToolResult(d tool.Descriptor, r tool.Result, asJSON bool, out, errOut
 		return ExitVerify
 	}
 	return ExitOK
+}
+
+// printNotes prints what a run noted, each as the sentence its tool declared
+// and its items: one item on the same line, several on lines of their own.
+//
+// Every item goes through core.Shown, because an item is usually a file name
+// and a name may hold a line break or an escape sequence - printed as it is, a
+// name could end the list early or rewrite the lines above it in a terminal.
+// The same reason verify shows its paths that way.
+func printNotes(d tool.Descriptor, notes []tool.Noted, w io.Writer) {
+	for _, n := range notes {
+		says := d.NoteSays(n.ID)
+		if len(n.Items) == 1 {
+			fmt.Fprintf(w, "%s %s\n", says, core.Shown(n.Items[0]))
+			continue
+		}
+		fmt.Fprintln(w, says)
+		for _, item := range n.Items {
+			fmt.Fprintf(w, "  %s\n", core.Shown(item))
+		}
+	}
 }
 
 // printToolTable prints a result as columns under their headings, each as wide

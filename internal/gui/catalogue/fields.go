@@ -109,6 +109,7 @@ func propertyField() Entry {
 		{"a yes or no", format.Property{Name: "bom", Kind: format.PropertyBool, Default: "false", Detail: "Whether the file starts with a byte order mark."}},
 		{"a size", format.Property{Name: "member_size", Kind: format.PropertySize, Default: "1kb", Detail: "How big each file inside is."}},
 		{"free text", format.Property{Name: "password", Kind: format.PropertyText, Shape: "text", Detail: "What the archive is locked with."}},
+		{"long free text", format.Property{Name: "expected", Kind: format.PropertyText, Long: true, Shape: "a checksum in hexadecimal", Detail: "The checksum the file should have."}},
 	}
 	var states []State
 	for _, d := range declared {

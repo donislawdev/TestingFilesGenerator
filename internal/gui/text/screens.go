@@ -921,10 +921,18 @@ func ToolReading(done, total string) string {
 	return sayf("ToolReading", "Read {{.Done}} of {{.Total}}.", map[string]any{"Done": done, "Total": total})
 }
 
-// ToolStopped is said when Cancel stopped a tool. A tool only reads, so
-// nothing is left half done anywhere.
+// ToolStopped is said when Cancel stopped a tool. A tool that writes writes
+// last, and under a name of its own until the file is whole, so a stop leaves
+// nothing half done anywhere. Until 2026-09-30 this said a tool only reads,
+// which checksum-write made untrue.
 func ToolStopped() string {
-	return say("ToolStopped", "Stopped before it finished. A tool only reads, so nothing was changed.")
+	return say("ToolStopped", "Stopped before it finished. Nothing was written or changed.")
+}
+
+// ToolMoreItems ends a list the window cuts short. The command line prints
+// every item, so it is named as the place to see them.
+func ToolMoreItems(more int, tool string) string {
+	return sayf("ToolMoreItems", "And {{.More}} more. tfg tool {{.Tool}} lists them all.", map[string]any{"More": more, "Tool": tool})
 }
 
 // ToolCopied says a value is on the clipboard, since pressing Copy changes
@@ -943,6 +951,16 @@ func ToolMatches(about, got string) string {
 func ToolDoesNotMatch(about, got, wanted string) string {
 	return sayf("ToolDoesNotMatch", "Does not match: the {{.About}} is {{.Got}} and {{.Wanted}} was expected.",
 		map[string]any{"About": about, "Got": got, "Wanted": wanted})
+}
+
+// ToolListMatches and ToolListDoesNotMatch are the verdict about a checksum
+// file - tool.Verdict.Said when Listed - in the window's language.
+func ToolListMatches(about string) string {
+	return sayf("ToolListMatches", "Matches: every file {{.About}} lists is what it says.", map[string]any{"About": about})
+}
+
+func ToolListDoesNotMatch(about string) string {
+	return sayf("ToolListDoesNotMatch", "Does not match: {{.About}} lists files that are not what it says.", map[string]any{"About": about})
 }
 
 // ToolInputWrittenAs is what the button beside the box of what a tool works

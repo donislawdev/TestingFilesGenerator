@@ -178,7 +178,9 @@ const (
 	// took the whole row on the sentence that free text has no length to
 	// promise, and the owner's report from the running window was the
 	// obvious one: why are they so long. A path is the one value that can
-	// be, so a path still takes the row.
+	// be, so a path still takes the row - and since 2026-09-30 so does a
+	// value its declaration calls long (format.Property.Long), a checksum of
+	// 64 digits, which this width showed about twenty of.
 	//
 	// One column of the grid since the prototype of 2026-09-23, the same as a
 	// number: in a form of GridColumns columns a name sized for two numbers
@@ -290,3 +292,10 @@ func EdgeWidth() float32 { return edgeWidth }
 // RowGutter is the room in front of the first thing on a list row, for a
 // guard asking whether the words start there or a column later.
 func RowGutter() float32 { return rowGutter }
+
+// NoteItemsShown is how many items of one note of a tool's result the window
+// lists before it says how many more there are. Each item is a line drawn on
+// the canvas, and a checksum file of a folder that moved can have a hundred
+// thousand of them - drawn whole, that is a window the desktop calls not
+// responding. The command line prints every one.
+const NoteItemsShown = 20

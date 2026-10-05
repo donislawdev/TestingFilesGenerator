@@ -24,8 +24,6 @@ import (
 	"encoding/hex"
 	"hash"
 	"hash/crc32"
-	"io"
-	"os"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -92,7 +90,7 @@ func init() {
 					"crc32 is the one ZIP and PNG use, not the one cksum prints.",
 			},
 			{
-				Name: SettingExpect, Kind: format.PropertyText,
+				Name: SettingExpect, Kind: format.PropertyText, Long: true,
 				Shape: "a checksum in hexadecimal",
 				Detail: "The checksum the file should have. The algorithm is told from its length, " +
 					"and worked out even when it is not chosen above.",
@@ -135,12 +133,16 @@ func run(ctx context.Context, in tool.Request, progress tool.Progress) (tool.Res
 	}
 
 	path := in.Inputs[InputFile]
-	digests, size, err := digest(ctx, path, chosen, progress)
+	var done int64
+	digests, opened, err := digest(ctx, path, chosen, nil, func(read, size int64) {
+		done += read
+		progress(done, size)
+	})
 	if err != nil {
 		return tool.Result{}, err
 	}
 
-	out := Checksums{File: path, Bytes: size, Checksums: digests, Expected: expected}
+	out := Checksums{File: path, Bytes: opened.Size(), Checksums: digests, Expected: expected}
 	result := tool.Result{Data: &out}
 	for _, a := range algorithms {
 		if sum, ok := digests[a.name]; ok {
@@ -218,109 +220,4 @@ func readExpected(raw string) (*Expected, error) {
 		}
 	}
 	return nil, &ExpectedError{Given: raw, Digits: len(sum)}
-}
-
-// digest reads a file once and works out every chosen checksum of it.
-func digest(ctx context.Context, path string, chosen map[string]bool, progress tool.Progress) (map[string]string, int64, error) {
-	f, before, err := openRegular(path)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer func() { _ = f.Close() }()
-
-	hashes := map[string]hash.Hash{}
-	writers := make([]io.Writer, 0, len(chosen))
-	for _, a := range algorithms {
-		if chosen[a.name] {
-			h := a.make()
-			hashes[a.name] = h
-			writers = append(writers, h)
-		}
-	}
-	read, err := copyWatching(ctx, io.MultiWriter(writers...), f, before.Size(), progress)
-	if err != nil {
-		return nil, 0, err
-	}
-	after, err := f.Stat()
-	if err != nil {
-		return nil, 0, err
-	}
-	if changed(before, after, read) {
-		return nil, 0, &ChangedError{Path: path}
-	}
-
-	out := make(map[string]string, len(hashes))
-	for name, h := range hashes {
-		out[name] = hex.EncodeToString(h.Sum(nil))
-	}
-	return out, read, nil
-}
-
-// openRegular opens a path for reading, and hands it back only when what was
-// opened is a file.
-//
-// Followed through a link, the way a person naming a file means it - but what
-// is at the end has to be a file. A directory cannot be read as one, and a
-// pipe or a device can be read forever.
-//
-// Asked of the open file rather than of the name, since 2026-09-30. The name
-// was asked first and opened second until then, and between the two looks it
-// could come to stand for a pipe, which open then waited on for good - a
-// review of #157 found it. Now there is one look, at what was opened, and the
-// open itself does not wait (openForLooking). The price is that a device named
-// on purpose is opened and closed again, never read.
-func openRegular(path string) (*os.File, os.FileInfo, error) {
-	f, err := openForLooking(path)
-	if err != nil {
-		return nil, nil, err
-	}
-	info, err := f.Stat()
-	if err == nil && !info.Mode().IsRegular() {
-		err = &NotAFileError{Path: path, Directory: info.IsDir()}
-	}
-	if err == nil {
-		err = waitAgain(f)
-	}
-	if err != nil {
-		_ = f.Close()
-		return nil, nil, err
-	}
-	return f, info, nil
-}
-
-// changed says whether the file moved under the read. A checksum of a file
-// that was being written is a checksum of no version of it.
-func changed(before, after os.FileInfo, read int64) bool {
-	return after.Size() != before.Size() || read != before.Size() || !after.ModTime().Equal(before.ModTime())
-}
-
-// chunk is how much is read between two looks at the context. A megabyte is a
-// millisecond of sha256 and a few of the slowest algorithm, so a stop lands at
-// once and the look costs nothing.
-const chunk = 1 << 20
-
-// copyWatching is io.Copy that stops when asked and says how far it got.
-func copyWatching(ctx context.Context, dst io.Writer, src io.Reader, total int64, progress tool.Progress) (int64, error) {
-	buf := make([]byte, chunk)
-	var done int64
-	for {
-		if err := ctx.Err(); err != nil {
-			return done, err
-		}
-		// What was read is written before the error is looked at, because a
-		// reader may hand back its last bytes and io.EOF in one call. Nothing
-		// read is nothing written, so there is no need to ask first.
-		n, err := src.Read(buf)
-		if _, werr := dst.Write(buf[:n]); werr != nil {
-			return done, werr
-		}
-		done += int64(n)
-		progress(done, total)
-		if err == io.EOF {
-			return done, nil
-		}
-		if err != nil {
-			return done, err
-		}
-	}
 }

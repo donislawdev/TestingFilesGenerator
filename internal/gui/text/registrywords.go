@@ -86,6 +86,9 @@ func (w registryWords) tool(d tool.Descriptor) {
 		w.add(LabelKey(in.Name), EnglishLabel(in.Name), "The name beside the box of what "+whose+" works on.")
 		w.add(InputKey(d.ID, in.Name), in.Detail, "The sentence under the "+in.Name+" box of "+whose+".")
 	}
+	for _, n := range d.Notes {
+		w.add(ToolNoteKey(d.ID, n.ID), n.Says, "A line of the result of "+whose+", ending in a colon - what follows it is a list of names or one number.")
+	}
 	w.settings(ToolOwner(d.ID), whose, d.Settings)
 }
 

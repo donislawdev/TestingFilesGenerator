@@ -40,11 +40,11 @@ func Open(h Host) fyne.Size {
 	pre := NewPreset(h)
 	rec := NewRecipe(h)
 	tools := NewTools(h)
-	runners := []*runner{gen.runner, pre.runner, rec.runner}
+	busyScreens := []*busy{gen.runner.busy, pre.runner.busy, rec.runner.busy, tools.busy}
 	// The way out is wired below, once everything it stops exists. The screen
 	// is built now, so it is handed a way to reach it rather than the thing.
 	var leave func()
-	prefs := NewPreferences(h, func() { leave() }, func() bool { return anyBusy(runners) })
+	prefs := NewPreferences(h, func() { leave() }, func() bool { return anyBusy(busyScreens) })
 
 	// Tabs across the top rather than buttons at the foot, reported from use on
 	// 2026-08-11. The way between the screens used to sit in the row of actions
@@ -142,13 +142,14 @@ func Open(h Host) fyne.Size {
 	// the middle of a file.
 	// One wait for quiet for the whole window, told by every screen, and
 	// stopped with them when the window closes - see tidy.go.
-	quiet := tidyWhenLeftAlone(h, runners...)
+	quiet := tidyWhenLeftAlone(h, busyScreens, gen.runner, pre.runner, rec.runner)
 	leave = closeCleanly(h, []interface{ Stop() }{gen, pre, rec, tools, quiet}, working, &showing)
 	// Restart now stands down while any screen is making files, and stands up
 	// again when it stops - told rather than asked, so the button is right
-	// the moment a run ends while the Preferences tab is on show.
-	for _, r := range runners {
-		r.busy.changed = prefs.BusyChanged
+	// the moment a run ends while the Preferences tab is on show. The Tools tab
+	// tells it too since 2026-09-30, when a tool began to write.
+	for _, b := range busyScreens {
+		b.changed = prefs.BusyChanged
 	}
 	offerSettling(h, []interface{ Settled() }{gen, pre, rec, tools})
 	offerHolding(h, []interface{ HoldBeforeFinishing(func()) }{gen, pre, rec})

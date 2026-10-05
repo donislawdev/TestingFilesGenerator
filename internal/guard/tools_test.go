@@ -158,6 +158,16 @@ func TestTheWindowSaysAVerdictAsTheCommandLineDoes(t *testing.T) {
 	if said := (tool.Verdict{Outcome: tool.Unasked}).Said(); said != "" {
 		t.Errorf("nothing was compared and the command line says %q", said)
 	}
+	// A list of files compared with a checksum file, which is said about the
+	// list rather than about one value (checksum-check).
+	listMatch := tool.Verdict{Outcome: tool.Match, About: "SHA256SUMS", Listed: true}
+	if got, want := text.ToolListMatches(listMatch.About), listMatch.Said(); got != want {
+		t.Errorf("a checksum file that holds reads %q in the window and %q on the command line", got, want)
+	}
+	listMiss := tool.Verdict{Outcome: tool.Mismatch, About: "SHA256SUMS", Listed: true}
+	if got, want := text.ToolListDoesNotMatch(listMiss.About), listMiss.Said(); got != want {
+		t.Errorf("a checksum file that does not hold reads %q in the window and %q on the command line", got, want)
+	}
 }
 
 // TestTheToolsScreenOffersEveryToolWithEveryBox walks the registry, not a list:

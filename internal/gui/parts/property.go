@@ -268,10 +268,20 @@ func DeclaredFields(owner text.Owner, declared []format.Property, into *Fields, 
 		// whose window and whose recipe file are two ways into one engine, so
 		// somebody who finds a setting here has to be able to write it down.
 		// For a tool that is a flag rather than a recipe key - see WrittenAs.
-		objects = append(objects, into.Add(p.Name, text.SettingLabel(p.Name), PropertyDetail(owner, p),
-			tips.Say(text.WrittenAs(owner, p.Name)), ShapedFor(p, f.Control)))
+		field := into.Add(p.Name, text.SettingLabel(p.Name), PropertyDetail(owner, p),
+			tips.Say(text.WrittenAs(owner, p.Name)), ShapedFor(p, f.Control))
+		if longText(p) {
+			field = Wide(field)
+		}
+		objects = append(objects, field)
 	}
 	return fields, objects
+}
+
+// longText is free text the declaration calls long, which takes the row the
+// way a path does - see Property.Long.
+func longText(p format.Property) bool {
+	return p.Long && p.Kind == format.PropertyText
 }
 
 // ShapedFor gives a control the width the value in it needs.
@@ -292,8 +302,13 @@ func DeclaredFields(owner text.Owner, declared []format.Property, into *Fields, 
 // Shrinking to the first alone clipped "worked out from the size" mid-word -
 // which is the same defect the other way up, since a box has to be able to
 // show what it is already showing.
+//
+// Text the declaration calls long is left to the row it is given - see
+// Property.Long and DeclaredFields.
 func ShapedFor(p format.Property, control fyne.CanvasObject) fyne.CanvasObject {
 	switch {
+	case longText(p):
+		return control
 	case narrowOnAScreen(p):
 		return Sized(fyne.Max(NumericWidth, roomFor(leftAlone(p))), control)
 	case p.Kind == format.PropertyText:

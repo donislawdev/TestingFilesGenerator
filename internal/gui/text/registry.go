@@ -83,9 +83,10 @@ func NoteKey(preset, about string) string    { return "Note." + preset + "." + a
 // The words of a tool, under keys of their own rather than beside a preset's:
 // a tool and a preset may one day share a name, and "Question.<id>" would then
 // be one key for two sentences.
-func ToolQuestionKey(id string) string { return "Tool." + id + ".Question" }
-func ToolDetailKey(id string) string   { return "Tool." + id + ".Detail" }
-func InputKey(id, name string) string  { return "Input." + id + "." + name }
+func ToolQuestionKey(id string) string   { return "Tool." + id + ".Question" }
+func ToolDetailKey(id string) string     { return "Tool." + id + ".Detail" }
+func InputKey(id, name string) string    { return "Input." + id + "." + name }
+func ToolNoteKey(id, note string) string { return "Tool." + id + ".Note." + note }
 
 // lookup is say for a sentence whose key is made of identifiers and whose
 // English comes from a registry rather than from this package. Nothing to say
@@ -150,6 +151,9 @@ func ToolDetail(id, english string) string { return lookup(ToolDetailKey(id), en
 
 // ToolInput is the sentence beside what a tool works on.
 func ToolInput(id, name, english string) string { return lookup(InputKey(id, name), english) }
+
+// ToolNote is a line a tool's result may carry, before its items.
+func ToolNote(id, note, english string) string { return lookup(ToolNoteKey(id, note), english) }
 
 // HumanBytes is core.HumanBytes with the decimal mark of the window's language.
 //
