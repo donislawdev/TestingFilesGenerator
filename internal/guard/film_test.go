@@ -280,9 +280,9 @@ func readFrameHeader(p []byte) av1Frame {
 		f.refresh = 0xFF
 		return f
 	}
-	bit()      // error_resilient_mode
-	bit()      // disable_cdf_update
-	bit()      // frame_size_override_flag
+	bit() // error_resilient_mode
+	bit() // disable_cdf_update
+	bit() // frame_size_override_flag
 	f.refresh = bits(8)
 	return f
 }
