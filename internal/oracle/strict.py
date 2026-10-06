@@ -1850,11 +1850,171 @@ def check_toml(data):
     ok(f"{count} records, fields in order, no byte order mark")
 
 
+def ebml_vint(data, at, keep_marker):
+    """A Matroska variable length number: an element ID with its marker, or a
+    size without it. RFC 9559 section 4."""
+    if at >= len(data):
+        fail(f"the file ends at {at} where an element should start")
+    first = data[at]
+    length = 1
+    mask = 0x80
+    while length <= 8 and not first & mask:
+        length += 1
+        mask >>= 1
+    if length > 8 or at + length > len(data):
+        fail(f"a variable length number at {at} runs past the end")
+    value = first if keep_marker else first & (0xFF >> length)
+    for b in data[at + 1:at + length]:
+        value = value << 8 | b
+    return value, length
+
+
+def ebml_elements(data, start, stop):
+    """Every element between start and stop, each one ending where the next
+    starts and the last one ending exactly at stop."""
+    at = start
+    while at < stop:
+        ident, n = ebml_vint(data, at, True)
+        size, m = ebml_vint(data, at + n, False)
+        body = at + n + m
+        if body + size > stop:
+            fail(f"element {ident:#x} at {at} says {size} B and {stop - body} remain inside its parent")
+        yield ident, at, body, body + size
+        at = body + size
+
+
+def av1_frames(sample):
+    """The frame headers of one sample, under the sequence header this
+    generator writes: no frame ids, no order hint, screen content off."""
+    frames = []
+    at = 0
+    while at < len(sample):
+        header = sample[at]
+        if header & 0x80 or header & 0x04 or not header & 0x02:
+            fail(f"an OBU header {header:#04x} with the forbidden bit, an extension or no size")
+        kind = header >> 3 & 0xF
+        size = shift = 0
+        used = 0
+        for i in range(1, 9):
+            if at + i >= len(sample):
+                fail("an OBU size runs past its sample")
+            size |= (sample[at + i] & 0x7F) << shift
+            shift += 7
+            if not sample[at + i] & 0x80:
+                used = i
+                break
+        payload = sample[at + 1 + used:at + 1 + used + size]
+        if len(payload) != size:
+            fail(f"an OBU of type {kind} says {size} B and its sample has {len(payload)}")
+        at += 1 + used + size
+        if kind == 2:
+            fail("a temporal delimiter inside a block, which the AV1 mapping of Matroska removes")
+        if kind in (3, 6):
+            # Every field read here sits in the first three bytes.
+            bits = int.from_bytes(payload[:3].ljust(3, b"\0"), "big")
+            left = 24
+
+            def take(n):
+                nonlocal left
+                left -= n
+                return bits >> left & ((1 << n) - 1)
+
+            if take(1):
+                frames.append(("show", take(3)))
+                continue
+            frame_type, shown = take(2), take(1)
+            showable = frame_type != 0 if shown else take(1)
+            if frame_type == 0 and shown:
+                frames.append(("fill", 0xFF, False))
+                continue
+            take(3)  # error_resilient_mode, disable_cdf_update, frame_size_override_flag
+            frames.append(("fill", take(8), bool(showable)))
+        elif kind != 1:
+            fail(f"an OBU of type {kind} in a block")
+    return frames
+
+
+def check_webm(data):
+    """A WebM film as this generator writes it, read without its code.
+
+    The questions are the ones a film can get wrong while every frame still
+    plays: the segment ends where the file does and its padding is last, the
+    SeekHead points at what it names, every block is whole AV1 with no
+    temporal delimiter, nothing shows a picture that may not be shown again
+    (docs/WIDEO-2026-10-06.md section 9.2), and the Cues point at the key
+    frames and nothing else.
+    """
+    top = list(ebml_elements(data, 0, len(data)))
+    if len(top) != 2 or top[0][0] != 0x1A45DFA3 or top[1][0] != 0x18538067:
+        fail("the file is not an EBML header followed by one segment reaching its end")
+    header_ids = {i: data[b:e] for i, _, b, e in ebml_elements(data, top[0][2], top[0][3])}
+    if header_ids.get(0x4282) != b"webm":
+        fail(f"the DocType is {header_ids.get(0x4282)!r} and a WebM says webm")
+
+    seg_start, seg_end = top[1][2], top[1][3]
+    children = list(ebml_elements(data, seg_start, seg_end))
+    if children[-1][0] != 0xEC:
+        fail("the last element of the segment is not a Void, and this generator pads at the end")
+    at_offset = {at - seg_start: ident for ident, at, _, _ in children}
+
+    blocks, cues, seeks = [], [], 0
+    for ident, at, body, stop in children:
+        if ident == 0x114D9B74:
+            for _, _, sb, se in ebml_elements(data, body, stop):
+                fields = {i: data[b:e] for i, _, b, e in ebml_elements(data, sb, se)}
+                target = int.from_bytes(fields[0x53AB], "big")
+                where = int.from_bytes(fields[0x53AC], "big")
+                if at_offset.get(where) != target:
+                    fail(f"the SeekHead points at {where} for {target:#x} and finds {at_offset.get(where)}")
+                seeks += 1
+        elif ident == 0x1F43B675:
+            cluster_ts = None
+            for ci, _, cb, ce in ebml_elements(data, body, stop):
+                if ci == 0xE7:
+                    cluster_ts = int.from_bytes(data[cb:ce], "big")
+                elif ci == 0xA3:
+                    if data[cb] != 0x81:
+                        fail("a block on a track other than 1")
+                    rel = int.from_bytes(data[cb + 1:cb + 3], "big", signed=True)
+                    blocks.append((cluster_ts + rel, bool(data[cb + 3] & 0x80), data[cb + 4:ce], at - seg_start))
+                else:
+                    fail(f"a cluster holds element {ci:#x}")
+        elif ident == 0x1C53BB6B:
+            for _, _, pb, pe in ebml_elements(data, body, stop):
+                point = {i: (b, e) for i, _, b, e in ebml_elements(data, pb, pe)}
+                if 0xB3 not in point or 0xB7 not in point:
+                    fail("a cue point without its time or its track position")
+                when = int.from_bytes(data[point[0xB3][0]:point[0xB3][1]], "big")
+                where = {i: data[b:e] for i, _, b, e in ebml_elements(data, *point[0xB7])}
+                cues.append((when, int.from_bytes(where.get(0xF1, b""), "big")))
+    if seeks != 3:
+        fail(f"the SeekHead names {seeks} elements and this generator writes three")
+    if not blocks:
+        fail("the film holds no frames")
+
+    showable = [False] * 8
+    for number, (_, _, sample, _) in enumerate(blocks):
+        for frame in av1_frames(sample):
+            if frame[0] == "show":
+                if not showable[frame[1]]:
+                    fail(f"frame {number} shows slot {frame[1]}, which holds nothing that may be shown again")
+            else:
+                for slot in range(8):
+                    if frame[1] >> slot & 1:
+                        showable[slot] = frame[2]
+
+    keys = [(ts, cluster) for ts, key, _, cluster in blocks if key]
+    if [ts for ts, _ in keys] != [ts for ts, _ in cues] or [c for _, c in keys] != [p for _, p in cues]:
+        fail(f"the Cues name {len(cues)} points and the film has {len(keys)} key frames, not at the same places")
+    ok(f"{len(blocks)} frames, {len(keys)} key frames, every one in the Cues, Void last")
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
           "svg": check_svg, "html": check_html, "targz": check_targz,
           "bmp": check_bmp, "gif": check_gif, "ico": check_ico, "jpg": check_jpg,
           "tiff": check_tiff, "webp": check_webp, "avif": check_avif, "jxl": check_jxl,
+          "webm": check_webm,
           "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx,
           "txt": check_txt, "md": check_md,
           "yaml": check_yaml, "toml": check_toml}

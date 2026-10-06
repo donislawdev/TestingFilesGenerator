@@ -70,6 +70,8 @@ var layer = map[string]int{
 	"internal/format/avif":       1,
 	"internal/format/jxl":        1,
 	"internal/format/wav":        1,
+	"internal/format/video":      1,
+	"internal/format/webm":       1,
 
 	"internal/recipe":   2,
 	"internal/preset":   2,
@@ -147,6 +149,7 @@ var sameLayerAllowed = map[string][]string{
 		"internal/format/avif",
 		"internal/format/jxl",
 		"internal/format/wav",
+		"internal/format/webm",
 	},
 	"internal/format/imagelabel": {"internal/format"},
 	"internal/format/imagedim":   {"internal/format"},
@@ -178,6 +181,8 @@ var sameLayerAllowed = map[string][]string{
 	"internal/format/webp":       {"internal/format", "internal/format/imagelabel", "internal/format/imagedim"},
 	"internal/format/avif":       {"internal/format", "internal/format/imagelabel", "internal/format/imagedim"},
 	"internal/format/jxl":        {"internal/format", "internal/format/imagelabel", "internal/format/imagedim"},
+	"internal/format/video":      {"internal/format", "internal/format/imagelabel", "internal/format/imagedim"},
+	"internal/format/webm":       {"internal/format", "internal/format/video"},
 	"internal/format/wav":        {"internal/format", "internal/format/imagelabel"},
 	"internal/preset":            {"internal/recipe"},
 

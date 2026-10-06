@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -318,6 +319,76 @@ var checkers = map[string]Checker{
 		args:   func(p string) []string { return []string{"-c", pythonHTMLScript, p} },
 		accept: expectOK("the Python HTML parser"),
 	},
+	// A film is decoded whole by libaom, the AOM's own decoder, through
+	// ffmpeg - not by gav1d, which codes it, and not by dav1d inside ffmpeg,
+	// which ffmpeg runs without its strict checks. Measured 2026-10-06
+	// (docs/WIDEO-2026-10-06.md sections 9 to 11): of those, only libaom
+	// refuses a stream that shows a key frame twice.
+	"libaom": {
+		Name: "ffmpeg with libaom",
+		find: ffmpegWithLibaom,
+		args: func(p string) []string {
+			return []string{"-nostdin", "-v", "error", "-xerror", "-progress", "pipe:1",
+				"-c:v", "libaom-av1", "-i", p, "-f", "null", "-"}
+		},
+		accept: func(stdout, stderr string, code int) error {
+			// What ffmpeg prints is the verdict, and its exit code is not.
+			// The same broken stream ends 183 under ffmpeg 9.0 and 0 under the
+			// 6.1 a CI runner installs, and a cut off WebM ends 0 under both
+			// while saying so here.
+			if s := strings.TrimSpace(stderr); s != "" {
+				return fmt.Errorf("libaom complained: %s", s)
+			}
+			if code != 0 {
+				return fmt.Errorf("ffmpeg ended with %d and said nothing", code)
+			}
+			if n, ok := DecodedFrames(stdout); !ok || n == 0 {
+				return fmt.Errorf("libaom decoded no frame")
+			}
+			return nil
+		},
+	},
+}
+
+// DecodedFrames is how many frames the libaom oracle decoded, read from what
+// it printed - the last frame= line of ffmpeg's progress report. A guard
+// compares it with the frames the manifest declares, because a file cut off
+// after its first frames decodes without a complaint about the frames that
+// are there.
+func DecodedFrames(output string) (int, bool) {
+	n, found := 0, false
+	for _, line := range strings.Split(output, "\n") {
+		v, ok := strings.CutPrefix(strings.TrimSpace(line), "frame=")
+		if !ok {
+			continue
+		}
+		if parsed, err := strconv.Atoi(strings.TrimSpace(v)); err == nil {
+			n, found = parsed, true
+		}
+	}
+	return n, found
+}
+
+// ffmpegWithLibaom is ffmpeg, when it has the libaom decoder. An ffmpeg
+// without it is no witness for a film, and counts as missing rather than as
+// one that turned every file away.
+//
+// Asked again on every check rather than remembered: remembering it would be
+// state shared between the checks a test runs side by side, which is a
+// decision this package has not needed, and the question costs one short run
+// of ffmpeg.
+func ffmpegWithLibaom() (string, bool) {
+	p, err := exec.LookPath("ffmpeg")
+	if err != nil {
+		return "", false
+	}
+	//nolint:gosec // the path is the one exec.LookPath just found for ffmpeg
+	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
+	out, err := exec.Command(p, "-hide_banner", "-decoders").Output()
+	if err != nil || !strings.Contains(string(out), " libaom-av1 ") {
+		return "", false
+	}
+	return p, true
 }
 
 func inPath(name string) func() (string, bool) {
