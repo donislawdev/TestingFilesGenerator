@@ -30,6 +30,24 @@ func (w *bitWriter) align() {
 	}
 }
 
+// ns is a value below n in the specification's non-symmetric code,
+// 04.conventions.md lines 456-486, with w = FloorLog2(n) + 1 and
+// m = (1 << w) - n. A value under m takes w - 1 bits, one at m or over takes
+// one more, so that v = (x + m) >> 1 and the extra bit together read back as x.
+func (w *bitWriter) ns(x, n int) {
+	floor := 0
+	for 2<<floor <= n {
+		floor++
+	}
+	m := (1 << (floor + 1)) - n
+	if x < m {
+		w.bits(uint32(x), floor)
+		return
+	}
+	w.bits(uint32((x+m)>>1), floor)
+	w.bit(uint32((x + m) & 1))
+}
+
 // trailing is trailing_bits: a one, then zeros to the next byte.
 func (w *bitWriter) trailing() {
 	w.bit(1)
@@ -65,8 +83,10 @@ func (r *bitReader) bits(n int) uint32 {
 }
 
 // leb128 is the length an OBU header carries.
-func leb128(v int) []byte {
-	var out []byte
+func leb128(v int) []byte { return appendLeb128(nil, v) }
+
+// appendLeb128 appends it to out.
+func appendLeb128(out []byte, v int) []byte {
 	for {
 		b := byte(v & 0x7f)
 		v >>= 7

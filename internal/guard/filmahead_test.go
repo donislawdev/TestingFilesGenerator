@@ -93,8 +93,12 @@ func TestAFilmCodedBySeveralGoroutinesHasTheBytesOfOne(t *testing.T) {
 		filmTarget(2<<20, map[string]string{"width": "64", "height": "48", "duration": "40s"}),
 		filmTarget(1<<20, map[string]string{"duration": "30s", "change_interval": "500ms"}),
 	}
+	tiled := 0
 	for _, target := range targets {
 		alone, helped := filmUnder(t, 1, target), filmUnder(t, 8, target)
+		if filmTileCount(t, alone.bytes) > 1 {
+			tiled++
+		}
 		if alone.coded != 0 {
 			t.Errorf("%v: under one thread helpers coded %d pictures, so there is no film of one goroutine to compare with", target.Properties, alone.coded)
 		}
@@ -104,6 +108,12 @@ func TestAFilmCodedBySeveralGoroutinesHasTheBytesOfOne(t *testing.T) {
 		if !bytes.Equal(alone.bytes, helped.bytes) {
 			t.Errorf("%v: the film coded with helpers differs from the film coded by one goroutine (%d B and %d B)", target.Properties, len(helped.bytes), len(alone.bytes))
 		}
+	}
+	// Tiles are what helpers code, and a tile one helper coded is taken by
+	// pictures others are waiting for - the film of tiles is the one where
+	// the order of who coded what could show.
+	if tiled == 0 {
+		t.Fatalf("neither film was cut into tiles, so helpers coding tiles were never compared")
 	}
 }
 
@@ -131,20 +141,29 @@ func filmUnder(t *testing.T, threads int, target engine.Target) filmRun {
 // all written the work has to be far ahead of the bytes. And a run of files
 // whose cost is their bytes has to report the same numbers as before - work
 // equal to bytes at every report.
+//
+// The second film is cut into tiles, which are coded the first time their key
+// comes up, so most of its work is the first picture and the square's ten
+// places - and the bar has to move with that too.
 func TestAFilmsProgressMovesWithItsPicturesNotItsPadding(t *testing.T) {
-	reports, planned := progressOf(t, filmTarget(32<<20, map[string]string{"width": "160", "height": "90", "duration": "5m"}))
-	if changes, _ := planned.Properties["change_count"].(int64); changes < 100 || planned.Work <= 0 {
-		t.Fatalf("the film has %d pictures and declares %d of work, so there were no pictures for the bar to move with", changes, planned.Work)
-	}
-	ahead := 0.0
-	for _, r := range reports {
-		ahead = max(ahead, float64(r.WorkDone)/float64(r.WorkTotal)-float64(r.BytesDone)/float64(r.BytesTotal))
-	}
-	if ahead < 0.4 {
-		t.Errorf("the work was never more than %.0f%% ahead of the bytes, so the bar counts the padding as the film", 100*ahead)
-	}
-	if last := reports[len(reports)-1]; last.WorkDone != last.WorkTotal || last.BytesDone != last.BytesTotal {
-		t.Errorf("the run ended at %d of %d work and %d of %d bytes", last.WorkDone, last.WorkTotal, last.BytesDone, last.BytesTotal)
+	for _, props := range []map[string]string{
+		{"width": "160", "height": "90", "duration": "5m"},
+		{"width": "640", "height": "360", "duration": "5m"},
+	} {
+		reports, planned := progressOf(t, filmTarget(32<<20, props))
+		if changes, _ := planned.Properties["change_count"].(int64); changes < 100 || planned.Work <= 0 {
+			t.Fatalf("%v: the film has %d pictures and declares %d of work, so there were no pictures for the bar to move with", props, changes, planned.Work)
+		}
+		ahead := 0.0
+		for _, r := range reports {
+			ahead = max(ahead, float64(r.WorkDone)/float64(r.WorkTotal)-float64(r.BytesDone)/float64(r.BytesTotal))
+		}
+		if ahead < 0.4 {
+			t.Errorf("%v: the work was never more than %.0f%% ahead of the bytes, so the bar counts the padding as the film", props, 100*ahead)
+		}
+		if last := reports[len(reports)-1]; last.WorkDone != last.WorkTotal || last.BytesDone != last.BytesTotal {
+			t.Errorf("%v: the run ended at %d of %d work and %d of %d bytes", props, last.WorkDone, last.WorkTotal, last.BytesDone, last.BytesTotal)
+		}
 	}
 
 	plain, _ := progressOf(t, engine.Target{ID: "plain", Format: "txt", Sizes: engine.Uniform(1, 1<<20)})

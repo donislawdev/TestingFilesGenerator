@@ -504,9 +504,12 @@ func TestAFilmPictureChangesWhereTheManifestSays(t *testing.T) {
 		{"duration": "5s", "change_interval": "2s", "keyframe_interval": "1s"},
 		{"duration": "2s", "change_interval": "1h"},
 	}
-	moving := 0
+	moving, tiled := 0, 0
 	for _, props := range cases {
 		b, facts := filmOne(t, filmTarget(2*1024*1024, props))
+		if filmTileCount(t, b) > 1 {
+			tiled++
+		}
 		path := filepath.Join(t.TempDir(), "film.webm")
 		if err := os.WriteFile(path, b, 0o600); err != nil {
 			t.Fatal(err)
@@ -539,6 +542,12 @@ func TestAFilmPictureChangesWhereTheManifestSays(t *testing.T) {
 	if moving < 3 {
 		t.Fatalf("only %d of the films had a picture that moves, so the guard did not ask its question", moving)
 	}
+	// Asserted, not assumed: a picture cut into tiles is coded a tile at a
+	// time, and a tile kept from an earlier picture is where a picture that
+	// should move could stand still.
+	if tiled < 2 {
+		t.Fatalf("only %d of the films were cut into tiles, so the guard did not ask about tiles", tiled)
+	}
 }
 
 // libaom decodes every frame the manifest declares - not only "decodes".
@@ -558,8 +567,12 @@ func TestEveryFrameOfAFilmSurvivesItsReferenceTool(t *testing.T) {
 		{"duration": "10m", "keyframe_interval": "30s", "frame_rate": "30"},
 		{"duration": "40ms", "frame_rate": "25"},
 	}
+	tiled := 0
 	for _, props := range cases {
 		b, facts := filmOne(t, filmTarget(4*1024*1024, props))
+		if filmTileCount(t, b) > 1 {
+			tiled++
+		}
 		path := filepath.Join(t.TempDir(), "film.webm")
 		if err := os.WriteFile(path, b, 0o600); err != nil {
 			t.Fatal(err)
@@ -577,6 +590,11 @@ func TestEveryFrameOfAFilmSurvivesItsReferenceTool(t *testing.T) {
 		if !ok || int64(got) != frames {
 			t.Errorf("%v: libaom decoded %d frames and the manifest declares %d", props, got, frames)
 		}
+	}
+	// A frame of tiles is the one whose tile_info and tile sizes this tool
+	// writes itself, so at least one film has to be one.
+	if tiled == 0 {
+		t.Fatalf("no film was cut into tiles, so libaom was never asked about a frame of tiles")
 	}
 }
 
@@ -624,14 +642,24 @@ func TestAFilmOfANamedSizeKeepsEveryPictureInsideItsReserve(t *testing.T) {
 		{1 << 20, map[string]string{"width": "48", "height": "32", "duration": "10m"}},
 		{4 << 20, map[string]string{"width": "52", "height": "20", "duration": "1h"}},
 		{2 << 20, map[string]string{"width": "64", "height": "48", "duration": "2m", "change_interval": "100ms"}},
+		// Cut into tiles: a picture is its tiles together, and the sample
+		// counts them that way.
+		{16 << 20, map[string]string{"width": "320", "height": "180", "duration": "2m", "change_interval": "100ms"}},
 	}
+	tiled := 0
 	for _, c := range cases {
 		b, facts := filmOne(t, filmTarget(c.bytes, c.props))
+		if filmTileCount(t, b) > 1 {
+			tiled++
+		}
 		if changes, _ := facts["change_count"].(int64); changes <= 10 {
 			t.Fatalf("%v: %d pictures, which planning codes whole, so the sample was not asked", c.props, changes)
 		}
 		if int64(len(b)) != c.bytes {
 			t.Errorf("%v: the film is %d B and %d B were asked for", c.props, len(b), c.bytes)
 		}
+	}
+	if tiled == 0 {
+		t.Fatalf("no film was cut into tiles, so no reserve of tiles was asked")
 	}
 }
