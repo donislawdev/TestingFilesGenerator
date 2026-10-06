@@ -246,6 +246,7 @@
     "choice": "one of a fixed set",
     "bool": "true or false",
     "size": "a size such as 2mb",
+    "duration": "a length of time such as 10s",
     "text": "text",
     "pixels": "pixels",
     "paragraphs": "paragraphs",

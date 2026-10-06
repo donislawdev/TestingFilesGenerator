@@ -249,6 +249,7 @@
     "choice": "een uit een vaste verzameling",
     "bool": "waar of onwaar",
     "size": "een grootte zoals 2mb",
+    "duration": "een duur zoals 10s",
     "text": "tekst",
     "pixels": "pixels",
     "paragraphs": "alinea's",

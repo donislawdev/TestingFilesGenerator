@@ -249,6 +249,7 @@
     "choice": "sabit bir kümeden biri",
     "bool": "doğru veya yanlış",
     "size": "2mb gibi bir boyut",
+    "duration": "10s gibi bir süre",
     "text": "metin",
     "pixels": "piksel",
     "paragraphs": "paragraf",

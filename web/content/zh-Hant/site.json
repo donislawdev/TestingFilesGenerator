@@ -249,6 +249,7 @@
     "choice": "固定集合中的其中一個",
     "bool": "真或假",
     "size": "形如 2mb 的大小",
+    "duration": "形如 10s 的時長",
     "text": "文字",
     "pixels": "像素",
     "paragraphs": "段落",

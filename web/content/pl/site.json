@@ -246,6 +246,7 @@
     "choice": "jedna z ustalonych wartości",
     "bool": "prawda albo fałsz",
     "size": "rozmiar, na przykład 2mb",
+    "duration": "czas trwania, na przykład 10s",
     "text": "tekst",
     "pixels": "pikseli",
     "paragraphs": "akapitów",

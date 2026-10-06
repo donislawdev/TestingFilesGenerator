@@ -249,6 +249,7 @@
     "choice": "정해진 집합 중 하나",
     "bool": "참 또는 거짓",
     "size": "2mb와 같은 크기",
+    "duration": "10s와 같은 길이",
     "text": "텍스트",
     "pixels": "픽셀",
     "paragraphs": "단락",
