@@ -88,6 +88,24 @@ func (s Stream) BoundBytes() (key, copied, shown int) {
 	return len(s.seq) + k, h + len(s.show), len(s.show)
 }
 
+// workPerPixel is how many bytes of writing coding one pixel of a picture is
+// worth, for the bar a run draws (format.Plan.Work). Measured on 2026-10-06
+// with the owner's film, 1810 pictures of 1920x1080 and 2 GB of padding
+// (docs/WEBM-WYDAJNOSC-2026-10-06.md): coding 16.9 ns a pixel on sixteen
+// threads and 162 on one, writing 2.2 ns a byte. So the true figure is
+// between 8 and 74 depending on the machine, and this is one of four to eight
+// threads. A wrong figure misjudges only the padding against the pictures,
+// and the padding takes seconds, so the estimate is off by seconds rather
+// than by the film.
+const workPerPixel = 16
+
+// PictureWork is what coding one picture of the film is worth in bytes of
+// writing, which a container reports as each change is coded.
+func (s Stream) PictureWork() int64 { return int64(s.Width) * int64(s.Height) * workPerPixel }
+
+// Work is what coding every picture of the film is worth (format.Plan.Work).
+func (s Stream) Work() int64 { return s.Changes() * s.PictureWork() }
+
 // joined is a followed by b in one allocation of the right size.
 func joined(a, b []byte) []byte {
 	return append(append(make([]byte, 0, len(a)+len(b)), a...), b...)

@@ -789,6 +789,34 @@ type Plan struct {
 	// Memo is the generator's own scratch space, carried from planning to
 	// writing. Nothing outside the generator reads it.
 	Memo any
+	// Work is what writing the file costs beyond writing its bytes, counted
+	// as the bytes that would take as long to write - nought for every file
+	// whose cost is its bytes. A film is the case it exists for: thirty
+	// minutes of 1920x1080 is a hundred megabytes of pictures that take a
+	// minute to code and two gigabytes of padding that take five seconds to
+	// write, so a bar counting bytes stood at five percent for the whole
+	// minute and promised three hours (docs/WEBM-WYDAJNOSC-2026-10-06.md).
+	// The generator says how much of it is done through Worked as it goes.
+	Work int64
+}
+
+type workKey struct{}
+
+// WithWork is ctx carrying report, which Worked calls. The engine sets it on
+// the context a generator writes under, when somebody is watching the run.
+func WithWork(ctx context.Context, report func(int64)) context.Context {
+	return context.WithValue(ctx, workKey{}, report)
+}
+
+// Worked says that n more of the plan's Work is done. It goes through the
+// context rather than the writer, because the writer a generator is handed is
+// not always the engine's - a damaged file is written through the damage -
+// and from the goroutine Write runs on, which is the one the engine counts
+// the bytes on. With nobody watching it does nothing.
+func Worked(ctx context.Context, n int64) {
+	if report, ok := ctx.Value(workKey{}).(func(int64)); ok {
+		report(n)
+	}
 }
 
 // PropertyLabelEmbedded is the key a generator sets to say whether the label

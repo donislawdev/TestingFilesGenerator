@@ -118,6 +118,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		Determinism: format.DeterminismByte,
 		Properties:  video.Facts(c, s),
 		Memo:        memo{choice: c, settings: s, total: r.Bytes},
+		Work:        st.Work(),
 	}
 	if r.Label && !c.Labelled() {
 		p.Notes = append(p.Notes, format.Note{
@@ -233,19 +234,26 @@ func (s *sticky) uint(id uint32, v uint64) {
 
 // writeClusters codes the pictures one change at a time and writes the
 // clusters as it goes, giving back where each key frame's cluster starts, for
-// the Cues, and where the last one ends.
+// the Cues, and where the last one ends. Every change opens a cluster, so each
+// is reported as worked once, which adds up to the Work the plan counted.
 func writeClusters(ctx context.Context, out *sticky, l layout, pics *video.Pictures) ([]uint64, uint64, error) {
 	s := l.stream
 	keys := make([]uint64, 0, s.Keys())
 	pos := l.front()
+	worked := int64(-1)
 	for first := int64(0); first < s.Frames; {
 		if err := ctx.Err(); err != nil {
 			return nil, 0, err
 		}
 		// A cluster thirty seconds into a picture asks for the picture it
 		// already has, which At answers without coding anything.
-		if err := pics.At(s.ChangeOf(first)); err != nil {
+		change := s.ChangeOf(first)
+		if err := pics.At(change); err != nil {
 			return nil, 0, err
+		}
+		if change != worked {
+			format.Worked(ctx, s.PictureWork())
+			worked = change
 		}
 		if s.IsKey(first) {
 			keys = append(keys, pos)

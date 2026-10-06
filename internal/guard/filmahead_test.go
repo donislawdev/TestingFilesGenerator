@@ -9,6 +9,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/video"
 )
 
@@ -118,6 +119,59 @@ func filmUnder(t *testing.T, threads int, target engine.Target) filmRun {
 	b, _ := filmOne(t, target)
 	_, after := video.Helpers()
 	return filmRun{bytes: b, coded: after - before}
+}
+
+// A film's progress moves with its pictures, not with its padding.
+//
+// The bytes of a film are mostly padding written in its last seconds, so a bar
+// counting bytes stood at five percent while the pictures were coded and
+// promised the owner three hours for a film that took ten minutes
+// (docs/WEBM-WYDAJNOSC-2026-10-06.md). Here the pictures are about a
+// twenty-fifth of the bytes and two thirds of the work: at the moment they are
+// all written the work has to be far ahead of the bytes. And a run of files
+// whose cost is their bytes has to report the same numbers as before - work
+// equal to bytes at every report.
+func TestAFilmsProgressMovesWithItsPicturesNotItsPadding(t *testing.T) {
+	reports, planned := progressOf(t, filmTarget(32<<20, map[string]string{"width": "160", "height": "90", "duration": "5m"}))
+	if changes, _ := planned.Properties["change_count"].(int64); changes < 100 || planned.Work <= 0 {
+		t.Fatalf("the film has %d pictures and declares %d of work, so there were no pictures for the bar to move with", changes, planned.Work)
+	}
+	ahead := 0.0
+	for _, r := range reports {
+		ahead = max(ahead, float64(r.WorkDone)/float64(r.WorkTotal)-float64(r.BytesDone)/float64(r.BytesTotal))
+	}
+	if ahead < 0.4 {
+		t.Errorf("the work was never more than %.0f%% ahead of the bytes, so the bar counts the padding as the film", 100*ahead)
+	}
+	if last := reports[len(reports)-1]; last.WorkDone != last.WorkTotal || last.BytesDone != last.BytesTotal {
+		t.Errorf("the run ended at %d of %d work and %d of %d bytes", last.WorkDone, last.WorkTotal, last.BytesDone, last.BytesTotal)
+	}
+
+	plain, _ := progressOf(t, engine.Target{ID: "plain", Format: "txt", Sizes: engine.Uniform(1, 1<<20)})
+	for _, r := range plain {
+		if r.WorkDone != r.BytesDone || r.WorkTotal != r.BytesTotal {
+			t.Fatalf("a text file reported %d of %d work against %d of %d bytes, and its cost is its bytes", r.WorkDone, r.WorkTotal, r.BytesDone, r.BytesTotal)
+		}
+	}
+}
+
+// progressOf runs one target with every progress report kept, and its plan.
+func progressOf(t *testing.T, target engine.Target) ([]engine.Progress, format.Plan) {
+	t.Helper()
+	opt := engine.Options{OutDir: t.TempDir(), Seed: goldenSeed, Command: "test"}
+	planned, err := engine.Plan([]engine.Target{target}, opt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var reports []engine.Progress
+	opt.OnProgress = func(p engine.Progress) { reports = append(reports, p) }
+	if _, err := engine.Run(context.Background(), planned, opt); err != nil {
+		t.Fatal(err)
+	}
+	if len(reports) < 2 {
+		t.Fatalf("%s: %d progress reports, too few to say how the bar moved", target.Format, len(reports))
+	}
+	return reports, planned[0].Plan
 }
 
 // A film stopped half way leaves no helper running when the run returns.
