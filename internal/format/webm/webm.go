@@ -1,19 +1,22 @@
 // Package webm generates WebM films: AV1 in the WebM subset of Matroska, with
 // no sound.
 //
-// The picture and the stream are internal/format/video's, shared with MP4.
+// The pictures and the stream are internal/format/video's, shared with MP4.
 // What is here is the container: EBML written as a stream, a SeekHead, the one
-// track, clusters, Cues, and a Void at the end that carries the padding.
+// track, clusters, a Void that carries the padding, and the Cues last.
 //
 // The padding channel is a Void element, the one Matroska defines for bytes
-// that mean nothing, after the Cues and inside the segment. The segment's size
-// is always written in eight bytes, so the Void can grow a byte at a time and
-// nothing before it moves. Measured on 2026-10-06 (docs/WIDEO-2026-10-06.md
-// section 9.6) at a Void of 2, 3, 128, 129, 16 385, 16 386 and 1 048 576
-// bytes and with none: every file came out at the size asked for, libaom
-// decoded every frame of every one, and Chromium played and seeked them all.
-// A Void is always written, at least its two bytes, which leaves no size above
-// the minimum that cannot be reached.
+// that mean nothing, between the last cluster and the Cues. The segment's size
+// is always written in eight bytes and the Cues are the same length whatever
+// they point at, so the Void can grow a byte at a time and nothing before it
+// moves. It sat after the Cues until the pictures began to change
+// (docs/WIDEO-2026-10-06.md section 15): a cluster's length is known only
+// once its picture is coded, and the SeekHead, written first, has to say where
+// the Cues are - at the end, less their length, is the one place that does not
+// depend on the pictures. The Void at the end was measured on 2026-10-06
+// (section 9.6) at 2, 3, 128, 129, 16 385, 16 386 and 1 048 576 bytes and with
+// none. A Void is always written, at least its two bytes, which leaves no size
+// above the minimum that cannot be reached.
 package webm
 
 import (
@@ -41,8 +44,18 @@ func init() {
 
 		MinBytes: minimumBytes(),
 
+		// Every picture of a film is coded on its own, and gav1d allocates
+		// per picture - about forty objects each with the frames around it.
+		// The flat ceiling counts what a generator allocates per file, and a
+		// default film is ten pictures. Measured on 2026-10-06, lowest of the
+		// guard's rounds: 408 objects for the default film, and 698 with one
+		// object allocated per frame, the defect the ceiling exists for. The
+		// number below sits between the two, and like every ceiling here it
+		// goes down when work makes it lowerable, never up to turn a run green.
+		AllocCeiling: 512,
+
 		Padding: format.PaddingChannel{
-			Name:     "a Void element at the end of the file",
+			Name:     "a Void element before the index at the end of the file",
 			Where:    format.PlacementEnd,
 			Capacity: 0,
 		},
@@ -56,16 +69,16 @@ func init() {
 }
 
 // minimumBytes is the smallest film at the default settings - the smallest
-// rung's bound, ten seconds at thirty frames, one key frame - with its Void.
-// Worked out from the same layout planning uses rather than written down, so
-// the two cannot disagree.
+// rung's bound, ten seconds at thirty frames, one key frame, a new picture
+// every second - with its Void. Worked out from the same layout planning uses
+// rather than written down, so the two cannot disagree.
 func minimumBytes() int64 {
-	t, err := video.NewTimeline(id, 10_000, 60_000, 30)
+	t, err := video.NewTimeline(id, 10_000, 60_000, 1_000, 30)
 	if err != nil {
 		panic(err)
 	}
 	smallest := video.Ladder[len(video.Ladder)-1]
-	return newLayout(video.Bound(t, smallest.Ceiling, smallest.Width, smallest.Height)).fileBytes() + minVoid
+	return newLayout(video.NewStream(t, smallest.Ceiling, smallest.Width, smallest.Height)).boundBytes() + minVoid
 }
 
 type generator struct{}
@@ -85,12 +98,12 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	if err != nil {
 		return format.Plan{}, err
 	}
-	fits := func(st video.Stream) bool { return newLayout(st).fileBytes()+minVoid <= r.Bytes }
+	fits := func(st video.Stream) bool { return newLayout(st).boundBytes()+minVoid <= r.Bytes }
 	c, st, err := video.Choose(id, r, s, label, fits)
 	if err != nil {
 		return format.Plan{}, err
 	}
-	if need := newLayout(st).fileBytes() + minVoid; need > r.Bytes {
+	if need := newLayout(st).boundBytes() + minVoid; need > r.Bytes {
 		return format.Plan{}, belowMinimum(r.Bytes, need, c, s)
 	}
 
@@ -107,6 +120,13 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Detail: core.Says("format.ThePictureIsPxWideAnd", "The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("Width", c.Width)),
 		})
 	}
+	if !c.ClockShown(s.Timeline) {
+		p.Notes = append(p.Notes, format.Note{
+			Code: "clock_omitted",
+			Detail: core.Says("video.NoClock", "The picture is %dx%d and the clock needs more room, so this film shows no clock. The square still steps across it where it has room to move.",
+				core.A("Width", c.Width), core.A("Height", c.Height)),
+		})
+	}
 	return p, nil
 }
 
@@ -117,11 +137,11 @@ func belowMinimum(requested, need int64, c video.Choice, s video.Settings) error
 		Format:    "WebM",
 		Requested: requested,
 		Minimum:   need,
-		Reason: core.Says("webm.MinimumReason",
-			"a film of %s at %d frames a second with a key frame every %s and a %dx%d picture takes %d B, and the file always carries a Void element, which costs %d B even when it holds nothing",
+		Reason: core.Says("webm.MinimumReasonPictures",
+			"a film of %s at %d frames a second with a key frame every %s and a new %dx%d picture every %s takes %d B, and the file always carries a Void element, which costs %d B even when it holds nothing",
 			core.A("Duration", core.FormatDuration(s.DurationMs)), core.A("FPS", s.FPS),
 			core.A("Interval", core.FormatDuration(s.KeyEvery*1000/int64(s.FPS))),
-			core.A("Width", c.Width), core.A("Height", c.Height),
+			core.A("Width", c.Width), core.A("Height", c.Height), core.A("Change", core.FormatDuration(s.ChangeMs())),
 			core.A("Bytes", need-minVoid), core.A("Void", minVoid)),
 		Hint: hint(need, c),
 	}
@@ -132,12 +152,12 @@ func belowMinimum(requested, need int64, c video.Choice, s video.Settings) error
 // one would send somebody to a setting that changes nothing.
 func hint(need int64, c video.Choice) core.Said {
 	if c.Named {
-		return core.Says("webm.AskForBOrMore",
-			"Ask for %d B or more, or a shorter film, fewer frames a second, key frames further apart or a smaller picture",
+		return core.Says("webm.AskForBOrMorePictures",
+			"Ask for %d B or more, or a shorter film, fewer frames a second, key frames further apart, a new picture less often or a smaller picture",
 			core.A("Floor", need))
 	}
-	return core.Says("webm.AskForBOrMoreFilm",
-		"Ask for %d B or more, or a shorter film, fewer frames a second or key frames further apart",
+	return core.Says("webm.AskForBOrMoreFilmPictures",
+		"Ask for %d B or more, or a shorter film, fewer frames a second, key frames further apart or a new picture less often",
 		core.A("Floor", need))
 }
 
@@ -151,33 +171,32 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return ctx.Err()
 	default:
 	}
-	coded, err := m.choice.Code()
-	if err != nil {
-		return err
-	}
-	st := video.NewStream(m.settings.Timeline, coded, m.choice.Width, m.choice.Height)
+	st := video.NewStream(m.settings.Timeline, m.choice.Ceiling, m.choice.Width, m.choice.Height)
 	l := newLayout(st)
-	void := m.total - l.fileBytes()
-	if void < minVoid {
-		return core.Defect(fmt.Errorf("webm: the film came to %d B and the file was to be %d B, which leaves no room for the Void every one of these carries",
-			l.fileBytes(), m.total))
-	}
+	body := uint64(m.total - l.outside())
+	cuesAt := body - l.cuesLen()
 
 	out := &sticky{w: w}
 	out.write(l.head)
 	out.write(idBytes(idSegment))
-	out.write(sizeField(l.body+uint64(void), segmentSizeField))
-	out.write(l.seekHead)
+	out.write(sizeField(body, segmentSizeField))
+	out.write(seekHead(l.seekHeadLen, l.seekHeadLen+uint64(len(l.info)), cuesAt))
 	out.write(l.info)
 	out.write(l.tracks)
-	if err := writeClusters(ctx, out, l); err != nil {
+	keys, end, err := writeClusters(ctx, out, l, m.choice.Pictures(st))
+	if err != nil {
 		return err
 	}
-	writeCues(out, l)
-	if out.err != nil {
-		return out.err
+	void := int64(cuesAt) - int64(end)
+	if void < minVoid {
+		return core.Defect(fmt.Errorf("webm: the clusters came to %d B and the Cues are to start at %d B, which leaves no room for the Void every one of these carries",
+			end, cuesAt))
 	}
-	return writeVoid(ctx, w, void, m.choice.Seed)
+	if err := writeVoid(ctx, w, void, m.choice.Seed); err != nil {
+		return err
+	}
+	writeCues(out, l, keys)
+	return out.err
 }
 
 // sticky keeps the first error, so a long run of small writes checks once,
@@ -205,59 +224,81 @@ func (s *sticky) uint(id uint32, v uint64) {
 	s.write(appendUint(s.scratch[:0], id, v))
 }
 
-func writeClusters(ctx context.Context, out *sticky, l layout) error {
-	for _, c := range l.clusters {
+// writeClusters codes the pictures one change at a time and writes the
+// clusters as it goes, giving back where each key frame's cluster starts, for
+// the Cues, and where the last one ends.
+func writeClusters(ctx context.Context, out *sticky, l layout, pics *video.Pictures) ([]uint64, uint64, error) {
+	s := l.stream
+	keys := make([]uint64, 0, s.Keys())
+	pos := l.front()
+	for first := int64(0); first < s.Frames; {
 		if err := ctx.Err(); err != nil {
-			return err
+			return nil, 0, err
 		}
-		writeCluster(out, l.stream, c)
+		// A cluster thirty seconds into a picture asks for the picture it
+		// already has, which At answers without coding anything.
+		if err := pics.At(s.ChangeOf(first)); err != nil {
+			return nil, 0, err
+		}
+		if s.IsKey(first) {
+			keys = append(keys, pos)
+		}
+		last := l.next(first)
+		pos += writeCluster(out, l, pics, first, last)
 		if out.err != nil {
-			return out.err
+			return nil, 0, out.err
 		}
+		first = last
 	}
-	return nil
+	return keys, pos, nil
 }
 
-// writeCluster writes one cluster: its time, then a SimpleBlock for each of
-// its frames - track 1, the frame's time from the cluster's, and the key flag
-// on a key frame.
-func writeCluster(out *sticky, st video.Stream, c cluster) {
-	out.header(idCluster, c.content)
-	out.uint(idTimestamp, uint64(c.ts))
+// writeCluster writes the cluster of frames [first, last) and returns its
+// length: its time, then a SimpleBlock for each frame - track 1, the frame's
+// time from the cluster's, and the key flag on a key frame. Which sample each
+// frame carries is the layout's kindAt, the same answer the cluster's length
+// was counted from.
+func writeCluster(out *sticky, l layout, pics *video.Pictures, first, last int64) uint64 {
+	s := l.stream
+	samples := [kinds][]byte{keySample: pics.KeySample(), copySample: pics.CopySample(), showSample: s.ShowSample()}
+	content := l.clusterContent(first, last, [kinds]int{len(samples[keySample]), len(samples[copySample]), len(samples[showSample])})
+	ts := s.StartMs(first)
+	out.header(idCluster, content)
+	out.uint(idTimestamp, uint64(ts))
 	var block [4]byte
 	block[0] = 0x81
-	for i := c.first; i < c.last; i++ {
-		sample := st.Sample(i)
-		rel := st.StartMs(i) - c.ts
+	for i := first; i < last; i++ {
+		sample := samples[l.kindAt(first, i)]
+		rel := s.StartMs(i) - ts
 		block[1], block[2], block[3] = byte(rel>>8), byte(rel), 0
-		if st.IsKey(i) {
+		if s.IsKey(i) {
 			block[3] = 0x80
 		}
 		out.header(idSimpleBlock, uint64(4+len(sample)))
 		out.write(block[:])
 		out.write(sample)
 	}
+	return elementLen(idCluster, content)
 }
 
-// writeCues points at every cluster that opens with a key frame, with the
-// same arithmetic the layout counted them by.
-func writeCues(out *sticky, l layout) {
+// writeCues points at every cluster that opens with a key frame, each position
+// in eight bytes, as the layout counted them.
+func writeCues(out *sticky, l layout, keys []uint64) {
+	s := l.stream
 	out.header(idCues, l.cuesBody)
-	for _, c := range l.clusters {
-		if !l.stream.IsKey(c.first) {
-			continue
-		}
-		positions := uintElementLen(idCueTrack, 1) + uintElementLen(idCueClusterPosition, c.position)
-		out.header(idCuePoint, uintElementLen(idCueTime, uint64(c.ts))+elementLen(idCueTrackPositions, positions))
-		out.uint(idCueTime, uint64(c.ts))
+	positions := uintElementLen(idCueTrack, 1) + fixedUintElementLen(idCueClusterPosition)
+	for g, pos := range keys {
+		ts := uint64(s.StartMs(int64(g) * s.KeyEvery))
+		out.header(idCuePoint, uintElementLen(idCueTime, ts)+elementLen(idCueTrackPositions, positions))
+		out.uint(idCueTime, ts)
 		out.header(idCueTrackPositions, positions)
 		out.uint(idCueTrack, 1)
-		out.uint(idCueClusterPosition, c.position)
+		out.write(appendFixedUint(out.scratch[:0], idCueClusterPosition, pos))
 	}
 }
 
-// writeVoid fills the rest of the file with one Void element of exactly total
-// bytes, without ever holding its content.
+// writeVoid writes one Void element of exactly total bytes, without ever
+// holding its content.
 func writeVoid(ctx context.Context, w io.Writer, total int64, seed uint64) error {
 	k := 1
 	for ; k < 8; k++ {

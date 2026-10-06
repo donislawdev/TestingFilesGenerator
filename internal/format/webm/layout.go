@@ -24,97 +24,130 @@ const segmentSizeField = 8
 // a byte at a time.
 const minVoid = 2
 
-// cluster is one cluster's place in the file: the frames it holds, when it
-// starts, where it is, and how big its content is.
-type cluster struct {
-	first, last int64 // frames [first, last)
-	ts          int64
-	position    uint64 // from the start of the segment's content
-	content     uint64
-}
-
-// layout is the whole file worked out without writing it. Planning and writing
-// both build one from a stream - planning from the bound of a rung, writing
-// from the coded picture - so the two cannot come to disagree about where
-// anything is.
+// layout is what a film's file is made of before its pictures are coded: the
+// parts that do not depend on them, and the arithmetic of the clusters that do.
 //
-// The work is per cluster, not per frame. A day at sixty frames a second is
-// five million frames and at most ninety thousand clusters, because the key
-// frame interval is at least a second.
+// A cluster's length is known only once its picture is coded, because the
+// pictures of a film differ (docs/WIDEO-2026-10-06.md section 15), so the
+// clusters' places are found while writing. What is fixed in advance is where
+// the Cues go: last in the segment, at its end less their length - which does
+// not move, because each cluster position in them is written in eight bytes.
+// So the SeekHead points at them before anything after it is written, the
+// clusters are written as their pictures are coded, and the Void between the
+// last cluster and the Cues takes up whatever the pictures left.
+//
+// A cluster opens at every key frame, at every change of picture and thirty
+// seconds into a run of neither, so a cluster carries at most one picture and
+// writing holds no more than that. The work is per cluster, not per frame: a
+// day at sixty frames a second is five million frames, and the settings bound
+// the clusters to a hundred thousand key frames, a hundred thousand changes and
+// one every thirty seconds.
 type layout struct {
-	stream   video.Stream
-	head     []byte // the EBML header
-	seekHead []byte
-	info     []byte
-	tracks   []byte
-	clusters []cluster
-	cuesBody uint64 // what the Cues element holds
-	body     uint64 // the segment's content without the Void
+	stream      video.Stream
+	head        []byte // the EBML header
+	info        []byte
+	tracks      []byte
+	seekHeadLen uint64
+	cuesBody    uint64 // what the Cues element holds
 }
 
 func newLayout(s video.Stream) layout {
 	l := layout{stream: s, head: ebmlHeader(), info: info(s), tracks: tracks(s)}
-	l.seekHead = seekHead(0, 0, 0)
-	pos := uint64(len(l.seekHead) + len(l.info) + len(l.tracks))
-
-	var cues uint64
+	l.seekHeadLen = uint64(len(seekHead(0, 0, 0)))
 	for g := int64(0); g < s.Keys(); g++ {
-		pos, cues = l.addGroup(g, pos, cues)
+		l.cuesBody += cuePointLen(uint64(s.StartMs(g * s.KeyEvery)))
 	}
-	l.cuesBody = cues
-	l.body = pos + elementLen(idCues, cues)
-	l.seekHead = seekHead(uint64(len(l.seekHead)), uint64(len(l.seekHead)+len(l.info)), pos)
 	return l
 }
 
-// addGroup lays out the clusters of one group of pictures - the frames from
-// one key frame to the next - from pos on, and gives back where the next
-// group starts and the Cues so far. The first cluster of a group opens with
-// its key frame and gets the group's cue point.
-func (l *layout) addGroup(g int64, pos, cues uint64) (uint64, uint64) {
-	s := l.stream
-	key, copied, shown := s.KindBytes()
-	span := int64(s.FPS) * clusterSpanMs / 1000
-	start, end := g*s.KeyEvery, min((g+1)*s.KeyEvery, s.Frames)
-	opening := len(l.clusters)
-	for first := start; first < end; first += span {
-		c := cluster{first: first, last: min(first+span, end), ts: s.StartMs(first), position: pos}
-		c.content = uintElementLen(idTimestamp, uint64(c.ts)) + blocks(c, s.KeyEvery, key, copied, shown)
-		pos += elementLen(idCluster, c.content)
-		l.clusters = append(l.clusters, c)
-	}
-	return pos, cues + cuePointLen(l.clusters[opening])
+// front is where the first cluster starts, counted from the start of the
+// segment's content.
+func (l layout) front() uint64 { return l.seekHeadLen + uint64(len(l.info)+len(l.tracks)) }
+
+// cuesLen is the whole Cues element.
+func (l layout) cuesLen() uint64 { return elementLen(idCues, l.cuesBody) }
+
+// outside is the bytes of the file before the segment's content: the EBML
+// header, the segment's ID and its size.
+func (l layout) outside() int64 {
+	return int64(len(l.head)) + int64(idLen(idSegment)) + segmentSizeField
 }
 
-// blocks is the bytes a cluster's SimpleBlocks take. A cluster that starts a
-// group of pictures opens with the key sample and the hidden copy, and the
-// rest of every cluster is frames that show the copy again.
-func blocks(c cluster, keyEvery int64, key, copied, shown int) uint64 {
-	n := c.last - c.first
-	var total uint64
-	if c.first%keyEvery == 0 {
-		total += blockLen(key)
-		n--
-		if n > 0 && keyEvery > 1 {
-			total += blockLen(copied)
-			n--
-		}
+// next is where the cluster that opens at frame first ends: at the next key
+// frame, the next change of picture or thirty seconds on, whichever comes
+// first, and never past the film.
+func (l layout) next(first int64) int64 {
+	s := l.stream
+	span := int64(s.FPS) * clusterSpanMs / 1000
+	return min(s.Frames, (first/s.KeyEvery+1)*s.KeyEvery, (first/s.ChangeEvery+1)*s.ChangeEvery, first+span)
+}
+
+// The three kinds of sample a frame carries.
+const (
+	keySample  = iota // the picture as a key frame, the sequence header first
+	copySample        // the picture as a hidden copy, and the frame showing it
+	showSample        // the current picture shown again
+	kinds
+)
+
+// kindAt is what frame i of the cluster opening at frame first carries.
+//
+// Only a cluster's first two frames can carry a picture. A key frame opens its
+// cluster, and the frame after it carries the hidden copy, because a shown key
+// frame cannot be shown again - unless that frame opens a change, which opens
+// a cluster of its own. A change opens its cluster with the copy and the frame
+// that shows it. Every other frame shows the current picture again.
+func (l layout) kindAt(first, i int64) int {
+	s := l.stream
+	switch {
+	case i == first && s.IsKey(i):
+		return keySample
+	case i == first && s.StartsChange(i), i == first+1 && s.IsKey(first):
+		return copySample
 	}
-	return total + uint64(n)*blockLen(shown)
+	return showSample
+}
+
+// clusterContent is what the cluster of frames [first, last) holds, given how
+// long each kind of sample is - counted from kindAt for the two frames that can
+// carry a picture, so the length written before a cluster and the blocks
+// written in it come from one answer.
+func (l layout) clusterContent(first, last int64, lens [kinds]int) uint64 {
+	total := uintElementLen(idTimestamp, uint64(l.stream.StartMs(first)))
+	for i := first; i < min(first+2, last); i++ {
+		total += blockLen(lens[l.kindAt(first, i)])
+	}
+	if rest := last - first - 2; rest > 0 {
+		total += uint64(rest) * blockLen(lens[showSample])
+	}
+	return total
+}
+
+// boundBytes is the file without its Void when every picture takes its whole
+// reserve - what planning promises, because no film of this stream comes to
+// more.
+func (l layout) boundBytes() int64 {
+	key, copied, shown := l.stream.BoundBytes()
+	lens := [kinds]int{keySample: key, copySample: copied, showSample: shown}
+	body := l.front() + l.cuesLen()
+	for first := int64(0); first < l.stream.Frames; {
+		last := l.next(first)
+		body += elementLen(idCluster, l.clusterContent(first, last, lens))
+		first = last
+	}
+	return l.outside() + int64(body)
 }
 
 // blockLen is a SimpleBlock element carrying a sample: track number, a two
 // byte time offset and the flags, then the sample.
 func blockLen(sample int) uint64 { return elementLen(idSimpleBlock, uint64(4+sample)) }
 
-func cuePointLen(c cluster) uint64 {
-	positions := uintElementLen(idCueTrack, 1) + uintElementLen(idCueClusterPosition, c.position)
-	return elementLen(idCuePoint, uintElementLen(idCueTime, uint64(c.ts))+elementLen(idCueTrackPositions, positions))
-}
-
-// fileBytes is the file without its Void.
-func (l layout) fileBytes() int64 {
-	return int64(len(l.head)) + int64(idLen(idSegment)) + segmentSizeField + int64(l.body)
+// cuePointLen is one cue point, with the cluster's position in eight bytes
+// whatever it is - so the Cues are the same length before the clusters are
+// written as after.
+func cuePointLen(ts uint64) uint64 {
+	positions := uintElementLen(idCueTrack, 1) + fixedUintElementLen(idCueClusterPosition)
+	return elementLen(idCuePoint, uintElementLen(idCueTime, ts)+elementLen(idCueTrackPositions, positions))
 }
 
 func ebmlHeader() []byte {

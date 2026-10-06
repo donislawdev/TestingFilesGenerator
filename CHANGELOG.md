@@ -18,26 +18,35 @@ because it turns other people's test suites red.
 
 - **Films: the `webm` format.** A WebM video with an AV1 picture and no
   sound, at the exact size you ask for, like every other format. Its length
-  is a setting of its own, independent of the size: an hour at thirty frames
-  a second fits in less than a megabyte (977 128 B at the smallest), because
-  a film that shows one picture costs a few bytes for every frame after the
-  first. Set `duration`,
-  `frame_rate` (whole rates from 1 to 60), `keyframe_interval` - how far
-  apart the frames a player can start from are - `width`, `height` and
-  `quality`. The picture is the gradient with the self describing label the
-  image formats draw, and it stays the same for the whole film. It can be up
-  to 4096 pixels wide and at most 4096x2304 pixels in all, the largest the
-  built in encoder writes correctly - a larger one is refused with a pair
-  that fits. The manifest
-  says what a test can check: `duration_ms`, `frame_count`, `frame_rate`,
-  `keyframe_count`, `width`, `height`, `compression: av1` and `audio: false`.
-  A length that does not end on a frame is refused with the two nearest that
-  do - at 30 frames a second lengths go in steps of 100ms. Below the
-  smallest film the settings allow, the refusal says how small it can be and
-  which settings make it smaller. AV1 plays in current browsers, and an older
-  player or a pipeline that expects H.264 may refuse it - which is a test
-  worth having. The window lists it under Video.
-- **A length of time as a setting.** `duration` and `keyframe_interval` take
+  is a setting of its own, independent of the size. The picture moves: every
+  `change_interval`, one second unless you say otherwise, the clock in it
+  moves on and a square takes a step across it, so a player that plays it
+  shows a running clock and one that freezes shows a stopped one. The clock
+  reads the time the picture starts, the way a player's position does -
+  `00:00:07`, with milliseconds when the changes do not fall on whole
+  seconds. Each change is a whole new picture in bytes and in coding time,
+  and the frames between changes cost a few bytes each, so an hour at thirty
+  frames a second with a change every second fits in about a megabyte
+  (1 075 831 B at the smallest), and a `change_interval` as long as the film
+  or longer keeps one picture throughout (977 434 B for that hour). Set
+  `duration`, `change_interval`, `frame_rate` (whole rates from 1 to 60),
+  `keyframe_interval` - how far apart the frames a player can start from
+  are - `width`, `height` and `quality`. The picture is the gradient with the
+  self describing label the image formats draw, with the clock under the
+  label and the square below. On a picture too small for the clock the film
+  says so in the manifest. It can be up to 4096 pixels wide and at most
+  4096x2304 pixels in all, the largest the built-in encoder writes
+  correctly - a larger one is refused with a pair that fits. The manifest says what a
+  test can check: `duration_ms`, `frame_count`, `frame_rate`,
+  `keyframe_count`, `change_count`, `change_interval_ms`, `width`, `height`,
+  `compression: av1` and `audio: false`. A length that does not end on a
+  frame is refused with the two nearest that do - at 30 frames a second
+  lengths go in steps of `100ms`. Below the smallest film the settings allow,
+  the refusal says how small it can be and which settings make it smaller.
+  AV1 plays in current browsers, and an older player or a pipeline that
+  expects H.264 may refuse it - which is a test worth having. The window
+  lists it under Video.
+- **A length of time as a setting.** `duration`, `change_interval` and `keyframe_interval` take
   `10s`, `1m30s`, `1h`, `500ms` or `59.9s`, to the millisecond. A bare number
   is refused rather than read as seconds, and so is a length that does not
   land on a whole millisecond.

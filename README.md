@@ -606,7 +606,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `avif`, `jpg`, `jxl` | `width`, `height`, `quality` |
 | `ico` | `width`, `height`, `embed` |
 | `wav` | `sample_rate`, `bit_depth`, `channels`, `content` |
-| `webm` | `width`, `height`, `duration`, `frame_rate`, `keyframe_interval`, `quality` |
+| `webm` | `width`, `height`, `duration`, `change_interval`, `frame_rate`, `keyframe_interval`, `quality` |
 | `zip` | `entries`, `entry_format`, `entry_size`, `compression`, `depth`, `directory_entries`, `password`, `encryption` |
 | `targz` | `entries`, `entry_format`, `entry_size`, `compression`, `depth`, `directory_entries`, `entry_mode`, `entry_owner` |
 | `docx` | `paragraphs` |
