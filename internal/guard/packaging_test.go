@@ -2,6 +2,7 @@ package guard
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -10,6 +11,8 @@ import (
 	"sort"
 	"strings"
 	"testing"
+
+	"github.com/goccy/go-yaml"
 )
 
 // The WinGet and Chocolatey packages, and the renderer that fills them.
@@ -24,7 +27,9 @@ import (
 // (docs/PACKAGING-2026-09-25.md section 8).
 //
 // Every guard renders a real release: v0.4.0, with the checksums of its real
-// archives, so the guards read the same shape a person packaging it reads.
+// archives, so the guards read the same shape a person packaging it reads -
+// with one line v0.4.0 never had, the Windows installer's, which the window's
+// WinGet package needs and every release from the next one on carries.
 
 const packagingTag = "v0.4.0"
 
@@ -34,7 +39,13 @@ var packagingSums = []string{
 	"3f74f66e181bdef20785bccd603c3e5c5ad04cdff3b38338487a02b1682eccc6  tfg_0.4.0_windows_arm64.zip",
 	// A line no package needs, because the real file has eight of them.
 	"c7a63f918db43cf2841a89359d3ef272c861a89a408018f6453dea7f7aaebb96  tfg_0.4.0_linux_amd64.tar.gz",
+	// Made up: v0.4.0 was published before the installer existed. Replace the
+	// fixture with the first release that has one.
+	"0d1c2b3a4f5e6d7c8b9a0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a  tfg-setup_0.4.0_windows_amd64.msi",
 }
+
+// The checksum of the installer in the fixture, as WinGet writes it.
+const packagingInstallerSha = "0D1C2B3A4F5E6D7C8B9A0F1E2D3C4B5A69788796A5B4C3D2E1F00F1E2D3C4B5A"
 
 // Where each package lands, in the layout the renderer writes. WinGet's
 // follows winget-pkgs, so the three files can be copied across as they are.
@@ -72,23 +83,24 @@ func fixtureSums() []byte {
 	return []byte(strings.Join(packagingSums, "\n") + "\n")
 }
 
-// renderPackages runs the renderer the way a person does.
-func renderPackages(t *testing.T, tag string, sums []byte, out string) rendering {
+// renderPackages runs the renderer the way a person does. extra is what a
+// person may add after the three arguments every run needs.
+func renderPackages(t *testing.T, tag string, sums []byte, out string, extra ...string) rendering {
 	t.Helper()
-	return renderFrom(t, tag, sumsFile(t, sums), out)
+	return renderFrom(t, tag, sumsFile(t, sums), out, extra...)
 }
 
 // renderFrom is renderPackages with the checksum file named rather than
 // written, so a guard can hand it a path to a file that is not there.
-func renderFrom(t *testing.T, tag, sumsPath, out string) rendering {
+func renderFrom(t *testing.T, tag, sumsPath, out string, extra ...string) rendering {
 	t.Helper()
 	python := pythonForGate(t)
 	// The interpreter is the one found on PATH, the script is a file of this
 	// repository, and every argument is a value this guard chose or a file it
 	// just wrote - nothing here comes from anything a person typed.
 	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
-	cmd := exec.Command(python, packagingScript(t),
-		"--tag", tag, "--sums", sumsPath, "--out", out)
+	cmd := exec.Command(python, append([]string{packagingScript(t),
+		"--tag", tag, "--sums", sumsPath, "--out", out}, extra...)...)
 	cmd.Dir = repoRoot(t)
 	said, err := cmd.CombinedOutput()
 	code := 0
@@ -105,7 +117,14 @@ func renderFrom(t *testing.T, tag, sumsPath, out string) rendering {
 // wrote, by its path under the output directory.
 func renderedPackages(t *testing.T) map[string]string {
 	t.Helper()
-	r := renderPackages(t, packagingTag, fixtureSums(), filepath.Join(t.TempDir(), "packages"))
+	return renderedFrom(t, fixtureSums())
+}
+
+// renderedFrom is renderedPackages for a checksum file of the guard's own,
+// with what a person may add after the three arguments every run needs.
+func renderedFrom(t *testing.T, sums []byte, extra ...string) map[string]string {
+	t.Helper()
+	r := renderPackages(t, packagingTag, sums, filepath.Join(t.TempDir(), "packages"), extra...)
 	if r.code != 0 {
 		t.Fatalf("the renderer refused a real release (exit %d):\n%s", r.code, r.said)
 	}
@@ -215,7 +234,55 @@ func TestNoPackageSourceCarriesAVersionNumber(t *testing.T) {
 	}
 }
 
-// Both WinGet packages keep the program beside the files it came with.
+// wingetInstallers reads a rendered WinGet installer manifest and returns its
+// installers in order, each with the fields WinGet gives it: a field at the
+// top of the manifest holds for every installer that does not set it itself.
+// The command line's manifest keeps its fields at the top, the window's in
+// each installer, because its two installers are of two kinds - so a guard
+// asking one installer what it is has to ask both places.
+func wingetInstallers(t *testing.T, name, text string) []map[string]any {
+	t.Helper()
+	var manifest map[string]any
+	if err := yaml.Unmarshal([]byte(text), &manifest); err != nil {
+		t.Fatalf("%s is not YAML: %v", name, err)
+	}
+	entries, _ := manifest["Installers"].([]any)
+	if len(entries) == 0 {
+		t.Fatalf("%s lists no installers, so there is nothing to ask", name)
+	}
+	var installers []map[string]any
+	for i, e := range entries {
+		entry, ok := e.(map[string]any)
+		if !ok {
+			t.Fatalf("%s installer %d is not a mapping: %T", name, i+1, e)
+		}
+		merged := map[string]any{}
+		for key, value := range manifest {
+			if key != "Installers" {
+				merged[key] = value
+			}
+		}
+		for key, value := range entry {
+			merged[key] = value
+		}
+		installers = append(installers, merged)
+	}
+	return installers
+}
+
+// firstOf returns one field of the first mapping in a list field - the file a
+// nested archive installs, the entry Windows lists the installer under.
+func firstOf(installer map[string]any, list, field string) any {
+	items, _ := installer[list].([]any)
+	if len(items) == 0 {
+		return nil
+	}
+	item, _ := items[0].(map[string]any)
+	return item[field]
+}
+
+// Both WinGet packages keep the program beside the files it came with, in
+// every installer that unpacks the archive.
 //
 // Without ArchiveBinariesDependOnPath WinGet reaches the program through a
 // symbolic link, and the window started that way looks for its software
@@ -223,52 +290,119 @@ func TestNoPackageSourceCarriesAVersionNumber(t *testing.T) {
 // goes on PATH. An alias would ask for the very link this avoids.
 func TestEveryWingetPackageKeepsItsProgramBesideItsFiles(t *testing.T) {
 	files := renderedPackages(t)
-	for manifest, program := range map[string]string{
-		windowWinget + ".installer.yaml": "tfg-gui.exe",
-		cliWinget + ".installer.yaml":    "tfg.exe",
+	for manifest, want := range map[string]struct {
+		program  string
+		archives int
+	}{
+		windowWinget + ".installer.yaml": {"tfg-gui.exe", 1},
+		cliWinget + ".installer.yaml":    {"tfg.exe", 2},
 	} {
-		code := scriptLines(files[manifest])
-		if !anyLine(code, `^ArchiveBinariesDependOnPath: true$`) {
-			t.Errorf("%s does not set ArchiveBinariesDependOnPath, so WinGet reaches the "+
-				"program through a link and the window loses its renderer", manifest)
+		archives := 0
+		for i, in := range wingetInstallers(t, manifest, files[manifest]) {
+			if in["InstallerType"] != "zip" {
+				continue
+			}
+			archives++
+			if in["NestedInstallerType"] != "portable" {
+				t.Errorf("%s installer %d unpacks the archive as %v, not as a portable program",
+					manifest, i+1, in["NestedInstallerType"])
+			}
+			if in["ArchiveBinariesDependOnPath"] != true {
+				t.Errorf("%s installer %d does not set ArchiveBinariesDependOnPath, so WinGet "+
+					"reaches the program through a link and the window loses its renderer", manifest, i+1)
+			}
+			if got := firstOf(in, "NestedInstallerFiles", "RelativeFilePath"); got != want.program {
+				t.Errorf("%s installer %d installs %v, and the archive holds %s", manifest, i+1, got, want.program)
+			}
 		}
-		if !anyLine(code, `^- RelativeFilePath: `+regexp.QuoteMeta(program)+`$`) {
-			t.Errorf("%s does not install %s, the program the archive holds", manifest, program)
+		// Asked first, so the answers above are about installers that were
+		// there to ask and not about none.
+		if archives != want.archives {
+			t.Errorf("%s has %d installer(s) that unpack the archive, and it should have %d - "+
+				"the lines above asked fewer than they should have", manifest, archives, want.archives)
 		}
-		if anyLine(code, `PortableCommandAlias`) {
+		if anyLine(scriptLines(files[manifest]), `PortableCommandAlias`) {
 			t.Errorf("%s names an alias, which is the link this package exists to avoid", manifest)
 		}
 	}
 }
 
 // The command line ships for both Windows architectures and the window for
-// one, each with the checksum the release published for that archive.
+// one - from the installer first and from the archive second - each with the
+// checksum the release published for that file.
 func TestEachWingetPackageOffersTheArchitecturesTheReleaseBuilds(t *testing.T) {
 	files := renderedPackages(t)
 	for manifest, want := range map[string][]string{
-		windowWinget + ".installer.yaml": {"x64 E744F4FF793407218FAC9EEC139DD49C03264AB636DB2057BA2963D0515625AD"},
+		windowWinget + ".installer.yaml": {
+			"x64 wix " + packagingInstallerSha,
+			"x64 zip E744F4FF793407218FAC9EEC139DD49C03264AB636DB2057BA2963D0515625AD",
+		},
 		cliWinget + ".installer.yaml": {
-			"x64 16FE56C7B3F2A13D22385A6B428ED6F0C9FB98C2103076B8C7C876401EEAAF79",
-			"arm64 3F74F66E181BDEF20785BCCD603C3E5C5AD04CDFF3B38338487A02B1682ECCC6",
+			"x64 zip 16FE56C7B3F2A13D22385A6B428ED6F0C9FB98C2103076B8C7C876401EEAAF79",
+			"arm64 zip 3F74F66E181BDEF20785BCCD603C3E5C5AD04CDFF3B38338487A02B1682ECCC6",
 		},
 	} {
-		installer := regexp.MustCompile(`(?m)^- Architecture: (\S+)\n  InstallerUrl: \S+\n  InstallerSha256: (\S+)$`)
 		var got []string
-		for _, m := range installer.FindAllStringSubmatch(files[manifest], -1) {
-			got = append(got, m[1]+" "+m[2])
+		for _, in := range wingetInstallers(t, manifest, files[manifest]) {
+			got = append(got, fmt.Sprint(in["Architecture"], " ", in["InstallerType"], " ", in["InstallerSha256"]))
 		}
 		if strings.Join(got, "\n") != strings.Join(want, "\n") {
-			t.Errorf("%s offers %v, and the release built %v", manifest, got, want)
+			t.Errorf("%s offers\n%s\nand the release built\n%s", manifest,
+				strings.Join(got, "\n"), strings.Join(want, "\n"))
 		}
 	}
 }
 
-// Every archive a package downloads is one the release workflow builds.
+// The window comes with a Start menu shortcut wherever WinGet can give it one.
+//
+// A portable package cannot have a shortcut - the manifest has no field for
+// one - so the window installs from the Windows installer, which makes it.
+// The installer is listed first, because that decides a fresh install on
+// clients old and new. The archive stays, without a scope, for --scope user
+// and for an install made before the package had the installer: WinGet
+// upgrades only within the kind that is installed. And WinGet knows the
+// installed program by the UpgradeCode, the one that never changes.
+func TestTheWindowInstallsWithAStartMenuShortcutWhereWinGetCan(t *testing.T) {
+	manifest := windowWinget + ".installer.yaml"
+	installers := wingetInstallers(t, manifest, renderedPackages(t)[manifest])
+	if len(installers) != 2 {
+		t.Fatalf("%s lists %d installer(s), and the window has two - the installer and the archive",
+			manifest, len(installers))
+	}
+	msi, archive := installers[0], installers[1]
+	for field, want := range map[string]any{
+		"InstallerType":        "wix",
+		"Scope":                "machine",
+		"ElevationRequirement": "elevatesSelf",
+	} {
+		if msi[field] != want {
+			t.Errorf("the first installer of %s has %s %v, and the installer is %v", manifest, field, msi[field], want)
+		}
+	}
+	if url, _ := msi["InstallerUrl"].(string); !strings.HasSuffix(url, "/v0.4.0/tfg-setup_0.4.0_windows_amd64.msi") {
+		t.Errorf("the first installer of %s downloads %q, not the release's installer", manifest, url)
+	}
+	if got := firstOf(msi, "AppsAndFeaturesEntries", "UpgradeCode"); got != "{"+installerUpgradeCode+"}" {
+		t.Errorf("the installer in %s is known by %v, and its UpgradeCode is {%s} - WinGet would not "+
+			"recognise the program it installed", manifest, got, installerUpgradeCode)
+	}
+	if archive["InstallerType"] != "zip" {
+		t.Errorf("the second installer of %s is %v, not the archive", manifest, archive["InstallerType"])
+	}
+	if scope, ok := archive["Scope"]; ok {
+		t.Errorf("the archive in %s is limited to the %v scope, so --scope user would find no installer",
+			manifest, scope)
+	}
+}
+
+// Every archive a package downloads is one the release workflow builds, and
+// the installer is the one the signing step adds beside them.
 //
 // The renderer spells the archive names, and so does release.yml. This reads
 // the name pattern out of the workflow and holds every address the packages
 // download from to it, so renaming the archives in one place and not the
-// other reddens here instead of in a feed's moderation queue.
+// other reddens here instead of in a feed's moderation queue. The installer's
+// name is public for good, so it is spelled here.
 func TestThePackagesDownloadWhatTheReleaseBuilds(t *testing.T) {
 	release := withoutYamlComments(workflowText(t, "release.yml"))
 	bases := regexp.MustCompile(`base="(tfg(?:-gui)?)_\$\{version\}_\$\{label\}_\$\{arch\}"`).
@@ -277,7 +411,8 @@ func TestThePackagesDownloadWhatTheReleaseBuilds(t *testing.T) {
 		t.Fatalf("release.yml names its archives %d way(s) this guard can read, and it reads "+
 			"exactly two - the command line and the window. Read the base= lines again", len(bases))
 	}
-	built := regexp.MustCompile(`^(` + bases[0][1] + `|` + bases[1][1] + `)_0\.4\.0_windows_(amd64|arm64)\.zip$`)
+	built := regexp.MustCompile(`^((` + bases[0][1] + `|` + bases[1][1] + `)_0\.4\.0_windows_(amd64|arm64)\.zip` +
+		`|tfg-setup_0\.4\.0_windows_amd64\.msi)$`)
 	address := regexp.MustCompile(`https://github\.com/[^/\s']+/[^/\s']+/releases/download/v0\.4\.0/([^\s']+)`)
 	seen := 0
 	for name, text := range renderedPackages(t) {
@@ -288,8 +423,8 @@ func TestThePackagesDownloadWhatTheReleaseBuilds(t *testing.T) {
 			}
 		}
 	}
-	if seen < 5 {
-		t.Errorf("found %d download address(es) in the packages, and they hold five - this "+
+	if seen < 6 {
+		t.Errorf("found %d download address(es) in the packages, and they hold six - this "+
 			"guard is not reading what it thinks it reads", seen)
 	}
 }
@@ -343,8 +478,12 @@ func TestTheChocolateyIconIsAPinnedCdnAddress(t *testing.T) {
 // The shim waits for the program unless a .gui file lies beside it. The
 // shortcut's working directory is the directory the window offers its tfg-out
 // folder under, and the package's own folder is one an ordinary account cannot
-// write to - owner's decision of 2026-09-25, the user's profile. And the
-// uninstall removes only a shortcut that points into the package.
+// write to - owner's decision of 2026-09-25, the user's profile. The install
+// leaves alone a shortcut under the same name that starts something outside
+// the package - the program's Windows installer makes exactly that one - or
+// that points at no file, and the uninstall removes only a shortcut that
+// points into the package. These
+// are the lines. The packages job in ci.yml asks a machine what they do.
 func TestTheWindowPackageStartsWhereAPersonCanWrite(t *testing.T) {
 	files := renderedPackages(t)
 	install := scriptLines(files[windowChoco+"tools/chocolateyinstall.ps1"])
@@ -359,6 +498,16 @@ func TestTheWindowPackageStartsWhereAPersonCanWrite(t *testing.T) {
 	if !anyLine(install, `^\s*-WorkingDirectory '%USERPROFILE%' `) {
 		t.Error("the Start menu shortcut does not start in the user's profile, so the window " +
 			"offers to write into a folder the person cannot write to")
+	}
+	if !anyLine(install, `^    \} elseif \(-not \$target\.StartsWith\(\$toolsDir \+ '\\', \[StringComparison\]::OrdinalIgnoreCase\) -and \(Test-Path -LiteralPath \$target\)\) \{$`) ||
+		!anyLine(install, `^if \(\$keep\) \{$`) || !anyLine(install, `^    Install-ChocolateyShortcut `+"`"+`$`) {
+		t.Error("the install makes its shortcut without asking whether the one already there " +
+			"starts another install, so it takes over the shortcut of the Windows installer - " +
+			"and its uninstall then deletes it")
+	}
+	if !anyLine(install, `^    if \(-not \$target\) \{$`) {
+		t.Error("the install takes over a shortcut that points at no file - a shell item, " +
+			"somebody else's - and its uninstall then deletes it")
 	}
 	uninstall := scriptLines(files[windowChoco+"tools/chocolateyuninstall.ps1"])
 	if !anyLine(uninstall, `^if \(\$target\.StartsWith\(\$toolsDir \+ '\\', `) {

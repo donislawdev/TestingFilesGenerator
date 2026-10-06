@@ -14,8 +14,12 @@ product's name, its licence and its copyright line - are held to their Go
 originals by a guard.
 
 Usage:
-    python .github/scripts/build_packages.py --tag v0.4.0 \\
+    python .github/scripts/build_packages.py --tag vX.Y.Z \\
         --sums verify-SHA256SUMS.txt --out <a directory outside the repository>
+
+The window's WinGet package installs the Windows installer first, so a
+checksum file without the installer's line is refused. A release published
+without one can still be packaged for Chocolatey, with --only chocolatey.
 
 Exit codes:
     0  every package was rendered into --out
@@ -118,15 +122,27 @@ def how_to_start(package, feed):
                      "upgrade runs after tfg has finished.")
         return text
     if feed == "winget":
-        return ("This package is the desktop window. The command line is the package %s. "
-                "WinGet adds no Start menu shortcut for it. Open a new terminal and type "
-                "tfg-gui. The window offers a tfg-out folder in the directory it was started "
-                "from. Close the window before you upgrade. WinGet cannot replace a running "
-                "program, so it stops half way, and the package works again once the "
-                "upgrade runs with the window closed." % other_id)
+        # Two installers, so two shapes to describe. The archive is what
+        # --scope user gets, and what an install made before the package had
+        # the installer keeps: WinGet upgrades only within the kind installed.
+        return ("This package is the desktop window. WinGet installs it with the Windows "
+                "installer, for every account on the machine, and asks for administrator "
+                "rights. That puts it in the Start menu and puts both tfg-gui and the command "
+                "line tfg on PATH, so the package %s is not needed beside it. Started from "
+                "the Start menu, the window offers a tfg-out folder in your user profile. "
+                "With --scope user it needs no administrator rights, but WinGet installs the "
+                "archive instead, which has no Start menu shortcut. Open a new terminal and "
+                "type tfg-gui, and the window offers a tfg-out folder in the directory it was "
+                "started from. An install made before this package had the installer stays "
+                "without a shortcut when it is upgraded. Uninstall it and install it again to "
+                "get one. Close the window before you upgrade. Without the installer WinGet "
+                "cannot replace a running program, so it stops half way, and the package "
+                "works again once the upgrade runs with the window closed." % other_id)
     return ("This package is the desktop window. The command line is the package %s. It "
             "adds a Start menu shortcut and the tfg-gui command. Started from the shortcut, "
-            "the window offers a tfg-out folder in your user profile." % other_id)
+            "the window offers a tfg-out folder in your user profile. With the Windows "
+            "installer of the program installed as well, the Start menu keeps the "
+            "installer's shortcut." % other_id)
 
 
 def refuse(message):
@@ -225,21 +241,46 @@ def archives(package, version):
     return {arch: package.archive.format(version=version, arch=arch) for arch in package.arches}
 
 
-def checked_archives(sums, version, path):
-    """Every archive a package needs, with its checksum, or a refusal naming what is missing."""
+def installer():
+    """The Windows installer's file name, with {version} in it, and its UpgradeCode.
+
+    build_msi.py owns both, and a guard pins the UpgradeCode for good. It
+    imports this script, so it is imported here, when asked, and not at the top.
+    """
+    import build_msi  # the sibling script, found beside this one
+    return build_msi.NAME, build_msi.UPGRADE_CODE
+
+
+def another_release(sums, pattern):
+    """The hint for a missing line: a name that fits the pattern with another version."""
+    other = sorted(n for n in sums if re.fullmatch(
+        re.escape(pattern).replace(r"\{version\}", r"[^_]+"), n))
+    return (" It lists %s - that is the checksum file of another release." % other[0]
+            if other else "")
+
+
+def checked_archives(sums, version, path, feeds):
+    """Every file the packages download, with its checksum, or a refusal naming what is missing."""
     found = {}
     for package in PACKAGES:
         for arch, name in archives(package, version).items():
             if name in sums:
                 found[name] = sums[name]
                 continue
-            other = sorted(n for n in sums if re.fullmatch(
-                re.escape(package.archive).replace(r"\{version\}", r"[^_]+")
-                .replace(r"\{arch\}", re.escape(arch)), n))
-            hint = (" It lists %s - that is the checksum file of another release." % other[0]
-                    if other else "")
             refuse("%s has no line for %s.%s Download the checksum file of the release "
-                   "you are packaging." % (path, name, hint))
+                   "you are packaging." % (path, name, another_release(
+                       sums, package.archive.replace("{arch}", arch))))
+    if "winget" in feeds:
+        pattern, _ = installer()
+        name = pattern.format(version=version)
+        if name not in sums:
+            hint = another_release(sums, pattern)
+            refuse("%s has no line for %s, the Windows installer, which the window's WinGet "
+                   "package installs first.%s %s" % (path, name, hint, (
+                       "Download the checksum file of the release you are packaging." if hint
+                       else "A release published without an installer can be packaged for "
+                            "Chocolatey only - pass --only chocolatey.")))
+        found[name] = sums[name]
     return found
 
 
@@ -253,7 +294,18 @@ def values(package, version, tag, sums):
         installers += ["- Architecture: %s" % WINGET_ARCH[arch],
                        "  InstallerUrl: %s/releases/download/%s/%s" % (repo_url, tag, name),
                        "  InstallerSha256: %s" % sums[name].upper()]
-    return {
+    # Only when the release has an installer - checked_archives asks for its
+    # line whenever WinGet is rendered, so a WinGet template never goes without.
+    pattern, upgrade_code = installer()
+    msi = pattern.format(version=version)
+    with_installer = {} if msi not in sums else {
+        "MSI_URL": "%s/releases/download/%s/%s" % (repo_url, tag, msi),
+        "MSI_SHA256": sums[msi].upper(),
+        # In braces, as Windows Installer spells a code and as merged
+        # manifests in winget-pkgs carry it (7zip.7zip, read 2026-10-06).
+        "UPGRADE_CODE": "{%s}" % upgrade_code,
+    }
+    return dict(with_installer, **{
         "VERSION": version,
         "WINGET_SCHEMA": WINGET_SCHEMA,
         "WINGET_ID": package.winget_id,
@@ -278,6 +330,7 @@ def values(package, version, tag, sums):
         "RELEASE_DATE": release_date(version),
         "URL_AMD64": "%s/releases/download/%s/%s" % (repo_url, tag, names["amd64"]),
         "SHA256_AMD64": sums[names["amd64"]],
+        "WINGET_SHA256_AMD64": sums[names["amd64"]].upper(),
         "SHORT_DESCRIPTION": SHORT[package.kind],
         "DESCRIPTION": DESCRIPTION,
         "WINGET_HOW_TO_START": how_to_start(package, "winget"),
@@ -285,7 +338,7 @@ def values(package, version, tag, sums):
         "WINGET_TAGS": "\n".join("- " + t for t in TAGS + (KIND_TAG[package.kind],)),
         "CHOCO_TAGS": " ".join(TAGS + (KIND_TAG[package.kind],)),
         "WINGET_INSTALLERS": "\n".join(installers),
-    }
+    })
 
 
 def render(text, table, name):
@@ -351,14 +404,17 @@ def check_script(text, name):
             refuse("%s line %d is not ASCII: %r" % (name, number, line))
 
 
-def templates(kind):
+FEEDS = ("winget", "chocolatey")
+
+
+def templates(kind, feeds=FEEDS):
     """(template path, output path relative to the package) for one kind of package.
 
     A template named name.<kind>.ext.in belongs to that kind only, and renders to
     name.ext. One named name.ext.in belongs to every package.
     """
     kinds = {p.kind for p in PACKAGES}
-    for feed in ("winget", "chocolatey"):
+    for feed in feeds:
         for base, _, files in os.walk(os.path.join(TEMPLATES, feed)):
             for file in sorted(files):
                 if not file.endswith(TEMPLATE_SUFFIX):
@@ -428,11 +484,11 @@ def remove_empty(folders):
             return
 
 
-def build(tag, sums_path, out):
-    """Render every package into out, all or nothing."""
+def build(tag, sums_path, out, feeds=FEEDS):
+    """Render every package of the given feeds into out, all or nothing."""
     version = parse_tag(tag)
     out = check_out(out)
-    sums = checked_archives(read_sums(sums_path), version, sums_path)
+    sums = checked_archives(read_sums(sums_path), version, sums_path, feeds)
     if not os.path.isfile(os.path.join(ROOT, ICON)):
         refuse("the icon %s is not in the repository" % ICON)
 
@@ -447,14 +503,16 @@ def build(tag, sums_path, out):
                "or pass another --out" % (parent, err.strerror or err))
     finished = False
     try:
-        used = set()
+        # What every template uses, read from all of them whichever feeds are
+        # rendered, so a run for one feed does not call the other's values unused.
+        used = {key for package in PACKAGES for source, _ in templates(package.kind)
+                for key in PLACEHOLDER.findall(read_text(source))}
         known = set()
         for package in PACKAGES:
             table = values(package, version, tag, sums)
             known |= set(table)
-            for source, relative in templates(package.kind):
+            for source, relative in templates(package.kind, feeds):
                 text = read_text(source)
-                used |= set(PLACEHOLDER.findall(text))
                 rendered = render(text, table, relative)
                 if relative.endswith(".ps1"):
                     check_script(rendered, relative)
@@ -487,8 +545,10 @@ def main(argv=None):
     parser.add_argument("--tag", required=True, help="the published release, for example v0.4.0")
     parser.add_argument("--sums", required=True, help="that release's verify-SHA256SUMS.txt")
     parser.add_argument("--out", required=True, help="an empty or new directory outside the repository")
+    parser.add_argument("--only", choices=FEEDS,
+                        help="render the packages of one feed - Chocolatey needs no installer")
     args = parser.parse_args(argv)
-    out = build(args.tag, args.sums, args.out)
+    out = build(args.tag, args.sums, args.out, (args.only,) if args.only else FEEDS)
     for base, _, files in sorted(os.walk(out)):
         for file in sorted(files):
             print(os.path.join(base, file))

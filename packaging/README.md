@@ -8,8 +8,12 @@ release date from `CHANGELOG.md`. The three values the renderer keeps a copy
 of, the product name, the licence and the copyright line, are held to their Go
 originals by a guard.
 
-    python .github/scripts/build_packages.py --tag v0.4.0 \
+    python .github/scripts/build_packages.py --tag vX.Y.Z \
         --sums verify-SHA256SUMS.txt --out <a directory outside the repository>
+
+The window's WinGet package installs the Windows installer first, so the
+checksum file has to have the installer's line. A release published before the
+installer existed renders for Chocolatey only, with `--only chocolatey`.
 
 The renderer refuses, with a sentence that names the input and says what to do,
 and never a traceback: a tag that is a release candidate or not a tag, a
@@ -29,7 +33,7 @@ destination.
 |---|---|---|
 | WinGet | `DonislawDev.TestingFilesGenerator` | `DonislawDev.TestingFilesGenerator.CLI` |
 | Chocolatey | `testing-files-generator` | `testing-files-generator-cli` |
-| archive | `tfg-gui_<version>_windows_amd64.zip` | `tfg_<version>_windows_amd64.zip`, and `arm64` in WinGet |
+| archive | `tfg-gui_<version>_windows_amd64.zip`, and in WinGet the installer `tfg-setup_<version>_windows_amd64.msi` first | `tfg_<version>_windows_amd64.zip`, and `arm64` in WinGet |
 | command | `tfg-gui` | `tfg` |
 
 The window does not need the command line - it carries the same engine - so
@@ -47,14 +51,31 @@ its software renderer next to the link rather than in the `opengl` folder beside
 the real file. With it, WinGet makes no link and puts the package's folder on
 `PATH`. The command line would work either way, but without the field its shape
 depends on the machine - a link where symbolic links are allowed, the folder on
-`PATH` where they are not. WinGet adds no Start menu shortcut for a portable
-package, and the window's description says so. One cost of the field is not
+`PATH` where they are not. One cost of the field is not
 ours to fix. WinGet 1.29.380 left the package's folder on `PATH` after an
 uninstall, for both of these packages, in machine scope on Windows Server 2025
 and in user scope on Windows 11 - measured on 2026-09-25, the entry stays and
 points at a folder that no longer exists.
 [microsoft/winget-cli#6160](https://github.com/microsoft/winget-cli/issues/6160),
 open, reports the same for another package that sets the field.
+
+**The window in WinGet: the installer first, the archive second.** A portable
+package gets no Start menu shortcut, and nothing in a manifest can give it one -
+the schema has no field for it, and
+[microsoft/winget-cli#2299](https://github.com/microsoft/winget-cli/issues/2299)
+asking for one has been open since 2022. So the window's manifest lists two
+installers, and the order is load-bearing. The Windows installer comes first:
+recent clients prefer it over a portable package, and older ones take the first
+installer that applies. It installs for the whole machine, with the shortcut,
+and WinGet knows it again by its `UpgradeCode`. The archive comes second, with
+no scope, for two kinds of install the installer cannot serve. One is
+`--scope user`, without administrator rights. The other is an install made
+before the package had the installer - WinGet upgrades only within the kind
+that is installed, so without the archive that install could not be upgraded at
+all, and with it, it is upgraded as it is. The description says how to get the
+shortcut then. The fields of the archive stand in its own entry, not at the top
+of the manifest, because the two installers are of two kinds. The command line's
+manifest keeps one kind and its fields at the top.
 
 **Chocolatey.** The package downloads the release archive rather than carrying
 it, so it holds no binaries and owes no `VERIFICATION.txt`, and the archive is the
@@ -64,8 +85,11 @@ unpacked into a folder of its own under `tools`. The window gets an empty
 to close and holds the terminal. It also gets a Start menu shortcut whose working
 directory is `%USERPROFILE%`, because the window offers a `tfg-out` folder under
 the directory it was started from, and the package folder is one an ordinary
-account cannot write to. The uninstall removes that shortcut only when it points
-into the package. The icon is a jsDelivr address pinned to the release tag:
+account cannot write to. The install leaves alone a shortcut under the same name
+that starts a program outside the package - the Windows installer makes exactly
+that one - or that points at no file, as a shortcut to a shell item does, and
+replaces one whose target is gone. The uninstall removes the shortcut only when
+it points into the package. The icon is a jsDelivr address pinned to the release tag:
 moderation refuses `raw.githubusercontent.com` and `github.com/.../raw` alike,
 and an icon on a branch would keep changing under an approved package.
 
@@ -81,17 +105,25 @@ scope and on Windows 11 in user scope:
   after an upgrade until the next Chocolatey operation on the package, after an
   uninstall for good. `chocolateybeforemodify.ps1` says so at that moment and
   names the folder to delete once the program is closed.
-- **WinGet stops half way.** An upgrade fails with "Access is denied" on the
-  program, having already deleted some of the other files, and the package works
-  again once the upgrade runs with the program closed. Measured for the window
-  and, on Windows 11, for the command line while a tfg command was running. A portable
-  package carries no script, so the description is where this is said.
+- **WinGet with the archive stops half way.** An upgrade fails with "Access is
+  denied" on the program, having already deleted some of the other files, and
+  the package works again once the upgrade runs with the program closed.
+  Measured for the window and, on Windows 11, for the command line while a tfg
+  command was running. A portable package carries no script, so the description
+  is where this is said.
+- **WinGet with the Windows installer goes ahead.** Measured on 2026-10-06 on
+  Windows Server 2025, the installer of 0.4.0 over 0.3.0 while a tfg command was
+  running: WinGet said "Restart your PC to finish installation." and exited 0,
+  the run went on, and a new tfg was the new version at once - the restart only
+  removes the old copy, as the installer section below says. Not measured with
+  the window open, so the window's description still asks to close it first.
 
 ## The Windows installer
 
 `msi/tfg-setup.wxs.in` is the source of `tfg-setup_<version>_windows_amd64.msi`,
-a release asset of its own beside the zip archives - the feed packages above stay
-on the zips. `.github/scripts/build_msi.py` fills it and builds it with WiX 5.0.2,
+a release asset of its own beside the zip archives. The window's WinGet package
+installs it first. The Chocolatey packages and the command line's WinGet package
+stay on the zips. `.github/scripts/build_msi.py` fills it and builds it with WiX 5.0.2,
 from the two signed amd64 archives:
 
     python .github/scripts/build_msi.py --tag v0.5.0 --archives <folder> --out-dir <folder>
@@ -144,10 +176,13 @@ release: a package is published under the project's name to a feed somebody
 else moderates.
 
 1. The release is published and its `verify-SHA256SUMS.txt` is the file you
-   render from.
+   render from, with the installer's line.
 2. Render, then `winget validate` both WinGet folders and `choco pack` both
    nuspecs.
-3. Install, run and remove every package on a machine you can break.
+3. Install, run and remove every package on a machine you can break. A fresh
+   WinGet install of the window takes the installer and puts the window in the
+   Start menu, `--scope user` takes the archive, and an install of the archive
+   is upgraded as the archive.
 4. Chocolatey: `choco push` with the maintainer's API key. WinGet: one pull
    request per package against `microsoft/winget-pkgs`, with the three files under
    `manifests/d/DonislawDev/TestingFilesGenerator/<version>/` and
