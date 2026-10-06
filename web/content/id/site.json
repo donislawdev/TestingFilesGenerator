@@ -249,6 +249,7 @@
     "choice": "salah satu dari himpunan tetap",
     "bool": "benar atau salah",
     "size": "ukuran seperti 2mb",
+    "duration": "durasi seperti 10s",
     "text": "teks",
     "pixels": "piksel",
     "paragraphs": "paragraf",

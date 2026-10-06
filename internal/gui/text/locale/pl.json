@@ -2,6 +2,8 @@
   "AboutLicenceBinds": { "hash": "sha256-e3b0c44298fc", "other": "To tłumaczenie jest informacyjne. Wiążący jest angielski tekst powyższej informacji i licencji GNU GPL." },
   "AboutTagline": { "hash": "sha256-3677496ffba0", "other": "Generuj pliki testowe i wiedz, jak system pod testem powinien na nie zareagować." },
   "AllowedDefault": { "hash": "sha256-22ad56774302", "other": "domyślnie {{.Default}}" },
+  "AllowedDuration": { "hash": "sha256-ae5b83872964", "other": "czas trwania, na przykład 10s, 1m30s albo 500ms" },
+  "AllowedDurationRange": { "hash": "sha256-7d64ac4c82ed", "other": "czas trwania od {{.Min}} do {{.Max}}, na przykład 10s, 1m30s albo 500ms" },
   "AllowedJointly": { "hash": "sha256-890007fb5262", "other": "{{.Of}} razy {{.By}} nie może przekroczyć {{.Max}} {{.Unit}}, bo {{.Why}}" },
   "AllowedOneOf": { "hash": "sha256-96a180377b5d", "other": "jedna z wartości: {{.Values}}" },
   "AllowedRange": { "hash": "sha256-430416192be6", "other": "liczba całkowita od {{.Min}} do {{.Max}}" },

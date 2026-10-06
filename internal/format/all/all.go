@@ -29,6 +29,7 @@ import (
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/tomlfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/txt"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/wav"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/webm"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/webp"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/xlsx"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/xmlfile"

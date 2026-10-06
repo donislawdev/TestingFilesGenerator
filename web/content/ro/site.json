@@ -249,6 +249,7 @@
     "choice": "unul dintr-un set fix",
     "bool": "adevărat sau fals",
     "size": "o dimensiune precum 2mb",
+    "duration": "o durată precum 10s",
     "text": "text",
     "pixels": "pixeli",
     "paragraphs": "paragrafe",

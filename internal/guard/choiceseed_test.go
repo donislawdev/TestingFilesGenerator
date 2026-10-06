@@ -87,7 +87,7 @@ func nonDefaultValues(p format.Property) []string {
 		values = p.Choices
 	case format.PropertyBool:
 		values = []string{"true", "false"}
-	case format.PropertyInt, format.PropertySize, format.PropertyText:
+	case format.PropertyInt, format.PropertySize, format.PropertyDuration, format.PropertyText:
 		// Open ranges and free text have no list to walk. A kind added
 		// later reddens the linter here rather than being skipped unseen.
 	}

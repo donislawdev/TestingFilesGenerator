@@ -249,6 +249,7 @@
     "choice": "jedna z pevné množiny",
     "bool": "pravda nebo nepravda",
     "size": "velikost, například 2mb",
+    "duration": "délka, například 10s",
     "text": "text",
     "pixels": "pixelů",
     "paragraphs": "odstavců",

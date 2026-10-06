@@ -249,6 +249,7 @@
     "choice": "uno di un insieme fisso",
     "bool": "vero o falso",
     "size": "una dimensione come 2mb",
+    "duration": "una durata come 10s",
     "text": "testo",
     "pixels": "pixel",
     "paragraphs": "paragrafi",

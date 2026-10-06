@@ -14,6 +14,16 @@
     "hash": "sha256-22ad56774302",
     "other": "default {{.Default}}"
   },
+  "AllowedDuration": {
+    "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are.",
+    "hash": "sha256-ae5b83872964",
+    "other": "a length of time such as 10s, 1m30s or 500ms"
+  },
+  "AllowedDurationRange": {
+    "description": "The start of the sentence under a setting a format, a preset or a damage declares, saying what it takes. The values in it - true, 2mb, the numbers, the default, the names a recipe writes - stay as they are. Carries these values, each of which has to stay spelled exactly that way: {{.Min}}, {{.Max}}.",
+    "hash": "sha256-7d64ac4c82ed",
+    "other": "a length of time from {{.Min}} to {{.Max}}, such as 10s, 1m30s or 500ms"
+  },
   "AllowedJointly": {
     "description": "A note under two settings of a format whose product has a ceiling. Of and By are the names a recipe writes and stay as they are. Carries these values, each of which has to stay spelled exactly that way: {{.Of}}, {{.By}}, {{.Max}}, {{.Unit}}, {{.Why}}.",
     "hash": "sha256-890007fb5262",

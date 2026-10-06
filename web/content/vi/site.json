@@ -249,6 +249,7 @@
     "choice": "một trong một tập cố định",
     "bool": "đúng hoặc sai",
     "size": "kích thước như 2mb",
+    "duration": "thời lượng như 10s",
     "text": "văn bản",
     "pixels": "pixel",
     "paragraphs": "đoạn văn",

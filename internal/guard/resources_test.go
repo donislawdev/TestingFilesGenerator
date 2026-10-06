@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
@@ -476,6 +477,11 @@ func acceptableValue(p format.Property) string {
 		return "true"
 	case format.PropertySize:
 		return "1kb"
+	case format.PropertyDuration:
+		if p.Min != 0 {
+			return core.FormatDuration(p.Min)
+		}
+		return "1s"
 	case format.PropertyInt:
 		if p.Min != 0 || p.Max != 0 {
 			return strconv.FormatInt(p.Min, 10)

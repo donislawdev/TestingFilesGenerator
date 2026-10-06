@@ -33,7 +33,7 @@ func TestABoxForANumberIsNotAsWideAsTheForm(t *testing.T) {
 	for _, d := range format.All() {
 		choose.to(d.ID)
 		for _, p := range d.Properties {
-			if p.Kind != format.PropertyInt && p.Kind != format.PropertySize {
+			if p.Kind != format.PropertyInt && p.Kind != format.PropertySize && p.Kind != format.PropertyDuration {
 				continue
 			}
 			control := controlUnder(generate, settingLabelOf(p))
@@ -70,7 +70,7 @@ func TestABoxIsWideEnoughForItsOwnPlaceholder(t *testing.T) {
 	for _, d := range format.All() {
 		choose.to(d.ID)
 		for _, p := range d.Properties {
-			if p.Kind != format.PropertyInt && p.Kind != format.PropertySize {
+			if p.Kind != format.PropertyInt && p.Kind != format.PropertySize && p.Kind != format.PropertyDuration {
 				continue
 			}
 			control := controlUnder(generate, settingLabelOf(p))
@@ -235,7 +235,7 @@ func TestABoxForANumberIsNotAsWideAsTheFormOnTheBatchScreen(t *testing.T) {
 	for _, d := range format.All() {
 		narrow := false
 		for _, p := range d.Properties {
-			if p.Kind == format.PropertyInt || p.Kind == format.PropertySize {
+			if p.Kind == format.PropertyInt || p.Kind == format.PropertySize || p.Kind == format.PropertyDuration {
 				narrow = true
 			}
 		}
@@ -251,7 +251,7 @@ func TestABoxForANumberIsNotAsWideAsTheFormOnTheBatchScreen(t *testing.T) {
 		}
 		layOut()
 		for _, p := range d.Properties {
-			if p.Kind != format.PropertyInt && p.Kind != format.PropertySize {
+			if p.Kind != format.PropertyInt && p.Kind != format.PropertySize && p.Kind != format.PropertyDuration {
 				continue
 			}
 			control := controlUnder(batches, settingLabelOf(p))

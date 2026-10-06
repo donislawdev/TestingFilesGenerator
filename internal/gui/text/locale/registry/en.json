@@ -584,6 +584,11 @@
     "hash": "sha256-61e25c2cdda1",
     "other": "wav"
   },
+  "Choice.format.webm": {
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-ed55d4a2399b",
+    "other": "webm"
+  },
   "Choice.format.webp": {
     "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-a57bb082e728",
@@ -623,6 +628,61 @@
     "description": "One entry of the formatting list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-6f0d86374d60",
     "other": "record-per-line"
+  },
+  "Choice.frame_rate.1": {
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-6b86b273ff34",
+    "other": "1"
+  },
+  "Choice.frame_rate.10": {
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-4a44dc153642",
+    "other": "10"
+  },
+  "Choice.frame_rate.12": {
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-6b51d431df5d",
+    "other": "12"
+  },
+  "Choice.frame_rate.15": {
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-e629fa6598d7",
+    "other": "15"
+  },
+  "Choice.frame_rate.24": {
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-c2356069e9d1",
+    "other": "24"
+  },
+  "Choice.frame_rate.25": {
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-b7a56873cd77",
+    "other": "25"
+  },
+  "Choice.frame_rate.30": {
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-624b60c58c9d",
+    "other": "30"
+  },
+  "Choice.frame_rate.48": {
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-98010bd9270f",
+    "other": "48"
+  },
+  "Choice.frame_rate.5": {
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-ef2d127de37b",
+    "other": "5"
+  },
+  "Choice.frame_rate.50": {
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-1a6562590ef1",
+    "other": "50"
+  },
+  "Choice.frame_rate.60": {
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-39fa9ec190ee",
+    "other": "60"
   },
   "Choice.ip_version.mixed": {
     "description": "One entry of the ip_version list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
@@ -1164,6 +1224,36 @@
     "hash": "sha256-71e4eb77e129",
     "other": "How many samples a second the signal carries."
   },
+  "Detail.format/webm.duration": {
+    "description": "The sentence under the duration setting of the webm format, after what it takes.",
+    "hash": "sha256-adacce8ce234",
+    "other": "How long the film plays. It has to end on a frame, so at 30 frames a second it goes in steps of 100ms."
+  },
+  "Detail.format/webm.frame_rate": {
+    "description": "The sentence under the frame_rate setting of the webm format, after what it takes.",
+    "hash": "sha256-f53baa5f4ccf",
+    "other": "How many frames the film shows each second."
+  },
+  "Detail.format/webm.height": {
+    "description": "The sentence under the height setting of the webm format, after what it takes.",
+    "hash": "sha256-4b336c279584",
+    "other": "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
+  "Detail.format/webm.keyframe_interval": {
+    "description": "The sentence under the keyframe_interval setting of the webm format, after what it takes.",
+    "hash": "sha256-6c717248aaaa",
+    "other": "How far apart the frames are that a player can start from. Shorter makes skipping through a long film faster and the file bigger, because each of them carries the whole picture twice."
+  },
+  "Detail.format/webm.quality": {
+    "description": "The sentence under the quality setting of the webm format, after what it takes.",
+    "hash": "sha256-f6e1c3e1af83",
+    "other": "How much detail the picture keeps. Higher looks better and takes more of the file, leaving less room for padding."
+  },
+  "Detail.format/webm.width": {
+    "description": "The sentence under the width setting of the webm format, after what it takes.",
+    "hash": "sha256-3085ac44f0e0",
+    "other": "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
   "Detail.format/webp.height": {
     "description": "The sentence under the height setting of the webp format, after what it takes.",
     "hash": "sha256-c5f8bc5c8f49",
@@ -1419,6 +1509,11 @@
     "hash": "sha256-126c919e4ee7",
     "other": "Waveform Audio"
   },
+  "Format.webm": {
+    "description": "What the webm format is called, beside its id in a list of formats. The name of a standard stays as it is - only a name that describes the file is translated.",
+    "hash": "sha256-d57684b56de8",
+    "other": "WebM video"
+  },
   "Format.webp": {
     "description": "What the webp format is called, beside its id in a list of formats. The name of a standard stays as it is - only a name that describes the file is translated.",
     "hash": "sha256-98a439e3b19a",
@@ -1488,6 +1583,11 @@
     "description": "Why width times height of the png format have a ceiling, at the end of the note under the two, after the word because.",
     "hash": "sha256-0bed7aa664d8",
     "other": "the picture is held in memory while it is encoded"
+  },
+  "Joint.format/webm.width.height": {
+    "description": "Why width times height of the webm format have a ceiling, at the end of the note under the two, after the word because.",
+    "hash": "sha256-ed5704060118",
+    "other": "the encoder codes a picture as one AV1 tile, which holds 4096 by 2304 pixels"
   },
   "Joint.format/xlsx.rows.columns": {
     "description": "Why rows times columns of the xlsx format have a ceiling, at the end of the note under the two, after the word because.",
@@ -1594,6 +1694,11 @@
     "hash": "sha256-7f31f347692c",
     "other": "Directory entries"
   },
+  "Label.duration": {
+    "description": "The name beside the box of a setting a recipe writes as duration.",
+    "hash": "sha256-4fc52a3c4c55",
+    "other": "Duration"
+  },
   "Label.embed": {
     "description": "The name beside the box of a setting a recipe writes as embed.",
     "hash": "sha256-7512561d2f68",
@@ -1669,6 +1774,11 @@
     "hash": "sha256-29d4198e41d8",
     "other": "Formatting"
   },
+  "Label.frame_rate": {
+    "description": "The name beside the box of a setting a recipe writes as frame_rate.",
+    "hash": "sha256-68e19e4ca3a5",
+    "other": "Frame rate"
+  },
   "Label.frames": {
     "description": "The name beside the box of a setting a recipe writes as frames.",
     "hash": "sha256-2c447e8d0598",
@@ -1688,6 +1798,11 @@
     "description": "The name beside the box of a setting a recipe writes as ip_version.",
     "hash": "sha256-29016036fada",
     "other": "Ip version"
+  },
+  "Label.keyframe_interval": {
+    "description": "The name beside the box of a setting a recipe writes as keyframe_interval.",
+    "hash": "sha256-e2ebcac3d589",
+    "other": "Keyframe interval"
   },
   "Label.keywords": {
     "description": "The name beside the box of a setting a recipe writes as keywords.",

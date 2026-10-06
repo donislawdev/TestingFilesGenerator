@@ -249,6 +249,7 @@
     "choice": "eine aus einer festen Auswahl",
     "bool": "wahr oder falsch",
     "size": "eine Größe wie 2mb",
+    "duration": "eine Dauer wie 10s",
     "text": "Text",
     "pixels": "Pixel",
     "paragraphs": "Absätze",

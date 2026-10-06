@@ -119,11 +119,10 @@ const (
 	kindDocument
 	// kindArchive holds other files.
 	kindArchive
-	// kindSound and kindMoving are the two media kinds. Nothing is registered
-	// as moving yet - MP4 is one of the five formats still to come - and the
-	// entry is here rather than added later because the guard below reads this
-	// table and the day MP4 arrives is the day somebody is thinking about
-	// something else.
+	// kindSound and kindMoving are the two media kinds. WebM was the first
+	// format to move, on 2026-10-06, and the kind had waited for it since the
+	// table was written, because the guard below reads this table and the day
+	// a film arrives is the day somebody is thinking about something else.
 	kindSound
 	kindMoving
 	// kindWords is text and structured data: what a parser reads.
@@ -153,6 +152,7 @@ var fileKinds = map[string]fileKind{
 	"targz": kindArchive,
 	"zip":   kindArchive,
 	"wav":   kindSound,
+	"webm":  kindMoving,
 	"csv":   kindWords,
 	"html":  kindWords,
 	"json":  kindWords,

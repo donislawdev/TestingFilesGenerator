@@ -429,6 +429,13 @@ func AllowedTrueOrFalse() string { return say("AllowedTrueOrFalse", "true or fal
 func AllowedSize() string {
 	return say("AllowedSize", "a size such as 2mb, or a plain byte count")
 }
+func AllowedDuration() string {
+	return say("AllowedDuration", "a length of time such as 10s, 1m30s or 500ms")
+}
+func AllowedDurationRange(least, most string) string {
+	return sayf("AllowedDurationRange", "a length of time from {{.Min}} to {{.Max}}, such as 10s, 1m30s or 500ms",
+		map[string]any{"Min": least, "Max": most})
+}
 func AllowedDefault(value string) string {
 	return sayf("AllowedDefault", "default {{.Default}}", map[string]any{"Default": value})
 }

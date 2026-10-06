@@ -290,6 +290,41 @@
     "hash": "sha256-54b8e801756c",
     "other": "the set needs a size one byte below the limit, and there is nothing below zero"
   },
+  "core.DurationEmpty": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-3a7508d80a33",
+    "other": "an empty length of time: write one such as 10s, 1m30s or 500ms"
+  },
+  "core.DurationNoUnit": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-6f7e4e89b31d",
+    "other": "{{.Value}} has no unit: write 10s for seconds or 10ms for milliseconds, because a bare number could be either"
+  },
+  "core.DurationNotALength": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-1b6907777cb3",
+    "other": "{{.Value}} is not a length of time: write one such as 10s, 1m30s or 500ms. A sign, an exponent or a comma is refused rather than guessed at"
+  },
+  "core.DurationNotWhole": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-048b7e2fec91",
+    "other": "{{.Value}} does not land on a whole millisecond: write it to the millisecond, as 1.5s or 1500ms"
+  },
+  "core.DurationOutOfOrder": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-d5bd61725719",
+    "other": "{{.Value}} writes a unit twice or out of order: write the larger units first, each once, as 1h30m or 1m30s"
+  },
+  "core.DurationTooLong": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-06c88d98ae65",
+    "other": "{{.Value}} is too long to count in milliseconds"
+  },
+  "core.DurationUnknownUnit": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, {{.Unit}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-96f50400bd65",
+    "other": "{{.Value}} uses an unknown unit {{.Unit}}: use h, m, s or ms"
+  },
   "core.Error": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Error}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-6dc38cd1cb85",
@@ -1326,7 +1361,7 @@
     "other": "{{.Why}}. Each side may go up to {{.Most}}, but not both at once - ask for a smaller pair"
   },
   "format.JointSmallerPair": {
-    "description": "Said by internal/format/jxl - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Why}}, written the way the program writes them - keep each spelled exactly that way.",
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Why}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-a05cb7a754cc",
     "other": "{{.Why}}. Ask for a smaller pair"
   },
@@ -1414,6 +1449,16 @@
     "description": "Said by internal/format/tomlfile - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-ece7fa6fa508",
     "other": "TOML is UTF-8 by its own specification, so there is no other encoding for a document to be in"
+  },
+  "format.TakesDuration": {
+    "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-c2c68b2e4cfa",
+    "other": "it takes a length of time such as 10s, 1m30s or 500ms"
+  },
+  "format.TakesDurationRange": {
+    "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Least}}, {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-bbf74dee7cf4",
+    "other": "it takes a length of time from {{.Least}} to {{.Most}}, such as 10s, 1m30s or 500ms"
   },
   "format.TakesNoProperties": {
     "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Key}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -1546,7 +1591,7 @@
     "other": "this size needs a padding chunk and the smallest one costs {{.ChunkHeader}} B, so nothing between {{.Fixed}} and {{.Fixed2}} B can be reached"
   },
   "format.TwoSettings": {
-    "description": "Said by internal/format/logfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Of}}, {{.By}}, written the way the program writes them - keep each spelled exactly that way.",
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Of}}, {{.By}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-a61ae8d11eb8",
     "other": "{{.Of}} and {{.By}}"
   },
@@ -3096,10 +3141,45 @@
     "hash": "sha256-a53588601259",
     "other": "use one of: {{.Known}}"
   },
+  "video.MoreThanOneTile": {
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Width}}, {{.Height}}, {{.Blocks}}, {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-319218310f03",
+    "other": "a {{.Width}}x{{.Height}} picture is {{.Blocks}} blocks of 64 by 64 pixels once its sides are rounded up to whole blocks, and the encoder codes one AV1 tile, which holds {{.Most}}. Ask for a smaller pair, such as 4096x2304 or 3840x2160"
+  },
+  "video.NotOnAFrame": {
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.FPS}}, {{.Step}}, {{.Below}}, {{.Above}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-4471642f4d67",
+    "other": "at {{.FPS}} frames a second a length has to end on a frame, and lengths at that rate go in steps of {{.Step}}. Ask for {{.Below}} or {{.Above}}"
+  },
+  "video.NotOnAFrameShortest": {
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.FPS}}, {{.Step}}, {{.Above}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-e6b01f8c0aeb",
+    "other": "at {{.FPS}} frames a second a length has to end on a frame, and lengths at that rate go in steps of {{.Step}}. Ask for {{.Above}}, the shortest film at this rate"
+  },
+  "video.TooManyKeyFrames": {
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Duration}}, {{.Interval}}, {{.Keys}}, {{.Most}}, {{.Shortest}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-fab3e045a284",
+    "other": "a film of {{.Duration}} with a key frame every {{.Interval}} has {{.Keys}} of them, and a film can have at most {{.Most}}. Ask for {{.Shortest}} or longer, or a shorter film"
+  },
   "wav.DropTheLabel": {
     "description": "Said by internal/format/wav - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-b8bfddcdab7d",
     "other": ", or drop the label"
+  },
+  "webm.AskForBOrMore": {
+    "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Floor}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-dcb48388a704",
+    "other": "Ask for {{.Floor}} B or more, or a shorter film, fewer frames a second, key frames further apart or a smaller picture"
+  },
+  "webm.AskForBOrMoreFilm": {
+    "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Floor}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-030aa26d50a8",
+    "other": "Ask for {{.Floor}} B or more, or a shorter film, fewer frames a second or key frames further apart"
+  },
+  "webm.MinimumReason": {
+    "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Duration}}, {{.FPS}}, {{.Interval}}, {{.Width}}, {{.Height}}, {{.Bytes}}, {{.Void}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-736b751cfd83",
+    "other": "a film of {{.Duration}} at {{.FPS}} frames a second with a key frame every {{.Interval}} and a {{.Width}}x{{.Height}} picture takes {{.Bytes}} B, and the file always carries a Void element, which costs {{.Void}} B even when it holds nothing"
   },
   "xlsx.Columns": {
     "description": "Said by internal/format/xlsx - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",

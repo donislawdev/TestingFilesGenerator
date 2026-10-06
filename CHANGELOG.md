@@ -16,6 +16,31 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Films: the `webm` format.** A WebM video with an AV1 picture and no
+  sound, at the exact size you ask for, like every other format. Its length
+  is a setting of its own, independent of the size: an hour at thirty frames
+  a second fits in less than a megabyte (977 128 B at the smallest), because
+  a film that shows one picture costs a few bytes for every frame after the
+  first. Set `duration`,
+  `frame_rate` (whole rates from 1 to 60), `keyframe_interval` - how far
+  apart the frames a player can start from are - `width`, `height` and
+  `quality`. The picture is the gradient with the self describing label the
+  image formats draw, and it stays the same for the whole film. It can be up
+  to 4096 pixels wide and at most 4096x2304 pixels in all, the largest the
+  built in encoder writes correctly - a larger one is refused with a pair
+  that fits. The manifest
+  says what a test can check: `duration_ms`, `frame_count`, `frame_rate`,
+  `keyframe_count`, `width`, `height`, `compression: av1` and `audio: false`.
+  A length that does not end on a frame is refused with the two nearest that
+  do - at 30 frames a second lengths go in steps of 100ms. Below the
+  smallest film the settings allow, the refusal says how small it can be and
+  which settings make it smaller. AV1 plays in current browsers, and an older
+  player or a pipeline that expects H.264 may refuse it - which is a test
+  worth having. The window lists it under Video.
+- **A length of time as a setting.** `duration` and `keyframe_interval` take
+  `10s`, `1m30s`, `1h`, `500ms` or `59.9s`, to the millisecond. A bare number
+  is refused rather than read as seconds, and so is a length that does not
+  land on a whole millisecond.
 - **The website in twenty-two languages.** Beside English and Polish it now
   reads in Simplified and Traditional Chinese, Japanese, German, French,
   Spanish, Brazilian Portuguese, Italian, Indonesian, Russian, Turkish, Czech,
@@ -103,6 +128,12 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **`empty-and-minimal` now includes a film.** The preset builds the smallest
+  file of every format this build has, so with `formats` left at `all` it
+  gains a `webm` target, and the recipe `tfg preset eject empty-and-minimal`
+  prints is a target longer. A manifest from a run of that preset records the
+  hash of that recipe, so its `recipe_hash` differs from one written before.
+  No generated file changes, and a run that names its `formats` is untouched.
 - **An empty text box in the window reads "not set"** instead of "worked out
   from the size" when leaving it empty means going without - the password
   of an archive, the author of a PDF. What that means for the file is in the
