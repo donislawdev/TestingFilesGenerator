@@ -13,18 +13,21 @@ import (
 // and every video format declares them from here.
 const (
 	SettingDuration         = "duration"
+	SettingChangeInterval   = "change_interval"
 	SettingFrameRate        = "frame_rate"
 	SettingKeyframeInterval = "keyframe_interval"
 	SettingQuality          = "quality"
 )
 
 // The defaults are the owner's of 2026-10-06 (docs/WIDEO-2026-10-06.md
-// section 12): ten seconds, and a key frame a minute, which leaves a short film
-// with one key frame and an hour at about a megabyte and a half.
+// sections 12 and 15): ten seconds, a key frame a minute, which leaves a short
+// film with one key frame, and a new picture every second, so the clock in it
+// ticks the way a clock does.
 const (
-	defaultDurationMs    = 10_000
-	defaultKeyIntervalMs = 60_000
-	defaultFPS           = 30
+	defaultDurationMs       = 10_000
+	defaultKeyIntervalMs    = 60_000
+	defaultChangeIntervalMs = 1_000
+	defaultFPS              = 30
 
 	// maxDurationMs is a day. A day at sixty frames a second is five million
 	// frames, which a container writes in seconds and holds in no memory -
@@ -76,6 +79,11 @@ func Properties() []format.Property {
 			Name: SettingDuration, Kind: format.PropertyDuration,
 			Min: 1, Max: maxDurationMs, Default: core.FormatDuration(defaultDurationMs),
 			Detail: "How long the film plays. It has to end on a frame, so at 30 frames a second it goes in steps of 100ms.",
+		},
+		{
+			Name: SettingChangeInterval, Kind: format.PropertyDuration,
+			Min: 1, Max: maxDurationMs, Default: core.FormatDuration(defaultChangeIntervalMs),
+			Detail: "How often the picture changes: the clock in it moves on and the square takes a step. Each change costs a whole picture in bytes and in time. An interval as long as the film or longer keeps one picture throughout.",
 		},
 		{
 			Name: SettingFrameRate, Kind: format.PropertyChoice,
@@ -134,6 +142,10 @@ func Read(formatID string, props map[string]string) (Settings, error) {
 	if err != nil {
 		return Settings{}, err
 	}
+	change, err := durationOr(props, SettingChangeInterval, defaultChangeIntervalMs)
+	if err != nil {
+		return Settings{}, err
+	}
 	fps := defaultFPS
 	if raw := props[SettingFrameRate]; raw != "" {
 		if fps, err = strconv.Atoi(raw); err != nil {
@@ -147,12 +159,15 @@ func Read(formatID string, props map[string]string) (Settings, error) {
 			return Settings{}, core.Defect(fmt.Errorf("video: quality %q passed the registry and is not a number", raw))
 		}
 	}
-	t, err := NewTimeline(formatID, duration, interval, fps)
+	t, err := NewTimeline(formatID, duration, interval, change, fps)
 	if err != nil {
 		return Settings{}, err
 	}
 	if t.Keys() > MaxKeyFrames {
 		return Settings{}, tooManyKeyFrames(formatID, t, interval)
+	}
+	if t.Changes() > MaxChanges {
+		return Settings{}, tooManyChanges(formatID, t, change)
 	}
 	return Settings{
 		Timeline: t, Quality: quality, QIndex: (100 - quality) * 255 / 100,
@@ -180,6 +195,28 @@ func tooManyKeyFrames(formatID string, t Timeline, interval int64) error {
 			"a film of %s with a key frame every %s has %d of them, and a film can have at most %d. Ask for %s or longer, or a shorter film",
 			core.A("Duration", core.FormatDuration(t.DurationMs)), core.A("Interval", core.FormatDuration(interval)),
 			core.A("Keys", t.Keys()), core.A("Most", MaxKeyFrames), core.A("Shortest", core.FormatDuration(shortest))),
+	}
+}
+
+// MaxChanges bounds how many pictures one film shows.
+//
+// Every change is a picture coded on its own - gav1d codes stills, so nothing
+// is carried over from the picture before - and a picture costs its bytes and
+// its time: 34 ms at 640x360 and about a second at 3840x2160, measured on
+// 2026-10-06 (docs/WIDEO-2026-10-06.md section 14). A change a second for a
+// day is under the bound, a change every frame for an hour is not.
+const MaxChanges = 100_000
+
+func tooManyChanges(formatID string, t Timeline, interval int64) error {
+	step := stepMs(t.FPS)
+	shortest := (t.DurationMs + MaxChanges - 1) / MaxChanges
+	shortest = (shortest + step - 1) / step * step
+	return &format.PropertyValueError{
+		Format: formatID, Key: SettingChangeInterval, Value: core.FormatDuration(interval),
+		Reason: core.Says("video.TooManyChanges",
+			"a film of %s with a new picture every %s shows %d pictures, and a film can show at most %d. Ask for %s or longer, or a shorter film",
+			core.A("Duration", core.FormatDuration(t.DurationMs)), core.A("Interval", core.FormatDuration(interval)),
+			core.A("Pictures", t.Changes()), core.A("Most", MaxChanges), core.A("Shortest", core.FormatDuration(shortest))),
 	}
 }
 

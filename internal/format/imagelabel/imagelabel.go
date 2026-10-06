@@ -91,3 +91,15 @@ func drawGlyph(img draw.Image, g string, x, y, scale int, ink color.Color) {
 func Fits(width, chars int) bool {
 	return scaleFor(width, chars) > 0
 }
+
+// BandHeight is how tall the band Draw paints for a label of chars characters
+// across width is, before it is cut to the picture - 0 when the label does not
+// fit. A film draws a second line under the first and asks this before it
+// draws, so planning can say whether that line will be there.
+func BandHeight(width, chars int) int {
+	s := scaleFor(width, chars)
+	if s == 0 {
+		return 0
+	}
+	return glyphHeight*s + 2*pad
+}

@@ -1940,11 +1940,11 @@ def check_webm(data):
     """A WebM film as this generator writes it, read without its code.
 
     The questions are the ones a film can get wrong while every frame still
-    plays: the segment ends where the file does and its padding is last, the
+    plays: the segment ends where the file does, with its padding just before
+    the Cues and the Cues last (docs/WIDEO-2026-10-06.md section 15), the
     SeekHead points at what it names, every block is whole AV1 with no
     temporal delimiter, nothing shows a picture that may not be shown again
-    (docs/WIDEO-2026-10-06.md section 9.2), and the Cues point at the key
-    frames and nothing else.
+    (section 9.2), and the Cues point at the key frames and nothing else.
     """
     top = list(ebml_elements(data, 0, len(data)))
     if len(top) != 2 or top[0][0] != 0x1A45DFA3 or top[1][0] != 0x18538067:
@@ -1955,8 +1955,8 @@ def check_webm(data):
 
     seg_start, seg_end = top[1][2], top[1][3]
     children = list(ebml_elements(data, seg_start, seg_end))
-    if not children or children[-1][0] != 0xEC:
-        fail("the last element of the segment is not a Void, and this generator pads at the end")
+    if len(children) < 2 or children[-1][0] != 0x1C53BB6B or children[-2][0] != 0xEC:
+        fail("the segment does not end in a Void and then the Cues, which is where this generator pads")
     at_offset = {at - seg_start: ident for ident, at, _, _ in children}
 
     blocks, cues, seeks = [], [], 0
@@ -2014,7 +2014,7 @@ def check_webm(data):
     keys = [(ts, cluster) for ts, key, _, cluster in blocks if key]
     if [ts for ts, _ in keys] != [ts for ts, _ in cues] or [c for _, c in keys] != [p for _, p in cues]:
         fail(f"the Cues name {len(cues)} points and the film has {len(keys)} key frames, not at the same places")
-    ok(f"{len(blocks)} frames, {len(keys)} key frames, every one in the Cues, Void last")
+    ok(f"{len(blocks)} frames, {len(keys)} key frames, every one in the Cues, Void before them")
 
 
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,

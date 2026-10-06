@@ -45,12 +45,15 @@ var levels = []level{
 // to, or the maximum parameters level when none does.
 //
 // The shape matters to three of the constraints. Every frame is shown at the
-// frame rate, so the display rate is width times height times fps. A coded
-// picture travels twice within one frame time - the key frame and its hidden
-// copy - so the one second buffer has to hold both. And each of those two
-// frames has to meet the compression ratio, which is why the level is chosen
-// after the picture is coded rather than from its size alone: a picture at
-// quality 100 can be too big for the level its size would suggest.
+// frame rate, so the display rate is width times height times fps. The one
+// second buffer has to hold every coded picture one second of the film
+// carries - perSecond of them, from Timeline.CodedPerSecond: a key frame and
+// its hidden copy, and the picture each change opens with. Until 2026-10-06
+// this counted two whatever the film, which was short for a film whose key
+// frames come more than once a second. And each coded frame has to meet the
+// compression ratio, which is why the level is chosen from how big a picture
+// may be rather than from its size alone: a picture at quality 100 can be too
+// big for the level its size would suggest.
 //
 // A frame narrower or shorter than 16 conforms to no level - the specification
 // asks FrameWidth and FrameHeight to be at least 16 - so a small picture
@@ -59,7 +62,7 @@ var levels = []level{
 // Whole numbers throughout, because the answer is written into the sequence
 // header and so into the bytes (D11), and a float compared at a boundary is a
 // place for two machines to disagree.
-func chooseLevel(width, height, fps, frameBytes int) int {
+func chooseLevel(width, height, fps, frameBytes, perSecond int) int {
 	if width < 16 || height < 16 {
 		return levelMaximumParameters
 	}
@@ -72,7 +75,7 @@ func chooseLevel(width, height, fps, frameBytes int) int {
 		if display > l.maxDisplayRate {
 			continue
 		}
-		if 2*8*int64(frameBytes) > l.mainKbps*1000 {
+		if int64(perSecond)*8*int64(frameBytes) > l.mainKbps*1000 {
 			continue
 		}
 		if !compressedEnough(pic, display, int64(frameBytes), l) {
@@ -85,8 +88,8 @@ func chooseLevel(width, height, fps, frameBytes int) int {
 
 // LevelFor is chooseLevel, exported for the guard that holds it to the
 // specification's own examples.
-func LevelFor(width, height, fps, frameBytes int) int {
-	return chooseLevel(width, height, fps, frameBytes)
+func LevelFor(width, height, fps, frameBytes, perSecond int) int {
+	return chooseLevel(width, height, fps, frameBytes, perSecond)
 }
 
 // compressedEnough is CompressedRatio >= MinPicCompressRatio, Annex A.3:

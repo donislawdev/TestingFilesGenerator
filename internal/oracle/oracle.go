@@ -369,6 +369,52 @@ func DecodedFrames(output string) (int, bool) {
 	return n, found
 }
 
+// PictureChanges is the frames at which a film's picture, as libaom decodes
+// it, differs from the frame before - the first frame always among them. It
+// answers what a viewer sees rather than what the file says: a film whose
+// frames all decode and whose picture never moves passes every other check
+// here (docs/WIDEO-2026-10-06.md section 14).
+//
+// Each frame is told apart by the MD5 of its decoded picture, from ffmpeg's
+// framemd5 output, so nothing of the picture is held. As with the libaom
+// oracle, what ffmpeg prints on standard error is the verdict.
+func PictureChanges(path string) ([]int64, Result) {
+	res := Result{Tool: "ffmpeg with libaom"}
+	ffmpeg, ok := ffmpegWithLibaom()
+	if !ok {
+		return nil, res
+	}
+	res.Available = true
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+	//nolint:gosec // the path is the one exec.LookPath just found for ffmpeg,
+	// run against a file this tool wrote a moment ago
+	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
+	cmd := exec.CommandContext(ctx, ffmpeg, "-nostdin", "-v", "error", "-c:v", "libaom-av1", "-i", path, "-f", "framemd5", "-")
+	var out, errOut strings.Builder
+	cmd.Stdout = &out
+	cmd.Stderr = &errOut
+	if err := cmd.Run(); err != nil || strings.TrimSpace(errOut.String()) != "" {
+		res.Err = fmt.Errorf("libaom complained: %s %v", strings.TrimSpace(errOut.String()), err)
+		return nil, res
+	}
+	var changes []int64
+	prev, frame := "", int64(0)
+	for _, line := range strings.Split(out.String(), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		fields := strings.Split(line, ",")
+		if sum := strings.TrimSpace(fields[len(fields)-1]); sum != prev {
+			changes = append(changes, frame)
+			prev = sum
+		}
+		frame++
+	}
+	return changes, res
+}
+
 // ffmpegWithLibaom is ffmpeg, when it has the libaom decoder. An ffmpeg
 // without it is no witness for a film, and counts as missing rather than as
 // one that turned every file away.

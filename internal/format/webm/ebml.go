@@ -164,3 +164,6 @@ func elementLen(id uint32, content uint64) uint64 {
 func uintElementLen(id uint32, v uint64) uint64 {
 	return elementLen(id, uint64(uintLen(v)))
 }
+
+// fixedUintElementLen is appendFixedUint's length without building it.
+func fixedUintElementLen(id uint32) uint64 { return elementLen(id, 8) }
