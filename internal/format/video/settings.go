@@ -38,11 +38,25 @@ const (
 	maxQuality     = 100
 	defaultQuality = 60
 
-	// maxDimension is the longest side, the same as AVIF's - gav1d's ceiling.
-	maxDimension = 16384
-	// MaxPixels bounds the picture for the reason AVIF's is bounded: the whole
-	// picture is held while it is coded.
-	MaxPixels = 40_000_000
+	// The picture has to fit one AV1 tile, because gav1d codes one: a frame
+	// wider than 4096 or larger than 2304 blocks of 64 by 64 pixels comes out
+	// of its encoder with a header that announces several tiles over the data
+	// of one, and both libaom and gav1d's own decoder refuse it. Measured on
+	// 2026-10-06 (docs/REVIEW-165-2026-10-06.md): 4096x2304 decodes, 4096x2305
+	// and 4097x64 do not. That is a limit of the encoder this tool carries, not
+	// of AV1, so it is the number to raise if a later gav1d codes several tiles.
+	//
+	// maxWidth is the widest tile. maxHeight is gav1d's longest side - a tall
+	// narrow picture is one tile as long as it stays within the area.
+	maxWidth  = 4096
+	maxHeight = 16384
+	// tileBlocks is how many 64 by 64 blocks one tile holds, and
+	// maxTilePixels the same area in pixels, which is what the registry can
+	// declare: a product of the two sides. The blocks are what decides, because
+	// a side is rounded up to a whole block, so a pair just under the pixels
+	// can still be one block too many - checked before coding, see named.
+	tileBlocks    = 2304
+	maxTilePixels = 4096 * 2304
 )
 
 // frameRates are whole rates only. 23.976, 29.97 and 59.94 need a time scale
@@ -54,9 +68,9 @@ var frameRates = []string{"1", "5", "10", "12", "15", "24", "25", "30", "48", "5
 // show it.
 func Properties() []format.Property {
 	return []format.Property{
-		imagedim.Width(imagedim.Side{Largest: maxDimension,
+		imagedim.Width(imagedim.Side{Largest: maxWidth,
 			Detail: "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."}),
-		imagedim.Height(imagedim.Side{Largest: maxDimension,
+		imagedim.Height(imagedim.Side{Largest: maxHeight,
 			Detail: "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for."}),
 		{
 			Name: SettingDuration, Kind: format.PropertyDuration,
@@ -81,12 +95,17 @@ func Properties() []format.Property {
 	}
 }
 
-// JointLimits is the bound on the picture, declared once for both formats.
+// JointLimits is the bound on the picture, declared once for both formats:
+// the area of one AV1 tile. In pixels rather than megapixels, because 9 437 184
+// read as "9 megapixels" would be a limit nobody can aim at.
+//
+// The memory bound AVIF declares is not here, and not by omission: one tile is
+// far below it, so it could never be the limit a request meets.
 func JointLimits() []format.JointLimit {
 	return []format.JointLimit{{
-		Of: imagedim.SettingWidth, By: imagedim.SettingHeight, Max: MaxPixels,
-		Unit: "megapixels", Per: 1_000_000, Base: "pixels",
-		Why: "the encoder holds the whole picture in memory while it works",
+		Of: imagedim.SettingWidth, By: imagedim.SettingHeight, Max: maxTilePixels,
+		Unit: "pixels", Base: "pixels",
+		Why: "the encoder codes a picture as one AV1 tile, which holds 4096 by 2304 pixels",
 	}}
 }
 

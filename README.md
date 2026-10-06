@@ -156,8 +156,8 @@ logs matches ./logs/manifest.json: 10000 files checked
 
 ## 📁 Formats it generates
 
-Twenty seven, and every one is a **real file of that format** - it opens in the
-software that owns it, at the exact size you asked for:
+Every one is a **real file of that format** - it opens in the software that
+owns it, at the exact size you asked for:
 
 | group | formats |
 |---|---|
@@ -583,7 +583,7 @@ recipe cannot build on another file.
 
 ## 📁 Formats in detail
 
-The twenty four formats are listed near the top of this file. Each is produced at an
+The formats are listed near the top of this file. Each is produced at an
 exact size and checked against independent readers before it ships - a PNG is
 opened and its pixels compared, a DOCX is read back by three separate
 libraries, an archive is extracted.
@@ -835,7 +835,7 @@ a valid one of its format.
 
 Honest scope, because a tool that oversells itself wastes your afternoon.
 
-**Working end to end:** twenty four formats, recipes, presets, the desktop window,
+**Working end to end:** every format above, recipes, presets, the desktop window,
 `generate`, `validate`, `verify`, `cleanup`, boundary sets, archive contents,
 size ranges, per format settings, manifests and every exit code above.
 

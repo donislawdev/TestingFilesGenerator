@@ -38,7 +38,6 @@ type webmFilm struct {
 	codecPrivate []byte
 	blocks       []filmBlock
 	cuePoints    int
-	voidBytes    int64
 	voidLast     bool
 }
 
@@ -156,7 +155,6 @@ func walkSegment(f *webmFilm, body []byte) error {
 				return nil
 			})
 		case 0xEC: // Void
-			f.voidBytes += int64(len(el))
 			f.voidLast = true
 		}
 		return nil
@@ -392,7 +390,10 @@ func TestAFilmHoldsTheFramesTheManifestDeclares(t *testing.T) {
 		if w, _ := facts["width"].(int); w != f.width {
 			t.Errorf("%v: the track is %d px wide and the manifest says %d", props, f.width, w)
 		}
-		if !f.voidLast || f.voidBytes < 0 {
+		if h, _ := facts["height"].(int); h != f.height {
+			t.Errorf("%v: the track is %d px tall and the manifest says %d", props, f.height, h)
+		}
+		if !f.voidLast {
 			t.Errorf("%v: the padding is not the last element of the segment", props)
 		}
 		if last := f.blocks[len(f.blocks)-1].ts; last >= int64(durationMs) {
@@ -511,5 +512,31 @@ func TestEveryFrameOfAFilmSurvivesItsReferenceTool(t *testing.T) {
 		if !ok || int64(got) != frames {
 			t.Errorf("%v: libaom decoded %d frames and the manifest declares %d", props, got, frames)
 		}
+	}
+}
+
+// A picture the encoder would code as more than one AV1 tile is refused as a
+// setting, before coding - not left to come out as an internal error.
+//
+// gav1d codes one tile, and a larger frame comes out of it with a header that
+// announces several tiles over the data of one, which libaom and gav1d's own
+// decoder both refuse (measured 2026-10-06, docs/REVIEW-165-2026-10-06.md).
+// Until the review of #165 the format declared sides up to 16384 and such a
+// picture ended the run with exit 1 - "the program broke" - for a request the
+// declaration had invited. 4000x2359 is the case the declared limit cannot
+// catch: under the pixels, one block too many once its sides are rounded up.
+func TestAFilmPictureLargerThanOneTileIsRefusedNotBroken(t *testing.T) {
+	for _, size := range [][2]string{{"4096", "2305"}, {"4000", "2359"}, {"4097", "64"}, {"7680", "4320"}} {
+		props := map[string]string{"width": size[0], "height": size[1], "duration": "1s"}
+		_, err := engine.Plan([]engine.Target{filmTarget(32*1024*1024, props)}, engine.Options{OutDir: t.TempDir(), Seed: goldenSeed, Command: "test"})
+		var refused *format.PropertyValueError
+		if !errors.As(err, &refused) {
+			t.Errorf("%sx%s was not refused as a setting: %v", size[0], size[1], err)
+		}
+	}
+	// And the largest picture one tile holds is not refused.
+	props := map[string]string{"width": "4096", "height": "2304", "duration": "1s"}
+	if _, err := engine.Plan([]engine.Target{filmTarget(32*1024*1024, props)}, engine.Options{OutDir: t.TempDir(), Seed: goldenSeed, Command: "test"}); err != nil {
+		t.Errorf("4096x2304 is one tile and was refused: %v", err)
 	}
 }
