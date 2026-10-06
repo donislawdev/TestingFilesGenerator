@@ -332,9 +332,11 @@ func menuWidth(c *Chooser) float32 {
 	// is the one measurement that knows the placeholder. The floor at the end
 	// of this function is what covers it today, with room to spare.
 	//
-	// Nothing of ours ever sets a placeholder on a menu - it would be a word a
-	// person reads coming from outside the text package - so there is no
-	// placeholder of ours to measure either.
+	// Since 2026-10-06 every menu is made with the window's own placeholder
+	// (NewChooser), so the toolkit no longer puts one in and the two widths
+	// cannot come back from that side. It is still not measured here: the
+	// floor at the end of this function covers it, and the guard above says so
+	// of every menu laid out.
 	// In bold on a menu with a filter, because the filter draws the part of a
 	// value that matched in bold, and bold letters are wider - so a value
 	// typed in full is the widest that value is ever drawn.

@@ -105,7 +105,7 @@ func inOurWords(err error) string {
 // systemReason is our own English sentence for a system error, with the number
 // beside it. The number is the part that survives translation.
 func systemReason(errno syscall.Errno) string {
-	reason := "the system refused it"
+	var reason string
 	switch core.SystemKindOf(errno) {
 	case core.SystemNothingThere:
 		reason = "there is nothing at that path"
@@ -113,6 +113,8 @@ func systemReason(errno syscall.Errno) string {
 		reason = "the system refused permission"
 	case core.SystemAlreadyThere:
 		reason = "something is already there"
+	default:
+		reason = "the system refused it"
 	}
 	return fmt.Sprintf("%s (system error %d)", reason, uintptr(errno))
 }

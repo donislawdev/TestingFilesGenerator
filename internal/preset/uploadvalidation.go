@@ -1,8 +1,6 @@
 package preset
 
 import (
-	"strings"
-
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
@@ -181,26 +179,6 @@ func standIns(denied []deniedEntry) []string {
 		}
 	}
 	return out
-}
-
-// joinWithAnd and joinWithOr write a list the way a sentence takes one.
-//
-// A comma between every pair is how a machine writes a list and it reads as an
-// enumeration rather than as a sentence: "denied.exe, denied.sh holds plain
-// text" has no number to agree with. The text rules in CLAUDE.md ask for a
-// sentence, so the last pair gets its conjunction.
-func joinWithAnd(items []string) string { return joinWith(items, "and") }
-
-func joinWithOr(items []string) string { return joinWith(items, "or") }
-
-func joinWith(items []string, conjunction string) string {
-	switch len(items) {
-	case 0:
-		return ""
-	case 1:
-		return items[0]
-	}
-	return strings.Join(items[:len(items)-1], ", ") + " " + conjunction + " " + items[len(items)-1]
 }
 
 func namesOf(extensions []string) []string {

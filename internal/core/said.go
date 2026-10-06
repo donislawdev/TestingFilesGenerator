@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"sync"
 	"unicode"
 	"unicode/utf8"
 )
@@ -138,8 +137,9 @@ func keeps(v any) bool {
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Float32, reflect.Float64:
 		return true
+	default:
+		return false
 	}
-	return false
 }
 
 // ID is the key a window looks this sentence up by.
@@ -189,8 +189,9 @@ func asCount(v any) int64 {
 		return r.Int()
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		return int64(r.Uint())
+	default:
+		return -1
 	}
-	return -1
 }
 
 // String is the sentence in English, with the setting slots left in it -
@@ -427,19 +428,12 @@ func (c Choices) Format(f fmt.State, verb rune) {
 // directivesOf is every value directive of a layout, in the order the values
 // are taken - "%q", "%d", "% x". A literal %% takes no value and is left out.
 //
-// Kept once per layout: a note is said for every file of a run, from a handful
-// of layouts, and parsing one again for each of a million files would be work
-// done a million times to learn one answer.
-func directivesOf(layout string) []string {
-	if kept, ok := parsedLayouts.Load(layout); ok {
-		return kept.([]string)
-	}
-	verbs := parseDirectives(layout)
-	parsedLayouts.Store(layout, verbs)
-	return verbs
-}
-
-var parsedLayouts sync.Map
+// Parsed every time rather than kept per layout. Measured 2026-10-06: a parse
+// is 141 ns against 16 ns for a kept answer, so a note said for each of a
+// million files costs about a tenth of a second more on a run that takes tens
+// of minutes - and keeping it needed a sync.Map, concurrency in a package
+// that has none anywhere else.
+func directivesOf(layout string) []string { return parseDirectives(layout) }
 
 // parseDirectives reads a layout the way fmt does: a per cent sign, then flags,
 // a width, a precision, then one verb letter. Widths taken from a value (*) and

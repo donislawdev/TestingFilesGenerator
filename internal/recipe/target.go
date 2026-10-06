@@ -3,7 +3,6 @@ package recipe
 import (
 	"errors"
 	"sort"
-	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -303,10 +302,6 @@ var reasons = map[string]bool{
 	"filename_invalid": true, "filename_too_long": true, "filename_traversal": true,
 	"dimensions_limit": true, "nesting_depth": true, "encoding_invalid": true,
 	"malware_signature": true, "duplicate": true, "none": true,
-}
-
-func reasonList() string {
-	return strings.Join(Reasons(), ", ")
 }
 
 // Reasons is the closed list, for the surfaces that have to offer it.

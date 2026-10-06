@@ -215,6 +215,7 @@ func systemReason(errno syscall.Errno) string {
 		return SystemNoPermission(uint64(errno))
 	case core.SystemAlreadyThere:
 		return SystemAlreadyThere(uint64(errno))
+	default:
+		return SystemRefused(uint64(errno))
 	}
-	return SystemRefused(uint64(errno))
 }
