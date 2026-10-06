@@ -61,6 +61,39 @@ func FuzzParseSize(f *testing.F) {
 	})
 }
 
+// FuzzParseDuration feeds arbitrary text to the length of time parser.
+//
+// The second parser of its kind beside the size one, and every duration a
+// recipe or a window states goes through it. Stronger than FuzzParseSize in one
+// way: an accepted length is also written back and read again, because the
+// written form is what a refusal offers somebody to type.
+func FuzzParseDuration(f *testing.F) {
+	for _, seed := range []string{
+		"10s", "1m30s", "1h", "500ms", "0.1s", "1h 30m", "", "10", "-5s",
+		"1,5s", "1e5s", "5min", "30s1m", ".", "1.", "99999999999999999999h",
+		"0.0000001h", "1h0.033s", "1\x00s", "٣s",
+	} {
+		f.Add(seed)
+	}
+
+	f.Fuzz(func(t *testing.T, s string) {
+		ms, err := core.ParseDuration(s)
+		if err != nil {
+			if ms != 0 {
+				t.Fatalf("ParseDuration(%q) refused with %v and still returned %d", s, err, ms)
+			}
+			return
+		}
+		if ms < 0 {
+			t.Fatalf("ParseDuration(%q) accepted and returned %d", s, ms)
+		}
+		back, err := core.ParseDuration(core.FormatDuration(ms))
+		if err != nil || back != ms {
+			t.Fatalf("ParseDuration(%q) gave %d ms, written as %q it reads back as %d (%v)", s, ms, core.FormatDuration(ms), back, err)
+		}
+	})
+}
+
 // FuzzNameTemplate throws arbitrary name templates at the planner.
 //
 // This is the one input in the tool where being wrong means writing outside the

@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
@@ -339,7 +340,7 @@ func roomFor(words string) float32 {
 // the width in the first place.
 func narrowOnAScreen(p format.Property) bool {
 	switch p.Kind {
-	case format.PropertyInt, format.PropertySize:
+	case format.PropertyInt, format.PropertySize, format.PropertyDuration:
 		return true
 	default:
 		return false
@@ -414,6 +415,13 @@ func allowedKind(p format.Property) string {
 		return text.AllowedTrueOrFalse()
 	case format.PropertySize:
 		return text.AllowedSize()
+	case format.PropertyDuration:
+		// The bounds are written the way a recipe writes them, 1h or 33ms,
+		// in every language, as a size's 2mb is.
+		if p.Min == 0 && p.Max == 0 {
+			return text.AllowedDuration()
+		}
+		return text.AllowedDurationRange(core.FormatDuration(p.Min), core.FormatDuration(p.Max))
 	default:
 		// A text setting describes itself with its shape or not at all - the
 		// same default as Property.Allowed, so a kind added tomorrow reads the

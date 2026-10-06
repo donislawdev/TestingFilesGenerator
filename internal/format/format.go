@@ -118,6 +118,13 @@ const (
 	// it differently and because the same syntax failing here while working
 	// for --size is the kind of difference nobody would predict.
 	PropertySize PropertyKind = "size"
+	// PropertyDuration is a length of time written the way core.ParseDuration
+	// reads it, so 10s, 1m30s or 500ms, and counted in whole milliseconds. Its
+	// own kind for the reason size is one: a window draws it as a short box,
+	// and a duration typed as text would be read differently by every format
+	// that took one. The first to declare it is a video's length
+	// (docs/WIDEO-2026-10-06.md section 12), and a sound's is meant to follow.
+	PropertyDuration PropertyKind = "duration"
 	// PropertyText is free text the format interprets itself.
 	PropertyText PropertyKind = "text"
 )
@@ -139,7 +146,8 @@ type Property struct {
 	Name string
 	Kind PropertyKind
 
-	// Min and Max bound an int. Both zero means unbounded.
+	// Min and Max bound an int, and a duration in milliseconds. Both zero means
+	// unbounded.
 	Min, Max int64
 	// Unit is what an int counts, for the message and for a window's field.
 	// Empty when the number counts itself, as a page count does.
@@ -383,15 +391,7 @@ func Containers() []string {
 func (p Property) Allows(raw string) (bad core.Said) {
 	switch p.Kind {
 	case PropertyInt:
-		n, err := strconv.ParseInt(raw, 10, 64)
-		if err != nil {
-			return p.takesWholeNumber()
-		}
-		if p.Min != 0 || p.Max != 0 {
-			if n < p.Min || n > p.Max {
-				return p.takesRange()
-			}
-		}
+		return p.allowsInt(raw)
 	case PropertyChoice:
 		// Spelled the way it is declared, not merely close to it. This used to
 		// fold with EqualFold, and the folding was invisible here and decisive
@@ -423,6 +423,8 @@ func (p Property) Allows(raw string) (bad core.Said) {
 		if _, err := core.ParseSize(raw); err != nil {
 			return core.Says("format.TakesSize", "it takes a size such as 2mb, or a plain byte count")
 		}
+	case PropertyDuration:
+		return p.allowsDuration(raw)
 	case PropertyText:
 		// Named rather than left out. Free text has no shape to check, so
 		// anything is allowed - and a kind added later reddens the linter
@@ -446,6 +448,51 @@ func (p Property) takesRange() core.Said {
 	}
 	return core.Says("format.TakesRangeOf", "it takes a whole number of %s from %d to %d",
 		core.A("Unit", core.UnitTerm(p.Unit)), core.A("Least", p.Min), core.A("Most", p.Max))
+}
+
+// allowsInt is Allows for a whole number. Its own function since the length of
+// time arrived, because Allows with every kind inline reached the band the
+// branching guard watches.
+func (p Property) allowsInt(raw string) core.Said {
+	n, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil {
+		return p.takesWholeNumber()
+	}
+	if p.Min != 0 || p.Max != 0 {
+		if n < p.Min || n > p.Max {
+			return p.takesRange()
+		}
+	}
+	return core.Said{}
+}
+
+// allowsDuration is Allows for a length of time.
+//
+// One sentence for a spelling it cannot read and for a length outside the
+// range, and it is the sentence Allowed puts under an empty field. The range
+// and the examples together are what somebody needs to type the next value,
+// whichever of the two was wrong.
+func (p Property) allowsDuration(raw string) core.Said {
+	ms, err := core.ParseDuration(raw)
+	if err != nil {
+		return p.takesDuration()
+	}
+	if p.Min == 0 && p.Max == 0 {
+		return core.Said{}
+	}
+	if ms < p.Min || ms > p.Max {
+		return p.takesDuration()
+	}
+	return core.Said{}
+}
+
+// takesDuration is what a duration setting takes, as a refusal.
+func (p Property) takesDuration() core.Said {
+	if p.Min == 0 && p.Max == 0 {
+		return core.Says("format.TakesDuration", "it takes a length of time such as 10s, 1m30s or 500ms")
+	}
+	return core.Says("format.TakesDurationRange", "it takes a length of time from %s to %s, such as 10s, 1m30s or 500ms",
+		core.A("Least", core.FormatDuration(p.Min)), core.A("Most", core.FormatDuration(p.Max)))
 }
 
 // sizePhrase is what a size setting takes, written once.
@@ -497,6 +544,10 @@ func (p Property) Allowed() string {
 		what = "true or false"
 	case PropertySize:
 		what = sizePhrase
+	case PropertyDuration:
+		// The refusal's own words without its first two, so an empty field
+		// and a refused one describe the setting identically.
+		what = strings.TrimPrefix(p.takesDuration().String(), "it takes ")
 	default:
 		// A text setting describes itself with Shape or not at all. Saying
 		// "text" under a field is a word where a description should be.

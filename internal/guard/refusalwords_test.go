@@ -25,7 +25,10 @@ func TestASettingIsDescribedTheSameWayEmptyOrRefused(t *testing.T) {
 	checked := 0
 	for _, d := range format.All() {
 		for _, p := range d.Properties {
-			if p.Kind != format.PropertySize {
+			// A duration has the same two sentences and the same risk, and
+			// builds both from takesDuration for the reason size builds both
+			// from sizePhrase.
+			if p.Kind != format.PropertySize && p.Kind != format.PropertyDuration {
 				continue
 			}
 			// Allowed carries the default on the end, because it is read under

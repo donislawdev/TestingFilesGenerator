@@ -108,6 +108,7 @@ func propertyField() Entry {
 		{"a choice from a closed set", format.Property{Name: "compression", Kind: format.PropertyChoice, Choices: []string{"deflate", "store"}, Default: "deflate", Detail: "How each file inside is packed."}},
 		{"a yes or no", format.Property{Name: "bom", Kind: format.PropertyBool, Default: "false", Detail: "Whether the file starts with a byte order mark."}},
 		{"a size", format.Property{Name: "member_size", Kind: format.PropertySize, Default: "1kb", Detail: "How big each file inside is."}},
+		{"a length of time", format.Property{Name: "duration", Kind: format.PropertyDuration, Min: 1, Max: 86_400_000, Default: "10s", Detail: "How long the film plays."}},
 		{"free text", format.Property{Name: "password", Kind: format.PropertyText, Shape: "text", Detail: "What the archive is locked with."}},
 		{"long free text", format.Property{Name: "expected", Kind: format.PropertyText, Long: true, Shape: "a checksum in hexadecimal", Detail: "The checksum the file should have."}},
 	}

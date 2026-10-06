@@ -290,6 +290,41 @@
     "hash": "sha256-54b8e801756c",
     "other": "the set needs a size one byte below the limit, and there is nothing below zero"
   },
+  "core.DurationEmpty": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-3a7508d80a33",
+    "other": "an empty length of time: write one such as 10s, 1m30s or 500ms"
+  },
+  "core.DurationNoUnit": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-6f7e4e89b31d",
+    "other": "{{.Value}} has no unit: write 10s for seconds or 10ms for milliseconds, because a bare number could be either"
+  },
+  "core.DurationNotALength": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-1b6907777cb3",
+    "other": "{{.Value}} is not a length of time: write one such as 10s, 1m30s or 500ms. A sign, an exponent or a comma is refused rather than guessed at"
+  },
+  "core.DurationNotWhole": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-048b7e2fec91",
+    "other": "{{.Value}} does not land on a whole millisecond: write it to the millisecond, as 1.5s or 1500ms"
+  },
+  "core.DurationOutOfOrder": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-d5bd61725719",
+    "other": "{{.Value}} writes a unit twice or out of order: write the larger units first, each once, as 1h30m or 1m30s"
+  },
+  "core.DurationTooLong": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-06c88d98ae65",
+    "other": "{{.Value}} is too long to count in milliseconds"
+  },
+  "core.DurationUnknownUnit": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, {{.Unit}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-96f50400bd65",
+    "other": "{{.Value}} uses an unknown unit {{.Unit}}: use h, m, s or ms"
+  },
   "core.Error": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Error}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-6dc38cd1cb85",
@@ -1414,6 +1449,16 @@
     "description": "Said by internal/format/tomlfile - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-ece7fa6fa508",
     "other": "TOML is UTF-8 by its own specification, so there is no other encoding for a document to be in"
+  },
+  "format.TakesDuration": {
+    "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-c2c68b2e4cfa",
+    "other": "it takes a length of time such as 10s, 1m30s or 500ms"
+  },
+  "format.TakesDurationRange": {
+    "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Least}}, {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-bbf74dee7cf4",
+    "other": "it takes a length of time from {{.Least}} to {{.Most}}, such as 10s, 1m30s or 500ms"
   },
   "format.TakesNoProperties": {
     "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Key}}, written the way the program writes them - keep each spelled exactly that way.",
