@@ -8,6 +8,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -38,7 +39,9 @@ type webmFilm struct {
 	codecPrivate []byte
 	blocks       []filmBlock
 	cuePoints    int
-	voidLast     bool
+	// tail is the IDs of the segment's last two elements, the padding and
+	// then the Cues (docs/WIDEO-2026-10-06.md section 15).
+	tail [2]uint64
 }
 
 func filmOne(t *testing.T, target engine.Target) ([]byte, map[string]any) {
@@ -134,7 +137,7 @@ func walkWebM(b []byte) (webmFilm, error) {
 
 func walkSegment(f *webmFilm, body []byte) error {
 	return ebmlElements(body, func(id uint64, el []byte) error {
-		f.voidLast = false
+		f.tail = [2]uint64{f.tail[1], id}
 		switch id {
 		case 0x1549A966: // Info
 			return ebmlElements(el, func(id uint64, v []byte) error {
@@ -154,8 +157,6 @@ func walkSegment(f *webmFilm, body []byte) error {
 				}
 				return nil
 			})
-		case 0xEC: // Void
-			f.voidLast = true
 		}
 		return nil
 	})
@@ -393,8 +394,8 @@ func TestAFilmHoldsTheFramesTheManifestDeclares(t *testing.T) {
 		if h, _ := facts["height"].(int); h != f.height {
 			t.Errorf("%v: the track is %d px tall and the manifest says %d", props, f.height, h)
 		}
-		if !f.voidLast {
-			t.Errorf("%v: the padding is not the last element of the segment", props)
+		if f.tail != [2]uint64{0xEC, 0x1C53BB6B} {
+			t.Errorf("%v: the segment ends in elements %#x and %#x, and it ends in the padding and then the Cues", props, f.tail[0], f.tail[1])
 		}
 		if last := f.blocks[len(f.blocks)-1].ts; last >= int64(durationMs) {
 			t.Errorf("%v: the last frame starts at %d ms, at or after the film's end at %d ms", props, last, durationMs)
@@ -421,21 +422,32 @@ func TestAFilmDeclaresTheLowestLevelTheSpecificationAllows(t *testing.T) {
 		{7680, 4320, 30, 16, "6.0"}, {7680, 4320, 60, 17, "6.1"},
 	}
 	for _, c := range cases {
-		if got := video.LevelFor(c.w, c.h, c.fps, small); got != c.want {
+		if got := video.LevelFor(c.w, c.h, c.fps, small, 2); got != c.want {
 			t.Errorf("%dx%d at %d fps is the example of level %s (seq_level_idx %d) and declares %d", c.w, c.h, c.fps, c.example, c.want, got)
 		}
 	}
 	// No level admits a frame under 16 on a side, so those declare the
 	// maximum parameters level, 31.
 	for _, s := range [][2]int{{1, 1}, {15, 240}, {320, 15}} {
-		if got := video.LevelFor(s[0], s[1], 30, 100); got != 31 {
+		if got := video.LevelFor(s[0], s[1], 30, 100, 2); got != 31 {
 			t.Errorf("%dx%d declares level %d, and no defined level admits a side under 16", s[0], s[1], got)
 		}
 	}
 	// A frame too big for a level's buffer, or too little compressed for it,
 	// moves the film up - 640x360 at quality 100 is not a level 2.1 film.
-	if got := video.LevelFor(640, 360, 30, 300_000); got <= 1 {
+	if got := video.LevelFor(640, 360, 30, 300_000, 2); got <= 1 {
 		t.Errorf("a 300 kB frame of 640x360 declares level %d, whose one second buffer it does not fit twice", got)
+	}
+	// The buffer holds every picture a second carries, not two. A 20 kB
+	// picture of 640x360 is a level 2.1 film shown twice a second, and not
+	// one coded thirty times a second - a new picture every frame, or a key
+	// frame every frame - because thirty of them are 4.8 Mbit and level 2.1
+	// holds 3.
+	if got := video.LevelFor(640, 360, 30, 20_000, 2); got != 1 {
+		t.Errorf("a 20 kB picture of 640x360 coded twice a second declares level %d, and level 2.1 (1) holds it", got)
+	}
+	if got := video.LevelFor(640, 360, 30, 20_000, 30); got <= 1 {
+		t.Errorf("a 20 kB picture of 640x360 coded thirty times a second declares level %d, whose one second buffer holds 3 Mbit", got)
 	}
 }
 
@@ -473,6 +485,59 @@ func TestALengthThatDoesNotEndOnAFrameIsRefusedWithTheTwoNearest(t *testing.T) {
 		if _, err := engine.Plan([]engine.Target{filmTarget(1024*1024, props)}, engine.Options{OutDir: t.TempDir(), Seed: goldenSeed, Command: "test"}); err != nil {
 			t.Errorf("%v ends on a frame and was refused: %v", props, err)
 		}
+	}
+}
+
+// The picture a viewer sees changes exactly where the manifest says, and
+// nowhere else - asked of libaom's decoded frames, not of the file's bytes.
+//
+// Every other guard here passed the film whose picture never moved, which is
+// what the owner saw on 2026-10-06 and nothing in this repository could have
+// (docs/WIDEO-2026-10-06.md section 14). The cases are the ones that can go
+// wrong apart: a change a second, changes faster than key frames, key frames
+// inside a change - where a new key frame must not move the picture - and a
+// change interval longer than the film, which is one picture throughout.
+func TestAFilmPictureChangesWhereTheManifestSays(t *testing.T) {
+	cases := []map[string]string{
+		{},
+		{"duration": "3s", "change_interval": "100ms"},
+		{"duration": "5s", "change_interval": "2s", "keyframe_interval": "1s"},
+		{"duration": "2s", "change_interval": "1h"},
+	}
+	moving := 0
+	for _, props := range cases {
+		b, facts := filmOne(t, filmTarget(2*1024*1024, props))
+		path := filepath.Join(t.TempDir(), "film.webm")
+		if err := os.WriteFile(path, b, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		got, res := oracle.PictureChanges(path)
+		if !res.Available {
+			t.Skipf("%s is not installed, so no picture was looked at - a skip, not a pass", res.Tool)
+		}
+		if res.Err != nil {
+			t.Errorf("%v: %v", props, res.Err)
+			continue
+		}
+		count, _ := facts["change_count"].(int64)
+		interval, _ := facts["change_interval_ms"].(int64)
+		fps, _ := facts["frame_rate"].(int)
+		if count == 0 || interval == 0 || fps == 0 {
+			t.Fatalf("%v: the manifest declares %d changes every %d ms at %d frames a second, so nothing here was checked", props, count, interval, fps)
+		}
+		want := make([]int64, count)
+		for c := range want {
+			want[c] = int64(c) * interval * int64(fps) / 1000
+		}
+		if !slices.Equal(got, want) {
+			t.Errorf("%v: the decoded picture changes at frames %v and the manifest puts the changes at %v", props, got, want)
+		}
+		if count > 1 {
+			moving++
+		}
+	}
+	if moving < 3 {
+		t.Fatalf("only %d of the films had a picture that moves, so the guard did not ask its question", moving)
 	}
 }
 
@@ -538,5 +603,35 @@ func TestAFilmPictureLargerThanOneTileIsRefusedNotBroken(t *testing.T) {
 	props := map[string]string{"width": "4096", "height": "2304", "duration": "1s"}
 	if _, err := engine.Plan([]engine.Target{filmTarget(32*1024*1024, props)}, engine.Options{OutDir: t.TempDir(), Seed: goldenSeed, Command: "test"}); err != nil {
 		t.Errorf("4096x2304 is one tile and was refused: %v", err)
+	}
+}
+
+// A film whose picture size is named by hand is written whole when it holds
+// many pictures - every one of them inside the reserve planning settled from a
+// sample of ten (docs/WIDEO-2026-10-06.md section 15).
+//
+// The sizes are the ones where the pictures of one film spread most, measured
+// by tools/probes/videomotion/spread: a reserve a tenth above the first picture
+// refused the 64x48 film of the golden set, and on 48x32 the largest of a film
+// came out 42 percent above its first. Each case holds more than ten pictures,
+// so it is the sample and its margin that is asked, not a film planning coded
+// whole.
+func TestAFilmOfANamedSizeKeepsEveryPictureInsideItsReserve(t *testing.T) {
+	cases := []struct {
+		bytes int64
+		props map[string]string
+	}{
+		{1 << 20, map[string]string{"width": "48", "height": "32", "duration": "10m"}},
+		{4 << 20, map[string]string{"width": "52", "height": "20", "duration": "1h"}},
+		{2 << 20, map[string]string{"width": "64", "height": "48", "duration": "2m", "change_interval": "100ms"}},
+	}
+	for _, c := range cases {
+		b, facts := filmOne(t, filmTarget(c.bytes, c.props))
+		if changes, _ := facts["change_count"].(int64); changes <= 10 {
+			t.Fatalf("%v: %d pictures, which planning codes whole, so the sample was not asked", c.props, changes)
+		}
+		if int64(len(b)) != c.bytes {
+			t.Errorf("%v: the film is %d B and %d B were asked for", c.props, len(b), c.bytes)
+		}
 	}
 }

@@ -334,21 +334,30 @@
     },
     "webm_64kib": {
       "bytes": 65536,
-      "sha256": "54b2c5610ecfe09798298b460dfbf40a20de9acf159ab4403450646996311b86",
+      "sha256": "9c1ee9c40292c2df4148fb580f8d9cc0c2430b760d390e6d011639542c43820d",
       "measured_on": "2026-10-06"
     },
     "webm_named": {
       "bytes": 65536,
-      "sha256": "62d199e1e7a9e92ec14152a0156798735be3d715630d851f8ca96e4876a981ba",
+      "sha256": "e035a66d1b8a0caf420df0b7ff91958e3ed0785561f77e560cfdd04a9092adf3",
       "measured_on": "2026-10-06"
     },
     "webm_odd_size": {
       "bytes": 65537,
-      "sha256": "775c5c40ac7f7089858fd62ca956be23d2a706796d809aa6f8d3d07114bf8a42",
+      "sha256": "d4fc121f6b6714609207bd98d1f52fb232bfdf0520009b1b264b2151b732b3db",
       "measured_on": "2026-10-06"
     }
   },
   "remeasured": [
+    {
+      "on": "2026-10-06",
+      "why": "A film's picture changes now. Every change_interval, one second by default, the clock in it moves on and a square takes a step, because a film that showed one picture for its whole length looked to a viewer like a photograph at thirty frames a second - the owner's report, the same day the format was merged. Each change is a picture coded on its own, the Void that pads the file moved from the end to just before the Cues so the SeekHead can point at them before the pictures are coded, and the ladder's ceilings were measured again with the clock and the square in the picture. No release carried webm before this, so its bytes were nobody's contract yet and this is not a breaking change. Sizes are unchanged and the smallest film at the default settings went from 3044 B to 3294 B. Guarded from now on by TestAFilmPictureChangesWhereTheManifestSays, which asks libaom's decoded frames where the picture changes, and TestAFilmOfANamedSizeKeepsEveryPictureInsideItsReserve.",
+      "files": [
+        "webm_64kib",
+        "webm_named",
+        "webm_odd_size"
+      ]
+    },
     {
       "on": "2026-09-01",
       "why": "TAR.GZ pads through the gzip EXTRA field now, where it used to pad through the header comment. The comment keeps the label and at most a byte beyond it. Sizes are unchanged - every one of these archives is the same length it was, and the same sizes are reachable, measured across 11 260 of them. What moved is where the padding sits in the header. The reason is O163: Go's compress/gzip reads a header comment into a fixed buffer and refuses one of 512 bytes or more, so 4 134 of those 11 260 sizes produced an archive no Go program could open - with the message gzip: invalid header, which reads like a corrupt file rather than like a field the reader will not take. 7-Zip, GNU tar, bsdtar, Python and node all took them without a word, which is why it went a month unnoticed, and testers write tools in Go. The extra field was measured against Go on the same day and accepted to 65 531 bytes beside a comment, at a cost of exactly two bytes more than it carries, so it is byte granular where a tar filler entry is aligned to 512. The cheaper looking fix - capping the comment at 511 and leaving the rest to the filler - was measured and rejected: 831 sizes in the same sweep stopped being reachable at all, because nothing could bridge the gap under one block. After the change: 11 260 reachable, 0 unreachable, 0 unreadable. Guarded from now on by TestEveryArchiveThisToolWritesCanBeReadByTheStandardLibrary.",

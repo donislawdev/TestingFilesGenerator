@@ -235,6 +235,7 @@ var reachableFromTheWindow = []string{
 	"property:wav.channels",
 	"property:wav.content",
 	"property:wav.sample_rate",
+	"property:webm.change_interval",
 	"property:webm.duration",
 	"property:webm.frame_rate",
 	"property:webm.height",
