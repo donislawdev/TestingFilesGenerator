@@ -173,16 +173,16 @@ func checkJointLimits(formatID string, w, h int) error {
 // on (untouchable rule 10).
 func Facts(c Choice, s Settings) map[string]any {
 	return map[string]any{
-		"width":                c.Width,
-		"height":               c.Height,
-		"duration_ms":          s.DurationMs,
-		"frame_count":          s.Frames,
-		"frame_rate":           s.FPS,
-		"keyframe_count":       s.Keys(),
-		"keyframe_interval_ms": s.KeyEvery * 1000 / int64(s.FPS),
-		"quality":              s.Quality,
-		"compression":          "av1",
-		"audio":                false,
+		"width":                      c.Width,
+		"height":                     c.Height,
+		"duration_ms":                s.DurationMs,
+		"frame_count":                s.Frames,
+		"frame_rate":                 s.FPS,
+		"keyframe_count":             s.Keys(),
+		"keyframe_interval_ms":       s.KeyEvery * 1000 / int64(s.FPS),
+		"quality":                    s.Quality,
+		"compression":                "av1",
+		"audio":                      false,
 		format.PropertyLabelEmbedded: c.Labelled(),
 	}
 }

@@ -29,9 +29,19 @@ const copySlot = 1
 // obu wraps a payload with the header both containers take: no extension, and
 // the size carried in the header.
 func obu(typ int, payload []byte) []byte {
-	out := []byte{byte(typ<<3) | 0x02}
-	out = append(out, leb128(len(payload))...)
-	return append(out, payload...)
+	return obuOf(typ, payload, nil)
+}
+
+// obuOf is an OBU whose payload is a header followed by data, written into
+// one allocation of the right size - the data is a picture's tile, and copying
+// it twice to join it to its header is the cost this avoids.
+func obuOf(typ int, header, data []byte) []byte {
+	size := leb128(len(header) + len(data))
+	out := make([]byte, 0, 1+len(size)+len(header)+len(data))
+	out = append(out, byte(typ<<3)|0x02)
+	out = append(out, size...)
+	out = append(out, header...)
+	return append(out, data...)
 }
 
 // sequenceHeader is the payload of a full sequence header, not the reduced
@@ -44,7 +54,7 @@ func obu(typ int, payload []byte) []byte {
 // The field order is the specification's, section 5.5, and the reason for
 // each zero is written beside it.
 func sequenceHeader(width, height, level int) []byte {
-	var w bitWriter
+	w := bitWriter{buf: make([]byte, 0, 16)}
 	w.bits(0, 3) // seq_profile: Main
 	w.bit(0)     // still_picture
 	w.bit(0)     // reduced_still_picture_header
@@ -109,7 +119,7 @@ func codecConfig(level int, sequence []byte) []byte {
 // keyFrame is a shown KEY_FRAME around a coded picture. Shown, it is a place
 // to start playing, and the specification makes it impossible to show again.
 func keyFrame(c Coded) []byte {
-	var w bitWriter
+	w := bitWriter{buf: make([]byte, 0, 8)}
 	w.bit(0)     // show_existing_frame
 	w.bits(0, 2) // frame_type: KEY_FRAME
 	w.bit(1)     // show_frame
@@ -121,13 +131,13 @@ func keyFrame(c Coded) []byte {
 	w.bit(1) // disable_frame_end_update_cdf
 	c.writeSuffix(&w)
 	w.align()
-	return obu(obuFrame, append(w.bytes(), c.tile...))
+	return obuOf(obuFrame, w.bytes(), c.tile)
 }
 
 // hiddenCopy is the same picture as an INTRA_ONLY frame that is not shown now
 // and is showable later, kept in copySlot.
 func hiddenCopy(c Coded) []byte {
-	var w bitWriter
+	w := bitWriter{buf: make([]byte, 0, 9)}
 	w.bit(0)     // show_existing_frame
 	w.bits(2, 2) // frame_type: INTRA_ONLY_FRAME
 	w.bit(0)     // show_frame
@@ -140,7 +150,7 @@ func hiddenCopy(c Coded) []byte {
 	w.bit(1) // disable_frame_end_update_cdf
 	c.writeSuffix(&w)
 	w.align()
-	return obu(obuFrame, append(w.bytes(), c.tile...))
+	return obuOf(obuFrame, w.bytes(), c.tile)
 }
 
 // showCopy shows what copySlot holds, and is three bytes.

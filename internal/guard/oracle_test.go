@@ -167,6 +167,11 @@ var structurallyChecked = map[string]bool{
 	// beside YAML accepts a duplicate key, and field order is something a
 	// parser throws away before anybody could ask about it.
 	"yaml": true, "toml": true,
+	// Since 2026-10-06, and here the structural check is half the witness:
+	// libaom plays a film cut off after its first frames without a word about
+	// the rest, and only reading the container sees the frames that are not
+	// there (docs/WIDEO-2026-10-06.md section 9.5).
+	"webm": true,
 }
 
 func TestTheStructuralCheckerCoversEveryFormatItShould(t *testing.T) {

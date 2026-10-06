@@ -494,7 +494,11 @@ func StrictKnows(formatID string) bool {
 		// carries more of them than usual: measured 2026-09-22, PyYAML takes a
 		// duplicate key that every other implementation refuses, and neither a
 		// parser nor a hash would report a field that moved.
-		"yaml", "toml":
+		"yaml", "toml",
+		// The first film, from the day it arrived (2026-10-06). The decoder
+		// says whether the frames that are there play, and only the container
+		// says whether they are all there.
+		"webm":
 		return true
 	}
 	return false

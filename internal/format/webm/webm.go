@@ -180,16 +180,29 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	return writeVoid(ctx, w, void, m.choice.Seed)
 }
 
-// sticky keeps the first error, so a long run of small writes checks once.
+// sticky keeps the first error, so a long run of small writes checks once,
+// and carries the few bytes a header takes so writing one allocates nothing.
+// A film's frames number in the millions, and a header built fresh for each
+// was an allocation per frame - measured 2026-10-06, 853 objects for a ten
+// second film where the guard on generators allows 128.
 type sticky struct {
-	w   io.Writer
-	err error
+	w       io.Writer
+	err     error
+	scratch [24]byte
 }
 
 func (s *sticky) write(b []byte) {
 	if s.err == nil {
 		_, s.err = s.w.Write(b)
 	}
+}
+
+func (s *sticky) header(id uint32, content uint64) {
+	s.write(appendHeader(s.scratch[:0], id, content))
+}
+
+func (s *sticky) uint(id uint32, v uint64) {
+	s.write(appendUint(s.scratch[:0], id, v))
 }
 
 func writeClusters(ctx context.Context, out *sticky, l layout) error {
@@ -209,9 +222,10 @@ func writeClusters(ctx context.Context, out *sticky, l layout) error {
 // its frames - track 1, the frame's time from the cluster's, and the key flag
 // on a key frame.
 func writeCluster(out *sticky, st video.Stream, c cluster) {
-	out.write(header(idCluster, c.content))
-	out.write(uintElement(idTimestamp, uint64(c.ts)))
-	block := [4]byte{0x81}
+	out.header(idCluster, c.content)
+	out.uint(idTimestamp, uint64(c.ts))
+	var block [4]byte
+	block[0] = 0x81
 	for i := c.first; i < c.last; i++ {
 		sample := st.Sample(i)
 		rel := st.StartMs(i) - c.ts
@@ -219,21 +233,26 @@ func writeCluster(out *sticky, st video.Stream, c cluster) {
 		if st.IsKey(i) {
 			block[3] = 0x80
 		}
-		out.write(header(idSimpleBlock, uint64(4+len(sample))))
+		out.header(idSimpleBlock, uint64(4+len(sample)))
 		out.write(block[:])
 		out.write(sample)
 	}
 }
 
-// writeCues points at every cluster that opens with a key frame.
+// writeCues points at every cluster that opens with a key frame, with the
+// same arithmetic the layout counted them by.
 func writeCues(out *sticky, l layout) {
-	out.write(header(idCues, l.cuesBody))
+	out.header(idCues, l.cuesBody)
 	for _, c := range l.clusters {
 		if !l.stream.IsKey(c.first) {
 			continue
 		}
-		positions := cat(uintElement(idCueTrack, 1), uintElement(idCueClusterPosition, c.position))
-		out.write(element(idCuePoint, cat(uintElement(idCueTime, uint64(c.ts)), element(idCueTrackPositions, positions))))
+		positions := uintElementLen(idCueTrack, 1) + uintElementLen(idCueClusterPosition, c.position)
+		out.header(idCuePoint, uintElementLen(idCueTime, uint64(c.ts))+elementLen(idCueTrackPositions, positions))
+		out.uint(idCueTime, uint64(c.ts))
+		out.header(idCueTrackPositions, positions)
+		out.uint(idCueTrack, 1)
+		out.uint(idCueClusterPosition, c.position)
 	}
 }
 

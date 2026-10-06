@@ -44,13 +44,19 @@ func Bound(t Timeline, tileBytes, width, height int) Stream {
 
 func newStream(t Timeline, c Coded, width, height, level int) Stream {
 	seq := obu(obuSequenceHeader, sequenceHeader(width, height, level))
+	show := showCopy()
 	return Stream{
 		Timeline: t, Width: width, Height: height, Level: level,
 		config: codecConfig(level, seq),
-		keyTU:  append(append([]byte{}, seq...), keyFrame(c)...),
-		copyTU: append(hiddenCopy(c), showCopy()...),
-		showTU: showCopy(),
+		keyTU:  joined(seq, keyFrame(c)),
+		copyTU: joined(hiddenCopy(c), show),
+		showTU: show,
 	}
+}
+
+// joined is a followed by b in one allocation of the right size.
+func joined(a, b []byte) []byte {
+	return append(append(make([]byte, 0, len(a)+len(b)), a...), b...)
 }
 
 // Config is the AV1 codec configuration record with the sequence header OBU,

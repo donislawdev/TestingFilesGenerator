@@ -114,48 +114,69 @@ func cuePointLen(c cluster) uint64 {
 
 // fileBytes is the file without its Void.
 func (l layout) fileBytes() int64 {
-	return int64(len(l.head)) + int64(len(idBytes(idSegment))) + segmentSizeField + int64(l.body)
+	return int64(len(l.head)) + int64(idLen(idSegment)) + segmentSizeField + int64(l.body)
 }
 
 func ebmlHeader() []byte {
-	return element(idEBML, cat(
-		uintElement(idEBMLVersion, 1), uintElement(idEBMLReadVersion, 1),
-		uintElement(idEBMLMaxIDLength, 4), uintElement(idEBMLMaxSizeLength, 8),
-		stringElement(idDocType, "webm"), uintElement(idDocTypeVersion, 4), uintElement(idDocTypeReadVersion, 2),
-	))
+	b := make([]byte, 0, 48)
+	b = appendUint(b, idEBMLVersion, 1)
+	b = appendUint(b, idEBMLReadVersion, 1)
+	b = appendUint(b, idEBMLMaxIDLength, 4)
+	b = appendUint(b, idEBMLMaxSizeLength, 8)
+	b = appendString(b, idDocType, "webm")
+	b = appendUint(b, idDocTypeVersion, 4)
+	b = appendUint(b, idDocTypeReadVersion, 2)
+	return appendBytes(make([]byte, 0, len(b)+8), idEBML, b)
 }
 
 // seekHead points at Info, Tracks and Cues. The positions are written in
 // eight bytes each, so the SeekHead is the same length whatever they are and
 // can be built before anything after it is known.
 func seekHead(infoPos, tracksPos, cuesPos uint64) []byte {
-	seek := func(id uint32, pos uint64) []byte {
-		return element(idSeek, cat(element(idSeekID, idBytes(id)), fixedUintElement(idSeekPosition, pos)))
+	b := make([]byte, 0, 96)
+	for _, s := range [3]struct {
+		id  uint32
+		pos uint64
+	}{{idInfo, infoPos}, {idTracks, tracksPos}, {idCues, cuesPos}} {
+		b = appendHeader(b, idSeek, elementLen(idSeekID, uint64(idLen(s.id)))+elementLen(idSeekPosition, 8))
+		b = appendBigEndian(appendHeader(b, idSeekID, uint64(idLen(s.id))), uint64(s.id), idLen(s.id))
+		b = appendFixedUint(b, idSeekPosition, s.pos)
 	}
-	return element(idSeekHead, cat(seek(idInfo, infoPos), seek(idTracks, tracksPos), seek(idCues, cuesPos)))
+	return appendBytes(make([]byte, 0, len(b)+8), idSeekHead, b)
 }
 
 func info(s video.Stream) []byte {
-	return element(idInfo, cat(
-		uintElement(idTimestampScale, 1_000_000),
-		floatElement(idDuration, float64(s.DurationMs)),
-		stringElement(idMuxingApp, application), stringElement(idWritingApp, application),
-	))
+	b := make([]byte, 0, 80)
+	b = appendUint(b, idTimestampScale, 1_000_000)
+	b = appendFloat(b, idDuration, float64(s.DurationMs))
+	b = appendString(b, idMuxingApp, application)
+	b = appendString(b, idWritingApp, application)
+	return appendBytes(make([]byte, 0, len(b)+8), idInfo, b)
 }
 
 // tracks is the one video track. The colour is said again here, in the
 // numbers the sequence header uses, for a player that reads the container's
 // description rather than the stream's.
 func tracks(s video.Stream) []byte {
-	colour := element(idColour, cat(
-		uintElement(idMatrix, 1), uintElement(idRange, 1),
-		uintElement(idTransfer, 1), uintElement(idPrimaries, 1),
-	))
-	return element(idTracks, element(idTrackEntry, cat(
-		uintElement(idTrackNumber, 1), uintElement(idTrackUID, 1), uintElement(idTrackType, 1),
-		uintElement(idFlagLacing, 0), stringElement(idCodecID, "V_AV1"),
-		element(idCodecPrivate, s.Config()),
-		uintElement(idDefaultDuration, uint64(1_000_000_000/s.FPS)),
-		element(idVideo, cat(uintElement(idPixelWidth, uint64(s.Width)), uintElement(idPixelHeight, uint64(s.Height)), colour)),
-	)))
+	v := make([]byte, 0, 48)
+	v = appendUint(v, idPixelWidth, uint64(s.Width))
+	v = appendUint(v, idPixelHeight, uint64(s.Height))
+	v = appendHeader(v, idColour, 4*uintElementLen(idMatrix, 1))
+	v = appendUint(v, idMatrix, 1)
+	v = appendUint(v, idRange, 1)
+	v = appendUint(v, idTransfer, 1)
+	v = appendUint(v, idPrimaries, 1)
+
+	e := make([]byte, 0, 64+len(s.Config())+len(v))
+	e = appendUint(e, idTrackNumber, 1)
+	e = appendUint(e, idTrackUID, 1)
+	e = appendUint(e, idTrackType, 1)
+	e = appendUint(e, idFlagLacing, 0)
+	e = appendString(e, idCodecID, "V_AV1")
+	e = appendBytes(e, idCodecPrivate, s.Config())
+	e = appendUint(e, idDefaultDuration, uint64(1_000_000_000/s.FPS))
+	e = appendBytes(e, idVideo, v)
+
+	t := appendBytes(make([]byte, 0, len(e)+16), idTrackEntry, e)
+	return appendBytes(make([]byte, 0, len(t)+8), idTracks, t)
 }
