@@ -223,9 +223,9 @@ func withinZip32(total int64) error {
 		Format:    "ZIP",
 		Requested: total,
 		Maximum:   zip32Ceiling,
-		Reason: "an archive this large would need the zip64 records, and this build works out an " +
-			"archive's size before it writes it in a way that cannot account for them",
-		Hint: "Ask for less than 4 GiB, or split the contents across several archives.",
+		Reason: core.Says("format.AnArchiveThisLargeWouldNeed", "an archive this large would need the zip64 records, and this build works out an "+
+			"archive's size before it writes it in a way that cannot account for them"),
+		Hint: core.Says("format.AskForLessThan4GiB2", "Ask for less than 4 GiB, or split the contents across several archives."),
 	}
 }
 
@@ -272,8 +272,8 @@ func settleSize(m *memo, r format.Request) (target, bare int64, label string, er
 			size = measured
 		}
 		if !settled {
-			return 0, 0, "", fmt.Errorf(
-				"zip: the size of this archive and the size written in its label do not settle. Give an explicit size")
+			return 0, 0, "", core.Defect(fmt.Errorf(
+				"zip: the size of this archive and the size written in its label do not settle. Give an explicit size"))
 		}
 		label = m.comment
 		bare = size
@@ -335,8 +335,8 @@ func pad(m *memo, p *format.Plan, r format.Request, target, bare int64, label st
 			Format:    "ZIP",
 			Requested: target,
 			Minimum:   bare,
-			Reason:    fmt.Sprintf("an archive holding %s already needs that much", describeGroups(groups)),
-			Hint:      fmt.Sprintf("Ask for %d B or more, or hold fewer or smaller files.", bare),
+			Reason:    core.Says("format.AnArchiveHoldingAlreadyNeedsThat2", "an archive holding %s already needs that much", core.A("Groups", describeGroups(groups))),
+			Hint:      core.Says("format.AskForBOrMoreOr6", "Ask for %d B or more, or hold fewer or smaller files.", core.A("Bare", bare)),
 		}
 	// Exactly the bare size, and nothing to add - but only when the entries
 	// are stored. A squeezed archive comes out SHORTER than its stored
@@ -383,8 +383,8 @@ func pad(m *memo, p *format.Plan, r format.Request, target, bare int64, label st
 			Format:    "ZIP",
 			Requested: r.Bytes,
 			Minimum:   withFiller,
-			Reason:    "the padding entry the archive needs at this size does not fit",
-			Hint:      fmt.Sprintf("Ask for %d B or more.", withFiller),
+			Reason:    core.Says("format.ThePaddingEntryTheArchiveNeeds", "the padding entry the archive needs at this size does not fit"),
+			Hint:      core.Says("format.AskForBOrMore", "Ask for %d B or more.", core.A("Min", withFiller)),
 		}
 	}
 	p.Properties["padding_entry"] = fillerName
@@ -406,19 +406,19 @@ func contentSummary(groups []format.Content) []map[string]any {
 }
 
 // describeGroups is the same thing for a person reading an error.
-func describeGroups(groups []format.Content) string {
-	parts := make([]string, 0, len(groups))
+func describeGroups(groups []format.Content) core.Said {
+	parts := make(core.Conjoined, 0, len(groups))
 	for _, g := range groups {
-		kind := strings.ToUpper(g.Format)
-		parts = append(parts, fmt.Sprintf("%s of %d B", core.Count(g.Count, kind+" file", kind+" files"), g.Bytes))
+		parts = append(parts, core.SaysN("format.GroupOf", "%d %s file of %d B", "%d %s files of %d B",
+			core.A("Count", g.Count), core.A("Kind", strings.ToUpper(g.Format)), core.A("Bytes", g.Bytes)))
 	}
-	return strings.Join(parts, " and ")
+	return core.Says("format.Groups", "%s", core.A("Groups", parts))
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("zip: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("zip: the plan was not produced by this generator"))
 	}
 	return build(ctx, w, m, true)
 }
@@ -539,7 +539,7 @@ func plaintextCRC(ctx context.Context, m memo, withContents bool, write func(io.
 func build(ctx context.Context, w io.Writer, m memo, withContents bool) error {
 	zw := stdzip.NewWriter(w)
 	if err := zw.SetComment(m.comment); err != nil {
-		return fmt.Errorf("zip: the archive comment was refused: %w", err)
+		return core.Defect(fmt.Errorf("zip: the archive comment was refused: %w", err))
 	}
 
 	// squeezed is how many bytes the entries actually came to once compressed.
@@ -571,7 +571,7 @@ func build(ctx context.Context, w io.Writer, m memo, withContents bool) error {
 			return c.desc.Generator.Write(ctx, w, c.plan)
 		})
 		if err != nil {
-			return fmt.Errorf("zip: the %s file inside could not be checksummed: %w", c.desc.ID, err)
+			return core.Defect(fmt.Errorf("zip: the %s file inside could not be checksummed: %w", c.desc.ID, err))
 		}
 		entry, shut, err := openEntry(zw, m, entryPlan{
 			name: c.name, plain: c.plan.Bytes, index: i, withContents: withContents, crc: crc,
@@ -581,7 +581,7 @@ func build(ctx context.Context, w io.Writer, m memo, withContents bool) error {
 		}
 		if withContents {
 			if err := c.desc.Generator.Write(ctx, entry, c.plan); err != nil {
-				return fmt.Errorf("zip: the %s file inside could not be written: %w", c.desc.ID, err)
+				return core.Defect(fmt.Errorf("zip: the %s file inside could not be written: %w", c.desc.ID, err))
 			}
 			if err := shut(); err != nil {
 				return err

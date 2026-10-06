@@ -84,8 +84,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "TXT",
 			Requested: r.Bytes,
 			Minimum:   0,
-			Reason:    "a file cannot hold fewer than zero bytes",
-			Hint:      "Ask for 0 B or more.",
+			Reason:    core.Says("format.AFileCannotHoldFewerThan", "a file cannot hold fewer than zero bytes"),
+			Hint:      core.Says("format.AskFor0BOrMore", "Ask for 0 B or more."),
 		}
 	}
 
@@ -123,10 +123,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			// long it is to read. In UTF-16 those differ by a factor of two,
 			// and a note off by half is worse than no note.
 			p.Notes = append(p.Notes, format.Note{
-				Code: "label_omitted",
-				Detail: fmt.Sprintf(
-					"The label needs %d B and the file is %d B, so this file carries no label. Its name and the manifest still identify it.",
-					codec.Cost(int64(len(line))), r.Bytes),
+				Code:   "label_omitted",
+				Detail: core.Says("format.TheLabelNeedsBAndThe", "The label needs %d B and the file is %d B, so this file carries no label. Its name and the manifest still identify it.", core.A("Length", codec.Cost(int64(len(line)))), core.A("Bytes", r.Bytes)),
 			})
 		}
 	}
@@ -139,7 +137,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("txt: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("txt: the plan was not produced by this generator"))
 	}
 
 	// The mark is bytes rather than text, so it goes out as itself. Everything
@@ -195,7 +193,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		// hangs is worse than one that fails - nobody can tell it apart from
 		// a very large file. Found by mutation testing, not by reasoning.
 		if len(buf) == 0 {
-			return fmt.Errorf("txt: made no progress with %d B still owed", remaining)
+			return core.Defect(fmt.Errorf("txt: made no progress with %d B still owed", remaining))
 		}
 
 		if err := writeAll(w, buf); err != nil {

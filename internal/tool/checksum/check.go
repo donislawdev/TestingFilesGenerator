@@ -242,7 +242,9 @@ func checkResult(sumsPath string, parsed Sums, targets []target, answers []Probl
 	notes = appendNote(notes, noteItself, data.NotChecked.Itself)
 	notes = appendNote(notes, noteTwice, data.NotChecked.Twice)
 	notes = appendNote(notes, noteNotChecksums, ranges(data.NotChecked.NotChecksums))
-	notes = appendNote(notes, noteUnknown, data.NotChecked.Unknown)
+	if unknown := data.NotChecked.Unknown; len(unknown) > 0 {
+		notes = append(notes, tool.Noted{ID: noteUnknown, Items: unknown, Words: parsed.UnknownWords})
+	}
 
 	verdict := tool.Verdict{Outcome: tool.Match, About: filepath.Base(sumsPath), Listed: true}
 	if len(data.Problems) > 0 {

@@ -2,11 +2,12 @@ package preset
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Read is a recipe file as a run sees it: the recipe, and the preset it was
@@ -79,7 +80,7 @@ func ReadRecipe(src []byte, name string) (*Read, error) {
 // and the refusal has to say so and carry that address - the window marks a
 // box by it, and the command line's list of problems names it.
 func aboutTheFile(name, id string, err error) error {
-	problem := recipe.Problem{At: recipe.KeyExtends, What: err.Error()}
+	problem := recipe.Problem{At: recipe.KeyExtends, What: core.SaidOf(err)}
 
 	var unknownPreset *UnknownPresetError
 	var unknownParameter *UnknownParameterError
@@ -87,43 +88,41 @@ func aboutTheFile(name, id string, err error) error {
 	var value *format.PropertyValueError
 	var about interface{ AboutSetting() string }
 	var three interface {
-		What() string
-		Why() string
-		Instead() string
+		Parts() (what, why, instead core.Said)
 	}
 	switch {
 	case errors.As(err, &unknownPreset):
-		problem.What = fmt.Sprintf("extends names preset:%s, which this build does not have", unknownPreset.ID)
-		problem.Why = "a recipe can build only on a preset the tool it runs on knows"
-		problem.Fix = "run \"tfg preset list\" for the ids this build has"
+		problem.What = core.Says("preset.ExtendsNamesPresetWhichThisBuild", "extends names preset:%s, which this build does not have", core.A("ID", unknownPreset.ID))
+		problem.Why = core.Says("preset.ARecipeCanBuildOnlyOn", "a recipe can build only on a preset the tool it runs on knows")
+		problem.Fix = core.Says("preset.RunTfgPresetListForThe", "run \"tfg preset list\" for the ids this build has")
 		if len(unknownPreset.Known) > 0 {
-			problem.Fix = fmt.Sprintf("this build has: %s", strings.Join(unknownPreset.Known, ", "))
+			problem.Fix = core.Says("preset.ThisBuildHas", "this build has: %s", core.A("Join", strings.Join(unknownPreset.Known, ", ")))
 		}
 	case errors.As(err, &unknownParameter):
 		problem.At = recipe.KeyWith + "." + unknownParameter.Name
-		problem.What = fmt.Sprintf("with names %s, which the preset %s does not take", unknownParameter.Name, unknownParameter.Preset)
-		problem.Why = "with fills the parameters the preset declares, and this is not one of them"
-		problem.Fix = "remove the line"
+		problem.What = core.Says("preset.WithNamesWhichThePresetDoes", "with names %s, which the preset %s does not take", core.A("Name", unknownParameter.Name), core.A("Preset", unknownParameter.Preset))
+		problem.Why = core.Says("preset.WithFillsTheParametersThePreset", "with fills the parameters the preset declares, and this is not one of them")
+		problem.Fix = core.Says("preset.RemoveTheLine", "remove the line")
 		if len(unknownParameter.Known) > 0 {
-			problem.Fix = fmt.Sprintf("the preset takes: %s", strings.Join(unknownParameter.Known, ", "))
+			problem.Fix = core.Says("preset.ThePresetTakes", "the preset takes: %s", core.A("Join", strings.Join(unknownParameter.Known, ", ")))
 		}
 	case errors.As(err, &value):
 		// A value the parameter refuses. Named by its line in the file
 		// rather than by the preset, which is how the command line's
 		// --preset path words the same refusal - there the flag is the line.
 		problem.At = recipe.KeyWith + "." + value.Key
-		problem.What = fmt.Sprintf("with.%s cannot be %q", value.Key, value.Value)
-		problem.Why = value.Why()
-		problem.Fix = value.Instead()
+		problem.What = core.Says("preset.WithCannotBe", "with.%s cannot be %q", core.A("Key", value.Key), core.A("Value", value.Value))
+		problem.Why = value.Reason
+		problem.Fix = value.Remedy
 	case errors.As(err, &unknownFormat):
 		// The one global a preset reads. The format registry refuses it in
 		// its own words, which name no line, so the line is named here.
 		problem.At = recipe.KeyWith + ".format"
-		problem.What = fmt.Sprintf("with.format names %q, which this build does not have", unknownFormat.ID)
-		problem.Why = "the preset gives every file it builds this format, so it has to be one the build can write"
-		problem.Fix = "run \"tfg formats\" for the list"
+		problem.What = core.Says("preset.WithFormatNamesWhichThisBuild", "with.format names %q, which this build does not have", core.A("ID", unknownFormat.ID))
+		problem.Why = core.Says("preset.ThePresetGivesEveryFileIt", "the preset gives every file it builds this format, so it has to be one the build can write")
+		problem.Fix = core.Says("preset.RunTfgFormatsForTheList", "run \"tfg formats\" for the list")
 		if len(unknownFormat.Known) > 0 {
-			problem.Fix = fmt.Sprintf("this build has: %s", strings.Join(unknownFormat.Known, ", "))
+			problem.Fix = core.Says("preset.ThisBuildHas", "this build has: %s", core.A("Join", strings.Join(unknownFormat.Known, ", ")))
 		}
 	case errors.As(err, &three) && errors.As(err, &about) && about.AboutSetting() != "":
 		// A set the preset cannot build from these values. It comes in three
@@ -131,15 +130,16 @@ func aboutTheFile(name, id string, err error) error {
 		// the parameter's line. The hint ends in a full stop of its own and
 		// the problem adds one, so the stop comes off here.
 		problem.At = recipe.KeyWith + "." + about.AboutSetting()
-		problem.What = three.What()
-		problem.Why = strings.TrimSuffix(three.Why(), ".")
-		problem.Fix = strings.TrimSuffix(three.Instead(), ".")
+		what, why, instead := three.Parts()
+		problem.What = what
+		problem.Why = why.WithoutFullStop()
+		problem.Fix = instead.WithoutFullStop()
 	default:
 		// A refusal of a shape this does not know still arrives whole, at
 		// the extends line, with the two parts it lacks filled in rather than
 		// printed as a bare dash and a bare stop.
-		problem.Why = "the preset refused what the recipe gave it"
-		problem.Fix = "run \"tfg preset show " + id + "\" for what it takes"
+		problem.Why = core.Says("preset.ThePresetRefusedWhatTheRecipe", "the preset refused what the recipe gave it")
+		problem.Fix = core.Says("preset.RunPresetShow", "run \"tfg preset show %s\" for what it takes", core.A("Preset", id))
 	}
 	return &recipe.ValidationError{Name: name, Problems: []recipe.Problem{problem}}
 }

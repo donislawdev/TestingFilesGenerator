@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Where the files inside an archive sit, and whether the archive lists the
@@ -180,8 +182,9 @@ func ReadLayout(id string, r format.Request) (Layout, error) {
 			Format: id,
 			Key:    DirectoryEntries,
 			Value:  "true",
-			Reason: "a flat archive has no directories to list, and " + Depth + " is 0",
-			Remedy: "Ask for " + Depth + " of 1 or more, or leave " + DirectoryEntries + " off.",
+			Reason: core.Says("archive.FlatNoDirectories", "a flat archive has no directories to list, and %s is 0", core.A("Depth", core.LabelTerm(Depth))),
+			Remedy: core.Says("archive.FlatNoDirectoriesFix", "Ask for %s of 1 or more, or leave %s off.",
+				core.A("Depth", core.LabelTerm(Depth)), core.A("Directories", core.LabelTerm(DirectoryEntries))),
 		}
 	}
 	return Layout{Depth: depth, DirEntries: dirs}, nil
@@ -204,8 +207,8 @@ func boolProperty(id string, props map[string]string, key string, fallback bool)
 			Format: id,
 			Key:    key,
 			Value:  raw,
-			Reason: "it takes true or false",
-			Remedy: "Write " + key + ": true or " + key + ": false.",
+			Reason: core.Says("format.ItTakesTrueOrFalse", "it takes true or false"),
+			Remedy: core.Says("archive.WriteTrueOrFalse", "Write %s: true or %s: false.", core.A("Key", key), core.A("Again", key)),
 		}
 	}
 	return v, nil

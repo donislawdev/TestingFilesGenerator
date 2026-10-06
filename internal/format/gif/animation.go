@@ -17,6 +17,8 @@ import (
 	stdgif "image/gif"
 	"io"
 	"strconv"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // frameCount reads the frames setting, which is the one thing about a GIF that
@@ -28,10 +30,10 @@ func frameCount(props map[string]string) (int, error) {
 	}
 	n, err := strconv.Atoi(raw)
 	if err != nil {
-		return 0, fmt.Errorf("gif: frames must be a whole number, got %q", raw)
+		return 0, core.Defect(fmt.Errorf("gif: frames must be a whole number, got %q", raw))
 	}
 	if n < minFrames || n > maxFrames {
-		return 0, fmt.Errorf("gif: frames must be between %d and %d, got %d", minFrames, maxFrames, n)
+		return 0, core.Defect(fmt.Errorf("gif: frames must be between %d and %d, got %d", minFrames, maxFrames, n))
 	}
 	return n, nil
 }

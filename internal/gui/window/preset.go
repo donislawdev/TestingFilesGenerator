@@ -91,6 +91,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 
 	ids := preset.IDs()
 	p.pick = parts.NewChooser(ids, p.onPresetChosen)
+	p.pick.NameOf = presetTitle
 	p.outDir = entry(startingDirectory(), "")
 	p.seed = entry("0", "")
 
@@ -390,9 +391,25 @@ func notesIn(e *preset.Expansion) []string {
 	spoken := e.Spoken()
 	out := make([]string, 0, len(spoken))
 	for _, n := range spoken {
-		out = append(out, text.PresetNote(e.Preset.ID, n.About, n.Said))
+		if n.About == "" {
+			out = append(out, text.Sentence(n.Said))
+			continue
+		}
+		out = append(out, text.PresetNote(e.Preset.ID, n.About, n.Said.String()))
 	}
 	return out
+}
+
+// presetTitle is what a preset is called, beside its id in a list of presets -
+// the way a format's name stands beside its id (the owner's decision of
+// 2026-10-05). The id stays what the box shows, because it is what a recipe
+// and the command line write.
+func presetTitle(id string) string {
+	p, err := preset.Get(id)
+	if err != nil {
+		return ""
+	}
+	return text.PresetTitle(id, p.Title)
 }
 
 // engineTarget turns one recipe target into one engine target.

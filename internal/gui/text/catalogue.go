@@ -222,9 +222,15 @@ func Load(fsys fs.FS, dir string, prefer ...string) error {
 	// translator, and the English on screen comes from the registries
 	// themselves - a copy one commit behind them must not be able to answer
 	// for them.
-	err := loadFiles(bundle, fsys, path.Join(dir, RegistryFolder), English+".json")
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return err
+	//
+	// The engine's sentences the same way, and for the same reason: their
+	// English is in the code that refuses, and en.json beside them is a copy for
+	// a translator - see said.go.
+	for _, folder := range []string{RegistryFolder, SaidFolder} {
+		err := loadFiles(bundle, fsys, path.Join(dir, folder), English+".json")
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
 	}
 
 	localiser = i18n.NewLocalizer(bundle, append(prefer, English)...)
@@ -268,6 +274,33 @@ func carries(bundle *i18n.Bundle, asked string) bool {
 		}
 	}
 	return false
+}
+
+// ToolkitFolder is where the words of the graphics toolkit are kept, inside
+// the folder of the window's catalogue. Never loaded into the window's own
+// catalogue - they are the toolkit's, and are handed to it.
+const ToolkitFolder = "toolkit"
+
+// ToolkitWords is the toolkit's words in the language this window speaks, as a
+// catalogue file the toolkit reads: the language's own file, the English one
+// for a language that has none, and the English disguised in Pseudo.
+func ToolkitWords() ([]byte, error) {
+	raw, err := fs.ReadFile(builtIn, path.Join("locale", ToolkitFolder, Speaking()+".json"))
+	if err != nil {
+		raw, err = fs.ReadFile(builtIn, path.Join("locale", ToolkitFolder, English+".json"))
+	}
+	if err != nil || !pseudo {
+		return raw, err
+	}
+	var entries map[string]map[string]string
+	if err := json.Unmarshal(raw, &entries); err != nil {
+		return nil, err
+	}
+	disguised := map[string]map[string]string{}
+	for key, entry := range entries {
+		disguised[key] = map[string]string{"other": pseudoOf(entry["other"])}
+	}
+	return json.Marshal(disguised)
 }
 
 // LoadBuiltIn is Load over the catalogue compiled into this program.

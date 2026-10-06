@@ -74,6 +74,7 @@ func newBase(r *Recipe) *base {
 			r.rebuild()
 		}
 	})
+	b.pick.NameOf = presetTitle
 	// Chosen here rather than left empty, so a switch turned on shows a
 	// preset with its parameters at once rather than a menu asking to be
 	// opened first.

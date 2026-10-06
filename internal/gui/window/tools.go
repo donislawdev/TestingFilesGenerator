@@ -220,7 +220,7 @@ func (t *Tools) Settled() {
 func (t *Tools) onChosen(choice string) {
 	d, err := tool.Get(t.menu.titles[choice])
 	if err != nil {
-		t.fault.Say(core.ShownText(err.Error()))
+		t.fault.Say(core.ShownText(text.Refusal(err, "")))
 		return
 	}
 	t.chosen = d
@@ -303,7 +303,7 @@ func (t *Tools) refuse(err error) {
 		t.relay()
 		return
 	}
-	t.fault.Say(core.ShownText(err.Error()))
+	t.fault.Say(core.ShownText(text.Refusal(err, "")))
 }
 
 // toolJob is one run of a tool beside the window.

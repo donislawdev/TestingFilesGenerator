@@ -54,7 +54,7 @@ func planChildren(r format.Request, groups []format.Content, layout archive.Layo
 				Label: r.Label,
 			})
 			if err != nil {
-				return nil, fmt.Errorf("zip: the %s file inside cannot be made: %w", g.Format, err)
+				return nil, core.Refuse(core.Says("format.ZipTheFileInsideCannotBe", "zip: the %s file inside cannot be made: %w", core.A("Format", g.Format), core.A("Err", err)))
 			}
 			numbered[g.Format]++
 			out = append(out, child{

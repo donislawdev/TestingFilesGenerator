@@ -51,8 +51,8 @@ func preflight(ctx context.Context, files []PlannedFile, opt Options) error {
 	// "missing", "no permission" and "already there".
 	if info, err := os.Stat(opt.OutDir); err == nil && !info.IsDir() {
 		return &RecipeError{Setting: SettingOutDir,
-			Detail: fmt.Sprintf("the output directory %s is a file, not a directory", core.Shown(opt.OutDir)),
-			Remedy: "Point the output directory at a directory, or at one that does not exist yet and it will be created"}
+			Detail: core.Says("engine.OutDirIsAFile", "the output directory %s is a file, not a directory", core.A("Dir", core.Shown(opt.OutDir))),
+			Remedy: core.Says("engine.OutDirIsAFileFix", "Point the output directory at a directory, or at one that does not exist yet and it will be created")}
 	}
 
 	// Whether anybody else is writing here comes before every other question

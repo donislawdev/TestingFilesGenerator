@@ -494,6 +494,22 @@ func speakTheChosenLanguage(kept window.Remembered, pseudo bool, errOut io.Write
 	if err := text.LoadBuiltIn(speak); err != nil {
 		fmt.Fprintln(errOut, text.CatalogueNotLoaded(err))
 	}
+	// The toolkit's own words - the menu of a box to type in, the dialogs that
+	// choose a folder or a file - in the language the window speaks rather
+	// than the system's. The toolkit picks its language from the system and
+	// offers no call to choose one, so ours are given under the system's own
+	// tag, which then is the closest match it can find. Measured 2026-10-05
+	// on a pl-PL system (tools/probes/fynelang): words given under pl-PL
+	// replace the toolkit's, and words given under any other tag change
+	// nothing. Before the first window, so no word of the toolkit has been
+	// asked for yet.
+	words, err := text.ToolkitWords()
+	if err == nil {
+		err = lang.AddTranslationsForLocale(words, lang.SystemLocale())
+	}
+	if err != nil {
+		fmt.Fprintln(errOut, text.CatalogueNotLoaded(err))
+	}
 }
 
 // restartInstead starts the program again once this window has gone. The
@@ -506,7 +522,7 @@ func restartInstead(args []string, errOut io.Writer) {
 	if err == nil {
 		return
 	}
-	sentence := text.PreferencesRestartFailed(err.Error())
+	sentence := text.PreferencesRestartFailed(text.Refusal(err, ""))
 	fmt.Fprintln(errOut, sentence)
 	sayInADialog(text.WindowTitle(version.Version), sentence)
 }

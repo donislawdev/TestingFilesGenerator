@@ -120,31 +120,32 @@ func TestEveryRowOfATableStandsUnderTheSameNames(t *testing.T) {
 // puts its own placeholder into an empty menu while the renderer is made, and
 // parts.menuWidth used to measure whatever placeholder was there.
 //
-// The state is asserted rather than assumed - the placeholder has to have
-// ARRIVED for the second measurement to be the warm one - because a guard
-// that measures a menu twice before the toolkit touched it would agree with
-// the old code.
+// Since 2026-10-06 a menu is made with the window's own placeholder, in the
+// window's language, so the toolkit has nothing to put in. That is asserted
+// rather than assumed: a placeholder of the toolkit's arriving with the
+// renderer would be the second width again, and an English word in a window
+// speaking another language. The renderer is asked for outright, so the warm
+// measurement is taken after the moment the toolkit would have stepped in.
 func TestAMenuIsOneWidthBeforeAndAfterItIsDrawn(t *testing.T) {
 	ourTheme(t)
 	menu := parts.NewChooser(format.IDs(), nil)
-	// Menu measures the menu as it builds the box, so the box built here is
-	// the cold measurement - and asking the box for its size is what makes the
-	// toolkit build the renderer and put the placeholder in.
-	sizedCold := parts.Menu(menu)
-	if menu.PlaceHolder != "" {
-		t.Fatalf("a menu built and not yet drawn already has the placeholder %q, so there is no cold"+
-			" measurement to take", menu.PlaceHolder)
+	ours := text.PlaceholderChooseOne()
+	if menu.PlaceHolder != ours {
+		t.Fatalf("a menu is made with the placeholder %q rather than the window's own %q, so the toolkit"+
+			" puts its English one in when the menu is first drawn", menu.PlaceHolder, ours)
 	}
-	cold := sizedCold.MinSize().Width
-	if menu.PlaceHolder == "" {
-		t.Fatal("asking the box for its size did not put the toolkit's placeholder into the menu, so the" +
-			" warm measurement below is the cold one again and this guard would prove nothing")
+	cold := parts.Menu(menu).MinSize().Width
+	if test.WidgetRenderer(menu) == nil {
+		t.Fatal("the menu has no renderer, so the warm measurement below would be the cold one again" +
+			" and this guard would prove nothing")
+	}
+	if menu.PlaceHolder != ours {
+		t.Errorf("drawing the menu replaced the window's placeholder %q with %q", ours, menu.PlaceHolder)
 	}
 	warm := parts.Menu(menu).MinSize().Width
 	if cold != warm {
-		t.Errorf("a menu of the format ids is %.2f px measured before it is drawn and %.2f px after"+
-			" the toolkit put %q into it, so the same menu is two widths depending on when it was"+
-			" measured", cold, warm, menu.PlaceHolder)
+		t.Errorf("a menu of the format ids is %.2f px measured before it is drawn and %.2f px after,"+
+			" so the same menu is two widths depending on when it was measured", cold, warm)
 	}
 }
 

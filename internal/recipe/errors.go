@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
 
 // A recipe is refused with every problem it has, not the first one.
@@ -19,9 +20,9 @@ import (
 // what to do instead. An error that only states the first leaves the reader to
 // guess the other two.
 type Problem struct {
-	What string
-	Why  string
-	Fix  string
+	What core.Said
+	Why  core.Said
+	Fix  core.Said
 	// At is the setting this problem is about, in the vocabulary the two
 	// surfaces share: a recipe key, with a 1-based index wherever a list is
 	// involved, as in targets[2].size or targets[2].contains[1].format.
@@ -51,8 +52,13 @@ func (p Problem) InTheWordsOf(name string) string {
 	if name == "" {
 		name = core.LastSettingSegment(p.At)
 	}
-	return core.InTheWordsOf(
-		fmt.Sprintf("%s - %s.\n  %s.", p.What, p.Why, p.Fix), name)
+	return core.InTheWordsOf(p.Said().String(), name)
+}
+
+// Said is the whole problem, for a window that says it in its own language,
+// with the setting slot left for the window to fill.
+func (p Problem) Said() core.Said {
+	return core.Says("recipe.Problem", "%s - %s.\n  %s.", core.A("What", p.What), core.A("Why", p.Why), core.A("Fix", p.Fix))
 }
 
 // Error makes one problem an error in its own right, so a refused recipe can be
@@ -97,11 +103,8 @@ func (e *ValidationError) Unwrap() []error {
 
 func (e *ValidationError) Error() string {
 	var b strings.Builder
-	word := "problems"
-	if len(e.Problems) == 1 {
-		word = "problem"
-	}
-	fmt.Fprintf(&b, "%s has %d %s and nothing was written:", e.Name, len(e.Problems), word)
+	b.WriteString(core.SaysN("recipe.Refused", "%s has %d problem and nothing was written:", "%s has %d problems and nothing was written:",
+		core.A("Name", e.Name), core.A("Count", len(e.Problems))).String())
 	for _, p := range e.Problems {
 		fmt.Fprintf(&b, "\n\n- %s", p.String())
 	}
@@ -122,8 +125,26 @@ type SyntaxError struct {
 	UTF16 bool
 }
 
-func (e *SyntaxError) Error() string {
-	return fmt.Sprintf("%s cannot be read as a recipe:\n%s", e.Name, e.Detail)
+func (e *SyntaxError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language. The
+// parser's own words follow it as they came - they point at a line and a
+// column, and rewriting them would lose that.
+func (e *SyntaxError) Said() core.Said {
+	return core.Says("recipe.Unreadable", "%s cannot be read as a recipe:\n%s", core.A("Name", e.Name), core.A("Detail", e.Detail))
+}
+
+// whereWhat is a refusal from below the reader, said with the place it is
+// about in front of it.
+func whereWhat(where spot, what core.Said) core.Said {
+	return core.Says("recipe.WhereWhat", "%s: %s", core.A("Where", where), core.A("What", what))
+}
+
+// cannotBe is a declared setting refused its value, with the place in front.
+// The setting is named as a registry word, so a window says its label.
+func cannotBe(where spot, value *format.PropertyValueError) core.Said {
+	return core.Says("recipe.CannotBe", "%s: %s cannot be %q",
+		core.A("Where", where), core.A("Key", core.LabelTerm(value.Key)), core.A("Value", value.Value))
 }
 
 // problems collects everything wrong with one recipe.
@@ -132,7 +153,7 @@ type problems struct {
 	list []Problem
 }
 
-func (p *problems) add(at, what, why, fix string) {
+func (p *problems) add(at string, what, why, fix core.Said) {
 	p.list = append(p.list, Problem{What: what, Why: why, Fix: fix, At: at})
 }
 
@@ -141,14 +162,14 @@ func (p *problems) add(at, what, why, fix string) {
 // It is its own kind of message because the answer is different: the recipe is
 // not wrong, the tool is not there yet. Saying "unknown key" would send the
 // reader looking for a typo that does not exist.
-func (p *problems) notYet(key, why, fix string) {
-	p.add(key, fmt.Sprintf("%s is not in this build yet", key), why, fix)
+func (p *problems) notYet(key string, why, fix core.Said) {
+	p.add(key, core.Says("recipe.NotYet", "%s is not in this build yet", core.A("Key", key)), why, fix)
 }
 
 // notYetIn is the same for a key inside a target, where the sentence names the
 // target and the address does not - see spot.
-func (p *problems) notYetIn(where spot, setting, why, fix string) {
-	p.add(where.of(setting), fmt.Sprintf("%s: %s is not in this build yet", where, setting), why, fix)
+func (p *problems) notYetIn(where spot, setting string, why, fix core.Said) {
+	p.add(where.of(setting), core.Says("recipe.NotYetIn", "%s: %s is not in this build yet", core.A("Where", where), core.A("Key", setting)), why, fix)
 }
 
 // spot is one place in a recipe, in the two vocabularies this tool needs at
@@ -163,7 +184,7 @@ func (p *problems) notYetIn(where spot, setting, why, fix string) {
 // It renders as the prose, so every message built with %s reads as it did
 // before this type existed.
 type spot struct {
-	says string
+	says core.Said
 	key  string
 	// whole means the address is the whole of this spot whatever setting is
 	// named under it. A preset's target has no boxes of its own on any
@@ -172,7 +193,10 @@ type spot struct {
 	whole bool
 }
 
-func (s spot) String() string { return s.says }
+func (s spot) String() string { return s.says.String() }
+
+// Said is the place as a sentence, so a window names it in its own language.
+func (s spot) Said() core.Said { return s.says }
 
 // of names a setting inside this spot: targets[2] and "size" make
 // targets[2].size. A dotted setting is passed through, for the settings that
@@ -191,12 +215,17 @@ func (s spot) of(setting string) string {
 // prose counts, so the two halves agree about which entry is meant.
 func (s spot) entry(list string, index int) spot {
 	if s.whole {
-		return spot{says: fmt.Sprintf("%s: %s entry %d", s.says, list, index+1), key: s.key, whole: true}
+		return spot{says: entrySaid(s, list, index), key: s.key, whole: true}
 	}
 	return spot{
-		says: fmt.Sprintf("%s: %s entry %d", s.says, list, index+1),
+		says: entrySaid(s, list, index),
 		key:  fmt.Sprintf("%s.%s[%d]", s.key, list, index+1),
 	}
+}
+
+// entrySaid is one entry of a list inside a spot, counted from one.
+func entrySaid(s spot, list string, index int) core.Said {
+	return core.Says("recipe.Entry", "%s: %s entry %d", core.A("Where", s.says), core.A("List", list), core.A("Number", index+1))
 }
 
 // presetTargetSpot is where one target the preset contributed is.
@@ -207,12 +236,12 @@ func (s spot) entry(list string, index int) spot {
 // preset's own list, which is what "tfg preset eject" prints.
 func presetTargetSpot(index int, id string) spot {
 	s := spot{
-		says:  fmt.Sprintf("the preset's target %d", index+1),
+		says:  core.Says("recipe.PresetTargetNumber", "the preset's target %d", core.A("Number", index+1)),
 		key:   KeyExtends,
 		whole: true,
 	}
 	if id != "" {
-		s.says = fmt.Sprintf("the preset's target %q", id)
+		s.says = core.Says("recipe.PresetTarget", "the preset's target %q", core.A("Target", id))
 	}
 	return s
 }
@@ -220,7 +249,7 @@ func presetTargetSpot(index int, id string) spot {
 // targetSpot is where one entry of the targets list is.
 func targetSpot(index int, id string) spot {
 	s := spot{
-		says: fmt.Sprintf("target %d", index+1),
+		says: core.Says("recipe.TargetNumber", "target %d", core.A("Number", index+1)),
 		// Built from the same helper a surface uses, so the address a refusal
 		// arrives with and the address a box is registered under cannot differ
 		// in their shape. What they can still differ in is which setting was
@@ -228,7 +257,7 @@ func targetSpot(index int, id string) spot {
 		key: core.TargetPrefix(index + 1),
 	}
 	if id != "" {
-		s.says = fmt.Sprintf("target %q", id)
+		s.says = core.Says("recipe.Target", "target %q", core.A("Target", id))
 	}
 	return s
 }

@@ -194,6 +194,15 @@ func TestOneEnglishSentenceIsOneSentenceInEveryLanguage(t *testing.T) {
 		}
 		sort.Strings(keys)
 		for _, key := range keys {
+			// The name of a list's value agrees with the setting it is a value
+			// of - orientacja mieszana, rozmiar mieszany, wersje mieszane - and
+			// its key already names that setting, so one setting has one name
+			// for each value wherever it is drawn. Two settings sharing an
+			// English word are two contexts, the way they would be for any
+			// language with grammatical gender.
+			if strings.HasPrefix(key, "Choice.") {
+				continue
+			}
 			english, translated := words[key].English, entries[key]["other"]
 			if was, seen := said[english]; seen && was != translated {
 				t.Errorf("%s says %q two ways: %q under %s and %q under %s",
@@ -453,7 +462,7 @@ func TestThePolishWindowSaysTheRegistriesInPolish(t *testing.T) {
 			continue
 		}
 		about++
-		if got, want := text.PresetNote(expanded.Preset.ID, n.About, n.Said), polish[text.NoteKey(expanded.Preset.ID, n.About)]["other"]; got != want {
+		if got, want := text.PresetNote(expanded.Preset.ID, n.About, n.Said.String()), polish[text.NoteKey(expanded.Preset.ID, n.About)]["other"]; got != want {
 			t.Errorf("the note about %s reads %q in the Polish window, and %q was translated", n.About, got, want)
 		}
 	}

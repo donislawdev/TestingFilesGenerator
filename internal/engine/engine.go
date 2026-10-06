@@ -195,6 +195,12 @@ type Result struct {
 	// with nothing able to remove them. A refused run has nothing to record.
 	Started bool
 
+	// NotesSaid is every note of the run as a sentence, by the English the
+	// manifest holds - one entry for each different note rather than one for
+	// each file, so a million files with the same note cost one. A window says
+	// the notes in its own language from here, and the manifest stays English.
+	NotesSaid map[string]core.Said
+
 	// reservation is the run's hold on its manifest name, taken before the
 	// first file and handed to SaveRecord, which saves through it. Nil for a
 	// dry run and for a run refused before it reserved anything.
@@ -236,20 +242,20 @@ func (f PlannedFile) Damaged() bool {
 func settleTarget(t *Target, opt Options, seen map[string]bool) (format.Descriptor, error) {
 	if t.ID == "" {
 		return format.Descriptor{}, &RecipeError{Setting: SettingID,
-			Detail:  "a target has no id",
-			Because: "every target needs a stable id, it anchors the seed and links to the manifest"}
+			Detail:  core.Says("engine.NoID", "a target has no id"),
+			Because: core.Says("engine.NoIDWhy", "every target needs a stable id, it anchors the seed and links to the manifest")}
 	}
 	if seen[t.ID] {
 		return format.Descriptor{}, &RecipeError{Setting: SettingID,
-			Detail:  fmt.Sprintf("target id %q is used twice", t.ID),
-			Because: "ids identify targets, so a duplicate is an error rather than a silent overwrite"}
+			Detail:  core.Says("engine.IDTwice", "target id %q is used twice", core.A("ID", t.ID)),
+			Because: core.Says("engine.IDTwiceWhy", "ids identify targets, so a duplicate is an error rather than a silent overwrite")}
 	}
 	seen[t.ID] = true
 
 	if len(t.Sizes) == 0 {
 		return format.Descriptor{}, &RecipeError{Setting: SettingCount,
-			Detail: fmt.Sprintf("target %q asks for 0 files", t.ID),
-			Remedy: "Ask for at least one"}
+			Detail: core.Says("engine.NoFiles", "target %q asks for 0 files", core.A("Target", t.ID)),
+			Remedy: core.Says("engine.NoFilesFix", "Ask for at least one")}
 	}
 
 	desc, err := format.Get(t.Format)
@@ -360,7 +366,7 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 	// here would leave a manifest outside the directory the run was pointed
 	// at, describing files that are not next to it.
 	if opt.ManifestName != "" {
-		if err := checkFileName(SettingOutputManifest, "the manifest", opt.ManifestName); err != nil {
+		if err := checkFileName(SettingOutputManifest, core.Says("engine.TheManifest", "the manifest"), opt.ManifestName); err != nil {
 			return nil, err
 		}
 	}
@@ -384,7 +390,7 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 	// anything is written rather than after every file.
 	if explained(targets) {
 		name := instructionsNameOf(opt)
-		if err := checkFileName(SettingOutputManifest, "the instructions beside the manifest", name); err != nil {
+		if err := checkFileName(SettingOutputManifest, core.Says("engine.TheInstructions", "the instructions beside the manifest"), name); err != nil {
 			return nil, err
 		}
 		pl.names[collisionKey(name)] = nameOwner{name: name, instructions: true}
@@ -392,7 +398,7 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 
 	if opt.OutDir == "" {
 		return nil, &RecipeError{Setting: SettingOutDir,
-			Detail: "the output directory is empty",
+			Detail: core.Says("engine.NoOutDir", "the output directory is empty"),
 			// "or leave it out to use the current one" used to close this
 			// sentence and it was removed on 2026-08-26. It is true of a
 			// recipe file and of the command line, and it is a thing a person
@@ -400,7 +406,7 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 			// they just did, and all three screens refuse it. One refusal
 			// cannot carry two surfaces' advice, and the half that survives is
 			// the half that is true on both. O125.
-			Remedy: "Name a directory, for example ./fixtures"}
+			Remedy: core.Says("engine.NoOutDirFix", "Name a directory, for example ./fixtures")}
 	}
 
 	for i := range targets {
@@ -431,9 +437,9 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 			// this line "validate --json" carried no "at" for it.
 			return nil, &RecipeError{
 				Setting: core.TargetAddress(i+1, SettingCount),
-				Detail: fmt.Sprintf("this run asks for %s across %s",
-					core.Count(totalFiles, "file", "files"),
-					core.Count(len(targets), "target", "targets")),
+				Detail: core.Says("engine.TooManyFiles", "this run asks for %s across %s",
+					core.A("Files", core.SaysN("engine.Files", "%d file", "%d files", core.A("Count", totalFiles))),
+					core.A("Targets", core.SaysN("engine.Targets", "%d target", "%d targets", core.A("Count", len(targets))))),
 				Because: core.TooManyFilesWhy,
 				Remedy:  core.TooManyFilesFix}
 		}
@@ -505,14 +511,15 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 		// separate one that can drift away from it.
 		res.Started = true
 		for _, f := range files {
-			m.Add(entryFor(f, "", false, nil))
+			m.Add(res.entryFor(f, "", false, nil))
 		}
 		m.Run.Complete = true
 		return res, nil
 	}
 
 	if err := os.MkdirAll(opt.OutDir, 0o755); err != nil {
-		return res, fmt.Errorf("cannot create the output directory %s: %w", core.Shown(opt.OutDir), err)
+		return res, core.Refuse(core.Says("engine.CannotCreateOutDir", "cannot create the output directory %s: %w",
+			core.A("Dir", core.Shown(opt.OutDir)), core.A("Cause", err)))
 	}
 
 	// The directory is taken before the manifest name is, and the two are not
@@ -533,7 +540,8 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 		if errors.Is(err, fs.ErrExist) {
 			return res, &RunInProgressError{Path: lockPath, Dir: opt.OutDir}
 		}
-		return res, fmt.Errorf("cannot start a run in %s: %w", core.Shown(opt.OutDir), err)
+		return res, core.Refuse(core.Says("engine.CannotStart", "cannot start a run in %s: %w",
+			core.A("Dir", core.Shown(opt.OutDir)), core.A("Cause", err)))
 	}
 	// Given back however this run ends, including one stopped part way: the
 	// signal cancels the context, Run returns, and this runs. What it cannot
@@ -581,7 +589,7 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	for i, r := range written {
 		switch {
 		case r.ok:
-			m.Add(entryFor(files[i], r.sha, true, nil))
+			m.Add(res.entryFor(files[i], r.sha, true, nil))
 		case r.err == nil:
 			// Never started. A cancelled run leaves these behind and they are
 			// neither a success nor a failure, so they get no entry - which is
@@ -596,7 +604,7 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 			// One file failing does not end the run. Nine thousand good
 			// files are worth keeping, and the entry says what went wrong.
 			res.Failures++
-			m.Add(entryFor(files[i], "", false, r.err))
+			m.Add(res.entryFor(files[i], "", false, r.err))
 		}
 	}
 
@@ -653,7 +661,8 @@ func reserveManifest(manifestPath, outDir string) (*manifest.Reservation, error)
 	if errors.Is(err, fs.ErrExist) {
 		return nil, &CollisionError{Path: manifestPath, Manifest: true}
 	}
-	return nil, fmt.Errorf("cannot start a run in %s: %w", core.Shown(outDir), err)
+	return nil, core.Refuse(core.Says("engine.CannotStart", "cannot start a run in %s: %w",
+		core.A("Dir", core.Shown(outDir)), core.A("Cause", err)))
 }
 
 // claimRunLock takes the name that says this directory has a run in it.
@@ -693,10 +702,10 @@ func releaseRunLock(path string, own os.FileInfo) {
 	_ = core.RemoveOwn(path, own)
 }
 
-func entryFor(f PlannedFile, sha string, materialized bool, failure error) manifest.File {
+func (res *Result) entryFor(f PlannedFile, sha string, materialized bool, failure error) manifest.File {
 	var notes []manifest.Note
 	for _, n := range f.Plan.Notes {
-		notes = append(notes, manifest.Note{Code: n.Code, Detail: n.Detail})
+		notes = append(notes, res.note(n.Code, n.Detail))
 	}
 
 	label, _ := f.Plan.Properties[format.PropertyLabelEmbedded].(bool)
@@ -727,12 +736,23 @@ func entryFor(f PlannedFile, sha string, materialized bool, failure error) manif
 		e.Failed = true
 		e.Error = failure.Error()
 		e.Materialized = false
-		e.Notes = append(e.Notes, manifest.Note{
-			Code:   "generation_failed",
-			Detail: "This file was not produced. The run carried on and ended with the partial exit code.",
-		})
+		e.Notes = append(e.Notes, res.note("generation_failed",
+			core.Says("engine.NotProduced", "This file was not produced. The run carried on and ended with the partial exit code.")))
 	}
 	return e
+}
+
+// note is one note for the manifest, remembered as a sentence once for each
+// different thing it says.
+func (res *Result) note(code string, said core.Said) manifest.Note {
+	detail := said.String()
+	if res.NotesSaid == nil {
+		res.NotesSaid = map[string]core.Said{}
+	}
+	if _, have := res.NotesSaid[detail]; !have {
+		res.NotesSaid[detail] = said
+	}
+	return manifest.Note{Code: code, Detail: detail}
 }
 
 func expectationFor(f PlannedFile) manifest.Expected {
@@ -814,11 +834,13 @@ func renderName(t *Target, d format.Descriptor, index int) (string, error) {
 	// numbering they asked for.
 	if strings.Contains(name, "{") {
 		return "", &RecipeError{Setting: SettingName,
-			Detail: fmt.Sprintf("target %q has a name template this build does not understand: %q", t.ID, tmpl),
-			Remedy: fmt.Sprintf("The only placeholder is %s, so a name looks like invoice_%s.pdf", indexToken, indexToken)}
+			Detail: core.Says("engine.NameTemplateUnknown", "target %q has a name template this build does not understand: %q",
+				core.A("Target", t.ID), core.A("Template", tmpl)),
+			Remedy: core.Says("engine.NameTemplateFix", "The only placeholder is %s, so a name looks like invoice_%s.pdf",
+				core.A("Placeholder", indexToken), core.A("Example", indexToken))}
 	}
 
-	if err := checkFileName(SettingName, fmt.Sprintf("target %q", t.ID), name); err != nil {
+	if err := checkFileName(SettingName, core.Says("engine.Target", "target %q", core.A("Target", t.ID)), name); err != nil {
 		return "", err
 	}
 	return name, nil

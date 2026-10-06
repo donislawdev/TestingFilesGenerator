@@ -134,9 +134,9 @@ func refusal(err error, want int64, shape opc.Shape, slides int) error {
 			Format:    "PPTX",
 			Requested: big.Want,
 			Maximum:   big.Ceiling,
-			Reason: "an Office file is a ZIP archive, and this build works out its size before it writes it " +
-				"in a way that cannot account for the zip64 records a larger one needs",
-			Hint: "Ask for less than 4 GiB, or split the content across several files.",
+			Reason: core.Says("format.AnOfficeFileIsAZIP", "an Office file is a ZIP archive, and this build works out its size before it writes it "+
+				"in a way that cannot account for the zip64 records a larger one needs"),
+			Hint: core.Says("format.AskForLessThan4GiB", "Ask for less than 4 GiB, or split the content across several files."),
 		}
 	}
 	var gap *opc.Unreachable
@@ -145,27 +145,23 @@ func refusal(err error, want int64, shape opc.Shape, slides int) error {
 			Format:    "PPTX",
 			Requested: want,
 			Minimum:   gap.Above,
-			Reason: fmt.Sprintf(
-				"the archive comment carries at most %d B and the smallest extra part costs %d B, so nothing between those two is reachable",
-				opc.CommentLimit, shape.FillerOverhead),
-			Hint: fmt.Sprintf("Ask for %d B or less, or %d B or more.", gap.Below, gap.Above),
+			Reason:    core.Says("format.TheArchiveCommentCarriesAtMost", "the archive comment carries at most %d B and the smallest extra part costs %d B, so nothing between those two is reachable", core.A("CommentLimit", opc.CommentLimit), core.A("FillerOverhead", shape.FillerOverhead)),
+			Hint:      core.Says("format.AskForBOrLessOr", "Ask for %d B or less, or %d B or more.", core.A("Below", gap.Below), core.A("Above", gap.Above)),
 		}
 	}
 	return &format.BelowMinimumError{
 		Format:    "PPTX",
 		Requested: want,
 		Minimum:   shape.Bare,
-		Reason: fmt.Sprintf(
-			"a deck of %s already packages to that much - a presentation needs a master, a layout and a theme whether it shows them or not",
-			core.Count(slides, "slide", "slides")),
-		Hint: fmt.Sprintf("Ask for %d B or more, or set fewer slides", shape.Bare),
+		Reason:    core.Says("format.ADeckOfAlreadyPackagesTo", "a deck of %s already packages to that much - a presentation needs a master, a layout and a theme whether it shows them or not", core.A("Count", core.SaysN("pptx.Slides", "%d slide", "%d slides", core.A("Count", slides)))),
+		Hint:      core.Says("format.AskForBOrMoreOr5", "Ask for %d B or more, or set fewer slides", core.A("Bare", shape.Bare)),
 	}
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("pptx: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("pptx: the plan was not produced by this generator"))
 	}
 	return opc.Write(ctx, w, m.pkg)
 }
@@ -334,10 +330,10 @@ func intProperty(props map[string]string, key string, fallback int) (int, error)
 	}
 	n, err := strconv.Atoi(raw)
 	if err != nil {
-		return 0, fmt.Errorf("pptx: %s must be a whole number, got %q", key, raw)
+		return 0, core.Defect(fmt.Errorf("pptx: %s must be a whole number, got %q", key, raw))
 	}
 	if n < minSlides || n > maxSlides {
-		return 0, fmt.Errorf("pptx: %s must be between %d and %d, got %d", key, minSlides, maxSlides, n)
+		return 0, core.Defect(fmt.Errorf("pptx: %s must be between %d and %d, got %d", key, minSlides, maxSlides, n))
 	}
 	return n, nil
 }

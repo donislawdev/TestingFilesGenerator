@@ -173,11 +173,12 @@ func checkJointLimits(w, h int) error {
 		return err
 	}
 	for _, j := range d.JointLimits {
-		if bad := j.Allows(int64(w), int64(h)); bad != "" {
+		if bad := j.Allows("gif", int64(w), int64(h)); !bad.IsZero() {
 			return &format.PropertyValueError{
-				Format: "gif", Key: j.Of + " and " + j.By,
-				Value:  fmt.Sprintf("%dx%d", w, h),
-				Reason: bad + fmt.Sprintf(". Each side may go up to %d, but not both at once - ask for a smaller pair", maxDimension),
+				Format: "gif", Key: j.Of + " and " + j.By, Subject: j.Subject(),
+				Value: fmt.Sprintf("%dx%d", w, h),
+				Reason: core.Says("format.JointEachSide", "%s. Each side may go up to %d, but not both at once - ask for a smaller pair",
+					core.A("Why", bad), core.A("Most", maxDimension)),
 			}
 		}
 	}
@@ -223,10 +224,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	labelled := r.Label && imagelabel.Fits(w, len(label))
 	if r.Label && !labelled {
 		p.Notes = append(p.Notes, format.Note{
-			Code: "label_omitted",
-			Detail: fmt.Sprintf(
-				"The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.",
-				w),
+			Code:   "label_omitted",
+			Detail: core.Says("format.ThePictureIsPxWideAnd", "The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("Width", w)),
 		})
 	}
 	p.Properties[format.PropertyLabelEmbedded] = labelled
@@ -253,8 +252,8 @@ func settlePadding(m *memo, want, bare int64) error {
 			Format:    "GIF",
 			Requested: want,
 			Minimum:   bare,
-			Reason:    fmt.Sprintf("a %dx%d picture already encodes to that much before any padding", m.width, m.height),
-			Hint:      fmt.Sprintf("Ask for %d B or more, or set a smaller width and height", bare),
+			Reason:    core.Says("format.AXPictureAlreadyEncodesTo", "a %dx%d picture already encodes to that much before any padding", core.A("Width", m.width), core.A("Height", m.height)),
+			Hint:      core.Says("format.AskForBOrMoreOr2", "Ask for %d B or more, or set a smaller width and height", core.A("Bare", bare)),
 		}
 
 	case delta < smallestCarryingComment:
@@ -266,20 +265,17 @@ func settlePadding(m *memo, want, bare int64) error {
 			Format:    "GIF",
 			Requested: want,
 			Minimum:   bare + smallestCarryingComment,
-			Reason: fmt.Sprintf(
-				"a %dx%d picture encodes to exactly %d B, an empty comment adds %d B and the smallest comment that carries any padding adds %d B, so nothing else in between is reachable",
-				m.width, m.height, bare, emptyComment, smallestCarryingComment),
-			Hint: fmt.Sprintf("Ask for exactly %d B, exactly %d B, or %d B or more.",
-				bare, bare+emptyComment, bare+smallestCarryingComment),
+			Reason:    core.Says("format.AXPictureEncodesToExactly", "a %dx%d picture encodes to exactly %d B, an empty comment adds %d B and the smallest comment that carries any padding adds %d B, so nothing else in between is reachable", core.A("Width", m.width), core.A("Height", m.height), core.A("Bare", bare), core.A("EmptyComment", emptyComment), core.A("SmallestCarryingComment", smallestCarryingComment)),
+			Hint:      core.Says("format.AskForExactlyBExactlyB", "Ask for exactly %d B, exactly %d B, or %d B or more.", core.A("Bare", bare), core.A("Bare2", bare+emptyComment), core.A("Bare3", bare+smallestCarryingComment)),
 		}
 	}
 
 	m.comment = true
 	m.blocks, m.payload = commentShape(delta)
 	if m.payload < m.blocks {
-		return fmt.Errorf(
+		return core.Defect(fmt.Errorf(
 			"gif: %d B of padding does not divide into %d sub blocks carrying %d B - this is a bug in the size arithmetic, not in the request",
-			delta, m.blocks, m.payload)
+			delta, m.blocks, m.payload))
 	}
 	return nil
 }
@@ -304,7 +300,7 @@ func commentShape(delta int64) (blocks, payload int64) {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("gif: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("gif: the plan was not produced by this generator"))
 	}
 
 	select {
@@ -327,13 +323,13 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		if err := settlePadding(&m, p.Bytes, m.body+trailerSize); err != nil {
 			// Unreachable unless ladderCeiling is wrong, and then saying so
 			// beats writing a file of the wrong length.
-			return fmt.Errorf("gif: %w - ladderCeiling is wrong", err)
+			return core.Defect(fmt.Errorf("gif: %w - ladderCeiling is wrong", err))
 		}
 	} else if holder.written != m.body {
-		return fmt.Errorf("gif: the picture encoded to %d B where planning said %d B", holder.written, m.body)
+		return core.Defect(fmt.Errorf("gif: the picture encoded to %d B where planning said %d B", holder.written, m.body))
 	}
 	if holder.tail[0] != 0x3B {
-		return fmt.Errorf("gif: the encoded stream does not end with the trailer")
+		return core.Defect(fmt.Errorf("gif: the encoded stream does not end with the trailer"))
 	}
 
 	if m.comment {

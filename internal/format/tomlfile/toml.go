@@ -106,15 +106,15 @@ func init() {
 		Unsupported: []format.UnsupportedSetting{
 			{
 				Name: textenc.Setting,
-				Why: "TOML is UTF-8 by its own specification, so there is no other " +
-					"encoding for a document to be in",
-				Instead: "Use yaml, xml, txt or md for a file in another encoding.",
+				Why: core.Says("format.TOMLIsUTF8ByIts", "TOML is UTF-8 by its own specification, so there is no other "+
+					"encoding for a document to be in"),
+				Instead: core.Says("format.UseYamlXmlTxtOrMd", "Use yaml, xml, txt or md for a file in another encoding."),
 			},
 			{
 				Name: textenc.SettingBOM,
-				Why: "both readers on this machine refuse a TOML file that opens with a " +
-					"byte order mark, even in UTF-8",
-				Instead: "Use txt or md for a file that opens with a byte order mark.",
+				Why: core.Says("format.BothReadersOnThisMachineRefuse", "both readers on this machine refuse a TOML file that opens with a "+
+					"byte order mark, even in UTF-8"),
+				Instead: core.Says("format.UseTxtOrMdForA", "Use txt or md for a file that opens with a byte order mark."),
 			},
 		},
 		GeneratorVersion: generatorVersion,
@@ -136,8 +136,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "TOML",
 			Requested: r.Bytes,
 			Minimum:   min,
-			Reason:    "a document holds whole records, and one table of them with every value type needs that much",
-			Hint:      fmt.Sprintf("Ask for %d B or more.", min),
+			Reason:    core.Says("format.ADocumentHoldsWholeRecordsAnd2", "a document holds whole records, and one table of them with every value type needs that much"),
+			Hint:      core.Says("format.AskForBOrMore", "Ask for %d B or more.", core.A("Min", min)),
 		}
 	}
 
@@ -165,10 +165,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			m.comment = line
 		} else {
 			p.Notes = append(p.Notes, format.Note{
-				Code: "label_omitted",
-				Detail: fmt.Sprintf(
-					"The label comment needs %d B and this file has no room for it beside a whole record. Its name and the manifest still identify it.",
-					len(line)),
+				Code:   "label_omitted",
+				Detail: core.Says("format.TheLabelCommentNeedsBAnd", "The label comment needs %d B and this file has no room for it beside a whole record. Its name and the manifest still identify it.", core.A("Length", len(line))),
 			})
 		}
 	}
@@ -181,7 +179,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("toml: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("toml: the plan was not produced by this generator"))
 	}
 
 	// The comment is the whole of the prologue, so with no label there is

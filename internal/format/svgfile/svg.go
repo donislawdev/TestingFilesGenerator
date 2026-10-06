@@ -261,8 +261,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "SVG",
 			Requested: r.Bytes,
 			Minimum:   min,
-			Reason:    "a drawing holds a declaration, a root element and whole shapes, and one of each needs that much",
-			Hint:      fmt.Sprintf("Ask for %d B or more.", min),
+			Reason:    core.Says("format.ADrawingHoldsADeclarationA", "a drawing holds a declaration, a root element and whole shapes, and one of each needs that much"),
+			Hint:      core.Says("format.AskForBOrMore", "Ask for %d B or more.", core.A("Min", min)),
 		}
 	}
 
@@ -287,19 +287,15 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			// separate sentence from the one below. Both leave the file named
 			// by its own name and by the manifest.
 			p.Notes = append(p.Notes, format.Note{
-				Code: "label_omitted",
-				Detail: fmt.Sprintf(
-					"The drawing is %d px tall and the label needs the %d px strip along the bottom, so this file carries no visible label. Its name and the manifest still identify it.",
-					h, TextBand),
+				Code:   "label_omitted",
+				Detail: core.Says("format.TheDrawingIsPxTallAnd", "The drawing is %d px tall and the label needs the %d px strip along the bottom, so this file carries no visible label. Its name and the manifest still identify it.", core.A("H", h), core.A("TextBand", TextBand)),
 			})
 		case int64(len(line))+min <= r.Bytes:
 			m.labelLine = line
 		default:
 			p.Notes = append(p.Notes, format.Note{
-				Code: "label_omitted",
-				Detail: fmt.Sprintf(
-					"The label needs %d B and this file has no room for it beside a whole shape. Its name and the manifest still identify it.",
-					len(line)),
+				Code:   "label_omitted",
+				Detail: core.Says("format.TheLabelNeedsBAndThis2", "The label needs %d B and this file has no room for it beside a whole shape. Its name and the manifest still identify it.", core.A("Length", len(line))),
 			})
 		}
 	}
@@ -312,7 +308,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("svg: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("svg: the plan was not produced by this generator"))
 	}
 
 	head := declaration + rootOpen(m.width, m.height) + m.labelLine

@@ -29,6 +29,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Setting names. Public names, so they are spelled once.
@@ -90,7 +92,10 @@ func Parse(formatID string, props map[string]string) (Codec, error) {
 		default:
 			return Codec{}, &format.PropertyValueError{
 				Format: formatID, Key: Setting, Value: v,
-				Reason: "it has to be " + UTF8 + ", " + UTF16LE + " or " + UTF16BE,
+				Reason: core.Says("textenc.HasToBeEncoding", "it has to be %s, %s or %s",
+					core.A("UTF8", core.Choice{Of: Setting, Value: UTF8}),
+					core.A("UTF16LE", core.Choice{Of: Setting, Value: UTF16LE}),
+					core.A("UTF16BE", core.Choice{Of: Setting, Value: UTF16BE})),
 			}
 		}
 	}
@@ -104,7 +109,7 @@ func Parse(formatID string, props map[string]string) (Codec, error) {
 		default:
 			return Codec{}, &format.PropertyValueError{
 				Format: formatID, Key: SettingBOM, Value: v,
-				Reason: "it has to be true or false",
+				Reason: core.Says("format.ItHasToBeTrueOr", "it has to be true or false"),
 			}
 		}
 	}
@@ -166,18 +171,15 @@ func (c Codec) Check(formatName string, requested int64) error {
 	if requested < mark {
 		return &format.BelowMinimumError{
 			Format: formatName, Requested: requested, Minimum: mark,
-			Reason: fmt.Sprintf(
-				"a byte order mark is %d B and the file has to hold it", mark),
-			Hint: fmt.Sprintf("Ask for %d B or more, or turn the %s setting off.", mark, SettingBOM),
+			Reason: core.Says("format.AByteOrderMarkIsB", "a byte order mark is %d B and the file has to hold it", core.A("Mark", mark)),
+			Hint:   core.Says("format.AskForBOrMoreOr8", "Ask for %d B or more, or turn the %s setting off.", core.A("Mark", mark), core.A("SettingBOM", SettingBOM)),
 		}
 	}
 	if next, ok := c.fits(requested); !ok {
 		return &format.BelowMinimumError{
 			Format: formatName, Requested: requested, Minimum: next,
-			Reason: fmt.Sprintf(
-				"%s stores two bytes for every character, so a whole file always has an even number of them",
-				c.name),
-			Hint: fmt.Sprintf("Ask for %d B or %d B.", requested-1, next),
+			Reason: core.Says("format.StoresTwoBytesForEveryCharacter", "%s stores two bytes for every character, so a whole file always has an even number of them", core.A("Name", c.name)),
+			Hint:   core.Says("format.AskForBOrB", "Ask for %d B or %d B.", core.A("Requested", requested-1), core.A("Next", next)),
 		}
 	}
 	return nil

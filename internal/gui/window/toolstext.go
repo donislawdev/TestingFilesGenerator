@@ -24,17 +24,26 @@ import (
 func noteLines(d tool.Descriptor, n tool.Noted, most int) []string {
 	says := text.ToolNote(d.ID, n.ID, d.NoteSays(n.ID))
 	if len(n.Items) == 1 {
-		return []string{says + " " + core.Shown(n.Items[0])}
+		return []string{says + " " + itemOf(n, 0)}
 	}
 	out := []string{says}
-	for i, item := range n.Items {
+	for i := range n.Items {
 		if most > 0 && i == most {
 			out = append(out, text.ToolMoreItems(len(n.Items)-i, d.ID))
 			break
 		}
-		out = append(out, core.Shown(item))
+		out = append(out, itemOf(n, i))
 	}
 	return out
+}
+
+// itemOf is one item of a note: in the window's words where the tool gave
+// some, and as the data it is otherwise.
+func itemOf(n tool.Noted, i int) string {
+	if len(n.Words) == len(n.Items) {
+		return core.ShownText(text.Sentence(n.Words[i]))
+	}
+	return core.Shown(n.Items[i])
 }
 
 // verdictSaid is tool.Verdict.Said in the window's language.

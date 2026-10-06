@@ -253,7 +253,7 @@ func loadRecipeReporting(path string, asJSON bool, errOut io.Writer) (*preset.Re
 		var invalid *recipe.ValidationError
 		if errors.As(err, &invalid) {
 			for _, p := range invalid.Problems {
-				report.Problems = append(report.Problems, validateProblem{What: p.What, Why: p.Why, Fix: p.Fix, At: p.At})
+				report.Problems = append(report.Problems, validateProblem{What: p.What.String(), Why: p.Why.String(), Fix: p.Fix.String(), At: p.At})
 			}
 		} else {
 			report.Problems = append(report.Problems, validateProblem{What: err.Error()})

@@ -257,6 +257,10 @@ func PlaceholderWorkedOut() string { return say("PlaceholderWorkedOut", "worked 
 // means for the file is said in the sentence beside the box.
 func PlaceholderNotSet() string { return say("PlaceholderNotSet", "not set") }
 
+// PlaceholderChooseOne stands in a menu nothing has been chosen in yet. The
+// words are the toolkit's own, which it puts in every empty menu in English.
+func PlaceholderChooseOne() string { return say("PlaceholderChooseOne", "(Select one)") }
+
 // PlaceholderFilter stands in the box at the top of an open list of formats,
 // where typing narrows the list to the formats whose identifier holds what was
 // typed, or whose name or kind has a word starting with it.
@@ -454,10 +458,14 @@ func SettingKey(key string) string {
 	return sayf("SettingKey", "Written as {{.Key}} in a recipe.", map[string]any{"Key": key})
 }
 
+// LicenceBinds follows a translated licence notice. Empty in English on
+// purpose - there is nothing to say where the notice is the one that binds.
+func LicenceBinds() string { return say("AboutLicenceBinds", "") }
+
 // TooManyFiles refuses a run before the list is built, because building it is
 // the failure. The reason comes from core, so the window and the command line
 // do not hold two opinions about how many files is too many.
-func TooManyFiles(count int64, reason error) string {
+func TooManyFiles(count int64, reason string) string {
 	return sayf("TooManyFiles", "this run asks for {{.Count}} files - {{.Reason}}",
 		map[string]any{"Count": count, "Reason": reason})
 }

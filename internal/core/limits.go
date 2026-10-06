@@ -1,8 +1,6 @@
 package core
 
 import (
-	"errors"
-	"fmt"
 	"math"
 	"strings"
 )
@@ -40,7 +38,7 @@ const MaxFilesPerRun = 1_000_000
 //
 // It carries the four parts every refusal in this tool carries, so both callers
 // report it in the same words rather than each phrasing it again.
-var ErrTooManyFiles = errors.New(TooManyFilesWhy + ". " + TooManyFilesFix)
+var ErrTooManyFiles = Refuse(Says("core.TooManyFiles", "%s. %s", A("Why", TooManyFilesWhy), A("Fix", TooManyFilesFix)))
 
 // The same refusal in the two parts a report keeps apart. ErrTooManyFiles is
 // built from them rather than beside them, so the sentence and the parts cannot
@@ -52,10 +50,10 @@ var (
 	// the sentence saying the old one, which is a refusal that lies about its
 	// own rule. A variable rather than a constant because Sprintf is not a
 	// constant expression, and that is the whole cost.
-	TooManyFilesWhy = fmt.Sprintf(
+	TooManyFilesWhy = Says("core.TooManyFilesWhy",
 		"this build plans at most %d files in one run, because the whole plan is worked out in memory before anything is written - "+
-			"that is what lets a run that cannot succeed be refused before the first byte", MaxFilesPerRun)
-	TooManyFilesFix = "Ask for fewer files, or split the work into several runs"
+			"that is what lets a run that cannot succeed be refused before the first byte", A("Most", MaxFilesPerRun))
+	TooManyFilesFix = Says("core.TooManyFilesFix", "Ask for fewer files, or split the work into several runs")
 
 	// The same refusal for the quantity that actually runs out.
 	//
@@ -65,11 +63,11 @@ var (
 	// thousand pages - so the file ceiling lets a run ask for about 52 GB of
 	// plan while every number in it is legal. The sentence says memory rather
 	// than files because that is what the person has to change.
-	PlanTooLargeWhy = fmt.Sprintf(
+	PlanTooLargeWhy = Says("core.PlanTooLargeWhy",
 		"the whole plan is held in memory before anything is written, and this build works to a ceiling of %s for it - "+
 			"how much a file costs to plan depends on the format, so a ceiling on the number of files alone cannot see this",
-		HumanBytes(MaxPlanBytes))
-	PlanTooLargeFix = "Ask for fewer files, or make each one cheaper to plan - fewer pages, fewer entries - or split the work into several runs"
+		A("Ceiling", Bytes(MaxPlanBytes)))
+	PlanTooLargeFix = Says("core.PlanTooLargeFix", "Ask for fewer files, or make each one cheaper to plan - fewer pages, fewer entries - or split the work into several runs")
 )
 
 // MaxPlanBytes is the most memory this build will let a plan take.
@@ -201,12 +199,12 @@ func IsRunLockName(name string) bool {
 // code 0, which is the guard being satisfied rather than skipped.
 func AddSizes(total, size int64) (int64, error) {
 	if size < 0 {
-		return 0, errors.New("a file cannot be smaller than zero bytes")
+		return 0, Refuse(Says("core.SizeBelowZero", "a file cannot be smaller than zero bytes"))
 	}
 	if total > math.MaxInt64-size {
-		return 0, errors.New(
-			"the sizes in this run add up to more than a number of bytes can hold, so the total cannot be measured and the free space check cannot be trusted. " +
-				"Ask for fewer files or smaller ones")
+		return 0, Refuse(Says("core.SizesOverflow",
+			"the sizes in this run add up to more than a number of bytes can hold, so the total cannot be measured and the free space check cannot be trusted. "+
+				"Ask for fewer files or smaller ones"))
 	}
 	return total + size, nil
 }

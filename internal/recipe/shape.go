@@ -1,6 +1,6 @@
 package recipe
 
-import "fmt"
+import "github.com/donislawdev/TestingFilesGenerator/internal/core"
 
 // A setting written as a block where a single value belongs.
 //
@@ -36,9 +36,9 @@ func oneValue(p *problems, at, subject, example string, s *scalar) (string, bool
 	v, ok := s.value()
 	if !ok {
 		p.add(at,
-			fmt.Sprintf("%s is written as a list or a block", subject),
-			"this setting is one value, written beside its name rather than indented under it",
-			fmt.Sprintf("write it on one line, such as %s", example))
+			core.Says("recipe.IsWrittenAsAListOr", "%s is written as a list or a block", core.A("Subject", subject)),
+			core.Says("recipe.ThisSettingIsOneValueWritten", "this setting is one value, written beside its name rather than indented under it"),
+			core.Says("recipe.WriteItOnOneLineSuch", "write it on one line, such as %s", core.A("Example", example)))
 		return "", false
 	}
 	return v, true
@@ -62,8 +62,8 @@ func oneFlag(p *problems, at, subject string, s *scalar) (bool, bool) {
 		return false, true
 	}
 	p.add(at,
-		fmt.Sprintf("%s is %q, which is neither true nor false", subject, v),
-		"this setting is one of two words, and anything else would have to be guessed at",
-		fmt.Sprintf("use %s: true or %s: false", subject, subject))
+		core.Says("recipe.IsWhichIsNeitherTrueNor", "%s is %q, which is neither true nor false", core.A("Subject", subject), core.A("Value", v)),
+		core.Says("recipe.ThisSettingIsOneOfTwo", "this setting is one of two words, and anything else would have to be guessed at"),
+		core.Says("recipe.UseTrueOrFalse", "use %s: true or %s: false", core.A("Subject", subject), core.A("Subject2", subject)))
 	return false, false
 }

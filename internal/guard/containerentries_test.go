@@ -79,11 +79,11 @@ func TestBothWaysOfAskingForEntriesShareOneCeiling(t *testing.T) {
 		// And they have to name the same ceiling, in the same words. Comparing
 		// the reason rather than the whole sentence, because the key differs
 		// on purpose - one says entries and the other says contains.
-		if propErr != nil && propErr.Reason != containsErr.Reason {
+		if propErr != nil && propErr.Reason.String() != containsErr.Reason.String() {
 			t.Errorf("%s: the two doors give different reasons\n  entries:  %s\n  contains: %s",
 				d.ID, propErr.Reason, containsErr.Reason)
 		}
-		if !strings.Contains(containsErr.Reason, itoa(ceiling)) {
+		if !strings.Contains(containsErr.Reason.String(), itoa(ceiling)) {
 			t.Errorf("%s: the contains refusal does not name the ceiling %d: %q",
 				d.ID, ceiling, containsErr.Reason)
 		}

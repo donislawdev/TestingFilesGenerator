@@ -85,6 +85,14 @@ func NewOpenList(options []string, chosen string, take func(string, bool), close
 	return l
 }
 
+// ShowEach draws every value as the words shownAs gives it, and hands the
+// value back when its row is chosen. Called before the list is shown, the way
+// GroupUnder is.
+func (l *OpenList) ShowEach(shownAs func(string) string) {
+	l.shownAs = shownAs
+	l.rearrange()
+}
+
 // GroupUnder puts every value under a heading, the one headingOf gives it.
 // Called before the list is shown, the way KindOf is set.
 func (l *OpenList) GroupUnder(headingOf func(string) string) {
@@ -163,7 +171,7 @@ func (l *OpenList) fill(id int, r *ListRow) {
 	r.onTap = nil
 	r.hovered = r.hovered && !r.heading
 	if entry.kind == entryValue {
-		value := entry.text
+		value := entry.value
 		if l.KindOf != nil {
 			r.kind = l.KindOf(value)
 		}
@@ -326,7 +334,7 @@ func (l *OpenList) TypedKey(event *fyne.KeyEvent) {
 		l.close(true)
 	case fyne.KeyReturn, fyne.KeyEnter, fyne.KeySpace:
 		if l.active >= 0 && l.active < len(l.entries) && l.entries[l.active].kind == entryValue {
-			l.take(l.entries[l.active].text, true)
+			l.take(l.entries[l.active].value, true)
 		}
 	}
 }
@@ -404,7 +412,7 @@ func (l *OpenList) Active() int { return l.active }
 // the first value while the box shows the ninth.
 func (l *OpenList) StartOn(value string) {
 	for i, e := range l.entries {
-		if e.kind == entryValue && e.text == value {
+		if e.kind == entryValue && e.value == value {
 			l.moveTo(i)
 			l.shown = false
 			break

@@ -4,6 +4,8 @@ import (
 	"strconv"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // What an archive records about the files it holds, beyond their bytes.
@@ -73,8 +75,8 @@ func ReadOwnership(id string, props map[string]string) (Ownership, error) {
 			// file nothing can read.
 			return Ownership{}, &format.PropertyValueError{
 				Format: id, Key: EntryMode, Value: raw,
-				Reason: "it is not a permission written as octal digits",
-				Remedy: "Write it the way chmod takes it, so 644 or 755.",
+				Reason: core.Says("format.ItIsNotAPermissionWritten", "it is not a permission written as octal digits"),
+				Remedy: core.Says("format.WriteItTheWayChmodTakes", "Write it the way chmod takes it, so 644 or 755."),
 			}
 		}
 		own.Mode = mode
@@ -112,8 +114,8 @@ func ReadOwnership(id string, props map[string]string) (Ownership, error) {
 			// here, and the guard that puts every declared word through this
 			// function is what stops that arriving as an empty reason.
 			Reason: axes[EntryOwner].Allows(raw),
-			Remedy: "Write it the way the setting is declared, so root or user, " +
-				"or leave the line out and the entries carry no owner.",
+			Remedy: core.Says("format.WriteItTheWayTheSetting", "Write it the way the setting is declared, so root or user, "+
+				"or leave the line out and the entries carry no owner."),
 		}
 	}
 	return own, nil

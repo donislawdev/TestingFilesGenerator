@@ -89,9 +89,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "PDF",
 			Requested: r.Bytes,
 			Minimum:   floor,
-			Reason: fmt.Sprintf("a %s%s already needs that much before any padding",
-				documentWords(opts), carrying(r.Label, opts)),
-			Hint: fmt.Sprintf("Ask for %d B or more%s.", floor, cleanHint(r.Label, opts)),
+			Reason:    core.Says("format.AAlreadyNeedsThatMuchBefore", "a %s%s already needs that much before any padding", core.A("Opts", documentWords(opts)), core.A("Carrying", carrying(r.Label, opts))),
+			Hint:      core.Says("format.AskForBOrMore2", "Ask for %d B or more%s.", core.A("Floor", floor), core.A("CleanHint", cleanHint(r.Label, opts))),
 		}
 	case r.Bytes < bare+minComment:
 		// A comment is a per cent sign and a newline at the very least, so
@@ -100,10 +99,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "PDF",
 			Requested: r.Bytes,
 			Minimum:   bare + minComment,
-			Reason: fmt.Sprintf(
-				"this document is exactly %d B and the shortest comment that could pad it is %d B, so one byte more than the document is the single size in between that cannot be reached",
-				bare, minComment),
-			Hint: fmt.Sprintf("Ask for exactly %d B or for %d B or more.", bare, bare+minComment),
+			Reason:    core.Says("format.ThisDocumentIsExactlyBAnd", "this document is exactly %d B and the shortest comment that could pad it is %d B, so one byte more than the document is the single size in between that cannot be reached", core.A("Bare", bare), core.A("MinComment", minComment)),
+			Hint:      core.Says("format.AskForExactlyBOrFor", "Ask for exactly %d B or for %d B or more.", core.A("Bare", bare), core.A("Bare2", bare+minComment)),
 		}
 	default:
 		m.padLen = r.Bytes - bare
@@ -161,7 +158,7 @@ func described(m memo, labelled bool) map[string]any {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("pdf: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("pdf: the plan was not produced by this generator"))
 	}
 
 	select {

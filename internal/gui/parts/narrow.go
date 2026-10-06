@@ -36,8 +36,12 @@ const (
 // name is what the value is called, drawn beside it, with its own bold span in
 // nameFrom and nameTo - empty on a list whose values have no names.
 type listEntry struct {
-	kind             entryKind
+	kind entryKind
+	// text is what the row shows, and value is what choosing the row hands
+	// back - the same word on most lists, and a value under its name in the
+	// window's language on a list of a declared setting (Chooser.ShownAs).
 	text             string
+	value            string
 	from, to         int
 	name             string
 	nameFrom, nameTo int
@@ -49,6 +53,15 @@ type listEntry struct {
 type labels struct {
 	headingOf func(string) string
 	nameOf    func(string) string
+	shownAs   func(string) string
+}
+
+// shown is the words a value is drawn as.
+func (by labels) shown(v string) string {
+	if by.shownAs == nil {
+		return v
+	}
+	return by.shownAs(v)
 }
 
 // arrange is what an open list draws: the values the typed text keeps, each
@@ -74,7 +87,7 @@ func arrange(values []string, by labels, typed string) []listEntry {
 	if by.headingOf == nil {
 		out := make([]listEntry, 0, len(kept))
 		for _, v := range kept {
-			out = append(out, valueEntry(v, by.nameOf, typed))
+			out = append(out, valueEntry(v, by, typed))
 		}
 		return out
 	}
@@ -96,7 +109,7 @@ func arrange(values []string, by labels, typed string) []listEntry {
 			out = append(out, listEntry{kind: entryHeading, text: text.ListHeadingCount(h, len(groups[h]))})
 		}
 		for _, v := range groups[h] {
-			out = append(out, valueEntry(v, by.nameOf, typed))
+			out = append(out, valueEntry(v, by, typed))
 		}
 	}
 	return out
@@ -113,16 +126,16 @@ func arrange(values []string, by labels, typed string) []listEntry {
 // letters as are drawn - true of every format and every format name, which
 // are ASCII (TestEveryFormatDeclaresTheFullSet), and a value for which it is
 // not simply gets no bold.
-func valueEntry(v string, nameOf func(string) string, typed string) listEntry {
-	e := listEntry{kind: entryValue, text: v}
-	if nameOf != nil {
-		e.name = nameOf(v)
+func valueEntry(v string, by labels, typed string) listEntry {
+	e := listEntry{kind: entryValue, text: by.shown(v), value: v}
+	if by.nameOf != nil {
+		e.name = by.nameOf(v)
 	}
 	want := strings.ToLower(strings.TrimSpace(typed))
 	if want == "" {
 		return e
 	}
-	if lower := strings.ToLower(v); len(lower) == len(v) {
+	if lower := strings.ToLower(e.text); len(lower) == len(e.text) {
 		if at := strings.Index(lower, want); at >= 0 {
 			e.from, e.to = at, at+len(want)
 		}
@@ -158,7 +171,7 @@ func narrow(values []string, by labels, typed string) []string {
 	}
 	out := make([]string, 0, len(values))
 	for _, v := range values {
-		if strings.Contains(strings.ToLower(v), want) ||
+		if strings.Contains(strings.ToLower(by.shown(v)), want) || strings.Contains(strings.ToLower(v), want) ||
 			(by.headingOf != nil && aWordStartsWith(by.headingOf(v), want)) ||
 			(by.nameOf != nil && aWordStartsWith(by.nameOf(v), want)) {
 			out = append(out, v)

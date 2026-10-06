@@ -3,11 +3,12 @@ package recipe
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"strings"
 
 	"github.com/goccy/go-yaml/ast"
 	"github.com/goccy/go-yaml/parser"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Canonical is the recipe in one settled shape, comments and blank lines kept.
@@ -80,16 +81,16 @@ func Canonical(src []byte, name string) ([]byte, error) {
 	again, err := oneDocument(withoutBOM(out), name)
 	if err != nil {
 		return nil, &ValidationError{Name: name, Problems: []Problem{{
-			What: "the settled shape of this file cannot be read back",
-			Why:  "the layout this file needs is one the formatter cannot write, so settling it would replace it with something no longer readable",
-			Fix:  "leave the file as it is, and check it for an anchor or an alias used where a key belongs",
+			What: core.Says("recipe.TheSettledShapeOfThisFile", "the settled shape of this file cannot be read back"),
+			Why:  core.Says("recipe.TheLayoutThisFileNeedsIs", "the layout this file needs is one the formatter cannot write, so settling it would replace it with something no longer readable"),
+			Fix:  core.Says("recipe.LeaveTheFileAsItIs", "leave the file as it is, and check it for an anchor or an alias used where a key belongs"),
 		}}}
 	}
 	if again.String() != string(out) {
 		return nil, &ValidationError{Name: name, Problems: []Problem{{
-			What: "the settled shape of this file does not stay settled",
-			Why:  "settling it twice gives two different files, so a check would never pass and the recipe hash in a manifest would not describe it",
-			Fix:  "leave the file as it is, and simplify whatever it uses that has no single written form - a byte order mark that is not at the very start is the usual cause",
+			What: core.Says("recipe.TheSettledShapeOfThisFile2", "the settled shape of this file does not stay settled"),
+			Why:  core.Says("recipe.SettlingItTwiceGivesTwoDifferent", "settling it twice gives two different files, so a check would never pass and the recipe hash in a manifest would not describe it"),
+			Fix:  core.Says("recipe.LeaveTheFileAsItIs2", "leave the file as it is, and simplify whatever it uses that has no single written form - a byte order mark that is not at the very start is the usual cause"),
 		}}}
 	}
 	return out, nil
@@ -131,9 +132,9 @@ func oneDocument(src []byte, name string) (*ast.File, error) {
 	}
 	if n := recipesIn(f); n > 1 {
 		return nil, &ValidationError{Name: name, Problems: []Problem{{
-			What: fmt.Sprintf("the file holds %d YAML documents", n),
-			Why:  "a recipe is one document, and everything after the first separator would be ignored without a word",
-			Fix:  "remove the --- separators, or split the file into one recipe per file",
+			What: core.Says("recipe.TheFileHoldsYAMLDocuments", "the file holds %d YAML documents", core.A("Value", n)),
+			Why:  core.Says("recipe.ARecipeIsOneDocumentAnd", "a recipe is one document, and everything after the first separator would be ignored without a word"),
+			Fix:  core.Says("recipe.RemoveTheSeparatorsOrSplitThe", "remove the --- separators, or split the file into one recipe per file"),
 		}}}
 	}
 	return f, nil

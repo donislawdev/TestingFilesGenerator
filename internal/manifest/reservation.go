@@ -107,7 +107,7 @@ func Claim(path string) (*Reservation, error) {
 // holds the file this run created. A save can be asked once.
 func (r *Reservation) Save(m *Manifest) error {
 	if r.used {
-		return fmt.Errorf("the reservation of %s was already used or given back", core.Shown(r.final))
+		return core.Defect(fmt.Errorf("the reservation of %s was already used or given back", core.Shown(r.final)))
 	}
 	r.used = true
 	f, err := core.OpenOwn(r.tmp, r.own)

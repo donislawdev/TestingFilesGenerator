@@ -2,7 +2,6 @@ package recipe
 
 import (
 	"errors"
-	"fmt"
 	"sort"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -31,9 +30,9 @@ func damages(p *problems, where spot, raw []any) damage.Chain {
 		// Not silently nothing. Somebody wrote the key, so they are expecting
 		// broken files, and a run that quietly produced whole ones would be
 		// the silence untouchable rule 6 forbids.
-		p.add(where.of(KeyDamage), fmt.Sprintf("%s says damage and names none", where),
-			"a target that damages nothing produces the same files as one that does not mention it",
-			"name a damage, or remove the line")
+		p.add(where.of(KeyDamage), core.Says("recipe.SaysDamageAndNamesNone", "%s says damage and names none", core.A("Where", where)),
+			core.Says("recipe.ATargetThatDamagesNothingProduces", "a target that damages nothing produces the same files as one that does not mention it"),
+			core.Says("recipe.NameADamageOrRemoveThe", "name a damage, or remove the line"))
 		return nil
 	}
 
@@ -54,9 +53,9 @@ func oneDamage(p *problems, at spot, entry any) (damage.Spec, bool) {
 	case map[string]any:
 		return mappedDamage(p, at, x)
 	default:
-		p.add(at.of(KeyDamageType), fmt.Sprintf("%s is neither a name nor a set of settings", at),
-			"a damage is written as its name, or as a mapping with type and the settings it takes",
-			"write the name on its own, or a mapping starting with type")
+		p.add(at.of(KeyDamageType), core.Says("recipe.IsNeitherANameNorA", "%s is neither a name nor a set of settings", core.A("At", at)),
+			core.Says("recipe.ADamageIsWrittenAsIts", "a damage is written as its name, or as a mapping with type and the settings it takes"),
+			core.Says("recipe.WriteTheNameOnItsOwn", "write the name on its own, or a mapping starting with type"))
 		return damage.Spec{}, false
 	}
 }
@@ -65,16 +64,16 @@ func oneDamage(p *problems, at spot, entry any) (damage.Spec, bool) {
 func mappedDamage(p *problems, at spot, x map[string]any) (damage.Spec, bool) {
 	rawType, stated := x[KeyDamageType]
 	if !stated {
-		p.add(at.of(KeyDamageType), fmt.Sprintf("%s does not say which damage it is", at),
-			"a damage written as a mapping names itself with type",
-			"add type, with the name of the damage")
+		p.add(at.of(KeyDamageType), core.Says("recipe.DoesNotSayWhichDamageIt", "%s does not say which damage it is", core.A("At", at)),
+			core.Says("recipe.ADamageWrittenAsAMapping", "a damage written as a mapping names itself with type"),
+			core.Says("recipe.AddTypeWithTheNameOf", "add type, with the name of the damage"))
 		return damage.Spec{}, false
 	}
 	id, isScalar := scalarText(rawType)
 	if !isScalar {
-		p.add(at.of(KeyDamageType), fmt.Sprintf("%s names a damage that is not a word", at),
-			"the type of a damage is the name this build knows it by",
-			"write the name as a word")
+		p.add(at.of(KeyDamageType), core.Says("recipe.NamesADamageThatIsNot", "%s names a damage that is not a word", core.A("At", at)),
+			core.Says("recipe.TheTypeOfADamageIs", "the type of a damage is the name this build knows it by"),
+			core.Says("recipe.WriteTheNameAsAWord", "write the name as a word"))
 		return damage.Spec{}, false
 	}
 
@@ -85,9 +84,9 @@ func mappedDamage(p *problems, at spot, x map[string]any) (damage.Spec, bool) {
 		}
 		text, single := scalarText(x[key])
 		if !single {
-			p.add(at.of(key), fmt.Sprintf("%s: %s is a list or a block", at, key),
-				"a damage setting takes one value, the way a format property does",
-				"give it one value, for example bytes: 16")
+			p.add(at.of(key), core.Says("recipe.IsAListOrABlock", "%s: %s is a list or a block", core.A("At", at), core.A("Key", key)),
+				core.Says("recipe.ADamageSettingTakesOneValue", "a damage setting takes one value, the way a format property does"),
+				core.Says("recipe.GiveItOneValueForExample", "give it one value, for example bytes: 16"))
 			continue
 		}
 		values[key] = text
@@ -108,10 +107,10 @@ func checkedDamage(p *problems, at spot, id string, values damage.Values) (damag
 	if err != nil {
 		var unknown *damage.UnknownError
 		if errors.As(err, &unknown) {
-			p.add(at.of(KeyDamageType), fmt.Sprintf("%s: %s", at, unknown.What()),
-				unknown.Why(), unknown.Instead())
+			what, why, instead := unknown.Parts()
+			p.add(at.of(KeyDamageType), whereWhat(at, what), why, instead)
 		} else {
-			p.add(at.of(KeyDamageType), fmt.Sprintf("%s: %s", at, err.Error()), "", "")
+			p.add(at.of(KeyDamageType), whereWhat(at, core.SaidOf(err)), core.Said{}, core.Said{})
 		}
 		return damage.Spec{}, false
 	}
@@ -132,23 +131,23 @@ func checkedDamage(p *problems, at spot, id string, values damage.Values) (damag
 func reportDamageSetting(p *problems, at spot, bad error) {
 	var about interface{ AboutSetting() string }
 	if !errors.As(bad, &about) {
-		p.add(at.of(KeyDamage), bad.Error(), "", "")
+		p.add(at.of(KeyDamage), core.SaidOf(bad), core.Said{}, core.Said{})
 		return
 	}
 	where := at.of(about.AboutSetting())
 
 	var value *format.PropertyValueError
 	if errors.As(bad, &value) {
-		p.add(where, fmt.Sprintf("%s: %s cannot be %q", at, value.Key, value.Value),
-			core.InTheWordsOf(value.Reason, value.Key), value.Remedy)
+		p.add(where, cannotBe(at, value), value.Reason, value.Remedy)
 		return
 	}
 	var unknown *format.UnknownPropertyError
 	if errors.As(bad, &unknown) {
-		p.add(where, fmt.Sprintf("%s: %s", at, unknown.What()), unknown.Why(), unknown.Instead())
+		what, why, instead := unknown.Parts()
+		p.add(where, whereWhat(at, what), why, instead)
 		return
 	}
-	p.add(where, fmt.Sprintf("%s: %s", at, bad.Error()), "", "")
+	p.add(where, whereWhat(at, core.SaidOf(bad)), core.Said{}, core.Said{})
 }
 
 // refuseImpossibleExpectation stops a target that breaks a file and expects it
@@ -177,9 +176,8 @@ func refuseImpossibleExpectation(p *problems, where spot, t Target) {
 	if refusal == nil {
 		return
 	}
-	p.add(where.of(refusal.AboutSetting()),
-		fmt.Sprintf("%s: %s", where, refusal.What()),
-		refusal.Why(), refusal.Instead())
+	what, why, instead := refusal.Parts()
+	p.add(where.of(refusal.AboutSetting()), whereWhat(where, what), why, instead)
 }
 
 // sortedKeysOf puts the settings of one entry in a stable order, so the same

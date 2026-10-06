@@ -174,10 +174,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "TIFF",
 			Requested: r.Bytes,
 			Minimum:   bare,
-			Reason: fmt.Sprintf(
-				"a %dx%d picture is %d B of pixels at three bytes each, and the header, the directory and its values take another %d B",
-				w, h, pixelBytes(w, h), overhead),
-			Hint: fmt.Sprintf("Ask for %d B or more, or set a smaller width and height", bare),
+			Reason:    core.Says("format.AXPictureIsBOf2", "a %dx%d picture is %d B of pixels at three bytes each, and the header, the directory and its values take another %d B", core.A("W", w), core.A("H", h), core.A("PixelBytes", pixelBytes(w, h)), core.A("Overhead", overhead)),
+			Hint:      core.Says("format.AskForBOrMoreOr2", "Ask for %d B or more, or set a smaller width and height", core.A("Bare", bare)),
 		}
 	}
 	if r.Bytes > maxFileBytes {
@@ -185,8 +183,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "TIFF",
 			Requested: r.Bytes,
 			Maximum:   maxFileBytes,
-			Reason:    "a TIFF locates its pixels with a four byte offset, so the format cannot describe a file this large",
-			Hint:      "Ask for 4 GiB or less, or pick a format with no offset of its own such as gif.",
+			Reason:    core.Says("format.ATIFFLocatesItsPixelsWith", "a TIFF locates its pixels with a four byte offset, so the format cannot describe a file this large"),
+			Hint:      core.Says("format.AskFor4GiBOrLess3", "Ask for 4 GiB or less, or pick a format with no offset of its own such as gif."),
 		}
 	}
 
@@ -209,10 +207,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	labelled := r.Label && imagelabel.Fits(w, len(label))
 	if r.Label && !labelled {
 		p.Notes = append(p.Notes, format.Note{
-			Code: "label_omitted",
-			Detail: fmt.Sprintf(
-				"The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.",
-				w),
+			Code:   "label_omitted",
+			Detail: core.Says("format.ThePictureIsPxWideAnd", "The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("Width", w)),
 		})
 	}
 	p.Properties[format.PropertyLabelEmbedded] = labelled
@@ -321,7 +317,7 @@ func isqrt(n uint64) uint64 {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("tiff: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("tiff: the plan was not produced by this generator"))
 	}
 
 	select {
@@ -417,7 +413,7 @@ func writeDirectory(w io.Writer, m memo) error {
 	}
 
 	if len(buf) != directory+heap {
-		return fmt.Errorf("tiff: the directory came out %d B and the header says %d B", len(buf), directory+heap)
+		return core.Defect(fmt.Errorf("tiff: the directory came out %d B and the header says %d B", len(buf), directory+heap))
 	}
 	_, err := w.Write(buf)
 	return err

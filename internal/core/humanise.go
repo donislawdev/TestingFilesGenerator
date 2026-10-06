@@ -165,12 +165,33 @@ func Noun(n int, one, many string) string {
 // Roughly keeps an estimate at the precision it deserves. Seconds on a two
 // minute estimate are noise that changes every redraw.
 func Roughly(d time.Duration) string {
+	r := Rough(d)
+	switch r.Unit {
+	case 's':
+		return fmt.Sprintf("%ds", r.Seconds)
+	case 'm':
+		return fmt.Sprintf("%dm", r.Minutes)
+	default:
+		return fmt.Sprintf("%dh%dm", r.Hours, r.Minutes)
+	}
+}
+
+// RoughTime is Roughly in parts, for a window that writes the units in its own
+// language: Unit is 's' for seconds alone, 'm' for minutes alone and 'h' for
+// hours with minutes. One arithmetic, so the two surfaces round alike.
+type RoughTime struct {
+	Unit                    rune
+	Hours, Minutes, Seconds int
+}
+
+// Rough is an estimate at the precision Roughly gives it, in parts.
+func Rough(d time.Duration) RoughTime {
 	switch {
 	case d < time.Minute:
-		return fmt.Sprintf("%ds", int(d.Seconds())+1)
+		return RoughTime{Unit: 's', Seconds: int(d.Seconds()) + 1}
 	case d < time.Hour:
-		return fmt.Sprintf("%dm", int(d.Minutes())+1)
+		return RoughTime{Unit: 'm', Minutes: int(d.Minutes()) + 1}
 	default:
-		return fmt.Sprintf("%dh%dm", int(d.Hours()), int(d.Minutes())%60)
+		return RoughTime{Unit: 'h', Hours: int(d.Hours()), Minutes: int(d.Minutes()) % 60}
 	}
 }

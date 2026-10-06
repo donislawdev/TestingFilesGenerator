@@ -123,6 +123,14 @@ func TestEveryLanguageSaysEverythingTheWindowSays(t *testing.T) {
 				t.Errorf("%s.json has no %s, so the window says it in English", tag, id)
 				continue
 			}
+			// The hash of the English it translated, since 2026-10-05: a key
+			// cannot tell that the English under it changed, and a sentence
+			// that looks translated and says last month's English is worse
+			// than an English one (docs/OKNO-PO-POLSKU-2026-10-05.md).
+			if entry["hash"] != want["hash"] {
+				t.Errorf("%s.json translates %s from an English the window no longer says. It says now:\n  %q\n"+
+					"Translate it again and record hash %s.", tag, id, want["other"], want["hash"])
+			}
 			given := map[string]bool{}
 			for _, f := range catalogueField.FindAllStringSubmatch(want["other"]+want["one"], -1) {
 				given[f[1]] = true
@@ -191,6 +199,9 @@ func TestEveryLetterEveryLanguageSaysIsInTheTypeface(t *testing.T) {
 	// they came from - they reach the same screens in the same face.
 	for tag, entries := range registryFiles(t) {
 		languages[tag+" "+text.RegistryFolder] = entries
+	}
+	for tag, entries := range catalogueFilesIn(t, saidDir) {
+		languages[tag+" "+text.SaidFolder] = entries
 	}
 	for tag, entries := range languages {
 		missing := map[string][]string{}

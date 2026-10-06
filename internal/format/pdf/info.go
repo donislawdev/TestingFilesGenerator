@@ -13,6 +13,8 @@ import (
 	"unicode/utf8"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 const (
@@ -66,8 +68,8 @@ func readInfo(props map[string]string) (docInfo, error) {
 		if raw := props[k]; !utf8.ValidString(raw) {
 			return docInfo{}, &format.PropertyValueError{
 				Format: "pdf", Key: k, Value: strings.ToValidUTF8(raw, "?"),
-				Reason: "it takes text, and this value is not valid UTF-8",
-				Remedy: "Write the value in UTF-8.",
+				Reason: core.Says("format.ItTakesTextAndThisValue", "it takes text, and this value is not valid UTF-8"),
+				Remedy: core.Says("format.WriteTheValueInUTF8", "Write the value in UTF-8."),
 			}
 		}
 	}
@@ -115,15 +117,15 @@ func readDate(props map[string]string, key, fallback string) (date, error) {
 	if m == nil {
 		return date{}, &format.PropertyValueError{
 			Format: "pdf", Key: key, Value: raw,
-			Reason: "it takes a date written as 2024-02-29, 2024-02-29T13:45:00 or 2024-02-29T13:45:00+02:00, or none",
-			Remedy: "Write the date in one of those three ways, with no fraction of a second.",
+			Reason: core.Says("format.ItTakesADateWrittenAs", "it takes a date written as 2024-02-29, 2024-02-29T13:45:00 or 2024-02-29T13:45:00+02:00, or none"),
+			Remedy: core.Says("format.WriteTheDateInOneOf", "Write the date in one of those three ways, with no fraction of a second."),
 		}
 	}
 	if !exists(m) {
 		return date{}, &format.PropertyValueError{
 			Format: "pdf", Key: key, Value: raw,
-			Reason: "no calendar has that day, time or zone",
-			Remedy: "Write a date that exists, such as 2024-02-29T13:45:00+02:00.",
+			Reason: core.Says("format.NoCalendarHasThatDayTime", "no calendar has that day, time or zone"),
+			Remedy: core.Says("format.WriteADateThatExistsSuch", "Write a date that exists, such as 2024-02-29T13:45:00+02:00."),
 		}
 	}
 	pdf := "D:" + m[1] + m[2] + m[3] + m[4] + m[5] + m[6]

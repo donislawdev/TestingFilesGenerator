@@ -14,6 +14,10 @@
 // JSON that no parser will complain about.
 package jsonfile
 
+import (
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+)
+
 import "github.com/donislawdev/TestingFilesGenerator/internal/format"
 
 // Setting name. A public name, so it is spelled once.
@@ -162,7 +166,10 @@ func parseStyle(props map[string]string) (style, error) {
 	if !known {
 		return style{}, &format.PropertyValueError{
 			Format: "json", Key: Formatting, Value: v,
-			Reason: "it has to be " + Indented + ", " + Minified + " or " + RecordPerLine,
+			Reason: core.Says("json.HasToBeStyle", "it has to be %s, %s or %s",
+				core.A("Indented", core.Choice{Of: Formatting, Value: Indented}),
+				core.A("Minified", core.Choice{Of: Formatting, Value: Minified}),
+				core.A("RecordPerLine", core.Choice{Of: Formatting, Value: RecordPerLine})),
 		}
 	}
 	return s, nil

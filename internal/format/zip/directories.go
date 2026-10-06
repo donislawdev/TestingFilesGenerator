@@ -3,10 +3,11 @@ package zip
 import (
 	stdzip "archive/zip"
 	"context"
-	"fmt"
 	"io/fs"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/archive"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // writeDirectories names the directories the archive was asked to list.
@@ -50,7 +51,7 @@ func writeDirectory(zw *stdzip.Writer, name string) error {
 	h := &stdzip.FileHeader{Name: name, Method: stdzip.Store}
 	h.SetMode(fs.ModeDir | 0o755)
 	if _, err := zw.CreateHeader(h); err != nil {
-		return fmt.Errorf("zip: the directory %q could not be named: %w", name, err)
+		return core.Refuse(core.Says("format.ZipTheDirectoryCouldNotBe", "zip: the directory %q could not be named: %w", core.A("Name", name), core.A("Err", err)))
 	}
 	return nil
 }

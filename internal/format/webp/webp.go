@@ -150,10 +150,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "WEBP",
 			Requested: r.Bytes,
 			Minimum:   bare,
-			Reason: fmt.Sprintf(
-				"a %dx%d picture is %d B of pixels at three bytes each, and the container and the coding tables take another %d B",
-				w, h, int64(w)*int64(h)*samplesPerPixel, bare-int64(w)*int64(h)*samplesPerPixel),
-			Hint: fmt.Sprintf("Ask for %d B or more, or set a smaller width and height", bare),
+			Reason:    core.Says("format.AXPictureIsBOf3", "a %dx%d picture is %d B of pixels at three bytes each, and the container and the coding tables take another %d B", core.A("W", w), core.A("H", h), core.A("W2", int64(w)*int64(h)*samplesPerPixel), core.A("Bare", bare-int64(w)*int64(h)*samplesPerPixel)),
+			Hint:      core.Says("format.AskForBOrMoreOr2", "Ask for %d B or more, or set a smaller width and height", core.A("Bare", bare)),
 		}
 	}
 	if r.Bytes > maxFileBytes {
@@ -161,8 +159,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Format:    "WEBP",
 			Requested: r.Bytes,
 			Maximum:   maxFileBytes,
-			Reason:    "a WebP declares its length in a four byte field, so the format cannot describe a file this large",
-			Hint:      "Ask for 4 GiB or less, or pick a format with no length field of its own such as gif.",
+			Reason:    core.Says("format.AWebPDeclaresItsLengthIn", "a WebP declares its length in a four byte field, so the format cannot describe a file this large"),
+			Hint:      core.Says("format.AskFor4GiBOrLess5", "Ask for 4 GiB or less, or pick a format with no length field of its own such as gif."),
 		}
 	}
 
@@ -186,10 +184,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	labelled := r.Label && imagelabel.Fits(w, len(label))
 	if r.Label && !labelled {
 		p.Notes = append(p.Notes, format.Note{
-			Code: "label_omitted",
-			Detail: fmt.Sprintf(
-				"The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.",
-				w),
+			Code:   "label_omitted",
+			Detail: core.Says("format.ThePictureIsPxWideAnd", "The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("Width", w)),
 		})
 	}
 	p.Properties[format.PropertyLabelEmbedded] = labelled
@@ -315,7 +311,7 @@ func isqrt(n uint64) uint64 {
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
-		return fmt.Errorf("webp: the plan was not produced by this generator")
+		return core.Defect(fmt.Errorf("webp: the plan was not produced by this generator"))
 	}
 
 	select {
@@ -344,7 +340,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	// leave a file every reader mistrusts, so it is an error rather than a
 	// silent short write.
 	if written != stream {
-		return fmt.Errorf("webp: the bitstream came to %d B where the header promised %d B", written, stream)
+		return core.Defect(fmt.Errorf("webp: the bitstream came to %d B where the header promised %d B", written, stream))
 	}
 	if stream%2 == 1 {
 		if err := writeAll(w, []byte{0}); err != nil {

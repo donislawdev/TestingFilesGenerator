@@ -7,6 +7,8 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // The machinery every preset shares, so that a preset file holds its question
@@ -33,10 +35,10 @@ type commaList struct {
 	// label on the field.
 	preset, param string
 	// empty is the reason for a list that named nothing at all.
-	empty string
-	// check judges one item and answers with why it is not allowed, or "" when
-	// it is. It receives the item trimmed, never blank.
-	check func(item string) string
+	empty core.Said
+	// check judges one item and answers with why it is not allowed, or nothing
+	// when it is. It receives the item trimmed, never blank.
+	check func(item string) core.Said
 	// same is what makes two items one, for the duplicate that would otherwise
 	// reach the recipe as two targets of one id. Nil compares the items
 	// themselves. size-boundaries compares byte counts instead, so that 1024
@@ -57,7 +59,21 @@ type commaList struct {
 	// flattens both into "the same item" makes the message vaguer for everyone
 	// in order to save a line. The text rules in CLAUDE.md ask for the name the
 	// reader sees, not the name the code uses.
-	duplicate func(first string) string
+	duplicate func(first string) core.Said
+}
+
+// paramCause is a refusal of one parameter's value from below, with the
+// parameter named in front of it.
+func paramCause(param string, err error) error {
+	return core.Refuse(core.Says("preset.ParamCause", "%s: %w", core.A("Param", core.LabelTerm(param)), core.A("Cause", err)))
+}
+
+// limitUnusable is a limit whose text cannot become part of a file name.
+func limitUnusable(param, bad string) error {
+	return core.Refuse(core.Says("preset.LimitUnusable",
+		"%s: it holds %s, and a limit is written with digits, letters and a dot - "+
+			"such as 10mb, 512 or 1.5gb. Its text becomes part of every file name",
+		core.A("Param", core.LabelTerm(param)), core.A("Bad", bad)))
 }
 
 // refuse is the shape a bad value in a preset parameter takes.
@@ -67,7 +83,7 @@ type commaList struct {
 // plain error falls through the classifier to RUNTIME, so "--spread notasize"
 // told CI this program had a bug instead of saying the value was wrong -
 // measured on 2026-08-05, exit 1.
-func (l commaList) refuse(value, reason string) error {
+func (l commaList) refuse(value string, reason core.Said) error {
 	return &format.PropertyValueError{
 		Format: l.preset, Key: l.param, Value: value, Reason: reason,
 	}
@@ -92,7 +108,7 @@ func (l commaList) parse(raw string) ([]string, error) {
 		}
 		// Judged as it was typed, so the message quotes what the reader can see
 		// in their own command line.
-		if bad := l.check(typed); bad != "" {
+		if bad := l.check(typed); !bad.IsZero() {
 			return nil, l.refuse(typed, bad)
 		}
 		item := typed
@@ -121,12 +137,11 @@ func (l commaList) parse(raw string) ([]string, error) {
 // pulled from CLAUDE.md the hard way: a list copied by hand goes stale green.
 // The refusal names what this build has, because a person who typed heic has no
 // other way to find out what it does have.
-func knownFormat(item string) string {
+func knownFormat(item string) core.Said {
 	if _, err := format.Get(strings.ToLower(item)); err != nil {
-		return fmt.Sprintf("this build has no format called that. It has: %s",
-			strings.Join(format.IDs(), ", "))
+		return core.Says("preset.ThisBuildHasNoFormatCalled", "this build has no format called that. It has: %s", core.A("Join", strings.Join(format.IDs(), ", ")))
 	}
-	return ""
+	return core.Said{}
 }
 
 // lower is the keep for a list of names the registry spells in lower case.

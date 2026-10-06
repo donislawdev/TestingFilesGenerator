@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"runtime"
 	"runtime/metrics"
 
@@ -181,10 +180,10 @@ func (p *planMemory) account(targetIndex, filesSoFar int) error {
 
 	return &RecipeError{
 		Setting: core.TargetAddress(targetIndex, SettingCount),
-		Detail: fmt.Sprintf("the plan for this run has reached %s after %s and the ceiling is %s",
-			core.HumanBytes(int64(used)),
-			core.Count(filesSoFar, "file", "files"),
-			core.HumanBytes(int64(p.ceiling))),
+		Detail: core.Says("engine.PlanTooLarge", "the plan for this run has reached %s after %s and the ceiling is %s",
+			core.A("Used", core.Bytes(used)),
+			core.A("Files", core.SaysN("engine.FilesSoFar", "%d file", "%d files", core.A("Count", filesSoFar))),
+			core.A("Ceiling", core.Bytes(p.ceiling))),
 		Because: core.PlanTooLargeWhy,
 		Remedy:  core.PlanTooLargeFix,
 	}

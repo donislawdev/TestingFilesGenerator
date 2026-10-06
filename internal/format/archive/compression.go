@@ -4,6 +4,8 @@ import (
 	"compress/flate"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // How hard the archive is squeezed, in one vocabulary for both containers.
@@ -91,7 +93,7 @@ func ReadCompression(id string, r format.Request, locked bool) (Squeeze, error) 
 			// every declared word is put through this function and has to be
 			// accepted.
 			Reason: axes[Compression].Allows(raw),
-			Remedy: "Ask for " + CompressNone + " to store the files as they are.",
+			Remedy: core.Says("archive.AskForNone", "Ask for %s to store the files as they are.", core.A("None", core.Choice{Of: Compression, Value: CompressNone})),
 		}
 	}
 	s := Squeeze{Name: raw, Level: level}
@@ -104,8 +106,9 @@ func ReadCompression(id string, r format.Request, locked bool) (Squeeze, error) 
 			Format: id,
 			Key:    Compression,
 			Value:  raw,
-			Reason: "the size is being left to the contents, and how far they compress is only known once they have been compressed",
-			Remedy: "Give the archive an explicit size, or ask for " + Compression + ": " + CompressNone + ".",
+			Reason: core.Says("format.TheSizeIsBeingLeftTo", "the size is being left to the contents, and how far they compress is only known once they have been compressed"),
+			Remedy: core.Says("archive.ExplicitSizeOrNone", "Give the archive an explicit size, or ask for %s: %s.",
+				core.A("Compression", core.LabelTerm(Compression)), core.A("None", core.Choice{Of: Compression, Value: CompressNone})),
 		}
 	}
 	if locked {
@@ -113,8 +116,11 @@ func ReadCompression(id string, r format.Request, locked bool) (Squeeze, error) 
 			Format: id,
 			Key:    Compression,
 			Value:  raw,
-			Reason: "the archive is locked with a " + Password + ", and a locked entry states its length before its data is written - so a compressed one would have to be held in memory whole",
-			Remedy: "Ask for " + Compression + ": " + CompressNone + ", or take the " + Password + " off.",
+			Reason: core.Says("archive.LockedNoCompression", "the archive is locked with a %s, and a locked entry states its length before its data is written - so a compressed one would have to be held in memory whole",
+				core.A("Password", core.LabelTerm(Password))),
+			Remedy: core.Says("archive.LockedNoCompressionFix", "Ask for %s: %s, or take the %s off.",
+				core.A("Compression", core.LabelTerm(Compression)), core.A("None", core.Choice{Of: Compression, Value: CompressNone}),
+				core.A("Password", core.LabelTerm(Password))),
 		}
 	}
 	return s, nil

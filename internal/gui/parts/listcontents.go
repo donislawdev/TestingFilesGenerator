@@ -73,7 +73,7 @@ func (c *listContents) Rows() []Choice {
 	out := make([]Choice, 0, len(c.entries))
 	for _, e := range c.entries {
 		value := e.kind == entryValue
-		out = append(out, Choice{Label: e.text, Name: e.name, Marked: value && c.isChosen(e.text), Choosable: value})
+		out = append(out, Choice{Label: e.text, Name: e.name, Marked: value && c.isChosen(e.value), Choosable: value})
 	}
 	return out
 }

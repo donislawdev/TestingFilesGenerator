@@ -39,6 +39,8 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // framing is what a level zero gzip stream costs beyond its content.
@@ -97,17 +99,17 @@ func measureFraming() (framing, error) {
 		return framing{}, err
 	}
 	if want := f.base + 3*f.perBlock; three != want {
-		return framing{}, fmt.Errorf(
+		return framing{}, core.Defect(fmt.Errorf(
 			"targz: this build of Go frames a gzip stream in a shape this tool does not understand. "+
 				"Three blocks of content cost %d B where the two measured before them predict %d B, "+
 				"so the size of an archive cannot be worked out without building it",
-			three, want)
+			three, want))
 	}
 	if empty != f.base {
-		return framing{}, fmt.Errorf(
+		return framing{}, core.Defect(fmt.Errorf(
 			"targz: this build of Go frames an empty gzip stream at %d B where the measurement says %d B, "+
 				"so the size of an archive cannot be worked out without building it",
-			empty, f.base)
+			empty, f.base))
 	}
 	return f, nil
 }

@@ -6,6 +6,8 @@ import (
 	"io"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // GeneratorCrashError is a generator that stopped the way a program stops when
@@ -34,17 +36,39 @@ type GeneratorCrashError struct {
 	Value  any
 }
 
-func (e *GeneratorCrashError) Error() string {
+func (e *GeneratorCrashError) Error() string { return e.Said().String() }
+
+// Said is the whole sentence, for a window that says it in its own language.
+// The value the generator stopped with is said as it came - it is for the
+// report, the same as a defect's detail.
+func (e *GeneratorCrashError) Said() core.Said {
+	return core.Says("engine.GeneratorCrash",
+		"the %s generator stopped with an internal error while %s: %v. "+
+			"This is a defect in this tool rather than something a recipe can ask for. "+
+			"Please report it with the settings that produced it",
+		core.A("Format", e.Format), core.A("While", e.while()), core.A("Value", fmt.Sprint(e.Value)))
+}
+
+// while is the half of the work the generator stopped in.
+func (e *GeneratorCrashError) while() core.Said {
+	switch {
+	case e.While == crashPlanning && e.Name == "":
+		return core.Says("engine.CrashPlanning", "planning a file")
+	case e.While == crashWriting && e.Name != "":
+		return core.Says("engine.CrashWriting", "writing %s", core.A("File", e.Name))
+	}
 	where := e.While
 	if e.Name != "" {
 		where += " " + e.Name
 	}
-	return fmt.Sprintf(
-		"the %s generator stopped with an internal error while %s: %v. "+
-			"This is a defect in this tool rather than something a recipe can ask for. "+
-			"Please report it with the settings that produced it",
-		e.Format, where, e.Value)
+	return core.Says("engine.CrashWhile", "%s", core.A("While", where))
 }
+
+// The two halves of the work a generator can stop in.
+const (
+	crashPlanning = "planning a file"
+	crashWriting  = "writing"
+)
 
 // planWithoutCrashing asks a generator what it would produce and turns a panic
 // into an ordinary error.
@@ -62,7 +86,7 @@ func planWithoutCrashing(desc format.Descriptor, r format.Request) (p format.Pla
 		if v == nil {
 			return
 		}
-		err = &GeneratorCrashError{Format: desc.ID, While: "planning a file", Value: v}
+		err = &GeneratorCrashError{Format: desc.ID, While: crashPlanning, Value: v}
 	}()
 	return desc.Generator.Plan(r)
 }
@@ -93,7 +117,7 @@ func writeWithoutCrashing(ctx context.Context, f PlannedFile, w io.Writer) (err 
 		if v == nil {
 			return
 		}
-		err = &GeneratorCrashError{Format: f.Desc.ID, While: "writing", Name: f.Name, Value: v}
+		err = &GeneratorCrashError{Format: f.Desc.ID, While: crashWriting, Name: f.Name, Value: v}
 	}()
 	return f.Desc.Generator.Write(ctx, w, f.Plan)
 }

@@ -54,6 +54,15 @@ func openList() Entry {
 			l.KindOf = parts.KindOfFile
 			return asWideAsItsBox(many, l)
 		}},
+		{"every value drawn under its name, longer than the value", func() fyne.CanvasObject {
+			// As wide as the box that draws the names, which is wider than
+			// one drawing the values.
+			box := parts.NewChooser(namedValues, func(string) {})
+			box.ShownAs = nameOfValue
+			l := parts.NewOpenList(namedValues, "landscape", func(string, bool) {}, func(bool) {})
+			l.ShowEach(nameOfValue)
+			return asWideAsTheBoxOf(box, l)
+		}},
 		{"a long value", func() fyne.CanvasObject {
 			values := []string{longText, "png"}
 			return asWideAsItsBox(values, parts.NewOpenList(values, "png", func(string, bool) {}, func(bool) {}))
@@ -97,7 +106,13 @@ const everyFormatWindow = 640
 // parts.Menu, or wider where the list needs it - the list of formats, which
 // names every value (parts.ListWidth).
 func asWideAsItsBox(values []string, list *parts.OpenList) fyne.CanvasObject {
-	return parts.Sized(parts.ListWidth(parts.NewChooser(values, func(string) {})), list)
+	return asWideAsTheBoxOf(parts.NewChooser(values, func(string) {}), list)
+}
+
+// asWideAsTheBoxOf is asWideAsItsBox for a box that is given more than its
+// values - the names it draws them under.
+func asWideAsTheBoxOf(box *parts.Chooser, list *parts.OpenList) fyne.CanvasObject {
+	return parts.Sized(parts.ListWidth(box), list)
 }
 
 func tabs() Entry {

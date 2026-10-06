@@ -63,7 +63,7 @@ func progressText(p engine.Progress, elapsed time.Duration) string {
 	}
 	left := time.Duration(float64(elapsed) *
 		float64(p.BytesTotal-p.BytesDone) / float64(p.BytesDone))
-	return line + text.TimeLeft(core.Roughly(left))
+	return line + text.TimeLeft(text.Roughly(left))
 }
 
 // saveRecord writes the record of what the run did, and hands back where it

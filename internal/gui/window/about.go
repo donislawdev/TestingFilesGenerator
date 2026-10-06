@@ -62,7 +62,7 @@ func About(h Host) fyne.CanvasObject {
 		// In a card like every other block on every other screen, so this reads
 		// as a page of the application rather than as the one screen that was
 		// left as it was.
-		parts.Section(text.SectionLicence(), parts.Prose(paragraphs(version.LicenceNotice))),
+		parts.Section(text.SectionLicence(), parts.Prose(paragraphs(text.Licence(version.LicenceNotice)))),
 		// The support address, in words, on the one screen somebody reads when
 		// they are deciding what this program costs them.
 		//

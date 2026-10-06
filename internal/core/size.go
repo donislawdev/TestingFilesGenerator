@@ -1,8 +1,6 @@
 package core
 
 import (
-	"errors"
-	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -35,7 +33,7 @@ import (
 func ParseSize(s string) (int64, error) {
 	raw := strings.TrimSpace(s)
 	if raw == "" {
-		return 0, SettingErrorf(SettingSize, "empty {setting}: write a number of bytes or a size such as 10mb, 1.5gib or 700kB")
+		return 0, RefuseAbout(SettingSize, Says("core.SizeEmpty", "empty {setting}: write a number of bytes or a size such as 10mb, 1.5gib or 700kB"))
 	}
 
 	digits := strings.TrimRight(raw, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ")
@@ -43,7 +41,7 @@ func ParseSize(s string) (int64, error) {
 	digits = strings.TrimSpace(digits)
 
 	if digits == "" {
-		return 0, SettingErrorf(SettingSize, "{setting} %q has no number: write something like 10mb or 1048576", s)
+		return 0, RefuseAbout(SettingSize, Says("core.SizeNoNumber", "{setting} %q has no number: write something like 10mb or 1048576", A("Value", s)))
 	}
 
 	multiplier, ok := unitBytes(unit)
@@ -52,17 +50,17 @@ func ParseSize(s string) (int64, error) {
 		// of this sentence said kb was for thousands, which is the opposite of
 		// what the tool does and appeared in the one place somebody has
 		// already got their units wrong.
-		return 0, SettingErrorf(SettingSize, "{setting} %q uses an unknown unit %q: use b, kb, mb, gb or tb, all counting in 1024s, and kib, mib, gib or tib for the same thing spelled out", s, unit)
+		return 0, RefuseAbout(SettingSize, Says("core.SizeUnknownUnit", "{setting} %q uses an unknown unit %q: use b, kb, mb, gb or tb, all counting in 1024s, and kib, mib, gib or tib for the same thing spelled out", A("Value", s), A("Unit", unit)))
 	}
 
 	// A whole number with no unit, or with a unit, is the common case and
 	// stays in integer arithmetic so nothing is lost on the way.
 	if n, err := strconv.ParseInt(digits, 10, 64); err == nil {
 		if n < 0 {
-			return 0, SettingErrorf(SettingSize, "{setting} %q is negative: a file cannot be smaller than zero bytes", s)
+			return 0, sizeNegative(s)
 		}
 		if multiplier != 1 && n > math.MaxInt64/multiplier {
-			return 0, SettingErrorf(SettingSize, "{setting} %q is too large to express in bytes", s)
+			return 0, sizeTooLarge(s)
 		}
 		return n * multiplier, nil
 	}
@@ -79,16 +77,16 @@ func ParseSize(s string) (int64, error) {
 	//
 	// The decimal point stays, because 1.5gib is a real thing people write.
 	if !plainDecimal(digits) {
-		return 0, SettingErrorf(SettingSize,
-			"{setting} %q is not a plain number: write the digits out, as 10mb, 1.5gib or 1048576. Spellings such as 1e5, 0x10 or 1_000 are refused rather than guessed at, the same as in a recipe", s)
+		return 0, RefuseAbout(SettingSize, Says("core.SizeNotPlain",
+			"{setting} %q is not a plain number: write the digits out, as 10mb, 1.5gib or 1048576. Spellings such as 1e5, 0x10 or 1_000 are refused rather than guessed at, the same as in a recipe", A("Value", s)))
 	}
 
 	f, err := strconv.ParseFloat(digits, 64)
 	if err != nil {
-		return 0, SettingErrorf(SettingSize, "{setting} %q is not a number: write something like 10mb, 1.5gib or 1048576", s)
+		return 0, RefuseAbout(SettingSize, Says("core.SizeNotANumber", "{setting} %q is not a number: write something like 10mb, 1.5gib or 1048576", A("Value", s)))
 	}
 	if f < 0 {
-		return 0, SettingErrorf(SettingSize, "{setting} %q is negative: a file cannot be smaller than zero bytes", s)
+		return 0, sizeNegative(s)
 	}
 
 	exact := f * float64(multiplier)
@@ -101,15 +99,25 @@ func ParseSize(s string) (int64, error) {
 	// accepted and came back as -9223372036854775808. ParseInt refuses it for
 	// being out of range, so it reaches the float path, which does not.
 	if exact >= float64(math.MaxInt64) {
-		return 0, SettingErrorf(SettingSize, "{setting} %q is too large to express in bytes", s)
+		return 0, sizeTooLarge(s)
 	}
 	n := int64(exact)
 	if exact != math.Trunc(exact) {
-		return 0, SettingErrorf(SettingSize,
+		return 0, RefuseAbout(SettingSize, Says("core.SizeNotWhole",
 			"{setting} %q is not a whole number of bytes: it works out to %.4f bytes. Ask for %d or %d instead",
-			s, exact, n, n+1)
+			A("Value", s), A("Exact", exact), A("Below", n), A("Above", n+1)))
 	}
 	return n, nil
+}
+
+// sizeNegative and sizeTooLarge are two refusals ParseSize gives from two
+// places each.
+func sizeNegative(s string) error {
+	return RefuseAbout(SettingSize, Says("core.SizeNegative", "{setting} %q is negative: a file cannot be smaller than zero bytes", A("Value", s)))
+}
+
+func sizeTooLarge(s string) error {
+	return RefuseAbout(SettingSize, Says("core.SizeTooLarge", "{setting} %q is too large to express in bytes", A("Value", s)))
 }
 
 // plainDecimal reports whether the text is digits, with at most one decimal
@@ -173,7 +181,7 @@ func unitBytes(unit string) (int64, bool) {
 func ParseSizeRange(text string) (low, high int64, err error) {
 	parts := strings.Split(text, "-")
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-		return 0, 0, fmt.Errorf("%q is not a range. A range is exactly two sizes with one hyphen between them, such as 1kb-8kb", text)
+		return 0, 0, Refuse(Says("core.RangeNotARange", "%q is not a range. A range is exactly two sizes with one hyphen between them, such as 1kb-8kb", A("Value", text)))
 	}
 
 	ends := [2]int64{}
@@ -189,9 +197,9 @@ func ParseSizeRange(text string) (low, high int64, err error) {
 	// is a reasonable thing to arrive at from a script that computes both ends,
 	// so refusing it would be pedantry rather than protection.
 	if ends[0] > ends[1] {
-		return 0, 0, fmt.Errorf(
+		return 0, 0, Refuse(Says("core.RangeBackwards",
 			"the range runs backwards, from %d B down to %d B. The smaller end comes first, and a range that runs backwards holds no sizes at all. Write it as %d-%d",
-			ends[0], ends[1], ends[1], ends[0])
+			A("From", ends[0]), A("To", ends[1]), A("Low", ends[1]), A("High", ends[0])))
 	}
 	return ends[0], ends[1], nil
 }
@@ -227,16 +235,16 @@ func ParseBoundary(s string) (int64, error) {
 // the limit to the smallest number there is, and the refusal that followed said
 // "TXT cannot be smaller than 0 B. Requested: -9223372036854775808 B" - an
 // answer about the bottom of the range to a question about the top of it.
-var ErrBoundaryTooLarge = errors.New(
-	"a boundary set needs one size above the limit, and there is no number above this one. " +
-		"Use a limit at least one byte below the largest, or check that the number is the one you meant")
+var ErrBoundaryTooLarge = Refuse(Says("core.BoundaryTooLarge",
+	"a boundary set needs one size above the limit, and there is no number above this one. "+
+		"Use a limit at least one byte below the largest, or check that the number is the one you meant"))
 
 // The other end, in the two parts a report keeps apart. Built from them rather
 // than beside them, the same way ErrTooManyFiles is, so the sentence and the
 // parts cannot come to disagree.
-const (
-	BoundaryTooSmallWhy = "the set needs a size one byte below the limit, and there is nothing below zero"
-	BoundaryTooSmallFix = "Use a limit of at least 1 B"
+var (
+	BoundaryTooSmallWhy = Says("core.BoundaryTooSmallWhy", "the set needs a size one byte below the limit, and there is nothing below zero")
+	BoundaryTooSmallFix = Says("core.BoundaryTooSmallFix", "Use a limit of at least 1 B")
 )
 
 // ErrBoundaryTooSmall is a limit with no room below it for the first file.
@@ -249,7 +257,7 @@ const (
 // this file already argued the same thing about ParseSizeRange and
 // ParseBoundary: two implementations of one rule are a place for them to
 // disagree.
-var ErrBoundaryTooSmall = errors.New(BoundaryTooSmallWhy + ". " + BoundaryTooSmallFix)
+var ErrBoundaryTooSmall = Refuse(Says("core.BoundaryTooSmall", "%s. %s", A("Why", BoundaryTooSmallWhy), A("Fix", BoundaryTooSmallFix)))
 
 // BoundarySizes turns a limit into the three sizes a boundary set means: one
 // byte under it, the limit itself, and one byte over.

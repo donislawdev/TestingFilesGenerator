@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // A recipe that builds on a preset.
@@ -76,9 +78,9 @@ func (e *Extension) Parse(base []byte) (*Recipe, error) {
 func (raw rawRecipe) extension(p *problems) *Extension {
 	if raw.Extends == nil {
 		if raw.With != nil {
-			p.add(KeyWith, "with fills the parameters of a preset, and no preset is named",
-				"with belongs beside extends: it says what to fill in, and extends says what to fill it into",
-				"add extends: preset:<id> above it, or remove with")
+			p.add(KeyWith, core.Says("recipe.WithFillsTheParametersOfA", "with fills the parameters of a preset, and no preset is named"),
+				core.Says("recipe.WithBelongsBesideExtendsItSays", "with belongs beside extends: it says what to fill in, and extends says what to fill it into"),
+				core.Says("recipe.AddExtendsPresetIdAboveIt", "add extends: preset:<id> above it, or remove with"))
 		}
 		return nil
 	}
@@ -88,9 +90,9 @@ func (raw rawRecipe) extension(p *problems) *Extension {
 	}
 	id := strings.TrimPrefix(value, presetScheme)
 	if id == value || id == "" {
-		p.add(KeyExtends, fmt.Sprintf("extends %q does not name a preset", value),
-			"a recipe can build on a preset, and on nothing else in this build - not on another file",
-			"write extends: preset:<id>, and run \"tfg preset list\" for the ids this build has")
+		p.add(KeyExtends, core.Says("recipe.ExtendsDoesNotNameAPreset", "extends %q does not name a preset", core.A("Value", value)),
+			core.Says("recipe.ARecipeCanBuildOnA", "a recipe can build on a preset, and on nothing else in this build - not on another file"),
+			core.Says("recipe.WriteExtendsPresetIdAndRun", "write extends: preset:<id>, and run \"tfg preset list\" for the ids this build has"))
 		return nil
 	}
 	ext := &Extension{Preset: id}
@@ -155,16 +157,16 @@ func (own rawRecipe) parseExtending(name string, base []byte) (*Recipe, error) {
 		// caller's mistake rather than the file's, and reading the file as
 		// if it did would run targets the file never asked for.
 		if p.err() == nil {
-			p.add(KeyExtends, "this recipe does not build on a preset",
-				"a preset's targets were supplied to the reader, and the recipe names none",
-				"read the file with Parse, or add extends: preset:<id>")
+			p.add(KeyExtends, core.Says("recipe.ThisRecipeDoesNotBuildOn", "this recipe does not build on a preset"),
+				core.Says("recipe.APresetSTargetsWereSupplied", "a preset's targets were supplied to the reader, and the recipe names none"),
+				core.Says("recipe.ReadTheFileWithParseOr", "read the file with Parse, or add extends: preset:<id>"))
 		}
 		return nil, p.err()
 	}
 	if err := from.onlyTargets(); err != nil {
-		p.add(KeyExtends, err.Error(),
-			"a preset contributes targets and nothing else, so that the seed, the defaults and the output section are always the file's own",
-			"this is a mistake in the preset rather than in the recipe - run \"tfg preset eject\" and edit the result instead")
+		p.add(KeyExtends, core.SaidOf(err),
+			core.Says("recipe.APresetContributesTargetsAndNothing", "a preset contributes targets and nothing else, so that the seed, the defaults and the output section are always the file's own"),
+			core.Says("recipe.ThisIsAMistakeInThe", "this is a mistake in the preset rather than in the recipe - run \"tfg preset eject\" and edit the result instead"))
 		return nil, p.err()
 	}
 
@@ -229,6 +231,6 @@ func (raw rawRecipe) onlyTargets() error {
 	if len(carries) == 0 {
 		return nil
 	}
-	return fmt.Errorf("the preset's recipe carries %s, which a recipe building on it cannot inherit",
-		strings.Join(carries, ", "))
+	return core.Refuse(core.Says("recipe.PresetCarries", "the preset's recipe carries %s, which a recipe building on it cannot inherit",
+		core.A("Keys", strings.Join(carries, ", "))))
 }

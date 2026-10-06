@@ -59,10 +59,15 @@ because it turns other people's test suites red.
   lets you choose another language. The choice takes effect the next time
   the window opens, and Restart now does that at once. It is off while files
   are being made, and anything typed on the other tabs is cleared. In Polish
-  the settings of every format, the presets and the sizes of a run are Polish
-  as well, so a size reads 10,0 MB. The values you pick from a list
-  (portrait, a4), the names of the formats and the reason a run is refused
-  stay in English, and so do the command line, recipes and manifests. The
+  everything the window says is Polish: the settings of every format, the
+  values you pick from a list (pionowo for portrait), the names of the
+  formats, the titles of the presets, the reason a run is refused, the time
+  left, the licence on About and the words of the menus and dialogs, such as
+  Copy and Cancel. A size reads 10,0 MB. A value you typed is shown as you
+  typed it, and so are values that are names, such as a4 or utf-8. The
+  command line, recipes and manifests stay in English, so a recipe written
+  from the window still says portrait. A fault in the program itself is said
+  in Polish with its English detail under it, for whoever reports it. The
   same tab says what the window keeps between runs (the output directory,
   the window size and the language), shows the folder they are kept in, and
   Forget clears them. `tfg-gui --pseudo-language` opens the window with

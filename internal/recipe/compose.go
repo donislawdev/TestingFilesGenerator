@@ -1,7 +1,6 @@
 package recipe
 
 import (
-	"fmt"
 	"strconv"
 	"unicode/utf8"
 
@@ -352,9 +351,9 @@ func refuseUnwritable(d Document) error {
 	check := func(at, value string) {
 		if bad, found := firstControl(value); found {
 			p.add(at,
-				fmt.Sprintf("%s holds the character %q, which cannot be written to a recipe", at, bad),
-				"a recipe is a text document, and a control character either breaks it or is dropped without a word",
-				"remove it - it is usually a stray tab or a line break from pasting")
+				core.Says("recipe.HoldsTheCharacterWhichCannotBe", "%s holds the character %q, which cannot be written to a recipe", core.A("At", at), core.A("Bad", bad)),
+				core.Says("recipe.ARecipeIsATextDocument", "a recipe is a text document, and a control character either breaks it or is dropped without a word"),
+				core.Says("recipe.RemoveItItIsUsuallyA", "remove it - it is usually a stray tab or a line break from pasting"))
 		}
 	}
 

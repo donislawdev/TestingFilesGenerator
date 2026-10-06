@@ -90,13 +90,13 @@ func TestTheRefusalComesFromTheDeclaration(t *testing.T) {
 	// Both ends. Checking only the low one leaves half the declaration
 	// unguarded, and a mutation disabling the upper bound stayed green until
 	// this line existed.
-	if bad := pages.Allows("0"); bad == "" {
+	if bad := pages.Allows("0"); bad.IsZero() {
 		t.Error("zero pages was allowed by a property declared to start at 1")
 	}
-	if bad := pages.Allows(strconv.FormatInt(pages.Max+1, 10)); bad == "" {
+	if bad := pages.Allows(strconv.FormatInt(pages.Max+1, 10)); bad.IsZero() {
 		t.Errorf("%d pages was allowed by a property declared to stop at %d", pages.Max+1, pages.Max)
 	}
-	if bad := pages.Allows(pages.Default); bad != "" {
+	if bad := pages.Allows(pages.Default); !bad.IsZero() {
 		t.Errorf("pdf advertises pages default %q and then refuses it: %s", pages.Default, bad)
 	}
 }

@@ -723,7 +723,7 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room dis
 	if saved.Missed != nil {
 		// Escaped as the command line escapes it, the path and the system's
 		// sentence both - the second carries the path again (review on #140).
-		said = append(said, text.InstructionsNotSaved(core.Shown(saved.Missed.Path), core.ShownText(saved.Missed.Err.Error())))
+		said = append(said, text.InstructionsNotSaved(core.Shown(saved.Missed.Path), core.ShownText(text.Refusal(saved.Missed.Err, ""))))
 	}
 	r.say(append(said, notesOf(res)...)...)
 	r.toneOfOutcome(res, runErr)
@@ -828,7 +828,7 @@ func (r *runner) Settled() {
 func wholeNumber(setting, field, value string) (int64, error) {
 	n, err := strconv.ParseInt(strings.TrimSpace(value), 10, 64)
 	if err != nil {
-		return 0, &aboutField{setting: setting, detail: text.NotAWholeNumber(field, value)}
+		return 0, &aboutField{setting: setting, err: errors.New(text.NotAWholeNumber(field, value))}
 	}
 	return n, nil
 }
@@ -842,12 +842,16 @@ func wholeNumber(setting, field, value string) (int64, error) {
 // 2026-08-12 - the size field could be marked when a format refused the number
 // and not when the number was not a number, which is the more common mistake of
 // the two.
+//
+// It keeps the refusal it wraps rather than its text, so a window speaking
+// another language still finds the sentence inside - see text.Refusal.
 type aboutField struct {
 	setting string
-	detail  string
+	err     error
 }
 
-func (e *aboutField) Error() string        { return e.detail }
+func (e *aboutField) Error() string        { return e.err.Error() }
+func (e *aboutField) Unwrap() error        { return e.err }
 func (e *aboutField) AboutSetting() string { return e.setting }
 
 // saying wraps a refusal from somewhere that does not know which box was read.
@@ -860,5 +864,5 @@ func saying(setting string, err error) error {
 	if errors.As(err, &already) && already.AboutSetting() != "" {
 		return err
 	}
-	return &aboutField{setting: setting, detail: err.Error()}
+	return &aboutField{setting: setting, err: err}
 }

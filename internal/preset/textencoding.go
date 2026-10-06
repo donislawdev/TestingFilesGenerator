@@ -174,7 +174,7 @@ func declared(desc format.Descriptor, name string) (format.Property, bool) {
 //
 // Which cells those are is asked of the format rather than written here. The
 // rule belongs to XML today and the next text format may have its own.
-func encodingCells() (files []textFile, left []string) {
+func encodingCells() (files []textFile, left []core.Said) {
 	for _, desc := range carrying(textenc.Setting) {
 		kept, dropped := cellsOfFormat(desc)
 		files = append(files, kept...)
@@ -184,7 +184,7 @@ func encodingCells() (files []textFile, left []string) {
 }
 
 // cellsOfFormat is the encoding half for one format.
-func cellsOfFormat(desc format.Descriptor) (files []textFile, left []string) {
+func cellsOfFormat(desc format.Descriptor) (files []textFile, left []core.Said) {
 	enc, _ := declared(desc, textenc.Setting)
 	for _, name := range enc.Choices {
 		kept, dropped := cellsOfEncoding(desc, name)
@@ -195,7 +195,7 @@ func cellsOfFormat(desc format.Descriptor) (files []textFile, left []string) {
 }
 
 // cellsOfEncoding is one format in one encoding, with and without a mark.
-func cellsOfEncoding(desc format.Descriptor, encoding string) (files []textFile, left []string) {
+func cellsOfEncoding(desc format.Descriptor, encoding string) (files []textFile, left []core.Said) {
 	for _, mark := range marks(desc) {
 		props := map[string]string{textenc.Setting: encoding}
 		label := encoding
@@ -205,8 +205,8 @@ func cellsOfEncoding(desc format.Descriptor, encoding string) (files []textFile,
 		if mark == "true" {
 			label += "_bom"
 		}
-		if why := refusedOutright(desc, props); why != "" {
-			left = append(left, fmt.Sprintf("%s as %s (%s)", desc.ID, label, why))
+		if why := refusedOutright(desc, props); !why.IsZero() {
+			left = append(left, core.Says("preset.LeftOutAs", "%s as %s (%s)", core.A("Format", desc.ID), core.A("As", label), core.A("Why", why)))
 			continue
 		}
 		files = append(files, textFile{
@@ -285,7 +285,7 @@ func lineEndingCells() []textFile {
 // The format answers rather than this file. Asked at the size the format itself
 // names as its smallest for these settings, so a refusal that comes back is
 // about the settings and not about the room they need.
-func refusedOutright(desc format.Descriptor, props map[string]string) string {
+func refusedOutright(desc format.Descriptor, props map[string]string) core.Said {
 	r := format.Request{Label: true, Properties: props}
 	r.Bytes = format.SmallestRemembered(desc, r)
 	_, err := desc.Generator.Plan(r)
@@ -293,7 +293,7 @@ func refusedOutright(desc format.Descriptor, props map[string]string) string {
 	if errors.As(err, &bad) {
 		return bad.Reason
 	}
-	return ""
+	return core.Said{}
 }
 
 // evenEnough refuses a size no file of this set could have.
@@ -317,9 +317,8 @@ func evenEnough(size int64) error {
 			return &ImpossibleError{
 				Preset:  encodingID,
 				Setting: sampleParam,
-				Detail:  fmt.Sprintf("the set holds files in %s, and %s", name, below.Reason),
-				Hint: fmt.Sprintf("Set the {setting} to %d B or %d B.",
-					size-1, below.Minimum),
+				Detail:  core.Says("preset.TheSetHoldsFilesInAnd", "the set holds files in %s, and %s", core.A("Name", name), core.A("Reason", below.Reason)),
+				Hint:    core.Says("preset.SetTheSettingToBOr", "Set the {setting} to %d B or %d B.", core.A("Size", size-1), core.A("Minimum", below.Minimum)),
 			}
 		}
 	}
@@ -374,9 +373,8 @@ func roomEnough(files []textFile, size int64) error {
 	return &ImpossibleError{
 		Preset:  encodingID,
 		Setting: sampleParam,
-		Detail: fmt.Sprintf("%s written as %s cannot be smaller than %d B, and every file of this set is the same size",
-			strings.ToUpper(tallest.desc.ID), tallest.label, floor),
-		Hint: fmt.Sprintf("Set the {setting} to %d B or more.", floor),
+		Detail:  core.Says("preset.WrittenAsCannotBeSmallerThan", "%s written as %s cannot be smaller than %d B, and every file of this set is the same size", core.A("ID", strings.ToUpper(tallest.desc.ID)), core.A("Label", tallest.label), core.A("Floor", floor)),
+		Hint:    core.Says("preset.SetTheSettingToBOr2", "Set the {setting} to %d B or more.", core.A("Floor", floor)),
 	}
 }
 
@@ -387,21 +385,21 @@ func roomEnough(files []textFile, size int64) error {
 // described. And the two halves look like one grid and are not - somebody
 // reading the file list will look for the UTF-16 CSV that no format in this
 // build can produce.
-func saidAboutTheEncodingSet(Args) []string {
-	var out []string
+func saidAboutTheEncodingSet(Args) []core.Said {
+	var out []core.Said
 	cells, left := encodingCells()
 	if len(left) > 0 {
-		out = append(out, fmt.Sprintf(
+		out = append(out, core.Says("preset.EncodingLeftOut",
 			"this build refuses %s of the encoding set, so it holds %s rather than %d. Left out: %s.",
-			core.Count(len(left), "combination", "combinations"),
-			core.Count(len(cells), "file", "files"),
-			len(cells)+len(left), strings.Join(left, ", ")))
+			core.A("Refused", core.SaysN("preset.Combinations", "%d combination", "%d combinations", core.A("Count", len(left)))),
+			core.A("Holds", core.SaysN("preset.Files", "%d file", "%d files", core.A("Count", len(cells)))),
+			core.A("Described", len(cells)+len(left)), core.A("Left", core.Sentences(left))))
 	}
 	if both := carrying(textenc.Setting, lineEndingSetting); len(both) == 0 {
-		out = append(out, fmt.Sprintf(
+		out = append(out, core.Says("preset.EncodingNoGrid",
 			"no format in this build carries an encoding and a line ending at once, so the two halves of this set are separate files rather than one grid. Encodings: %s. Line endings: %s.",
-			strings.Join(idsOf(carrying(textenc.Setting)), ", "),
-			strings.Join(idsOf(carrying(lineEndingSetting)), ", ")))
+			core.A("Encodings", strings.Join(idsOf(carrying(textenc.Setting)), ", ")),
+			core.A("LineEndings", strings.Join(idsOf(carrying(lineEndingSetting)), ", "))))
 	}
 	return out
 }
@@ -417,7 +415,7 @@ func idsOf(descs []format.Descriptor) []string {
 func expandTextEncoding(args Args) ([]byte, error) {
 	size, err := core.ParseSize(args[sampleParam])
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", sampleParam, err)
+		return nil, paramCause(sampleParam, err)
 	}
 	// Before the files are laid out, because this refusal is about the value
 	// somebody typed and the one below it is about the set that value asks for.
@@ -430,8 +428,8 @@ func expandTextEncoding(args Args) ([]byte, error) {
 	if len(files) == 0 {
 		return nil, &ImpossibleError{
 			Preset: encodingID,
-			Detail: "no format in this build carries an encoding or a line ending, so there is no set to build",
-			Hint:   "Run \"tfg formats\" to see what this build has.",
+			Detail: core.Says("preset.NoFormatInThisBuildCarries", "no format in this build carries an encoding or a line ending, so there is no set to build"),
+			Hint:   core.Says("preset.RunTfgFormatsToSeeWhat", "Run \"tfg formats\" to see what this build has."),
 		}
 	}
 	if err := roomEnough(files, size); err != nil {

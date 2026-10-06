@@ -66,7 +66,7 @@ type Record interface {
 func FillRecords(ctx context.Context, w io.Writer, rng *rand.Rand, remaining int64, rec Record) error {
 	shortest := rec.Shortest()
 	if remaining < shortest {
-		return fmt.Errorf("core: %d B are owed and the shortest whole record needs %d B", remaining, shortest)
+		return Defect(fmt.Errorf("core: %d B are owed and the shortest whole record needs %d B", remaining, shortest))
 	}
 
 	// One buffer, reused. A record built into its own allocation costs a
@@ -90,7 +90,7 @@ func FillRecords(ctx context.Context, w io.Writer, rng *rand.Rand, remaining int
 		// today and the interface does not forbid it, so it is named here
 		// rather than left to a hang somebody has to interrupt.
 		if len(buf) == mark {
-			return fmt.Errorf("core: a record of this format added no bytes, so the file could never be filled")
+			return Defect(fmt.Errorf("core: a record of this format added no bytes, so the file could never be filled"))
 		}
 		// Stop while what is left still fits a whole closing record. That is
 		// what keeps the last one from being a stub.
@@ -115,7 +115,7 @@ func FillRecords(ctx context.Context, w io.Writer, rng *rand.Rand, remaining int
 	mark := len(buf)
 	buf = rec.AppendExact(buf, rng, remaining)
 	if got := int64(len(buf) - mark); got != remaining {
-		return fmt.Errorf("core: the closing record came to %d B and %d B were owed", got, remaining)
+		return Defect(fmt.Errorf("core: the closing record came to %d B and %d B were owed", got, remaining))
 	}
 	return WriteAll(w, buf)
 }

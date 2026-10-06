@@ -83,7 +83,7 @@ func (d Descriptor) checkOne(p format.Property, raw string) error {
 		return nil
 	}
 	why := p.Allows(raw)
-	if why == "" {
+	if why.IsZero() {
 		return nil
 	}
 	return &format.PropertyValueError{

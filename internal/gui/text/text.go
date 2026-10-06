@@ -40,6 +40,9 @@ package text
 import (
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Buttons on the run controls, in the order G6 puts them: preview before the
@@ -165,6 +168,22 @@ func AndNothingWrittenYet() string {
 // person reads, and one language's comma is another's ideograph.
 func Formats(kinds []string) string { return strings.Join(kinds, listSeparator) }
 
+// Joined is names joined the way the window's language joins the last two of
+// a list - "a, b and c", "a or b".
+func Joined(items []string, and bool) string {
+	switch len(items) {
+	case 0:
+		return ""
+	case 1:
+		return items[0]
+	}
+	data := map[string]any{"Head": strings.Join(items[:len(items)-1], listSeparator), "Last": items[len(items)-1]}
+	if and {
+		return sayf("ListJoinedAnd", "{{.Head}} and {{.Last}}", data)
+	}
+	return sayf("ListJoinedOr", "{{.Head}} or {{.Last}}", data)
+}
+
 // listSeparator divides the items of a list said on one line.
 const listSeparator = ", "
 
@@ -236,6 +255,20 @@ func Progress(filesDone, filesTotal int, bytesDone, bytesTotal string, percent i
 	return sayf("Progress", "{{.Done}}/{{.Total}} files  {{.BytesDone}} of {{.BytesTotal}}  {{.Percent}}%",
 		map[string]any{"Done": filesDone, "Total": filesTotal,
 			"BytesDone": bytesDone, "BytesTotal": bytesTotal, "Percent": percent})
+}
+
+// Roughly is core.Roughly with the units of the window's language - "3m" is
+// three metres to a Polish reader. The rounding is core's, so the two
+// surfaces round alike.
+func Roughly(d time.Duration) string {
+	r := core.Rough(d)
+	switch r.Unit {
+	case 's':
+		return sayf("TimeSeconds", "{{.Seconds}}s", map[string]any{"Seconds": r.Seconds})
+	case 'm':
+		return sayf("TimeMinutes", "{{.Minutes}}m", map[string]any{"Minutes": r.Minutes})
+	}
+	return sayf("TimeHours", "{{.Hours}}h{{.Minutes}}m", map[string]any{"Hours": r.Hours, "Minutes": r.Minutes})
 }
 
 // TimeLeft is appended to Progress once the estimate is worth showing.
@@ -369,8 +402,11 @@ func RendererNotLoaded(err error) string {
 // its own with, for a sentence that supplies its own. Measured on
 // 2026-09-17: "The specified module could not be found." arrived with one
 // and the sentence around it ended with two.
+//
+// The words are the system's own, in the system's language, so they go through
+// Refusal, which puts ours in their place with the number beside them (O251).
 func withoutFullStop(err error) string {
-	return strings.TrimSuffix(strings.TrimSpace(err.Error()), ".")
+	return strings.TrimSuffix(strings.TrimSpace(Refusal(err, "")), ".")
 }
 
 // RendererDidNotHelp is what the refusal adds when the renderer was loaded
@@ -467,4 +503,39 @@ func SaidWithManifest(said, name string) string {
 		return said
 	}
 	return said + " " + ManifestNamed(name)
+}
+
+// What the system refused, in our words rather than the system's, with the
+// number the system gave - the same four kinds and the same sentences the
+// command line prints (internal/cli/errors.go, systemReason), told apart in
+// one place (core.SystemKindOf). See Refusal in said.go.
+func SystemNothingThere(number uint64) string {
+	return sayf("SystemNothingThere", "there is nothing at that path (system error {{.Number}})", map[string]any{"Number": number})
+}
+
+func SystemNoPermission(number uint64) string {
+	return sayf("SystemNoPermission", "the system refused permission (system error {{.Number}})", map[string]any{"Number": number})
+}
+
+func SystemAlreadyThere(number uint64) string {
+	return sayf("SystemAlreadyThere", "something is already there (system error {{.Number}})", map[string]any{"Number": number})
+}
+
+func SystemRefused(number uint64) string {
+	return sayf("SystemRefused", "the system refused it (system error {{.Number}})", map[string]any{"Number": number})
+}
+
+// SystemFailure is a path and what the system refused about it. The name of
+// the operation the system was asked for - open, mkdir - is left out: it is
+// the vocabulary of the program, not of the person reading.
+func SystemFailure(path, reason string) string {
+	return sayf("SystemFailure", "{{.Path}}: {{.Reason}}", map[string]any{"Path": path, "Reason": reason})
+}
+
+// Defect is what the window says about an error only a fault in the program
+// can produce, with the error's own words after it for whoever reports it.
+// The owner's decision of 2026-10-05: the sentence in the window's language,
+// the detail as it came, because the detail is for the report.
+func Defect(detail string) string {
+	return sayf("Defect", "Something inside the program went wrong, and it should not have. Report it with this description: {{.Detail}}", map[string]any{"Detail": detail})
 }

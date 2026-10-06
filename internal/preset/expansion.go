@@ -1,5 +1,9 @@
 package preset
 
+import (
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+)
+
 import "sort"
 
 // Expansion is one preset settled on its parameters and turned into the recipe
@@ -58,7 +62,7 @@ func (e *Expansion) Notes() []string {
 	spoken := e.Spoken()
 	out := make([]string, 0, len(spoken))
 	for _, n := range spoken {
-		out = append(out, n.Said)
+		out = append(out, n.Said.String())
 	}
 	return out
 }
@@ -70,7 +74,7 @@ func (e *Expansion) Notes() []string {
 // there is nothing fixed to translate them from.
 type Note struct {
 	About string
-	Said  string
+	Said  core.Said
 }
 
 // Spoken is Notes with what each one is about, in the same order.
@@ -78,7 +82,9 @@ func (e *Expansion) Spoken() []Note {
 	var out []Note
 	for _, name := range e.Defaulted {
 		if said := e.Preset.SaidWhenDefaulted[name]; said != "" {
-			out = append(out, Note{About: name, Said: said})
+			// A registry word rather than a sentence of the engine: a window
+			// finds it by the preset and the parameter it is about.
+			out = append(out, Note{About: name, Said: core.Says("preset.Defaulted", "%s", core.A("Text", said))})
 		}
 	}
 	// What those values then laid out, after what we invented, because a

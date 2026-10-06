@@ -1,7 +1,6 @@
 package damage
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -20,8 +19,10 @@ type UnknownError struct {
 }
 
 // What happened, without the list of names.
-func (e *UnknownError) What() string {
-	return fmt.Sprintf("there is no damage called %q", e.ID)
+func (e *UnknownError) What() string { return e.what().String() }
+
+func (e *UnknownError) what() core.Said {
+	return core.Says("damage.UnknownWhat", "there is no damage called %q", core.A("Damage", e.ID))
 }
 
 // Why this is refused rather than skipped.
@@ -29,23 +30,37 @@ func (e *UnknownError) What() string {
 // Silently ignoring it would produce an intact file whose manifest says it is
 // broken, which is untouchable rule 6 read backwards: the silence is not a
 // missing file but a missing hole in one.
-func (e *UnknownError) Why() string {
-	return "a damage has to be one this build knows, and one it does not would leave the file intact while the manifest called it broken"
+func (e *UnknownError) Why() string { return e.why().String() }
+
+func (e *UnknownError) why() core.Said {
+	return core.Says("damage.UnknownWhy", "a damage has to be one this build knows, and one it does not would leave the file intact while the manifest called it broken")
 }
 
 // Instead names what there is, from the registry rather than from a list.
-func (e *UnknownError) Instead() string {
+func (e *UnknownError) Instead() string { return e.instead().String() }
+
+func (e *UnknownError) instead() core.Said {
 	if len(e.Known) == 0 {
-		return "remove the damage line"
+		return core.Says("damage.UnknownInsteadRemove", "remove the damage line")
 	}
-	return "use one of: " + strings.Join(e.Known, ", ")
+	return core.Says("damage.UnknownInstead", "use one of: %s", core.A("Known", strings.Join(e.Known, ", ")))
 }
 
-func (e *UnknownError) Error() string {
+func (e *UnknownError) Error() string { return e.Said().String() }
+
+// Parts is what happened, why and what to do instead, for a reader that lays
+// them out apart and in its own language.
+func (e *UnknownError) Parts() (what, why, instead core.Said) {
+	return e.what(), e.why(), e.instead()
+}
+
+// Said is the whole refusal, for a window that says it in its own language.
+func (e *UnknownError) Said() core.Said {
 	if len(e.Known) == 0 {
-		return e.What()
+		return e.what()
 	}
-	return e.What() + ". This build has: " + strings.Join(e.Known, ", ")
+	return core.Says("damage.Unknown", "%s. This build has: %s",
+		core.A("What", e.what()), core.A("Known", strings.Join(e.Known, ", ")))
 }
 
 // TooSmallError is a file smaller than the damage it was given.
@@ -65,22 +80,30 @@ type TooSmallError struct {
 // damage.
 func (e *TooSmallError) AboutSetting() string { return "size" }
 
-func (e *TooSmallError) What() string {
-	return fmt.Sprintf("%s needs at least %s and the file is %s",
-		e.Damage, core.ExactBytes(e.Floor), core.ExactBytes(e.Requested))
+func (e *TooSmallError) What() string { return e.what().String() }
+
+func (e *TooSmallError) what() core.Said {
+	return core.Says("damage.TooSmallWhat", "%s needs at least %s and the file is %s",
+		core.A("Damage", e.Damage), core.A("Floor", core.ExactBytes(e.Floor)),
+		core.A("Requested", core.ExactBytes(e.Requested)))
 }
 
 func (e *TooSmallError) Why() string {
-	return "a file smaller than the damage would come out unchanged, and an unchanged file described as broken is the one thing this tool must not write"
+	return core.Says("damage.TooSmallWhy", "a file smaller than the damage would come out unchanged, and an unchanged file described as broken is the one thing this tool must not write").String()
 }
 
-func (e *TooSmallError) Instead() string {
-	return fmt.Sprintf("Ask for %s or more, or take the damage off this target.",
-		core.ExactBytes(e.Floor))
+func (e *TooSmallError) Instead() string { return e.instead().String() }
+
+func (e *TooSmallError) instead() core.Said {
+	return core.Says("damage.TooSmallInstead", "Ask for %s or more, or take the damage off this target.",
+		core.A("Floor", core.ExactBytes(e.Floor)))
 }
 
-func (e *TooSmallError) Error() string {
-	return e.What() + ". " + e.Instead()
+func (e *TooSmallError) Error() string { return e.Said().String() }
+
+// Said is the whole refusal, for a window that says it in its own language.
+func (e *TooSmallError) Said() core.Said {
+	return core.Says("damage.TooSmall", "%s. %s", core.A("What", e.what()), core.A("Instead", e.instead()))
 }
 
 // NoChangeError is a damage that ran and moved nothing.
@@ -98,20 +121,27 @@ type NoChangeError struct {
 	File   string
 }
 
-func (e *NoChangeError) What() string {
-	return fmt.Sprintf("%s changed nothing in %s", e.Damage, e.File)
+func (e *NoChangeError) What() string { return e.what().String() }
+
+func (e *NoChangeError) what() core.Said {
+	return core.Says("damage.NoChangeWhat", "%s changed nothing in %s", core.A("Damage", e.Damage), core.A("File", e.File))
 }
 
-func (e *NoChangeError) Why() string {
-	return "the file would be accepted by every reader while the manifest called it broken, so the run stops rather than writing it"
+func (e *NoChangeError) Why() string { return e.why().String() }
+
+func (e *NoChangeError) why() core.Said {
+	return core.Says("damage.NoChangeWhy", "the file would be accepted by every reader while the manifest called it broken, so the run stops rather than writing it")
 }
 
 func (e *NoChangeError) Instead() string {
-	return "give the damage a larger file, different settings, or take it off this target"
+	return core.Says("damage.NoChangeInstead", "give the damage a larger file, different settings, or take it off this target").String()
 }
 
-func (e *NoChangeError) Error() string {
-	return e.What() + ". " + e.Why()
+func (e *NoChangeError) Error() string { return e.Said().String() }
+
+// Said is the whole refusal, for a window that says it in its own language.
+func (e *NoChangeError) Said() core.Said {
+	return core.Says("damage.NoChange", "%s. %s", core.A("What", e.what()), core.A("Why", e.why()))
 }
 
 // RuledOutExpectation is the one declared outcome a damaged file cannot have.
@@ -177,18 +207,33 @@ type ExpectationConflictError struct {
 // disagrees with it.
 func (e *ExpectationConflictError) AboutSetting() string { return "expected" }
 
-func (e *ExpectationConflictError) What() string {
-	return fmt.Sprintf("this target damages the file and expects %q", e.Outcome)
+func (e *ExpectationConflictError) What() string { return e.what().String() }
+
+func (e *ExpectationConflictError) what() core.Said {
+	return core.Says("damage.ConflictWhat", "this target damages the file and expects %q", core.A("Outcome", core.Choice{Of: "expected", Value: e.Outcome}))
 }
 
-func (e *ExpectationConflictError) Why() string {
-	return "a damaged file is one a judge was measured to refuse, so expecting it to be accepted is an expectation nothing could meet"
+func (e *ExpectationConflictError) Why() string { return e.why().String() }
+
+func (e *ExpectationConflictError) why() core.Said {
+	return core.Says("damage.ConflictWhy", "a damaged file is one a judge was measured to refuse, so expecting it to be accepted is an expectation nothing could meet")
 }
 
-func (e *ExpectationConflictError) Instead() string {
-	return "leave expected out and get reject, or write sanitize if the system under test is meant to repair the file, or unspecified if that is the question"
+// Parts is what happened, why and what to do instead, for a reader that lays
+// them out apart and in its own language.
+func (e *ExpectationConflictError) Parts() (what, why, instead core.Said) {
+	return e.what(), e.why(), e.instead()
 }
 
-func (e *ExpectationConflictError) Error() string {
-	return e.What() + ". " + e.Instead()
+func (e *ExpectationConflictError) Instead() string { return e.instead().String() }
+
+func (e *ExpectationConflictError) instead() core.Said {
+	return core.Says("damage.ConflictInstead", "leave expected out and get reject, or write sanitize if the system under test is meant to repair the file, or unspecified if that is the question")
+}
+
+func (e *ExpectationConflictError) Error() string { return e.Said().String() }
+
+// Said is the whole refusal, for a window that says it in its own language.
+func (e *ExpectationConflictError) Said() core.Said {
+	return core.Says("damage.Conflict", "%s. %s", core.A("What", e.what()), core.A("Instead", e.instead()))
 }

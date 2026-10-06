@@ -46,7 +46,7 @@ func writeComment(ctx context.Context, w io.Writer, seed uint64, n int64) error 
 		return nil
 	}
 	if n < minComment {
-		return fmt.Errorf("pdf: %d B of padding cannot be written as a comment", n)
+		return core.Defect(fmt.Errorf("pdf: %d B of padding cannot be written as a comment", n))
 	}
 
 	// Line length is fixed so the block stays readable in an editor. The last
@@ -79,7 +79,7 @@ func writeComment(ctx context.Context, w io.Writer, seed uint64, n int64) error 
 				size = lineLen - minComment
 			}
 			if size < minComment {
-				return fmt.Errorf("pdf: %d B left over, which cannot form a comment line", size)
+				return core.Defect(fmt.Errorf("pdf: %d B left over, which cannot form a comment line", size))
 			}
 			buf = append(buf, '%')
 			for i := int64(0); i < size-2; i++ {

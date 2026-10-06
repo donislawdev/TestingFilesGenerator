@@ -70,26 +70,24 @@ func init() {
 var spreadList = commaList{
 	preset:    boundariesID,
 	param:     "spread",
-	empty:     "no distances were given, so there is nothing either side of the limit",
+	empty:     core.Says("preset.NoDistancesWereGivenSoThere", "no distances were given, so there is nothing either side of the limit"),
 	check:     checkDistance,
 	same:      sizeKey,
 	keep:      lower,
 	duplicate: repeatedDistance,
 }
 
-func repeatedDistance(first string) string {
-	return fmt.Sprintf(
-		"it is the same distance as %q and the set would hold that step twice. Every distance has to be different, because each one names one file either side of the limit",
-		first)
+func repeatedDistance(first string) core.Said {
+	return core.Says("preset.ItIsTheSameDistanceAs", "it is the same distance as %q and the set would hold that step twice. Every distance has to be different, because each one names one file either side of the limit", core.A("First", first))
 }
 
 // badSpread is a value the spread parameter does not accept.
-func badSpread(value, reason string) error {
+func badSpread(value string, reason core.Said) error {
 	return spreadList.refuse(value, reason)
 }
 
 // checkDistance answers why a piece of the spread is not a distance.
-func checkDistance(piece string) string {
+func checkDistance(piece string) core.Said {
 	// The text of a distance becomes the id of a target and the name of a
 	// file, so it has to be made of what a size is made of and nothing else.
 	// Found by fuzzing on 2026-08-05: "1\rB" parses as one byte, because the
@@ -97,17 +95,16 @@ func checkDistance(piece string) string {
 	// and the character then reached the recipe source raw and broke the
 	// document.
 	if bad := firstUnusable(piece); bad != "" {
-		return fmt.Sprintf(
-			"it holds %s, and a distance is written with digits, letters and a dot - such as 1kb, 512 or 1.5mb. Its text becomes the name of a file", bad)
+		return core.Says("preset.ItHoldsAndADistanceIs", "it holds %s, and a distance is written with digits, letters and a dot - such as 1kb, 512 or 1.5mb. Its text becomes the name of a file", core.A("Bad", bad))
 	}
 	n, err := core.ParseSize(piece)
 	if err != nil {
-		return err.Error()
+		return core.SaidOf(err)
 	}
 	if n <= 0 {
-		return "a distance from the limit has to be more than nothing"
+		return core.Says("preset.ADistanceFromTheLimitHas", "a distance from the limit has to be more than nothing")
 	}
-	return ""
+	return core.Said{}
 }
 
 // sizeKey is what makes two distances the same one, for the duplicate check.
@@ -145,7 +142,7 @@ func parseSpread(raw string) ([]offset, error) {
 		// checkDistance has already refused anything that would fail here.
 		n, err := core.ParseSize(piece)
 		if err != nil {
-			return nil, badSpread(piece, err.Error())
+			return nil, badSpread(piece, core.SaidOf(err))
 		}
 		out = append(out, offset{text: piece, bytes: n})
 	}
@@ -155,7 +152,7 @@ func parseSpread(raw string) ([]offset, error) {
 func expandSizeBoundaries(args Args) ([]byte, error) {
 	limit, err := core.ParseSize(args["limit"])
 	if err != nil {
-		return nil, fmt.Errorf("limit: %w", err)
+		return nil, paramCause("limit", err)
 	}
 	// The limit leads every file name, so two sets built around different
 	// limits cannot be told apart only by opening the files. Reported from use
@@ -168,9 +165,7 @@ func expandSizeBoundaries(args Args) ([]byte, error) {
 	// source once.
 	limitText := strings.TrimSpace(args["limit"])
 	if bad := firstUnusable(limitText); bad != "" {
-		return nil, fmt.Errorf(
-			"limit: it holds %s, and a limit is written with digits, letters and a dot - "+
-				"such as 10mb, 512 or 1.5gb. Its text becomes part of every file name", bad)
+		return nil, limitUnusable("limit", bad)
 	}
 	spread, err := parseSpread(args["spread"])
 	if err != nil {

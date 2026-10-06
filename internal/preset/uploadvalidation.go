@@ -1,9 +1,6 @@
 package preset
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
@@ -146,29 +143,29 @@ func init() {
 // whose inside is a stand-in reads as a real one: somebody testing a content
 // sniffer against denied.exe would be testing it against plain text and would
 // never find out from the file.
-func saidAboutTheUploadSet(args Args) []string {
+func saidAboutTheUploadSet(args Args) []core.Said {
 	s, err := settleUpload(args)
 	if err != nil {
 		// Expand is about to refuse these same values with a message that names
 		// the one that is wrong. A sentence here would be a second opinion.
 		return nil
 	}
-	var out []string
+	var out []core.Said
 	if stood := standIns(s.denied); len(stood) > 0 {
-		out = append(out, fmt.Sprintf(
-			"this build has no format called %s, so %s %s plain text under %s. That tests a form reading the end of a name, not one reading what is inside.",
-			joinWithOr(stood), joinWithAnd(namesOf(stood)),
-			core.Noun(len(stood), "holds", "hold"),
-			core.Noun(len(stood), "that name", "those names")))
+		out = append(out, core.SaysN("preset.StandIns",
+			"this build has no format called %s, so %s holds plain text under that name. That tests a form reading the end of a name, not one reading what is inside.",
+			"this build has no format called %s, so %s hold plain text under those names. That tests a form reading the end of a name, not one reading what is inside.",
+			core.A("Formats", core.Joined{Items: stood}), core.A("Names", core.Joined{Items: namesOf(stood), And: true}),
+			core.A("Count", len(stood))))
 	}
 	if s.farOver == 0 {
-		out = append(out, "far-over is off, so nothing in this set is well past the limit. The largest file is one byte over it.")
+		out = append(out, core.Says("preset.FarOverOff", "far-over is off, so nothing in this set is well past the limit. The largest file is one byte over it."))
 	}
 	if s.bulk == 0 {
-		out = append(out, "bulk is nought, so this set holds no mass upload.")
+		out = append(out, core.Says("preset.BulkNought", "bulk is nought, so this set holds no mass upload."))
 	}
 	if len(s.allowed) < 2 {
-		out = append(out, "only one type is allowed, so the set holds no file named as one allowed type and filled with another - that needs two.")
+		out = append(out, core.Says("preset.OneAllowed", "only one type is allowed, so the set holds no file named as one allowed type and filled with another - that needs two."))
 	}
 	return out
 }
@@ -182,26 +179,6 @@ func standIns(denied []deniedEntry) []string {
 		}
 	}
 	return out
-}
-
-// joinWithAnd and joinWithOr write a list the way a sentence takes one.
-//
-// A comma between every pair is how a machine writes a list and it reads as an
-// enumeration rather than as a sentence: "denied.exe, denied.sh holds plain
-// text" has no number to agree with. The text rules in CLAUDE.md ask for a
-// sentence, so the last pair gets its conjunction.
-func joinWithAnd(items []string) string { return joinWith(items, "and") }
-
-func joinWithOr(items []string) string { return joinWith(items, "or") }
-
-func joinWith(items []string, conjunction string) string {
-	switch len(items) {
-	case 0:
-		return ""
-	case 1:
-		return items[0]
-	}
-	return strings.Join(items[:len(items)-1], ", ") + " " + conjunction + " " + items[len(items)-1]
 }
 
 func namesOf(extensions []string) []string {

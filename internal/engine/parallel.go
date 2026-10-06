@@ -392,8 +392,8 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress
 	// never reaches its final name.
 	if counter.n != f.Plan.Bytes {
 		_ = os.Remove(tmp)
-		return "", fmt.Errorf("generator for %s produced %d B where the plan said %d B",
-			f.Desc.ID, counter.n, f.Plan.Bytes)
+		return "", core.Defect(fmt.Errorf("generator for %s produced %d B where the plan said %d B",
+			f.Desc.ID, counter.n, f.Plan.Bytes))
 	}
 
 	// Given its name only while nobody holds it. Preflight refused every name

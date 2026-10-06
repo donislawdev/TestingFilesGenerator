@@ -2,7 +2,6 @@ package manifest
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 	"runtime"
@@ -426,6 +425,25 @@ const noteExamples = 3
 // Names are not sorted here and the count is kept rather than the names, so a
 // million entry run no longer sorts a million strings to print sixteen lines.
 func (m *Manifest) Notes() []string {
+	groups := m.NoteGroups()
+	out := make([]string, 0, len(groups))
+	for _, g := range groups {
+		out = append(out, g.Line(core.Says("manifest.NoteText", "%s", core.A("Text", g.Detail))).String())
+	}
+	return out
+}
+
+// NoteGroup is one sentence of the notes and the files that carry it, for a
+// reader that words the line in its own language - see Line.
+type NoteGroup struct {
+	Detail string
+	Count  int
+	First  []string
+}
+
+// NoteGroups is the notes grouped by their sentence, in the order Notes prints
+// them.
+func (m *Manifest) NoteGroups() []NoteGroup {
 	groups := noteGroups{byDetail: map[string]*noteGroup{}}
 	for _, f := range m.Files {
 		for _, n := range f.Notes {
@@ -434,9 +452,10 @@ func (m *Manifest) Notes() []string {
 	}
 	sort.Strings(groups.order)
 
-	out := make([]string, 0, len(groups.order))
+	out := make([]NoteGroup, 0, len(groups.order))
 	for _, detail := range groups.order {
-		out = append(out, groups.byDetail[detail].line(detail))
+		g := groups.byDetail[detail]
+		out = append(out, NoteGroup{Detail: detail, Count: g.count, First: g.first})
 	}
 	return out
 }
@@ -475,23 +494,33 @@ func (n *noteGroups) add(detail, name string) {
 	}
 }
 
+// AsHeld is the group's note said as the manifest holds it, for a window
+// given a note the run did not keep as a sentence. There is none today, and
+// one would reach a window in English rather than not at all.
+func (g NoteGroup) AsHeld() core.Said {
+	return core.Says("manifest.NoteText", "%s", core.A("Text", g.Detail))
+}
+
 // line renders one group for a person to read.
 //
 // A group of one keeps the shape it always had - the file name in front - so
 // the common case of one file with something to say about it does not get worse
 // to make the large case better.
-func (g *noteGroup) line(detail string) string {
-	if g.count == 1 {
-		return fmt.Sprintf("%s: %s", core.Shown(g.first[0]), detail)
+//
+// The note is handed in as a sentence, so the command line gives the English
+// the manifest holds and a window gives the same note in its own language.
+func (g NoteGroup) Line(note core.Said) core.Said {
+	if g.Count == 1 {
+		return core.Says("manifest.NoteOne", "%s: %s", core.A("File", core.Shown(g.First[0])), core.A("Note", note))
 	}
-	named := strings.Join(core.ShownEach(g.first), ", ")
-	if hidden := g.count - len(g.first); hidden > 0 {
-		return fmt.Sprintf("%s: %s Named: %s. %s not named here.",
-			core.Count(g.count, "file", "files"), detail, named,
-			core.Count(hidden, "file", "files"))
+	named := strings.Join(core.ShownEach(g.First), ", ")
+	files := core.SaysN("manifest.Files", "%d file", "%d files", core.A("Count", g.Count))
+	if hidden := g.Count - len(g.First); hidden > 0 {
+		return core.Says("manifest.NoteMany", "%s: %s Named: %s. %s not named here.",
+			core.A("Files", files), core.A("Note", note), core.A("Named", named),
+			core.A("Hidden", core.SaysN("manifest.Files", "%d file", "%d files", core.A("Count", hidden))))
 	}
-	return fmt.Sprintf("%s: %s Named: %s.",
-		core.Count(g.count, "file", "files"), detail, named)
+	return core.Says("manifest.NoteSeveral", "%s: %s Named: %s.", core.A("Files", files), core.A("Note", note), core.A("Named", named))
 }
 
 // Encode renders the manifest as JSON.
@@ -504,11 +533,14 @@ func (m *Manifest) Encode(w io.Writer) error {
 // SchemaError is a manifest this build cannot read.
 type SchemaError struct {
 	Path   string
-	Detail string
+	Detail core.Said
 }
 
-func (e *SchemaError) Error() string {
-	return fmt.Sprintf("%s cannot be read as a manifest: %s", e.Path, e.Detail)
+func (e *SchemaError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *SchemaError) Said() core.Said {
+	return core.Says("manifest.Unreadable", "%s cannot be read as a manifest: %s", core.A("Path", e.Path), core.A("Detail", e.Detail))
 }
 
 // MaxBytes is the largest manifest this build will read.
@@ -596,10 +628,13 @@ type TooLargeError struct {
 	Bytes int64
 }
 
-func (e *TooLargeError) Error() string {
-	return fmt.Sprintf(
+func (e *TooLargeError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *TooLargeError) Said() core.Said {
+	return core.Says("manifest.TooLarge",
 		"%s is %d B and the limit is %d B. A manifest is read into memory to be compared against a directory, so an unbounded one is a way to exhaust it. Check that this is a manifest this tool wrote, or split the run it describes",
-		e.Path, e.Bytes, MaxBytes)
+		core.A("Path", e.Path), core.A("Bytes", e.Bytes), core.A("Limit", int64(MaxBytes)))
 }
 
 // Load reads a manifest written by an earlier run.
@@ -619,16 +654,14 @@ func Load(path string) (*Manifest, error) {
 	}
 	var m Manifest
 	if err := json.Unmarshal(raw, &m); err != nil {
-		return nil, &SchemaError{Path: path, Detail: err.Error()}
+		return nil, &SchemaError{Path: path, Detail: core.SaidOf(err)}
 	}
 	if m.ManifestVersion == "" {
-		return nil, &SchemaError{Path: path, Detail: "it carries no manifest_version, so it is not a manifest this tool wrote"}
+		return nil, &SchemaError{Path: path, Detail: core.Says("manifest.ItCarriesNoManifestVersionSo", "it carries no manifest_version, so it is not a manifest this tool wrote")}
 	}
 	got, want := major(m.ManifestVersion), major(Version)
 	if got != want {
-		return nil, &SchemaError{Path: path, Detail: fmt.Sprintf(
-			"it is schema version %s and this build reads %s. Use the version of tfg that wrote it",
-			m.ManifestVersion, Version)}
+		return nil, &SchemaError{Path: path, Detail: core.Says("manifest.ItIsSchemaVersionAndThis", "it is schema version %s and this build reads %s. Use the version of tfg that wrote it", core.A("ManifestVersion", m.ManifestVersion), core.A("Version", Version))}
 	}
 	if err := checkPaths(path, &m); err != nil {
 		return nil, err
@@ -664,22 +697,18 @@ func checkPaths(path string, m *Manifest) error {
 		if problem == "" {
 			continue
 		}
-		return &SchemaError{Path: path, Detail: fmt.Sprintf(
-			"entry %d has the path %q, which lands outside the directory the manifest describes - %s. "+
-				"This tool never reads or removes anything outside that directory, so a manifest that asks it to is one it will not act on. "+
-				"Use the manifest the run actually wrote, or correct the path to one inside the directory",
-			i+1, f.Path, problem)}
+		return &SchemaError{Path: path, Detail: core.Says("manifest.EntryHasThePathWhichLands", "entry %d has the path %q, which lands outside the directory the manifest describes - %s. "+
+			"This tool never reads or removes anything outside that directory, so a manifest that asks it to is one it will not act on. "+
+			"Use the manifest the run actually wrote, or correct the path to one inside the directory", core.A("I", i+1), core.A("Path", f.Path), core.A("Problem", problem))}
 	}
 	// The instructions are a name beside the manifest and nothing else.
 	// cleanup --with-manifest removes the file this names, so a manifest
 	// carrying a path here would be a manifest that removes something the run
 	// never wrote.
 	if name := m.Run.Instructions; name != "" && !isInstructionsName(name) {
-		return &SchemaError{Path: path, Detail: fmt.Sprintf(
-			"run.instructions is %q, and it can only be the name of a file beside the manifest ending in %s. "+
-				"This tool removes that file with the manifest, so it will not act on one that names anything else. "+
-				"Use the manifest the run actually wrote, or remove the key",
-			name, instructionsSuffix)}
+		return &SchemaError{Path: path, Detail: core.Says("manifest.RunInstructionsIsAndItCan", "run.instructions is %q, and it can only be the name of a file beside the manifest ending in %s. "+
+			"This tool removes that file with the manifest, so it will not act on one that names anything else. "+
+			"Use the manifest the run actually wrote, or remove the key", core.A("Name", name), core.A("InstructionsSuffix", instructionsSuffix))}
 	}
 	return nil
 }

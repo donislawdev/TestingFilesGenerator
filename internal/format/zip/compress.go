@@ -2,10 +2,11 @@ package zip
 
 import (
 	stdzip "archive/zip"
-	"fmt"
 	"io"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Everything about squeezing a zip, kept together and kept out of zip.go.
@@ -41,9 +42,9 @@ func padCompressed(m *memo, p *format.Plan, r format.Request, groups []format.Co
 			Format:    "ZIP",
 			Requested: r.Bytes,
 			Minimum:   withFiller,
-			Reason: fmt.Sprintf("an archive holding %s needs that much before anything is squeezed, "+
-				"and how far it squeezes is not known until it has been", describeGroups(groups)),
-			Hint: fmt.Sprintf("Ask for %d B or more, or hold fewer or smaller files.", withFiller),
+			Reason: core.Says("format.AnArchiveHoldingNeedsThatMuch", "an archive holding %s needs that much before anything is squeezed, "+
+				"and how far it squeezes is not known until it has been", core.A("Groups", describeGroups(groups))),
+			Hint: core.Says("format.AskForBOrMoreOr6", "Ask for %d B or more, or hold fewer or smaller files.", core.A("Bare", withFiller)),
 		}
 	}
 	p.Properties["padding_entry"] = fillerName

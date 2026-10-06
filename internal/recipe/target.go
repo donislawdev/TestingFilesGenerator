@@ -2,9 +2,7 @@ package recipe
 
 import (
 	"errors"
-	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -80,16 +78,16 @@ func (rt rawTarget) validate(p *problems, at func(id string) spot, def Defaults)
 		t.ID = id
 		where = at(t.ID)
 	} else {
-		p.add(where.of("id"), fmt.Sprintf("%s has no {setting}", where),
-			"{a} {setting} anchors the seed of a target, so editing one target never moves the bytes of another",
-			"give it {a} {setting}, for example id: invoices")
+		p.add(where.of("id"), core.Says("recipe.HasNoSetting", "%s has no {setting}", core.A("At", where)),
+			core.Says("recipe.SettingAnchorsTheSeedOfA", "{a} {setting} anchors the seed of a target, so editing one target never moves the bytes of another"),
+			core.Says("recipe.GiveItSettingForExampleId", "give it {a} {setting}, for example id: invoices"))
 	}
 
 	format, formatGiven := oneValue(p, where.of("format"), where.String()+" format", "format: txt", rt.Format)
 	if !formatGiven || format == "" {
-		p.add(where.of("format"), fmt.Sprintf("%s has no format", where),
-			"a target has to say what kind of file it produces",
-			"add format: txt, or run \"tfg formats\" to see the whole list")
+		p.add(where.of("format"), core.Says("recipe.HasNoFormat", "%s has no format", core.A("At", where)),
+			core.Says("recipe.ATargetHasToSayWhat", "a target has to say what kind of file it produces"),
+			core.Says("recipe.AddFormatTxtOrRunTfg", "add format: txt, or run \"tfg formats\" to see the whole list"))
 	} else {
 		t.Format = format
 	}
@@ -98,20 +96,20 @@ func (rt rawTarget) validate(p *problems, at func(id string) spot, def Defaults)
 		n, ok := rt.Count.number()
 		switch {
 		case !ok:
-			p.add(where.of("count"), fmt.Sprintf("%s has {a} {setting} of %q, which is not a whole number", where, rt.Count.text),
-				"{a} {setting} is how many files this target produces, so it is read exactly as written",
-				"write a decimal number such as count: 10")
+			p.add(where.of("count"), core.Says("recipe.HasSettingOfWhichIsNot", "%s has {a} {setting} of %q, which is not a whole number", core.A("Where", where), core.A("Text", rt.Count.text)),
+				core.Says("recipe.SettingIsHowManyFilesThis", "{a} {setting} is how many files this target produces, so it is read exactly as written"),
+				core.Says("recipe.WriteADecimalNumberSuchAs2", "write a decimal number such as count: 10"))
 		case n <= 0:
-			p.add(where.of("count"), fmt.Sprintf("%s asks for %d files", where, n),
-				"a target that produces nothing is almost always a mistake rather than an intention",
-				"ask for at least one, or delete the target")
+			p.add(where.of("count"), core.Says("recipe.AsksForFiles", "%s asks for %d files", core.A("At", where), core.A("Value", n)),
+				core.Says("recipe.ATargetThatProducesNothingIs", "a target that produces nothing is almost always a mistake rather than an intention"),
+				core.Says("recipe.AskForAtLeastOneOr", "ask for at least one, or delete the target"))
 		// Judged before the list is built. The reader used to grow it one entry
 		// at a time and reached a 13 GB allocation on a count of 2^63 - so this
 		// has to refuse the number rather than the result of using it.
 		case n > core.MaxFilesPerRun:
-			p.add(where.of("count"), fmt.Sprintf("%s asks for %d files", where, n),
-				core.ErrTooManyFiles.Error(),
-				fmt.Sprintf("use {a} {setting} of %d or less, or split the target across several recipes", core.MaxFilesPerRun))
+			p.add(where.of("count"), core.Says("recipe.AsksForFiles", "%s asks for %d files", core.A("At", where), core.A("Value", n)),
+				core.SaidOf(core.ErrTooManyFiles),
+				core.Says("recipe.UseSettingOfOrLessOr2", "use {a} {setting} of %d or less, or split the target across several recipes", core.A("MaxFilesPerRun", core.MaxFilesPerRun)))
 		default:
 			count = int(n)
 		}
@@ -153,8 +151,8 @@ func (rt rawTarget) describe(p *problems, where spot, t *Target) {
 // refuseSections names the parts of a target this build cannot honour.
 func (rt rawTarget) refuseSections(p *problems, where spot) {
 	if rt.Fill != nil {
-		p.notYetIn(where, "fill", "the fill mode is not settable yet",
-			"remove the line - content is generated from the seed")
+		p.notYetIn(where, "fill", core.Says("recipe.TheFillModeIsNotSettable", "the fill mode is not settable yet"),
+			core.Says("recipe.RemoveTheLineContentIsGenerated", "remove the line - content is generated from the seed"))
 	}
 }
 
@@ -170,24 +168,24 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 	// and picking one of them quietly is how a recipe stops meaning what it
 	// says. Every pairing is named rather than resolved.
 	case rt.SizeRange != nil && rt.Size != nil:
-		p.add(where.of("size"), fmt.Sprintf("%s states both {a} {setting} and a size-range", where),
-			"one names an exact {setting} and the other draws one, so together they say two different things",
-			"keep {setting} for identical files, or keep size-range for a different {setting} each")
+		p.add(where.of("size"), core.Says("recipe.StatesBothSettingAndASize", "%s states both {a} {setting} and a size-range", core.A("Where", where)),
+			core.Says("recipe.OneNamesAnExactSettingAnd", "one names an exact {setting} and the other draws one, so together they say two different things"),
+			core.Says("recipe.KeepSettingForIdenticalFilesOr", "keep {setting} for identical files, or keep size-range for a different {setting} each"))
 
 	case rt.SizeRange != nil && rt.Boundary != nil:
-		p.add(where.of("boundary"), fmt.Sprintf("%s states both {a} {setting} and a size-range", where),
-			"{a} {setting} is three chosen sizes around a limit, so drawing sizes as well would throw away the reason for choosing them",
-			"keep {setting} to test a limit, or keep size-range for files of varying size")
+		p.add(where.of("boundary"), core.Says("recipe.StatesBothSettingAndASize", "%s states both {a} {setting} and a size-range", core.A("Where", where)),
+			core.Says("recipe.SettingIsThreeChosenSizesAround", "{a} {setting} is three chosen sizes around a limit, so drawing sizes as well would throw away the reason for choosing them"),
+			core.Says("recipe.KeepSettingToTestALimit", "keep {setting} to test a limit, or keep size-range for files of varying size"))
 
 	case rt.Boundary != nil && rt.Size != nil:
-		p.add(where.of("size"), fmt.Sprintf("%s states both {a} {setting} and a boundary", where),
-			"a boundary already decides the sizes, so {a} {setting} beside it means two different things at once",
-			"keep boundary for the three sizes around a limit, or keep {setting} for one exact {setting}")
+		p.add(where.of("size"), core.Says("recipe.StatesBothSettingAndABoundary", "%s states both {a} {setting} and a boundary", core.A("Where", where)),
+			core.Says("recipe.ABoundaryAlreadyDecidesTheSizes", "a boundary already decides the sizes, so {a} {setting} beside it means two different things at once"),
+			core.Says("recipe.KeepBoundaryForTheThreeSizes", "keep boundary for the three sizes around a limit, or keep {setting} for one exact {setting}"))
 
 	case rt.Boundary != nil && rt.Count != nil:
-		p.add(where.of("count"), fmt.Sprintf("%s states both {a} {setting} and a boundary", where),
-			"a boundary set is exactly three files, one below the limit, one at it and one above",
-			"remove {setting}, or use size with {setting} to ask for identical files")
+		p.add(where.of("count"), core.Says("recipe.StatesBothSettingAndABoundary", "%s states both {a} {setting} and a boundary", core.A("Where", where)),
+			core.Says("recipe.ABoundarySetIsExactlyThree", "a boundary set is exactly three files, one below the limit, one at it and one above"),
+			core.Says("recipe.RemoveSettingOrUseSizeWith", "remove {setting}, or use size with {setting} to ask for identical files"))
 
 	case rt.Boundary != nil:
 		t.Size = boundaryText(p, where, rt.Boundary)
@@ -204,17 +202,17 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 	case rt.Size != nil:
 		s, ok := rt.Size.value()
 		if !ok {
-			p.add(where.of("size"), fmt.Sprintf("%s has {a} {setting} that is neither text nor a number", where),
-				"{a} {setting} is written as 2mb or as a plain byte count",
-				"use size: 2mb or size: 2097152")
+			p.add(where.of("size"), core.Says("recipe.HasSettingThatIsNeitherText", "%s has {a} {setting} that is neither text nor a number", core.A("At", where)),
+				core.Says("recipe.SettingIsWrittenAs2mbOr", "{a} {setting} is written as 2mb or as a plain byte count"),
+				core.Says("recipe.UseSize2mbOrSize2097152", "use size: 2mb or size: 2097152"))
 			break
 		}
 		t.Size = s
 		n, err := core.ParseSize(s)
 		if err != nil {
-			p.add(where.of("size"), fmt.Sprintf("%s: %v", where, err),
-				"units count in 1024s, so 10mb is 10485760 bytes",
-				"use {a} {setting} such as 2mb, 512kb or a plain byte count")
+			p.add(where.of("size"), core.Says("recipe.WhereError", "%s: %v", core.A("Where", where), core.A("Error", err)),
+				core.Says("recipe.UnitsCountIn1024sSo10mb", "units count in 1024s, so 10mb is 10485760 bytes"),
+				core.Says("recipe.UseSettingSuchAs2mb512kb", "use {a} {setting} such as 2mb, 512kb or a plain byte count"))
 			break
 		}
 		for i := 0; i < count; i++ {
@@ -228,9 +226,9 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 		// per file.
 		text, ok := rt.SizeRange.value()
 		if !ok {
-			p.add(where.of("size-range"), fmt.Sprintf("%s has {a} {setting} that is not text", where),
-				"a range is two sizes with a hyphen between them",
-				"use size-range: 1kb-8kb")
+			p.add(where.of("size-range"), core.Says("recipe.HasSettingThatIsNotText", "%s has {a} {setting} that is not text", core.A("Where", where)),
+				core.Says("recipe.ARangeIsTwoSizesWith", "a range is two sizes with a hyphen between them"),
+				core.Says("recipe.UseSizeRange1kb8kb", "use size-range: 1kb-8kb"))
 			break
 		}
 		t.Size = text
@@ -257,9 +255,9 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 		}
 
 	default:
-		p.add(where.of("size"), fmt.Sprintf("%s has no {setting}", where),
-			"every target declares its {setting}, which is what lets a dry run report exact numbers before anything reaches the disk",
-			"add size: 2mb, size-range: 1kb-8kb, a boundary, contains, or a plain number of bytes")
+		p.add(where.of("size"), core.Says("recipe.HasNoSetting", "%s has no {setting}", core.A("At", where)),
+			core.Says("recipe.EveryTargetDeclaresItsSettingWhich", "every target declares its {setting}, which is what lets a dry run report exact numbers before anything reaches the disk"),
+			core.Says("recipe.AddSize2mbSizeRange1kb", "add size: 2mb, size-range: 1kb-8kb, a boundary, contains, or a plain number of bytes"))
 	}
 }
 
@@ -271,9 +269,9 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 func parseSizeRange(p *problems, where spot, text string) (low, high int64, ok bool) {
 	lo, hi, err := core.ParseSizeRange(text)
 	if err != nil {
-		p.add(where.of("size-range"), fmt.Sprintf("%s: %v", where, err),
-			"both ends of a range are sizes, and units count in 1024s",
-			"use size-range: 1kb-8kb or a pair of plain byte counts")
+		p.add(where.of("size-range"), core.Says("recipe.WhereError", "%s: %v", core.A("Where", where), core.A("Error", err)),
+			core.Says("recipe.BothEndsOfARangeAre", "both ends of a range are sizes, and units count in 1024s"),
+			core.Says("recipe.UseSizeRange1kb8kbOr", "use size-range: 1kb-8kb or a pair of plain byte counts"))
 		return 0, 0, false
 	}
 	return lo, hi, true
@@ -304,10 +302,6 @@ var reasons = map[string]bool{
 	"filename_invalid": true, "filename_too_long": true, "filename_traversal": true,
 	"dimensions_limit": true, "nesting_depth": true, "encoding_invalid": true,
 	"malware_signature": true, "duplicate": true, "none": true,
-}
-
-func reasonList() string {
-	return strings.Join(Reasons(), ", ")
 }
 
 // Reasons is the closed list, for the surfaces that have to offer it.
@@ -374,9 +368,9 @@ func KnownOutcome(o string) bool {
 func boundaryText(p *problems, where spot, v *scalar) string {
 	s, ok := v.value()
 	if !ok {
-		p.add(where.of("boundary"), fmt.Sprintf("%s has {a} {setting} that is neither text nor a number", where),
-			"{a} {setting} is one size, and the set is built either side of it",
-			"use boundary: 10mb or a plain byte count")
+		p.add(where.of("boundary"), core.Says("recipe.HasSettingThatIsNeitherText", "%s has {a} {setting} that is neither text nor a number", core.A("At", where)),
+			core.Says("recipe.SettingIsOneSizeAndThe", "{a} {setting} is one size, and the set is built either side of it"),
+			core.Says("recipe.UseBoundary10mbOrAPlain", "use boundary: 10mb or a plain byte count"))
 		return ""
 	}
 	return s
@@ -395,21 +389,21 @@ func boundarySizes(p *problems, where spot, text string) []int64 {
 	}
 	limit, err := core.ParseBoundary(text)
 	if err != nil {
-		p.add(where.of("boundary"), fmt.Sprintf("%s: %v", where, err),
-			"units count in 1024s, so 10mb is 10485760 bytes",
-			"use {a} {setting} such as 10mb, 512kb or a plain byte count")
+		p.add(where.of("boundary"), core.Says("recipe.WhereError", "%s: %v", core.A("Where", where), core.A("Error", err)),
+			core.Says("recipe.UnitsCountIn1024sSo10mb", "units count in 1024s, so 10mb is 10485760 bytes"),
+			core.Says("recipe.UseSettingSuchAs10mb512kb", "use {a} {setting} such as 10mb, 512kb or a plain byte count"))
 		return nil
 	}
 	sizes, err := core.BoundarySizes(limit)
 	if errors.Is(err, core.ErrBoundaryTooSmall) {
-		p.add(where.of("boundary"), fmt.Sprintf("%s has {a} {setting} of %d B", where, limit),
+		p.add(where.of("boundary"), core.Says("recipe.HasSettingOfB", "%s has {a} {setting} of %d B", core.A("Where", where), core.A("Limit", limit)),
 			core.BoundaryTooSmallWhy, core.BoundaryTooSmallFix)
 		return nil
 	}
 	if err != nil {
-		p.add(where.of("boundary"), fmt.Sprintf("%s has {a} {setting} of %d B", where, limit),
-			err.Error(),
-			"use {a} {setting} at least one byte below the largest number")
+		p.add(where.of("boundary"), core.Says("recipe.HasSettingOfB", "%s has {a} {setting} of %d B", core.A("Where", where), core.A("Limit", limit)),
+			core.SaidOf(err),
+			core.Says("recipe.UseSettingAtLeastOneByte", "use {a} {setting} at least one byte below the largest number"))
 		return nil
 	}
 	return sizes
@@ -429,16 +423,16 @@ func expectation(p *problems, where spot, v any) (string, string) {
 	case map[string]any:
 		o, ok := x["outcome"]
 		if !ok {
-			p.add(where.of("expected"), fmt.Sprintf("%s declares an expectation with no outcome", where),
-				"an expectation says what the system under test should do with the file",
-				"add outcome: accept, reject, sanitize or unspecified")
+			p.add(where.of("expected"), core.Says("recipe.DeclaresAnExpectationWithNoOutcome", "%s declares an expectation with no outcome", core.A("Where", where)),
+				core.Says("recipe.AnExpectationSaysWhatTheSystem", "an expectation says what the system under test should do with the file"),
+				core.Says("recipe.AddOutcomeAcceptRejectSanitizeOr", "add outcome: accept, reject, sanitize or unspecified"))
 			return "", ""
 		}
 		s, ok := scalarText(o)
 		if !ok {
-			p.add(where.of("expected"), fmt.Sprintf("%s declares an outcome that is not a word", where),
-				"an outcome is one of four words",
-				"use accept, reject, sanitize or unspecified")
+			p.add(where.of("expected"), core.Says("recipe.DeclaresAnOutcomeThatIsNot", "%s declares an outcome that is not a word", core.A("Where", where)),
+				core.Says("recipe.AnOutcomeIsOneOfFour", "an outcome is one of four words"),
+				core.Says("recipe.UseAcceptRejectSanitizeOrUnspecified", "use accept, reject, sanitize or unspecified"))
 			return "", ""
 		}
 		outcome = s
@@ -449,30 +443,30 @@ func expectation(p *problems, where spot, v any) (string, string) {
 			switch k {
 			case "outcome", "reason":
 			default:
-				p.add(where.of("expected"), fmt.Sprintf("%s declares %q inside its expectation", where, k),
-					"an expectation carries an outcome and a reason, and anything else would be dropped without a word",
-					"remove the line, or put the explanation in reason")
+				p.add(where.of("expected"), core.Says("recipe.DeclaresInsideItsExpectation", "%s declares %q inside its expectation", core.A("Where", where), core.A("K", k)),
+					core.Says("recipe.AnExpectationCarriesAnOutcomeAnd", "an expectation carries an outcome and a reason, and anything else would be dropped without a word"),
+					core.Says("recipe.RemoveTheLineOrPutThe", "remove the line, or put the explanation in reason"))
 			}
 		}
 
 		if r, ok := x["reason"]; ok {
 			s, ok := scalarText(r)
 			if !ok {
-				p.add(where.of("expected.reason"), fmt.Sprintf("%s declares a reason that is not a word", where),
-					"a reason is one value from a closed list",
-					"use one of: "+reasonList())
+				p.add(where.of("expected.reason"), core.Says("recipe.DeclaresAReasonThatIsNot", "%s declares a reason that is not a word", core.A("Where", where)),
+					core.Says("recipe.AReasonIsOneValueFrom", "a reason is one value from a closed list"),
+					core.Says("recipe.UseOneOfReasons", "use one of: %s", core.A("Reasons", core.Choices{Of: KeyExpectedReason, Values: Reasons()})))
 			} else if !reasons[s] {
-				p.add(where.of("expected.reason"), fmt.Sprintf("%s gives the reason %q, which is not on the list", where, s),
-					"the list is closed so that a report can group by reason, and a typo would make a category of one",
-					"use one of: "+reasonList())
+				p.add(where.of("expected.reason"), core.Says("recipe.GivesTheReasonWhichIsNot", "%s gives the reason %q, which is not on the list", core.A("Where", where), core.A("Value", s)),
+					core.Says("recipe.TheListIsClosedSoThat", "the list is closed so that a report can group by reason, and a typo would make a category of one"),
+					core.Says("recipe.UseOneOfReasons", "use one of: %s", core.A("Reasons", core.Choices{Of: KeyExpectedReason, Values: Reasons()})))
 			} else {
 				reason = s
 			}
 		}
 	default:
-		p.add(where.of("expected"), fmt.Sprintf("%s declares an expectation this build cannot read", where),
-			"an expectation is either one word or a block with an outcome",
-			"use expected: accept, or a block with outcome:")
+		p.add(where.of("expected"), core.Says("recipe.DeclaresAnExpectationThisBuildCannot", "%s declares an expectation this build cannot read", core.A("Where", where)),
+			core.Says("recipe.AnExpectationIsEitherOneWord", "an expectation is either one word or a block with an outcome"),
+			core.Says("recipe.UseExpectedAcceptOrABlock", "use expected: accept, or a block with outcome:"))
 		return "", ""
 	}
 
@@ -482,9 +476,9 @@ func expectation(p *problems, where spot, v any) (string, string) {
 	case KnownOutcome(outcome):
 		return outcome, reason
 	default:
-		p.add(where.of("expected"), fmt.Sprintf("%s expects %q, which is not a known outcome", where, outcome),
-			"a typo accepted in silence becomes an expectation no test will ever check",
-			"use accept, reject, sanitize or unspecified")
+		p.add(where.of("expected"), core.Says("recipe.ExpectsWhichIsNotAKnown", "%s expects %q, which is not a known outcome", core.A("Where", where), core.A("Outcome", outcome)),
+			core.Says("recipe.ATypoAcceptedInSilenceBecomes", "a typo accepted in silence becomes an expectation no test will ever check"),
+			core.Says("recipe.UseAcceptRejectSanitizeOrUnspecified", "use accept, reject, sanitize or unspecified"))
 		return "", ""
 	}
 }
@@ -507,9 +501,9 @@ func properties(p *problems, where spot, formatID string, in map[string]scalar) 
 	for _, k := range keys {
 		s, ok := in[k].value()
 		if !ok {
-			p.add(where.of("properties."+k), fmt.Sprintf("%s: property %q is a list or a block", where, k),
-				"a format property is a single value",
-				"give it one value, for example pages: 3")
+			p.add(where.of("properties."+k), core.Says("recipe.PropertyIsAListOrA", "%s: property %q is a list or a block", core.A("Where", where), core.A("K", k)),
+				core.Says("recipe.AFormatPropertyIsASingle", "a format property is a single value"),
+				core.Says("recipe.GiveItOneValueForExample2", "give it one value, for example pages: 3"))
 			continue
 		}
 		out[k] = s
@@ -553,25 +547,24 @@ func askTheFormat(p *problems, where spot, formatID string, stated map[string]st
 			// Every problem this can return names its key. Kept as a branch
 			// rather than assumed, because a third kind added without one would
 			// otherwise vanish instead of arriving unaddressed.
-			p.add(where.of(KeyProperties), bad.Error(), "", "")
+			p.add(where.of(KeyProperties), core.SaidOf(bad), core.Said{}, core.Said{})
 			continue
 		}
 		at := where.of(KeyProperties + "." + about.AboutSetting())
 		var value *format.PropertyValueError
 		if errors.As(bad, &value) {
-			p.add(at, fmt.Sprintf("%s: %s cannot be %q", where, value.Key, value.Value),
-				core.InTheWordsOf(value.Reason, value.Key), value.Remedy)
+			p.add(at, cannotBe(where, value), value.Reason, value.Remedy)
 			continue
 		}
 		var unknown *format.UnknownPropertyError
 		if errors.As(bad, &unknown) {
-			p.add(at, fmt.Sprintf("%s: %s", where, unknown.What()),
-				unknown.Why(), unknown.Instead())
+			what, why, instead := unknown.Parts()
+			p.add(at, whereWhat(where, what), why, instead)
 			continue
 		}
 		// A kind of problem this does not know the shape of. It still names its
 		// box, and the sentence still arrives whole - an empty why would print
 		// as a bare dash, which is what the first version of this did.
-		p.add(at, fmt.Sprintf("%s: %s", where, bad.Error()), "", "")
+		p.add(at, whereWhat(where, core.SaidOf(bad)), core.Said{}, core.Said{})
 	}
 }

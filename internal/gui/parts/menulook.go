@@ -41,6 +41,7 @@ func (c *Chooser) CreateRenderer() fyne.WidgetRenderer {
 	}
 	look.accent()
 	look.showKind()
+	look.showName()
 	return look
 }
 
@@ -67,6 +68,7 @@ func (m *menuLook) Refresh() {
 	// The toolkit's Refresh lays itself out again, which moves the value back
 	// under the picture - so the picture's room is made again after it.
 	m.WidgetRenderer.Refresh()
+	m.showName()
 	m.accent()
 	m.showKind()
 	m.placeKind(m.menu.Size())
@@ -74,6 +76,26 @@ func (m *menuLook) Refresh() {
 
 // showKind puts the picture of the value now in the box into the box, or
 // hides it when the value has none.
+// showName puts the words a value is drawn as in the box, over the value the
+// toolkit wrote there - see Chooser.ShownAs. A menu whose values are their own
+// words is left as the toolkit drew it.
+func (m *menuLook) showName() {
+	if m.menu.ShownAs == nil || m.menu.Selected == "" {
+		return
+	}
+	for _, o := range m.WidgetRenderer.Objects() {
+		words, ok := o.(*widget.RichText)
+		if !ok || len(words.Segments) == 0 {
+			continue
+		}
+		if segment, ok := words.Segments[0].(*widget.TextSegment); ok {
+			segment.Text = m.menu.shown(m.menu.Selected)
+			words.Refresh()
+		}
+		return
+	}
+}
+
 func (m *menuLook) showKind() {
 	if m.kind == nil {
 		return

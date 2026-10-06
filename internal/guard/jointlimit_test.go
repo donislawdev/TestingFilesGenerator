@@ -31,13 +31,13 @@ func TestNoJointLimitRefusalPrintsTheRequestAndTheLimitAsOneNumber(t *testing.T)
 		// the limit is exactly where rounding used to hide the difference.
 		for _, over := range []int64{1, l.Max / 2, l.Max * 9} {
 			got := l.Max + over
-			bad := l.Allows(got, 1)
-			if bad == "" {
+			bad := l.Allows("", got, 1)
+			if bad.IsZero() {
 				t.Errorf("%s: %d is past the limit of %d and the rule allowed it",
 					l.Of+" times "+l.By, got, l.Max)
 				continue
 			}
-			counts := countsIn(bad)
+			counts := countsIn(bad.String())
 			if len(counts) < 2 {
 				t.Errorf("%s: the refusal does not read as two counts: %q",
 					l.Of+" times "+l.By, bad)

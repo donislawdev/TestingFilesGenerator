@@ -1,7 +1,6 @@
 package recipe
 
 import (
-	"fmt"
 	"sort"
 	"strconv"
 	"strings"
@@ -11,6 +10,8 @@ import (
 	"github.com/goccy/go-yaml/ast"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // SchemaVersion is the recipe schema this build understands. It is versioned
@@ -170,10 +171,13 @@ type TooLargeError struct {
 	Bytes int64
 }
 
-func (e *TooLargeError) Error() string {
-	return fmt.Sprintf(
+func (e *TooLargeError) Error() string { return e.Said().String() }
+
+// Said is the refusal, for a window that says it in its own language.
+func (e *TooLargeError) Said() core.Said {
+	return core.Says("recipe.TooLarge",
 		"%s is %d B and the limit is %d B. A recipe is a document somebody writes, and reading time grows with its size, so an unbounded one is a way to hang a build. Split it into several recipes, or generate the targets with a loop in your own script",
-		e.Name, e.Bytes, MaxBytes)
+		core.A("Name", e.Name), core.A("Bytes", e.Bytes), core.A("Limit", int64(MaxBytes)))
 }
 
 // Parse reads a recipe and returns it only when every check passes.
@@ -286,7 +290,7 @@ func decodeStrict(f *ast.File, raw *rawRecipe) (err error) {
 			// The panic value itself says "invalid memory address", which tells
 			// a person testing an upload form nothing at all. What helps is the
 			// shape of the thing that does it.
-			err = fmt.Errorf("this file could not be read as YAML. Look for a tag or anchor marker such as ! or & with nothing after it")
+			err = core.Refuse(core.Says("recipe.NotYAML", "this file could not be read as YAML. Look for a tag or anchor marker such as ! or & with nothing after it"))
 		}
 	}()
 	// Decoded from the document the one-document check already parsed, rather
@@ -382,17 +386,17 @@ func (raw rawRecipe) validate(p *problems, fromPreset int) *Recipe {
 	}
 	switch {
 	case raw.Version == nil:
-		p.add("version", "the recipe has no version",
-			"every recipe declares the schema version it was written against",
-			fmt.Sprintf("add version: %d as the first line", SchemaVersion))
+		p.add("version", core.Says("recipe.TheRecipeHasNoVersion", "the recipe has no version"),
+			core.Says("recipe.EveryRecipeDeclaresTheSchemaVersion", "every recipe declares the schema version it was written against"),
+			core.Says("recipe.AddVersionAsTheFirstLine", "add version: %d as the first line", core.A("SchemaVersion", SchemaVersion)))
 	case !versionIsNumber:
-		p.add("version", fmt.Sprintf("version %q is not a whole number", raw.Version.text),
-			"the version decides how the rest of the file is read, so it is never guessed at",
-			fmt.Sprintf("write version: %d", SchemaVersion))
+		p.add("version", core.Says("recipe.VersionIsNotAWholeNumber", "version %q is not a whole number", core.A("Text", raw.Version.text)),
+			core.Says("recipe.TheVersionDecidesHowTheRest", "the version decides how the rest of the file is read, so it is never guessed at"),
+			core.Says("recipe.WriteVersion", "write version: %d", core.A("SchemaVersion", SchemaVersion)))
 	case version != SchemaVersion:
-		p.add("version", fmt.Sprintf("version %d is not a schema this build knows", version),
-			fmt.Sprintf("this build understands version %d", SchemaVersion),
-			"upgrade the tool, or write the recipe against the version above")
+		p.add("version", core.Says("recipe.VersionIsNotASchemaThis", "version %d is not a schema this build knows", core.A("Version", version)),
+			core.Says("recipe.ThisBuildUnderstandsVersion", "this build understands version %d", core.A("SchemaVersion", SchemaVersion)),
+			core.Says("recipe.UpgradeTheToolOrWriteThe", "upgrade the tool, or write the recipe against the version above"))
 	}
 
 	raw.refuseUnsupported(p)
@@ -408,16 +412,16 @@ func (raw rawRecipe) validate(p *problems, fromPreset int) *Recipe {
 	// README, which says a recipe of extends alone is legal. Until
 	// 2026-09-22 both keys were refused here as "not in this build yet".
 	if ext := raw.extension(p); ext != nil {
-		p.add(KeyExtends, fmt.Sprintf("this recipe builds on preset:%s, and the preset's targets were not supplied", ext.Preset),
-			"a recipe that builds on a preset is read by a reader that expands the preset first, and this one does not",
-			"read the file with \"tfg generate\" or \"tfg validate\", which do")
+		p.add(KeyExtends, core.Says("recipe.ThisRecipeBuildsOnPresetAnd", "this recipe builds on preset:%s, and the preset's targets were not supplied", core.A("Preset", ext.Preset)),
+			core.Says("recipe.ARecipeThatBuildsOnA", "a recipe that builds on a preset is read by a reader that expands the preset first, and this one does not"),
+			core.Says("recipe.ReadTheFileWithTfgGenerate", "read the file with \"tfg generate\" or \"tfg validate\", which do"))
 		return rec
 	}
 
 	if len(raw.Targets) == 0 {
-		p.add("targets", "the recipe asks for no files",
-			"a recipe without targets has nothing to produce",
-			"add at least one entry under targets:")
+		p.add("targets", core.Says("recipe.TheRecipeAsksForNoFiles", "the recipe asks for no files"),
+			core.Says("recipe.ARecipeWithoutTargetsHasNothing", "a recipe without targets has nothing to produce"),
+			core.Says("recipe.AddAtLeastOneEntryUnder", "add at least one entry under targets:"))
 		return rec
 	}
 
@@ -447,14 +451,14 @@ func (raw rawRecipe) validate(p *problems, fromPreset int) *Recipe {
 // lies. ofThePreset says which.
 func usedTwice(p *problems, where spot, id string, ofThePreset bool) {
 	if ofThePreset {
-		p.add(where.of("id"), fmt.Sprintf("%s has the {setting} of a target the preset already builds", where),
-			"the preset's targets come first and every {setting} anchors a seed, so a second one would be a target nobody can tell from the first",
-			"give it a different {setting}, or leave the preset's target out by ejecting the preset and editing the recipe")
+		p.add(where.of("id"), core.Says("recipe.HasTheSettingOfATarget", "%s has the {setting} of a target the preset already builds", core.A("Where", where)),
+			core.Says("recipe.ThePresetSTargetsComeFirst", "the preset's targets come first and every {setting} anchors a seed, so a second one would be a target nobody can tell from the first"),
+			core.Says("recipe.GiveItADifferentSettingOr", "give it a different {setting}, or leave the preset's target out by ejecting the preset and editing the recipe"))
 		return
 	}
-	p.add(where.of("id"), fmt.Sprintf("target {setting} %q is used twice", id),
-		"{a} {setting} identifies a target, anchors its seed and links it to the manifest",
-		"give one of them a different {setting}")
+	p.add(where.of("id"), core.Says("recipe.TargetSettingIsUsedTwice", "target {setting} %q is used twice", core.A("ID", id)),
+		core.Says("recipe.SettingIdentifiesATargetAnchorsIts", "{a} {setting} identifies a target, anchors its seed and links it to the manifest"),
+		core.Says("recipe.GiveOneOfThemADifferent", "give one of them a different {setting}"))
 }
 
 // spotOfTarget is where the target at position i of the merged list is, as a
@@ -479,22 +483,22 @@ func spotOfTarget(i, fromPreset int) func(id string) spot {
 // asked for, which is the one thing this tool must never do.
 func (raw rawRecipe) refuseUnsupported(p *problems) {
 	if raw.Engine != nil {
-		p.notYet("engine", "the tool version this recipe requires is not checked yet",
-			"remove the line - the manifest records the version that ran")
+		p.notYet("engine", core.Says("recipe.TheToolVersionThisRecipeRequires", "the tool version this recipe requires is not checked yet"),
+			core.Says("recipe.RemoveTheLineTheManifestRecords", "remove the line - the manifest records the version that ran"))
 	}
 	if locale, ok := oneValue(p, "locale", "locale", "locale: en", raw.Locale); ok && locale != "en" {
-		p.add("locale", fmt.Sprintf("locale %q is not available in this build", locale),
-			"generated content is English only so far",
-			"use locale: en, or leave the line out")
+		p.add("locale", core.Says("recipe.LocaleIsNotAvailableInThis", "locale %q is not available in this build", core.A("Locale", locale)),
+			core.Says("recipe.GeneratedContentIsEnglishOnlySo", "generated content is English only so far"),
+			core.Says("recipe.UseLocaleEnOrLeaveThe", "use locale: en, or leave the line out"))
 	}
 	if on, ok := oneFlag(p, "allow_nondeterministic", "allow_nondeterministic", raw.AllowNondeterministic); ok && on {
-		p.add("allow_nondeterministic", "allow_nondeterministic: true has nothing to allow in this build",
-			"every format here repeats to the byte, so no consent is needed",
-			"remove the line - it will be needed by the formats that use a system encoder")
+		p.add("allow_nondeterministic", core.Says("recipe.AllowNondeterministicTrueHasNothingTo", "allow_nondeterministic: true has nothing to allow in this build"),
+			core.Says("recipe.EveryFormatHereRepeatsToThe", "every format here repeats to the byte, so no consent is needed"),
+			core.Says("recipe.RemoveTheLineItWillBe", "remove the line - it will be needed by the formats that use a system encoder"))
 	}
 	if raw.Policy != nil {
-		p.notYet("policy", "unspecified expectations are left in the manifest for the consumer to settle",
-			"remove the section - the expected field on a target already works")
+		p.notYet("policy", core.Says("recipe.UnspecifiedExpectationsAreLeftInThe", "unspecified expectations are left in the manifest for the consumer to settle"),
+			core.Says("recipe.RemoveTheSectionTheExpectedField", "remove the section - the expected field on a target already works"))
 	}
 }
 
@@ -504,9 +508,9 @@ func (raw rawRecipe) applySettings(p *problems, rec *Recipe) {
 	if raw.Seed != nil {
 		n, ok := raw.Seed.number()
 		if !ok {
-			p.add("seed", fmt.Sprintf("seed %q is not a whole number", raw.Seed.text),
-				"the seed decides every byte of the run, so it is read exactly as written and never guessed at",
-				"write a decimal number such as seed: 20260802")
+			p.add("seed", core.Says("recipe.SeedIsNotAWholeNumber", "seed %q is not a whole number", core.A("Text", raw.Seed.text)),
+				core.Says("recipe.TheSeedDecidesEveryByteOf", "the seed decides every byte of the run, so it is read exactly as written and never guessed at"),
+				core.Says("recipe.WriteADecimalNumberSuchAs", "write a decimal number such as seed: 20260802"))
 		} else {
 			rec.Seed = n
 			rec.SeedSet = true
@@ -515,8 +519,8 @@ func (raw rawRecipe) applySettings(p *problems, rec *Recipe) {
 
 	if raw.Defaults != nil {
 		if raw.Defaults.Fill != nil {
-			p.notYet("defaults.fill", "the fill mode is not settable yet",
-				"remove the line - content is generated from the seed")
+			p.notYet("defaults.fill", core.Says("recipe.TheFillModeIsNotSettable", "the fill mode is not settable yet"),
+				core.Says("recipe.RemoveTheLineContentIsGenerated", "remove the line - content is generated from the seed"))
 		}
 		if on, ok := oneFlag(p, "defaults.label", "defaults.label", raw.Defaults.Label); ok {
 			rec.Defaults.Label = on
@@ -525,8 +529,8 @@ func (raw rawRecipe) applySettings(p *problems, rec *Recipe) {
 
 	if raw.Output != nil {
 		if raw.Output.SplitThreshold != nil {
-			p.notYet("output.split_threshold", "the manifest is always written as one file so far",
-				"remove the line")
+			p.notYet("output.split_threshold", core.Says("recipe.TheManifestIsAlwaysWrittenAs", "the manifest is always written as one file so far"),
+				core.Says("recipe.RemoveTheLine", "remove the line"))
 		}
 		if dir, ok := oneValue(p, "output.dir", "output.dir", "dir: ./fixtures", raw.Output.Dir); ok {
 			rec.Output.Dir = dir

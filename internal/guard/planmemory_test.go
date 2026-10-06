@@ -207,7 +207,7 @@ func TestThePlanCeilingIsTheOneCoreStates(t *testing.T) {
 	}
 	// And the sentence has to name it, or the refusal sends somebody looking
 	// for a number that is written somewhere else.
-	if !strings.Contains(core.PlanTooLargeWhy, core.HumanBytes(core.MaxPlanBytes)) {
+	if !strings.Contains(core.PlanTooLargeWhy.String(), core.HumanBytes(core.MaxPlanBytes)) {
 		t.Errorf("the refusal reason does not name the ceiling %s: %s",
 			core.HumanBytes(core.MaxPlanBytes), core.PlanTooLargeWhy)
 	}

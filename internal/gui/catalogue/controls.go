@@ -158,6 +158,14 @@ func chooser() Entry {
 			c.SetSelected(longText)
 			return onAForm(c)
 		}},
+		{"a value drawn under its name, longer than the value", func() fyne.CanvasObject {
+			// A declared setting in a window that does not speak English:
+			// the box draws the name and still holds the value (ShownAs).
+			c := parts.NewChooser(namedValues, func(string) {})
+			c.ShownAs = nameOfValue
+			c.SetSelected("landscape")
+			return onAForm(c)
+		}},
 		{"every format, showing the kind of its value", func() fyne.CanvasObject {
 			// The one menu that draws a picture in the shut box - see
 			// menuLook.placeKind. Its open list is wider than it, for the
@@ -167,6 +175,21 @@ func chooser() Entry {
 			return onAForm(c)
 		}},
 	}}
+}
+
+// namedValues and nameOfValue are a list whose values are drawn under names
+// longer than themselves, the way a declared setting is drawn in a window
+// whose language is not English (Chooser.ShownAs). Words given to the state
+// rather than the registry's, so the names differ from the values whatever
+// language the catalogue is drawn in.
+var namedValues = []string{"portrait", "landscape", "mixed"}
+
+func nameOfValue(v string) string {
+	return map[string]string{
+		"portrait":  "every page standing upright",
+		"landscape": "every page lying on its side",
+		"mixed":     "turn by turn, starting upright",
+	}[v]
 }
 
 func entry() Entry {
