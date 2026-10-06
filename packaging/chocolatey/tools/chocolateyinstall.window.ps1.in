@@ -35,13 +35,36 @@ New-Item -ItemType File -Path "$exe.gui" -Force | Out-Null
 # stored as written and expanded when the shortcut is started, so it is the
 # profile of whoever starts it (measured 2026-09-25). Owner's decision the same
 # day.
+#
+# A shortcut of another install under the same name is left alone. The
+# program's Windows installer makes one with exactly this name, and taking it
+# over would hand it to this package - whose uninstall would then delete the
+# only Start menu entry the installer has. A shortcut that points into this
+# package is the one an earlier version made, and one whose target is gone
+# belongs to nobody. Both are replaced.
 $shortcut = Join-Path ([Environment]::GetFolderPath('CommonPrograms')) '{{TITLE}}.lnk'
-Install-ChocolateyShortcut `
-    -ShortcutFilePath $shortcut `
-    -TargetPath $exe `
-    -WorkingDirectory '%USERPROFILE%' `
-    -IconLocation $exe `
-    -Description '{{SHORT_DESCRIPTION}}'
+$other = ''
+if (Test-Path -LiteralPath $shortcut) {
+    $target = ''
+    try {
+        $target = (New-Object -ComObject WScript.Shell).CreateShortcut($shortcut).TargetPath
+    } catch {
+        $target = ''
+    }
+    if ($target -and -not $target.StartsWith($toolsDir + '\', [StringComparison]::OrdinalIgnoreCase) -and (Test-Path -LiteralPath $target)) {
+        $other = $target
+    }
+}
+if ($other) {
+    Write-Host "Left the Start menu shortcut alone. It points at $other, not at this package."
+} else {
+    Install-ChocolateyShortcut `
+        -ShortcutFilePath $shortcut `
+        -TargetPath $exe `
+        -WorkingDirectory '%USERPROFILE%' `
+        -IconLocation $exe `
+        -Description '{{SHORT_DESCRIPTION}}'
+}
 
 Write-Host ''
 Write-Host 'Start it from the Start menu, or type tfg-gui in a terminal.'

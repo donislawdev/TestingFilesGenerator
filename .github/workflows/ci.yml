@@ -406,12 +406,16 @@ jobs:
     # shim does not wait, the software renderer lies beside the window, the
     # Start menu shortcut starts in the user's profile. Then it removes them and
     # asks again, including whether a shortcut of somebody else's under the same
-    # name was left alone.
+    # name was left alone - by the uninstall, and by an install that found it
+    # there, which is what the program's Windows installer leaves.
     #
     # Against the LATEST release, because a package can only point at one that
     # exists. A change that renames the archives in release.yml will fail here
     # until a release with the new names is published, and that is the right
-    # answer: the packages cannot be submitted before it either.
+    # answer: the packages cannot be submitted before it either. Chocolatey
+    # only (--only chocolatey): the window's WinGet package needs the release's
+    # Windows installer, which releases before it was added do not have, and
+    # WinGet is not installed here anyway.
     #
     # WinGet is not asked here. The runner image does not carry it - its own
     # inventory lists Chocolatey 2.7.4 and no WinGet (Windows2025-Readme.md,
@@ -441,7 +445,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "could not download the checksums of $tag" }
           python .github/scripts/build_packages.py --tag $tag `
             --sums (Join-Path $env:RUNNER_TEMP 'verify-SHA256SUMS.txt') `
-            --out (Join-Path $env:RUNNER_TEMP 'packages')
+            --out (Join-Path $env:RUNNER_TEMP 'packages') --only chocolatey
           if ($LASTEXITCODE -ne 0) { throw "the renderer refused $tag" }
           "version=$($tag.TrimStart('v'))" >> $env:GITHUB_OUTPUT
 
@@ -536,6 +540,31 @@ jobs:
           choco.exe uninstall testing-files-generator --yes --no-progress
           if ($LASTEXITCODE -ne 0) { throw "the third uninstall exited $LASTEXITCODE" }
           Check (-not (Test-Path $shortcut)) "removing the window takes its own shortcut"
+
+          # A shortcut of another install already there when the package comes
+          # - the program's Windows installer makes one under this very name -
+          # is left alone by the install, and so by the uninstall. One whose
+          # target is gone belongs to nobody, and the install replaces it.
+          $notepad = Join-Path $env:WINDIR 'notepad.exe'
+          $other = $shell.CreateShortcut($shortcut)
+          $other.TargetPath = $notepad
+          $other.Save()
+          $said = (choco.exe install testing-files-generator --source $feed --yes --no-progress) -join "`n"
+          if ($LASTEXITCODE -ne 0) { throw "the fourth install exited $LASTEXITCODE" }
+          Check ($shell.CreateShortcut($shortcut).TargetPath -eq $notepad) "the install leaves a shortcut of another install alone"
+          Check ($said -match 'It points at .*notepad\.exe, not at this package') "and the install says where it points"
+          choco.exe uninstall testing-files-generator --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "the fourth uninstall exited $LASTEXITCODE" }
+          Check ($shell.CreateShortcut($shortcut).TargetPath -eq $notepad) "and so does the uninstall"
+          $other = $shell.CreateShortcut($shortcut)
+          $other.TargetPath = Join-Path $env:RUNNER_TEMP 'gone\tfg-gui.exe'
+          $other.Save()
+          choco.exe install testing-files-generator --source $feed --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "the fifth install exited $LASTEXITCODE" }
+          Check ($shell.CreateShortcut($shortcut).TargetPath -eq $window) "the install replaces a shortcut whose target is gone"
+          choco.exe uninstall testing-files-generator --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "the fifth uninstall exited $LASTEXITCODE" }
+          Check (-not (Test-Path $shortcut)) "and the uninstall takes the shortcut it made"
 
           if ($failed -ne 0) { throw "$failed check(s) failed - read the FAILED lines above" }
           "every check passed"

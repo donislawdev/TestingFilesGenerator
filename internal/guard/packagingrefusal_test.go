@@ -20,7 +20,8 @@ import (
 // leaves no half of a package to be submitted by mistake.
 
 func TestTheRendererRefusesInputsThatLookFineAndAreWrong(t *testing.T) {
-	withoutArm := []byte(strings.Join(packagingSums[:2], "\n") + "\n" + packagingSums[3] + "\n")
+	withoutArm := []byte(strings.Join(append(packagingSums[:2:2], packagingSums[3:]...), "\n") + "\n")
+	otherInstaller := []byte(strings.ReplaceAll(string(fixtureSums()), "tfg-setup_0.4.0", "tfg-setup_0.3.0"))
 	otherRelease := []byte(strings.ReplaceAll(string(fixtureSums()), "0.4.0", "0.3.0"))
 	unreleased := []byte(strings.ReplaceAll(string(fixtureSums()), "0.4.0", "9.9.9"))
 
@@ -55,6 +56,8 @@ func TestTheRendererRefusesInputsThatLookFineAndAreWrong(t *testing.T) {
 		{"a release candidate", "v0.4.0-rc1", fixtureSums(), "", "release candidate"},
 		{"a version without its v", "0.4.0", fixtureSums(), "", "not a release tag"},
 		{"a checksum file missing one archive", packagingTag, withoutArm, "", "tfg_0.4.0_windows_arm64.zip"},
+		{"a checksum file without the installer", packagingTag, withoutInstaller(), "", "tfg-setup_0.4.0_windows_amd64.msi, the Windows installer"},
+		{"the installer of another release", packagingTag, otherInstaller, "", "It lists tfg-setup_0.3.0_windows_amd64.msi"},
 		{"a version the changelog never released", "v9.9.9", unreleased, "", "CHANGELOG.md"},
 		{"a destination inside the repository", packagingTag, fixtureSums(), inside, "inside the repository"},
 		{"a destination that already holds something", packagingTag, fixtureSums(), occupied, "already holds"},
@@ -91,6 +94,54 @@ func TestTheRendererRefusesInputsThatLookFineAndAreWrong(t *testing.T) {
 	// its one input and not about something the fixture always gets wrong.
 	if r := renderPackages(t, packagingTag, fixtureSums(), filepath.Join(t.TempDir(), "packages")); r.code != 0 {
 		t.Errorf("the fixture itself is refused (exit %d), so the refusals above prove nothing:\n%s", r.code, r.said)
+	}
+}
+
+// withoutInstaller is the fixture as a release published before the Windows
+// installer existed has it - v0.4.0's own checksum file.
+func withoutInstaller() []byte {
+	var lines []string
+	for _, line := range packagingSums {
+		if !strings.HasSuffix(line, ".msi") {
+			lines = append(lines, line)
+		}
+	}
+	return []byte(strings.Join(lines, "\n") + "\n")
+}
+
+// A release without the installer is refused for WinGet, whose window package
+// installs it first, and still renders for Chocolatey, which needs none - the
+// packages job in ci.yml renders the latest release, and v0.4.0 has none. Each
+// feed rendered alone is, byte for byte, its part of a full render.
+func TestAReleaseWithoutTheInstallerStillRendersForChocolatey(t *testing.T) {
+	r := renderPackages(t, packagingTag, withoutInstaller(), filepath.Join(t.TempDir(), "packages"))
+	if r.code != 1 || !strings.Contains(r.said, "pass --only chocolatey") {
+		t.Errorf("without the installer, a render of both feeds exited %d and did not say what "+
+			"to do instead:\n%s", r.code, r.said)
+	}
+	full := renderedPackages(t)
+	for _, c := range []struct {
+		feed string
+		sums []byte
+	}{
+		{"chocolatey", withoutInstaller()},
+		{"winget", fixtureSums()},
+	} {
+		alone := renderedFrom(t, c.sums, "--only", c.feed)
+		want := 0
+		for name, body := range full {
+			if !strings.HasPrefix(name, c.feed+"/") {
+				continue
+			}
+			want++
+			if got, ok := alone[name]; !ok || got != body {
+				t.Errorf("--only %s: %s is missing or differs from the full render", c.feed, name)
+			}
+		}
+		if want == 0 || len(alone) != want {
+			t.Errorf("--only %s wrote %d file(s), and the full render has %d for that feed",
+				c.feed, len(alone), want)
+		}
 	}
 }
 
