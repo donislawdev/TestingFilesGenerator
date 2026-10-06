@@ -1361,7 +1361,7 @@
     "other": "{{.Why}}. Each side may go up to {{.Most}}, but not both at once - ask for a smaller pair"
   },
   "format.JointSmallerPair": {
-    "description": "Said by internal/format/jxl - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Why}}, written the way the program writes them - keep each spelled exactly that way.",
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Why}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-a05cb7a754cc",
     "other": "{{.Why}}. Ask for a smaller pair"
   },
@@ -3141,10 +3141,40 @@
     "hash": "sha256-a53588601259",
     "other": "use one of: {{.Known}}"
   },
+  "video.NotOnAFrame": {
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.FPS}}, {{.Step}}, {{.Below}}, {{.Above}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-4471642f4d67",
+    "other": "at {{.FPS}} frames a second a length has to end on a frame, and lengths at that rate go in steps of {{.Step}}. Ask for {{.Below}} or {{.Above}}"
+  },
+  "video.NotOnAFrameShortest": {
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.FPS}}, {{.Step}}, {{.Above}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-e6b01f8c0aeb",
+    "other": "at {{.FPS}} frames a second a length has to end on a frame, and lengths at that rate go in steps of {{.Step}}. Ask for {{.Above}}, the shortest film at this rate"
+  },
+  "video.TooManyKeyFrames": {
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Duration}}, {{.Interval}}, {{.Keys}}, {{.Most}}, {{.Shortest}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-fab3e045a284",
+    "other": "a film of {{.Duration}} with a key frame every {{.Interval}} has {{.Keys}} of them, and a film can have at most {{.Most}}. Ask for {{.Shortest}} or longer, or a shorter film"
+  },
   "wav.DropTheLabel": {
     "description": "Said by internal/format/wav - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-b8bfddcdab7d",
     "other": ", or drop the label"
+  },
+  "webm.AskForBOrMore": {
+    "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Floor}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-dcb48388a704",
+    "other": "Ask for {{.Floor}} B or more, or a shorter film, fewer frames a second, key frames further apart or a smaller picture"
+  },
+  "webm.AskForBOrMoreFilm": {
+    "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Floor}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-030aa26d50a8",
+    "other": "Ask for {{.Floor}} B or more, or a shorter film, fewer frames a second or key frames further apart"
+  },
+  "webm.MinimumReason": {
+    "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Duration}}, {{.FPS}}, {{.Interval}}, {{.Width}}, {{.Height}}, {{.Bytes}}, {{.Void}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-736b751cfd83",
+    "other": "a film of {{.Duration}} at {{.FPS}} frames a second with a key frame every {{.Interval}} and a {{.Width}}x{{.Height}} picture takes {{.Bytes}} B, and the file always carries a Void element, which costs {{.Void}} B even when it holds nothing"
   },
   "xlsx.Columns": {
     "description": "Said by internal/format/xlsx - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",

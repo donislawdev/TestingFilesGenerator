@@ -73,11 +73,11 @@ func splitUnits(b []byte) ([]unit, error) {
 	for len(b) > 0 {
 		h := b[0]
 		if h&0x80 != 0 || h&0x04 != 0 || h&0x02 == 0 {
-			return nil, fmt.Errorf("an OBU header %#02x with the forbidden bit, an extension or no size", h)
+			return nil, core.Defect(fmt.Errorf("an OBU header %#02x with the forbidden bit, an extension or no size", h))
 		}
 		size, used := readLeb128(b[1:])
 		if used == 0 || 1+used+size > len(b) {
-			return nil, fmt.Errorf("an OBU whose size runs past the end")
+			return nil, core.Defect(fmt.Errorf("an OBU whose size runs past the end"))
 		}
 		out = append(out, unit{typ: int(h>>3) & 0xf, payload: b[1+used : 1+used+size]})
 		b = b[1+used+size:]
@@ -107,7 +107,7 @@ func describeUnits(units []unit) string {
 func splitFrame(frame []byte, width, height int) (Coded, error) {
 	r := bitReader{b: frame}
 	if r.bits(3) != 0 {
-		return Coded{}, fmt.Errorf("disable_cdf_update, allow_screen_content_tools or render_and_frame_size_different is set")
+		return Coded{}, core.Defect(fmt.Errorf("disable_cdf_update, allow_screen_content_tools or render_and_frame_size_different is set"))
 	}
 	start := r.pos
 	if err := readTileInfo(&r, width, height); err != nil {
@@ -119,11 +119,11 @@ func splitFrame(frame []byte, width, height int) (Coded, error) {
 	end := r.pos
 	for r.pos%8 != 0 {
 		if r.bit() != 0 {
-			return Coded{}, fmt.Errorf("byte_alignment after the header is not zero")
+			return Coded{}, core.Defect(fmt.Errorf("byte_alignment after the header is not zero"))
 		}
 	}
 	if r.overrun || r.pos/8 >= uint(len(frame)) {
-		return Coded{}, fmt.Errorf("the header runs to the end of the frame and leaves no tile")
+		return Coded{}, core.Defect(fmt.Errorf("the header runs to the end of the frame and leaves no tile"))
 	}
 
 	var w bitWriter
@@ -149,7 +149,7 @@ func readTileInfo(r *bitReader, width, height int) error {
 	minLog2Tiles := max(minLog2TileCols, tileLog2((4096*2304)>>12, sbRows*sbCols))
 
 	if r.bit() != 1 {
-		return fmt.Errorf("uniform_tile_spacing_flag is not set")
+		return core.Defect(fmt.Errorf("uniform_tile_spacing_flag is not set"))
 	}
 	cols := minLog2TileCols
 	for cols < maxLog2TileCols && r.bit() == 1 {
@@ -160,7 +160,7 @@ func readTileInfo(r *bitReader, width, height int) error {
 		rows++
 	}
 	if cols > 0 || rows > 0 {
-		return fmt.Errorf("a %dx%d frame is coded as more than one tile", width, height)
+		return core.Defect(fmt.Errorf("a %dx%d frame is coded as more than one tile", width, height))
 	}
 	return nil
 }
@@ -181,17 +181,17 @@ func readQuantizerToTxSet(r *bitReader) error {
 	lossless := baseQ == 0
 	for range 3 { // DeltaQYDc, DeltaQUDc, DeltaQUAc
 		if r.bit() == 1 {
-			return fmt.Errorf("a quantizer delta is coded")
+			return core.Defect(fmt.Errorf("a quantizer delta is coded"))
 		}
 	}
 	if r.bit() == 1 {
-		return fmt.Errorf("using_qmatrix is set")
+		return core.Defect(fmt.Errorf("using_qmatrix is set"))
 	}
 	if r.bit() == 1 {
-		return fmt.Errorf("segmentation_enabled is set")
+		return core.Defect(fmt.Errorf("segmentation_enabled is set"))
 	}
 	if baseQ > 0 && r.bit() == 1 {
-		return fmt.Errorf("delta_q_present is set")
+		return core.Defect(fmt.Errorf("delta_q_present is set"))
 	}
 	if !lossless {
 		level0, level1 := r.bits(6), r.bits(6)
@@ -200,13 +200,13 @@ func readQuantizerToTxSet(r *bitReader) error {
 		}
 		r.bits(3) // loop_filter_sharpness
 		if r.bit() == 1 {
-			return fmt.Errorf("loop_filter_delta_enabled is set")
+			return core.Defect(fmt.Errorf("loop_filter_delta_enabled is set"))
 		}
 		r.bit() // tx_mode_select
 	}
 	r.bit() // reduced_tx_set
 	if r.overrun {
-		return fmt.Errorf("the frame ends inside its header")
+		return core.Defect(fmt.Errorf("the frame ends inside its header"))
 	}
 	return nil
 }
