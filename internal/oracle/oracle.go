@@ -394,8 +394,13 @@ func PictureChanges(path string) ([]int64, Result) {
 	var out, errOut strings.Builder
 	cmd.Stdout = &out
 	cmd.Stderr = &errOut
-	if err := cmd.Run(); err != nil || strings.TrimSpace(errOut.String()) != "" {
-		res.Err = fmt.Errorf("libaom complained: %s %v", strings.TrimSpace(errOut.String()), err)
+	runErr := cmd.Run()
+	if said := strings.TrimSpace(errOut.String()); said != "" {
+		res.Err = fmt.Errorf("libaom complained: %s", said)
+		return nil, res
+	}
+	if runErr != nil {
+		res.Err = fmt.Errorf("ffmpeg did not decode the film: %w", runErr)
 		return nil, res
 	}
 	var changes []int64

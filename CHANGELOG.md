@@ -35,13 +35,13 @@ because it turns other people's test suites red.
   self describing label the image formats draw, with the clock under the
   label and the square below. On a picture too small for the clock the film
   says so in the manifest. It can be up to 4096 pixels wide and at most
-  4096x2304 pixels in all, the largest the built in encoder writes
+  4096x2304 pixels in all, the largest the built-in encoder writes
   correctly - a larger one is refused with a pair that fits. The manifest says what a
   test can check: `duration_ms`, `frame_count`, `frame_rate`,
   `keyframe_count`, `change_count`, `change_interval_ms`, `width`, `height`,
   `compression: av1` and `audio: false`. A length that does not end on a
   frame is refused with the two nearest that do - at 30 frames a second
-  lengths go in steps of 100ms. Below the smallest film the settings allow,
+  lengths go in steps of `100ms`. Below the smallest film the settings allow,
   the refusal says how small it can be and which settings make it smaller.
   AV1 plays in current browsers, and an older player or a pipeline that
   expects H.264 may refuse it - which is a test worth having. The window
