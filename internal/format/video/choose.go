@@ -99,21 +99,19 @@ func sampleReserve(w, h int, seed uint64, label string, t Timeline, qindex int) 
 	defer c.stop()
 	jobs := make([]*job, len(sample))
 	for i, ch := range sample {
-		jobs[i] = newJob(f.lookOf(ch))
-		c.offer(jobs[i])
+		jobs[i] = newJob(f.lookOf(ch), ch)
 	}
-	c.finish()
+	coded, err := c.all(jobs)
+	if err != nil {
+		return Coded{}, 0, err
+	}
 	var first Coded
 	largest := 0
 	for i, ch := range sample {
-		coded, err := c.wait(jobs[i])
-		if err != nil {
-			return Coded{}, 0, err
-		}
 		if ch == 0 {
-			first = coded
+			first = coded[i]
 		}
-		largest = max(largest, coded.Size())
+		largest = max(largest, coded[i].Size())
 	}
 	if int64(len(sample)) == t.Changes() {
 		return first, largest, nil

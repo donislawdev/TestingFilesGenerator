@@ -58,7 +58,7 @@ func (p *progressBar) report(pr engine.Progress) {
 	line := fmt.Sprintf("  %d/%d files  %s of %s  %d%%%s",
 		pr.FilesDone, pr.FilesTotal,
 		core.HumanBytes(pr.BytesDone), core.HumanBytes(pr.BytesTotal),
-		core.Percent(pr.WorkDone, pr.WorkTotal),
+		pr.Percent(),
 		p.remaining(pr))
 
 	// Pad to cover whatever the last line left behind, so a shorter line does
@@ -82,16 +82,12 @@ func (p *progressBar) clear() {
 }
 
 // remaining is an estimate and says so by staying quiet until it has enough to
-// go on. A number that swings wildly for the first second is worse than none.
-// It comes from the work, like the percentage, and not from the bytes - see
-// engine.Progress for the film that promised three hours for a minute.
+// go on (engine.Progress.Left, which the window asks too).
 func (p *progressBar) remaining(pr engine.Progress) string {
-	elapsed := time.Since(p.started)
-	if elapsed < time.Second || pr.WorkDone <= 0 || pr.WorkDone >= pr.WorkTotal {
+	left, ok := pr.Left(time.Since(p.started))
+	if !ok {
 		return ""
 	}
-	left := time.Duration(float64(elapsed) *
-		float64(pr.WorkTotal-pr.WorkDone) / float64(pr.WorkDone))
 	return "  " + core.Roughly(left) + " left"
 }
 

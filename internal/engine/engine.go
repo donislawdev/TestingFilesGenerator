@@ -451,43 +451,6 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 	return pl.out, nil
 }
 
-// TotalBytes is what a plan will occupy on disk. Known before the first byte
-// is written, which is what the free space guard and --dry-run stand on.
-func TotalBytes(files []PlannedFile) int64 {
-	var n int64
-	for _, f := range files {
-		n += f.Plan.Bytes
-	}
-	return n
-}
-
-// totalWork is what the planned files cost to make, their bytes included.
-func totalWork(files []PlannedFile) int64 {
-	var n int64
-	for _, f := range files {
-		n += f.Plan.Bytes + f.Plan.Work
-	}
-	return n
-}
-
-// Progress is how far a run has got. Both counts are known from the plan, so
-// the fractions are exact rather than estimated.
-//
-// A fraction of the run and the time it has left come from the work, not the
-// bytes. The work is the bytes plus what the plans counted beyond them
-// (format.Plan.Work), so for a run of files whose cost is their bytes the two
-// are the same numbers, and for a film they are the pictures as well as the
-// padding - the bytes alone stood at five percent while a film's pictures were
-// coded and promised hours for a minute's work.
-type Progress struct {
-	FilesDone  int
-	FilesTotal int
-	BytesDone  int64
-	BytesTotal int64
-	WorkDone   int64
-	WorkTotal  int64
-}
-
 // Run writes a planned set of files.
 //
 // Each file is written under a temporary name and only then renamed, so the

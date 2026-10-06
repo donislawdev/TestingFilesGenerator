@@ -272,6 +272,19 @@ func (p *fileProgress) advance(n int64) {
 	p.worked += d
 }
 
+// listen has this writer hear the file being written: its bytes through the
+// counter, and the work its bytes do not show through the context the
+// generator writes under (format.Worked). Nothing is set when nobody is
+// listening, so a run without progress does no locking at all and allocates
+// nothing for it.
+func (p *fileProgress) listen(ctx context.Context, counter *countingWriter) context.Context {
+	if p.gate == nil {
+		return ctx
+	}
+	counter.report = p.advance
+	return format.WithWork(ctx, p.work)
+}
+
 // work is the generator's report of work its bytes do not show
 // (format.Worked), n more of what its plan counted in Work.
 func (p *fileProgress) work(n int64) {
@@ -357,12 +370,7 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress
 	h := sha256.New()
 	buffered := bufio.NewWriterSize(fh, 64<<10)
 	counter := &countingWriter{w: io.MultiWriter(buffered, h)}
-	// Left nil when nobody is listening, so a run without progress does no
-	// locking at all and allocates nothing for it.
-	if p.gate != nil {
-		counter.report = p.advance
-		ctx = format.WithWork(ctx, p.work)
-	}
+	ctx = p.listen(ctx, counter)
 
 	// Damage sits between the generator and the counter, and the order is the
 	// design rather than a convenience.

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
@@ -58,16 +57,11 @@ func manifestReachNote(res *engine.Result) []string {
 // the whole minute its pictures took and promised three hours.
 func progressText(p engine.Progress, elapsed time.Duration) string {
 	line := text.Progress(p.FilesDone, p.FilesTotal,
-		text.HumanBytes(p.BytesDone), text.HumanBytes(p.BytesTotal),
-		core.Percent(p.WorkDone, p.WorkTotal))
-
-	// The estimate stays quiet until it has enough to go on. A number that
-	// swings wildly for the first second is worse than no number.
-	if elapsed < time.Second || p.WorkDone <= 0 || p.WorkDone >= p.WorkTotal {
+		text.HumanBytes(p.BytesDone), text.HumanBytes(p.BytesTotal), p.Percent())
+	left, ok := p.Left(elapsed)
+	if !ok {
 		return line
 	}
-	left := time.Duration(float64(elapsed) *
-		float64(p.WorkTotal-p.WorkDone) / float64(p.WorkDone))
 	return line + text.TimeLeft(text.Roughly(left))
 }
 

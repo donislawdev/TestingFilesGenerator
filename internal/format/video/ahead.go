@@ -64,11 +64,12 @@ func takeHelper() bool {
 // inside the job rather than a channel beside it, because a channel is one
 // more allocation for every picture of every film.
 type job struct {
-	look  look
-	taken atomic.Bool
-	done  sync.WaitGroup
-	coded Coded
-	err   error
+	look   look
+	change int64
+	taken  atomic.Bool
+	done   sync.WaitGroup
+	coded  Coded
+	err    error
 	// panicked is what coding it panicked with. A panic on a helper would end
 	// the process, where the same panic on the writer becomes the run's error
 	// (internal/engine, writeWithoutCrashing), so a helper keeps it here and
@@ -76,8 +77,8 @@ type job struct {
 	panicked any
 }
 
-func newJob(l look) *job {
-	j := &job{look: l}
+func newJob(l look, change int64) *job {
+	j := &job{look: l, change: change}
 	j.done.Add(1)
 	return j
 }
@@ -103,6 +104,10 @@ type crew struct {
 	wg      sync.WaitGroup
 	stopped atomic.Bool
 	closed  bool
+	// encode stands in for painting a picture and coding it through gav1d,
+	// told whether a helper is the one asking. Nil in every film - only
+	// CodeBeside sets it.
+	encode func(change int64, beside bool) (Coded, error)
 }
 
 // newCrew is the crew for a film of this many pictures. A film of one picture
@@ -159,26 +164,30 @@ func (c *crew) help() {
 			continue
 		}
 		if j.taken.CompareAndSwap(false, true) {
-			c.code(p, j)
+			c.code(p, j, true)
 			codedBeside.Add(1)
 		}
 	}
 }
 
-func (c *crew) code(p *painter, j *job) {
+func (c *crew) code(p *painter, j *job, beside bool) {
 	defer j.done.Done()
 	defer func() {
 		if v := recover(); v != nil {
 			j.panicked = v
 		}
 	}()
+	if c.encode != nil {
+		j.coded, j.err = c.encode(j.change, beside)
+		return
+	}
 	j.coded, j.err = Encode(p.draw(j.look), c.qindex)
 }
 
 // wait is the picture of j, coded here when no helper has taken it.
 func (c *crew) wait(j *job) (Coded, error) {
 	if j.taken.CompareAndSwap(false, true) {
-		c.code(c.own, j)
+		c.code(c.own, j, false)
 	}
 	j.done.Wait()
 	if j.panicked != nil {
@@ -204,4 +213,57 @@ func (c *crew) stop() {
 	c.stopped.Store(true)
 	c.finish()
 	c.wg.Wait()
+}
+
+// all offers every job at once and gives back their pictures in order - a
+// set known in advance, like the sample planning codes, rather than a film
+// coded as it is written.
+func (c *crew) all(jobs []*job) ([]Coded, error) {
+	for _, j := range jobs {
+		c.offer(j)
+	}
+	c.finish()
+	out := make([]Coded, len(jobs))
+	for i, j := range jobs {
+		coded, err := c.wait(j)
+		if err != nil {
+			return nil, err
+		}
+		out[i] = coded
+	}
+	return out, nil
+}
+
+// CodeBeside codes pictures 0 to n-1 the way a film's are coded - this
+// goroutine and the helpers it can take, offered ahead and taken in order -
+// with code standing in for painting and gav1d, told whether a helper is the
+// one calling, and gives back the size code returned for each.
+//
+// It is for the guards, and only because what it lets them hold cannot be
+// reached another way: a panic on a helper has to come out on the goroutine
+// that asked for the picture, where the engine turns it into the run's error,
+// rather than end the process - and nothing outside makes gav1d panic.
+// Measured on 2026-10-06: a quantizer out of range is refused with an error,
+// and only planes shorter than the picture panic, which no painter makes.
+func CodeBeside(n int64, code func(change int64, beside bool) (int, error)) ([]int, error) {
+	t := Timeline{FPS: 1, Frames: n, DurationMs: n * 1000, KeyEvery: n, ChangeEvery: 1}
+	c := newCrew(newFilm(1, 1, 0, "", t), 0, n)
+	defer c.stop()
+	c.encode = func(change int64, beside bool) (Coded, error) {
+		size, err := code(change, beside)
+		return Coded{tile: make([]byte, size)}, err
+	}
+	jobs := make([]*job, n)
+	for i := range jobs {
+		jobs[i] = newJob(look{}, int64(i))
+	}
+	coded, err := c.all(jobs)
+	if err != nil {
+		return nil, err
+	}
+	sizes := make([]int, n)
+	for i, p := range coded {
+		sizes[i] = p.Size()
+	}
+	return sizes, nil
 }

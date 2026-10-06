@@ -201,14 +201,7 @@ func (p *Pictures) offerTo(c int64) {
 	for p.next < n && (p.next <= c || len(p.pending) < p.crew.ahead()) {
 		l := p.film.lookOf(p.next)
 		if p.next == 0 || l != p.last {
-			j := (*job)(nil)
-			if p.next == 0 && p.choice.First != nil {
-				j = codedJob(*p.choice.First)
-			} else {
-				j = newJob(l)
-				p.crew.offer(j)
-			}
-			p.pending = append(p.pending, openedBy{change: p.next, job: j})
+			p.pending = append(p.pending, openedBy{change: p.next, job: p.jobFor(l)})
 		}
 		p.last = l
 		p.next++
@@ -216,6 +209,18 @@ func (p *Pictures) offerTo(c int64) {
 	if p.next == n {
 		p.crew.finish()
 	}
+}
+
+// jobFor is the job of the picture with this look at change p.next, offered
+// to the helpers - or, for change 0 when planning coded it, the picture
+// planning already has.
+func (p *Pictures) jobFor(l look) *job {
+	if p.next == 0 && p.choice.First != nil {
+		return codedJob(*p.choice.First)
+	}
+	j := newJob(l, p.next)
+	p.crew.offer(j)
+	return j
 }
 
 // Close stops the helpers and waits for them, so nothing this film started is
