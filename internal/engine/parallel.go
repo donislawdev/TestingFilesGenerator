@@ -18,6 +18,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
 
 // This file is the only place in internal/engine that runs anything beside
@@ -157,7 +158,7 @@ func drain(ctx context.Context, next *atomic.Int64, files []PlannedFile, outDir 
 		p := fileProgress{gate: gate}
 		sum, err := writeOne(ctx, files[i], outDir, &p)
 		out[i] = fileResult{sha: sum, ok: err == nil, err: err}
-		p.finished(files[i].Plan.Bytes, err == nil)
+		p.finished(files[i].Plan, err == nil)
 	}
 }
 
@@ -182,12 +183,17 @@ func drain(ctx context.Context, next *atomic.Int64, files []PlannedFile, outDir 
 //
 // A nil gate is a run nobody is watching. Every method takes a nil receiver,
 // so a run without progress does no locking and allocates nothing for it.
+//
+// Work moves with the bytes, and on its own where a generator reports work its
+// bytes do not show (format.Plan.Work) - the pictures of a film.
 type progressGate struct {
 	mu         sync.Mutex
 	filesDone  int
 	bytesDone  int64
+	workDone   int64
 	filesTotal int
 	bytesTotal int64
+	workTotal  int64
 	report     func(Progress)
 }
 
@@ -198,6 +204,7 @@ func newProgressGate(files []PlannedFile, report func(Progress)) *progressGate {
 	return &progressGate{
 		filesTotal: len(files),
 		bytesTotal: TotalBytes(files),
+		workTotal:  totalWork(files),
 		report:     report,
 	}
 }
@@ -209,25 +216,27 @@ func newProgressGate(files []PlannedFile, report func(Progress)) *progressGate {
 // file" describes no run at all. At one writer the numbers this produces are
 // the same ones the sequential loop produced, which is what lets the guards
 // that watch the bar stay as they were.
-func (g *progressGate) advance(delta int64) {
+func (g *progressGate) advance(bytes, work int64) {
 	if g == nil {
 		return
 	}
 	g.mu.Lock()
 	defer g.mu.Unlock()
-	g.bytesDone += delta
+	g.bytesDone += bytes
+	g.workDone += work
 	g.say()
 }
 
 // finished is the end of one file: the delta that squares this writer's
 // reporting with what the plan promised, and one more file done.
-func (g *progressGate) finished(delta int64) {
+func (g *progressGate) finished(bytes, work int64) {
 	if g == nil {
 		return
 	}
 	g.mu.Lock()
 	defer g.mu.Unlock()
-	g.bytesDone += delta
+	g.bytesDone += bytes
+	g.workDone += work
 	g.filesDone++
 	g.say()
 }
@@ -237,6 +246,7 @@ func (g *progressGate) say() {
 	g.report(Progress{
 		FilesDone: g.filesDone, FilesTotal: g.filesTotal,
 		BytesDone: g.bytesDone, BytesTotal: g.bytesTotal,
+		WorkDone: g.workDone, WorkTotal: g.workTotal,
 	})
 }
 
@@ -248,14 +258,38 @@ func (g *progressGate) say() {
 // delta, so the gate never has to know which file it came from.
 type fileProgress struct {
 	gate     *progressGate
-	reported int64
+	reported int64 // bytes
+	worked   int64 // work, the bytes among it
 }
 
 // advance is the counting writer's callback: n is the running total for this
-// file, and the gate is told the difference.
+// file, and the gate is told the difference - as bytes, and as work, because
+// writing a byte is a byte of work.
 func (p *fileProgress) advance(n int64) {
-	p.gate.advance(n - p.reported)
+	d := n - p.reported
+	p.gate.advance(d, d)
 	p.reported = n
+	p.worked += d
+}
+
+// listen has this writer hear the file being written: its bytes through the
+// counter, and the work its bytes do not show through the context the
+// generator writes under (format.Worked). Nothing is set when nobody is
+// listening, so a run without progress does no locking at all and allocates
+// nothing for it.
+func (p *fileProgress) listen(ctx context.Context, counter *countingWriter) context.Context {
+	if p.gate == nil {
+		return ctx
+	}
+	counter.report = p.advance
+	return format.WithWork(ctx, p.work)
+}
+
+// work is the generator's report of work its bytes do not show
+// (format.Worked), n more of what its plan counted in Work.
+func (p *fileProgress) work(n int64) {
+	p.gate.advance(0, n)
+	p.worked += n
 }
 
 // finished squares this file up. A file that succeeded is topped up to exactly
@@ -265,12 +299,14 @@ func (p *fileProgress) advance(n int64) {
 // find. That the total can go backwards on a failed file is how it already
 // behaves. What is new is only that another writer's bytes may sit in the same
 // total while it happens.
-func (p *fileProgress) finished(planned int64, ok bool) {
+//
+// Work is squared up the same way, to the plan's bytes and Work together.
+func (p *fileProgress) finished(plan format.Plan, ok bool) {
 	if ok {
-		p.gate.finished(planned - p.reported)
+		p.gate.finished(plan.Bytes-p.reported, plan.Bytes+plan.Work-p.worked)
 		return
 	}
-	p.gate.finished(-p.reported)
+	p.gate.finished(-p.reported, -p.worked)
 }
 
 // writeOne writes one file under a temporary name and renames it only once it
@@ -334,11 +370,7 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress
 	h := sha256.New()
 	buffered := bufio.NewWriterSize(fh, 64<<10)
 	counter := &countingWriter{w: io.MultiWriter(buffered, h)}
-	// Left nil when nobody is listening, so a run without progress does no
-	// locking at all and allocates nothing for it.
-	if p.gate != nil {
-		counter.report = p.advance
-	}
+	ctx = p.listen(ctx, counter)
 
 	// Damage sits between the generator and the counter, and the order is the
 	// design rather than a convenience.

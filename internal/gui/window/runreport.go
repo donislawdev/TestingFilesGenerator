@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
@@ -51,18 +50,18 @@ func manifestReachNote(res *engine.Result) []string {
 
 // progressText is the line under the bar. Bytes rather than files, because one
 // large file is a run where the file count says nothing for minutes.
+//
+// The percentage and the time left come from the work rather than the bytes
+// (engine.Progress), because a film's bytes are mostly padding written in its
+// last seconds - by the bytes, a thirty minute film stood at five percent for
+// the whole minute its pictures took and promised three hours.
 func progressText(p engine.Progress, elapsed time.Duration) string {
 	line := text.Progress(p.FilesDone, p.FilesTotal,
-		text.HumanBytes(p.BytesDone), text.HumanBytes(p.BytesTotal),
-		core.Percent(p.BytesDone, p.BytesTotal))
-
-	// The estimate stays quiet until it has enough to go on. A number that
-	// swings wildly for the first second is worse than no number.
-	if elapsed < time.Second || p.BytesDone <= 0 || p.BytesDone >= p.BytesTotal {
+		text.HumanBytes(p.BytesDone), text.HumanBytes(p.BytesTotal), p.Percent())
+	left, ok := p.Left(elapsed)
+	if !ok {
 		return line
 	}
-	left := time.Duration(float64(elapsed) *
-		float64(p.BytesTotal-p.BytesDone) / float64(p.BytesDone))
 	return line + text.TimeLeft(text.Roughly(left))
 }
 

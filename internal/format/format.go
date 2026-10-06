@@ -789,6 +789,10 @@ type Plan struct {
 	// Memo is the generator's own scratch space, carried from planning to
 	// writing. Nothing outside the generator reads it.
 	Memo any
+	// Work is what writing the file costs beyond writing its bytes, counted
+	// as the bytes that would take as long to write - nought for every file
+	// whose cost is its bytes. See work.go.
+	Work int64
 }
 
 // PropertyLabelEmbedded is the key a generator sets to say whether the label

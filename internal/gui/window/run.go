@@ -616,7 +616,7 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 		}
 		elapsed := time.Since(started)
 		fyne.Do(func() {
-			r.busy.bar.SetValue(float64(core.Percent(p.BytesDone, p.BytesTotal)))
+			r.busy.bar.SetValue(float64(p.Percent()))
 			r.status.SetText(progressText(p, elapsed))
 		})
 	}
