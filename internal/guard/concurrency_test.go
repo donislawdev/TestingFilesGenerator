@@ -101,6 +101,18 @@ var mayBeConcurrent = map[string]string{
 	// Numbers, the instrument, and the two mistakes made getting them:
 	// docs/PERFORMANCE-REVIEW-2026-09-05.md section 14.
 	"internal/engine/parallel.go": "the planned files are written beside each other, and nothing else in the package does",
+	// A film is its pictures, each a whole picture through gav1d on one
+	// goroutine: the owner's thirty minute 1920x1080 film was 611.7 s on one
+	// core of sixteen, and the window's estimate from the bytes said three
+	// hours. The pictures are independent, so several goroutines code them and
+	// the writer takes them in order - 7.60x at sixteen threads, 5.12x at
+	// eight, every picture the same size at every width (tools/probes/
+	// videoparallel). Helpers come from one count for the whole process,
+	// because the engine above already writes a file per thread.
+	//
+	// Added 2026-10-06 and THE OWNER DECIDED IT:
+	// docs/WEBM-WYDAJNOSC-2026-10-06.md sections 4 and 5.
+	"internal/format/video/ahead.go": "the pictures of one film are coded beside each other, from one count of helpers for the process",
 }
 
 // Waiting on cancellation is not the same thing as running in parallel. Every

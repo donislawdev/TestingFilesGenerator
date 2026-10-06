@@ -25,7 +25,9 @@ because it turns other people's test suites red.
   reads the time the picture starts, the way a player's position does -
   `00:00:07`, with milliseconds when the changes do not fall on whole
   seconds. Each change is a whole new picture in bytes and in coding time,
-  and the frames between changes cost a few bytes each, so an hour at thirty
+  and the pictures of a film are coded on every core of the machine at once -
+  a thirty minute 1920x1080 film took 68 s on sixteen threads. The frames
+  between changes cost a few bytes each, so an hour at thirty
   frames a second with a change every second fits in about a megabyte
   (1 075 831 B at the smallest), and a `change_interval` as long as the film
   or longer keeps one picture throughout (977 434 B for that hour). Set

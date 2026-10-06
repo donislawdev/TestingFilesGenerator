@@ -52,6 +52,11 @@ func init() {
 		// object allocated per frame, the defect the ceiling exists for. The
 		// number below sits between the two, and like every ceiling here it
 		// goes down when work makes it lowerable, never up to turn a run green.
+		// Since the pictures are coded beside each other (internal/format/video,
+		// ahead.go) the default film is 474 to 477 objects at sixteen, four and
+		// one threads alike - each picture is a job, each helper one painter of
+		// four allocations - measured the same day, still under the ceiling,
+		// which was not moved.
 		AllocCeiling: 512,
 
 		Padding: format.PaddingChannel{
@@ -183,7 +188,9 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	out.write(seekHead(l.seekHeadLen, l.seekHeadLen+uint64(len(l.info)), cuesAt))
 	out.write(l.info)
 	out.write(l.tracks)
-	keys, end, err := writeClusters(ctx, out, l, m.choice.Pictures(st))
+	pics := m.choice.Pictures(st)
+	defer pics.Close()
+	keys, end, err := writeClusters(ctx, out, l, pics)
 	if err != nil {
 		return err
 	}

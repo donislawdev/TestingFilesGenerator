@@ -88,17 +88,29 @@ func (c Choice) ClockShown(t Timeline) bool { return ClockShown(c.Width, c.Heigh
 // ceilings keep over their own measurement. The gradient does not move between
 // pictures, by the owner's decision of the same day, because moving it changed
 // a picture's size by up to 1.9 times.
+//
+// The sample is coded the way a film is (ahead.go), all of it offered at once,
+// because at 1920x1080 ten pictures are three seconds of planning on one
+// goroutine, and planning is what a preview waits for.
 func sampleReserve(w, h int, seed uint64, label string, t Timeline, qindex int) (Coded, int, error) {
-	p := newPainter(w, h, seed, label, t)
+	f := newFilm(w, h, seed, label, t)
 	sample := SampleChanges(t)
+	c := newCrew(f, qindex, int64(len(sample)))
+	defer c.stop()
+	jobs := make([]*job, len(sample))
+	for i, ch := range sample {
+		jobs[i] = newJob(f.lookOf(ch))
+		c.offer(jobs[i])
+	}
+	c.finish()
 	var first Coded
 	largest := 0
-	for _, c := range sample {
-		coded, err := Encode(p.paint(c), qindex)
+	for i, ch := range sample {
+		coded, err := c.wait(jobs[i])
 		if err != nil {
 			return Coded{}, 0, err
 		}
-		if c == 0 {
+		if ch == 0 {
 			first = coded
 		}
 		largest = max(largest, coded.Size())

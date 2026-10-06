@@ -93,27 +93,46 @@ func joined(a, b []byte) []byte {
 	return append(append(make([]byte, 0, len(a)+len(b)), a...), b...)
 }
 
-// Pictures codes the pictures of one film in order, one change at a time, and
-// keeps only the last - an hour at a change a second is 3600 pictures, and
-// holding them all would hold the film.
+// Pictures codes the pictures of one film in the order the film shows them,
+// on the goroutine that asks for them and on the helpers it can take
+// (ahead.go), and keeps only the last one it was asked for and the few coded
+// ahead of it - an hour at a change a second is 3600 pictures, and holding
+// them all would hold the film.
+//
+// Close has to be called when the film is written or abandoned, because the
+// helpers are goroutines.
 type Pictures struct {
-	choice  Choice
-	stream  Stream
-	painter *painter
+	choice Choice
+	stream Stream
+	film   *film
+	crew   *crew
+	// pending are the pictures offered and not yet reached, in order, each
+	// with the change it opens. Changes that look the same as the one before
+	// open none, so they are not in it.
+	pending []openedBy
+	next    int64 // the first change not looked at yet
+	last    look  // the look of change next-1
 	change  int64
-	look    look
 	key     []byte
 	copied  []byte
 }
 
+type openedBy struct {
+	change int64
+	job    *job
+}
+
 // Pictures is the coder of this choice's film.
 func (c Choice) Pictures(st Stream) *Pictures {
-	return &Pictures{choice: c, stream: st, change: -1,
-		painter: newPainter(c.Width, c.Height, c.Seed, c.Label, st.Timeline)}
+	f := newFilm(c.Width, c.Height, c.Seed, c.Label, st.Timeline)
+	cr := newCrew(f, c.QIndex, st.Changes())
+	return &Pictures{choice: c, stream: st, film: f, crew: cr, change: -1,
+		pending: make([]openedBy, 0, cr.ahead()+1)}
 }
 
 // At makes picture c the current one, coding it unless it looks the same as
-// the one before.
+// the one before. Pictures are asked for in the order the film shows them -
+// the same change again is fine, an earlier one is a defect of the caller.
 //
 // Every picture is held to the stream's reserve, because the level and the
 // file around it were planned on it. A picture over it is a ceiling that did
@@ -124,29 +143,67 @@ func (p *Pictures) At(c int64) error {
 	if c == p.change {
 		return nil
 	}
-	l := p.painter.lookOf(c)
-	if p.change >= 0 && l == p.look {
+	if c < p.change {
+		return core.Defect(fmt.Errorf("video: picture %d was asked for after picture %d, and a film's pictures are coded in the order it shows them", c, p.change))
+	}
+	p.offerTo(c)
+	var opened *job
+	reached := 0
+	for reached < len(p.pending) && p.pending[reached].change <= c {
+		opened = p.pending[reached].job
+		reached++
+	}
+	// Moved down rather than sliced off, so the one array made for the
+	// window lasts the whole film.
+	p.pending = p.pending[:copy(p.pending, p.pending[reached:])]
+	if opened == nil {
+		// The same look as the picture before it: shown again, not coded.
 		p.change = c
 		return nil
 	}
-	var coded Coded
-	if c == 0 && p.choice.First != nil {
-		coded = *p.choice.First
-	} else {
-		var err error
-		if coded, err = Encode(p.painter.draw(l), p.choice.QIndex); err != nil {
-			return err
-		}
+	coded, err := p.crew.wait(opened)
+	if err != nil {
+		return err
 	}
 	if coded.Size() > p.stream.Reserve {
 		return core.Defect(fmt.Errorf("video: picture %d of a %dx%d film coded to a %d B tile and the film was planned on %d B a picture, so the file cannot be kept",
 			c, p.choice.Width, p.choice.Height, coded.Size(), p.stream.Reserve))
 	}
-	p.change, p.look = c, l
+	p.change = c
 	p.key = joined(p.stream.seq, keyFrame(coded))
 	p.copied = joined(hiddenCopy(coded), p.stream.show)
 	return nil
 }
+
+// offerTo looks at every change up to c and as far past it as the crew codes
+// ahead, and offers each one that looks different from the one before it.
+// Change 0 is the picture planning already coded, when it coded one.
+func (p *Pictures) offerTo(c int64) {
+	n := p.stream.Changes()
+	for p.next < n && (p.next <= c || len(p.pending) < p.crew.ahead()) {
+		l := p.film.lookOf(p.next)
+		if p.next == 0 || l != p.last {
+			j := (*job)(nil)
+			if p.next == 0 && p.choice.First != nil {
+				j = codedJob(*p.choice.First)
+			} else {
+				j = newJob(l)
+				p.crew.offer(j)
+			}
+			p.pending = append(p.pending, openedBy{change: p.next, job: j})
+		}
+		p.last = l
+		p.next++
+	}
+	if p.next == n {
+		p.crew.finish()
+	}
+}
+
+// Close stops the helpers and waits for them, so nothing this film started is
+// running once it returns. A helper in the middle of a picture finishes it
+// first, which is at most one picture's time.
+func (p *Pictures) Close() { p.crew.stop() }
 
 // KeySample is the current picture as a key frame, with the sequence header
 // before it.

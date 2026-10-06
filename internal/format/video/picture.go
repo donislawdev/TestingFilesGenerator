@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"slices"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagelabel"
 )
@@ -33,11 +34,22 @@ var ink = color.RGBA{R: 240, G: 240, B: 240, A: 255}
 // Picture draws picture c of a film: the gradient every image format here
 // draws, moved by the seed, with the label burned into the top of it when
 // there is room, the clock under it reading when the picture starts, and the
-// square at its step. A film draws its pictures through one painter, so this
-// is for planning, which codes the first, and for the probes and guards that
-// measure any one of them.
+// square at its step. It is drawn the way a film draws it, and a film draws
+// its pictures through painters of its own, so this is for the probes and
+// guards that measure any one of them.
 func Picture(width, height int, seed uint64, label string, t Timeline, c int64) Planes {
-	return newPainter(width, height, seed, label, t).paint(c)
+	f := newFilm(width, height, seed, label, t)
+	return f.painter().draw(f.lookOf(c))
+}
+
+// WholePicture is picture c painted whole - the gradient copied, the clock and
+// the square drawn on the copy, and every pixel of it converted - which is how
+// every picture of a film was painted until 2026-10-06. A film now paints only
+// the rows that can change (painter.draw), and a guard holds the two to the
+// same planes, because the bytes of every film depend on them being the same.
+func WholePicture(width, height int, seed uint64, label string, t Timeline, c int64) Planes {
+	f := newFilm(width, height, seed, label, t)
+	return f.whole(f.lookOf(c))
 }
 
 // Labelled says whether a picture this wide carries a readable label - asked
@@ -76,21 +88,28 @@ func Clock(c int64, t Timeline) string {
 	return fmt.Sprintf("%s.%03d", hms, ms%1000)
 }
 
-// painter draws the pictures of one film. The gradient and the label are the
-// same in every one of them, so they are drawn once, and each change copies
-// them and adds only what moves - the clock and the square.
-type painter struct {
-	t         Timeline
-	base      *image.RGBA
-	work      *image.RGBA
-	planes    Planes
-	clockFrom int // the row the clock's band starts at
-	showClock bool
-	side      int
-	square    *image.Uniform
+// film is what every picture of one film has in common, made once and only
+// read after: the gradient with the label burned in, the same gradient in
+// planes, and where the clock and the square go. The painters of one film
+// share it, which is what lets several of them paint at once (ahead.go).
+type film struct {
+	t          Timeline
+	base       *image.RGBA
+	basePlanes Planes
+	planesBuf  []uint8 // what basePlanes lie over, copied whole by a painter
+	clockFrom  int     // the row the clock's band starts at
+	clockEnd   int     // the row under the band, where Draw stops painting it
+	showClock  bool
+	side       int
+	squareY    int
+	square     *image.Uniform
+	// strips are the only rows a picture can differ from the gradient in -
+	// the clock's band and the square's - each widened to whole pairs of
+	// rows, because one chroma sample covers two, and merged where they meet.
+	strips []image.Rectangle
 }
 
-func newPainter(width, height int, seed uint64, label string, t Timeline) *painter {
+func newFilm(width, height int, seed uint64, label string, t Timeline) *film {
 	off := int(seed % 256)
 	base := image.NewRGBA(image.Rect(0, 0, width, height))
 	for y := range height {
@@ -102,15 +121,61 @@ func newPainter(width, height int, seed uint64, label string, t Timeline) *paint
 	if Labelled(width, label) {
 		imagelabel.Draw(base, label)
 	}
-	cw, ch := (width+1)/2, (height+1)/2
-	return &painter{
-		t: t, base: base, work: image.NewRGBA(base.Rect),
-		planes:    Planes{Width: width, Height: height, Y: make([]uint8, width*height), U: make([]uint8, cw*ch), V: make([]uint8, cw*ch)},
+	f := &film{
+		t: t, base: base,
 		clockFrom: labelBand(width, label),
 		showClock: ClockShown(width, height, label, t),
 		side:      min(max(width/squareDivisor, 1), maxSquareSide, height),
 		square:    image.NewUniform(ink),
 	}
+	f.basePlanes, f.planesBuf = newPlanes(width, height)
+	toPlanes(base, f.basePlanes)
+	f.squareY = (height - f.side) * 3 / 4
+	f.clockEnd = f.clockFrom
+	if f.showClock {
+		f.clockEnd = min(height, f.clockFrom+imagelabel.BandHeight(width, len(Clock(0, t))))
+	}
+	f.strips = changingRows(width, height, [][2]int{{f.clockFrom, f.clockEnd}, {f.squareY, f.squareY + f.side}})
+	return f
+}
+
+// newPlanes is the three planes of a picture this size in one allocation,
+// and that allocation, which a painter copies whole (film.painter).
+func newPlanes(width, height int) (Planes, []uint8) {
+	cw, ch := (width+1)/2, (height+1)/2
+	buf := make([]uint8, width*height+2*cw*ch)
+	return planesOver(buf, width, height), buf
+}
+
+// planesOver lays the three planes out over buf, luma first. Each is capped
+// at its own length, so no plane can grow into the next.
+func planesOver(buf []uint8, width, height int) Planes {
+	n, c := width*height, ((width+1)/2)*((height+1)/2)
+	return Planes{Width: width, Height: height, Y: buf[:n:n], U: buf[n : n+c : n+c], V: buf[n+c : n+2*c : n+2*c]}
+}
+
+// changingRows turns runs of rows into strips the width of the picture,
+// each starting on an even row and ending on an even row or the last one, so
+// that every chroma sample a strip converts covers only rows the strip holds,
+// and merges the strips that overlap or touch. A run of no rows - the clock's,
+// on a picture with no room for it - gives no strip.
+func changingRows(width, height int, runs [][2]int) []image.Rectangle {
+	var spans [][2]int
+	for _, r := range runs {
+		if r[0] < r[1] {
+			spans = append(spans, [2]int{r[0] &^ 1, min(height, (r[1]+1)&^1)})
+		}
+	}
+	slices.SortFunc(spans, func(a, b [2]int) int { return a[0] - b[0] })
+	var out []image.Rectangle
+	for _, s := range spans {
+		if n := len(out); n > 0 && s[0] <= out[n-1].Max.Y {
+			out[n-1].Max.Y = max(out[n-1].Max.Y, s[1])
+			continue
+		}
+		out = append(out, image.Rect(0, s[0], width, s[1]))
+	}
+	return out
 }
 
 // look is what tells two pictures of one film apart: the clock's text when it
@@ -122,28 +187,84 @@ type look struct {
 	x     int
 }
 
-func (p *painter) lookOf(c int64) look {
-	l := look{x: (p.base.Rect.Dx() - p.side) * int(c%squareSteps) / (squareSteps - 1)}
-	if p.showClock {
-		l.clock = Clock(c, p.t)
+func (f *film) lookOf(c int64) look {
+	l := look{x: (f.base.Rect.Dx() - f.side) * int(c%squareSteps) / (squareSteps - 1)}
+	if f.showClock {
+		l.clock = Clock(c, f.t)
 	}
 	return l
 }
 
-// paint draws picture c into the painter's own planes and returns them. They
-// are overwritten by the next call.
-func (p *painter) paint(c int64) Planes { return p.draw(p.lookOf(c)) }
-
-// draw is paint for a picture whose look is already worked out.
-func (p *painter) draw(l look) Planes {
-	copy(p.work.Pix, p.base.Pix)
-	if p.showClock {
-		b := p.work.Rect
-		imagelabel.Draw(p.work.SubImage(image.Rect(0, p.clockFrom, b.Dx(), b.Dy())).(*image.RGBA), l.clock)
+// whole paints a picture the long way, into planes of its own: the whole
+// gradient copied, the clock and the square drawn on the copy, every pixel
+// converted. It is the reference painter.draw is held to (WholePicture).
+func (f *film) whole(l look) Planes {
+	work := image.NewRGBA(f.base.Rect)
+	copy(work.Pix, f.base.Pix)
+	if f.showClock {
+		b := work.Rect
+		imagelabel.Draw(work.SubImage(image.Rect(0, f.clockFrom, b.Dx(), b.Dy())).(*image.RGBA), l.clock)
 	}
-	y := (p.base.Rect.Dy() - p.side) * 3 / 4
-	draw.Draw(p.work, image.Rect(l.x, y, l.x+p.side, y+p.side), p.square, image.Point{}, draw.Src)
-	toPlanes(p.work, p.planes)
+	draw.Draw(work, image.Rect(l.x, f.squareY, l.x+f.side, f.squareY+f.side), f.square, image.Point{}, draw.Src)
+	planes, _ := newPlanes(f.base.Rect.Dx(), f.base.Rect.Dy())
+	toPlanes(work, planes)
+	return planes
+}
+
+// painter draws pictures of one film into planes of its own. They start as
+// the gradient's, and every row outside the film's strips stays the
+// gradient's in every picture, so a picture repaints and converts the strips
+// and nothing else - at 1920x1080 the clock's band and the square's are about
+// a sixth of the rows. One painter is used by one goroutine at a time.
+type painter struct {
+	f      *film
+	planes Planes
+	strips []image.RGBA
+}
+
+// painter is a painter of this film, in four allocations whatever the size:
+// itself, its planes, its strips, and the pixels of all of them. Every helper
+// coding a film makes one, and the allocations a file may cost are counted
+// (the AllocCeiling of the formats built on this).
+func (f *film) painter() *painter {
+	w := f.base.Rect.Dx()
+	stride := 4 * w
+	rows := 0
+	for _, r := range f.strips {
+		rows += r.Dy()
+	}
+	pix := make([]uint8, rows*stride)
+	p := &painter{f: f, planes: planesOver(slices.Clone(f.planesBuf), w, f.base.Rect.Dy()), strips: make([]image.RGBA, len(f.strips))}
+	for i, r := range f.strips {
+		n := r.Dy() * stride
+		p.strips[i] = image.RGBA{Pix: pix[:n:n], Stride: stride, Rect: r}
+		pix = pix[n:]
+	}
+	return p
+}
+
+// draw paints the picture with this look into the painter's planes and
+// returns them. They are overwritten by the next call.
+//
+// Each strip is the gradient's rows copied, the clock drawn when its band
+// starts in the strip, the square drawn where it crosses the strip, and the
+// rows converted - the same steps, in the same order, as whole, on fewer
+// rows. The clock's band always lies whole inside one strip, because the
+// strips were cut around it, so Draw sizes it as it would on the whole
+// picture.
+func (p *painter) draw(l look) Planes {
+	f := p.f
+	w := f.base.Rect.Dx()
+	for i := range p.strips {
+		s := &p.strips[i]
+		r := s.Rect
+		copy(s.Pix, f.base.Pix[r.Min.Y*f.base.Stride:r.Max.Y*f.base.Stride])
+		if f.showClock && r.Min.Y <= f.clockFrom && f.clockFrom < r.Max.Y {
+			imagelabel.Draw(s.SubImage(image.Rect(0, f.clockFrom, w, r.Max.Y)).(*image.RGBA), l.clock)
+		}
+		draw.Draw(s, image.Rect(l.x, f.squareY, l.x+f.side, f.squareY+f.side), f.square, image.Point{}, draw.Src)
+		convertRows(s, p.planes, r.Min.Y, r.Max.Y)
+	}
 	return p.planes
 }
 
@@ -162,30 +283,38 @@ func (p *painter) draw(l look) Planes {
 //
 // Chroma is the rounded mean of the two by two block it covers, so an odd
 // width or height averages the pixels that are there.
-func toPlanes(img *image.RGBA, p Planes) {
-	w, h := img.Rect.Dx(), img.Rect.Dy()
-	cw, ch := (w+1)/2, (h+1)/2
-	for y := range h {
-		row := img.Pix[y*img.Stride:]
+func toPlanes(img *image.RGBA, p Planes) { convertRows(img, p, 0, p.Height) }
+
+// convertRows converts rows r0 up to r1 of the picture p is, read from img -
+// the whole picture, or a strip of it that starts at row r0. r0 is even and r1
+// is even or the picture's height, so every chroma sample written here covers
+// rows img holds.
+func convertRows(img *image.RGBA, p Planes, r0, r1 int) {
+	w, h := p.Width, p.Height
+	top := img.Rect.Min.Y
+	for y := r0; y < r1; y++ {
+		row := img.Pix[(y-top)*img.Stride:]
 		for x := range w {
 			r, g, b := int(row[4*x]), int(row[4*x+1]), int(row[4*x+2])
 			p.Y[y*w+x] = uint8(16 + (47*r+157*g+16*b+128)>>8)
 		}
 	}
-	for cy := range ch {
+	cw := (w + 1) / 2
+	for cy := r0 / 2; cy < (r1+1)/2; cy++ {
 		for cx := range cw {
-			p.U[cy*cw+cx], p.V[cy*cw+cx] = chroma(img, 2*cx, 2*cy)
+			p.U[cy*cw+cx], p.V[cy*cw+cx] = chroma(img, 2*cx, 2*cy, w, h)
 		}
 	}
 }
 
 // chroma is the Cb and Cr of the two by two block whose top left is x0, y0,
-// over the pixels of it that are inside the picture.
-func chroma(img *image.RGBA, x0, y0 int) (cb, cr uint8) {
+// over the pixels of it that are inside a picture w by h.
+func chroma(img *image.RGBA, x0, y0, w, h int) (cb, cr uint8) {
 	sumB, sumR, n := 0, 0, 0
-	for y := y0; y < min(y0+2, img.Rect.Dy()); y++ {
-		row := img.Pix[y*img.Stride:]
-		for x := x0; x < min(x0+2, img.Rect.Dx()); x++ {
+	top := img.Rect.Min.Y
+	for y := y0; y < min(y0+2, h); y++ {
+		row := img.Pix[(y-top)*img.Stride:]
+		for x := x0; x < min(x0+2, w); x++ {
 			r, g, b := int(row[4*x]), int(row[4*x+1]), int(row[4*x+2])
 			sumB += -26*r - 86*g + 112*b
 			sumR += 112*r - 102*g - 10*b
