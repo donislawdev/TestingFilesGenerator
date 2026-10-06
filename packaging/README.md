@@ -87,8 +87,9 @@ directory is `%USERPROFILE%`, because the window offers a `tfg-out` folder under
 the directory it was started from, and the package folder is one an ordinary
 account cannot write to. The install leaves alone a shortcut under the same name
 that starts a program outside the package - the Windows installer makes exactly
-that one - and replaces one whose target is gone. The uninstall removes the
-shortcut only when it points into the package. The icon is a jsDelivr address pinned to the release tag:
+that one - or that points at no file, as a shortcut to a shell item does, and
+replaces one whose target is gone. The uninstall removes the shortcut only when
+it points into the package. The icon is a jsDelivr address pinned to the release tag:
 moderation refuses `raw.githubusercontent.com` and `github.com/.../raw` alike,
 and an icon on a branch would keep changing under an approved package.
 
@@ -104,11 +105,18 @@ scope and on Windows 11 in user scope:
   after an upgrade until the next Chocolatey operation on the package, after an
   uninstall for good. `chocolateybeforemodify.ps1` says so at that moment and
   names the folder to delete once the program is closed.
-- **WinGet stops half way.** An upgrade fails with "Access is denied" on the
-  program, having already deleted some of the other files, and the package works
-  again once the upgrade runs with the program closed. Measured for the window
-  and, on Windows 11, for the command line while a tfg command was running. A portable
-  package carries no script, so the description is where this is said.
+- **WinGet with the archive stops half way.** An upgrade fails with "Access is
+  denied" on the program, having already deleted some of the other files, and
+  the package works again once the upgrade runs with the program closed.
+  Measured for the window and, on Windows 11, for the command line while a tfg
+  command was running. A portable package carries no script, so the description
+  is where this is said.
+- **WinGet with the Windows installer goes ahead.** Measured on 2026-10-06 on
+  Windows Server 2025, the installer of 0.4.0 over 0.3.0 while a tfg command was
+  running: WinGet said "Restart your PC to finish installation." and exited 0,
+  the run went on, and a new tfg was the new version at once - the restart only
+  removes the old copy, as the installer section below says. Not measured with
+  the window open, so the window's description still asks to close it first.
 
 ## The Windows installer
 

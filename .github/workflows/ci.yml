@@ -543,8 +543,9 @@ jobs:
 
           # A shortcut of another install already there when the package comes
           # - the program's Windows installer makes one under this very name -
-          # is left alone by the install, and so by the uninstall. One whose
-          # target is gone belongs to nobody, and the install replaces it.
+          # is left alone by the install, and so by the uninstall. So is one to
+          # a shell item, which points at no file. One whose target is gone
+          # belongs to nobody, and the install replaces it.
           $notepad = Join-Path $env:WINDIR 'notepad.exe'
           $other = $shell.CreateShortcut($shortcut)
           $other.TargetPath = $notepad
@@ -556,6 +557,18 @@ jobs:
           choco.exe uninstall testing-files-generator --yes --no-progress
           if ($LASTEXITCODE -ne 0) { throw "the fourth uninstall exited $LASTEXITCODE" }
           Check ($shell.CreateShortcut($shortcut).TargetPath -eq $notepad) "and so does the uninstall"
+          Remove-Item -LiteralPath $shortcut -Force
+          $other = $shell.CreateShortcut($shortcut)
+          $other.TargetPath = '::{20D04FE0-3AEA-1069-A2D8-08002B30309D}'
+          $other.Save()
+          $said = (choco.exe install testing-files-generator --source $feed --yes --no-progress) -join "`n"
+          if ($LASTEXITCODE -ne 0) { throw "the shell item install exited $LASTEXITCODE" }
+          Check ((Test-Path $shortcut) -and $shell.CreateShortcut($shortcut).TargetPath -eq '') "the install leaves a shortcut to a shell item alone"
+          Check ($said -match 'It points at no file, so it is not from this package') "and the install says so in a whole sentence"
+          choco.exe uninstall testing-files-generator --yes --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "the shell item uninstall exited $LASTEXITCODE" }
+          Check ((Test-Path $shortcut) -and $shell.CreateShortcut($shortcut).TargetPath -eq '') "and so does the uninstall"
+          Remove-Item -LiteralPath $shortcut -Force
           $other = $shell.CreateShortcut($shortcut)
           $other.TargetPath = Join-Path $env:RUNNER_TEMP 'gone\tfg-gui.exe'
           $other.Save()

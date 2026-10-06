@@ -480,9 +480,10 @@ func TestTheChocolateyIconIsAPinnedCdnAddress(t *testing.T) {
 // folder under, and the package's own folder is one an ordinary account cannot
 // write to - owner's decision of 2026-09-25, the user's profile. The install
 // leaves alone a shortcut under the same name that starts something outside
-// the package - the program's Windows installer makes exactly that one - and
-// the uninstall removes only a shortcut that points into the package. These
-// are the lines; the packages job in ci.yml asks a machine what they do.
+// the package - the program's Windows installer makes exactly that one - or
+// that points at no file, and the uninstall removes only a shortcut that
+// points into the package. These
+// are the lines. The packages job in ci.yml asks a machine what they do.
 func TestTheWindowPackageStartsWhereAPersonCanWrite(t *testing.T) {
 	files := renderedPackages(t)
 	install := scriptLines(files[windowChoco+"tools/chocolateyinstall.ps1"])
@@ -498,11 +499,15 @@ func TestTheWindowPackageStartsWhereAPersonCanWrite(t *testing.T) {
 		t.Error("the Start menu shortcut does not start in the user's profile, so the window " +
 			"offers to write into a folder the person cannot write to")
 	}
-	if !anyLine(install, `^    if \(\$target -and -not \$target\.StartsWith\(\$toolsDir \+ '\\', \[StringComparison\]::OrdinalIgnoreCase\) -and \(Test-Path -LiteralPath \$target\)\) \{$`) ||
-		!anyLine(install, `^if \(\$other\) \{$`) || !anyLine(install, `^    Install-ChocolateyShortcut `+"`"+`$`) {
+	if !anyLine(install, `^    \} elseif \(-not \$target\.StartsWith\(\$toolsDir \+ '\\', \[StringComparison\]::OrdinalIgnoreCase\) -and \(Test-Path -LiteralPath \$target\)\) \{$`) ||
+		!anyLine(install, `^if \(\$keep\) \{$`) || !anyLine(install, `^    Install-ChocolateyShortcut `+"`"+`$`) {
 		t.Error("the install makes its shortcut without asking whether the one already there " +
 			"starts another install, so it takes over the shortcut of the Windows installer - " +
 			"and its uninstall then deletes it")
+	}
+	if !anyLine(install, `^    if \(-not \$target\) \{$`) {
+		t.Error("the install takes over a shortcut that points at no file - a shell item, " +
+			"somebody else's - and its uninstall then deletes it")
 	}
 	uninstall := scriptLines(files[windowChoco+"tools/chocolateyuninstall.ps1"])
 	if !anyLine(uninstall, `^if \(\$target\.StartsWith\(\$toolsDir \+ '\\', `) {
