@@ -154,6 +154,17 @@ func goldenCases() map[string]engine.Target {
 		"jxl_quality": {ID: "g", Format: "jxl", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"width": "64", "height": "48", "quality": "70"}},
 
+		// WebM, whose picture is coded by gav1d like AVIF's and whose stream
+		// and container are ours. Three cases for three roads: the ladder at
+		// the default settings, a picture named by hand in a film with several
+		// key frames and so several clusters and cue points, and an odd size,
+		// which the Void carries a byte at a time.
+		"webm_64kib": {ID: "g", Format: "webm", Sizes: engine.Uniform(1, 65536), Label: true},
+		"webm_named": {ID: "g", Format: "webm", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "64", "height": "48", "duration": "2s", "keyframe_interval": "1s", "frame_rate": "25"}},
+		"webm_odd_size": {ID: "g", Format: "webm", Sizes: engine.Uniform(1, 65537), Label: true,
+			Properties: map[string]string{"width": "64", "height": "48"}},
+
 		// An odd size. The free box takes any length at all, so this is the case
 		// that would catch padding that could only step in twos.
 		"jxl_odd_size": {ID: "g", Format: "jxl", Sizes: engine.Uniform(1, 65537), Label: true,

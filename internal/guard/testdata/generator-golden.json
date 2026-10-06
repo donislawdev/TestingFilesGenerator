@@ -331,6 +331,21 @@
       "bytes": 8192,
       "sha256": "eae81b32d70ff0380a09aa2d5cfbbbe85e8595c34d66187b9ca30cd7cc668540",
       "measured_on": "2026-09-22"
+    },
+    "webm_64kib": {
+      "bytes": 65536,
+      "sha256": "54b2c5610ecfe09798298b460dfbf40a20de9acf159ab4403450646996311b86",
+      "measured_on": "2026-10-06"
+    },
+    "webm_named": {
+      "bytes": 65536,
+      "sha256": "62d199e1e7a9e92ec14152a0156798735be3d715630d851f8ca96e4876a981ba",
+      "measured_on": "2026-10-06"
+    },
+    "webm_odd_size": {
+      "bytes": 65537,
+      "sha256": "775c5c40ac7f7089858fd62ca956be23d2a706796d809aa6f8d3d07114bf8a42",
+      "measured_on": "2026-10-06"
     }
   },
   "remeasured": [

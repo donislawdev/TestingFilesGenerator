@@ -10,7 +10,7 @@
 
 **Testing Files Generator** is a tool for QA engineers and developers who need real
 files to test against - an upload form, a parser, anything that takes a file and
-has an opinion about it. You pick one of its 26 formats and the size you want,
+has an opinion about it. You pick one of its 27 formats and the size you want,
 and you get **exactly that**: ask for a 10 MB PDF and you get a PDF that a reader
 will open, at 10 MB to the byte. Every run also leaves a manifest saying **what
 your system should do with each file**, which is the part other generators leave
@@ -23,7 +23,7 @@ needs it finds out it exists.
 
 - **Hit an exact size, to the byte** - ask for 10485761 bytes and get exactly
   that, never a silently rounded file.
-- **Write 26 real formats** - a generated PNG opens in an image viewer, a DOCX
+- **Write 27 real formats** - a generated PNG opens in an image viewer, a DOCX
   opens in Word, a ZIP extracts. Not padded zeros with an extension.
 - **Say what should happen to each file** - the manifest carries an expected
   outcome, so your test reads the assertion instead of you writing it out.
@@ -156,7 +156,7 @@ logs matches ./logs/manifest.json: 10000 files checked
 
 ## 📁 Formats it generates
 
-Twenty six, and every one is a **real file of that format** - it opens in the
+Twenty seven, and every one is a **real file of that format** - it opens in the
 software that owns it, at the exact size you asked for:
 
 | group | formats |
@@ -167,6 +167,7 @@ software that owns it, at the exact size you asked for:
 | ⚙️ **Configuration** | `yaml`, `toml` |
 | 🗜️ **Archives** | `zip`, `targz` (`.tar.gz`) |
 | 🔊 **Audio** | `wav` |
+| 🎞️ **Video** | `webm` (AV1, no sound) |
 
 Coming next: `7z`, `mp3`, `mp4`.
 
@@ -605,6 +606,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `avif`, `jpg`, `jxl` | `width`, `height`, `quality` |
 | `ico` | `width`, `height`, `embed` |
 | `wav` | `sample_rate`, `bit_depth`, `channels`, `content` |
+| `webm` | `width`, `height`, `duration`, `frame_rate`, `keyframe_interval`, `quality` |
 | `zip` | `entries`, `entry_format`, `entry_size`, `compression`, `depth`, `directory_entries`, `password`, `encryption` |
 | `targz` | `entries`, `entry_format`, `entry_size`, `compression`, `depth`, `directory_entries`, `entry_mode`, `entry_owner` |
 | `docx` | `paragraphs` |
