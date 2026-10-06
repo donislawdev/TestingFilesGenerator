@@ -3146,6 +3146,11 @@
     "hash": "sha256-319218310f03",
     "other": "a {{.Width}}x{{.Height}} picture is {{.Blocks}} blocks of 64 by 64 pixels once its sides are rounded up to whole blocks, and the encoder codes one AV1 tile, which holds {{.Most}}. Ask for a smaller pair, such as 4096x2304 or 3840x2160"
   },
+  "video.NoClock": {
+    "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Width}}, {{.Height}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-9fb32f58b247",
+    "other": "The picture is {{.Width}}x{{.Height}} and the clock needs more room, so this film shows no clock. The square still steps across it where it has room to move."
+  },
   "video.NotOnAFrame": {
     "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.FPS}}, {{.Step}}, {{.Below}}, {{.Above}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-4471642f4d67",
@@ -3155,6 +3160,11 @@
     "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.FPS}}, {{.Step}}, {{.Above}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-e6b01f8c0aeb",
     "other": "at {{.FPS}} frames a second a length has to end on a frame, and lengths at that rate go in steps of {{.Step}}. Ask for {{.Above}}, the shortest film at this rate"
+  },
+  "video.TooManyChanges": {
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Duration}}, {{.Interval}}, {{.Pictures}}, {{.Most}}, {{.Shortest}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-79ad4cf6e19b",
+    "other": "a film of {{.Duration}} with a new picture every {{.Interval}} shows {{.Pictures}} pictures, and a film can show at most {{.Most}}. Ask for {{.Shortest}} or longer, or a shorter film"
   },
   "video.TooManyKeyFrames": {
     "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Duration}}, {{.Interval}}, {{.Keys}}, {{.Most}}, {{.Shortest}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -3166,20 +3176,20 @@
     "hash": "sha256-b8bfddcdab7d",
     "other": ", or drop the label"
   },
-  "webm.AskForBOrMore": {
+  "webm.AskForBOrMoreFilmPictures": {
     "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Floor}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-dcb48388a704",
-    "other": "Ask for {{.Floor}} B or more, or a shorter film, fewer frames a second, key frames further apart or a smaller picture"
+    "hash": "sha256-faee56eaa68b",
+    "other": "Ask for {{.Floor}} B or more, or a shorter film, fewer frames a second, key frames further apart or a new picture less often"
   },
-  "webm.AskForBOrMoreFilm": {
+  "webm.AskForBOrMorePictures": {
     "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Floor}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-030aa26d50a8",
-    "other": "Ask for {{.Floor}} B or more, or a shorter film, fewer frames a second or key frames further apart"
+    "hash": "sha256-504e7380dc2f",
+    "other": "Ask for {{.Floor}} B or more, or a shorter film, fewer frames a second, key frames further apart, a new picture less often or a smaller picture"
   },
-  "webm.MinimumReason": {
-    "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Duration}}, {{.FPS}}, {{.Interval}}, {{.Width}}, {{.Height}}, {{.Bytes}}, {{.Void}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-736b751cfd83",
-    "other": "a film of {{.Duration}} at {{.FPS}} frames a second with a key frame every {{.Interval}} and a {{.Width}}x{{.Height}} picture takes {{.Bytes}} B, and the file always carries a Void element, which costs {{.Void}} B even when it holds nothing"
+  "webm.MinimumReasonPictures": {
+    "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Duration}}, {{.FPS}}, {{.Interval}}, {{.Width}}, {{.Height}}, {{.Change}}, {{.Bytes}}, {{.Void}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-613f54fd8e25",
+    "other": "a film of {{.Duration}} at {{.FPS}} frames a second with a key frame every {{.Interval}} and a new {{.Width}}x{{.Height}} picture every {{.Change}} takes {{.Bytes}} B, and the file always carries a Void element, which costs {{.Void}} B even when it holds nothing"
   },
   "xlsx.Columns": {
     "description": "Said by internal/format/xlsx - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",

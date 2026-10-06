@@ -1224,6 +1224,11 @@
     "hash": "sha256-71e4eb77e129",
     "other": "How many samples a second the signal carries."
   },
+  "Detail.format/webm.change_interval": {
+    "description": "The sentence under the change_interval setting of the webm format, after what it takes.",
+    "hash": "sha256-d94e8abf3718",
+    "other": "How often the picture changes: the clock in it moves on and the square takes a step. Each change costs a whole picture in bytes and in time. An interval as long as the film or longer keeps one picture throughout."
+  },
   "Detail.format/webm.duration": {
     "description": "The sentence under the duration setting of the webm format, after what it takes.",
     "hash": "sha256-adacce8ce234",
@@ -1638,6 +1643,11 @@
     "description": "The name beside the box of a setting a recipe writes as bytes.",
     "hash": "sha256-4d8000301fcc",
     "other": "Bytes"
+  },
+  "Label.change_interval": {
+    "description": "The name beside the box of a setting a recipe writes as change_interval.",
+    "hash": "sha256-e99a12a7d82d",
+    "other": "Change interval"
   },
   "Label.channels": {
     "description": "The name beside the box of a setting a recipe writes as channels.",
