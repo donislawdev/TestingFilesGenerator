@@ -1903,6 +1903,8 @@ def av1_frames(sample):
             if not sample[at + i] & 0x80:
                 used = i
                 break
+        if not used:
+            fail("an OBU size longer than the eight bytes AV1 allows")
         payload = sample[at + 1 + used:at + 1 + used + size]
         if len(payload) != size:
             fail(f"an OBU of type {kind} says {size} B and its sample has {len(payload)}")
@@ -1953,7 +1955,7 @@ def check_webm(data):
 
     seg_start, seg_end = top[1][2], top[1][3]
     children = list(ebml_elements(data, seg_start, seg_end))
-    if children[-1][0] != 0xEC:
+    if not children or children[-1][0] != 0xEC:
         fail("the last element of the segment is not a Void, and this generator pads at the end")
     at_offset = {at - seg_start: ident for ident, at, _, _ in children}
 
@@ -1962,6 +1964,8 @@ def check_webm(data):
         if ident == 0x114D9B74:
             for _, _, sb, se in ebml_elements(data, body, stop):
                 fields = {i: data[b:e] for i, _, b, e in ebml_elements(data, sb, se)}
+                if 0x53AB not in fields or 0x53AC not in fields:
+                    fail("a Seek without the ID or the position it names")
                 target = int.from_bytes(fields[0x53AB], "big")
                 where = int.from_bytes(fields[0x53AC], "big")
                 if at_offset.get(where) != target:
@@ -1973,6 +1977,10 @@ def check_webm(data):
                 if ci == 0xE7:
                     cluster_ts = int.from_bytes(data[cb:ce], "big")
                 elif ci == 0xA3:
+                    if cluster_ts is None:
+                        fail("a block before its cluster's Timestamp, which this generator writes first")
+                    if ce - cb < 4:
+                        fail(f"a SimpleBlock of {ce - cb} B, shorter than its track, time and flags")
                     if data[cb] != 0x81:
                         fail("a block on a track other than 1")
                     rel = int.from_bytes(data[cb + 1:cb + 3], "big", signed=True)

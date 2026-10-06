@@ -625,6 +625,7 @@
   "tool.ThereIsNoToolCalled": { "hash": "sha256-151e818f434e", "other": "nie ma narzędzia o nazwie {{.ID}}" },
   "tool.ThisBuildHasNoTools": { "hash": "sha256-42b26a93974c", "other": "ta wersja nie ma narzędzi" },
   "tool.UseOneOf": { "hash": "sha256-a53588601259", "other": "użyj jednego z: {{.Known}}" },
+  "video.MoreThanOneTile": { "hash": "sha256-319218310f03", "other": "obraz {{.Width}}x{{.Height}} po zaokrągleniu boków w górę do pełnych bloków 64 na 64 piksele ma ich {{.Blocks}}, a koder zapisuje jeden kafel AV1, który mieści ich najwyżej {{.Most}}. Poproś o mniejszą parę, na przykład 4096x2304 albo 3840x2160" },
   "video.NotOnAFrame": { "hash": "sha256-4471642f4d67", "other": "przy {{.FPS}} klatkach na sekundę długość musi kończyć się na klatce, a przy tej szybkości długości idą co {{.Step}}. Poproś o {{.Below}} albo {{.Above}}" },
   "video.NotOnAFrameShortest": { "hash": "sha256-e6b01f8c0aeb", "other": "przy {{.FPS}} klatkach na sekundę długość musi kończyć się na klatce, a przy tej szybkości długości idą co {{.Step}}. Poproś o {{.Above}}, najkrótszy film przy tej szybkości" },
   "video.TooManyKeyFrames": { "hash": "sha256-fab3e045a284", "other": "film o długości {{.Duration}} z klatką kluczową co {{.Interval}} ma ich {{.Keys}}, a film może mieć najwyżej {{.Most}}. Poproś o {{.Shortest}} albo dłużej albo o krótszy film" },

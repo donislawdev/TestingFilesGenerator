@@ -316,7 +316,7 @@
   "Joint.format/jpg.width.height": { "hash": "sha256-0bed7aa664d8", "other": "obraz jest trzymany w pamięci podczas kodowania" },
   "Joint.format/jxl.width.height": { "hash": "sha256-269a6c476761", "other": "koder trzyma cały obraz w pamięci podczas pracy" },
   "Joint.format/png.width.height": { "hash": "sha256-0bed7aa664d8", "other": "obraz jest trzymany w pamięci podczas kodowania" },
-  "Joint.format/webm.width.height": { "hash": "sha256-269a6c476761", "other": "koder trzyma cały obraz w pamięci podczas pracy" },
+  "Joint.format/webm.width.height": { "hash": "sha256-ed5704060118", "other": "koder zapisuje obraz jako jeden kafel AV1, a ten mieści 4096 na 2304 piksele" },
   "Joint.format/xlsx.rows.columns": { "hash": "sha256-e1ef283f3c5d", "other": "arkusz powstaje w pamięci, zanim zostanie spakowany" },
   "Kind.file": { "hash": "sha256-3b9c358f36f0", "other": "plik" },
   "Kind.folder": { "hash": "sha256-034a00624882", "other": "folder" },

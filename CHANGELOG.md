@@ -25,7 +25,10 @@ because it turns other people's test suites red.
   `frame_rate` (whole rates from 1 to 60), `keyframe_interval` - how far
   apart the frames a player can start from are - `width`, `height` and
   `quality`. The picture is the gradient with the self describing label the
-  image formats draw, and it stays the same for the whole film. The manifest
+  image formats draw, and it stays the same for the whole film. It can be up
+  to 4096 pixels wide and at most 4096x2304 pixels in all, the largest the
+  built in encoder writes correctly - a larger one is refused with a pair
+  that fits. The manifest
   says what a test can check: `duration_ms`, `frame_count`, `frame_rate`,
   `keyframe_count`, `width`, `height`, `compression: av1` and `audio: false`.
   A length that does not end on a frame is refused with the two nearest that
