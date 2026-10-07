@@ -469,7 +469,7 @@
 						<rectangle fillColor="inputBackground" radius="8" size="367x624" strokeColor="inputBorder" strokeWidth="1"/>
 						<container size="367x624">
 							<widget pos="0,40" size="367x584" type="*widget.Scroll">
-								<container size="367x924">
+								<container size="367x952">
 									<widget size="367x28" type="*parts.ListRow">
 										<rectangle radius="6" size="367x28"/>
 										<text bold color="rgba(211,211,215,255)" pos="8,6" size="351x14" textSize="12">Archives · 2</text>
@@ -649,9 +649,15 @@
 									</widget>
 									<widget pos="0,868" size="367x28" type="*parts.ListRow">
 										<rectangle radius="6" size="367x28"/>
-										<text bold color="rgba(211,211,215,255)" pos="8,6" size="351x14" textSize="12">Video · 1</text>
+										<text bold color="rgba(211,211,215,255)" pos="8,6" size="351x14" textSize="12">Video · 2</text>
 									</widget>
 									<widget pos="0,896" size="367x28" type="*parts.ListRow">
+										<rectangle radius="6" size="367x28"/>
+										<image pos="36,4" rsc="media-video.svg" size="iconInlineSize" themed="foreground"/>
+										<text pos="64,5" size="41x16">mp4</text>
+										<text color="rgba(211,211,215,255)" pos="121,5" size="209x16">MP4 video</text>
+									</widget>
+									<widget pos="0,924" size="367x28" type="*parts.ListRow">
 										<rectangle radius="6" size="367x28"/>
 										<image pos="36,4" rsc="media-video.svg" size="iconInlineSize" themed="foreground"/>
 										<text pos="64,5" size="41x16">webm</text>
@@ -662,8 +668,8 @@
 									<linearGradient pos="0,-8" size="367x8"/>
 								</widget>
 								<widget pos="361,0" size="6x584" type="*widget.scrollBarArea">
-									<widget pos="3,0" size="3x369" type="*widget.scrollBar">
-										<rectangle fillColor="scrollbar" radius="3" size="3x369"/>
+									<widget pos="3,0" size="3x358" type="*widget.scrollBar">
+										<rectangle fillColor="scrollbar" radius="3" size="3x358"/>
 									</widget>
 								</widget>
 							</widget>

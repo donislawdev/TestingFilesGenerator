@@ -10,7 +10,7 @@
 
 **Testing Files Generator** is a tool for QA engineers and developers who need real
 files to test against - an upload form, a parser, anything that takes a file and
-has an opinion about it. You pick one of its 27 formats and the size you want,
+has an opinion about it. You pick one of its 28 formats and the size you want,
 and you get **exactly that**: ask for a 10 MB PDF and you get a PDF that a reader
 will open, at 10 MB to the byte. Every run also leaves a manifest saying **what
 your system should do with each file**, which is the part other generators leave
@@ -167,9 +167,9 @@ owns it, at the exact size you asked for:
 | ⚙️ **Configuration** | `yaml`, `toml` |
 | 🗜️ **Archives** | `zip`, `targz` (`.tar.gz`) |
 | 🔊 **Audio** | `wav` |
-| 🎞️ **Video** | `webm` (AV1, no sound) |
+| 🎞️ **Video** | `webm`, `mp4` (both AV1, no sound) |
 
-Coming next: `7z`, `mp3`, `mp4`.
+Coming next: `7z`, `mp3`.
 
 Most of them take settings of their own - image dimensions, JPEG quality, PDF
 page count, rows and columns in a spreadsheet, what goes inside an archive. See
@@ -606,7 +606,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `avif`, `jpg`, `jxl` | `width`, `height`, `quality` |
 | `ico` | `width`, `height`, `embed` |
 | `wav` | `sample_rate`, `bit_depth`, `channels`, `content` |
-| `webm` | `width`, `height`, `duration`, `change_interval`, `frame_rate`, `keyframe_interval`, `quality` |
+| `webm`, `mp4` | `width`, `height`, `duration`, `change_interval`, `frame_rate`, `keyframe_interval`, `quality` |
 | `zip` | `entries`, `entry_format`, `entry_size`, `compression`, `depth`, `directory_entries`, `password`, `encryption` |
 | `targz` | `entries`, `entry_format`, `entry_size`, `compression`, `depth`, `directory_entries`, `entry_mode`, `entry_owner` |
 | `docx` | `paragraphs` |
