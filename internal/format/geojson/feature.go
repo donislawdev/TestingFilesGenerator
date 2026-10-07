@@ -193,8 +193,12 @@ func (r *records) worstLength(k kind, n int) int64 {
 		widest.bounds = r.d.extent()
 	}
 	buf := r.shut(r.write(nil, k, widest))
-	closing := r.epilogue(nil, widestBox(r.s, r.g))
-	return int64(len(buf) + len(closing))
+	// Into the buffer the closing feature reuses, rather than a new one for
+	// each kind and each count measured: fourteen of those with mixed were
+	// enough to take the generator past the allocation ceiling of the guard
+	// that keeps a file out of memory (CI on #172).
+	r.closing = r.epilogue(r.closing[:0], widestBox(r.s, r.g))
+	return int64(len(buf) + len(r.closing))
 }
 
 // widestBox is a box with the widest number the grid writes at every axis, or

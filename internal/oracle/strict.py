@@ -2303,8 +2303,9 @@ def geo_id(number, feat, settings):
 def geo_feature(number, feat, settings, kinds):
     """One feature: its members, its id, its place or the lack of one, its shape.
 
-    Returns the box its positions lie in, as drawn, or None for a feature with
-    no place."""
+    Returns whether it has a place, and the box its positions lie in, as drawn,
+    when a bbox was ordered - worked out only then, because only then is it
+    asked about."""
     if not isinstance(feat, dict):
         fail(f"feature {number} is {type(feat).__name__} rather than an object")
     unlocated = geo_unlocated(number, settings)
@@ -2327,7 +2328,7 @@ def geo_feature(number, feat, settings, kinds):
     if unlocated:
         if feat["geometry"] is not None:
             fail(f"feature {number} has a geometry and unlocated={settings['unlocated']} leaves it without one")
-        return None
+        return False, None
     if not isinstance(feat["geometry"], dict):
         fail(f"feature {number} has a geometry of {type(feat['geometry']).__name__} - "
              f"unlocated={settings['unlocated']} gives it a place")
@@ -2335,12 +2336,11 @@ def geo_feature(number, feat, settings, kinds):
     if feat["geometry"]["type"] != want:
         fail(f"feature {number} is a {feat['geometry']['type']} and geometry={settings['geometry']} makes it a {want}")
     geo_shape(number, feat["geometry"], settings)
-    drawn = geo_drawn(feat["geometry"], settings)
-    lo = [min(p[i] for p in drawn) for i in range(len(drawn[0]))]
-    hi = [max(p[i] for p in drawn) for i in range(len(drawn[0]))]
-    if settings["bbox"]:
-        geo_bbox(f"feature {number}", feat["bbox"], lo, hi, settings["precision"])
-    return lo, hi
+    if not settings["bbox"]:
+        return True, None
+    lo, hi = geo_extent(feat["geometry"], settings)
+    geo_bbox(f"feature {number}", feat["bbox"], lo, hi, settings["precision"])
+    return True, (lo, hi)
 
 
 def geo_shape(number, geom, settings):
@@ -2413,23 +2413,35 @@ def geo_edges(number, run, first, places):
 
     An edge of half the globe or more reads to a reader that draws edges on the
     sphere as the short way round the other side - a crossing of the antimeridian
-    nobody ordered, or one that was ordered going the wrong way."""
-    xs = [geo_lon(p[0], first, places) for p in run]
-    for a, b in zip(xs, xs[1:]):
-        if abs(b - a) >= 180 * 10 ** places:
-            fail(f"feature {number}: an edge spans {geo_text(abs(b - a), places)} degrees of longitude, "
+    nobody ordered, or one that was ordered going the wrong way. Walked a pair
+    at a time, so no copy of the run is kept (review of #172)."""
+    half, before = 180 * 10 ** places, None
+    for p in run:
+        x = geo_lon(p[0], first, places)
+        if before is not None and abs(x - before) >= half:
+            fail(f"feature {number}: an edge spans {geo_text(abs(x - before), places)} degrees of longitude, "
                  f"and every edge this tool draws spans less than half the globe")
+        before = x
 
 
-def geo_drawn(geom, settings):
-    """Every position of a geometry in steps, with the longitudes as they were drawn."""
+def geo_extent(geom, settings):
+    """The box a geometry's positions lie in, in steps, with the longitudes as
+    they were drawn - a running minimum and maximum rather than a copy of every
+    position, and asked for only when a bbox was ordered (review of #172).
+
+    Not a memory bound: the parsed document and the text its layout is rebuilt
+    into are what the check holds at its peak - 638 MiB for a 40 MiB file of
+    outlines of 200 000 points and 20 000 holes, measured 2026-10-07 the same
+    with the copy and without it."""
     first, places = geo_anchor(geom, settings), settings["precision"]
-    drawn = []
+    lo = hi = None
     for piece, coords in geo_pieces(geom):
-        runs = {"Point": [[coords]], "LineString": [coords], "Polygon": coords}[piece]
-        drawn.extend([geo_lon(pos[0], first, places)] + [geo_steps(v) for v in pos[1:]]
-                     for run in runs for pos in run)
-    return drawn
+        for run in {"Point": [[coords]], "LineString": [coords], "Polygon": coords}[piece]:
+            for pos in run:
+                p = [geo_lon(pos[0], first, places)] + [geo_steps(v) for v in pos[1:]]
+                lo = p if lo is None else [min(a, b) for a, b in zip(lo, p)]
+                hi = p if hi is None else [max(a, b) for a, b in zip(hi, p)]
+    return lo, hi
 
 
 def geo_bbox(where, got, lo, hi, places):
@@ -2499,9 +2511,9 @@ def check_geojson(data, settings=None):
     # to come out as a refusal with a reason rather than a Python traceback,
     # because a crash also turns a guard red and proves nothing (review of #171).
     try:
-        boxes = [b for b in (geo_feature(number, feat, settings, kinds)
-                             for number, feat in enumerate(feats, start=1)) if b]
-        geo_collection_box(doc, boxes, settings)
+        found = [geo_feature(number, feat, settings, kinds) for number, feat in enumerate(feats, start=1)]
+        located = sum(1 for placed, _ in found if placed)
+        geo_collection_box(doc, [box for _, box in found if box], located, settings)
     except (TypeError, KeyError, IndexError, AttributeError, ValueError) as exc:
         fail(f"a feature is not shaped the way this tool writes one: {type(exc).__name__}: {exc}")
     spaces = geo_layout(text, doc, settings["formatting"])
@@ -2509,7 +2521,7 @@ def check_geojson(data, settings=None):
     if note > GEOJSON_NOTE_CAP or (spaces and note != GEOJSON_NOTE_CAP):
         fail(f"the last note is {note} B with {spaces} spaces after the feature - "
              f"spaces may only follow a note of exactly {GEOJSON_NOTE_CAP} B")
-    ok(f"{len(feats)} features, {len(boxes)} with a place, {settings['geometry']}, {spaces} trailing spaces, "
+    ok(f"{len(feats)} features, {located} with a place, {settings['geometry']}, {spaces} trailing spaces, "
        f"collection box {geo_box_shape(doc)}")
 
 
@@ -2526,10 +2538,10 @@ def geo_box_shape(doc):
     return "crossing" if west > east else "plain"
 
 
-def geo_collection_box(doc, boxes, settings):
+def geo_collection_box(doc, boxes, located, settings):
     """The root's members after its features: a bbox taking in every feature
     with a place when one was ordered and any feature has one, and nothing else."""
-    want = ["type", "features"] + (["bbox"] if settings["bbox"] and boxes else [])
+    want = ["type", "features"] + (["bbox"] if settings["bbox"] and located else [])
     if list(doc) != want:
         fail(f"the collection has the members {list(doc)}, not {want}")
     if "bbox" in want:
