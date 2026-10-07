@@ -244,7 +244,7 @@
   "Detail.format/wav.channels": { "hash": "sha256-f94ddfa60e04", "other": "Ile kanałów ma sygnał, czyli 1 dla mono i 2 dla stereo." },
   "Detail.format/wav.content": { "hash": "sha256-c2baa480c847", "other": "Jak brzmi sygnał." },
   "Detail.format/wav.sample_rate": { "hash": "sha256-71e4eb77e129", "other": "Ile próbek na sekundę niesie sygnał." },
-  "Detail.format/webm.change_interval": { "hash": "sha256-d94e8abf3718", "other": "Jak często zmienia się obraz: zegar w nim idzie dalej, a kwadrat robi krok. Każda zmiana kosztuje cały obraz w bajtach i w czasie, a odstęp równy długości filmu albo dłuższy zostawia jeden obraz przez cały film." },
+  "Detail.format/webm.change_interval": { "hash": "sha256-13634dfb475a", "other": "Jak często zmienia się obraz: zegar w nim idzie dalej, a kwadrat robi krok. Każda zmiana kosztuje cały obraz w bajtach, a odstęp równy długości filmu albo dłuższy zostawia jeden obraz przez cały film." },
   "Detail.format/webm.duration": { "hash": "sha256-adacce8ce234", "other": "Jak długo trwa film. Musi kończyć się na klatce, więc przy 30 klatkach na sekundę idzie co 100ms." },
   "Detail.format/webm.frame_rate": { "hash": "sha256-f53baa5f4ccf", "other": "Ile klatek film pokazuje w każdej sekundzie." },
   "Detail.format/webm.height": { "hash": "sha256-4b336c279584", "other": "Jak wysoki jest obraz. Gdy pole zostaje puste, wybierany jest rozmiar, który mieści się w zamówionych bajtach." },

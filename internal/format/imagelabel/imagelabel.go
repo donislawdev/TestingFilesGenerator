@@ -92,6 +92,24 @@ func Fits(width, chars int) bool {
 	return scaleFor(width, chars) > 0
 }
 
+// Cells is where Draw puts the characters of a text: character k covers the
+// columns from First + k*Step, Width of them, and every row of the band. A
+// film asks it to know which characters of its clock fall in which part of
+// the picture, so it is Draw's own arithmetic rather than a copy of it.
+type Cells struct {
+	First, Step, Width int
+}
+
+// CellsOf is where Draw puts a text of chars characters across width - the
+// zero Cells when Draw would draw nothing.
+func CellsOf(width, chars int) Cells {
+	s := scaleFor(width, chars)
+	if s == 0 {
+		return Cells{}
+	}
+	return Cells{First: pad, Step: (glyphWidth + 1) * s, Width: glyphWidth * s}
+}
+
 // BandHeight is how tall the band Draw paints for a label of chars characters
 // across width is, before it is cut to the picture - 0 when the label does not
 // fit. A film draws a second line under the first and asks this before it

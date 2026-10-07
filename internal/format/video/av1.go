@@ -1,5 +1,11 @@
 package video
 
+import (
+	"fmt"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+)
+
 // OBU types this package writes, AV1 specification section 6.2.2.
 const (
 	obuSequenceHeader    = 1
@@ -116,29 +122,30 @@ func codecConfig(level int, sequence []byte) []byte {
 	return append([]byte{0x81, byte(level & 0x1f), 0x0C, 0x00}, sequence...)
 }
 
-// keyFrame is a shown KEY_FRAME around a coded picture. Shown, it is a place
-// to start playing, and the specification makes it impossible to show again.
-func keyFrame(c Coded) []byte {
-	w := bitWriter{buf: make([]byte, 0, 8)}
-	w.bit(0)     // show_existing_frame
-	w.bits(0, 2) // frame_type: KEY_FRAME
-	w.bit(1)     // show_frame
-	// error_resilient_mode is 1 by rule for a shown key frame, not written
-	w.bit(0) // disable_cdf_update
-	w.bit(0) // frame_size_override_flag
-	// refresh_frame_flags is every slot by rule, not written
-	w.bit(0) // render_and_frame_size_different
-	w.bit(1) // disable_frame_end_update_cdf
-	c.writeSuffix(&w)
-	w.align()
-	return obuOf(obuFrame, w.bytes(), c.tile)
-}
+// The two frames a picture is carried in.
+const (
+	// keyKind is a shown KEY_FRAME. Shown, it is a place to start playing,
+	// and the specification makes it impossible to show again.
+	keyKind = iota
+	// copyKind is the same picture as an INTRA_ONLY frame that is not shown
+	// now and is showable later, kept in copySlot.
+	copyKind
+)
 
-// hiddenCopy is the same picture as an INTRA_ONLY frame that is not shown now
-// and is showable later, kept in copySlot.
-func hiddenCopy(c Coded) []byte {
-	w := bitWriter{buf: make([]byte, 0, 9)}
-	w.bit(0)     // show_existing_frame
+// headerStart writes a frame's uncompressed header up to tile_info.
+func headerStart(w *bitWriter, kind int) {
+	w.bit(0) // show_existing_frame
+	if kind == keyKind {
+		w.bits(0, 2) // frame_type: KEY_FRAME
+		w.bit(1)     // show_frame
+		// error_resilient_mode is 1 by rule for a shown key frame, not written
+		w.bit(0) // disable_cdf_update
+		w.bit(0) // frame_size_override_flag
+		// refresh_frame_flags is every slot by rule, not written
+		w.bit(0) // render_and_frame_size_different
+		w.bit(1) // disable_frame_end_update_cdf
+		return
+	}
 	w.bits(2, 2) // frame_type: INTRA_ONLY_FRAME
 	w.bit(0)     // show_frame
 	w.bit(1)     // showable_frame
@@ -148,9 +155,72 @@ func hiddenCopy(c Coded) []byte {
 	w.bits(1<<copySlot, 8)
 	w.bit(0) // render_and_frame_size_different
 	w.bit(1) // disable_frame_end_update_cdf
-	c.writeSuffix(&w)
+}
+
+// frameShape is what a frame of a film needs besides its tiles: the layout
+// and how many bytes each tile's size takes.
+type frameShape struct {
+	grid          grid
+	tileSizeBytes int
+}
+
+// sample is before, the frame OBU carrying the picture's tiles, then after,
+// written over dst when it has room and into one allocation of the right size
+// when it has not - a film's pictures are made per change, and what a file
+// allocates is counted.
+//
+// The frame is 06.bitstream.syntax.md "Frame OBU syntax" (lines 1748-1764):
+// the header to tile_info, the layout's tile_info, the tiles' common header
+// bits, byte_alignment, and the tile group (lines 1771-1816). With several
+// tiles the group opens with tile_start_and_end_present_flag 0, which an
+// OBU_FRAME has to carry (07.bitstream.semantics.md lines 2439-2443), and its
+// byte_alignment, and every tile but the last follows its size less one in
+// tileSizeBytes little endian bytes. One tile is its data alone, as gav1d
+// wrote it.
+func (s frameShape) sample(dst, before []byte, kind int, tiles []tileCoded, after []byte) ([]byte, error) {
+	var scratch [64]byte
+	w := bitWriter{buf: scratch[:0]}
+	headerStart(&w, kind)
+	s.grid.writeTileInfo(&w, s.tileSizeBytes)
+	tiles[0].writeRest(&w)
 	w.align()
-	return obuOf(obuFrame, w.bytes(), c.tile)
+	group := 0
+	if len(tiles) > 1 {
+		group = 1 + (len(tiles)-1)*s.tileSizeBytes
+	}
+	payload := len(w.buf) + group
+	for i, t := range tiles {
+		if !t.sameHeader(tiles[0]) {
+			return nil, core.Defect(fmt.Errorf("video: tile %d of a picture was coded under other header bits than tile 0, and one frame carries one header", i))
+		}
+		payload += len(t.data)
+	}
+	var sizeRoom [8]byte
+	size := appendLeb128(sizeRoom[:0], payload)
+	out := dst[:0]
+	if total := len(before) + 1 + len(size) + payload + len(after); cap(out) < total {
+		out = make([]byte, 0, total)
+	}
+	out = append(append(append(append(out, before...), byte(obuFrame<<3)|0x02), size...), w.buf...)
+	if group > 0 {
+		out = append(out, 0)
+	}
+	for i, t := range tiles {
+		if i < len(tiles)-1 {
+			out = appendLittleEndian(out, len(t.data)-1, s.tileSizeBytes)
+		}
+		out = append(out, t.data...)
+	}
+	return append(out, after...), nil
+}
+
+// appendLittleEndian is le(n), 04.conventions.md: v in n bytes, the lowest
+// first.
+func appendLittleEndian(out []byte, v, n int) []byte {
+	for b := range n {
+		out = append(out, byte(v>>(8*b)))
+	}
+	return out
 }
 
 // showCopy shows what copySlot holds, and is three bytes.

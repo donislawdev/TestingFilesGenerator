@@ -57,7 +57,19 @@ func init() {
 		// one threads alike - each picture is a job, each helper one painter of
 		// four allocations - measured the same day, still under the ceiling,
 		// which was not moved.
-		AllocCeiling: 512,
+		//
+		// Raised to 1024 on 2026-10-07 by the owner's decision, the one time it
+		// went up, and why: a picture is cut into AV1 tiles since then, each
+		// tile one call to gav1d, and gav1d allocates 21 to 22 objects a call
+		// whatever the size (tools/probes/videotiles/allocs). The default film,
+		// 640x360 in six tiles, makes 27 calls - about 594 objects of gav1d's
+		// alone, over the old ceiling before this package allocates anything.
+		// With this package's own allocations cut down it is 886 to 891 at one,
+		// four and sixteen threads, and one object a frame, the defect the
+		// ceiling exists for, takes it to 1177. 1024 sits between the two, as
+		// 512 sat between 474 and 698 (docs/WEBM-WYDAJNOSC-2026-10-06.md
+		// section 10).
+		AllocCeiling: 1024,
 
 		Padding: format.PaddingChannel{
 			Name:     "a Void element before the index at the end of the file",
@@ -83,7 +95,7 @@ func minimumBytes() int64 {
 		panic(err)
 	}
 	smallest := video.Ladder[len(video.Ladder)-1]
-	return newLayout(video.NewStream(t, smallest.Ceiling, smallest.Width, smallest.Height)).boundBytes() + minVoid
+	return newLayout(video.NewStream(t, smallest.Ceiling, smallest.Width, smallest.Height, "")).boundBytes() + minVoid
 }
 
 type generator struct{}
@@ -177,7 +189,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return ctx.Err()
 	default:
 	}
-	st := video.NewStream(m.settings.Timeline, m.choice.Ceiling, m.choice.Width, m.choice.Height)
+	st := video.NewStream(m.settings.Timeline, m.choice.Ceiling, m.choice.Width, m.choice.Height, m.choice.Label)
 	l := newLayout(st)
 	body := uint64(m.total - l.outside())
 	cuesAt := body - l.cuesLen()
@@ -235,7 +247,8 @@ func (s *sticky) uint(id uint32, v uint64) {
 // writeClusters codes the pictures one change at a time and writes the
 // clusters as it goes, giving back where each key frame's cluster starts, for
 // the Cues, and where the last one ends. Every change opens a cluster, so each
-// is reported as worked once, which adds up to the Work the plan counted.
+// is reported as worked once - what its new tiles were worth - which adds up
+// to the Work the plan counted.
 func writeClusters(ctx context.Context, out *sticky, l layout, pics *video.Pictures) ([]uint64, uint64, error) {
 	s := l.stream
 	keys := make([]uint64, 0, s.Keys())
@@ -252,7 +265,7 @@ func writeClusters(ctx context.Context, out *sticky, l layout, pics *video.Pictu
 			return nil, 0, err
 		}
 		if change != worked {
-			format.Worked(ctx, s.PictureWork())
+			format.Worked(ctx, pics.Work())
 			worked = change
 		}
 		if s.IsKey(first) {

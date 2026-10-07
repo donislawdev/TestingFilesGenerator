@@ -22,10 +22,16 @@ type Rung struct {
 // 640x360 for the reason AVIF stops at 640x480: a larger picture costs every
 // file of a run its encoding time, and somebody who wants Full HD says so.
 //
-// Ceiling is a tenth above the largest tile any picture of a film on the rung
-// coded to, and it is the reserve of every one of them. Measured by
-// tools/probes/videoladder at the default quality on 2026-10-06
-// (docs/WIDEO-2026-10-06.md section 15), in three passes. First every seed
+// Ceiling is a tenth above the largest any picture of a film on the rung
+// coded to - all its tiles together - and it is the reserve of every one of
+// them. Measured by tools/probes/videoladder at the default quality on
+// 2026-10-06 (docs/WIDEO-2026-10-06.md section 15), in three passes, and
+// again on 2026-10-07 once pictures were cut into tiles
+// (docs/WEBM-WYDAJNOSC-2026-10-06.md section 10): the four rungs from 640x360
+// to 256x144 have tiles, and the first three came out 1.5 to 2.3 percent
+// above their pictures whole, every seam costing a little prediction. 256x144
+// and the rungs under it did not move - their heaviest picture is one tile,
+// on 256x144 the clock with milliseconds, which takes a third of it. First every seed
 // offset there is with every length the label can have, either format's name
 // in it, and the label absent, in both shapes of the clock. Then the eight
 // heaviest of those at a hundred clocks, every step of the square and the
@@ -41,7 +47,7 @@ type Rung struct {
 // writing cannot keep, so writing checks every picture and says so rather
 // than trusting this table.
 var Ladder = []Rung{
-	{640, 360, 17026}, {426, 240, 10905}, {320, 180, 8191}, {256, 144, 6754},
+	{640, 360, 17277}, {426, 240, 11156}, {320, 180, 8322}, {256, 144, 6754},
 	{160, 90, 3951}, {80, 45, 1454}, {40, 23, 825}, {16, 9, 149},
 	{4, 3, 46}, {2, 2, 31}, {1, 1, 6},
 }
@@ -52,10 +58,11 @@ type Choice struct {
 	Seed          uint64
 	Label         string
 	QIndex        int
-	// First is the film's first picture when planning had to code it - a size
-	// named by hand, or a quality the ceilings were not measured at. Nil means
-	// the picture is a ladder rung and writing codes it.
-	First *Coded
+	// tiles are what planning coded when it had to code a sample of the
+	// film's pictures - a size named by hand, or a quality the ceilings were
+	// not measured at - by key, which writing takes rather than codes again.
+	// Nil means the picture is a ladder rung and writing codes every tile.
+	tiles map[tileKey]tileCoded
 	// Ceiling is the most tile bytes the plan allowed each picture, which
 	// writing holds every picture to.
 	Ceiling int
@@ -71,10 +78,11 @@ func (c Choice) Labelled() bool { return Labelled(c.Width, c.Label) }
 // ClockShown is whether this film's pictures show the clock.
 func (c Choice) ClockShown(t Timeline) bool { return ClockShown(c.Width, c.Height, c.Label, t) }
 
-// sampleReserve codes the sample of a film's pictures, SampleChanges, and
-// gives back the first picture, which writing reuses, and the reserve every
-// picture is held to: the largest of the sample when the sample is the whole
-// film, and a tenth above it when it is not.
+// sampleReserve codes the sample of a film's pictures, SampleChanges, tile by
+// tile and each tile once, and gives back the tiles, which writing reuses, and
+// the reserve every picture is held to: the largest of the sample - all its
+// tiles together - when the sample is the whole film, and a tenth above it
+// when it is not.
 //
 // The first picture alone is no base for it. The pictures of one film differ
 // only in the clock and the square, and on a small picture those are much of
@@ -92,31 +100,61 @@ func (c Choice) ClockShown(t Timeline) bool { return ClockShown(c.Width, c.Heigh
 // The sample is coded the way a film is (ahead.go), all of it offered at once,
 // because at 1920x1080 ten pictures are three seconds of planning on one
 // goroutine, and planning is what a preview waits for.
-func sampleReserve(w, h int, seed uint64, label string, t Timeline, qindex int) (Coded, int, error) {
+func sampleReserve(w, h int, seed uint64, label string, t Timeline, qindex int) (map[tileKey]tileCoded, int, error) {
 	f := newFilm(w, h, seed, label, t)
+	ks := newKeyer(f.geometry, gridFor(f.geometry, t.FPS))
 	sample := SampleChanges(t)
-	c := newCrew(f, qindex, int64(len(sample)))
+	s := sampleJobs{keys: ks, byKey: make(map[tileKey]*job)}
+	pictures := make([][]*job, len(sample))
+	for i, ch := range sample {
+		pictures[i] = s.picture(f.lookOf(ch), ch)
+	}
+	c := newCrew(f, ks, qindex, int64(len(s.jobs)))
 	defer c.stop()
-	jobs := make([]*job, len(sample))
-	for i, ch := range sample {
-		jobs[i] = newJob(f.lookOf(ch), ch)
+	if err := c.all(s.jobs); err != nil {
+		return nil, 0, err
 	}
-	coded, err := c.all(jobs)
-	if err != nil {
-		return Coded{}, 0, err
-	}
-	var first Coded
 	largest := 0
-	for i, ch := range sample {
-		if ch == 0 {
-			first = coded[i]
+	for _, tiles := range pictures {
+		size := 0
+		for _, j := range tiles {
+			size += len(j.coded.data)
 		}
-		largest = max(largest, coded[i].Size())
+		largest = max(largest, size)
+	}
+	coded := make(map[tileKey]tileCoded, len(s.byKey))
+	for key, j := range s.byKey {
+		coded[key] = j.coded
 	}
 	if int64(len(sample)) == t.Changes() {
-		return first, largest, nil
+		return coded, largest, nil
 	}
-	return first, largest + (largest+9)/10, nil
+	return coded, largest + (largest+9)/10, nil
+}
+
+// sampleJobs are the tiles of a sample, each key once, in the order they
+// first come up.
+type sampleJobs struct {
+	keys  keyer
+	byKey map[tileKey]*job
+	jobs  []*job
+}
+
+// picture is the job of each tile of the picture with this look at change,
+// a new job for each key not seen in the sample before.
+func (s *sampleJobs) picture(l look, change int64) []*job {
+	out := make([]*job, len(s.keys.tiles))
+	for k := range s.keys.tiles {
+		key := s.keys.key(k, l)
+		j, ok := s.byKey[key]
+		if !ok {
+			j = newJob(l, change, k)
+			s.byKey[key] = j
+			s.jobs = append(s.jobs, j)
+		}
+		out[k] = j
+	}
+	return out
 }
 
 // SampleChanges is the pictures planning codes to settle the reserve of a film
@@ -177,14 +215,14 @@ func onRung(base Choice, rung Rung, s Settings) (Choice, Stream, error) {
 	c := base
 	c.Width, c.Height, c.Ceiling = rung.Width, rung.Height, rung.Ceiling
 	if !s.QualityNamed {
-		return c, NewStream(s.Timeline, rung.Ceiling, rung.Width, rung.Height), nil
+		return c, NewStream(s.Timeline, rung.Ceiling, rung.Width, rung.Height, c.Label), nil
 	}
-	first, reserve, err := sampleReserve(c.Width, c.Height, c.Seed, c.Label, s.Timeline, c.QIndex)
+	tiles, reserve, err := sampleReserve(c.Width, c.Height, c.Seed, c.Label, s.Timeline, c.QIndex)
 	if err != nil {
 		return Choice{}, Stream{}, err
 	}
-	c.First, c.Ceiling = &first, reserve
-	return c, NewStream(s.Timeline, c.Ceiling, c.Width, c.Height), nil
+	c.tiles, c.Ceiling = tiles, reserve
+	return c, NewStream(s.Timeline, c.Ceiling, c.Width, c.Height, c.Label), nil
 }
 
 // named settles a film whose picture size the request gave by coding a sample
@@ -205,12 +243,12 @@ func named(formatID string, r format.Request, s Settings, c Choice) (Choice, Str
 	if err := checkOneTile(formatID, w, h); err != nil {
 		return Choice{}, Stream{}, err
 	}
-	first, reserve, err := sampleReserve(w, h, c.Seed, c.Label, s.Timeline, c.QIndex)
+	tiles, reserve, err := sampleReserve(w, h, c.Seed, c.Label, s.Timeline, c.QIndex)
 	if err != nil {
 		return Choice{}, Stream{}, err
 	}
-	c.Width, c.Height, c.First, c.Ceiling, c.Named = w, h, &first, reserve, true
-	return c, NewStream(s.Timeline, c.Ceiling, w, h), nil
+	c.Width, c.Height, c.tiles, c.Ceiling, c.Named = w, h, tiles, reserve, true
+	return c, NewStream(s.Timeline, c.Ceiling, w, h, c.Label), nil
 }
 
 // checkJointLimits asks the registry's own declaration, so the refusal, the

@@ -1226,8 +1226,8 @@
   },
   "Detail.format/webm.change_interval": {
     "description": "The sentence under the change_interval setting of the webm format, after what it takes.",
-    "hash": "sha256-d94e8abf3718",
-    "other": "How often the picture changes: the clock in it moves on and the square takes a step. Each change costs a whole picture in bytes and in time. An interval as long as the film or longer keeps one picture throughout."
+    "hash": "sha256-13634dfb475a",
+    "other": "How often the picture changes: the clock in it moves on and the square takes a step. Each change costs a whole picture in bytes. An interval as long as the film or longer keeps one picture throughout."
   },
   "Detail.format/webm.duration": {
     "description": "The sentence under the duration setting of the webm format, after what it takes.",

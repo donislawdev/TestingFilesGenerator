@@ -83,7 +83,7 @@ func Properties() []format.Property {
 		{
 			Name: SettingChangeInterval, Kind: format.PropertyDuration,
 			Min: 1, Max: maxDurationMs, Default: core.FormatDuration(defaultChangeIntervalMs),
-			Detail: "How often the picture changes: the clock in it moves on and the square takes a step. Each change costs a whole picture in bytes and in time. An interval as long as the film or longer keeps one picture throughout.",
+			Detail: "How often the picture changes: the clock in it moves on and the square takes a step. Each change costs a whole picture in bytes. An interval as long as the film or longer keeps one picture throughout.",
 		},
 		{
 			Name: SettingFrameRate, Kind: format.PropertyChoice,
@@ -200,11 +200,14 @@ func tooManyKeyFrames(formatID string, t Timeline, interval int64) error {
 
 // MaxChanges bounds how many pictures one film shows.
 //
-// Every change is a picture coded on its own - gav1d codes stills, so nothing
-// is carried over from the picture before - and a picture costs its bytes and
-// its time: 34 ms at 640x360 and about a second at 3840x2160, measured on
-// 2026-10-06 (docs/WIDEO-2026-10-06.md section 14). A change a second for a
-// day is under the bound, a change every frame for an hour is not.
+// Every change is a picture of its own - gav1d codes stills, so nothing is
+// carried over from the picture before - and a picture costs its bytes. Its
+// time was 34 ms at 640x360 and about a second at 3840x2160 when every picture
+// was coded whole (2026-10-06, docs/WIDEO-2026-10-06.md section 14). Cut into
+// tiles, a change codes only the tiles nobody coded before, a few
+// milliseconds (docs/WEBM-WYDAJNOSC-2026-10-06.md section 10). A change a
+// second for a day is under the bound, a change every frame for an hour is
+// not.
 const MaxChanges = 100_000
 
 func tooManyChanges(formatID string, t Timeline, interval int64) error {
