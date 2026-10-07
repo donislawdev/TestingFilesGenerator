@@ -658,7 +658,7 @@
 														<container size="788x16">
 															<widget pos="-6,-6" size="800x28" type="*widget.Label">
 																<widget size="800x28" type="*widget.RichText">
-																	<text pos="6,6" size="422x16">32 files · 10.0 MB (10 525 898 B) · 29 formats · will go to /tfg/out</text>
+																	<text pos="6,6" size="419x16">33 files · 10.0 MB (10 526 187 B) · 30 formats · will go to /tfg/out</text>
 																</widget>
 															</widget>
 														</container>

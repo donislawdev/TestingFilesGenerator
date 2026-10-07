@@ -61,6 +61,8 @@ func KindOfFile(id string) fyne.Resource {
 		return theme.MediaMusicIcon()
 	case kindMoving:
 		return theme.MediaVideoIcon()
+	case kindMail:
+		return theme.MailComposeIcon()
 	case kindWords:
 		return theme.ListIcon()
 	case kindUnknown:
@@ -90,6 +92,8 @@ func KindHeading(id string) string {
 		return text.ListKindSound()
 	case kindMoving:
 		return text.ListKindVideo()
+	case kindMail:
+		return text.ListKindMail()
 	case kindWords:
 		return text.ListKindText()
 	case kindUnknown:
@@ -125,6 +129,9 @@ const (
 	// a film arrives is the day somebody is thinking about something else.
 	kindSound
 	kindMoving
+	// kindMail is a message a mail program opens. eml was the first, on
+	// 2026-10-07, and the backlog names four more of the family.
+	kindMail
 	// kindWords is text and structured data: what a parser reads.
 	kindWords
 )
@@ -154,6 +161,7 @@ var fileKinds = map[string]fileKind{
 	"wav":     kindSound,
 	"webm":    kindMoving,
 	"mp4":     kindMoving,
+	"eml":     kindMail,
 	"csv":     kindWords,
 	"geojson": kindWords,
 	"html":    kindWords,

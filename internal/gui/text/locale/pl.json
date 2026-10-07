@@ -111,6 +111,7 @@
   "ListJoinedOr": { "hash": "sha256-c9be11158971", "other": "{{.Head}} albo {{.Last}}" },
   "ListKindArchives": { "hash": "sha256-e404aa80d8df", "other": "Archiwa" },
   "ListKindDocuments": { "hash": "sha256-b4e929d8bcfe", "other": "Dokumenty" },
+  "ListKindMail": { "hash": "sha256-07ed6ccf6bf6", "other": "Poczta" },
   "ListKindPictures": { "hash": "sha256-1e6245009d67", "other": "Obrazy" },
   "ListKindSound": { "hash": "sha256-46124e023603", "other": "Dźwięk" },
   "ListKindText": { "hash": "sha256-c04c0f52d26a", "other": "Tekst i dane" },
