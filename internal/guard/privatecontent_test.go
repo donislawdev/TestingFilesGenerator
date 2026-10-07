@@ -57,6 +57,13 @@ var privatePatterns = []struct {
 // fixture ever carries one the remedy is to use an address from here.
 var documentationNets = regexp.MustCompile(`\b(?:192\.0\.2\.|198\.51\.100\.|203\.0\.113\.)`)
 
+// documentationMail is the mail counterpart: the three names RFC 2606 keeps for
+// examples, which no mailbox is at. The eml format writes its messages between
+// two of them on purpose, so a message that leaves a test reaches nobody. Only
+// these three - a made up name under the reserved .example domain is still
+// reported, because a guard below asks for exactly that.
+var documentationMail = regexp.MustCompile(`(?i)@example\.(?:com|org|net)$`)
+
 // homePlaceholders are the names an example uses when it means "your home
 // directory". Refusing those would refuse ordinary help text.
 var homePlaceholders = map[string]bool{
@@ -73,6 +80,8 @@ func privateFaults(text string) []string {
 			case p.name == "a path inside somebody's home directory" && homePlaceholders[strings.ToLower(m[1])]:
 				continue
 			case p.name == "an address on somebody's private network" && documentationNets.MatchString(m[0]):
+				continue
+			case p.name == "an e-mail address" && documentationMail.MatchString(m[0]):
 				continue
 			// A no-reply address names a service rather than a person, and
 			// this project's own commit trailers carry one.
@@ -115,7 +124,7 @@ func TestTheScanForPrivateContentCanActuallyFindIt(t *testing.T) {
 		// clearest evidence it works.
 		"10.1." + "2.3",
 		"192.168." + "0.4",
-		"somebody" + "@" + "example.org",
+		"somebody" + "@" + "customer.example",
 		"-----" + "BEGIN " + "SOMETHING",
 		"AKIA" + "0123456789ABCDEF",
 		"ghp_" + strings.Repeat("a", 36),
@@ -143,6 +152,7 @@ func TestTheScanForPrivateContentLeavesOrdinaryTextAlone(t *testing.T) {
 		"192.0.2.1",
 		"203.0.113.9",
 		"noreply" + "@" + "anthropic.com",
+		"alice" + "@" + "example.com",
 		"invoice.txt",
 	}, "\n")
 

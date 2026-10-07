@@ -235,7 +235,21 @@ type Descriptor struct {
 	// 2026-09-24 as a widening. Recorded in docs/FORMAT-NAMES-2026-09-24.md.
 	Name string
 
-	Extension        string
+	Extension string
+
+	// MediaType is what a message, an upload form or a server calls this kind
+	// of file - application/pdf, image/png - written the way the IANA registry
+	// spells it, or the WHATWG MIME Sniffing standard for the two formats the
+	// registry does not list (wav and webm, checked 2026-10-07).
+	//
+	// It exists because a mail message carries its attachments under a type,
+	// and a test that checks the type against the extension needs the one
+	// the format really has. Nothing else writes it into a file today, so
+	// declaring or correcting one changes no byte of any other format (D11).
+	// The source of each value sits beside it in the format's own package.
+	// docs/EML-2026-10-07.md section 10.3.
+	MediaType string
+
 	Fidelity         Fidelity
 	Determinism      Determinism
 	MinBytes         int64
@@ -260,126 +274,23 @@ type Descriptor struct {
 	// generic "no such property", which reads as a gap in this build.
 	Unsupported []UnsupportedSetting
 
-	// AllocCeiling is how many objects this format may allocate producing one
-	// file, when the flat ceiling every other one meets does not describe it.
-	// Zero means the flat one applies, which is the case for all but one.
-	//
-	// It exists because a borrowed encoder allocates on its own account. The
-	// hand written generators here sit between 3 and 128 objects a file, and
-	// gav1d, the AVIF encoder, sits at about a hundred - but gen2brain/jxl
-	// allocates per block, about 618 000 of them for one 640x480 picture. A
-	// single ceiling has to fit the heaviest format, so one that fits that one
-	// would say nothing about the other twenty three.
-	//
-	// What the ceiling stands in for is untouched by this: the guard also asks
-	// each format whether its allocation GROWS with the size of the file
-	// asked for, and that question is the real one. Every format answers it,
-	// this one included. Owner's decision, 2026-08-31.
-	//
-	// A ratchet, like the coverage threshold and the code shape ceilings: it
-	// goes down when work makes it lowerable, never up to turn a run green.
-	AllocCeiling int64
-
-	// Container says this format holds other files, so a recipe may declare
-	// contains for it.
+	// Container is how a container names the settings that say, for files of
+	// one format, what it holds - how many, of which format, how big. Nil for a
+	// format that holds no other files, so a recipe may declare contains only
+	// for a format that sets it.
 	//
 	// Declared rather than inferred. A format that quietly ignored contains
 	// would produce an archive with nothing in it and report success, and
 	// that is the silence rule broken in the worst way - the file looks right
 	// and the test suite believes it.
-	Container bool
-}
-
-// NotAContainerError is contains asked of a format that holds nothing.
-type NotAContainerError struct {
-	Format     string
-	Containers []string
-}
-
-// What happened, what can do it instead, and what to do about it.
-func (e *NotAContainerError) What() string { return e.what().String() }
-
-func (e *NotAContainerError) what() core.Said {
-	return core.Says("format.NotAContainer", "%s holds no other files, so it cannot take contains", core.A("Format", e.Format))
-}
-
-func (e *NotAContainerError) Why() string { return e.why().String() }
-
-func (e *NotAContainerError) why() core.Said {
-	return core.Says("format.NotAContainerWhy", "the formats that can are %s", core.A("Containers", strings.Join(e.Containers, ", ")))
-}
-
-func (e *NotAContainerError) Instead() string { return e.instead().String() }
-
-func (e *NotAContainerError) instead() core.Said {
-	return core.Says("format.NotAContainerFix", "Drop contains, or change the format")
-}
-
-// Parts is what happened, why and what to do instead, for a reader that lays
-// them out apart and in its own language.
-func (e *NotAContainerError) Parts() (what, why, instead core.Said) {
-	return e.what(), e.why(), e.instead()
-}
-
-func (e *NotAContainerError) Error() string { return e.Said().String() }
-
-// Said is the whole refusal, for a window that says it in its own language.
-func (e *NotAContainerError) Said() core.Said {
-	return core.Says("format.NotAContainerWhole", "%s - %s. %s", core.A("What", e.what()), core.A("Why", e.why()), core.A("Fix", e.instead()))
-}
-
-// ContentsConflictError is contains stated beside format properties saying the
-// same thing. Picking one would build an archive holding something other than
-// what the recipe says, and the recipe is what somebody reads in a review.
-type ContentsConflictError struct {
-	Format string
-	Keys   []string
-}
-
-func (e *ContentsConflictError) Error() string { return e.Said().String() }
-
-// Said is the refusal, for a window that says it in its own language.
-func (e *ContentsConflictError) Said() core.Said {
-	if len(e.Keys) == 1 {
-		return core.Says("format.ContentsConflictOne",
-			"%s: contains and the %s property both say what the archive holds. Keep contains and drop the properties, or the other way round",
-			core.A("Format", e.Format), core.A("Key", e.Keys[0]))
-	}
-	return core.Says("format.ContentsConflict",
-		"%s: contains and the %s properties both say what the archive holds. Keep contains and drop the properties, or the other way round",
-		core.A("Format", e.Format), core.A("Keys", strings.Join(e.Keys, ", ")))
-}
-
-// NestingUnsupportedError is a container asked to hold its own format.
-//
-// A legitimate test case that needs a depth limit before it is allowed, and
-// there is none yet. It says that rather than pretending the format is unknown.
-type NestingUnsupportedError struct {
-	Format string
-}
-
-func (e *NestingUnsupportedError) Error() string { return e.Said().String() }
-
-// Said is the refusal, for a window that says it in its own language.
-func (e *NestingUnsupportedError) Said() core.Said {
-	return core.Says("format.NestingUnsupported",
-		"%s cannot hold %s yet - an archive inside an archive needs a depth limit first. Hold a different format, or build the inner archive as its own target",
-		core.A("Format", e.Format), core.A("Inner", e.Format))
-}
-
-// Containers lists the formats that accept contains, for a message that tells
-// somebody what to write instead.
-func Containers() []string {
-	mu.RLock()
-	defer mu.RUnlock()
-	var out []string
-	for id, d := range registry {
-		if d.Container {
-			out = append(out, id)
-		}
-	}
-	sort.Strings(out)
-	return out
+	//
+	// The names are part of the declaration because containers name them
+	// differently: an archive holds entries and a mail message attachments.
+	// Until eml arrived on 2026-10-07 every container was an archive, a flag
+	// said so, and the guards read "entries" by name. The flag and the names
+	// became one field that day, when the descriptor reached the field count
+	// the type shape guard watches.
+	Container *Members
 }
 
 // Allows reports whether raw is a value this property accepts, and says what

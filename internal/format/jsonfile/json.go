@@ -63,6 +63,7 @@ func init() {
 		ID:          "json",
 		Name:        "JavaScript Object Notation",
 		Extension:   ".json",
+		MediaType:   "application/json", // IANA, RFC 8259
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

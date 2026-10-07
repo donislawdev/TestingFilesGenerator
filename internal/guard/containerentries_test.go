@@ -30,7 +30,7 @@ import (
 func TestBothWaysOfAskingForEntriesShareOneCeiling(t *testing.T) {
 	containers := 0
 	for _, d := range format.All() {
-		if !d.Container {
+		if d.Container == nil {
 			continue
 		}
 		containers++
@@ -44,7 +44,7 @@ func TestBothWaysOfAskingForEntriesShareOneCeiling(t *testing.T) {
 		// value, and the generator's own reading of it is a second line the
 		// engine never reaches. Asking Plan here would compare the two doors at
 		// a layer neither surface uses.
-		propBad := d.CheckEachProperty(map[string]string{"entries": itoa(over)})
+		propBad := d.CheckEachProperty(map[string]string{d.Container.Count: itoa(over)})
 		var viaProperty error
 		if len(propBad) > 0 {
 			viaProperty = propBad[0]
@@ -56,10 +56,10 @@ func TestBothWaysOfAskingForEntriesShareOneCeiling(t *testing.T) {
 		_, viaContains := d.Generator.Plan(req)
 
 		if viaProperty == nil {
-			t.Errorf("%s: entries=%d was accepted and the declared ceiling is %d", d.ID, over, ceiling)
+			t.Errorf("%s: %s=%d was accepted and the declared ceiling is %d", d.ID, d.Container.Count, over, ceiling)
 		}
 		if viaContains == nil {
-			t.Errorf("%s: contains asking for %d entries was accepted and the declared ceiling is %d",
+			t.Errorf("%s: contains asking for %d files was accepted and the declared ceiling is %d",
 				d.ID, over, ceiling)
 			continue
 		}
@@ -68,11 +68,11 @@ func TestBothWaysOfAskingForEntriesShareOneCeiling(t *testing.T) {
 		// decides the exit code and what a window marks.
 		var propErr, containsErr *format.PropertyValueError
 		if !errors.As(viaProperty, &propErr) {
-			t.Errorf("%s: the entries refusal is %T, not a refusal about a property value", d.ID, viaProperty)
+			t.Errorf("%s: the %s refusal is %T, not a refusal about a property value", d.ID, d.Container.Count, viaProperty)
 		}
 		if !errors.As(viaContains, &containsErr) {
 			t.Errorf("%s: the contains refusal is %T, not a refusal about a property value - "+
-				"so it lands on a different exit code than the same request through entries", d.ID, viaContains)
+				"so it lands on a different exit code than the same request through %s", d.ID, viaContains, d.Container.Count)
 			continue
 		}
 
@@ -80,8 +80,8 @@ func TestBothWaysOfAskingForEntriesShareOneCeiling(t *testing.T) {
 		// the reason rather than the whole sentence, because the key differs
 		// on purpose - one says entries and the other says contains.
 		if propErr != nil && propErr.Reason.String() != containsErr.Reason.String() {
-			t.Errorf("%s: the two doors give different reasons\n  entries:  %s\n  contains: %s",
-				d.ID, propErr.Reason, containsErr.Reason)
+			t.Errorf("%s: the two doors give different reasons\n  %s:  %s\n  contains: %s",
+				d.ID, d.Container.Count, propErr.Reason, containsErr.Reason)
 		}
 		if !strings.Contains(containsErr.Reason.String(), itoa(ceiling)) {
 			t.Errorf("%s: the contains refusal does not name the ceiling %d: %q",
@@ -101,7 +101,7 @@ func TestBothWaysOfAskingForEntriesShareOneCeiling(t *testing.T) {
 // code for before.
 func TestTheEntryCeilingStillAcceptsTheNumberBelowIt(t *testing.T) {
 	for _, d := range format.All() {
-		if !d.Container {
+		if d.Container == nil {
 			continue
 		}
 		ceiling := declaredCeiling(t, d)
@@ -135,10 +135,10 @@ func planRequestWith(props map[string]string) format.Request {
 func declaredCeiling(t *testing.T, d format.Descriptor) int {
 	t.Helper()
 	for _, p := range d.Properties {
-		if p.Name == "entries" {
+		if p.Name == d.Container.Count {
 			return int(p.Max)
 		}
 	}
-	t.Fatalf("%s is a container with no declared entries property", d.ID)
+	t.Fatalf("%s is a container with no declared %q property", d.ID, d.Container.Count)
 	return 0
 }

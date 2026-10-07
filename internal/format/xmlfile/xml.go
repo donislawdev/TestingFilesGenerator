@@ -88,6 +88,7 @@ func init() {
 		ID:          "xml",
 		Name:        "Extensible Markup Language",
 		Extension:   ".xml",
+		MediaType:   "application/xml", // IANA, RFC 7303
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

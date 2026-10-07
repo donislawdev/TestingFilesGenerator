@@ -104,6 +104,7 @@ func init() {
 		ID:          "yaml",
 		Name:        "YAML",
 		Extension:   ".yaml",
+		MediaType:   "application/yaml", // IANA, RFC 9512
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

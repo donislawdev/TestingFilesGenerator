@@ -46,6 +46,7 @@ func init() {
 		ID:          "docx",
 		Name:        "Word (Office Open XML)",
 		Extension:   ".docx",
+		MediaType:   "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // IANA
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

@@ -164,6 +164,21 @@
     "hash": "sha256-2c624232cdd2",
     "other": "8"
   },
+  "Choice.body.alternative": {
+    "description": "One entry of the body list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-27747689baf9",
+    "other": "alternative"
+  },
+  "Choice.body.html": {
+    "description": "One entry of the body list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-e5e239560bc1",
+    "other": "html"
+  },
+  "Choice.body.plain": {
+    "description": "One entry of the body list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-a116c9ed46d6",
+    "other": "plain"
+  },
   "Choice.compression.best": {
     "description": "One entry of the compression list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-8f4375ec65c2",
@@ -479,6 +494,26 @@
     "hash": "sha256-b4dc66dde806",
     "other": "off"
   },
+  "Choice.filename_style.both": {
+    "description": "One entry of the filename_style list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-ff7772053abf",
+    "other": "both"
+  },
+  "Choice.filename_style.content-type": {
+    "description": "One entry of the filename_style list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-846b3a9229ce",
+    "other": "content-type"
+  },
+  "Choice.filename_style.rfc2047": {
+    "description": "One entry of the filename_style list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-1eeb8be955da",
+    "other": "rfc2047"
+  },
+  "Choice.filename_style.rfc2231": {
+    "description": "One entry of the filename_style list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-c4a81dcefb6e",
+    "other": "rfc2231"
+  },
   "Choice.format.avif": {
     "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-2f47c57aae31",
@@ -498,6 +533,11 @@
     "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-584cb925e6ad",
     "other": "docx"
+  },
+  "Choice.format.eml": {
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-13033c0419d0",
+    "other": "eml"
   },
   "Choice.format.geojson": {
     "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
@@ -734,6 +774,21 @@
     "hash": "sha256-2b3b18120924",
     "other": "polygon"
   },
+  "Choice.headers.ascii": {
+    "description": "One entry of the headers list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-c543ece81605",
+    "other": "ascii"
+  },
+  "Choice.headers.encoded": {
+    "description": "One entry of the headers list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-766adc67b02b",
+    "other": "encoded"
+  },
+  "Choice.headers.utf8": {
+    "description": "One entry of the headers list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-941b7ecd47e5",
+    "other": "utf8"
+  },
   "Choice.ids.mixed": {
     "description": "One entry of the ids list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3f8fee624f43",
@@ -796,6 +851,16 @@
   },
   "Choice.line_ending.lf": {
     "description": "One entry of the line_ending list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-39e741eddb03",
+    "other": "lf"
+  },
+  "Choice.line_endings.crlf": {
+    "description": "One entry of the line_endings list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-c613dc516f32",
+    "other": "crlf"
+  },
+  "Choice.line_endings.lf": {
+    "description": "One entry of the line_endings list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-39e741eddb03",
     "other": "lf"
   },
@@ -934,6 +999,21 @@
     "hash": "sha256-7587669ca42e",
     "other": "fragment"
   },
+  "Choice.text_encoding.7bit": {
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-af6ec1d82852",
+    "other": "7bit"
+  },
+  "Choice.text_encoding.8bit": {
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-e318653d2946",
+    "other": "8bit"
+  },
+  "Choice.text_encoding.quoted-printable": {
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-7956a9e2a40b",
+    "other": "quoted-printable"
+  },
   "Choice.timestamps.advancing": {
     "description": "One entry of the timestamps list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3656fa4d5539",
@@ -1028,6 +1108,46 @@
     "description": "The sentence under the paragraphs setting of the docx format, after what it takes.",
     "hash": "sha256-5d0141e9b1da",
     "other": "How many paragraphs of text the document holds. The rest of the size you asked for is carried by a part of the package that is not shown."
+  },
+  "Detail.format/eml.attachment_format": {
+    "description": "The sentence under the attachment_format setting of the eml format, after what it takes.",
+    "hash": "sha256-991e7874cdb1",
+    "other": "The format of the attached files. Run tfg formats to see what this build supports."
+  },
+  "Detail.format/eml.attachment_size": {
+    "description": "The sentence under the attachment_size setting of the eml format, after what it takes.",
+    "hash": "sha256-c6ca8985e21d",
+    "other": "How big each attached file is. The message grows by about a third more, because attached files travel in base64."
+  },
+  "Detail.format/eml.attachments": {
+    "description": "The sentence under the attachments setting of the eml format, after what it takes.",
+    "hash": "sha256-43c96b5ef075",
+    "other": "How many files the message carries. Use contains instead when the files are not all alike. mailparser refuses a message of more than 1000 MIME entities, and the manifest gives this one's count as mime_entities."
+  },
+  "Detail.format/eml.body": {
+    "description": "The sentence under the body setting of the eml format, after what it takes.",
+    "hash": "sha256-5dc479375b75",
+    "other": "Which text the message carries. plain is one text part and html one HTML part. alternative carries both with the same words, and a mail program shows one of them."
+  },
+  "Detail.format/eml.filename_style": {
+    "description": "The sentence under the filename_style setting of the eml format, after what it takes.",
+    "hash": "sha256-96e791aa7eac",
+    "other": "How the names of attached files are written. rfc2231 is the standard way. rfc2047 is the encoded form RFC 2047 forbids inside a name, and many readers decode it anyway. both writes the two, and content-type puts the name only where old mail programs looked for it. Go's standard library reads no name from content-type and the encoded text itself from rfc2047. Unless headers is encoded a name is written as it is and only where it goes changes, so rfc2047 and both write the same bytes."
+  },
+  "Detail.format/eml.headers": {
+    "description": "The sentence under the headers setting of the eml format, after what it takes.",
+    "hash": "sha256-5002e2b42e63",
+    "other": "Whether the subject, the names of the sender and the recipient and the names of attached files carry letters outside ASCII, and how. encoded writes them the way RFC 2047 and RFC 2231 say. utf8 writes them as they are (RFC 6532), and Python's email package reads that and reports a defect in the From and To lines."
+  },
+  "Detail.format/eml.line_endings": {
+    "description": "The sentence under the line_endings setting of the eml format, after what it takes.",
+    "hash": "sha256-42b29dfbf2d1",
+    "other": "How every line of the file ends. The standard is crlf. Python, MimeKit, mailparser and Go's standard library all read lf too, so the difference shows in programs that split the lines themselves."
+  },
+  "Detail.format/eml.text_encoding": {
+    "description": "The sentence under the text_encoding setting of the eml format, after what it takes.",
+    "hash": "sha256-b8ce76fdb974",
+    "other": "How the text is written. 7bit keeps it to plain ASCII. quoted-printable and 8bit add a line in Polish and Japanese, because that is what they are for - quoted-printable spells those letters as =C5=BC, and 8bit writes them as they are."
   },
   "Detail.format/geojson.altitude": {
     "description": "The sentence under the altitude setting of the geojson format, after what it takes.",
@@ -1614,6 +1734,11 @@
     "hash": "sha256-a1fb88e6372c",
     "other": "Word (Office Open XML)"
   },
+  "Format.eml": {
+    "description": "What the eml format is called, beside its id in a list of formats. The name of a standard stays as it is - only a name that describes the file is translated.",
+    "hash": "sha256-eb653a6eee22",
+    "other": "Email message"
+  },
   "Format.geojson": {
     "description": "What the geojson format is called, beside its id in a list of formats. The name of a standard stays as it is - only a name that describes the file is translated.",
     "hash": "sha256-84fe8f7f1c87",
@@ -1739,6 +1864,11 @@
     "hash": "sha256-eaca4b306928",
     "other": "ZIP"
   },
+  "Group.format/eml.Attached files": {
+    "description": "The heading over a block of settings of the eml format.",
+    "hash": "sha256-ecc5a28d1f5e",
+    "other": "Attached files"
+  },
   "Group.format/pdf.Document properties": {
     "description": "The heading over a block of settings of the pdf format.",
     "hash": "sha256-7115a778ab47",
@@ -1829,6 +1959,21 @@
     "hash": "sha256-cd0da1397b61",
     "other": "Antimeridian"
   },
+  "Label.attachment_format": {
+    "description": "The name beside the box of a setting a recipe writes as attachment_format.",
+    "hash": "sha256-29f25b6c026f",
+    "other": "Attachment format"
+  },
+  "Label.attachment_size": {
+    "description": "The name beside the box of a setting a recipe writes as attachment_size.",
+    "hash": "sha256-151d41e8a53c",
+    "other": "Attachment size"
+  },
+  "Label.attachments": {
+    "description": "The name beside the box of a setting a recipe writes as attachments.",
+    "hash": "sha256-634de1147750",
+    "other": "Attachments"
+  },
   "Label.author": {
     "description": "The name beside the box of a setting a recipe writes as author.",
     "hash": "sha256-d95082a2ee57",
@@ -1843,6 +1988,11 @@
     "description": "The name beside the box of a setting a recipe writes as bit_depth.",
     "hash": "sha256-cc62f2e89a82",
     "other": "Bit depth"
+  },
+  "Label.body": {
+    "description": "The name beside the box of a setting a recipe writes as body.",
+    "hash": "sha256-6ccaa6415b5e",
+    "other": "Body"
   },
   "Label.bom": {
     "description": "The name beside the box of a setting a recipe writes as bom.",
@@ -1979,6 +2129,11 @@
     "hash": "sha256-50009ce1da4d",
     "other": "File"
   },
+  "Label.filename_style": {
+    "description": "The name beside the box of a setting a recipe writes as filename_style.",
+    "hash": "sha256-fbfbf4d41f13",
+    "other": "Filename style"
+  },
   "Label.folder": {
     "description": "The name beside the box of what the checksum-write tool works on.",
     "hash": "sha256-74ccd4330384",
@@ -2018,6 +2173,11 @@
     "description": "The name beside the box of a setting a recipe writes as header.",
     "hash": "sha256-ba5caa4285a8",
     "other": "Header"
+  },
+  "Label.headers": {
+    "description": "The name beside the box of a setting a recipe writes as headers.",
+    "hash": "sha256-194e9fe656a1",
+    "other": "Headers"
   },
   "Label.height": {
     "description": "The name beside the box of a setting a recipe writes as height.",
@@ -2063,6 +2223,11 @@
     "description": "The name beside the box of a setting a recipe writes as line_ending.",
     "hash": "sha256-c4f7d0b83542",
     "other": "Line ending"
+  },
+  "Label.line_endings": {
+    "description": "The name beside the box of a setting a recipe writes as line_endings.",
+    "hash": "sha256-c948fba2b0dd",
+    "other": "Line endings"
   },
   "Label.methods": {
     "description": "The name beside the box of a setting a recipe writes as methods.",
@@ -2173,6 +2338,11 @@
     "description": "The name beside the box of a setting a recipe writes as subject.",
     "hash": "sha256-68971283841a",
     "other": "Subject"
+  },
+  "Label.text_encoding": {
+    "description": "The name beside the box of a setting a recipe writes as text_encoding.",
+    "hash": "sha256-f6726ca0b9fe",
+    "other": "Text encoding"
   },
   "Label.timestamps": {
     "description": "The name beside the box of a setting a recipe writes as timestamps.",

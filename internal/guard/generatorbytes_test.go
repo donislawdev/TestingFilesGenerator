@@ -42,7 +42,7 @@ const generatorGoldenFile = "testdata/generator-golden.json"
 const goldenSeed = 7741
 
 func goldenCases() map[string]engine.Target {
-	return map[string]engine.Target{
+	cases := map[string]engine.Target{
 		// Every format at a size comfortably above its minimum.
 		"txt_4kib": {ID: "g", Format: "txt", Sizes: engine.Uniform(1, 4096), Label: true},
 		"png_64kib": {ID: "g", Format: "png", Sizes: engine.Uniform(1, 65536), Label: true,
@@ -352,36 +352,6 @@ func goldenCases() map[string]engine.Target {
 		"toml_8kib":          {ID: "g", Format: "toml", Sizes: engine.Uniform(1, 8192), Label: true},
 		"toml_8kib_no_label": {ID: "g", Format: "toml", Sizes: engine.Uniform(1, 8192), Label: false},
 
-		// GeoJSON, one case for each path the bytes take rather than one for
-		// each setting: the three layouts, whole degrees (no decimal point at
-		// all), every pitfall at once with fifteen places - the wrap across the
-		// antimeridian, the reversed outline and the height whose span passes
-		// an int64 - and a note capped at a mebibyte with spaces after it. The
-		// label never reaches the content, so it is pinned in one position.
-		"geojson_8kib":               {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true},
-		"geojson_8kib_minified":      {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true, Properties: map[string]string{"formatting": "minified"}},
-		"geojson_8kib_indented":      {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true, Properties: map[string]string{"formatting": "indented"}},
-		"geojson_8kib_whole_degrees": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true, Properties: map[string]string{"precision": "0"}},
-		"geojson_8kib_every_pitfall": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true,
-			Properties: map[string]string{"antimeridian": "true", "winding": "reversed", "altitude": "true", "precision": "15"}},
-		"geojson_capped_note": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 3900000), Label: true,
-			Properties: map[string]string{"geometry": "polygon", "vertices": "100000"}},
-		// The second set of settings, one case for each new path: outlines
-		// with holes, a box on every feature and on the collection across the
-		// antimeridian with a height and indented, features with no place and
-		// ids of both types, and a collection box that goes all the way round -
-		// each read by the structural checker when its value was recorded, the
-		// last two reporting a crossing box and a box round the globe.
-		"geojson_8kib_holes": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true,
-			Properties: map[string]string{"holes": "2"}},
-		"geojson_8kib_boxes_across": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true,
-			Properties: map[string]string{"bbox": "true", "antimeridian": "true", "altitude": "true", "formatting": "indented"}},
-		"geojson_8kib_unlocated_mixed_ids": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true,
-			Properties: map[string]string{"unlocated": "some", "ids": "mixed"}},
-		"geojson_box_round_the_globe": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 65536), Label: true,
-			Properties: map[string]string{"bbox": "true", "antimeridian": "true", "precision": "0", "vertices": "300",
-				"geometry": "linestring", "formatting": "minified", "ids": "string"}},
-
 		// The label is a byte affecting switch, not a cosmetic one, so it is
 		// pinned in both positions.
 		"txt_4kib_no_label": {ID: "g", Format: "txt", Sizes: engine.Uniform(1, 4096), Label: false},
@@ -424,6 +394,70 @@ func goldenCases() map[string]engine.Target {
 		// entry is aligned to 512 bytes. This is the case where the two stages
 		// have to agree to the byte.
 		"targz_past_the_comment_limit": {ID: "g", Format: "targz", Sizes: engine.Uniform(1, 262144), Label: true},
+	}
+	for _, more := range []map[string]engine.Target{mapGoldenCases(), mailGoldenCases()} {
+		for name, target := range more {
+			cases[name] = target
+		}
+	}
+	return cases
+}
+
+// mapGoldenCases are the golden cases of the geojson format, a table of their
+// own for the reason mailGoldenCases gives.
+func mapGoldenCases() map[string]engine.Target {
+	return map[string]engine.Target{
+		// GeoJSON, one case for each path the bytes take rather than one for
+		// each setting: the three layouts, whole degrees (no decimal point at
+		// all), every pitfall at once with fifteen places - the wrap across the
+		// antimeridian, the reversed outline and the height whose span passes
+		// an int64 - and a note capped at a mebibyte with spaces after it. The
+		// label never reaches the content, so it is pinned in one position.
+		"geojson_8kib":               {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true},
+		"geojson_8kib_minified":      {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true, Properties: map[string]string{"formatting": "minified"}},
+		"geojson_8kib_indented":      {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true, Properties: map[string]string{"formatting": "indented"}},
+		"geojson_8kib_whole_degrees": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true, Properties: map[string]string{"precision": "0"}},
+		"geojson_8kib_every_pitfall": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"antimeridian": "true", "winding": "reversed", "altitude": "true", "precision": "15"}},
+		"geojson_capped_note": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 3900000), Label: true,
+			Properties: map[string]string{"geometry": "polygon", "vertices": "100000"}},
+
+		// The second set of settings, one case for each new path: outlines
+		// with holes, a box on every feature and on the collection across the
+		// antimeridian with a height and indented, features with no place and
+		// ids of both types, and a collection box that goes all the way round -
+		// each read by the structural checker when its value was recorded, the
+		// last two reporting a crossing box and a box round the globe.
+		"geojson_8kib_holes": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"holes": "2"}},
+		"geojson_8kib_boxes_across": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"bbox": "true", "antimeridian": "true", "altitude": "true", "formatting": "indented"}},
+		"geojson_8kib_unlocated_mixed_ids": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"unlocated": "some", "ids": "mixed"}},
+		"geojson_box_round_the_globe": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"bbox": "true", "antimeridian": "true", "precision": "0", "vertices": "300",
+				"geometry": "linestring", "formatting": "minified", "ids": "string"}},
+	}
+}
+
+// mailGoldenCases are the golden cases of the eml format, a table of their own
+// so goldenCases stays a length a person can read.
+func mailGoldenCases() map[string]engine.Target {
+	return map[string]engine.Target{
+		// One case for each path the bytes take: the plain default, HTML in
+		// quoted-printable, alternative at a size that leaves an odd byte (the
+		// space the HTML takes for what the two parts cannot split) with raw UTF-8 headers and
+		// LF, and attached files under every style of name - encoded words, the
+		// RFC 2231 form continued over lines, and the name in Content-Type only.
+		"eml_8kib":                         {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 8192), Label: true},
+		"eml_8kib_html_quoted":             {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 8192), Label: true, Properties: map[string]string{"body": "html", "text_encoding": "quoted-printable"}},
+		"eml_8kib_alternative_odd_utf8_lf": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 8192), Label: true, Properties: map[string]string{"body": "alternative", "text_encoding": "8bit", "headers": "utf8", "line_endings": "lf"}},
+		"eml_64kib_attached_both": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"attachments": "2", "attachment_format": "txt", "attachment_size": "8kb", "headers": "encoded", "filename_style": "both"}},
+		"eml_64kib_attached_rfc2047": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"attachments": "1", "attachment_format": "pdf", "attachment_size": "8kb", "headers": "encoded", "filename_style": "rfc2047"}},
+		"eml_64kib_attached_content_type": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"attachments": "3", "attachment_format": "png", "attachment_size": "4kb", "filename_style": "content-type"}},
 	}
 }
 

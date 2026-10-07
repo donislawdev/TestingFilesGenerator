@@ -113,8 +113,8 @@ func growthAllowanceFor(steady int64) int64 {
 // growth check below is untouched and applies to every format equally, and it
 // is the one that asks the question this ceiling is a proxy for.
 func ceilingFor(d format.Descriptor) int64 {
-	if d.AllocCeiling > 0 {
-		return d.AllocCeiling
+	if a, ok := d.Generator.(format.AllocCeiling); ok {
+		return a.AllocCeiling()
 	}
 	return allocCeiling
 }

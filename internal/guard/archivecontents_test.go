@@ -33,13 +33,13 @@ func TestOnlyAFormatThatHoldsFilesOffersToPutFilesInIt(t *testing.T) {
 
 		offered := buttonNamed(body, text.ButtonAddContents()) != nil
 		switch {
-		case d.Container && !offered:
+		case d.Container != nil && !offered:
 			t.Errorf("%s holds other files and its batch offers no way to say what they are", d.ID)
-		case !d.Container && offered:
+		case d.Container == nil && offered:
 			t.Errorf("%s holds no other files and its batch offers to put files in it, "+
 				"which leads nowhere but a refusal", d.ID)
 		}
-		if d.Container {
+		if d.Container != nil {
 			holders++
 		} else {
 			plain++

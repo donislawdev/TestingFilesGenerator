@@ -251,8 +251,46 @@ func Axes(names ...string) []format.Property {
 // is what an archive may not hold, since an archive inside an archive needs a
 // depth limit that does not exist yet.
 func Groups(id string, r format.Request) ([]format.Content, error) {
+	return GroupsThrough(id, r, archiveDoor)
+}
+
+// ArchiveMembers is how an archive names what it holds, for its descriptor.
+var ArchiveMembers = format.Members{Count: Entries, Format: EntryFormat, Size: EntrySize}
+
+// MaxMembers is the most files a container holds, through either door. A
+// container that is not an archive declares its own count with this ceiling,
+// so the two doors of every container stop at one number.
+const MaxMembers = maxEntries
+
+// DefaultSizeText is how big each file inside is when nothing says, written
+// the way a declaration shows it.
+const DefaultSizeText = defaultSizeText
+
+// Door is how a container names its contents, for GroupsThrough.
+//
+// The rules are one set for every container - both doors at once refused, the
+// container never inside itself, one ceiling on both - and what differs is the
+// words: which keys, how many files when nothing says, and the noun in the
+// sentence that asks for fewer.
+type Door struct {
+	Members      format.Members
+	DefaultCount int
+	// Fewer is the remedy when more files are asked for than MaxMembers.
+	Fewer core.Said
+}
+
+// archiveDoor is the door both archives share.
+var archiveDoor = Door{
+	Members:      ArchiveMembers,
+	DefaultCount: defaultEntries,
+	Fewer:        core.Says("format.AskForEntriesOrFewer", "Ask for %d entries or fewer.", core.A("MaxEntries", maxEntries)),
+}
+
+// GroupsThrough is Groups for a container that names its contents its own way.
+func GroupsThrough(id string, r format.Request, door Door) ([]format.Content, error) {
+	keys := door.Members
 	var stated []string
-	for _, key := range []string{Entries, EntryFormat, EntrySize} {
+	for _, key := range []string{keys.Count, keys.Format, keys.Size} {
 		if _, ok := r.Properties[key]; ok {
 			stated = append(stated, key)
 		}
@@ -262,7 +300,7 @@ func Groups(id string, r format.Request) ([]format.Content, error) {
 	// which is a legitimate thing to ask for, and it is a different statement
 	// from saying nothing at all.
 	if r.Contains != nil {
-		return fromContains(id, r, stated)
+		return fromContains(id, r, stated, door.Fewer)
 	}
 
 	if r.SizeFromContents {
@@ -271,19 +309,19 @@ func Groups(id string, r format.Request) ([]format.Content, error) {
 		return nil, core.Defect(fmt.Errorf("%s: the size was left to the contents and there are none", id))
 	}
 
-	entries, err := intProperty(id, r.Properties, Entries, defaultEntries, 0, maxEntries)
+	entries, err := intProperty(id, r.Properties, keys.Count, door.DefaultCount, 0, maxEntries)
 	if err != nil {
 		return nil, err
 	}
 	// Sizes in properties use the same syntax as --size. Anything else would
 	// mean entry_size=200kb failing while size=200kb works, which nobody would
 	// predict.
-	entrySize, err := sizeProperty(id, r.Properties, EntrySize, defaultSize)
+	entrySize, err := sizeProperty(id, r.Properties, keys.Size, defaultSize)
 	if err != nil {
 		return nil, err
 	}
 	entryFmt := DefaultFormat
-	if v, ok := r.Properties[EntryFormat]; ok && v != "" {
+	if v, ok := r.Properties[keys.Format]; ok && v != "" {
 		entryFmt = v
 	}
 	if entryFmt == id {
@@ -297,7 +335,7 @@ func Groups(id string, r format.Request) ([]format.Content, error) {
 // Split out of Groups so the branching stays under the ceiling the shape gates
 // hold, and because it is one subject: everything here is about a contains list
 // and nothing about it reads a property.
-func fromContains(id string, r format.Request, stated []string) ([]format.Content, error) {
+func fromContains(id string, r format.Request, stated []string, fewer core.Said) ([]format.Content, error) {
 	if len(stated) > 0 {
 		return nil, &format.ContentsConflictError{Format: id, Keys: stated}
 	}
@@ -319,7 +357,7 @@ func fromContains(id string, r format.Request, stated []string) ([]format.Conten
 		// to the exit code: a plain error here would have landed on 1 while
 		// the same request through entries lands on 4, which is the same
 		// disagreement one level further down.
-		return nil, tooMany(id, "contains", asked)
+		return nil, tooMany(id, "contains", asked, fewer)
 	}
 	return r.Contains, nil
 }
@@ -328,13 +366,13 @@ func fromContains(id string, r format.Request, stated []string) ([]format.Conten
 //
 // TestBothWaysOfAskingForEntriesShareOneCeiling compares the reason the two
 // produce, and before this it compared two sentences somebody had typed twice.
-func tooMany(id, key string, asked int) *format.PropertyValueError {
+func tooMany(id, key string, asked int, fewer core.Said) *format.PropertyValueError {
 	return &format.PropertyValueError{
 		Format: id,
 		Key:    key,
 		Value:  strconv.Itoa(asked),
 		Reason: core.Says("format.ItTakesAWholeNumberFrom", "it takes a whole number from 0 to %d", core.A("MaxEntries", maxEntries)),
-		Remedy: core.Says("format.AskForEntriesOrFewer", "Ask for %d entries or fewer.", core.A("MaxEntries", maxEntries)),
+		Remedy: fewer,
 	}
 }
 
@@ -364,4 +402,19 @@ func intProperty(id string, props map[string]string, key string, fallback, min, 
 		return 0, core.Defect(fmt.Errorf("%s: %s must be between %d and %d, got %d", id, key, min, max, n))
 	}
 	return n, nil
+}
+
+// ContentSummary is what a container holds, in the manifest, so a test can
+// assert on it without opening the file. One copy for every container, so the
+// key names a test reads cannot differ between them.
+func ContentSummary(groups []format.Content) []map[string]any {
+	out := make([]map[string]any, 0, len(groups))
+	for _, g := range groups {
+		out = append(out, map[string]any{
+			"format": g.Format,
+			"count":  g.Count,
+			"bytes":  g.Bytes,
+		})
+	}
+	return out
 }

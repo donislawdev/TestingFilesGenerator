@@ -36,6 +36,8 @@ func TestEveryFormatDeclaresTheFullSet(t *testing.T) {
 			if !strings.HasPrefix(d.Extension, ".") {
 				t.Errorf("extension %q does not start with a dot", d.Extension)
 			}
+			mediaTypeIsSpelledOut(t, d.MediaType)
+			membersAreDeclared(t, d)
 			if d.Generator == nil {
 				t.Error("no generator")
 			}
@@ -118,6 +120,42 @@ func nameShowsAsItIs(t *testing.T, name string) {
 	}
 	for _, fault := range proseFaults(name, false) {
 		t.Errorf("the name %q holds %s", name, fault)
+	}
+}
+
+// mediaTypeShape is a type and a subtype in lower case, the way the IANA
+// registry lists them. Lower case because a type is compared without case and
+// written in one, and a mail message carrying Application/PDF beside every
+// other sender's application/pdf is a difference a test would trip over.
+var mediaTypeShape = regexp.MustCompile(`^(application|audio|font|image|message|model|text|video)/[a-z0-9][a-z0-9.+-]*$`)
+
+// mediaTypeIsSpelledOut asks for the media type a mail message puts on an
+// attachment of this format. Empty is the failure that matters: a message would
+// carry the file under no type, and nothing else would notice.
+func mediaTypeIsSpelledOut(t *testing.T, mediaType string) {
+	t.Helper()
+	if !mediaTypeShape.MatchString(mediaType) {
+		t.Errorf("the media type %q is not a type and a subtype in lower case, such as application/pdf", mediaType)
+	}
+}
+
+// membersAreDeclared asks a container for the three settings that order its
+// contents in one group, each one declared as a setting it takes, and asks
+// every other format for none. A container naming a key it does not declare
+// would refuse its own short way of being asked.
+func membersAreDeclared(t *testing.T, d format.Descriptor) {
+	t.Helper()
+	if d.Container == nil {
+		return
+	}
+	declared := map[string]bool{}
+	for _, p := range d.Properties {
+		declared[p.Name] = true
+	}
+	for _, k := range []string{d.Container.Count, d.Container.Format, d.Container.Size} {
+		if !declared[k] {
+			t.Errorf("is a container whose members setting %q is not a setting it declares", k)
+		}
 	}
 }
 

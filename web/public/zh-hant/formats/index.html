@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="content-language" content="zh-Hant">
-<title>29 種支援的檔案格式 - PDF、DOCX、PNG、ZIP 等</title>
-<meta name="description" content="產生器支援的所有檔案格式、每種格式可能的最小檔案，以及各自接受的設定。全部 29 種都能在對應軟體中開啟。">
+<title>30 種支援的檔案格式 - PDF、DOCX、PNG、ZIP 等</title>
+<meta name="description" content="產生器支援的所有檔案格式、每種格式可能的最小檔案，以及各自接受的設定。全部 30 種都能在對應軟體中開啟。">
 <link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/zh-hant/formats/">
 <link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/formats/">
 <link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/formats/">
@@ -33,8 +33,8 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Testing Files Generator">
 <meta property="og:locale" content="zh_TW">
-<meta property="og:title" content="29 種支援的檔案格式 - PDF、DOCX、PNG、ZIP 等">
-<meta property="og:description" content="產生器支援的所有檔案格式、每種格式可能的最小檔案，以及各自接受的設定。全部 29 種都能在對應軟體中開啟。">
+<meta property="og:title" content="30 種支援的檔案格式 - PDF、DOCX、PNG、ZIP 等">
+<meta property="og:description" content="產生器支援的所有檔案格式、每種格式可能的最小檔案，以及各自接受的設定。全部 30 種都能在對應軟體中開啟。">
 <meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/zh-hant/formats/">
 <meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
 <meta property="og:image:width" content="1280">
@@ -62,8 +62,8 @@
 <meta property="og:locale:alternate" content="vi_VN">
 <meta property="og:locale:alternate" content="zh_CN">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="29 種支援的檔案格式 - PDF、DOCX、PNG、ZIP 等">
-<meta name="twitter:description" content="產生器支援的所有檔案格式、每種格式可能的最小檔案，以及各自接受的設定。全部 29 種都能在對應軟體中開啟。">
+<meta name="twitter:title" content="30 種支援的檔案格式 - PDF、DOCX、PNG、ZIP 等">
+<meta name="twitter:description" content="產生器支援的所有檔案格式、每種格式可能的最小檔案，以及各自接受的設定。全部 30 種都能在對應軟體中開啟。">
 <meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
 <meta name="twitter:image:alt" content="Testing Files Generator - 精確大小的真實測試檔案，並附上說明系統應如何回應每個檔案的清單">
 <meta name="theme-color" content="#131417">
@@ -144,7 +144,7 @@
 </header>
 
 <main id="main" class="wrap">
-<h1>29 種檔案格式，每一種都以精確大小產生</h1>
+<h1>30 種檔案格式，每一種都以精確大小產生</h1>
 <p class="lead">
   它們每一個都是<strong>該格式的真實檔案</strong>。它能在對應軟體中開啟，位元組數恰好等於你的要求。沒有一個是黏上副檔名的填充零。
 </p>
@@ -193,6 +193,14 @@
       <td class="num">1220</td>
       <td>full</td>
       <td>libreoffice</td>
+    </tr>
+    <tr>
+      <td><code>eml</code></td>
+      <td>Email message</td>
+      <td><code>.eml</code></td>
+      <td class="num">289</td>
+      <td>full</td>
+      <td>python-email</td>
     </tr>
     <tr>
       <td><code>geojson</code></td>
@@ -496,6 +504,46 @@
       <td><code>docx</code></td>
       <td><code>paragraphs</code></td>
       <td>1 - 50000 段落</td>
+    </tr>
+    <tr>
+      <td><code>eml</code></td>
+      <td><code>body</code></td>
+      <td>alternative, html, plain</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>text_encoding</code></td>
+      <td>7bit, 8bit, quoted-printable</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>headers</code></td>
+      <td>ascii, encoded, utf8</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>line_endings</code></td>
+      <td>crlf, lf</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>attachments</code></td>
+      <td>0 - 10000</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>attachment_format</code></td>
+      <td>格式的 id，與 tfg formats 列出的相同</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>attachment_size</code></td>
+      <td>形如 2mb 的大小</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>filename_style</code></td>
+      <td>both, content-type, rfc2047, rfc2231</td>
     </tr>
     <tr>
       <td><code>geojson</code></td>
@@ -996,7 +1044,7 @@
 <section class="section" id="archives">
   <h2>壓縮檔裡裝的是真實檔案</h2>
   <p>
-    <code>targz</code> 與 <code>zip</code>
+    <code>eml</code> 與 <code>targz</code> 與 <code>zip</code>
     可以填入項目，而不是只留一個空殼。產生的壓縮檔確實包含它宣稱包含的文件，所以測試期間解壓縮它的任何程式都會在裡面找到真實檔案。
   </p>
   <pre><code>targets:

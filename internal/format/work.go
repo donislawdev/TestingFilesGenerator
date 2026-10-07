@@ -30,3 +30,27 @@ func Worked(ctx context.Context, n int64) {
 		report(n)
 	}
 }
+
+// AllocCeiling is implemented by a generator that may allocate more objects
+// producing one file than the flat ceiling every other one meets. A generator
+// without it meets the flat one, which is the case for all but three.
+//
+// It exists because a borrowed encoder allocates on its own account. The hand
+// written generators here sit between 3 and 128 objects a file, and gav1d, the
+// AVIF encoder, sits at about a hundred - but gen2brain/jxl allocates per
+// block, about 618 000 of them for one 640x480 picture. A single ceiling has to
+// fit the heaviest format, so one that fits that one would say nothing about
+// the others.
+//
+// What the ceiling stands in for is untouched by this: the guard also asks
+// each format whether its allocation GROWS with the size of the file asked for,
+// and that question is the real one. Owner's decision, 2026-08-31. A ratchet,
+// like the coverage threshold and the code shape ceilings: it goes down when
+// work makes it lowerable, never up to turn a run green.
+//
+// A method of the generator rather than a field of the descriptor since
+// 2026-10-07, when the descriptor reached the field count the type shape guard
+// watches - how much a generator allocates is the generator's to say.
+type AllocCeiling interface {
+	AllocCeiling() int64
+}

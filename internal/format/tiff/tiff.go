@@ -106,6 +106,7 @@ func init() {
 		ID:          "tiff",
 		Name:        "Tagged Image File Format",
 		Extension:   ".tiff",
+		MediaType:   "image/tiff", // IANA, RFC 3302
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

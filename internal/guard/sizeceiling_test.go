@@ -51,8 +51,8 @@ func TestAFormatRefusesASizeItCannotDescribe(t *testing.T) {
 	for _, d := range format.All() {
 		for _, s := range sizes {
 			req := format.Request{Bytes: s.bytes, Seed: 7, Label: true}
-			if d.Container {
-				req.Properties = map[string]string{"entries": "1"}
+			if d.Container != nil {
+				req.Properties = map[string]string{d.Container.Count: "1"}
 			}
 
 			plan, err := d.Generator.Plan(req)
@@ -144,8 +144,8 @@ func TestARefusalAboutTooLargeSaysLargerNotSmaller(t *testing.T) {
 	found := 0
 	for _, d := range format.All() {
 		req := format.Request{Bytes: 1 << 40, Seed: 7, Label: true}
-		if d.Container {
-			req.Properties = map[string]string{"entries": "1"}
+		if d.Container != nil {
+			req.Properties = map[string]string{d.Container.Count: "1"}
 		}
 		_, err := d.Generator.Plan(req)
 		if err == nil {
@@ -214,8 +214,8 @@ func TestAContainerRefusesASizeItsArithmeticCannotSee(t *testing.T) {
 		containers++
 
 		req := format.Request{Bytes: 5 << 30, Seed: 7, Label: true}
-		if d.Container {
-			req.Properties = map[string]string{"entries": "1"}
+		if d.Container != nil {
+			req.Properties = map[string]string{d.Container.Count: "1"}
 		}
 		_, err := d.Generator.Plan(req)
 		if err == nil {

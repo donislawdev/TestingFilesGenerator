@@ -135,20 +135,11 @@ func init() {
 		ID:          "jxl",
 		Name:        "JPEG XL",
 		Extension:   ".jxl",
+		MediaType:   "image/jxl", // IANA, ISO/IEC JTC 1
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 
 		MinBytes: minimumBytes,
-
-		// This encoder allocates per block rather than per file, so the flat
-		// ceiling every hand written format here meets does not describe it.
-		// Measured on 2026-08-31, lowest of five rounds: 1 222 objects for one
-		// pixel, 156 679 at 320x240, 618 461 at 640x480. The number below is
-		// today's measurement at the top of the ladder with room for the
-		// runtime to move, and it is a ratchet like every other ceiling in
-		// this project - it goes down when work makes it lowerable, never up
-		// to turn a run green.
-		AllocCeiling: 700_000,
 
 		Padding: format.PaddingChannel{
 			// Measured on files this encoder produces, not on a container
@@ -185,6 +176,19 @@ func init() {
 }
 
 type generator struct{}
+
+// AllocCeiling is how many objects this generator may allocate for one
+// file, for the resource guard - see format.AllocCeiling.
+//
+// This encoder allocates per block rather than per file, so the flat
+// ceiling every hand written format here meets does not describe it.
+// Measured on 2026-08-31, lowest of five rounds: 1 222 objects for one
+// pixel, 156 679 at 320x240, 618 461 at 640x480. The number below is
+// today's measurement at the top of the ladder with room for the
+// runtime to move, and it is a ratchet like every other ceiling in
+// this project - it goes down when work makes it lowerable, never up
+// to turn a run green.
+func (generator) AllocCeiling() int64 { return 700_000 }
 
 type memo struct {
 	width, height int

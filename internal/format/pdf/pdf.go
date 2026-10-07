@@ -20,6 +20,7 @@ func init() {
 		ID:          "pdf",
 		Name:        "Portable Document Format",
 		Extension:   ".pdf",
+		MediaType:   "application/pdf", // IANA, RFC 8118
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 		MinBytes:    minimumBytes(),

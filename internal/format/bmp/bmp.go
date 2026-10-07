@@ -61,6 +61,7 @@ func init() {
 		ID:          "bmp",
 		Name:        "Windows Bitmap",
 		Extension:   ".bmp",
+		MediaType:   "image/bmp", // IANA, RFC 7903
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

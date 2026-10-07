@@ -75,6 +75,7 @@ func init() {
 		ID:          "toml",
 		Name:        "TOML",
 		Extension:   ".toml",
+		MediaType:   "application/toml", // IANA
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

@@ -46,6 +46,7 @@ func init() {
 		ID:          "md",
 		Name:        "Markdown",
 		Extension:   ".md",
+		MediaType:   "text/markdown", // IANA, RFC 7763
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

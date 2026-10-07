@@ -271,7 +271,7 @@ func settleTarget(t *Target, opt Options, seen map[string]bool) (format.Descript
 	// ignoring contains would give an archive with none of the files somebody
 	// listed, reported as a success - the file looks right and the test suite
 	// believes it.
-	if len(t.Contains) > 0 && !desc.Container {
+	if len(t.Contains) > 0 && desc.Container == nil {
 		return format.Descriptor{}, &format.NotAContainerError{Format: t.Format, Containers: format.Containers()}
 	}
 

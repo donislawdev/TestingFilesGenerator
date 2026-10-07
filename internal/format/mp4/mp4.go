@@ -49,21 +49,11 @@ func init() {
 		ID:          id,
 		Name:        "MP4 video",
 		Extension:   ".mp4",
+		MediaType:   "video/mp4", // IANA, RFC 4337
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 
 		MinBytes: minimumBytes(),
-
-		// WebM's ceiling and for WebM's reason: every picture is coded on its
-		// own, a tile a call to gav1d, and gav1d allocates twenty odd objects
-		// a call (internal/format/webm). The second pass takes every tile the
-		// first one kept, so the default film calls gav1d no more often than
-		// its WebM does. Measured on 2026-10-07, lowest of the guard's rounds:
-		// 938 to 941 objects at one, four and sixteen threads (WebM 898 to
-		// 904), the sample lengths and the second pass's crew the difference -
-		// and 1241 with one object allocated per frame, the defect the ceiling
-		// exists for. 1024 sits between the two.
-		AllocCeiling: 1024,
 
 		Padding: format.PaddingChannel{
 			Name:     "free boxes after the pictures at the end of the file",
@@ -93,6 +83,20 @@ func minimumBytes() int64 {
 }
 
 type generator struct{}
+
+// AllocCeiling is how many objects this generator may allocate for one
+// file, for the resource guard - see format.AllocCeiling.
+//
+// WebM's ceiling and for WebM's reason: every picture is coded on its
+// own, a tile a call to gav1d, and gav1d allocates twenty odd objects
+// a call (internal/format/webm). The second pass takes every tile the
+// first one kept, so the default film calls gav1d no more often than
+// its WebM does. Measured on 2026-10-07, lowest of the guard's rounds:
+// 938 to 941 objects at one, four and sixteen threads (WebM 898 to
+// 904), the sample lengths and the second pass's crew the difference -
+// and 1241 with one object allocated per frame, the defect the ceiling
+// exists for. 1024 sits between the two.
+func (generator) AllocCeiling() int64 { return 1024 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	need := func(st video.Stream) int64 { return newLayout(st).need() }

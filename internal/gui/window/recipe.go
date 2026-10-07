@@ -483,7 +483,7 @@ func (r *Recipe) batchBlock(index int, b *batch) fyne.CanvasObject {
 func (r *Recipe) contentsBlock(index int, b *batch) fyne.CanvasObject {
 	holds := false
 	if d, err := format.Get(b.formatPick.Selected); err == nil {
-		holds = d.Container
+		holds = d.Container != nil
 	}
 
 	addContents := parts.NewButton(parts.Secondary, text.ButtonAddContents(), func() {

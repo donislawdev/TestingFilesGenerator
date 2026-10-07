@@ -521,6 +521,36 @@
     "one": "{{.Count}} paragraph",
     "other": "{{.Count}} paragraphs"
   },
+  "eml.AMessageHoldsItsHeaderLines": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-5b3dd4df2ace",
+    "other": "a message holds its header lines, its parts and every attached file in base64, which is about a third larger than the file itself"
+  },
+  "eml.AMessageHoldsItsHeaderLinesAndText": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-1e727c17f578",
+    "other": "a message holds its header lines and the lines that open its text"
+  },
+  "eml.AMessageThisLargeCannotBe": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-ff6a6f0065c8",
+    "other": "a message this large cannot be counted to the byte in this build"
+  },
+  "eml.AskForAttachmentsOrFewer": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Max}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-2145e05752c5",
+    "other": "Ask for {{.Max}} attachments or fewer."
+  },
+  "eml.AskForSmallerAttachments": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-871e78c75c85",
+    "other": "Ask for fewer or smaller attachments."
+  },
+  "eml.TheAttachedFileCannotBe": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Err}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-cb66d6df0c0f",
+    "other": "eml: the attached {{.Format}} file cannot be made: {{.Err}}"
+  },
   "engine.CannotCreateOutDir": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Dir}}, {{.Cause}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-324037f71709",
@@ -1241,13 +1271,13 @@
   },
   "format.ContentsConflict": {
     "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Keys}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-c02ff58536fe",
-    "other": "{{.Format}}: contains and the {{.Keys}} properties both say what the archive holds. Keep contains and drop the properties, or the other way round"
+    "hash": "sha256-f8af78b330b1",
+    "other": "{{.Format}}: contains and the {{.Keys}} properties both say which files it holds. Keep contains and drop the properties, or the other way round"
   },
   "format.ContentsConflictOne": {
     "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Key}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-274eb866ce96",
-    "other": "{{.Format}}: contains and the {{.Key}} property both say what the archive holds. Keep contains and drop the properties, or the other way round"
+    "hash": "sha256-44b774ac5486",
+    "other": "{{.Format}}: contains and the {{.Key}} property both say which files it holds. Keep contains and drop the property, or the other way round"
   },
   "format.CountOf": {
     "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Number}}, {{.Unit}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -1387,8 +1417,8 @@
   },
   "format.NestingUnsupported": {
     "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Inner}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-f2cd29c6111d",
-    "other": "{{.Format}} cannot hold {{.Inner}} yet - an archive inside an archive needs a depth limit first. Hold a different format, or build the inner archive as its own target"
+    "hash": "sha256-f9a7add09c20",
+    "other": "{{.Format}} cannot hold {{.Inner}} yet - a file inside a file of its own format needs a depth limit first. Hold a different format, or make the inner file its own target"
   },
   "format.NoCalendarHasThatDayTime": {
     "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run.",

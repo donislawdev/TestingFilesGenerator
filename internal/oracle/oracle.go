@@ -351,6 +351,9 @@ var checkers = map[string]Checker{
 
 	// GDAL's GeoJSON driver. See geoscripts.go.
 	"gdal-geojson": gdalGeoJSON,
+
+	// Python's email package. See mailscripts.go.
+	"python-email": pythonEmail,
 }
 
 // DecodedFrames is how many frames the libaom oracle decoded, read from what
@@ -541,6 +544,9 @@ func StrictKnows(formatID string) bool {
 		// From its first day, because GDAL alone took files this one refuses
 		// (docs/GEOJSON-2026-10-07.md section 3).
 		"geojson",
+		// The same reason for mail: four readers took a message with no From
+		// line (docs/EML-2026-10-07.md section 5.1).
+		"eml",
 		"bmp", "gif", "ico", "jpg", "tiff", "webp", "avif", "jxl", "docx", "xlsx", "pptx",
 		// The two text formats joined on 2026-09-07, when they gained an
 		// encoding. Before that there was nothing here to check against

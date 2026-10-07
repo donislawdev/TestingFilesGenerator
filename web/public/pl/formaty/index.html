@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="content-language" content="pl">
-<title>29 formatów plików testowych - PDF, DOCX, PNG, ZIP</title>
+<title>30 formatów plików testowych - PDF, DOCX, PNG, ZIP</title>
 <meta name="description" content="Wszystkie formaty, jakie generuje to narzędzie, najmniejszy możliwy plik każdego z nich i ustawienia, które przyjmuje. Każdy otwiera się w swoim programie.">
 <link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/pl/formaty/">
 <link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/formats/">
@@ -33,7 +33,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Testing Files Generator">
 <meta property="og:locale" content="pl_PL">
-<meta property="og:title" content="29 formatów plików testowych - PDF, DOCX, PNG, ZIP">
+<meta property="og:title" content="30 formatów plików testowych - PDF, DOCX, PNG, ZIP">
 <meta property="og:description" content="Wszystkie formaty, jakie generuje to narzędzie, najmniejszy możliwy plik każdego z nich i ustawienia, które przyjmuje. Każdy otwiera się w swoim programie.">
 <meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/pl/formaty/">
 <meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
@@ -62,7 +62,7 @@
 <meta property="og:locale:alternate" content="zh_CN">
 <meta property="og:locale:alternate" content="zh_TW">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="29 formatów plików testowych - PDF, DOCX, PNG, ZIP">
+<meta name="twitter:title" content="30 formatów plików testowych - PDF, DOCX, PNG, ZIP">
 <meta name="twitter:description" content="Wszystkie formaty, jakie generuje to narzędzie, najmniejszy możliwy plik każdego z nich i ustawienia, które przyjmuje. Każdy otwiera się w swoim programie.">
 <meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
 <meta name="twitter:image:alt" content="Testing Files Generator - prawdziwe pliki testowe o dokładnym rozmiarze, z manifestem mówiącym, jak system ma na nie zareagować">
@@ -144,7 +144,7 @@
 </header>
 
 <main id="main" class="wrap">
-<h1>29 formatów plików, każdy generowany o dokładnym rozmiarze</h1>
+<h1>30 formatów plików, każdy generowany o dokładnym rozmiarze</h1>
 <p class="lead">
   Każdy z nich to <strong>prawdziwy plik tego formatu</strong>. Otwiera się w programie, do którego
   należy, i ma dokładnie tyle bajtów, ile zamówiłeś. Żaden nie jest zerami z doklejonym rozszerzeniem.
@@ -194,6 +194,14 @@
       <td class="num">1220</td>
       <td>full</td>
       <td>libreoffice</td>
+    </tr>
+    <tr>
+      <td><code>eml</code></td>
+      <td>Email message</td>
+      <td><code>.eml</code></td>
+      <td class="num">289</td>
+      <td>full</td>
+      <td>python-email</td>
     </tr>
     <tr>
       <td><code>geojson</code></td>
@@ -504,6 +512,46 @@
       <td><code>docx</code></td>
       <td><code>paragraphs</code></td>
       <td>1 - 50000 akapitów</td>
+    </tr>
+    <tr>
+      <td><code>eml</code></td>
+      <td><code>body</code></td>
+      <td>alternative, html, plain</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>text_encoding</code></td>
+      <td>7bit, 8bit, quoted-printable</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>headers</code></td>
+      <td>ascii, encoded, utf8</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>line_endings</code></td>
+      <td>crlf, lf</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>attachments</code></td>
+      <td>0 - 10000</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>attachment_format</code></td>
+      <td>identyfikator formatu, tak jak wypisuje go tfg formats</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>attachment_size</code></td>
+      <td>rozmiar, na przykład 2mb</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>filename_style</code></td>
+      <td>both, content-type, rfc2047, rfc2231</td>
     </tr>
     <tr>
       <td><code>geojson</code></td>
@@ -1008,7 +1056,7 @@
 <section class="section" id="archives">
   <h2>Archiwa zawierają prawdziwe pliki</h2>
   <p>
-    <code>targz</code> oraz <code>zip</code>
+    <code>eml</code> oraz <code>targz</code> oraz <code>zip</code>
     można wypełnić wpisami, zamiast zostawiać jako pustą skorupę. Wygenerowane archiwum naprawdę
     zawiera dokumenty, o których mówi, więc cokolwiek rozpakowuje je w trakcie testu, znajduje
     w środku prawdziwe pliki.

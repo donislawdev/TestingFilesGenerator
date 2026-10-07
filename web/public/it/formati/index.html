@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="content-language" content="it">
-<title>29 formati di file supportati - PDF, DOCX, PNG, ZIP e altri</title>
-<meta name="description" content="Tutti i formati che il generatore produce, il file più piccolo possibile per ciascuno e le impostazioni che accetta. Tutti i 29 si aprono nel loro programma.">
+<title>30 formati di file supportati - PDF, DOCX, PNG, ZIP e altri</title>
+<meta name="description" content="Tutti i formati che il generatore produce, il file più piccolo possibile per ciascuno e le impostazioni che accetta. Tutti i 30 si aprono nel loro programma.">
 <link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/it/formati/">
 <link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/formats/">
 <link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/formats/">
@@ -33,8 +33,8 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Testing Files Generator">
 <meta property="og:locale" content="it_IT">
-<meta property="og:title" content="29 formati di file supportati - PDF, DOCX, PNG, ZIP e altri">
-<meta property="og:description" content="Tutti i formati che il generatore produce, il file più piccolo possibile per ciascuno e le impostazioni che accetta. Tutti i 29 si aprono nel loro programma.">
+<meta property="og:title" content="30 formati di file supportati - PDF, DOCX, PNG, ZIP e altri">
+<meta property="og:description" content="Tutti i formati che il generatore produce, il file più piccolo possibile per ciascuno e le impostazioni che accetta. Tutti i 30 si aprono nel loro programma.">
 <meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/it/formati/">
 <meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
 <meta property="og:image:width" content="1280">
@@ -62,8 +62,8 @@
 <meta property="og:locale:alternate" content="zh_CN">
 <meta property="og:locale:alternate" content="zh_TW">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="29 formati di file supportati - PDF, DOCX, PNG, ZIP e altri">
-<meta name="twitter:description" content="Tutti i formati che il generatore produce, il file più piccolo possibile per ciascuno e le impostazioni che accetta. Tutti i 29 si aprono nel loro programma.">
+<meta name="twitter:title" content="30 formati di file supportati - PDF, DOCX, PNG, ZIP e altri">
+<meta name="twitter:description" content="Tutti i formati che il generatore produce, il file più piccolo possibile per ciascuno e le impostazioni che accetta. Tutti i 30 si aprono nel loro programma.">
 <meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
 <meta name="twitter:image:alt" content="Testing Files Generator - file di test reali della dimensione esatta, con un manifest che dice come il tuo sistema deve reagire a ciascuno">
 <meta name="theme-color" content="#131417">
@@ -144,7 +144,7 @@
 </header>
 
 <main id="main" class="wrap">
-<h1>29 formati di file, ognuno generato a una dimensione esatta</h1>
+<h1>30 formati di file, ognuno generato a una dimensione esatta</h1>
 <p class="lead">
   Ognuno è un <strong>file reale di quel formato</strong>. Si apre nel programma che gli appartiene ed
   è esattamente il numero di byte che hai chiesto. Nessuno è riempimento di zeri con un'estensione
@@ -195,6 +195,14 @@
       <td class="num">1220</td>
       <td>full</td>
       <td>libreoffice</td>
+    </tr>
+    <tr>
+      <td><code>eml</code></td>
+      <td>Email message</td>
+      <td><code>.eml</code></td>
+      <td class="num">289</td>
+      <td>full</td>
+      <td>python-email</td>
     </tr>
     <tr>
       <td><code>geojson</code></td>
@@ -506,6 +514,46 @@
       <td><code>docx</code></td>
       <td><code>paragraphs</code></td>
       <td>1 - 50000 paragrafi</td>
+    </tr>
+    <tr>
+      <td><code>eml</code></td>
+      <td><code>body</code></td>
+      <td>alternative, html, plain</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>text_encoding</code></td>
+      <td>7bit, 8bit, quoted-printable</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>headers</code></td>
+      <td>ascii, encoded, utf8</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>line_endings</code></td>
+      <td>crlf, lf</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>attachments</code></td>
+      <td>0 - 10000</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>attachment_format</code></td>
+      <td>l&#39;id di un formato, come lo elenca tfg formats</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>attachment_size</code></td>
+      <td>una dimensione come 2mb</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>filename_style</code></td>
+      <td>both, content-type, rfc2047, rfc2231</td>
     </tr>
     <tr>
       <td><code>geojson</code></td>
@@ -1011,7 +1059,7 @@
 <section class="section" id="archives">
   <h2>Gli archivi contengono file reali</h2>
   <p>
-    <code>targz</code> e <code>zip</code>
+    <code>eml</code> e <code>targz</code> e <code>zip</code>
     possono essere riempiti di voci invece di restare un guscio vuoto. Un archivio generato contiene
     davvero i documenti che dichiara di contenere, quindi qualsiasi cosa lo decomprima durante un
     test trova file reali al suo interno.

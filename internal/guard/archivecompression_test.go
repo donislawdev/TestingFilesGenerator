@@ -32,7 +32,7 @@ func TestACompressedArchiveStillHitsTheSizeToTheByte(t *testing.T) {
 	levels := []string{archive.CompressFast, archive.CompressDefault, archive.CompressBest}
 	checked := 0
 	for _, d := range format.All() {
-		if !d.Container {
+		if !compresses(d) {
 			continue
 		}
 		for _, level := range levels {
@@ -82,7 +82,7 @@ func TestACompressedArchiveStillHitsTheSizeToTheByte(t *testing.T) {
 // to more than the file holds.
 func TestAskingForCompressionActuallyCompresses(t *testing.T) {
 	for _, d := range format.All() {
-		if !d.Container {
+		if !compresses(d) {
 			continue
 		}
 		build := func(level string) []byte {
@@ -155,7 +155,7 @@ func TestAskingForCompressionActuallyCompresses(t *testing.T) {
 // cannot tell whether to drop the compression or give the archive a size.
 func TestCompressionWithASizeFromTheContentsIsRefusedNamingBoth(t *testing.T) {
 	for _, d := range format.All() {
-		if !d.Container {
+		if !compresses(d) {
 			continue
 		}
 		_, err := d.Generator.Plan(format.Request{
@@ -183,7 +183,7 @@ func TestCompressionWithASizeFromTheContentsIsRefusedNamingBoth(t *testing.T) {
 func TestCompressionWithAPasswordIsRefusedNamingBoth(t *testing.T) {
 	asked := 0
 	for _, d := range format.All() {
-		if !d.Container {
+		if !compresses(d) {
 			continue
 		}
 		if !offers(d, archive.Password) {
@@ -218,7 +218,7 @@ func TestCompressionWithAPasswordIsRefusedNamingBoth(t *testing.T) {
 // a single recipe changing - untouchable rule 3.
 func TestAnArchiveNobodyAskedToCompressIsStored(t *testing.T) {
 	for _, d := range format.All() {
-		if !d.Container {
+		if !compresses(d) {
 			continue
 		}
 		plain, err := d.Generator.Plan(format.Request{Bytes: 1 << 20, Seed: 7741, Label: true})
@@ -269,6 +269,18 @@ func assertNamesBothHalves(t *testing.T, id string, err error, halves ...string)
 func offers(d format.Descriptor, name string) bool {
 	for _, p := range d.Properties {
 		if p.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
+// compresses is whether a container offers the compression setting. Asked
+// rather than taken from Container, because a container is not always an
+// archive - a mail message holds files too and squeezes none of them.
+func compresses(d format.Descriptor) bool {
+	for _, p := range d.Properties {
+		if p.Name == archive.Compression {
 			return true
 		}
 	}

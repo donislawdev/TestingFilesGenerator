@@ -44,7 +44,7 @@ import (
 func TestEveryArchiveThisToolWritesCanBeReadByTheStandardLibrary(t *testing.T) {
 	checked := 0
 	for _, d := range format.All() {
-		if !d.Container {
+		if d.Container == nil {
 			continue
 		}
 		read, ok := standardReaderFor(d.ID)
@@ -101,6 +101,13 @@ func standardReaderFor(id string) (func([]byte) error, bool) {
 	case "zip":
 		return func(b []byte) error {
 			_, err := stdzip.NewReader(bytes.NewReader(b), int64(len(b)))
+			return err
+		}, true
+	case "eml":
+		// Read to the last byte of every part, because a message is only
+		// refused where a part is broken - see emlgo_test.go.
+		return func(b []byte) error {
+			_, _, err := goReadMail(b)
 			return err
 		}, true
 	}

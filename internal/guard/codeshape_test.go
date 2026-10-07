@@ -62,7 +62,10 @@ const (
 	// name moved out of manifest/manifest.go into reservation.go when O252
 	// took the file past the ceiling. The longest file is format/zip/zip.go
 	// now.
-	longestFile = 399
+	// Lowered from 399 on 2026-10-07: what makes a container moved out of
+	// format/format.go into container.go when two fields for eml took it
+	// past the ceiling. The longest file is gui/window/recipe.go now.
+	longestFile = 395
 
 	// Depth answers a different question than length, and it is the better
 	// question of the two. A hundred line function that is flat reads top to

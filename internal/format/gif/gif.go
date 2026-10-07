@@ -103,6 +103,7 @@ func init() {
 		ID:          "gif",
 		Name:        "Graphics Interchange Format",
 		Extension:   ".gif",
+		MediaType:   "image/gif", // IANA, RFC 2046
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

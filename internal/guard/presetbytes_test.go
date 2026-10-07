@@ -94,7 +94,10 @@ func TestEjectingAPresetGivesTheBytesItAlwaysGave(t *testing.T) {
 		// Moved a fifth time on 2026-10-07, under the same decision: geojson is
 		// a format more, so the set has its smallest collection, 875 B
 		// (docs/GEOJSON-2026-10-07.md).
-		{id: "empty-and-minimal", args: preset.Args{}, bytes: 9885, sum: "2a02ad1ec2e2c2ff7f19b87906ecf3ca910e1af5e806b135467824c28fb4fc24"},
+		// Moved a sixth time on 2026-10-07, under the same decision: eml is a
+		// format more, so the set has its smallest message, 289 B
+		// (docs/EML-2026-10-07.md).
+		{id: "empty-and-minimal", args: preset.Args{}, bytes: 10190, sum: "9530e0e5427d2d92cf05f47a5dcd4fc1755d67a9155ea65482e296f4d571adbe"},
 		{id: "empty-and-minimal", args: preset.Args{"formats": "jpg,png,txt"}, bytes: 1472, sum: "19b12800372395ad3bf5cba6407ca654d7ed51eba3a5bc5436f76a94bc09253c"},
 		// The preset of unusual file names, measured 2026-09-25 on its first
 		// build: the default, and a format whose extension is a byte longer,

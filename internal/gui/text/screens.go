@@ -281,6 +281,7 @@ func ListNothingMatches() string {
 // reorders the headings with it rather than leaving them in English order.
 func ListKindArchives() string  { return say("ListKindArchives", "Archives") }
 func ListKindDocuments() string { return say("ListKindDocuments", "Documents") }
+func ListKindMail() string      { return say("ListKindMail", "Mail") }
 func ListKindPictures() string  { return say("ListKindPictures", "Pictures") }
 func ListKindSound() string     { return say("ListKindSound", "Sound") }
 func ListKindText() string      { return say("ListKindText", "Text and data") }

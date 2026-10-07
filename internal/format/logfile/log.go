@@ -50,6 +50,7 @@ func init() {
 		ID:          "log",
 		Name:        "Server and application log",
 		Extension:   ".log",
+		MediaType:   "text/plain", // IANA, RFC 2046 - a log is plain text
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

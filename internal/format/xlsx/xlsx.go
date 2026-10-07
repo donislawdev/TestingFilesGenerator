@@ -67,6 +67,7 @@ func init() {
 		ID:          "xlsx",
 		Name:        "Excel (Office Open XML)",
 		Extension:   ".xlsx",
+		MediaType:   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // IANA
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 
