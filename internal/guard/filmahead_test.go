@@ -213,28 +213,34 @@ func progressOf(t *testing.T, target engine.Target) ([]engine.Progress, format.P
 // was taken and pass without asking anything.
 func TestAFilmStoppedHalfWayLeavesNoHelperRunning(t *testing.T) {
 	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(8))
-	writing := func(p engine.Progress) bool { return p.BytesDone > 100_000 } // some forty pictures in, of six hundred
+	// Stopped while pictures are being written is stopped once helpers have
+	// coded since the file's first byte, which is the state asked about rather
+	// than a number of bytes that stands for it.
+	writing := func(p engine.Progress, codedSinceFirstByte int64) bool { return codedSinceFirstByte > 8 }
+	small := map[string]string{"width": "160", "height": "90", "duration": "10m"}
 	stops := []struct {
 		format, where string
-		now           func(engine.Progress) bool
+		props         map[string]string
+		now           func(p engine.Progress, codedSinceFirstByte int64) bool
 	}{
-		{"webm", "once its pictures are being written", writing},
+		{"webm", "while its pictures are being written", small, writing},
 		// An MP4 has two passes, each with helpers of its own: stopped while
 		// the first codes and nothing of the file is written yet, and while
-		// the second writes.
-		{"mp4", "while its first pass codes", func(p engine.Progress) bool { return p.BytesDone == 0 && p.WorkDone > p.WorkTotal/4 }},
-		{"mp4", "once its pictures are being written", writing},
+		// the second writes. The second codes only the clock's tiles the first
+		// had no room to keep, so that film changes ten times a second - six
+		// thousand tiles of the clock, more than a film keeps.
+		{"mp4", "while its first pass codes", small, func(p engine.Progress, _ int64) bool { return p.BytesDone == 0 && p.WorkDone > p.WorkTotal/4 }},
+		{"mp4", "while its second pass codes", map[string]string{"width": "256", "height": "144", "duration": "10m", "change_interval": "100ms"}, writing},
 	}
 	for _, stop := range stops {
-		target := filmTarget(stop.format, 8<<20, map[string]string{"width": "160", "height": "90", "duration": "10m"})
-		stopFilmHalfWay(t, stop.format+" stopped "+stop.where, target, stop.now)
+		stopFilmHalfWay(t, stop.format+" stopped "+stop.where, filmTarget(stop.format, 64<<20, stop.props), stop.now)
 	}
 }
 
 // stopFilmHalfWay runs a film, stops it at the first report now says yes to,
 // and asks that the run was stopped, that helpers had coded before it was,
 // and that none is left running.
-func stopFilmHalfWay(t *testing.T, name string, target engine.Target, now func(engine.Progress) bool) {
+func stopFilmHalfWay(t *testing.T, name string, target engine.Target, now func(engine.Progress, int64) bool) {
 	t.Helper()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -247,8 +253,17 @@ func stopFilmHalfWay(t *testing.T, name string, target engine.Target, now func(e
 		t.Fatalf("%s: the film has %d pictures, too few to be stopped in the middle of them", name, changes)
 	}
 	_, codedBefore := video.Helpers()
+	atFirstByte := int64(-1)
 	opt.OnProgress = func(p engine.Progress) {
-		if now(p) {
+		_, coded := video.Helpers()
+		if p.BytesDone > 0 && atFirstByte < 0 {
+			atFirstByte = coded
+		}
+		since := int64(0)
+		if atFirstByte >= 0 {
+			since = coded - atFirstByte
+		}
+		if now(p, since) {
 			cancel()
 		}
 	}

@@ -168,6 +168,9 @@ func mp4Samples(stbl []byte) (starts, lens []int64, err error) {
 			}
 		}
 		for range per {
+			if len(starts) == len(lens) {
+				return nil, nil, fmt.Errorf("the chunks hold more samples than the %d stsz lists", len(lens))
+			}
 			starts = append(starts, place)
 			place += lens[len(starts)-1]
 		}
