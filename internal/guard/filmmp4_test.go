@@ -113,8 +113,11 @@ func walkMP4(b []byte) (filmRead, error) {
 	// The sample entry: a version and a count, then av01, whose boxes follow
 	// its 78 bytes of fields.
 	entry, err := mp4Child(stsd[8:], "av01")
-	if err != nil || len(entry) < 78 {
-		return f, fmt.Errorf("the sample description holds no AV1 entry: %v", err)
+	if err != nil {
+		return f, fmt.Errorf("the sample description holds no AV1 entry: %w", err)
+	}
+	if len(entry) < 78 {
+		return f, fmt.Errorf("the AV1 entry is %d B, shorter than its fields", len(entry))
 	}
 	if f.codecPrivate, err = mp4Child(entry[78:], "av1C"); err != nil {
 		return f, err
