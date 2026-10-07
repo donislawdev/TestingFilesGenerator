@@ -116,20 +116,26 @@ func phrase(s settings, text string) string {
 // the bytes of every message with a name outside ASCII (D11, O169).
 func encodedWords(text string) []string {
 	var out []string
-	start := 0
-	for start < len(text) {
-		end := start
-		for end < len(text) {
-			_, size := utf8.DecodeRuneInString(text[end:])
-			if end+size-start > wordBytes {
-				break
-			}
-			end += size
-		}
+	for start := 0; start < len(text); {
+		end := wordEnd(text, start)
 		out = append(out, "=?UTF-8?B?"+base64.StdEncoding.EncodeToString([]byte(text[start:end]))+"?=")
 		start = end
 	}
 	return out
+}
+
+// wordEnd is where the encoded word starting at start ends: as many whole
+// characters as fit in wordBytes.
+func wordEnd(text string, start int) int {
+	end := start
+	for end < len(text) {
+		_, size := utf8.DecodeRuneInString(text[end:])
+		if end+size-start > wordBytes {
+			break
+		}
+		end += size
+	}
+	return end
 }
 
 // isASCII says whether text needs nothing of headers to be written.

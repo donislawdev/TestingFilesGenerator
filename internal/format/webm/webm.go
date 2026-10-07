@@ -45,33 +45,6 @@ func init() {
 
 		MinBytes: minimumBytes(),
 
-		// Every picture of a film is coded on its own, and gav1d allocates
-		// per picture - about forty objects each with the frames around it.
-		// The flat ceiling counts what a generator allocates per file, and a
-		// default film is ten pictures. Measured on 2026-10-06, lowest of the
-		// guard's rounds: 408 objects for the default film, and 698 with one
-		// object allocated per frame, the defect the ceiling exists for. The
-		// number below sits between the two, and like every ceiling here it
-		// goes down when work makes it lowerable, never up to turn a run green.
-		// Since the pictures are coded beside each other (internal/format/video,
-		// ahead.go) the default film is 474 to 477 objects at sixteen, four and
-		// one threads alike - each picture is a job, each helper one painter of
-		// four allocations - measured the same day, still under the ceiling,
-		// which was not moved.
-		//
-		// Raised to 1024 on 2026-10-07 by the owner's decision, the one time it
-		// went up, and why: a picture is cut into AV1 tiles since then, each
-		// tile one call to gav1d, and gav1d allocates 21 to 22 objects a call
-		// whatever the size (tools/probes/videotiles/allocs). The default film,
-		// 640x360 in six tiles, makes 27 calls - about 594 objects of gav1d's
-		// alone, over the old ceiling before this package allocates anything.
-		// With this package's own allocations cut down it is 886 to 891 at one,
-		// four and sixteen threads, and one object a frame, the defect the
-		// ceiling exists for, takes it to 1177. 1024 sits between the two, as
-		// 512 sat between 474 and 698 (docs/WEBM-WYDAJNOSC-2026-10-06.md
-		// section 10).
-		AllocCeiling: 1024,
-
 		Padding: format.PaddingChannel{
 			Name:     "a Void element before the index at the end of the file",
 			Where:    format.PlacementEnd,
@@ -100,6 +73,36 @@ func minimumBytes() int64 {
 }
 
 type generator struct{}
+
+// AllocCeiling is how many objects this generator may allocate for one
+// file, for the resource guard - see format.AllocCeiling.
+//
+// Every picture of a film is coded on its own, and gav1d allocates
+// per picture - about forty objects each with the frames around it.
+// The flat ceiling counts what a generator allocates per file, and a
+// default film is ten pictures. Measured on 2026-10-06, lowest of the
+// guard's rounds: 408 objects for the default film, and 698 with one
+// object allocated per frame, the defect the ceiling exists for. The
+// number below sits between the two, and like every ceiling here it
+// goes down when work makes it lowerable, never up to turn a run green.
+// Since the pictures are coded beside each other (internal/format/video,
+// ahead.go) the default film is 474 to 477 objects at sixteen, four and
+// one threads alike - each picture is a job, each helper one painter of
+// four allocations - measured the same day, still under the ceiling,
+// which was not moved.
+//
+// Raised to 1024 on 2026-10-07 by the owner's decision, the one time it
+// went up, and why: a picture is cut into AV1 tiles since then, each
+// tile one call to gav1d, and gav1d allocates 21 to 22 objects a call
+// whatever the size (tools/probes/videotiles/allocs). The default film,
+// 640x360 in six tiles, makes 27 calls - about 594 objects of gav1d's
+// alone, over the old ceiling before this package allocates anything.
+// With this package's own allocations cut down it is 886 to 891 at one,
+// four and sixteen threads, and one object a frame, the defect the
+// ceiling exists for, takes it to 1177. 1024 sits between the two, as
+// 512 sat between 474 and 698 (docs/WEBM-WYDAJNOSC-2026-10-06.md
+// section 10).
+func (generator) AllocCeiling() int64 { return 1024 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	need := func(st video.Stream) int64 { return newLayout(st).boundBytes() + minVoid }

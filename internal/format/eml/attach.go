@@ -55,35 +55,49 @@ func planChildren(r format.Request, groups []format.Content, s settings) ([]chil
 	for _, g := range groups {
 		total += g.Count
 	}
-	out := make([]child, 0, total)
-	numbered := map[string]int{}
-	var sum int64
-	index := 0
+	p := planner{r: r, s: s, out: make([]child, 0, total), numbered: map[string]int{}}
 	for _, g := range groups {
 		desc, err := format.Get(g.Format)
 		if err != nil {
 			return nil, err
 		}
-		for i := 0; i < g.Count; i++ {
-			cp, err := desc.Generator.Plan(format.Request{Bytes: g.Bytes, Seed: core.FileSeed(r.Seed, index), Label: r.Label})
-			if err != nil {
-				return nil, core.Refuse(core.Says("eml.TheAttachedFileCannotBe", "eml: the attached %s file cannot be made: %w", core.A("Format", g.Format), core.A("Err", err)))
-			}
-			numbered[g.Format]++
-			c := child{desc: desc, plan: cp, name: fileName(s, g.Format, numbered[g.Format], desc.Extension)}
-			if cp.Bytes > maxMessage {
-				return nil, tooLarge(cp.Bytes)
-			}
-			c.encoded = encodedLength(cp.Bytes, len(s.eol))
-			if sum += c.encoded; sum > maxMessage {
-				return nil, tooLarge(sum)
-			}
-			c.contentType, c.disposition = nameHeaders(s, desc.MediaType, c.name)
-			out = append(out, c)
-			index++
+		if err := p.add(desc, g); err != nil {
+			return nil, err
 		}
 	}
-	return out, nil
+	return p.out, nil
+}
+
+// planner is planChildren's place in the message as it goes: how many files
+// came before, how many of each format, and how many bytes of base64 so far.
+type planner struct {
+	r        format.Request
+	s        settings
+	out      []child
+	numbered map[string]int
+	sum      int64
+}
+
+// add plans the files of one group.
+func (p *planner) add(desc format.Descriptor, g format.Content) error {
+	for i := 0; i < g.Count; i++ {
+		cp, err := desc.Generator.Plan(format.Request{Bytes: g.Bytes, Seed: core.FileSeed(p.r.Seed, len(p.out)), Label: p.r.Label})
+		if err != nil {
+			return core.Refuse(core.Says("eml.TheAttachedFileCannotBe", "eml: the attached %s file cannot be made: %w", core.A("Format", g.Format), core.A("Err", err)))
+		}
+		if cp.Bytes > maxMessage {
+			return tooLarge(cp.Bytes)
+		}
+		p.numbered[g.Format]++
+		c := child{desc: desc, plan: cp, name: fileName(p.s, g.Format, p.numbered[g.Format], desc.Extension)}
+		c.encoded = encodedLength(cp.Bytes, len(p.s.eol))
+		if p.sum += c.encoded; p.sum > maxMessage {
+			return tooLarge(p.sum)
+		}
+		c.contentType, c.disposition = nameHeaders(p.s, desc.MediaType, c.name)
+		p.out = append(p.out, c)
+	}
+	return nil
 }
 
 // tooLarge refuses attachments that add up past maxMessage.
@@ -243,12 +257,8 @@ type lines struct {
 func (l *lines) Write(p []byte) (int, error) {
 	written := 0
 	for len(p) > 0 {
-		if l.col == base64Line {
-			if _, err := io.WriteString(l.w, l.eol); err != nil {
-				return written, err
-			}
-			l.n += int64(len(l.eol))
-			l.col = 0
+		if err := l.breakFull(); err != nil {
+			return written, err
 		}
 		k := min(base64Line-l.col, len(p))
 		if err := core.WriteAll(l.w, p[:k]); err != nil {
@@ -260,4 +270,17 @@ func (l *lines) Write(p []byte) (int, error) {
 		p = p[k:]
 	}
 	return written, nil
+}
+
+// breakFull ends a line that holds 76 characters, before the next one starts.
+func (l *lines) breakFull() error {
+	if l.col != base64Line {
+		return nil
+	}
+	if _, err := io.WriteString(l.w, l.eol); err != nil {
+		return err
+	}
+	l.n += int64(len(l.eol))
+	l.col = 0
+	return nil
 }

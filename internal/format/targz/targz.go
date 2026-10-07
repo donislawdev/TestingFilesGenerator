@@ -145,8 +145,7 @@ func init() {
 				Instead: core.Says("format.UseZipForAnArchiveWith", "Use zip for an archive with a password, or leave this one open."),
 			},
 		},
-		Container:        true,
-		Members:          archive.ArchiveMembers,
+		Container:        &archive.ArchiveMembers,
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})

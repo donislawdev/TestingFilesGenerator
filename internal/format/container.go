@@ -101,7 +101,7 @@ func Containers() []string {
 	defer mu.RUnlock()
 	var out []string
 	for id, d := range registry {
-		if d.Container {
+		if d.Container != nil {
 			out = append(out, id)
 		}
 	}

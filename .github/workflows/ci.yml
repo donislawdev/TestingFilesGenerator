@@ -1373,6 +1373,17 @@ jobs:
           ogrinfo --version
           python -c "import shapely; print('shapely', shapely.__version__, 'GEOS', shapely.geos_version_string)"
 
+          # Mail is read by mailparser beside Python's email package - the
+          # parser much of the mail handling written in Node uses, and the one
+          # that refuses a message of more than 1000 MIME entities
+          # (docs/EML-2026-10-07.md section 5.1). Pinned, installed outside the
+          # checkout, and named to the guard through TFG_MAILPARSER. Asked for
+          # its version, so a package that did not install stops this step, and
+          # the guard fails if it is named and reads nothing.
+          npm install --prefix "$RUNNER_TEMP/mailparser" mailparser@3.9.36
+          echo "TFG_MAILPARSER=$RUNNER_TEMP/mailparser/node_modules/mailparser" >> "$GITHUB_ENV"
+          node -e "console.log('mailparser', require(process.argv[1] + '/package.json').version)" "$RUNNER_TEMP/mailparser/node_modules/mailparser"
+
           # The distribution's Pillow cannot open an AVIF - measured on this
           # runner, PIL.UnidentifiedImageError on a file the structural checker
           # had just called sound. Installed for the SAME interpreter the oracle

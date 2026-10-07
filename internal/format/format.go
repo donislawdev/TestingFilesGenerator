@@ -274,44 +274,23 @@ type Descriptor struct {
 	// generic "no such property", which reads as a gap in this build.
 	Unsupported []UnsupportedSetting
 
-	// AllocCeiling is how many objects this format may allocate producing one
-	// file, when the flat ceiling every other one meets does not describe it.
-	// Zero means the flat one applies, which is the case for all but one.
-	//
-	// It exists because a borrowed encoder allocates on its own account. The
-	// hand written generators here sit between 3 and 128 objects a file, and
-	// gav1d, the AVIF encoder, sits at about a hundred - but gen2brain/jxl
-	// allocates per block, about 618 000 of them for one 640x480 picture. A
-	// single ceiling has to fit the heaviest format, so one that fits that one
-	// would say nothing about the other twenty three.
-	//
-	// What the ceiling stands in for is untouched by this: the guard also asks
-	// each format whether its allocation GROWS with the size of the file
-	// asked for, and that question is the real one. Every format answers it,
-	// this one included. Owner's decision, 2026-08-31.
-	//
-	// A ratchet, like the coverage threshold and the code shape ceilings: it
-	// goes down when work makes it lowerable, never up to turn a run green.
-	AllocCeiling int64
-
-	// Container says this format holds other files, so a recipe may declare
-	// contains for it.
+	// Container is how a container names the settings that say, for files of
+	// one format, what it holds - how many, of which format, how big. Nil for a
+	// format that holds no other files, so a recipe may declare contains only
+	// for a format that sets it.
 	//
 	// Declared rather than inferred. A format that quietly ignored contains
 	// would produce an archive with nothing in it and report success, and
 	// that is the silence rule broken in the worst way - the file looks right
 	// and the test suite believes it.
-	Container bool
-
-	// Members names the three settings that say, for files of one format,
-	// what a container holds - how many, of which format, how big. The zero
-	// value for every format that is not a container.
 	//
-	// Declared because containers name them differently: an archive holds
-	// entries and a mail message holds attachments. Until eml arrived on
-	// 2026-10-07 every container was an archive, and the guards asking both
-	// ways of ordering contents for one ceiling read "entries" by name.
-	Members Members
+	// The names are part of the declaration because containers name them
+	// differently: an archive holds entries and a mail message attachments.
+	// Until eml arrived on 2026-10-07 every container was an archive, a flag
+	// said so, and the guards read "entries" by name. The flag and the names
+	// became one field that day, when the descriptor reached the field count
+	// the type shape guard watches.
+	Container *Members
 }
 
 // Allows reports whether raw is a value this property accepts, and says what

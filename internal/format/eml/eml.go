@@ -46,8 +46,7 @@ func init() {
 		Label:            format.LabelVisible,
 		Oracle:           "python-email",
 		Properties:       properties(),
-		Container:        true,
-		Members:          members,
+		Container:        &members,
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})

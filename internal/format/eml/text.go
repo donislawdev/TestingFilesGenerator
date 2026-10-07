@@ -103,35 +103,53 @@ func fill(o *out, n int64, seed uint64) {
 		o.n += n
 		return
 	}
-	rng := core.NewRand(seed)
+	w := wordWriter{rng: core.NewRand(seed), eol: o.eol}
 	buf := o.scratch[:0]
-	col := 0
 	for remaining := n; remaining > 0 && o.err == nil; {
 		if o.cancelled() {
 			return
 		}
-		buf = buf[:0]
-		for len(buf) < chunkSize && int64(len(buf)) < remaining {
-			word := words[rng.IntN(len(words))]
-			switch {
-			case col > 0 && col+1+len(word) > lineWidth:
-				buf = append(buf, o.eol...)
-				col = 0
-			case col > 0:
-				buf = append(buf, ' ')
-				col++
-			}
-			buf = append(buf, word...)
-			col += len(word)
-		}
+		buf = w.chunk(buf[:0], remaining)
 		if int64(len(buf)) >= remaining {
-			buf = buf[:remaining]
-			if last := buf[len(buf)-1]; last == ' ' || last == '\r' {
-				buf[len(buf)-1] = 'x'
-			}
+			buf = endInALetter(buf[:remaining])
 		}
 		o.bytes(buf)
 		remaining -= int64(len(buf))
 	}
 	o.scratch = buf
+}
+
+// wordWriter is the words of one text part as they are laid into lines.
+type wordWriter struct {
+	rng interface{ IntN(int) int }
+	eol string
+	col int
+}
+
+// chunk appends words to buf until it holds chunkSize bytes or the bytes still
+// owed, whichever comes first. The last word may run past either, and the
+// caller cuts it.
+func (w *wordWriter) chunk(buf []byte, owed int64) []byte {
+	for len(buf) < chunkSize && int64(len(buf)) < owed {
+		word := words[w.rng.IntN(len(words))]
+		switch {
+		case w.col > 0 && w.col+1+len(word) > lineWidth:
+			buf = append(buf, w.eol...)
+			w.col = 0
+		case w.col > 0:
+			buf = append(buf, ' ')
+			w.col++
+		}
+		buf = append(buf, word...)
+		w.col += len(word)
+	}
+	return buf
+}
+
+// endInALetter makes the last byte of the text a letter - see fill.
+func endInALetter(buf []byte) []byte {
+	if last := buf[len(buf)-1]; last == ' ' || last == '\r' {
+		buf[len(buf)-1] = 'x'
+	}
+	return buf
 }

@@ -30,7 +30,7 @@ import (
 func TestEveryContainerDeclaresTheSharedAxesAsTheyAreDeclaredOnce(t *testing.T) {
 	containers := 0
 	for _, d := range format.All() {
-		if !d.Container {
+		if d.Container == nil {
 			continue
 		}
 		containers++

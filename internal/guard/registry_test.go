@@ -145,18 +145,14 @@ func mediaTypeIsSpelledOut(t *testing.T, mediaType string) {
 // would refuse its own short way of being asked.
 func membersAreDeclared(t *testing.T, d format.Descriptor) {
 	t.Helper()
-	keys := []string{d.Members.Count, d.Members.Format, d.Members.Size}
-	if !d.Container {
-		if d.Members != (format.Members{}) {
-			t.Errorf("names its members %v and holds no other files", keys)
-		}
+	if d.Container == nil {
 		return
 	}
 	declared := map[string]bool{}
 	for _, p := range d.Properties {
 		declared[p.Name] = true
 	}
-	for _, k := range keys {
+	for _, k := range []string{d.Container.Count, d.Container.Format, d.Container.Size} {
 		if !declared[k] {
 			t.Errorf("is a container whose members setting %q is not a setting it declares", k)
 		}

@@ -81,8 +81,7 @@ func init() {
 		Properties: archive.Axes(archive.Entries, archive.EntryFormat, archive.EntrySize,
 			archive.Compression, archive.Depth, archive.DirectoryEntries,
 			archive.Password, archive.Encryption),
-		Container:        true,
-		Members:          archive.ArchiveMembers,
+		Container:        &archive.ArchiveMembers,
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})

@@ -44,7 +44,7 @@ import (
 func TestEveryArchiveThisToolWritesCanBeReadByTheStandardLibrary(t *testing.T) {
 	checked := 0
 	for _, d := range format.All() {
-		if !d.Container {
+		if d.Container == nil {
 			continue
 		}
 		read, ok := standardReaderFor(d.ID)

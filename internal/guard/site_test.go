@@ -113,7 +113,7 @@ func factsFromTheProgram(t *testing.T) site.Facts {
 			Smallest:   d.SmallestAccepted(format.Request{Label: true}),
 			Padding:    d.Padding.Name,
 			Oracle:     d.Oracle,
-			Container:  d.Container,
+			Container:  d.Container != nil,
 			Properties: props,
 		})
 	}
