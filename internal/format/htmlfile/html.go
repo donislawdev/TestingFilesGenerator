@@ -121,6 +121,7 @@ func init() {
 		ID:          "html",
 		Name:        "HyperText Markup Language",
 		Extension:   ".html",
+		MediaType:   "text/html", // IANA, W3C
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

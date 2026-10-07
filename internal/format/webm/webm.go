@@ -39,6 +39,7 @@ func init() {
 		ID:          id,
 		Name:        "WebM video",
 		Extension:   ".webm",
+		MediaType:   "video/webm", // not in the IANA registry, WHATWG MIME Sniffing
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

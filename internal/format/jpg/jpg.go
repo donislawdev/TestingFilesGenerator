@@ -72,6 +72,7 @@ func init() {
 		ID:          "jpg",
 		Name:        "JPEG",
 		Extension:   ".jpg",
+		MediaType:   "image/jpeg", // IANA, RFC 2046
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

@@ -105,6 +105,7 @@ func init() {
 		ID:          "csv",
 		Name:        "Comma-Separated Values",
 		Extension:   ".csv",
+		MediaType:   "text/csv", // IANA, RFC 4180
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

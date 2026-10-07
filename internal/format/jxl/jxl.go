@@ -135,6 +135,7 @@ func init() {
 		ID:          "jxl",
 		Name:        "JPEG XL",
 		Extension:   ".jxl",
+		MediaType:   "image/jxl", // IANA, ISO/IEC JTC 1
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

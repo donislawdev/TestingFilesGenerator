@@ -190,6 +190,7 @@ func init() {
 		ID:          "svg",
 		Name:        "Scalable Vector Graphics",
 		Extension:   ".svg",
+		MediaType:   "image/svg+xml", // IANA, W3C
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

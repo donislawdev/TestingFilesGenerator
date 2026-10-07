@@ -49,6 +49,7 @@ func init() {
 		ID:          id,
 		Name:        "MP4 video",
 		Extension:   ".mp4",
+		MediaType:   "video/mp4", // IANA, RFC 4337
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

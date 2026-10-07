@@ -75,6 +75,7 @@ func init() {
 		ID:          "png",
 		Name:        "Portable Network Graphics",
 		Extension:   ".png",
+		MediaType:   "image/png", // IANA, W3C
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

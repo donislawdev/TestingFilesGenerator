@@ -81,6 +81,7 @@ func init() {
 		ID:          "webp",
 		Name:        "WebP",
 		Extension:   ".webp",
+		MediaType:   "image/webp", // IANA, RFC 9649
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

@@ -63,6 +63,7 @@ func init() {
 		ID:          "zip",
 		Name:        "ZIP",
 		Extension:   ".zip",
+		MediaType:   "application/zip", // IANA
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 		MinBytes:    minimumBytes(),

@@ -235,7 +235,21 @@ type Descriptor struct {
 	// 2026-09-24 as a widening. Recorded in docs/FORMAT-NAMES-2026-09-24.md.
 	Name string
 
-	Extension        string
+	Extension string
+
+	// MediaType is what a message, an upload form or a server calls this kind
+	// of file - application/pdf, image/png - written the way the IANA registry
+	// spells it, or the WHATWG MIME Sniffing standard for the two formats the
+	// registry does not list (wav and webm, checked 2026-10-07).
+	//
+	// It exists because a mail message carries its attachments under a type,
+	// and a test that checks the type against the extension needs the one
+	// the format really has. Nothing else writes it into a file today, so
+	// declaring or correcting one changes no byte of any other format (D11).
+	// The source of each value sits beside it in the format's own package.
+	// docs/EML-2026-10-07.md section 10.3.
+	MediaType string
+
 	Fidelity         Fidelity
 	Determinism      Determinism
 	MinBytes         int64

@@ -60,6 +60,7 @@ func init() {
 		ID:          "ico",
 		Name:        "Windows Icon",
 		Extension:   ".ico",
+		MediaType:   "image/vnd.microsoft.icon", // IANA
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

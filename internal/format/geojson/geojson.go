@@ -31,6 +31,7 @@ func init() {
 		ID:          "geojson",
 		Name:        "GeoJSON",
 		Extension:   ".geojson",
+		MediaType:   "application/geo+json", // IANA, RFC 7946
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

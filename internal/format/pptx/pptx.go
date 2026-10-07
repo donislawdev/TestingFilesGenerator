@@ -56,6 +56,7 @@ func init() {
 		ID:          "pptx",
 		Name:        "PowerPoint (Office Open XML)",
 		Extension:   ".pptx",
+		MediaType:   "application/vnd.openxmlformats-officedocument.presentationml.presentation", // IANA
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

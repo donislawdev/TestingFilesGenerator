@@ -36,6 +36,7 @@ func init() {
 		ID:          "txt",
 		Name:        "Plain text",
 		Extension:   ".txt",
+		MediaType:   "text/plain", // IANA, RFC 2046
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

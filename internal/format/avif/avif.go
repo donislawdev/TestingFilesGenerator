@@ -102,6 +102,7 @@ func init() {
 		ID:          "avif",
 		Name:        "AV1 Image File Format",
 		Extension:   ".avif",
+		MediaType:   "image/avif", // IANA, Alliance for Open Media
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 

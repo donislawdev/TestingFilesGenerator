@@ -81,6 +81,7 @@ func init() {
 		ID:          "wav",
 		Name:        "Waveform Audio",
 		Extension:   ".wav",
+		MediaType:   "audio/wave", // not in the IANA registry, WHATWG MIME Sniffing
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 		MinBytes:    baseSize,

@@ -95,6 +95,7 @@ func init() {
 		ID:          "targz",
 		Name:        "tar + gzip",
 		Extension:   ".tar.gz",
+		MediaType:   "application/gzip", // IANA, RFC 6713 - the outer layer is what a reader meets first
 		Fidelity:    format.FidelityFull,
 		Determinism: format.DeterminismByte,
 		MinBytes:    minimumBytes(),
