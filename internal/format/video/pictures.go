@@ -226,10 +226,11 @@ func (p *Pictures) CopySample() []byte { return p.copied }
 func (c Choice) CodedSize(t Timeline, change int64) (int, error) {
 	f := newFilm(c.Width, c.Height, c.Seed, c.Label, t)
 	ks := newKeyer(f.geometry, gridFor(f.geometry, t.FPS))
-	p, l := f.painter(), f.lookOf(change)
+	p, l := f.painter(ks), f.lookOf(change)
 	size := 0
 	for _, tile := range ks.tiles {
-		coded, err := encodeTile(p.drawIn(l, tile.rect), tile.rect, c.QIndex)
+		src, at := p.source(l, tile.rect)
+		coded, err := encodeTile(src, at, c.QIndex)
 		if err != nil {
 			return 0, err
 		}

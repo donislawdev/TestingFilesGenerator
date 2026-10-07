@@ -56,12 +56,13 @@ func (t tileCoded) writeRest(w *bitWriter) {
 	}
 }
 
-// encodeTile codes the part r of a picture as a picture of its own. gav1d
-// reads its source a row at a time by the stride and never past Width and
-// Height (av1/encode_intra.go, residualEdge, the edge clamped to sw-1 and
-// sh-1), so the tile is read where it lies in the picture's planes rather
-// than copied out of them. r starts on an even row and column, as a tile does,
-// so its chroma is the picture's.
+// encodeTile codes the part r of the planes p as a picture of its own - p the
+// film's planes and r a tile no picture changes, or a painter's planes of one
+// tile and r all of them (painter.source). gav1d reads its source a row at a
+// time by the stride and never past Width and Height (av1/encode_intra.go,
+// residualEdge, the edge clamped to sw-1 and sh-1), so the tile is read where
+// it lies rather than copied out. r starts on an even row and column, as a
+// tile does, so its chroma is the picture's.
 //
 // gav1d's output is read here by the specification rather than by what
 // gav1d's writer happens to do, and anything other than the one shape this
@@ -169,6 +170,19 @@ type tileBounds struct {
 	sbCols, sbRows            int
 	minLog2Cols, maxLog2Cols  int
 	maxLog2Rows, minLog2Tiles int
+}
+
+// maxArea is maxTileAreaSb as tile_info derives it for tiles of coded sizes,
+// 06.bitstream.syntax.md lines 1243-1247: the whole frame while it fits one
+// tile, and once it does not, the frame shifted right by minLog2Tiles plus
+// one - a quarter to a half of MAX_TILE_AREA. A row of tiles is at most this
+// over the widest column, and a height tile_info cannot code is no height.
+func (b tileBounds) maxArea() int {
+	area := b.sbRows * b.sbCols
+	if b.minLog2Tiles > 0 {
+		area >>= b.minLog2Tiles + 1
+	}
+	return area
 }
 
 func boundsOf(width, height int) tileBounds {

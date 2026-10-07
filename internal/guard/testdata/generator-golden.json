@@ -346,6 +346,16 @@
       "bytes": 65537,
       "sha256": "d4fc121f6b6714609207bd98d1f52fb232bfdf0520009b1b264b2151b732b3db",
       "measured_on": "2026-10-06"
+    },
+    "webm_tiles": {
+      "bytes": 65536,
+      "sha256": "8ff27de05a089745a6510703c5c593651fc604cf0e3bd30c336adfad484f79b3",
+      "measured_on": "2026-10-07"
+    },
+    "webm_wide": {
+      "bytes": 524288,
+      "sha256": "270aab596f2a59abe47cf9ab35236964b88dcd1be2ea24247cbce8c72c3c1cd0",
+      "measured_on": "2026-10-07"
     }
   },
   "remeasured": [

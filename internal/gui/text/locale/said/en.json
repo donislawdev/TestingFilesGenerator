@@ -1591,7 +1591,7 @@
     "other": "this size needs a padding chunk and the smallest one costs {{.ChunkHeader}} B, so nothing between {{.Fixed}} and {{.Fixed2}} B can be reached"
   },
   "format.TwoSettings": {
-    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Of}}, {{.By}}, written the way the program writes them - keep each spelled exactly that way.",
+    "description": "Said by internal/format/logfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Of}}, {{.By}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-a61ae8d11eb8",
     "other": "{{.Of}} and {{.By}}"
   },
@@ -3140,11 +3140,6 @@
     "description": "Said by internal/tool - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Known}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-a53588601259",
     "other": "use one of: {{.Known}}"
-  },
-  "video.MoreThanOneTile": {
-    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Width}}, {{.Height}}, {{.Blocks}}, {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-319218310f03",
-    "other": "a {{.Width}}x{{.Height}} picture is {{.Blocks}} blocks of 64 by 64 pixels once its sides are rounded up to whole blocks, and the encoder codes one AV1 tile, which holds {{.Most}}. Ask for a smaller pair, such as 4096x2304 or 3840x2160"
   },
   "video.NoClock": {
     "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Width}}, {{.Height}}, written the way the program writes them - keep each spelled exactly that way.",

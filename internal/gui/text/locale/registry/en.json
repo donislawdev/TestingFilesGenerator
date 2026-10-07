@@ -1591,8 +1591,8 @@
   },
   "Joint.format/webm.width.height": {
     "description": "Why width times height of the webm format have a ceiling, at the end of the note under the two, after the word because.",
-    "hash": "sha256-ed5704060118",
-    "other": "the encoder codes a picture as one AV1 tile, which holds 4096 by 2304 pixels"
+    "hash": "sha256-72e26aa125ce",
+    "other": "the largest picture any AV1 level describes is 8192 by 4352 pixels"
   },
   "Joint.format/xlsx.rows.columns": {
     "description": "Why rows times columns of the xlsx format have a ceiling, at the end of the note under the two, after the word because.",

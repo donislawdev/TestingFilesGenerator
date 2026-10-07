@@ -553,6 +553,8 @@ func TestEveryFrameOfAFilmSurvivesItsReferenceTool(t *testing.T) {
 		{},
 		{"duration": "10m", "keyframe_interval": "30s", "frame_rate": "30"},
 		{"duration": "40ms", "frame_rate": "25"},
+		// Wider than one tile can be (grid.go, cutToFit).
+		{"width": "4240", "height": "1000", "duration": "2s"},
 	}
 	tiled := 0
 	for _, props := range cases {
@@ -585,29 +587,34 @@ func TestEveryFrameOfAFilmSurvivesItsReferenceTool(t *testing.T) {
 	}
 }
 
-// A picture the encoder would code as more than one AV1 tile is refused as a
-// setting, before coding - not left to come out as an internal error.
+// A picture larger than any AV1 level describes is refused as a setting,
+// before coding, and the pictures that used to be refused for not fitting one
+// tile are not.
 //
-// gav1d codes one tile, and a larger frame comes out of it with a header that
-// announces several tiles over the data of one, which libaom and gav1d's own
-// decoder both refuse (measured 2026-10-06, docs/REVIEW-165-2026-10-06.md).
-// Until the review of #165 the format declared sides up to 16384 and such a
-// picture ended the run with exit 1 - "the program broke" - for a request the
-// declaration had invited. 4000x2359 is the case the declared limit cannot
-// catch: under the pixels, one block too many once its sides are rounded up.
-func TestAFilmPictureLargerThanOneTileIsRefusedNotBroken(t *testing.T) {
-	for _, size := range [][2]string{{"4096", "2305"}, {"4000", "2359"}, {"4097", "64"}, {"7680", "4320"}} {
-		props := map[string]string{"width": size[0], "height": size[1], "duration": "1s"}
+// Until 2026-10-07 the bound was one AV1 tile, 4096x2304, because gav1d codes
+// one tile correctly and no more (docs/REVIEW-165-2026-10-06.md). A picture
+// is cut into tiles of at most that now, and the bound is AV1's own: 8192 by
+// 4352, the 6.x levels' MaxPicSize, with either side up to 16384 (the owner's
+// decision, docs/WEBM-LIMIT-2026-10-07.md section 10). The refused pairs are
+// one pixel over the area each way and a side over 16384. The accepted ones
+// are the four the old bound refused, cheap to plan, and the two longest
+// sides - not 8192x4352 itself, whose plan codes a sample of 8K pictures.
+func TestAFilmPictureLargerThanAnyAV1LevelIsRefusedNotBroken(t *testing.T) {
+	plan := func(w, h string) error {
+		props := map[string]string{"width": w, "height": h, "duration": "1s"}
 		_, err := engine.Plan([]engine.Target{filmTarget(32*1024*1024, props)}, engine.Options{OutDir: t.TempDir(), Seed: goldenSeed, Command: "test"})
+		return err
+	}
+	for _, size := range [][2]string{{"8192", "4353"}, {"8193", "4352"}, {"16384", "2177"}, {"16385", "64"}, {"64", "16385"}} {
 		var refused *format.PropertyValueError
-		if !errors.As(err, &refused) {
+		if err := plan(size[0], size[1]); !errors.As(err, &refused) {
 			t.Errorf("%sx%s was not refused as a setting: %v", size[0], size[1], err)
 		}
 	}
-	// And the largest picture one tile holds is not refused.
-	props := map[string]string{"width": "4096", "height": "2304", "duration": "1s"}
-	if _, err := engine.Plan([]engine.Target{filmTarget(32*1024*1024, props)}, engine.Options{OutDir: t.TempDir(), Seed: goldenSeed, Command: "test"}); err != nil {
-		t.Errorf("4096x2304 is one tile and was refused: %v", err)
+	for _, size := range [][2]string{{"4096", "2305"}, {"4000", "2359"}, {"4097", "64"}, {"4352", "512"}, {"16384", "64"}, {"64", "16384"}} {
+		if err := plan(size[0], size[1]); err != nil {
+			t.Errorf("%sx%s is inside every bound the format declares and was refused: %v", size[0], size[1], err)
+		}
 	}
 }
 

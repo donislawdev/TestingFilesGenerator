@@ -22,7 +22,8 @@ import (
 // The layout is part of the bytes of every film (D11), so it is a rule rather
 // than a search, measured against two others (section 9.1): one tile row under
 // the clock's band, two around the square's, each superblock the clock's
-// characters reach a column of its own and the rest of the width one column.
+// characters reach a column of its own and the rest of the width one column -
+// cut further only where a frame cannot carry it (cutToFit).
 // The clock's tile is coded at every change, so it is small. The square has
 // ten places, so its tiles are coded ten times a film at most, and only have
 // to be low. The rest is coded once. More columns cost bytes - every seam
@@ -50,16 +51,17 @@ func oneTile(width, height int) grid {
 // than one below it (annex.a.levels.md lines 99-114, MaxTiles and MaxTileCols
 // rise with the level), so a layout that fits the lowest fits every level the
 // film can end up declaring. Over the limits, the square's rows go first, then
-// the clock's columns are joined, then the picture is one tile.
+// the clock's columns are joined, then the picture is the fewest tiles it can
+// be - one, for any picture of 4096 by 2304 or less.
 //
-// A picture is one tile when its clock's tiles would be more than a quarter of
-// it - coding them at every change would save less than three quarters of the
-// time a whole picture takes, and every seam costs bytes. That is every rung
-// of the ladder from 160x90 down.
+// A picture is that fewest when its clock's tiles would be more than a quarter
+// of it - coding them at every change would save less than three quarters of
+// the time a whole picture takes, and every seam costs bytes. That is every
+// rung of the ladder from 160x90 down.
 func gridFor(g geometry, fps int) grid {
 	maxTiles, maxCols := tileLimits(chooseLevel(g.width, g.height, fps, 0, 1))
 	for _, try := range [...]struct{ square, apart bool }{{true, true}, {false, true}, {false, false}} {
-		out := grid{width: g.width, height: g.height, rows: tileRows(g, try.square), cols: tileCols(g, try.apart)}
+		out := cutToFit(grid{width: g.width, height: g.height, rows: tileRows(g, try.square), cols: tileCols(g, try.apart)})
 		if out.tiles() > maxTiles || len(out.cols) > maxCols {
 			continue
 		}
@@ -68,7 +70,56 @@ func gridFor(g geometry, fps int) grid {
 		}
 		return out
 	}
-	return oneTile(g.width, g.height)
+	return cutToFit(oneTile(g.width, g.height))
+}
+
+// Layout is the columns and rows, in superblocks, a film's picture is cut
+// into - for the guard that holds every layout to what tile_info and Annex A
+// allow, from the specification rather than from this package.
+func Layout(width, height int, label string, t Timeline) (cols, rows []int) {
+	g := gridFor(geometryOf(width, height, label, t), t.FPS)
+	return g.cols, g.rows
+}
+
+// cutToFit cuts a layout further where a frame cannot carry it: a column wider
+// than MAX_TILE_WIDTH, and a row taller than tile_info lets a tile be once the
+// frame is too large for one (tileBounds.maxArea). Each is cut into the fewest
+// equal parts, the larger ones last. A picture of 4096 by 2304 or less needs
+// neither, so its layout is the one it had before pictures this large were
+// allowed - every such size in a sweep of 10.4 million layouts on 2026-10-07
+// (docs/WEBM-LIMIT-2026-10-07.md section 2), and the golden film of tiles.
+//
+// A column is also no wider than half that area when the frame has more than
+// one row of superblocks, so that a row of tiles can be two superblocks tall.
+// Without it, a picture wider than 4096 and only a little over 64 tall came out
+// with a last row of one superblock holding a pixel or two, and Annex A asks
+// every tile to be at least 8 pixels tall (CroppedTileHeight, annex.a.levels.md
+// lines 265-267) - 81 900 layouts of that sweep did. The larger parts go last
+// for the same reason: the last part is then at least two superblocks.
+func cutToFit(g grid) grid {
+	b := boundsOf(g.width, g.height)
+	area := b.maxArea()
+	widest := maxTileWidth / superblock
+	if b.sbRows > 1 {
+		widest = min(widest, max(area/2, 1))
+	}
+	g.cols = cutEach(g.cols, widest)
+	g.rows = cutEach(g.rows, max(area/slices.Max(g.cols), 1))
+	return g
+}
+
+// cutEach cuts every size over most into the fewest parts no larger than it,
+// as equal as whole superblocks allow, the larger ones last.
+func cutEach(sizes []int, most int) []int {
+	out := make([]int, 0, len(sizes))
+	for _, s := range sizes {
+		n := (s + most - 1) / most
+		for k := range n {
+			// (k+s%n)/n is one for the last s%n parts and nought before them.
+			out = append(out, s/n+(k+s%n)/n)
+		}
+	}
+	return out
 }
 
 // tileLimits is MaxTiles and MaxTileCols of a level, annex.a.levels.md lines
@@ -122,7 +173,7 @@ func tileCols(g geometry, apart bool) []int {
 // at the edges or past them dropped, and a last size under 8 pixels joined to
 // the one before it, because Annex A asks every tile to be at least 8 by 8 of
 // the picture (CroppedTileWidth and CroppedTileHeight, annex.a.levels.md
-// lines 263-266).
+// lines 265-267).
 func sizesBetween(cuts []int, total, px int) []int {
 	slices.Sort(cuts)
 	cuts = slices.Compact(cuts)
@@ -184,13 +235,9 @@ func (g grid) writeTileInfo(w *bitWriter, tileSizeBytes int) {
 		w.ns(s-1, min(b.sbCols-start, maxTileWidth/superblock)) // width_in_sbs_minus_1
 		widest, start = max(widest, s), start+s
 	}
-	area := b.sbRows * b.sbCols
-	if b.minLog2Tiles > 0 {
-		area >>= b.minLog2Tiles + 1
-	}
 	start = 0
 	for _, s := range g.rows {
-		w.ns(s-1, min(b.sbRows-start, max(area/widest, 1))) // height_in_sbs_minus_1
+		w.ns(s-1, min(b.sbRows-start, max(b.maxArea()/widest, 1))) // height_in_sbs_minus_1
 		start += s
 	}
 	// context_update_tile_id says which tile's probabilities a frame keeps for

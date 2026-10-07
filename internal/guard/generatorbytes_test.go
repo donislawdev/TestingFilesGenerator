@@ -164,6 +164,16 @@ func goldenCases() map[string]engine.Target {
 			Properties: map[string]string{"width": "64", "height": "48", "duration": "2s", "keyframe_interval": "1s", "frame_rate": "25"}},
 		"webm_odd_size": {ID: "g", Format: "webm", Sizes: engine.Uniform(1, 65537), Label: true,
 			Properties: map[string]string{"width": "64", "height": "48"}},
+		// The three above are films of one AV1 tile. This one is cut into
+		// tiles - the clock's, the square's and the rest - so a change to how
+		// a picture is cut or to which tile is coded again moves its bytes.
+		"webm_tiles": {ID: "g", Format: "webm", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "640", "height": "360", "duration": "3s"}},
+		// Wider than one tile can be: the rest of the width is cut in two
+		// unequal columns, 32 and 33 superblocks, and a row of nine into four
+		// and five for the area tile_info leaves a tile, the larger last.
+		"webm_wide": {ID: "g", Format: "webm", Sizes: engine.Uniform(1, 524288), Label: true,
+			Properties: map[string]string{"width": "4240", "height": "1000", "duration": "2s"}},
 
 		// An odd size. The free box takes any length at all, so this is the case
 		// that would catch padding that could only step in twos.
