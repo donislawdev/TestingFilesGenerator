@@ -90,7 +90,7 @@ func (e *NestingUnsupportedError) Error() string { return e.Said().String() }
 // Said is the refusal, for a window that says it in its own language.
 func (e *NestingUnsupportedError) Said() core.Said {
 	return core.Says("format.NestingUnsupported",
-		"%s cannot hold %s yet - an archive inside an archive needs a depth limit first. Hold a different format, or build the inner archive as its own target",
+		"%s cannot hold %s yet - a file inside a file of its own format needs a depth limit first. Hold a different format, or make the inner file its own target",
 		core.A("Format", e.Format), core.A("Inner", e.Format))
 }
 

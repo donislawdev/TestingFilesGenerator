@@ -1417,8 +1417,8 @@
   },
   "format.NestingUnsupported": {
     "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Inner}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-f2cd29c6111d",
-    "other": "{{.Format}} cannot hold {{.Inner}} yet - an archive inside an archive needs a depth limit first. Hold a different format, or build the inner archive as its own target"
+    "hash": "sha256-f9a7add09c20",
+    "other": "{{.Format}} cannot hold {{.Inner}} yet - a file inside a file of its own format needs a depth limit first. Hold a different format, or make the inner file its own target"
   },
   "format.NoCalendarHasThatDayTime": {
     "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run.",

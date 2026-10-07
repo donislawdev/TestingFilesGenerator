@@ -281,7 +281,7 @@
   "format.MixedPagesNeedAtLeastTwo": { "hash": "sha256-338f9f2bd35e", "other": "mieszane strony wymagają co najmniej dwóch stron, a ten dokument ma jedną" },
   "format.NeitherTarNorGzipHasAny": { "hash": "sha256-b3831ecb57f7", "other": "ani tar, ani gzip nie mają żadnego szyfrowania, więc w żadnym z nich nie ma pola na hasło" },
   "format.NeitherTarNorGzipHasAny2": { "hash": "sha256-92f4ef797f00", "other": "ani tar, ani gzip nie mają żadnego szyfrowania, więc nie ma między czym wybierać" },
-  "format.NestingUnsupported": { "hash": "sha256-f2cd29c6111d", "other": "{{.Format}} nie może jeszcze zawierać {{.Inner}} - archiwum w archiwum wymaga najpierw limitu głębokości. Włóż inny format albo zbuduj wewnętrzne archiwum jako osobną partię" },
+  "format.NestingUnsupported": { "hash": "sha256-f9a7add09c20", "other": "{{.Format}} nie może jeszcze zawierać {{.Inner}} - plik w pliku własnego formatu wymaga najpierw limitu głębokości. Włóż inny format albo zrób wewnętrzny plik osobną partią" },
   "format.NoCalendarHasThatDayTime": { "hash": "sha256-4771df073166", "other": "żaden kalendarz nie ma takiego dnia, godziny ani strefy" },
   "format.NoSuchProperty": { "hash": "sha256-d6b4359c3811", "other": "{{.Format}} nie ma właściwości o nazwie {{.Key}}" },
   "format.NoSuchPropertyKnown": { "hash": "sha256-129d78741cc6", "other": "{{.What}}. Przyjmuje: {{.Known}}" },
