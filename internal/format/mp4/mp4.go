@@ -54,6 +54,15 @@ func init() {
 
 		MinBytes: minimumBytes(),
 
+		// WebM's ceiling and for WebM's reason: every picture is coded on its
+		// own, a tile a call to gav1d, and gav1d allocates twenty odd objects
+		// a call (internal/format/webm). The second pass takes every tile the
+		// first one kept, so the default film calls gav1d no more often than
+		// its WebM does. Measured on 2026-10-07, lowest of the guard's rounds:
+		// 938 to 941 objects at one, four and sixteen threads (WebM 898 to
+		// 904), the sample lengths and the second pass's crew the difference -
+		// and 1241 with one object allocated per frame, the defect the ceiling
+		// exists for. 1024 sits between the two.
 		AllocCeiling: 1024,
 
 		Padding: format.PaddingChannel{

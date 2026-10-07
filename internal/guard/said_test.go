@@ -40,8 +40,9 @@ type saidCall struct {
 	pkg, at        string
 }
 
-// saidID is what an id looks like: the package that says it, then a name.
-var saidID = regexp.MustCompile(`^[a-z]+\.[A-Z][A-Za-z0-9]*$`)
+// saidID is what an id looks like: the package that says it, then a name. A
+// package name may carry digits after its first letter, as mp4 does.
+var saidID = regexp.MustCompile(`^[a-z][a-z0-9]*\.[A-Z][A-Za-z0-9]*$`)
 
 // saidCalls is every core.Says and core.SaysN in the module, with what is
 // wrong with how each one is written.

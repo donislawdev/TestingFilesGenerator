@@ -539,6 +539,11 @@
     "hash": "sha256-21262a3cb533",
     "other": "md"
   },
+  "Choice.format.mp4": {
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-862c4ec62def",
+    "other": "mp4"
+  },
   "Choice.format.pdf": {
     "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-c35b21d6ca39",
@@ -1054,6 +1059,41 @@
     "hash": "sha256-9b6f8a3338ec",
     "other": "Which encoding the characters are written in. UTF-16 stores two bytes per character, so a file in it always has an even number of bytes and an odd size is refused."
   },
+  "Detail.format/mp4.change_interval": {
+    "description": "The sentence under the change_interval setting of the mp4 format, after what it takes.",
+    "hash": "sha256-13634dfb475a",
+    "other": "How often the picture changes: the clock in it moves on and the square takes a step. Each change costs a whole picture in bytes. An interval as long as the film or longer keeps one picture throughout."
+  },
+  "Detail.format/mp4.duration": {
+    "description": "The sentence under the duration setting of the mp4 format, after what it takes.",
+    "hash": "sha256-adacce8ce234",
+    "other": "How long the film plays. It has to end on a frame, so at 30 frames a second it goes in steps of 100ms."
+  },
+  "Detail.format/mp4.frame_rate": {
+    "description": "The sentence under the frame_rate setting of the mp4 format, after what it takes.",
+    "hash": "sha256-f53baa5f4ccf",
+    "other": "How many frames the film shows each second."
+  },
+  "Detail.format/mp4.height": {
+    "description": "The sentence under the height setting of the mp4 format, after what it takes.",
+    "hash": "sha256-4b336c279584",
+    "other": "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
+  "Detail.format/mp4.keyframe_interval": {
+    "description": "The sentence under the keyframe_interval setting of the mp4 format, after what it takes.",
+    "hash": "sha256-6c717248aaaa",
+    "other": "How far apart the frames are that a player can start from. Shorter makes skipping through a long film faster and the file bigger, because each of them carries the whole picture twice."
+  },
+  "Detail.format/mp4.quality": {
+    "description": "The sentence under the quality setting of the mp4 format, after what it takes.",
+    "hash": "sha256-f6e1c3e1af83",
+    "other": "How much detail the picture keeps. Higher looks better and takes more of the file, leaving less room for padding."
+  },
+  "Detail.format/mp4.width": {
+    "description": "The sentence under the width setting of the mp4 format, after what it takes.",
+    "hash": "sha256-3085ac44f0e0",
+    "other": "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
   "Detail.format/pdf.author": {
     "description": "The sentence under the author setting of the pdf format, after what it takes.",
     "hash": "sha256-33b1ee363d86",
@@ -1469,6 +1509,11 @@
     "hash": "sha256-0e52f6b9d025",
     "other": "Markdown"
   },
+  "Format.mp4": {
+    "description": "What the mp4 format is called, beside its id in a list of formats. The name of a standard stays as it is - only a name that describes the file is translated.",
+    "hash": "sha256-1f5265d4bfbb",
+    "other": "MP4 video"
+  },
   "Format.pdf": {
     "description": "What the pdf format is called, beside its id in a list of formats. The name of a standard stays as it is - only a name that describes the file is translated.",
     "hash": "sha256-ccf9cd24dc07",
@@ -1583,6 +1628,11 @@
     "description": "Why width times height of the jxl format have a ceiling, at the end of the note under the two, after the word because.",
     "hash": "sha256-269a6c476761",
     "other": "the encoder holds the whole picture in memory while it works"
+  },
+  "Joint.format/mp4.width.height": {
+    "description": "Why width times height of the mp4 format have a ceiling, at the end of the note under the two, after the word because.",
+    "hash": "sha256-72e26aa125ce",
+    "other": "the largest picture any AV1 level describes is 8192 by 4352 pixels"
   },
   "Joint.format/png.width.height": {
     "description": "Why width times height of the png format have a ceiling, at the end of the note under the two, after the word because.",
