@@ -82,6 +82,7 @@ func init() {
 			archive.Compression, archive.Depth, archive.DirectoryEntries,
 			archive.Password, archive.Encryption),
 		Container:        true,
+		Members:          archive.ArchiveMembers,
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})

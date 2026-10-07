@@ -37,6 +37,7 @@ func TestEveryFormatDeclaresTheFullSet(t *testing.T) {
 				t.Errorf("extension %q does not start with a dot", d.Extension)
 			}
 			mediaTypeIsSpelledOut(t, d.MediaType)
+			membersAreDeclared(t, d)
 			if d.Generator == nil {
 				t.Error("no generator")
 			}
@@ -135,6 +136,30 @@ func mediaTypeIsSpelledOut(t *testing.T, mediaType string) {
 	t.Helper()
 	if !mediaTypeShape.MatchString(mediaType) {
 		t.Errorf("the media type %q is not a type and a subtype in lower case, such as application/pdf", mediaType)
+	}
+}
+
+// membersAreDeclared asks a container for the three settings that order its
+// contents in one group, each one declared as a setting it takes, and asks
+// every other format for none. A container naming a key it does not declare
+// would refuse its own short way of being asked.
+func membersAreDeclared(t *testing.T, d format.Descriptor) {
+	t.Helper()
+	keys := []string{d.Members.Count, d.Members.Format, d.Members.Size}
+	if !d.Container {
+		if d.Members != (format.Members{}) {
+			t.Errorf("names its members %v and holds no other files", keys)
+		}
+		return
+	}
+	declared := map[string]bool{}
+	for _, p := range d.Properties {
+		declared[p.Name] = true
+	}
+	for _, k := range keys {
+		if !declared[k] {
+			t.Errorf("is a container whose members setting %q is not a setting it declares", k)
+		}
 	}
 }
 

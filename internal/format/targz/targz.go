@@ -146,6 +146,7 @@ func init() {
 			},
 		},
 		Container:        true,
+		Members:          archive.ArchiveMembers,
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})

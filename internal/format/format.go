@@ -302,6 +302,21 @@ type Descriptor struct {
 	// that is the silence rule broken in the worst way - the file looks right
 	// and the test suite believes it.
 	Container bool
+
+	// Members names the three settings that say, for files of one format,
+	// what a container holds - how many, of which format, how big. The zero
+	// value for every format that is not a container.
+	//
+	// Declared because containers name them differently: an archive holds
+	// entries and a mail message holds attachments. Until eml arrived on
+	// 2026-10-07 every container was an archive, and the guards asking both
+	// ways of ordering contents for one ceiling read "entries" by name.
+	Members Members
+}
+
+// Members is how a container names the settings for contents of one format.
+type Members struct {
+	Count, Format, Size string
 }
 
 // NotAContainerError is contains asked of a format that holds nothing.
