@@ -174,6 +174,26 @@ func TestEMLRefusesASizeBelowItsAttachmentsInBase64AndItselfInside(t *testing.T)
 	}
 }
 
+// alternative carries the same words in both parts, so its text grows two
+// bytes at a time, and an odd byte left over becomes one space in the HTML,
+// where it changes nothing a person sees. Two neighbouring sizes have to land
+// in both states - asserted rather than assumed, because a golden case named
+// for the odd byte was first pinned at a size that left none (2026-10-07).
+func TestAlternativePutsTheOddByteInTheHTML(t *testing.T) {
+	d, err := format.Get("eml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	reached := map[bool]bool{}
+	for size := int64(4000); size < 4002; size++ {
+		b, _ := writeEML(t, d, size, 9, map[string]string{eml.Body: eml.Alternative})
+		reached[bytes.Contains(b, []byte("<html> <body>"))] = true
+	}
+	if !reached[true] || !reached[false] {
+		t.Errorf("two neighbouring sizes did not reach both an even and an odd byte: %v", reached)
+	}
+}
+
 // withAttachments is a case with the attachment settings added.
 func withAttachments(base map[string]string, count, id, size string) map[string]string {
 	out := map[string]string{eml.Attachments: count, eml.AttachmentFormat: id, eml.AttachmentSize: size}

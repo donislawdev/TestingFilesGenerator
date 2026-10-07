@@ -366,6 +366,21 @@ func goldenCases() map[string]engine.Target {
 			Properties: map[string]string{"antimeridian": "true", "winding": "reversed", "altitude": "true", "precision": "15"}},
 		"geojson_capped_note": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 3900000), Label: true,
 			Properties: map[string]string{"geometry": "polygon", "vertices": "100000"}},
+
+		// EML, one case for each path the bytes take: the plain default, HTML in
+		// quoted-printable, alternative at a size that leaves an odd byte (the
+		// space the HTML takes for what the two parts cannot split) with raw UTF-8 headers and
+		// LF, and attached files under every style of name - encoded words, the
+		// RFC 2231 form continued over lines, and the name in Content-Type only.
+		"eml_8kib":                         {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 8192), Label: true},
+		"eml_8kib_html_quoted":             {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 8192), Label: true, Properties: map[string]string{"body": "html", "text_encoding": "quoted-printable"}},
+		"eml_8kib_alternative_odd_utf8_lf": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 8192), Label: true, Properties: map[string]string{"body": "alternative", "text_encoding": "8bit", "headers": "utf8", "line_endings": "lf"}},
+		"eml_64kib_attached_both": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"attachments": "2", "attachment_format": "txt", "attachment_size": "8kb", "headers": "encoded", "filename_style": "both"}},
+		"eml_64kib_attached_rfc2047": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"attachments": "1", "attachment_format": "pdf", "attachment_size": "8kb", "headers": "encoded", "filename_style": "rfc2047"}},
+		"eml_64kib_attached_content_type": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"attachments": "3", "attachment_format": "png", "attachment_size": "4kb", "filename_style": "content-type"}},
 		// The second set of settings, one case for each new path: outlines
 		// with holes, a box on every feature and on the collection across the
 		// antimeridian with a height and indented, features with no place and

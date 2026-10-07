@@ -88,6 +88,25 @@ because it turns other people's test suites red.
   refuses a text value of ten million characters. At precision 3 or less a
   line has fewer points than that, one for each step of longitude the globe
   has, and asking for more is refused with the number that fits.
+- **Mail: the `eml` format.** A mail message (RFC 5322 with MIME) at the
+  exact size you ask for, with real files of any other format attached in
+  base64 - `attachments`, `attachment_format` and `attachment_size`, or
+  `contains` for files that are not all alike. The size is the message's,
+  about a third more than the files it carries, and the manifest records
+  both, with the number of MIME entities and the subject and Message-ID a
+  test can find the message by. `body` gives a text part (the default), an
+  HTML part, or both with the same words. `text_encoding` keeps the text to
+  7bit, or adds a line in Polish and Japanese in quoted-printable or 8bit.
+  `headers` puts letters outside ASCII into the subject, the names of the
+  people and the names of attached files, encoded the way RFC 2047 and RFC
+  2231 say or raw as RFC 6532 allows. `filename_style` writes those names
+  four ways, and readers do not agree on two of them: Go's standard library
+  reads no name from `content-type` and the encoded text itself from
+  `rfc2047`. `line_endings` gives `crlf` or `lf`. Read by Python's email
+  package, mailparser and Go's standard library, and checked line by line
+  against RFC 5322, which none of the three does. The smallest message at
+  the default settings is 289 B. mailparser refuses a message of more than
+  1000 MIME entities, which 999 attached files and the text reach.
 - **GeoJSON: holes, features with no place, both types of id, and bbox.**
   `holes` gives every polygon up to 100 000 holes of four points, each running
   the other way round to its outline as RFC 7946 asks. Holes need 6 or more
@@ -194,10 +213,10 @@ because it turns other people's test suites red.
 
 ### Changed
 
-- **`empty-and-minimal` now includes the films and GeoJSON.** The preset builds the
+- **`empty-and-minimal` now includes the films, GeoJSON and mail.** The preset builds the
   smallest file of every format this build has, so with `formats` left at
-  `all` it gains a `webm`, an `mp4` and a `geojson` target, and the recipe
-  `tfg preset eject empty-and-minimal` prints is three targets longer. A manifest from a run of that preset records the
+  `all` it gains a `webm`, an `mp4`, a `geojson` and an `eml` target, and the recipe
+  `tfg preset eject empty-and-minimal` prints is four targets longer. A manifest from a run of that preset records the
   hash of that recipe, so its `recipe_hash` differs from one written before.
   No generated file changes, and a run that names its `formats` is untouched.
 - **An empty text box in the window reads "not set"** instead of "worked out
