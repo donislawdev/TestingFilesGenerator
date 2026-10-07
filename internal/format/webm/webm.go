@@ -100,56 +100,13 @@ func minimumBytes() int64 {
 
 type generator struct{}
 
-type memo struct {
-	choice   video.Choice
-	settings video.Settings
-	total    int64
-}
-
 func (generator) Plan(r format.Request) (format.Plan, error) {
-	label := ""
-	if r.Label {
-		label = core.Label(id, r.Bytes, r.Seed)
-	}
-	s, err := video.Read(id, r.Properties)
-	if err != nil {
-		return format.Plan{}, err
-	}
-	fits := func(st video.Stream) bool { return newLayout(st).boundBytes()+minVoid <= r.Bytes }
-	c, st, err := video.Choose(id, r, s, label, fits)
-	if err != nil {
-		return format.Plan{}, err
-	}
-	if need := newLayout(st).boundBytes() + minVoid; need > r.Bytes {
-		return format.Plan{}, belowMinimum(r.Bytes, need, c, s)
-	}
-
-	p := format.Plan{
-		Bytes:       r.Bytes,
-		Exact:       true,
-		Determinism: format.DeterminismByte,
-		Properties:  video.Facts(c, s),
-		Memo:        memo{choice: c, settings: s, total: r.Bytes},
-		Work:        st.Work(),
-	}
-	if r.Label && !c.Labelled() {
-		p.Notes = append(p.Notes, format.Note{
-			Code:   "label_omitted",
-			Detail: core.Says("format.ThePictureIsPxWideAnd", "The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("Width", c.Width)),
-		})
-	}
-	if !c.ClockShown(s.Timeline) {
-		p.Notes = append(p.Notes, format.Note{
-			Code: "clock_omitted",
-			Detail: core.Says("video.NoClock", "The picture is %dx%d and the clock needs more room, so this film shows no clock. The square still steps across it where it has room to move.",
-				core.A("Width", c.Width), core.A("Height", c.Height)),
-		})
-	}
-	return p, nil
+	need := func(st video.Stream) int64 { return newLayout(st).boundBytes() + minVoid }
+	return video.Plan(id, r, need, belowMinimum)
 }
 
 // belowMinimum names the four things D6 asks for, and the knobs that make a
-// film smaller - every one of them is a setting, so each is named.
+// film smaller (video.Hint).
 func belowMinimum(requested, need int64, c video.Choice, s video.Settings) error {
 	return &format.BelowMinimumError{
 		Format:    "WebM",
@@ -161,26 +118,12 @@ func belowMinimum(requested, need int64, c video.Choice, s video.Settings) error
 			core.A("Interval", core.FormatDuration(s.KeyEvery*1000/int64(s.FPS))),
 			core.A("Width", c.Width), core.A("Height", c.Height), core.A("Change", core.FormatDuration(s.ChangeMs())),
 			core.A("Bytes", need-minVoid), core.A("Void", minVoid)),
-		Hint: hint(need, c),
+		Hint: video.Hint(need, c),
 	}
-}
-
-// hint offers a smaller picture only when the request named one. A picture
-// chosen to fit is already the smallest that would, so offering a smaller
-// one would send somebody to a setting that changes nothing.
-func hint(need int64, c video.Choice) core.Said {
-	if c.Named {
-		return core.Says("webm.AskForBOrMorePictures",
-			"Ask for %d B or more, or a shorter film, fewer frames a second, key frames further apart, a new picture less often or a smaller picture",
-			core.A("Floor", need))
-	}
-	return core.Says("webm.AskForBOrMoreFilmPictures",
-		"Ask for %d B or more, or a shorter film, fewer frames a second, key frames further apart or a new picture less often",
-		core.A("Floor", need))
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
-	m, ok := p.Memo.(memo)
+	f, ok := p.Memo.(video.Film)
 	if !ok {
 		return core.Defect(fmt.Errorf("webm: the plan was not produced by this generator"))
 	}
@@ -189,9 +132,9 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return ctx.Err()
 	default:
 	}
-	st := video.NewStream(m.settings.Timeline, m.choice.Ceiling, m.choice.Width, m.choice.Height, m.choice.Label)
+	st := f.Stream()
 	l := newLayout(st)
-	body := uint64(m.total - l.outside())
+	body := uint64(p.Bytes - l.outside())
 	cuesAt := body - l.cuesLen()
 
 	out := &sticky{w: w}
@@ -201,7 +144,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	out.write(seekHead(l.seekHeadLen, l.seekHeadLen+uint64(len(l.info)), cuesAt))
 	out.write(l.info)
 	out.write(l.tracks)
-	pics := m.choice.Pictures(st)
+	pics := f.Choice.Pictures(st)
 	defer pics.Close()
 	keys, end, err := writeClusters(ctx, out, l, pics)
 	if err != nil {
@@ -212,7 +155,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return core.Defect(fmt.Errorf("webm: the clusters came to %d B and the Cues are to start at %d B, which leaves no room for the Void every one of these carries",
 			end, cuesAt))
 	}
-	if err := writeVoid(ctx, w, void, m.choice.Seed); err != nil {
+	if err := writeVoid(ctx, w, void, f.Choice.Seed); err != nil {
 		return err
 	}
 	writeCues(out, l, keys)
@@ -284,19 +227,19 @@ func writeClusters(ctx context.Context, out *sticky, l layout, pics *video.Pictu
 // writeCluster writes the cluster of frames [first, last) and returns its
 // length: its time, then a SimpleBlock for each frame - track 1, the frame's
 // time from the cluster's, and the key flag on a key frame. Which sample each
-// frame carries is the layout's kindAt, the same answer the cluster's length
-// was counted from.
+// frame carries is video.Timeline.SampleAt, the same answer the cluster's
+// length was counted from.
 func writeCluster(out *sticky, l layout, pics *video.Pictures, first, last int64) uint64 {
 	s := l.stream
-	samples := [kinds][]byte{keySample: pics.KeySample(), copySample: pics.CopySample(), showSample: s.ShowSample()}
-	content := l.clusterContent(first, last, [kinds]int{len(samples[keySample]), len(samples[copySample]), len(samples[showSample])})
+	samples := pics.Samples()
+	content := l.clusterContent(first, last, pics.SampleLens())
 	ts := s.StartMs(first)
 	out.header(idCluster, content)
 	out.uint(idTimestamp, uint64(ts))
 	var block [4]byte
 	block[0] = 0x81
 	for i := first; i < last; i++ {
-		sample := samples[l.kindAt(first, i)]
+		sample := samples[s.SampleAt(i)]
 		rel := s.StartMs(i) - ts
 		block[1], block[2], block[3] = byte(rel>>8), byte(rel), 0
 		if s.IsKey(i) {

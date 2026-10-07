@@ -85,17 +85,13 @@ func (s frameShape) frameLens(tiles int) (key, hidden int) {
 // what MP4 puts in av1C and Matroska in CodecPrivate.
 func (s Stream) Config() []byte { return s.config }
 
-// ShowSample is a frame that shows the current picture again. Shared between
-// frames, and must not be written to.
-func (s Stream) ShowSample() []byte { return s.show }
-
 // BoundBytes is the longest each of the three kinds of sample can be - a key
 // frame, a hidden copy with the frame that shows it, and a frame that shows a
 // picture again - for a container's arithmetic to plan with before any picture
 // is coded.
-func (s Stream) BoundBytes() (key, copied, shown int) {
+func (s Stream) BoundBytes() [SampleKinds]int {
 	k, h := s.shape.frameLens(s.Reserve)
-	return len(s.seq) + k, h + len(s.show), len(s.show)
+	return [SampleKinds]int{KeySample: len(s.seq) + k, CopySample: h + len(s.show), ShowSample: len(s.show)}
 }
 
 // workPerPixel is how many bytes of writing coding one pixel of a picture is

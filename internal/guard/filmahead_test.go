@@ -3,6 +3,7 @@ package guard
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"runtime"
 	"slices"
 	"testing"
@@ -88,15 +89,20 @@ func TestAFilmPaintsOnlyWhatChangesAndGetsTheWholePicture(t *testing.T) {
 // otherwise both runs are the same goroutine and the comparison is of a film
 // with itself. One film is sized by hand, so planning codes its sample through
 // the helpers too, and one is chosen to fit.
+//
+// An MP4 codes its film twice, the second time taking what the first kept
+// (video.Pictures.Again), and both passes take helpers, so it is asked too.
 func TestAFilmCodedBySeveralGoroutinesHasTheBytesOfOne(t *testing.T) {
-	targets := []engine.Target{
-		filmTarget(2<<20, map[string]string{"width": "64", "height": "48", "duration": "40s"}),
-		filmTarget(1<<20, map[string]string{"duration": "30s", "change_interval": "500ms"}),
+	var targets []engine.Target
+	for _, id := range filmFormats {
+		targets = append(targets,
+			filmTarget(id, 2<<20, map[string]string{"width": "64", "height": "48", "duration": "40s"}),
+			filmTarget(id, 1<<20, map[string]string{"duration": "30s", "change_interval": "500ms"}))
 	}
 	tiled := 0
 	for _, target := range targets {
 		alone, helped := filmUnder(t, 1, target), filmUnder(t, 8, target)
-		if filmTileCount(t, alone.bytes) > 1 {
+		if filmTileCount(t, target.Format, alone.bytes) > 1 {
 			tiled++
 		}
 		if alone.coded != 0 {
@@ -112,8 +118,8 @@ func TestAFilmCodedBySeveralGoroutinesHasTheBytesOfOne(t *testing.T) {
 	// Tiles are what helpers code, and a tile one helper coded is taken by
 	// pictures others are waiting for - the film of tiles is the one where
 	// the order of who coded what could show.
-	if tiled == 0 {
-		t.Fatalf("neither film was cut into tiles, so helpers coding tiles were never compared")
+	if tiled < len(filmFormats) {
+		t.Fatalf("%d films were cut into tiles, so helpers coding tiles were not compared in each container", tiled)
 	}
 }
 
@@ -146,11 +152,15 @@ func filmUnder(t *testing.T, threads int, target engine.Target) filmRun {
 // comes up, so most of its work is the first picture and the square's ten
 // places - and the bar has to move with that too.
 func TestAFilmsProgressMovesWithItsPicturesNotItsPadding(t *testing.T) {
-	for _, props := range []map[string]string{
-		{"width": "160", "height": "90", "duration": "5m"},
-		{"width": "640", "height": "360", "duration": "5m"},
+	for _, target := range []engine.Target{
+		filmTarget("webm", 32<<20, map[string]string{"width": "160", "height": "90", "duration": "5m"}),
+		filmTarget("webm", 32<<20, map[string]string{"width": "640", "height": "360", "duration": "5m"}),
+		// An MP4 codes its pictures before it writes a byte, so its bar is all
+		// work first - which a bar counting bytes would show standing still.
+		filmTarget("mp4", 32<<20, map[string]string{"width": "640", "height": "360", "duration": "5m"}),
 	} {
-		reports, planned := progressOf(t, filmTarget(32<<20, props))
+		props := target.Format + " " + fmt.Sprint(target.Properties)
+		reports, planned := progressOf(t, target)
 		if changes, _ := planned.Properties["change_count"].(int64); changes < 100 || planned.Work <= 0 {
 			t.Fatalf("%v: the film has %d pictures and declares %d of work, so there were no pictures for the bar to move with", props, changes, planned.Work)
 		}
@@ -203,34 +213,54 @@ func progressOf(t *testing.T, target engine.Target) ([]engine.Progress, format.P
 // was taken and pass without asking anything.
 func TestAFilmStoppedHalfWayLeavesNoHelperRunning(t *testing.T) {
 	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(8))
-	target := filmTarget(8<<20, map[string]string{"width": "160", "height": "90", "duration": "10m"})
-	dir := t.TempDir()
+	writing := func(p engine.Progress) bool { return p.BytesDone > 100_000 } // some forty pictures in, of six hundred
+	stops := []struct {
+		format, where string
+		now           func(engine.Progress) bool
+	}{
+		{"webm", "once its pictures are being written", writing},
+		// An MP4 has two passes, each with helpers of its own: stopped while
+		// the first codes and nothing of the file is written yet, and while
+		// the second writes.
+		{"mp4", "while its first pass codes", func(p engine.Progress) bool { return p.BytesDone == 0 && p.WorkDone > p.WorkTotal/4 }},
+		{"mp4", "once its pictures are being written", writing},
+	}
+	for _, stop := range stops {
+		target := filmTarget(stop.format, 8<<20, map[string]string{"width": "160", "height": "90", "duration": "10m"})
+		stopFilmHalfWay(t, stop.format+" stopped "+stop.where, target, stop.now)
+	}
+}
+
+// stopFilmHalfWay runs a film, stops it at the first report now says yes to,
+// and asks that the run was stopped, that helpers had coded before it was,
+// and that none is left running.
+func stopFilmHalfWay(t *testing.T, name string, target engine.Target, now func(engine.Progress) bool) {
+	t.Helper()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	opt := engine.Options{OutDir: dir, Seed: goldenSeed, Command: "test"}
+	opt := engine.Options{OutDir: t.TempDir(), Seed: goldenSeed, Command: "test"}
 	planned, err := engine.Plan([]engine.Target{target}, opt)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if changes, _ := planned[0].Plan.Properties["change_count"].(int64); changes < 100 {
-		t.Fatalf("the film has %d pictures, too few to be stopped in the middle of them", changes)
+		t.Fatalf("%s: the film has %d pictures, too few to be stopped in the middle of them", name, changes)
 	}
 	_, codedBefore := video.Helpers()
 	opt.OnProgress = func(p engine.Progress) {
-		// Some forty pictures in, of six hundred.
-		if p.BytesDone > 100_000 {
+		if now(p) {
 			cancel()
 		}
 	}
 	res, runErr := engine.Run(ctx, planned, opt)
 	running, codedAfter := video.Helpers()
 	if runErr == nil && (res == nil || len(res.Manifest.Files) > 0) {
-		t.Fatalf("the run finished the film, so it was never stopped half way")
+		t.Fatalf("%s: the run finished the film, so it was never stopped half way", name)
 	}
 	if codedAfter == codedBefore {
-		t.Fatalf("no helper coded a picture before the stop, so there was nothing that could have been left running")
+		t.Fatalf("%s: no helper coded a picture before the stop, so there was nothing that could have been left running", name)
 	}
 	if running != 0 {
-		t.Errorf("%d helpers are still running after the stopped run returned", running)
+		t.Errorf("%s: %d helpers are still running after the stopped run returned", name, running)
 	}
 }

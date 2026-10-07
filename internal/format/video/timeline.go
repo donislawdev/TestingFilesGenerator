@@ -117,6 +117,59 @@ func (t Timeline) CodedPerSecond() int64 {
 	return min(n, fps, t.Frames)
 }
 
+// The three kinds of sample a frame carries, in both containers.
+const (
+	KeySample   = iota // the picture as a key frame, the sequence header first
+	CopySample         // the picture as a hidden copy, and the frame showing it
+	ShowSample         // the current picture shown again
+	SampleKinds        // how many kinds there are
+)
+
+// SampleAt is the kind of sample frame i carries.
+//
+// A key frame carries the picture as a key frame. The frame after it carries
+// the hidden copy, because a shown key frame cannot be shown a second time
+// (doc.go), and so does the frame that opens a change, which is the first to
+// show its picture. Every other frame shows the current picture again.
+func (t Timeline) SampleAt(i int64) int {
+	switch {
+	case t.IsKey(i):
+		return KeySample
+	case t.StartsChange(i), t.IsKey(i - 1):
+		return CopySample
+	}
+	return ShowSample
+}
+
+// SampleCounts is how many frames of the film carry each kind of sample -
+// what SampleAt says of every frame, counted over the key frames and the
+// changes rather than the frames, so a day of frames is counted in the time of
+// its hundred thousand changes.
+func (t Timeline) SampleCounts() [SampleKinds]int64 {
+	var copies int64
+	// The first change opens on the first frame, which is a key frame.
+	for c := int64(1); c < t.Changes(); c++ {
+		if !t.IsKey(c * t.ChangeEvery) {
+			copies++
+		}
+	}
+	// The frame after a key frame, unless it is a key frame itself or opens
+	// a change, which the count above has.
+	for k := range t.Keys() {
+		i := k*t.KeyEvery + 1
+		copies += boolCount(i < t.Frames && !t.IsKey(i) && !t.StartsChange(i))
+	}
+	keys := t.Keys()
+	return [SampleKinds]int64{KeySample: keys, CopySample: copies, ShowSample: t.Frames - keys - copies}
+}
+
+func boolCount(b bool) int64 {
+	if b {
+		return 1
+	}
+	return 0
+}
+
 // StartMs is when frame i is shown, in whole milliseconds rounded to the
 // nearest, the way a container that counts in milliseconds stores it.
 func (t Timeline) StartMs(i int64) int64 {

@@ -1910,7 +1910,7 @@ def av1_frames(sample):
             fail(f"an OBU of type {kind} says {size} B and its sample has {len(payload)}")
         at += 1 + used + size
         if kind == 2:
-            fail("a temporal delimiter inside a block, which the AV1 mapping of Matroska removes")
+            fail("a temporal delimiter inside a sample, which the AV1 mappings of Matroska and of ISO base media both leave out")
         if kind in (3, 6):
             # Every field read here sits in the first three bytes.
             bits = int.from_bytes(payload[:3].ljust(3, b"\0"), "big")
@@ -2017,12 +2017,138 @@ def check_webm(data):
     ok(f"{len(blocks)} frames, {len(keys)} key frames, every one in the Cues, Void before them")
 
 
+def iso_child(data, start, end, name, depth="the movie box"):
+    """The one box called name between start and end."""
+    found = [(b, e) for n, b, e in iso_boxes(data, start, end) if n == name]
+    if len(found) != 1:
+        fail(f"{depth} holds {len(found)} {name.decode('latin1')!r} boxes and a film has one")
+    return found[0]
+
+
+def u32(data, at):
+    return struct.unpack(">I", data[at:at + 4])[0]
+
+
+def mp4_tables(data, stbl):
+    """The sample tables, read into the length, the place and the dependency
+    of every sample, and the sync samples."""
+    tables = {n: (b, e) for n, b, e in iso_boxes(data, *stbl)}
+    for name in (b"stsd", b"stts", b"stss", b"sdtp", b"stsc", b"stsz"):
+        if name not in tables:
+            fail(f"the sample tables have no {name.decode()!r}, which this generator always writes")
+    b, e = tables[b"stsz"]
+    if u32(data, b + 4) != 0:
+        fail("stsz gives every sample one length, and this generator lists each")
+    count = u32(data, b + 8)
+    if e - b != 12 + 4 * count:
+        fail(f"stsz says {count} samples and is {e - b} B long")
+    lengths = [u32(data, b + 12 + 4 * i) for i in range(count)]
+
+    b, _ = tables[b"stts"]
+    runs = [(u32(data, b + 8 + 8 * i), u32(data, b + 12 + 8 * i)) for i in range(u32(data, b + 4))]
+    if sum(n for n, _ in runs) != count or any(d != 1 for _, d in runs):
+        fail(f"stts covers {sum(n for n, _ in runs)} samples, not each of the {count} one tick long")
+
+    wide = b"co64" in tables
+    if wide == (b"stco" in tables):
+        fail("the sample tables carry both stco and co64, or neither")
+    b, _ = tables[b"co64" if wide else b"stco"]
+    step = 8 if wide else 4
+    places = [int.from_bytes(data[b + 8 + step * i:b + 8 + step * (i + 1)], "big") for i in range(u32(data, b + 4))]
+
+    b, _ = tables[b"stsc"]
+    chunk_runs = [(u32(data, b + 8 + 12 * i), u32(data, b + 12 + 12 * i)) for i in range(u32(data, b + 4))]
+    if not chunk_runs or chunk_runs[0][0] != 1:
+        fail("stsc does not start at the first chunk")
+    starts = []
+    for c in range(len(places)):
+        per = [n for first, n in chunk_runs if first <= c + 1][-1]
+        at = places[c]
+        for _ in range(per):
+            if len(starts) < count:
+                starts.append(at)
+                at += lengths[len(starts) - 1]
+    if len(starts) != count:
+        fail(f"the chunks hold {len(starts)} samples and stsz lists {count}")
+
+    b, e = tables[b"sdtp"]
+    if e - b != 4 + count:
+        fail(f"sdtp is {e - b - 4} B for {count} samples")
+    depends = [data[b + 4 + i] >> 4 & 3 for i in range(count)]
+    b, _ = tables[b"stss"]
+    syncs = [u32(data, b + 8 + 4 * i) for i in range(u32(data, b + 4))]
+    return lengths, starts, depends, syncs
+
+
+def check_mp4(data):
+    """An MP4 film as this generator writes it, read without its code.
+
+    The questions a film can get wrong while every frame still plays
+    (docs/MP4-2026-10-07.md): the boxes cover the file with the free boxes
+    last, the sample tables agree with the media data byte for byte - the
+    samples follow one another from its first byte to its last - every sync
+    sample opens with the sequence header and a shown key frame and every key
+    frame is a sync sample (AV1 binding section 2.4), sdtp says which samples
+    depend on none, and nothing shows a picture that may not be shown again
+    (docs/WIDEO-2026-10-06.md section 9.2).
+    """
+    top = list(iso_boxes(data, 0, len(data)))
+    names = [n for n, _, _ in top]
+    if names[:3] != [b"ftyp", b"moov", b"mdat"] or any(n != b"free" for n in names[3:]) or len(names) < 4:
+        fail(f"the file is {[n.decode('latin1') for n in names]} and this generator writes ftyp, moov, mdat, then free boxes")
+    _, fb, fe = top[0]
+    brands = [data[at:at + 4] for at in range(fb + 8, fe, 4)]
+    if b"av01" not in brands:
+        fail("av01 is not among the compatible brands, which the AV1 binding requires (section 2.1)")
+    _, mb, me = top[2]
+
+    trak = iso_child(data, top[1][1], top[1][2], b"trak")
+    mdia = iso_child(data, *trak, b"mdia", "the track")
+    minf = iso_child(data, *mdia, b"minf", "the media box")
+    stbl = iso_child(data, *minf, b"stbl", "the media information")
+    lengths, starts, depends, syncs = mp4_tables(data, stbl)
+    if not lengths:
+        fail("the film holds no frames")
+
+    at = mb
+    for i, (start, length) in enumerate(zip(starts, lengths)):
+        if start != at:
+            fail(f"sample {i + 1} starts at {start} and the one before it ended at {at}")
+        at += length
+    if at != me:
+        fail(f"the samples end at {at} and the media data at {me}")
+
+    showable = [False] * 8
+    keys = []
+    for i, (start, length) in enumerate(zip(starts, lengths)):
+        sample = data[start:start + length]
+        frames = av1_frames(sample)
+        if any(f[0] == "fill" and f[1] == 0xFF for f in frames):
+            keys.append(i + 1)
+            if sample[0] >> 3 & 0xF != 1 or frames[0] != ("fill", 0xFF, False):
+                fail(f"sample {i + 1} is a key frame without the sequence header first")
+        intra = any(f[0] == "fill" for f in frames)
+        if depends[i] != (2 if intra else 1):
+            fail(f"sdtp says sample {i + 1} depends {'on others' if depends[i] == 1 else 'on none'} and it {'codes' if intra else 'shows'} a picture")
+        for frame in frames:
+            if frame[0] == "show":
+                if not showable[frame[1]]:
+                    fail(f"sample {i + 1} shows slot {frame[1]}, which holds nothing that may be shown again")
+            else:
+                for slot in range(8):
+                    if frame[1] >> slot & 1:
+                        showable[slot] = frame[2]
+    if keys != syncs:
+        fail(f"stss names {len(syncs)} sync samples and the film has {len(keys)} key frames, not the same ones")
+    ok(f"{len(lengths)} frames, {len(keys)} key frames, every one a sync sample, the tables agree with the media data")
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
           "svg": check_svg, "html": check_html, "targz": check_targz,
           "bmp": check_bmp, "gif": check_gif, "ico": check_ico, "jpg": check_jpg,
           "tiff": check_tiff, "webp": check_webp, "avif": check_avif, "jxl": check_jxl,
-          "webm": check_webm,
+          "webm": check_webm, "mp4": check_mp4,
           "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx,
           "txt": check_txt, "md": check_md,
           "yaml": check_yaml, "toml": check_toml}

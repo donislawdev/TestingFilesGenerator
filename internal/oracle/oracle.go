@@ -549,7 +549,11 @@ func StrictKnows(formatID string) bool {
 		// The first film, from the day it arrived (2026-10-06). The decoder
 		// says whether the frames that are there play, and only the container
 		// says whether they are all there.
-		"webm":
+		"webm",
+		// The second, from the day it arrived (2026-10-07). The sample tables
+		// say how long every sample is, and only reading them against the
+		// media data says the tables and the samples agree.
+		"mp4":
 		return true
 	}
 	return false

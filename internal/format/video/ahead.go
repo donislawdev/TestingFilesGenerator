@@ -43,11 +43,20 @@ var helping atomic.Int64
 // asked for them, since the process started.
 var codedBeside atomic.Int64
 
+// codedAll counts every tile coded since the process started, by a helper or
+// by the goroutine that asked for it.
+var codedAll atomic.Int64
+
 // Helpers is how many helpers are coding right now and how many tiles helpers
 // have coded since the process started. Guards read it: a film held to
 // the bytes of one goroutine says nothing unless several really coded it, and
 // a film abandoned half way has to leave none of them running.
 func Helpers() (running, coded int64) { return helping.Load(), codedBeside.Load() }
+
+// Coded is how many tiles have been coded since the process started, by
+// anybody. A guard reads it: an MP4 codes its film twice, and the second pass
+// is to code nothing the first one kept (Pictures.Again).
+func Coded() int64 { return codedAll.Load() }
 
 // takeHelper claims a place for one more helper, if the process has one.
 func takeHelper() bool {
@@ -132,6 +141,17 @@ func newCrew(f *film, ks keyer, qindex int, jobs int64) *crew {
 	return c
 }
 
+// again is a crew for a second pass over the same film, painting with this
+// one's painter (Pictures.Again). This one has to be stopped first, because
+// the painter is used by one goroutine at a time.
+func (c *crew) again() *crew {
+	n := &crew{film: c.film, keys: c.keys, qindex: c.qindex, own: c.own, most: c.most, encode: c.encode}
+	if n.most > 0 {
+		n.queue = make(chan *job, n.ahead()*len(n.keys.tiles))
+	}
+	return n
+}
+
 // ahead is how many pictures past the one being written may be offered: two
 // for each goroutine that codes, so none of them waits for the next picture
 // while the writer is still busy with the last. Nought without helpers - a
@@ -183,6 +203,7 @@ func (c *crew) help() {
 
 func (c *crew) code(p *painter, j *job, beside bool) {
 	defer j.done.Done()
+	codedAll.Add(1)
 	defer func() {
 		if v := recover(); v != nil {
 			j.panicked = v

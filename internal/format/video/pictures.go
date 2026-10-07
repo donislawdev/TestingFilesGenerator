@@ -211,13 +211,47 @@ func (p *Pictures) jobFor(i int, l look) *job {
 // running once it returns. A helper in the middle of a tile finishes it first.
 func (p *Pictures) Close() { p.crew.stop() }
 
-// KeySample is the current picture as a key frame, with the sequence header
-// before it. It is written over by the next picture At makes.
-func (p *Pictures) KeySample() []byte { return p.key }
+// Again is the coder of the same film from its first picture, for a second
+// pass once this one has made its last. MP4 says how long every picture is
+// before it carries any of them (docs/MP4-2026-10-07.md section 2), so it
+// codes a film once to learn that and again to write it.
+//
+// The second pass takes what the first one has: every tile it kept - the ones
+// no picture changes, the square's places, the clock's while there was room -
+// and its film and painter, so it codes only the clock's tiles the first had
+// no room for, and holds no second copy of the picture. This one is closed by
+// it, and asked for nothing after.
+//
+// Every tile kept is a finished one: each picture was made in order, which
+// waited for all its tiles, and closing waited for every helper.
+func (p *Pictures) Again() (*Pictures, error) {
+	if n := p.stream.Changes(); p.change != n-1 {
+		return nil, core.Defect(fmt.Errorf("video: a film was asked to start again at picture %d of %d, and only one that has made its last can", p.change, n))
+	}
+	p.Close()
+	q := &Pictures{
+		choice: p.choice, stream: p.stream, change: -1,
+		crew:  p.crew.again(),
+		known: p.known, kept: p.kept, seen: p.seen,
+		tiles: p.tiles, spare: p.spare,
+	}
+	q.pending = make([]opened, 0, q.crew.ahead()+1)
+	return q, nil
+}
 
-// CopySample is the current picture as a hidden intra only copy, and the frame
-// that shows it. It is written over by the next picture At makes.
-func (p *Pictures) CopySample() []byte { return p.copied }
+// Samples is the current picture's samples by kind (Timeline.SampleAt): as a
+// key frame with the sequence header before it, as a hidden intra only copy
+// with the frame that shows it, and the frame that shows it again. The first
+// two are written over by the next picture At makes, and the third is shared
+// and must not be written to.
+func (p *Pictures) Samples() [SampleKinds][]byte {
+	return [SampleKinds][]byte{KeySample: p.key, CopySample: p.copied, ShowSample: p.stream.show}
+}
+
+// SampleLens is how long each of the current picture's samples is.
+func (p *Pictures) SampleLens() [SampleKinds]int {
+	return [SampleKinds]int{KeySample: len(p.key), CopySample: len(p.copied), ShowSample: len(p.stream.show)}
+}
 
 // CodedSize is the bytes of the tiles of picture change of this choice's
 // film, each coded afresh under the film's layout - what a picture takes of
