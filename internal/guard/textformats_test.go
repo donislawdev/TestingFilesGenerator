@@ -444,7 +444,7 @@ func TestAnSVGDrawingCarriesRealShapes(t *testing.T) {
 // This is the shape docs/OBSERVATIONS.md now calls out: an audit of
 // completeness has to run FROM THE SOURCE towards the list. Walking the entries
 // already written down cannot, by construction, find what is missing from them.
-var textFormats = []string{"txt", "md", "log", "csv", "json", "xml", "html", "svg", "yaml", "toml", "geojson"}
+var textFormats = []string{"txt", "md", "log", "csv", "json", "xml", "html", "svg", "yaml", "toml", "geojson", "eml"}
 
 var binaryFormats = []string{"avif", "bmp", "docx", "gif", "ico", "jpg", "jxl", "mp4", "pdf", "png", "pptx", "targz", "tiff", "wav", "webm", "webp", "xlsx", "zip"}
 

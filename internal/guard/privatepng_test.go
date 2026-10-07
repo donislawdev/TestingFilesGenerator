@@ -227,7 +227,7 @@ func zTXtChunk(keyword string, text []byte) []byte {
 // a PNG's text chunk is still found - plain, and behind zlib. Without this the
 // narrowing to text chunks could quietly become "pictures are never read".
 func TestAnAddressInAPictureTextChunkIsStillFound(t *testing.T) {
-	address := strings.Join([]string{"someone", "example.org"}, "@")
+	address := strings.Join([]string{"someone", "customer.example"}, "@")
 	for name, png := range map[string][]byte{
 		"tEXt": pngWithText("tEXt", append([]byte("Author\x00exported by "), address...)),
 		"zTXt": pngWithText("zTXt", zTXtChunk("Author", []byte("exported by "+address))),
