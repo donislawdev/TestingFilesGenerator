@@ -734,6 +734,26 @@
     "hash": "sha256-2b3b18120924",
     "other": "polygon"
   },
+  "Choice.ids.mixed": {
+    "description": "One entry of the ids list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-3f8fee624f43",
+    "other": "mixed"
+  },
+  "Choice.ids.none": {
+    "description": "One entry of the ids list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-140bedbf9c3f",
+    "other": "none"
+  },
+  "Choice.ids.number": {
+    "description": "One entry of the ids list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-12886f9d0005",
+    "other": "number"
+  },
+  "Choice.ids.string": {
+    "description": "One entry of the ids list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-473287f8298d",
+    "other": "string"
+  },
   "Choice.ip_version.mixed": {
     "description": "One entry of the ip_version list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3f8fee624f43",
@@ -924,6 +944,21 @@
     "hash": "sha256-992a93455c71",
     "other": "fixed"
   },
+  "Choice.unlocated.all": {
+    "description": "One entry of the unlocated list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-5ef5ef0364b6",
+    "other": "all"
+  },
+  "Choice.unlocated.none": {
+    "description": "One entry of the unlocated list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-140bedbf9c3f",
+    "other": "none"
+  },
+  "Choice.unlocated.some": {
+    "description": "One entry of the unlocated list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-a6b46dd0d1ae",
+    "other": "some"
+  },
   "Choice.winding.reversed": {
     "description": "One entry of the winding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-bc64f64fb479",
@@ -1004,6 +1039,11 @@
     "hash": "sha256-e7755a355839",
     "other": "Whether every line and outline crosses the 180th meridian without being cut in two. RFC 7946 asks for such shapes to be cut, and readers differ - read as flat coordinates, a crossing outline crosses itself and runs the other way round. A single point cannot cross and is placed beside it."
   },
+  "Detail.format/geojson.bbox": {
+    "description": "The sentence under the bbox setting of the geojson format, after what it takes.",
+    "hash": "sha256-2046a38a38a9",
+    "other": "Whether the collection and every feature with a place carry a bbox, the box their coordinates lie in. The collection's bbox follows its features, because its extent is known only after the last one, and a box across the antimeridian has a west edge greater than its east edge, as RFC 7946 asks."
+  },
   "Detail.format/geojson.formatting": {
     "description": "The sentence under the formatting setting of the geojson format, after what it takes.",
     "hash": "sha256-ed33a04494ed",
@@ -1014,10 +1054,25 @@
     "hash": "sha256-8d7e42488248",
     "other": "Which kind of geometry each feature carries. With mixed the seven kinds take turns, so a file of seven features or more holds every one of them."
   },
+  "Detail.format/geojson.holes": {
+    "description": "The sentence under the holes setting of the geojson format, after what it takes.",
+    "hash": "sha256-8d6a4341bc7f",
+    "other": "How many holes every polygon has inside its outline. Each hole has four points and runs the other way round to its outline, as RFC 7946 asks. Holes need 6 or more vertices, fewer of them fit at precision 3 or less, and points and lines do not change."
+  },
+  "Detail.format/geojson.ids": {
+    "description": "The sentence under the ids setting of the geojson format, after what it takes.",
+    "hash": "sha256-cc9e598ac76e",
+    "other": "Which type every feature id has. RFC 7946 allows a number or a string, mixed gives odd features a number and even ones a string such as f2, and none leaves the id out. Readers that turn the id into a key may keep only one of the two types."
+  },
   "Detail.format/geojson.precision": {
     "description": "The sentence under the precision setting of the geojson format, after what it takes.",
     "hash": "sha256-c34064661db8",
     "other": "How many decimal places every coordinate is written with. Six is about ten centimetres on the ground, the figure RFC 7946 gives."
+  },
+  "Detail.format/geojson.unlocated": {
+    "description": "The sentence under the unlocated setting of the geojson format, after what it takes.",
+    "hash": "sha256-d17e6159b9fe",
+    "other": "How many features have no place - RFC 7946 writes their geometry as null. some takes the place of every fifth feature, from the fifth on, and all takes it from every one, so the settings that shape a geometry change nothing."
   },
   "Detail.format/geojson.vertices": {
     "description": "The sentence under the vertices setting of the geojson format, after what it takes.",
@@ -1026,8 +1081,8 @@
   },
   "Detail.format/geojson.winding": {
     "description": "The sentence under the winding setting of the geojson format, after what it takes.",
-    "hash": "sha256-c36536a3a1bc",
-    "other": "Which way polygon outlines run - rfc7946 is counter-clockwise and reversed is clockwise. RFC 7946 tells readers to accept both, and they disagree about which side of the outline is inside. Points and lines do not change."
+    "hash": "sha256-1de3ea94a487",
+    "other": "Which way polygon outlines run - rfc7946 is counter-clockwise and reversed is clockwise, and holes always run the other way. RFC 7946 tells readers to accept both, and they disagree about which side of the outline is inside. Points and lines do not change."
   },
   "Detail.format/gif.frames": {
     "description": "The sentence under the frames setting of the gif format, after what it takes.",
@@ -1779,6 +1834,11 @@
     "hash": "sha256-d95082a2ee57",
     "other": "Author"
   },
+  "Label.bbox": {
+    "description": "The name beside the box of a setting a recipe writes as bbox.",
+    "hash": "sha256-708f44b1bd98",
+    "other": "Bbox"
+  },
   "Label.bit_depth": {
     "description": "The name beside the box of a setting a recipe writes as bit_depth.",
     "hash": "sha256-cc62f2e89a82",
@@ -1964,6 +2024,16 @@
     "hash": "sha256-bfe2eca40179",
     "other": "Height"
   },
+  "Label.holes": {
+    "description": "The name beside the box of a setting a recipe writes as holes.",
+    "hash": "sha256-158a3b71a54c",
+    "other": "Holes"
+  },
+  "Label.ids": {
+    "description": "The name beside the box of a setting a recipe writes as ids.",
+    "hash": "sha256-d9aa9d4aca97",
+    "other": "Ids"
+  },
   "Label.ip_version": {
     "description": "The name beside the box of a setting a recipe writes as ip_version.",
     "hash": "sha256-29016036fada",
@@ -2113,6 +2183,11 @@
     "description": "The name beside the box of a setting a recipe writes as title.",
     "hash": "sha256-7e8cd2056da7",
     "other": "Title"
+  },
+  "Label.unlocated": {
+    "description": "The name beside the box of a setting a recipe writes as unlocated.",
+    "hash": "sha256-9d9b671e4837",
+    "other": "Unlocated"
   },
   "Label.vertices": {
     "description": "The name beside the box of a setting a recipe writes as vertices.",
@@ -2413,6 +2488,11 @@
     "description": "What a number counts, after it, as in: from 1 to 20000 hertz. Written the way the language puts a noun after a number.",
     "hash": "sha256-e333c47e4b5c",
     "other": "hertz"
+  },
+  "Unit.holes": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 holes. Written the way the language puts a noun after a number.",
+    "hash": "sha256-ffce3618dce7",
+    "other": "holes"
   },
   "Unit.megapixels": {
     "description": "What a number counts, after it, as in: from 1 to 20000 megapixels. Written the way the language puts a noun after a number.",

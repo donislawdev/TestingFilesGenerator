@@ -88,6 +88,21 @@ because it turns other people's test suites red.
   refuses a text value of ten million characters. At precision 3 or less a
   line has fewer points than that, one for each step of longitude the globe
   has, and asking for more is refused with the number that fits.
+- **GeoJSON: holes, features with no place, both types of id, and bbox.**
+  `holes` gives every polygon up to 100 000 holes of four points, each running
+  the other way round to its outline as RFC 7946 asks. Holes need 6 or more
+  `vertices`, fewer of them fit at precision 3 or less, and asking for more is
+  refused with the number that fits. `unlocated` takes the place of every
+  fifth feature (`some`) or of every one (`all`), written as a geometry of
+  null. `ids` makes every id a number as before, a string such as `f2`, the
+  two in turn (`mixed`), or leaves it out (`none`) - GDAL keeps only the
+  numbers of a mixed file and warns that several features share an id.
+  `bbox` gives the collection and every feature with a place the box their
+  coordinates lie in. The collection's box comes after its features, because
+  its extent is known only after the last one, and a box across the
+  antimeridian has its west edge greater than its east edge. GDAL opens a file
+  whose bbox is wrong without a word, so a reader that relies on bbox needs a
+  test of its own. Files made with the earlier settings keep their bytes.
 - **A length of time as a setting.** `duration`, `change_interval` and `keyframe_interval` take
   `10s`, `1m30s`, `1h`, `500ms` or `59.9s`, to the millisecond. A bare number
   is refused rather than read as seconds, and so is a length that does not

@@ -411,6 +411,26 @@
       "bytes": 3900000,
       "sha256": "b921833657d0f75935cbd0c571199cb03cd9be8d57ed77f841c4282f87928162",
       "measured_on": "2026-10-07"
+    },
+    "geojson_8kib_holes": {
+      "bytes": 8192,
+      "sha256": "3e128555df65b3247acd30958d7d8367a54d7a81c5adae57037c1f7d2b2670fc",
+      "measured_on": "2026-10-07"
+    },
+    "geojson_8kib_boxes_across": {
+      "bytes": 8192,
+      "sha256": "f0d102a153610f4da0f91d2c35391e16f3d4c2a1e82b97a21274750e93f271ed",
+      "measured_on": "2026-10-07"
+    },
+    "geojson_8kib_unlocated_mixed_ids": {
+      "bytes": 8192,
+      "sha256": "7efffc9703fd90dcfd618267d063a63e5872e103ec686d43eb8b42e120907c32",
+      "measured_on": "2026-10-07"
+    },
+    "geojson_box_round_the_globe": {
+      "bytes": 65536,
+      "sha256": "5c01a4d2461685ed35c3e431da8452742d241e54f7b9e9d9158e87694e70a1dc",
+      "measured_on": "2026-10-07"
     }
   },
   "remeasured": [

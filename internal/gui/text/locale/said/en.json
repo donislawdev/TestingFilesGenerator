@@ -1685,15 +1685,35 @@
     "hash": "sha256-f2b3d3aeda55",
     "other": "a collection holds whole features, and the largest one these settings can draw needs that much"
   },
+  "geojson.AskForFewerHoles": {
+    "description": "Said by internal/format/geojson - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-cac73bf86f4e",
+    "other": "Ask for {{.Most}} holes or fewer, or for a higher precision."
+  },
   "geojson.AskForFewerPoints": {
     "description": "Said by internal/format/geojson - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-d36b2eba39c1",
     "other": "Ask for {{.Most}} points or fewer, or for a higher precision."
   },
+  "geojson.AskForMorePointsOrNoHoles": {
+    "description": "Said by internal/format/geojson - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Least}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-8d41e52b37de",
+    "other": "Ask for {{.Least}} vertices or more, or for no holes."
+  },
+  "geojson.EachHoleNeedsSteps": {
+    "description": "Said by internal/format/geojson - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Precision}}, {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-5774cee2ea85",
+    "other": "each hole needs four steps of longitude and an outline with holes spans at most half the globe, so at precision {{.Precision}} it has room for {{.Most}} - ask for that many or fewer, or for a higher precision"
+  },
   "geojson.EachPointNeedsAStep": {
     "description": "Said by internal/format/geojson - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Precision}}, {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-2cbc901989bd",
     "other": "each point needs its own step of longitude, and at precision {{.Precision}} the globe has room for {{.Most}} - ask for that many or fewer, or for a higher precision"
+  },
+  "geojson.HolesNeedSixPoints": {
+    "description": "Said by internal/format/geojson - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Least}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-6d00afc49eb9",
+    "other": "an outline keeps its middle free for holes only with two points above it and two below - ask for {{.Least}} vertices or more, or for no holes"
   },
   "html.HasToBeStructure": {
     "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Document}}, {{.Fragment}}, written the way the program writes them - keep each spelled exactly that way.",

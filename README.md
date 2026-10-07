@@ -617,7 +617,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `log` | `entry_format`, `timestamps`, `rate`, `methods`, `status_mix`, `level_mix`, `ip_version`, `line_ending` |
 | `txt`, `md`, `xml` | `encoding`, `bom` |
 | `json` | `formatting` |
-| `geojson` | `geometry`, `formatting`, `precision`, `altitude`, `vertices`, `winding`, `antimeridian` |
+| `geojson` | `geometry`, `formatting`, `precision`, `altitude`, `vertices`, `holes`, `winding`, `antimeridian`, `unlocated`, `ids`, `bbox` |
 | `svg` | `width`, `height` |
 | `html` | `structure` |
 | `yaml`, `toml` | none in this build - the document is a fixed shape, and a size is the only thing to ask for |
