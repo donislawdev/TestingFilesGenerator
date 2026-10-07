@@ -1,7 +1,6 @@
 package guard
 
 import (
-	"context"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -46,20 +45,8 @@ type webmFilm struct {
 
 func filmOne(t *testing.T, target engine.Target) ([]byte, map[string]any) {
 	t.Helper()
-	dir := t.TempDir()
-	opt := engine.Options{OutDir: dir, Seed: goldenSeed, Command: "test"}
-	planned, err := engine.Plan([]engine.Target{target}, opt)
-	if err != nil {
-		t.Fatalf("planning %s: %v", target.Format, err)
-	}
-	if _, err := engine.Run(context.Background(), planned, opt); err != nil {
-		t.Fatalf("running %s: %v", target.Format, err)
-	}
-	b, err := os.ReadFile(filepath.Join(dir, planned[0].Name))
-	if err != nil {
-		t.Fatalf("reading the film back: %v", err)
-	}
-	return b, planned[0].Plan.Properties
+	b, facts, _ := filmWithSeed(t, target)
+	return b, facts
 }
 
 // ebmlVint reads an element ID (keeping its marker) or a size (without it).

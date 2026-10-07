@@ -23,14 +23,19 @@ import (
 // specification (AOMediaCodec/av1-spec 5e04f3f, 06.bitstream.syntax.md lines
 // 1176-1268 and 1771-1816), not from the writer.
 
+// filmBits reads a frame header a bit at a time. Reading past its end
+// gives zeros and says so in overrun, which the reader turns into an error -
+// a panic here would end every guard of the package, not this one.
 type filmBits struct {
-	b   []byte
-	pos int
+	b       []byte
+	pos     int
+	overrun bool
 }
 
 func (r *filmBits) bit() int {
 	if r.pos/8 >= len(r.b) {
-		panic("the frame header ends inside itself")
+		r.overrun = true
+		return 0
 	}
 	v := int(r.b[r.pos/8]>>(7-r.pos%8)) & 1
 	r.pos++
@@ -102,6 +107,9 @@ func readFilmTiles(frame []byte, before, width, height int) (filmTiles, error) {
 		r.bit() // tx_mode_select
 	}
 	r.bit() // reduced_tx_set
+	if r.overrun {
+		return filmTiles{}, fmt.Errorf("the frame ends inside its header")
+	}
 	pos := (r.pos + 7) / 8
 	var out filmTiles
 	y := 0
@@ -114,6 +122,9 @@ func readFilmTiles(frame []byte, before, width, height int) (filmTiles, error) {
 		y += 64 * rh
 	}
 	if len(out.rects) > 1 {
+		if pos >= len(frame) {
+			return filmTiles{}, fmt.Errorf("the frame ends before its tile group")
+		}
 		if frame[pos] != 0 {
 			return filmTiles{}, fmt.Errorf("tile_start_and_end_present_flag is set in an OBU_FRAME")
 		}
@@ -122,13 +133,16 @@ func readFilmTiles(frame []byte, before, width, height int) (filmTiles, error) {
 	for i := range out.rects {
 		size := len(frame) - pos
 		if i < len(out.rects)-1 {
+			if pos+sizeBytes > len(frame) {
+				return filmTiles{}, fmt.Errorf("the frame ends inside the size of tile %d", i)
+			}
 			size = 1
 			for b := range sizeBytes {
 				size += int(frame[pos+b]) << (8 * b)
 			}
 			pos += sizeBytes
 		}
-		if pos+size > len(frame) {
+		if size < 0 || pos+size > len(frame) {
 			return filmTiles{}, fmt.Errorf("tile %d of %d says %d B and %d remain", i, len(out.rects), size, len(frame)-pos)
 		}
 		out.data = append(out.data, frame[pos:pos+size])
@@ -206,6 +220,9 @@ func frameOBU(sample []byte) ([]byte, int, error) {
 		}
 		if typ := int(sample[0]>>3) & 0xf; typ == 6 {
 			p := sample[1+used : 1+used+size]
+			if len(p) == 0 {
+				return nil, 0, fmt.Errorf("an empty frame OBU")
+			}
 			if frameType := p[0] >> 5 & 3; frameType == 0 {
 				return p, 8, nil
 			}
