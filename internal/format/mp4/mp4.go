@@ -186,25 +186,28 @@ func (z sizes) chunk(first, samples int64) int64 {
 // written yet, so a picture over its reserve is refused before the file has a
 // byte. The work coding is worth is reported here, and the second pass,
 // which codes only what this one could not keep, reports none.
+//
+// The first pass is closed on every way out - an error, a stop, and a panic
+// in coding, which the engine turns into the run's error and which would
+// otherwise leave this pass's helpers running. Closing it twice is harmless,
+// and Again closes it too.
 func measure(ctx context.Context, f video.Film, st video.Stream) (sizes, *video.Pictures, error) {
-	pics := f.Choice.Pictures(st)
+	first := f.Choice.Pictures(st)
+	defer first.Close()
 	z := sizes{t: st.Timeline, show: int64(st.BoundBytes()[video.ShowSample]), pictures: make([][2]uint32, st.Changes())}
 	for c := range st.Changes() {
 		if err := ctx.Err(); err != nil {
-			pics.Close()
 			return sizes{}, nil, err
 		}
-		if err := pics.At(c); err != nil {
-			pics.Close()
+		if err := first.At(c); err != nil {
 			return sizes{}, nil, err
 		}
-		format.Worked(ctx, pics.Work())
-		n := pics.SampleLens()
+		format.Worked(ctx, first.Work())
+		n := first.SampleLens()
 		z.pictures[c] = [2]uint32{uint32(n[video.KeySample]), uint32(n[video.CopySample])}
 	}
-	again, err := pics.Again()
+	again, err := first.Again()
 	if err != nil {
-		pics.Close()
 		return sizes{}, nil, err
 	}
 	return z, again, nil

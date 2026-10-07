@@ -2029,6 +2029,19 @@ def u32(data, at):
     return struct.unpack(">I", data[at:at + 4])[0]
 
 
+def mp4_entries(data, tables, name, head, size):
+    """The entries of one sample table, each size bytes, after head bytes that
+    end in their count - refused unless the box is exactly that long, so no
+    count a file states is read past the box that states it."""
+    b, e = tables[name]
+    if e - b < head:
+        fail(f"{name.decode()} is {e - b} B, shorter than its own header")
+    count = u32(data, b + head - 4)
+    if e - b != head + size * count:
+        fail(f"{name.decode()} says {count} entries and is {e - b} B long")
+    return [data[b + head + size * i:b + head + size * (i + 1)] for i in range(count)]
+
+
 def mp4_tables(data, stbl):
     """The sample tables, read into the length, the place and the dependency
     of every sample, and the sync samples."""
@@ -2037,37 +2050,36 @@ def mp4_tables(data, stbl):
         if name not in tables:
             fail(f"the sample tables have no {name.decode()!r}, which this generator always writes")
     b, e = tables[b"stsz"]
-    if u32(data, b + 4) != 0:
+    if e - b < 12 or u32(data, b + 4) != 0:
         fail("stsz gives every sample one length, and this generator lists each")
-    count = u32(data, b + 8)
-    if e - b != 12 + 4 * count:
-        fail(f"stsz says {count} samples and is {e - b} B long")
-    lengths = [u32(data, b + 12 + 4 * i) for i in range(count)]
+    lengths = [int.from_bytes(x, "big") for x in mp4_entries(data, tables, b"stsz", 12, 4)]
+    count = len(lengths)
 
-    b, _ = tables[b"stts"]
-    runs = [(u32(data, b + 8 + 8 * i), u32(data, b + 12 + 8 * i)) for i in range(u32(data, b + 4))]
+    runs = [(int.from_bytes(x[:4], "big"), int.from_bytes(x[4:], "big")) for x in mp4_entries(data, tables, b"stts", 8, 8)]
     if sum(n for n, _ in runs) != count or any(d != 1 for _, d in runs):
         fail(f"stts covers {sum(n for n, _ in runs)} samples, not each of the {count} one tick long")
 
     wide = b"co64" in tables
     if wide == (b"stco" in tables):
         fail("the sample tables carry both stco and co64, or neither")
-    b, _ = tables[b"co64" if wide else b"stco"]
-    step = 8 if wide else 4
-    places = [int.from_bytes(data[b + 8 + step * i:b + 8 + step * (i + 1)], "big") for i in range(u32(data, b + 4))]
+    places = [int.from_bytes(x, "big") for x in mp4_entries(data, tables, b"co64" if wide else b"stco", 8, 8 if wide else 4)]
 
-    b, _ = tables[b"stsc"]
-    chunk_runs = [(u32(data, b + 8 + 12 * i), u32(data, b + 12 + 12 * i)) for i in range(u32(data, b + 4))]
+    chunk_runs = [(int.from_bytes(x[:4], "big"), int.from_bytes(x[4:8], "big")) for x in mp4_entries(data, tables, b"stsc", 8, 12)]
     if not chunk_runs or chunk_runs[0][0] != 1:
         fail("stsc does not start at the first chunk")
-    starts = []
-    for c in range(len(places)):
-        per = [n for first, n in chunk_runs if first <= c + 1][-1]
-        at = places[c]
-        for _ in range(per):
-            if len(starts) < count:
-                starts.append(at)
-                at += lengths[len(starts) - 1]
+    if any(a[0] >= b_[0] for a, b_ in zip(chunk_runs, chunk_runs[1:])):
+        fail("stsc lists its runs out of order")
+    # One forward walk over the runs, not a search of them for every chunk -
+    # a film of irregular intervals has nearly a run per chunk.
+    starts, run = [], 0
+    for c, at in enumerate(places):
+        while run + 1 < len(chunk_runs) and chunk_runs[run + 1][0] <= c + 1:
+            run += 1
+        for _ in range(chunk_runs[run][1]):
+            if len(starts) == count:
+                fail(f"the chunks hold more samples than the {count} stsz lists")
+            starts.append(at)
+            at += lengths[len(starts) - 1]
     if len(starts) != count:
         fail(f"the chunks hold {len(starts)} samples and stsz lists {count}")
 
@@ -2075,8 +2087,7 @@ def mp4_tables(data, stbl):
     if e - b != 4 + count:
         fail(f"sdtp is {e - b - 4} B for {count} samples")
     depends = [data[b + 4 + i] >> 4 & 3 for i in range(count)]
-    b, _ = tables[b"stss"]
-    syncs = [u32(data, b + 8 + 4 * i) for i in range(u32(data, b + 4))]
+    syncs = [int.from_bytes(x, "big") for x in mp4_entries(data, tables, b"stss", 8, 4)]
     return lengths, starts, depends, syncs
 
 

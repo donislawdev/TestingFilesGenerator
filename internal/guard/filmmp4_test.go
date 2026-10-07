@@ -144,33 +144,57 @@ func walkMP4(b []byte) (filmRead, error) {
 	return f, nil
 }
 
+// mp4Table is the entries of one sample table, each size bytes, after head
+// bytes that end in their count - refused unless the box is exactly that
+// long, so no count a file states is read past the box that states it.
+func mp4Table(stbl []byte, name string, head, size int) ([][]byte, error) {
+	b, err := mp4Child(stbl, name)
+	if err != nil {
+		return nil, err
+	}
+	if len(b) < head {
+		return nil, fmt.Errorf("%s is %d B, shorter than its own header", name, len(b))
+	}
+	n := int64(binary.BigEndian.Uint32(b[head-4:]))
+	if int64(len(b)) != int64(head)+int64(size)*n {
+		return nil, fmt.Errorf("%s says %d entries and is %d B long", name, n, len(b))
+	}
+	out := make([][]byte, n)
+	for i := range out {
+		out[i] = b[head+size*i : head+size*(i+1)]
+	}
+	return out, nil
+}
+
 // mp4Samples is where each sample starts in the file and how long it is,
-// from stsz, stsc and stco or co64.
+// from stsz, stsc and stco or co64. The runs of stsc are walked once, forward
+// with the chunks, because a film of irregular intervals has nearly a run per
+// chunk.
 func mp4Samples(stbl []byte) (starts, lens []int64, err error) {
-	stsz, err := mp4Child(stbl, "stsz")
+	sizes, err := mp4Table(stbl, "stsz", 12, 4)
 	if err != nil {
 		return nil, nil, err
 	}
-	for i := range int(binary.BigEndian.Uint32(stsz[8:])) {
-		lens = append(lens, int64(binary.BigEndian.Uint32(stsz[12+4*i:])))
+	for _, e := range sizes {
+		lens = append(lens, int64(binary.BigEndian.Uint32(e)))
 	}
-	stsc, err := mp4Child(stbl, "stsc")
+	runs, err := mp4Table(stbl, "stsc", 8, 12)
 	if err != nil {
 		return nil, nil, err
+	}
+	if len(runs) == 0 || binary.BigEndian.Uint32(runs[0]) != 1 {
+		return nil, nil, fmt.Errorf("stsc does not start at the first chunk")
 	}
 	places, err := mp4ChunkPlaces(stbl)
 	if err != nil {
 		return nil, nil, err
 	}
-	runs := int(binary.BigEndian.Uint32(stsc[4:]))
+	run := 0
 	for c, place := range places {
-		per := int64(0)
-		for r := range runs {
-			if int(binary.BigEndian.Uint32(stsc[8+12*r:])) <= c+1 {
-				per = int64(binary.BigEndian.Uint32(stsc[12+12*r:]))
-			}
+		for run+1 < len(runs) && int(binary.BigEndian.Uint32(runs[run+1])) <= c+1 {
+			run++
 		}
-		for range per {
+		for range binary.BigEndian.Uint32(runs[run][4:]) {
 			if len(starts) == len(lens) {
 				return nil, nil, fmt.Errorf("the chunks hold more samples than the %d stsz lists", len(lens))
 			}
@@ -195,16 +219,16 @@ func mp4ChunkPlaces(stbl []byte) ([]int64, error) {
 			step, table = 8, "co64"
 		}
 	}
-	b, err := mp4Child(stbl, table)
+	entries, err := mp4Table(stbl, table, 8, step)
 	if err != nil {
 		return nil, err
 	}
-	places := make([]int64, binary.BigEndian.Uint32(b[4:]))
-	for i := range places {
+	places := make([]int64, len(entries))
+	for i, e := range entries {
 		if step == 8 {
-			places[i] = int64(binary.BigEndian.Uint64(b[8+8*i:]))
+			places[i] = int64(binary.BigEndian.Uint64(e))
 		} else {
-			places[i] = int64(binary.BigEndian.Uint32(b[8+4*i:]))
+			places[i] = int64(binary.BigEndian.Uint32(e))
 		}
 	}
 	return places, nil
@@ -212,13 +236,13 @@ func mp4ChunkPlaces(stbl []byte) ([]int64, error) {
 
 // mp4Syncs is the set of sync samples, numbered from one.
 func mp4Syncs(stbl []byte) (map[int64]bool, error) {
-	stss, err := mp4Child(stbl, "stss")
+	entries, err := mp4Table(stbl, "stss", 8, 4)
 	if err != nil {
 		return nil, err
 	}
 	out := map[int64]bool{}
-	for i := range int(binary.BigEndian.Uint32(stss[4:])) {
-		out[int64(binary.BigEndian.Uint32(stss[8+4*i:]))] = true
+	for _, e := range entries {
+		out[int64(binary.BigEndian.Uint32(e))] = true
 	}
 	return out, nil
 }

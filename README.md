@@ -23,7 +23,7 @@ needs it finds out it exists.
 
 - **Hit an exact size, to the byte** - ask for 10485761 bytes and get exactly
   that, never a silently rounded file.
-- **Write 27 real formats** - a generated PNG opens in an image viewer, a DOCX
+- **Write 28 real formats** - a generated PNG opens in an image viewer, a DOCX
   opens in Word, a ZIP extracts. Not padded zeros with an extension.
 - **Say what should happen to each file** - the manifest carries an expected
   outcome, so your test reads the assertion instead of you writing it out.
