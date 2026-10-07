@@ -255,6 +255,8 @@
     "slides": "slides",
     "hertz": "hertz",
     "megapixels": "megapixels",
+    "decimal places": "decimal places",
+    "points": "points",
     "million cells": "million cells",
     "entries per second": "entries per second",
     "files": "files",
@@ -305,7 +307,7 @@
     },
     {
       "q": "Which formats are coming next?",
-      "a": "7z, mp3 and mp4. {{ .Facts.FormatCount }} formats work end to end today."
+      "a": "7z and mp3. {{ .Facts.FormatCount }} formats work end to end today."
     },
     {
       "q": "Which systems can I run it on?",

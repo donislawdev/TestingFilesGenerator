@@ -352,6 +352,21 @@ func goldenCases() map[string]engine.Target {
 		"toml_8kib":          {ID: "g", Format: "toml", Sizes: engine.Uniform(1, 8192), Label: true},
 		"toml_8kib_no_label": {ID: "g", Format: "toml", Sizes: engine.Uniform(1, 8192), Label: false},
 
+		// GeoJSON, one case for each path the bytes take rather than one for
+		// each setting: the three layouts, whole degrees (no decimal point at
+		// all), every pitfall at once with fifteen places - the wrap across the
+		// antimeridian, the reversed outline and the height whose span passes
+		// an int64 - and a note capped at a mebibyte with spaces after it. The
+		// label never reaches the content, so it is pinned in one position.
+		"geojson_8kib":               {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true},
+		"geojson_8kib_minified":      {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true, Properties: map[string]string{"formatting": "minified"}},
+		"geojson_8kib_indented":      {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true, Properties: map[string]string{"formatting": "indented"}},
+		"geojson_8kib_whole_degrees": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true, Properties: map[string]string{"precision": "0"}},
+		"geojson_8kib_every_pitfall": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"antimeridian": "true", "winding": "reversed", "altitude": "true", "precision": "15"}},
+		"geojson_capped_note": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 3900000), Label: true,
+			Properties: map[string]string{"geometry": "polygon", "vertices": "100000"}},
+
 		// The label is a byte affecting switch, not a cosmetic one, so it is
 		// pinned in both positions.
 		"txt_4kib_no_label": {ID: "g", Format: "txt", Sizes: engine.Uniform(1, 4096), Label: false},

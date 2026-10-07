@@ -69,6 +69,25 @@ because it turns other people's test suites red.
   with one picture throughout. The smallest film at the default settings is
   3312 B. A pipeline that expects H.264 in an MP4 may refuse AV1, which is a
   test worth having.
+- **Maps: the `geojson` format.** A GeoJSON FeatureCollection (RFC 7946) at
+  the exact size you ask for, read by GDAL, the reader under QGIS and
+  ogr2ogr. Every feature carries a geometry and a set of properties with every
+  JSON value type, and the ids run 1..N. By default the seven geometry types
+  take turns, so a file of seven features or more holds every one of them -
+  `geometry` picks one instead. Set `formatting` (the same three layouts as
+  `json`), `precision` (0 to 15 decimal places, 6 by default, about ten
+  centimetres), `altitude` for a third number in every position and `vertices`
+  for the points in every line and outline, up to a million in one outline.
+  Two settings make a file that is valid and still hard: `winding=reversed`
+  runs outlines clockwise, which RFC 7946 tells readers to accept, and
+  `antimeridian` makes every line and outline cross the 180th meridian
+  without being cut in two - read as flat coordinates, such an outline crosses
+  itself. Every shape is valid by construction and checked with shapely. The
+  smallest file at the default settings is 875 B. A feature larger than 1 MiB
+  ends the file with spaces after it rather than a longer note, because GDAL
+  refuses a text value of ten million characters. At precision 3 or less a
+  line has fewer points than that, one for each step of longitude the globe
+  has, and asking for more is refused with the number that fits.
 - **A length of time as a setting.** `duration`, `change_interval` and `keyframe_interval` take
   `10s`, `1m30s`, `1h`, `500ms` or `59.9s`, to the millisecond. A bare number
   is refused rather than read as seconds, and so is a length that does not
@@ -160,10 +179,10 @@ because it turns other people's test suites red.
 
 ### Changed
 
-- **`empty-and-minimal` now includes the films.** The preset builds the
+- **`empty-and-minimal` now includes the films and GeoJSON.** The preset builds the
   smallest file of every format this build has, so with `formats` left at
-  `all` it gains a `webm` and an `mp4` target, and the recipe
-  `tfg preset eject empty-and-minimal` prints is two targets longer. A manifest from a run of that preset records the
+  `all` it gains a `webm`, an `mp4` and a `geojson` target, and the recipe
+  `tfg preset eject empty-and-minimal` prints is three targets longer. A manifest from a run of that preset records the
   hash of that recipe, so its `recipe_hash` differs from one written before.
   No generated file changes, and a run that names its `formats` is untouched.
 - **An empty text box in the window reads "not set"** instead of "worked out

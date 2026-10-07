@@ -381,6 +381,36 @@
       "bytes": 524288,
       "sha256": "ae5d267ff067caf04aa42e72916f67a89a19584d2ea30445a955202571fc45c3",
       "measured_on": "2026-10-07"
+    },
+    "geojson_8kib": {
+      "bytes": 8192,
+      "sha256": "bc35db22ca96b83a89998c5f537ae494788a7bd009a3f614f359a6d881366f8a",
+      "measured_on": "2026-10-07"
+    },
+    "geojson_8kib_minified": {
+      "bytes": 8192,
+      "sha256": "fdb40fcd26d1df1b86b28f173256588930c26a390f3e2be1862f80ba6fedf298",
+      "measured_on": "2026-10-07"
+    },
+    "geojson_8kib_indented": {
+      "bytes": 8192,
+      "sha256": "ec3b1d46fc2bfa1bf62a8f68823e36cd78269565d87275d442eaf059a4ce1ce5",
+      "measured_on": "2026-10-07"
+    },
+    "geojson_8kib_whole_degrees": {
+      "bytes": 8192,
+      "sha256": "a51236f01f575b8e8b72d4334cb2a2b9716bb5c24be7f443792dc6751cf7f556",
+      "measured_on": "2026-10-07"
+    },
+    "geojson_8kib_every_pitfall": {
+      "bytes": 8192,
+      "sha256": "541fc72eebe970e742b2f2317c03e6dcb22cd9a4fffa19f7f14ec410cf85627a",
+      "measured_on": "2026-10-07"
+    },
+    "geojson_capped_note": {
+      "bytes": 3900000,
+      "sha256": "b921833657d0f75935cbd0c571199cb03cd9be8d57ed77f841c4282f87928162",
+      "measured_on": "2026-10-07"
     }
   },
   "remeasured": [

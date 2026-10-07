@@ -10,7 +10,7 @@
 
 **Testing Files Generator** is a tool for QA engineers and developers who need real
 files to test against - an upload form, a parser, anything that takes a file and
-has an opinion about it. You pick one of its 28 formats and the size you want,
+has an opinion about it. You pick one of its 29 formats and the size you want,
 and you get **exactly that**: ask for a 10 MB PDF and you get a PDF that a reader
 will open, at 10 MB to the byte. Every run also leaves a manifest saying **what
 your system should do with each file**, which is the part other generators leave
@@ -23,7 +23,7 @@ needs it finds out it exists.
 
 - **Hit an exact size, to the byte** - ask for 10485761 bytes and get exactly
   that, never a silently rounded file.
-- **Write 28 real formats** - a generated PNG opens in an image viewer, a DOCX
+- **Write 29 real formats** - a generated PNG opens in an image viewer, a DOCX
   opens in Word, a ZIP extracts. Not padded zeros with an extension.
 - **Say what should happen to each file** - the manifest carries an expected
   outcome, so your test reads the assertion instead of you writing it out.
@@ -165,6 +165,7 @@ owns it, at the exact size you asked for:
 | 🖼️ **Images** | `png`, `jpg`, `bmp`, `gif`, `ico`, `svg`, `tiff`, `webp`, `avif`, `jxl` |
 | 📝 **Text and markup** | `txt`, `md`, `csv`, `json`, `xml`, `html`, `log` |
 | ⚙️ **Configuration** | `yaml`, `toml` |
+| 🗺️ **Maps** | `geojson` (RFC 7946) |
 | 🗜️ **Archives** | `zip`, `targz` (`.tar.gz`) |
 | 🔊 **Audio** | `wav` |
 | 🎞️ **Video** | `webm`, `mp4` (both AV1, no sound) |
@@ -616,6 +617,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `log` | `entry_format`, `timestamps`, `rate`, `methods`, `status_mix`, `level_mix`, `ip_version`, `line_ending` |
 | `txt`, `md`, `xml` | `encoding`, `bom` |
 | `json` | `formatting` |
+| `geojson` | `geometry`, `formatting`, `precision`, `altitude`, `vertices`, `winding`, `antimeridian` |
 | `svg` | `width`, `height` |
 | `html` | `structure` |
 | `yaml`, `toml` | none in this build - the document is a fixed shape, and a size is the only thing to ask for |
@@ -824,12 +826,18 @@ rounding are the two things this tool will not do.
 
 ### Can I generate a file that is deliberately broken?
 
-Not yet. Damaged and malformed files are a planned feature - today every file is
-a valid one of its format.
+Yes. Add `--damage zero-head` and the file comes out at exactly the size you
+asked for with its first bytes overwritten by zeros, so a reader turns it away,
+and the manifest says your system should reject it. [`tfg damage`](#tfg-damage)
+lists what this build can do and what each damage takes.
+
+```
+tfg generate --format png --size 2mb --damage zero-head --out ./out
+```
 
 ### Which formats are coming next?
 
-`7z`, `mp3` and `mp4`.
+`7z` and `mp3`.
 
 ## 🚧 Where this is
 

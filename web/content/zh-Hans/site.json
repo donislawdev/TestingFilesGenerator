@@ -258,6 +258,8 @@
     "slides": "幻灯片",
     "hertz": "赫兹",
     "megapixels": "百万像素",
+    "decimal places": "位小数",
+    "points": "个点",
     "million cells": "百万个单元格",
     "entries per second": "条目每秒",
     "files": "个文件",
@@ -308,7 +310,7 @@
     },
     {
       "q": "接下来会支持哪些格式？",
-      "a": "7z、mp3 和 mp4。目前有 {{ .Facts.FormatCount }} 种格式可以端到端使用。"
+      "a": "7z 和 mp3。目前有 {{ .Facts.FormatCount }} 种格式可以端到端使用。"
     },
     {
       "q": "我可以在哪些系统上运行？",

@@ -444,7 +444,7 @@ func TestAnSVGDrawingCarriesRealShapes(t *testing.T) {
 // This is the shape docs/OBSERVATIONS.md now calls out: an audit of
 // completeness has to run FROM THE SOURCE towards the list. Walking the entries
 // already written down cannot, by construction, find what is missing from them.
-var textFormats = []string{"txt", "md", "log", "csv", "json", "xml", "html", "svg", "yaml", "toml"}
+var textFormats = []string{"txt", "md", "log", "csv", "json", "xml", "html", "svg", "yaml", "toml", "geojson"}
 
 var binaryFormats = []string{"avif", "bmp", "docx", "gif", "ico", "jpg", "jxl", "mp4", "pdf", "png", "pptx", "targz", "tiff", "wav", "webm", "webp", "xlsx", "zip"}
 
@@ -679,16 +679,22 @@ func TestRecordNumbersRunFromOneWithoutAGap(t *testing.T) {
 	cases := []struct {
 		format string
 		number *regexp.Regexp
+		// smallest is the first size asked for, the smallest where two records
+		// fit. A kilobyte for every format but GeoJSON, whose smallest file is
+		// 875 B - the largest feature its default settings can draw - so a
+		// kilobyte holds one feature and shows no numbering at all.
+		smallest int64
 	}{
-		{"csv", regexp.MustCompile(`(?m)^(\d+),`)},
-		{"json", regexp.MustCompile(`\{"id":(\d+),`)},
-		{"xml", regexp.MustCompile(`<record id="(\d+)"`)},
-		{"yaml", regexp.MustCompile(`(?m)^  - id: (\d+)$`)},
-		{"toml", regexp.MustCompile(`(?m)^id = (\d+)$`)},
+		{"csv", regexp.MustCompile(`(?m)^(\d+),`), 1024},
+		{"json", regexp.MustCompile(`\{"id":(\d+),`), 1024},
+		{"xml", regexp.MustCompile(`<record id="(\d+)"`), 1024},
+		{"yaml", regexp.MustCompile(`(?m)^  - id: (\d+)$`), 1024},
+		{"toml", regexp.MustCompile(`(?m)^id = (\d+)$`), 1024},
+		{"geojson", regexp.MustCompile(`\{"type":"Feature","id":(\d+),`), 2048},
 	}
 
 	for _, c := range cases {
-		for _, size := range []int64{1024, 4097, densitySize} {
+		for _, size := range []int64{c.smallest, 4097, densitySize} {
 			t.Run(c.format+"/"+sizeText(size), func(t *testing.T) {
 				body := generateBytes(t, c.format, size)
 

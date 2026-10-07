@@ -258,6 +258,8 @@
     "slides": "dia's",
     "hertz": "hertz",
     "megapixels": "megapixels",
+    "decimal places": "decimalen",
+    "points": "punten",
     "million cells": "miljoen cellen",
     "entries per second": "items per seconde",
     "files": "bestanden",
@@ -308,7 +310,7 @@
     },
     {
       "q": "Welke formaten komen er nog?",
-      "a": "7z, mp3 en mp4. Vandaag werken {{ .Facts.FormatCount }} formaten van begin tot eind."
+      "a": "7z en mp3. Vandaag werken {{ .Facts.FormatCount }} formaten van begin tot eind."
     },
     {
       "q": "Op welke systemen kan ik het draaien?",

@@ -258,6 +258,8 @@
     "slides": "スライド",
     "hertz": "ヘルツ",
     "megapixels": "メガピクセル",
+    "decimal places": "小数桁",
+    "points": "点",
     "million cells": "百万セル",
     "entries per second": "1秒あたりのエントリ数",
     "files": "ファイル",
@@ -308,7 +310,7 @@
     },
     {
       "q": "次に対応する形式は何ですか。",
-      "a": "7z、mp3、mp4です。現在、{{ .Facts.FormatCount }}種類の形式がエンドツーエンドで動作します。"
+      "a": "7zとmp3です。現在、{{ .Facts.FormatCount }}種類の形式がエンドツーエンドで動作します。"
     },
     {
       "q": "どのOSで動かせますか。",

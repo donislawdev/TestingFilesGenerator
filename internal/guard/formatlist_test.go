@@ -207,9 +207,11 @@ func TestTypingIntoTheFormatListNarrowsItAndLandsOnWhatStartsWithIt(t *testing.T
 
 // TestTheArrowsInTheFormatListStepOverTheHeadings walks a narrowed list.
 //
-// "j" leaves jpg and jxl under one heading and json under another, so Down
-// from jxl has a heading in its way - the cost the deferral of 2026-08-25
-// wrote down, before there were any headings to step over.
+// "j" leaves jpg and jxl under one heading and geojson and json under another,
+// so Down from jxl has a heading in its way - the cost the deferral of
+// 2026-08-25 wrote down, before there were any headings to step over. geojson
+// joined the second heading on 2026-10-07, and the walk goes through it both
+// ways rather than around it.
 func TestTheArrowsInTheFormatListStepOverTheHeadings(t *testing.T) {
 	_, _, list, filter := openFormatList(t)
 	typeInto(filter, "j")
@@ -218,8 +220,10 @@ func TestTheArrowsInTheFormatListStepOverTheHeadings(t *testing.T) {
 		want string
 	}{
 		{fyne.KeyDown, "jxl"},
+		{fyne.KeyDown, "geojson"},
 		{fyne.KeyDown, "json"},
 		{fyne.KeyDown, "json"},
+		{fyne.KeyUp, "geojson"},
 		{fyne.KeyUp, "jxl"},
 		{fyne.KeyUp, "jpg"},
 		{fyne.KeyUp, "jpg"},

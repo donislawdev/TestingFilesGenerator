@@ -258,6 +258,8 @@
     "slides": "diapozitive",
     "hertz": "herți",
     "megapixels": "megapixeli",
+    "decimal places": "zecimale",
+    "points": "puncte",
     "million cells": "milioane de celule",
     "entries per second": "intrări pe secundă",
     "files": "fișiere",
@@ -308,7 +310,7 @@
     },
     {
       "q": "Ce formate urmează?",
-      "a": "7z, mp3 și mp4. Azi funcționează de la un capăt la altul {{ .Facts.FormatCount }} formate."
+      "a": "7z și mp3. Azi funcționează de la un capăt la altul {{ .Facts.FormatCount }} formate."
     },
     {
       "q": "Pe ce sisteme îl pot rula?",

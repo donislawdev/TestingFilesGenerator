@@ -258,6 +258,8 @@
     "slides": "slide",
     "hertz": "hertz",
     "megapixels": "megapiksel",
+    "decimal places": "angka desimal",
+    "points": "titik",
     "million cells": "juta sel",
     "entries per second": "entri per detik",
     "files": "file",
@@ -308,7 +310,7 @@
     },
     {
       "q": "Format apa yang akan hadir berikutnya?",
-      "a": "7z, mp3, dan mp4. Saat ini {{ .Facts.FormatCount }} format bekerja dari ujung ke ujung."
+      "a": "7z dan mp3. Saat ini {{ .Facts.FormatCount }} format bekerja dari ujung ke ujung."
     },
     {
       "q": "Di sistem apa saya bisa menjalankannya?",

@@ -348,6 +348,9 @@ var checkers = map[string]Checker{
 			return nil
 		},
 	},
+
+	// GDAL's GeoJSON driver. See geoscripts.go.
+	"gdal-geojson": gdalGeoJSON,
 }
 
 // DecodedFrames is how many frames the libaom oracle decoded, read from what
@@ -535,6 +538,9 @@ func Strict(formatID, path string, settings ...string) Result {
 func StrictKnows(formatID string) bool {
 	switch formatID {
 	case "png", "wav", "pdf", "zip", "targz", "log", "csv", "json", "xml", "svg", "html",
+		// From its first day, because GDAL alone took files this one refuses
+		// (docs/GEOJSON-2026-10-07.md section 3).
+		"geojson",
 		"bmp", "gif", "ico", "jpg", "tiff", "webp", "avif", "jxl", "docx", "xlsx", "pptx",
 		// The two text formats joined on 2026-09-07, when they gained an
 		// encoding. Before that there was nothing here to check against

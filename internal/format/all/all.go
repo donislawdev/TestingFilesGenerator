@@ -12,6 +12,7 @@ import (
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/bmp"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/csvfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/docx"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/geojson"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/gif"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/htmlfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/ico"
