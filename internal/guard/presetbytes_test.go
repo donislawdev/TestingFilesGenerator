@@ -81,7 +81,13 @@ func TestEjectingAPresetGivesTheBytesItAlwaysGave(t *testing.T) {
 		// picture began to change, and the smallest film the recipe asks for
 		// went from 3044 B to 3294 B (docs/WIDEO-2026-10-06.md section 15).
 		// The same Changed entry covers it.
-		{id: "empty-and-minimal", args: preset.Args{}, bytes: 9272, sum: "1b08c93c31773b19cf13ac445671345aa8bf160eff8fe16a889d13b7e6ec6d6b"},
+		// Moved a third time on 2026-10-07, still before any release carried
+		// the film, under the same decision: films are cut into tiles, and
+		// planning counts a frame's tile_info as this package writes it rather
+		// than at the longest gav1d could, so the smallest film went from
+		// 3294 B to 3284 B - the same film, a bound ten bytes closer to it
+		// (docs/WEBM-WYDAJNOSC-2026-10-06.md section 10).
+		{id: "empty-and-minimal", args: preset.Args{}, bytes: 9272, sum: "44600851ef3be72e73df2082c4a653416407efc770ca56bec62de87cf0f41905"},
 		{id: "empty-and-minimal", args: preset.Args{"formats": "jpg,png,txt"}, bytes: 1472, sum: "19b12800372395ad3bf5cba6407ca654d7ed51eba3a5bc5436f76a94bc09253c"},
 		// The preset of unusual file names, measured 2026-09-25 on its first
 		// build: the default, and a format whose extension is a byte longer,
