@@ -3,7 +3,9 @@ package geojson
 import "strconv"
 
 // layout is what stands around the features: what opens the collection, what
-// goes before and after each feature, and what closes it.
+// goes before and after each feature, and what closes it - after closes the
+// features array and end the collection, with the collection's bbox between
+// the two when there is one.
 //
 // The features themselves go through emitter, which knows only whether to
 // indent. Unlike the json format, whose records are flat enough to be held as
@@ -16,7 +18,8 @@ type layout struct {
 	prologue string
 	start    string
 	between  string
-	epilogue string
+	after    string
+	end      string
 }
 
 // featureDepth is how deep a feature sits: inside the collection and inside
@@ -30,7 +33,8 @@ var layouts = map[string]layout{
 		name:     RecordPerLine,
 		prologue: `{"type":"FeatureCollection","features":[` + "\n",
 		between:  ",\n",
-		epilogue: "\n]}\n",
+		after:    "\n]",
+		end:      "}\n",
 	},
 	// No whitespace anywhere and no newline at the end, the same promise the
 	// json format makes for the same word.
@@ -38,7 +42,8 @@ var layouts = map[string]layout{
 		name:     Minified,
 		prologue: `{"type":"FeatureCollection","features":[`,
 		between:  ",",
-		epilogue: "]}",
+		after:    "]",
+		end:      "}",
 	},
 	// What JSON.stringify(x, null, 2) and json.dumps(x, indent=2) write: two
 	// spaces a level and every value on its own line, every coordinate number
@@ -51,7 +56,8 @@ var layouts = map[string]layout{
 		prologue: "{\n  \"type\": \"FeatureCollection\",\n  \"features\": [\n",
 		start:    "    ",
 		between:  ",\n",
-		epilogue: "\n  ]\n}\n",
+		after:    "\n  ]",
+		end:      "\n}\n",
 	},
 }
 

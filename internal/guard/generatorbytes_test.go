@@ -366,6 +366,21 @@ func goldenCases() map[string]engine.Target {
 			Properties: map[string]string{"antimeridian": "true", "winding": "reversed", "altitude": "true", "precision": "15"}},
 		"geojson_capped_note": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 3900000), Label: true,
 			Properties: map[string]string{"geometry": "polygon", "vertices": "100000"}},
+		// The second set of settings, one case for each new path: outlines
+		// with holes, a box on every feature and on the collection across the
+		// antimeridian with a height and indented, features with no place and
+		// ids of both types, and a collection box that goes all the way round -
+		// each read by the structural checker when its value was recorded, the
+		// last two reporting a crossing box and a box round the globe.
+		"geojson_8kib_holes": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"holes": "2"}},
+		"geojson_8kib_boxes_across": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"bbox": "true", "antimeridian": "true", "altitude": "true", "formatting": "indented"}},
+		"geojson_8kib_unlocated_mixed_ids": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"unlocated": "some", "ids": "mixed"}},
+		"geojson_box_round_the_globe": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"bbox": "true", "antimeridian": "true", "precision": "0", "vertices": "300",
+				"geometry": "linestring", "formatting": "minified", "ids": "string"}},
 
 		// The label is a byte affecting switch, not a cosmetic one, so it is
 		// pinned in both positions.

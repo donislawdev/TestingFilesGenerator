@@ -2,6 +2,7 @@ package geojson
 
 import (
 	"math"
+	"slices"
 	// D11 promises the same bytes from the same seed, so a deliberate,
 	// reproducible generator is the product rather than a weakness. Nothing
 	// here ever makes a secret.
@@ -32,16 +33,28 @@ type records struct {
 	e        emitter
 	d        drawing
 	tail     []byte
+	closing  []byte
 	shortest int64
+
+	// seen is the box every feature written so far lies in, for the bbox of
+	// the collection, and before is what it was until the last feature. The
+	// one feature built only to learn it does not fit is thrown away, and its
+	// place must go with it - a box that takes in a feature the file does not
+	// hold is the same lie as a number the file skips.
+	seen, before extent
 }
 
 // values is everything about a feature except its geometry and its note,
 // drawn or chosen in one place so the smallest feature is measured with the
-// same code that writes every other one.
+// same code that writes every other one. bounds is the box of its geometry,
+// set only when the feature carries a bbox.
 type values struct {
 	name, tagA, tagB, city string
 	whole, cents, zip      int64
 	active                 bool
+	id                     int64
+	idForm                 string
+	bounds                 extent
 }
 
 func newRecords(s settings) *records {
@@ -54,12 +67,16 @@ func newRecords(s settings) *records {
 func (r *records) Shortest() int64 { return r.shortest }
 
 // Discard hands back the number the thrown away feature took with it, so the
-// closing one carries it instead and the ids read 1..N. The kind follows the
-// number, so the closing feature is the kind the thrown away one would have
-// been.
-func (r *records) Discard() { r.next-- }
+// closing one carries it instead and the ids read 1..N, and the place it took
+// in the collection's box. The kind follows the number, so the closing feature
+// is the kind the thrown away one would have been.
+func (r *records) Discard() {
+	r.next--
+	r.seen = r.before
+}
 
 func (r *records) Append(dst []byte, rng *rand.Rand) []byte {
+	r.before = r.seen
 	dst = r.draw(dst, rng)
 	dst = appendPhrase(dst, rng, 3+rng.IntN(5))
 	dst = r.shut(dst)
@@ -69,31 +86,54 @@ func (r *records) Append(dst []byte, rng *rand.Rand) []byte {
 // AppendExact writes the closing feature at exactly n bytes, the end of the
 // collection included. The note takes the remainder up to noteCap, and spaces
 // after the feature take the rest.
+//
+// The end of the collection is built after the closing feature is drawn,
+// because its bbox takes that feature in as well.
 func (r *records) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
 	mark := len(dst)
 	dst = r.draw(dst, rng)
 	at := len(dst)
 	dst = r.shut(dst)
 	r.tail = append(r.tail[:0], dst[at:]...)
-	fill := n - int64(len(dst)-mark) - int64(len(r.s.layout.epilogue))
+	r.closing = r.epilogue(r.closing[:0], r.seen)
+	fill := n - int64(len(dst)-mark) - int64(len(r.closing))
 	note := min(fill, noteCap)
 	dst = core.AppendFiller(dst[:at], words, note, nil)
 	dst = append(dst, r.tail...)
 	dst = appendSpaces(dst, fill-note)
-	return append(dst, r.s.layout.epilogue...)
+	return append(dst, r.closing...)
+}
+
+// epilogue is what closes the collection: the end of its features, its bbox
+// when one was asked for and any feature has a place, and the end of the
+// object.
+func (r *records) epilogue(dst []byte, x extent) []byte {
+	dst = append(dst, r.s.layout.after...)
+	if r.s.bbox && x.set {
+		e := &r.e
+		e.b, e.depth, e.fresh = dst, 1, false
+		e.key("bbox")
+		e.box(x, r.g, r.s.dims())
+		dst = e.b
+	}
+	return append(dst, r.s.layout.end...)
 }
 
 // draw writes the next feature up to the opening quote of its note.
 func (r *records) draw(dst []byte, rng *rand.Rand) []byte {
 	r.next++
-	k := r.s.kinds[(r.next-1)%int64(len(r.s.kinds))]
+	k := r.s.kindAt(r.next)
 	r.d.draw(rng, r.s, r.g, k)
 	v := values{
 		name: word(rng), whole: 100000 + rng.Int64N(899999), cents: rng.Int64N(100),
 		active: rng.IntN(2) == 0, tagA: word(rng), tagB: word(rng), city: word(rng),
-		zip: 10000 + rng.Int64N(90000),
+		zip: 10000 + rng.Int64N(90000), id: r.next, idForm: r.s.idAt(r.next),
 	}
-	return r.write(dst, r.next, k, v)
+	if r.s.bbox {
+		v.bounds = r.d.extent()
+		r.seen.grow(v.bounds, r.d.stride)
+	}
+	return r.write(dst, k, v)
 }
 
 // measureShortest is the closing feature at its longest with an empty note:
@@ -138,27 +178,50 @@ func ClosingFeatureBounds(props map[string]string) (carried, whole int64, err er
 
 // worstLength is the length of the longest closing feature of kind k with n
 // points, the end of the collection included.
+//
+// Its id is the widest number in the widest form the settings write, and both
+// boxes hold the widest number at every axis. The box of the collection is
+// counted whenever the settings draw any geometry - with some features
+// unlocated the first one always has a place, so the box is always there.
 func (r *records) worstLength(k kind, n int) int64 {
 	s := r.s
 	s.vertices = n
 	r.d.worst(s, r.g, k)
 	widest := values{name: longestWord, tagA: longestWord, tagB: longestWord, city: longestWord,
-		whole: 999999, cents: 99, zip: 99999}
-	buf := r.shut(r.write(nil, math.MaxInt64, k, widest))
-	return int64(len(buf) + len(s.layout.epilogue))
+		whole: 999999, cents: 99, zip: 99999, id: math.MaxInt64, idForm: s.widestID()}
+	if s.bbox {
+		widest.bounds = r.d.extent()
+	}
+	buf := r.shut(r.write(nil, k, widest))
+	closing := r.epilogue(nil, widestBox(r.s, r.g))
+	return int64(len(buf) + len(closing))
+}
+
+// widestBox is a box with the widest number the grid writes at every axis, or
+// none when the settings draw no geometry at all.
+func widestBox(s settings, g grid) extent {
+	if slices.Equal(s.kinds, []kind{kindNone}) {
+		return extent{}
+	}
+	var x extent
+	x.add([]int64{-g.lon, -g.lat, g.low})
+	return x
 }
 
 // write is one feature through the opening quote of its note, from a drawing
 // already made and values already chosen.
-func (r *records) write(dst []byte, id int64, k kind, v values) []byte {
+func (r *records) write(dst []byte, k kind, v values) []byte {
 	e := &r.e
 	e.b = append(dst, r.s.layout.start...)
 	e.depth = featureDepth
 	e.open('{')
 	e.key("type")
 	e.text("Feature")
-	e.key("id")
-	e.whole(id)
+	e.id(v.id, v.idForm)
+	if v.bounds.set {
+		e.key("bbox")
+		e.box(v.bounds, r.g, r.s.dims())
+	}
 	e.key("geometry")
 	r.geometry(k)
 	e.key("properties")
@@ -200,6 +263,22 @@ func (r *records) properties(v values) {
 	e.whole(v.zip)
 	e.b = append(e.b, '"')
 	e.close('}')
+}
+
+// id writes the id member in the form asked for: a number, the same number as
+// text after an f, or nothing at all. Every form counts 1..N, so a test can
+// still find a feature that went missing.
+func (e *emitter) id(n int64, form string) {
+	switch form {
+	case Number:
+		e.key("id")
+		e.whole(n)
+	case String:
+		e.key("id")
+		e.b = append(e.b, '"', 'f')
+		e.whole(n)
+		e.b = append(e.b, '"')
+	}
 }
 
 // shut closes the note, the properties and the feature.

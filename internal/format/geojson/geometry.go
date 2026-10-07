@@ -1,8 +1,13 @@
 package geojson
 
-// geometry writes the geometry object of kind k from the drawing already made.
+// geometry writes the geometry object of kind k from the drawing already made,
+// or null for a feature with no place.
 func (r *records) geometry(k kind) {
 	e := &r.e
+	if k == kindNone {
+		e.b = append(e.b, "null"...)
+		return
+	}
 	e.open('{')
 	e.key("type")
 	e.text(typeName[k])
@@ -54,7 +59,7 @@ func (r *records) coordinates(k kind) {
 }
 
 // piece writes piece j of the drawing: a position for a point, an array of
-// positions for a line, and an array holding one ring for an outline.
+// positions for a line, and for an outline an array of its rings.
 func (r *records) piece(p piece, j int) {
 	from := 0
 	if j > 0 {
@@ -67,10 +72,50 @@ func (r *records) piece(p piece, j int) {
 	case pieceLine:
 		r.run(from, to, false)
 	case pieceRing:
-		r.e.open('[')
-		r.e.next()
-		r.run(from, to, r.s.reversed)
-		r.e.close(']')
+		r.rings(from, to)
+	}
+}
+
+// rings is an outline and its holes, the outline first as RFC 7946 asks. The
+// holes are the last positions of the piece, five each, and each runs the
+// other way round to the outline - clockwise under rfc7946 and
+// counter-clockwise under reversed.
+func (r *records) rings(from, to int) {
+	e := &r.e
+	outline := to - r.s.holes*holePositions
+	e.open('[')
+	e.next()
+	r.run(from, outline, r.s.reversed)
+	for at := outline; at < to; at += holePositions {
+		e.next()
+		r.run(at, at+holePositions, !r.s.reversed)
+	}
+	e.close(']')
+}
+
+// box writes the bbox of an extent: every axis of the south-west corner, then
+// every axis of the north-east one. A box across the antimeridian is written
+// with its west edge greater than its east edge, and one that reaches all the
+// way round is the whole circle, -180 to 180 (RFC 7946 sections 5.2 and 5.3).
+// dims is how many axes a position has.
+func (e *emitter) box(x extent, g grid, dims int) {
+	west, east := g.wrap(x.lo[0]), g.wrap(x.hi[0])
+	if x.hi[0]-x.lo[0] >= 2*g.lon {
+		west, east = -g.lon, g.lon
+	}
+	e.open('[')
+	e.corner(g, west, x.lo[1:dims])
+	e.corner(g, east, x.hi[1:dims])
+	e.close(']')
+}
+
+// corner is the axes of one corner of a box: its longitude, then the rest.
+func (e *emitter) corner(g grid, lon int64, rest []int64) {
+	e.next()
+	e.fixed(lon, g.places, g.scale)
+	for _, v := range rest {
+		e.next()
+		e.fixed(v, g.places, g.scale)
 	}
 }
 
@@ -96,10 +141,7 @@ func (r *records) run(from, to int, backwards bool) {
 func (r *records) position(i int) {
 	e := &r.e
 	p := r.d.pos[i*r.d.stride : (i+1)*r.d.stride]
-	x := p[0]
-	if x > r.g.lon {
-		x -= 2 * r.g.lon
-	}
+	x := r.g.wrap(p[0])
 	e.open('[')
 	for j, v := range p {
 		if j == 0 {

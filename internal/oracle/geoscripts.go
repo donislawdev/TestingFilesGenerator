@@ -67,11 +67,16 @@ func ogrinfo() (string, bool) {
 // crossing itself opened without a word. It is a question about the shape
 // rather than about the text, so it lives beside the reader rather than in it.
 //
-// unwrap moves longitudes so no step between neighbours is more than 180
-// degrees before asking. That is how a shape crossing the antimeridian is meant
-// to be read. Read flat, as GEOS reads coordinates, the same outline crosses
-// itself - measured on the same day, and that is the trap the setting exists
-// to hand a tester, not a defect for this question to find.
+// unwrap moves every longitude of a shape into the turn of the globe that
+// starts at its first line or outline, before asking. That is how a shape
+// crossing the antimeridian is meant to be read. Read flat, as GEOS reads
+// coordinates, the same outline crosses itself - measured on the same day, and
+// that is the trap the setting exists to hand a tester, not a defect for this
+// question to find. One turn for the whole shape rather than one per ring,
+// because a hole that starts past 180 would otherwise land a turn away from
+// its outline, outside it.
+//
+// A feature with no place has no geometry to judge and is passed over.
 func ShapelyValid(path string, unwrap bool) Result {
 	return Checker{
 		Name: "shapely",
@@ -94,32 +99,40 @@ except ImportError:
 
 path, unwrap = sys.argv[1], sys.argv[2] == "true"
 
-def unwrapped(c):
-    if isinstance(c[0], (int, float)):
-        return c
-    if isinstance(c[0][0], (int, float)):
-        out = [list(c[0])]
-        for p in c[1:]:
-            q = list(p)
-            while q[0] - out[-1][0] > 180:
-                q[0] -= 360
-            while q[0] - out[-1][0] < -180:
-                q[0] += 360
-            out.append(q)
-        return out
-    return [unwrapped(x) for x in c]
-
-def geometry(g):
+def first_longitude(g):
     if g["type"] == "GeometryCollection":
-        return {"type": g["type"], "geometries": [geometry(m) for m in g["geometries"]]}
-    return {"type": g["type"], "coordinates": unwrapped(g["coordinates"]) if unwrap else g["coordinates"]}
+        lines = [m for m in g["geometries"] if m["type"] != "Point"]
+        return first_longitude(lines[0]) if lines else None
+    if g["type"] == "Point":
+        return None
+    c = g["coordinates"]
+    while isinstance(c[0], list):
+        c = c[0]
+    return c[0]
+
+def moved(c, first):
+    if isinstance(c[0], (int, float)):
+        return [first + (c[0] - first) % 360] + list(c[1:])
+    return [moved(x, first) for x in c]
+
+def geometry(g, first):
+    if g["type"] == "GeometryCollection":
+        return {"type": g["type"], "geometries": [geometry(m, first) for m in g["geometries"]]}
+    if first is None:
+        return g
+    return {"type": g["type"], "coordinates": moved(g["coordinates"], first)}
 
 with open(path, encoding="utf-8") as f:
     doc = json.load(f)
-for feature in doc["features"]:
-    shaped = shape(geometry(feature["geometry"]))
+judged = 0
+for number, feature in enumerate(doc["features"], start=1):
+    g = feature["geometry"]
+    if g is None:
+        continue
+    shaped = shape(geometry(g, first_longitude(g) if unwrap else None))
     if not shaped.is_valid:
-        print("FAIL feature %s %s: %s" % (feature["id"], feature["geometry"]["type"], explain_validity(shaped)))
+        print("FAIL feature %d %s: %s" % (number, g["type"], explain_validity(shaped)))
         sys.exit(1)
-print("OK %d features, every geometry valid" % len(doc["features"]))
+    judged += 1
+print("OK %d features, %d geometries, every one valid" % (len(doc["features"]), judged))
 `

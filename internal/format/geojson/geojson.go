@@ -84,8 +84,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	if err != nil {
 		return format.Plan{}, err
 	}
-	if most := mostPoints(s.kinds, gridFor(s.precision)); int64(s.vertices) > most {
-		return format.Plan{}, refuseCrowded(s, most)
+	if err := refusal(s); err != nil {
+		return format.Plan{}, err
 	}
 	if min := minimumBytes(s); r.Bytes < min {
 		return format.Plan{}, &format.BelowMinimumError{
@@ -108,14 +108,35 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Precision:    s.precision,
 			Altitude:     s.altitude,
 			Vertices:     s.vertices,
+			Holes:        s.holes,
 			Winding:      s.winding(),
 			Antimeridian: s.antimeridian,
+			Unlocated:    s.unlocated,
+			IDs:          s.ids,
+			BBox:         s.bbox,
 			// Stated even though it is always false here, so a test can assert
 			// on it without knowing which formats carry a label internally.
 			format.PropertyLabelEmbedded: false,
 		},
 		Memo: memo{seed: r.Seed, s: s},
 	}, nil
+}
+
+// refusal is why the globe has no room for what these settings draw, or nil.
+// Holes ask for nothing when no outline is drawn, and nothing asks for room
+// when every feature is unlocated.
+func refusal(s settings) error {
+	g := gridFor(s.precision)
+	if most := mostPoints(s.kinds, g); int64(s.vertices) > most {
+		return refuseCrowded(s, most)
+	}
+	if s.holes == 0 || !draws(s.kinds, pieceRing) {
+		return nil
+	}
+	if most := mostHoles(g); s.vertices < minVerticesWithHoles || int64(s.holes) > most {
+		return refuseHoles(s, most)
+	}
+	return nil
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {

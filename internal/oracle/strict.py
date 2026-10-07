@@ -2160,11 +2160,14 @@ class GeoNumber(str):
 
 GEOJSON_KINDS = ["Point", "LineString", "Polygon", "MultiPoint", "MultiLineString",
                  "MultiPolygon", "GeometryCollection"]
-GEOJSON_FEATURE_KEYS = ["type", "id", "geometry", "properties"]
 GEOJSON_PROPERTY_KEYS = ["name", "amount", "active", "retired", "tags", "address", "note"]
 # The longest the closing note gets before spaces take the rest, measured
 # against GDAL on 2026-10-07 (docs/GEOJSON-2026-10-07.md section 5).
 GEOJSON_NOTE_CAP = 1 << 20
+# With unlocated=some, every fifth feature has no place (the format's promise).
+GEOJSON_UNLOCATED_EVERY = 5
+# Four points and the first again.
+GEOJSON_HOLE_POSITIONS = 5
 
 
 def geo_dump(value, indent, depth=0):
@@ -2203,8 +2206,9 @@ def geo_layout(text, doc, layout):
     elif layout == "minified":
         expected, last = geo_dump(doc, False), geo_dump(feats[-1], False)
     elif layout == "record-per-line":
+        box = ',"bbox":' + geo_dump(doc["bbox"], False) if "bbox" in doc else ""
         expected = ('{"type":"FeatureCollection","features":[\n'
-                    + ",\n".join(geo_dump(f, False) for f in feats) + "\n]}\n")
+                    + ",\n".join(geo_dump(f, False) for f in feats) + "\n]" + box + "}\n")
         last = geo_dump(feats[-1], False)
     else:
         fail(f"the geojson check was told formatting={layout!r}, which is not a layout this tool writes")
@@ -2258,10 +2262,10 @@ def geo_crosses(run):
     return any(abs(float(a[0]) - float(b[0])) > 180 for a, b in zip(run, run[1:]))
 
 
-def geo_ring(ring, settings):
-    """An outline: closed, as many points as ordered, wound the ordered way."""
+def geo_ring(ring, settings, hole=False):
+    """A ring: closed, wound the ordered way - and a hole the other way round."""
     if ring[0] != ring[-1]:
-        fail("an outline does not end where it starts")
+        fail(f"{'a hole' if hole else 'an outline'} does not end where it starts")
     xs = [float(p[0]) for p in ring]
     if settings["antimeridian"]:
         for i in range(1, len(xs)):
@@ -2271,26 +2275,47 @@ def geo_ring(ring, settings):
                 xs[i] += 360
     ys = [float(p[1]) for p in ring]
     area = sum(xs[i] * ys[i + 1] - xs[i + 1] * ys[i] for i in range(len(ring) - 1)) / 2
-    if (area > 0) != (settings["winding"] == "rfc7946"):
-        fail(f"an outline runs {'counter-clockwise' if area > 0 else 'clockwise'} "
+    if (area > 0) != ((settings["winding"] == "rfc7946") != hole):
+        fail(f"{'a hole' if hole else 'an outline'} runs {'counter-clockwise' if area > 0 else 'clockwise'} "
              f"and winding={settings['winding']} was ordered")
 
 
+def geo_unlocated(number, settings):
+    """Whether feature number has no place, by the rule unlocated promises."""
+    return settings["unlocated"] == "all" or (
+        settings["unlocated"] == "some" and number % GEOJSON_UNLOCATED_EVERY == 0)
+
+
+def geo_id(number, feat, settings):
+    """The id in the form ids orders: a JSON number, the text f<number>, or none."""
+    form = settings["ids"]
+    if form == "mixed":
+        form = "string" if number % 2 == 0 else "number"
+    if form == "none":
+        return
+    got = feat["id"]
+    if form == "number" and not (type(got) is GeoNumber and got == str(number)):
+        fail(f"feature {number} carries the id {got!r} and ids={settings['ids']} makes it the number {number}")
+    if form == "string" and not (type(got) is str and got == f"f{number}"):
+        fail(f"feature {number} carries the id {got!r} and ids={settings['ids']} makes it the text 'f{number}'")
+
+
 def geo_feature(number, feat, settings, kinds):
+    """One feature: its members, its id, its place or the lack of one, its shape.
+
+    Returns the box its positions lie in, as drawn, or None for a feature with
+    no place."""
     if not isinstance(feat, dict):
         fail(f"feature {number} is {type(feat).__name__} rather than an object")
-    if list(feat) != GEOJSON_FEATURE_KEYS or feat["type"] != "Feature":
-        fail(f"feature {number} has the members {list(feat)}, not {GEOJSON_FEATURE_KEYS}")
-    # Both may be null in RFC 7946, and this tool writes neither null - a
-    # feature without a place or without properties is a file it did not make.
-    if not isinstance(feat["geometry"], dict) or not isinstance(feat["properties"], dict):
-        fail(f"feature {number} has a geometry of {type(feat['geometry']).__name__} and properties of "
-             f"{type(feat['properties']).__name__} - this tool writes an object for both")
-    if feat["id"] != str(number):
-        fail(f"feature {number} carries the id {feat['id']}, so the ids do not run 1..N")
-    want = kinds[(number - 1) % len(kinds)]
-    if feat["geometry"]["type"] != want:
-        fail(f"feature {number} is a {feat['geometry']['type']} and geometry={settings['geometry']} makes it a {want}")
+    unlocated = geo_unlocated(number, settings)
+    keys = (["type"] + (["id"] if settings["ids"] != "none" else [])
+            + (["bbox"] if settings["bbox"] and not unlocated else []) + ["geometry", "properties"])
+    if list(feat) != keys or feat["type"] != "Feature":
+        fail(f"feature {number} has the members {list(feat)}, not {keys}")
+    geo_id(number, feat, settings)
+    # properties may be null in RFC 7946 and this tool never writes it so.
+    if not isinstance(feat["properties"], dict):
+        fail(f"feature {number} has properties of {type(feat['properties']).__name__} - this tool writes an object")
     props = feat["properties"]
     if list(props) != GEOJSON_PROPERTY_KEYS:
         fail(f"feature {number} has the properties {list(props)}, not {GEOJSON_PROPERTY_KEYS}")
@@ -2299,24 +2324,125 @@ def geo_feature(number, feat, settings, kinds):
     types = [type(props[k]) for k in GEOJSON_PROPERTY_KEYS]
     if types != [str, GeoNumber, bool, type(None), list, dict, str]:
         fail(f"feature {number} has properties of the types {[t.__name__ for t in types]}")
-    dims, n = (3 if settings["altitude"] else 2), settings["vertices"]
-    for piece, coords in geo_pieces(feat["geometry"]):
+    if unlocated:
+        if feat["geometry"] is not None:
+            fail(f"feature {number} has a geometry and unlocated={settings['unlocated']} leaves it without one")
+        return None
+    if not isinstance(feat["geometry"], dict):
+        fail(f"feature {number} has a geometry of {type(feat['geometry']).__name__} - "
+             f"unlocated={settings['unlocated']} gives it a place")
+    want = kinds[(number - 1) % len(kinds)]
+    if feat["geometry"]["type"] != want:
+        fail(f"feature {number} is a {feat['geometry']['type']} and geometry={settings['geometry']} makes it a {want}")
+    geo_shape(number, feat["geometry"], settings)
+    drawn = geo_drawn(feat["geometry"], settings)
+    lo = [min(p[i] for p in drawn) for i in range(len(drawn[0]))]
+    hi = [max(p[i] for p in drawn) for i in range(len(drawn[0]))]
+    if settings["bbox"]:
+        geo_bbox(f"feature {number}", feat["bbox"], lo, hi, settings["precision"])
+    return lo, hi
+
+
+def geo_shape(number, geom, settings):
+    """The pieces of a geometry: their counts, places, edges, crossing and winding."""
+    dims, n, holes = (3 if settings["altitude"] else 2), settings["vertices"], settings["holes"]
+    first = geo_anchor(geom, settings)
+    for piece, coords in geo_pieces(geom):
         runs = {"Point": [[coords]], "LineString": [coords], "Polygon": coords}[piece]
-        # One outline and no holes - with none at all the loop below would have
-        # nothing to check and a polygon of no rings would pass.
-        if piece == "Polygon" and len(runs) != 1:
-            fail(f"feature {number}: a polygon has {len(runs)} rings and this tool writes one")
-        count = {"Point": 1, "LineString": n, "Polygon": n + 1}[piece]
-        for run in runs:
+        # An outline and exactly the holes ordered - with no rings at all the
+        # loop below would have nothing to check and a polygon of none would pass.
+        if piece == "Polygon" and len(runs) != 1 + holes:
+            fail(f"feature {number}: a polygon has {len(runs)} rings and holes={holes} makes it {1 + holes}")
+        for i, run in enumerate(runs):
+            hole = piece == "Polygon" and i > 0
+            count = GEOJSON_HOLE_POSITIONS if hole else {"Point": 1, "LineString": n, "Polygon": n + 1}[piece]
             if len(run) != count:
-                fail(f"feature {number}: a {piece} piece has {len(run)} positions and {count} were ordered")
+                fail(f"feature {number}: a {'hole' if hole else piece + ' piece'} has {len(run)} positions "
+                     f"and {count} were ordered")
             for pos in run:
                 geo_position(pos, settings["precision"], dims)
-            if piece != "Point" and geo_crosses(run) != settings["antimeridian"]:
+            geo_edges(number, run, first, settings["precision"])
+            # A hole crosses the antimeridian when it happens to lie across it,
+            # so only lines and outlines answer for the setting.
+            if piece != "Point" and not hole and geo_crosses(run) != settings["antimeridian"]:
                 fail(f"feature {number}: a {piece} {'crosses' if geo_crosses(run) else 'does not cross'} "
                      f"the antimeridian and antimeridian={str(settings['antimeridian']).lower()} was ordered")
             if piece == "Polygon":
-                geo_ring(run, settings)
+                geo_ring(run, settings, hole)
+
+
+def geo_steps(n):
+    """A number as the file wrote it, in steps of its last decimal place."""
+    return int(n.replace(".", ""))
+
+
+def geo_text(v, places):
+    """A count of steps written back with places decimals, as the format writes numbers."""
+    sign, v = ("-" if v < 0 else ""), abs(v)
+    if places == 0:
+        return f"{sign}{v}"
+    scale = 10 ** places
+    return f"{sign}{v // scale}.{v % scale:0{places}d}"
+
+
+def geo_anchor(geom, settings):
+    """Where the turn of the globe a shape was drawn in starts, in steps - or None
+    when nothing was wrapped.
+
+    Across the antimeridian a shape is drawn as one piece, its longitudes running
+    on past 180, and only written wrapped. Every line and outline starts at its
+    left end, short of 180 and so written as drawn, and the rest of the shape lies
+    within a turn of the globe to its east. A shape of points alone lies beside
+    180, so its turn starts at 0. Without the setting nothing is wrapped.
+    """
+    if not settings["antimeridian"]:
+        return None
+    pieces = geo_pieces(geom)
+    starts = [coords[0] if piece == "LineString" else coords[0][0] for piece, coords in pieces if piece != "Point"]
+    return geo_steps(starts[0][0]) if starts else 0
+
+
+def geo_lon(v, first, places):
+    """A longitude as written, in steps, put back in the turn the shape was drawn in."""
+    x = geo_steps(v)
+    return x if first is None else first + (x - first) % (360 * 10 ** places)
+
+
+def geo_edges(number, run, first, places):
+    """Every edge of a run spans less than half the globe, as drawn.
+
+    An edge of half the globe or more reads to a reader that draws edges on the
+    sphere as the short way round the other side - a crossing of the antimeridian
+    nobody ordered, or one that was ordered going the wrong way."""
+    xs = [geo_lon(p[0], first, places) for p in run]
+    for a, b in zip(xs, xs[1:]):
+        if abs(b - a) >= 180 * 10 ** places:
+            fail(f"feature {number}: an edge spans {geo_text(abs(b - a), places)} degrees of longitude, "
+                 f"and every edge this tool draws spans less than half the globe")
+
+
+def geo_drawn(geom, settings):
+    """Every position of a geometry in steps, with the longitudes as they were drawn."""
+    first, places = geo_anchor(geom, settings), settings["precision"]
+    drawn = []
+    for piece, coords in geo_pieces(geom):
+        runs = {"Point": [[coords]], "LineString": [coords], "Polygon": coords}[piece]
+        drawn.extend([geo_lon(pos[0], first, places)] + [geo_steps(v) for v in pos[1:]]
+                     for run in runs for pos in run)
+    return drawn
+
+
+def geo_bbox(where, got, lo, hi, places):
+    """A bbox against the box its positions lie in: south-west corner then
+    north-east, a west edge greater than the east one across the antimeridian,
+    and -180 to 180 when the shapes reach all the way round (RFC 7946 5.2, 5.3)."""
+    half = 180 * 10 ** places
+    west, east = (lo[0] - 2 * half if lo[0] > half else lo[0]), (hi[0] - 2 * half if hi[0] > half else hi[0])
+    if hi[0] - lo[0] >= 2 * half:
+        west, east = -half, half
+    want = [geo_text(v, places) for v in [west] + lo[1:] + [east] + hi[1:]]
+    if not isinstance(got, list) or [type(v) for v in got] != [GeoNumber] * len(got) or list(got) != want:
+        fail(f"{where} has the bbox {got!r} and its positions lie in {want}")
 
 
 def check_geojson(data, settings=None):
@@ -2325,14 +2451,18 @@ def check_geojson(data, settings=None):
     Parsing is CPython's json, and GDAL reads the same file in the reference
     tool beside this. What only this layer asks: that every number carries the
     decimal places ordered, that every outline is closed and wound the way
-    winding says - with longitudes unwrapped where antimeridian says the shape
-    crosses, because read flat such an outline is wound the other way and
-    crosses itself (measured 2026-10-07) - that the kinds take turns as
-    geometry says, that the ids run 1..N, and that the file is byte for byte
+    winding says and every hole the other way - with longitudes unwrapped where
+    antimeridian says the shape crosses, because read flat such an outline is
+    wound the other way and crosses itself (measured 2026-10-07) - that the
+    kinds take turns as geometry says and unlocated takes the place of the
+    features it names, that the ids run 1..N in the type ids orders, that every
+    bbox is the box its positions lie in, and that the file is byte for byte
     the text its layout makes of its own content.
 
     Measured 2026-10-07: GDAL takes a feature with no geometry member and a
-    latitude of 120 without a word. Both are refused here.
+    latitude of 120 without a word, and ignores bbox altogether - a box around
+    another place and one of three numbers both opened without a word. All of
+    them are refused here.
     """
     import json
 
@@ -2343,8 +2473,12 @@ def check_geojson(data, settings=None):
         "precision": int(given.get("precision", "6")),
         "altitude": given.get("altitude", "false") == "true",
         "vertices": int(given.get("vertices", "8")),
+        "holes": int(given.get("holes", "0")),
         "winding": given.get("winding", "rfc7946"),
         "antimeridian": given.get("antimeridian", "false") == "true",
+        "unlocated": given.get("unlocated", "none"),
+        "ids": given.get("ids", "number"),
+        "bbox": given.get("bbox", "false") == "true",
     }
     if data.startswith(b"\xef\xbb\xbf"):
         fail("the file starts with a byte order mark")
@@ -2353,7 +2487,7 @@ def check_geojson(data, settings=None):
         doc = json.loads(text, parse_int=GeoNumber, parse_float=GeoNumber)
     except (UnicodeDecodeError, ValueError) as exc:
         fail(f"not valid UTF-8 JSON: {exc}")
-    if not isinstance(doc, dict) or list(doc) != ["type", "features"] or doc["type"] != "FeatureCollection":
+    if not isinstance(doc, dict) or list(doc)[:2] != ["type", "features"] or doc["type"] != "FeatureCollection":
         fail("the root is not a FeatureCollection with its type and its features")
     feats = doc["features"]
     if not isinstance(feats, list) or not feats:
@@ -2365,8 +2499,9 @@ def check_geojson(data, settings=None):
     # to come out as a refusal with a reason rather than a Python traceback,
     # because a crash also turns a guard red and proves nothing (review of #171).
     try:
-        for number, feat in enumerate(feats, start=1):
-            geo_feature(number, feat, settings, kinds)
+        boxes = [b for b in (geo_feature(number, feat, settings, kinds)
+                             for number, feat in enumerate(feats, start=1)) if b]
+        geo_collection_box(doc, boxes, settings)
     except (TypeError, KeyError, IndexError, AttributeError, ValueError) as exc:
         fail(f"a feature is not shaped the way this tool writes one: {type(exc).__name__}: {exc}")
     spaces = geo_layout(text, doc, settings["formatting"])
@@ -2374,7 +2509,33 @@ def check_geojson(data, settings=None):
     if note > GEOJSON_NOTE_CAP or (spaces and note != GEOJSON_NOTE_CAP):
         fail(f"the last note is {note} B with {spaces} spaces after the feature - "
              f"spaces may only follow a note of exactly {GEOJSON_NOTE_CAP} B")
-    ok(f"{len(feats)} features, {settings['geometry']}, {spaces} trailing spaces")
+    ok(f"{len(feats)} features, {len(boxes)} with a place, {settings['geometry']}, {spaces} trailing spaces, "
+       f"collection box {geo_box_shape(doc)}")
+
+
+def geo_box_shape(doc):
+    """What the collection's bbox is, said so a guard can ask that a file reached
+    the state it exists to check: none, plain, crossing the antimeridian, or the
+    whole way round."""
+    if "bbox" not in doc:
+        return "none"
+    box = [float(v) for v in doc["bbox"]]
+    west, east = box[0], box[len(box) // 2]
+    if (west, east) == (-180, 180):
+        return "round"
+    return "crossing" if west > east else "plain"
+
+
+def geo_collection_box(doc, boxes, settings):
+    """The root's members after its features: a bbox taking in every feature
+    with a place when one was ordered and any feature has one, and nothing else."""
+    want = ["type", "features"] + (["bbox"] if settings["bbox"] and boxes else [])
+    if list(doc) != want:
+        fail(f"the collection has the members {list(doc)}, not {want}")
+    if "bbox" in want:
+        lo = [min(b[0][i] for b in boxes) for i in range(len(boxes[0][0]))]
+        hi = [max(b[1][i] for b in boxes) for i in range(len(boxes[0][1]))]
+        geo_bbox("the collection", doc["bbox"], lo, hi, settings["precision"])
 
 
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,

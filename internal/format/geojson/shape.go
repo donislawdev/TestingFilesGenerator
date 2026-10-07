@@ -9,7 +9,7 @@ import (
 	"slices"
 )
 
-// kind is one of the seven geometry types of RFC 7946.
+// kind is one of the seven geometry types of RFC 7946, or no geometry at all.
 type kind int
 
 const (
@@ -20,6 +20,9 @@ const (
 	kindMultiLine
 	kindMultiPolygon
 	kindCollection
+	// kindNone is a feature with no place, written as geometry null. It is
+	// drawn from no pieces, so it draws nothing.
+	kindNone
 )
 
 // typeName is how each kind is written in the file.
@@ -31,6 +34,7 @@ var typeName = [...]string{
 	kindMultiLine:    "MultiLineString",
 	kindMultiPolygon: "MultiPolygon",
 	kindCollection:   "GeometryCollection",
+	kindNone:         "",
 }
 
 var kindOf = map[string]kind{
@@ -46,11 +50,17 @@ var kindOf = map[string]kind{
 // everyKind is mixed: all seven, in the order RFC 7946 introduces them.
 var everyKind = []kind{kindPoint, kindLine, kindPolygon, kindMultiPoint, kindMultiLine, kindMultiPolygon, kindCollection}
 
-func kindsOf(geometry string) []kind {
-	if geometry == Mixed {
+// kindsOf is the kinds a file draws. With every feature unlocated it draws
+// none, whatever geometry says, so nothing asks for room on the globe.
+func kindsOf(geometry, unlocated string) []kind {
+	switch {
+	case unlocated == All:
+		return []kind{kindNone}
+	case geometry == Mixed:
 		return everyKind
+	default:
+		return []kind{kindOf[geometry]}
 	}
-	return []kind{kindOf[geometry]}
 }
 
 // piece is what a geometry is drawn from. A MultiPoint is drawn as a line's
@@ -74,6 +84,7 @@ var pieces = [...][]piece{
 	kindMultiLine:    {pieceLine, pieceLine},
 	kindMultiPolygon: {pieceRing, pieceRing},
 	kindCollection:   {piecePoint, pieceLine, pieceRing},
+	kindNone:         nil,
 }
 
 // grid is the precision as whole numbers: a coordinate is a count of steps of
@@ -110,27 +121,55 @@ func gridFor(places int) grid {
 // globe by a step on each side, so a shape never meets itself round the back.
 func (g grid) room() int64 { return 2*g.lon - 2 }
 
+// wrap is a longitude as written: one drawn past 180 degrees comes back on the
+// other side of the antimeridian.
+func (g grid) wrap(x int64) int64 {
+	if x > g.lon {
+		return x - 2*g.lon
+	}
+	return x
+}
+
 // needs is the fewest steps of longitude a piece of n points spans. A line
 // moves right at every point. An outline goes right along the bottom and back
-// left along the top, so it needs room for the longer of its two halves.
-func needs(p piece, n int64) int64 {
+// left along the top, so it needs room for the longer of its two halves - and
+// with holes, room for them as well: a cell of four steps each between the two
+// columns a step in from the ends (see pierced).
+func needs(p piece, n, holes int64) int64 {
 	switch p {
 	case pieceLine:
 		return n - 1
 	case pieceRing:
-		return (n - 2) - (n-2)/2 + 1
+		half := (n - 2) - (n-2)/2 + 1
+		if holes > 0 {
+			return max(half, holeCell*holes+2)
+		}
+		return half
 	default:
 		return 0
 	}
 }
 
-func widest(ps []piece, n int64) int64 {
+func widest(ps []piece, n, holes int64) int64 {
 	var most int64
 	for _, p := range ps {
-		most = max(most, needs(p, n))
+		most = max(most, needs(p, n, holes))
 	}
 	return most
 }
+
+// holeCell is the fewest steps of longitude one hole takes: two for the hole
+// and one either side of it.
+const holeCell = 4
+
+// mostHoles is the most holes an outline can hold at this precision - needs
+// turned round for holes, in half the globe rather than all of it. An outline
+// widened for holes may have only six points, so an edge of it can run from
+// one end nearly to the other, and an edge as long as half the globe or more
+// reads as the short way round the other side to a reader that draws edges on
+// the sphere - an outline crossing the antimeridian nobody asked for (measured
+// 2026-10-07 with 118 holes at precision 0, before this limit).
+func mostHoles(g grid) int64 { return (g.lon - 2) / holeCell }
 
 // mostPoints is the largest vertices the globe has room for at this precision,
 // given the kinds a file draws - needs turned round, for the piece that needs
@@ -184,16 +223,27 @@ type box struct {
 // their ends. The parts of a multi geometry sit in separate bands of latitude,
 // so they never overlap. Nothing is checked after the fact, because nothing
 // can go wrong that a check would have to catch.
+//
+// A feature with no place draws nothing and takes nothing from rng.
 func (d *drawing) draw(rng *rand.Rand, s settings, g grid, k kind) {
 	d.reset(s)
+	if k == kindNone {
+		return
+	}
 	d.rng, d.g, d.altitude = rng, g, s.altitude
 	ps := pieces[k]
 	n := int64(s.vertices)
-	b := box{w: max(widest(ps, n), g.scale/5+rng.Int64N(g.scale*4/5+1))}
+	holes := holesIn(ps, s)
+	b := box{w: max(widest(ps, n, holes), g.scale/5+rng.Int64N(g.scale*4/5+1))}
 	if s.antimeridian {
 		b.w = max(b.w, 2)
 	}
 	b.h = max(1, g.scale/20+rng.Int64N(g.scale/5+1))
+	if holes > 0 {
+		// Two steps either side of the middle at the least: the outline keeps
+		// to the outer one and the holes reach no further than the inner one.
+		b.h = max(b.h, 2)
+	}
 	pitch := 2*b.h + 3
 	if s.antimeridian {
 		// Starting at least a step short of 180 and ending at least a step past
@@ -211,10 +261,30 @@ func (d *drawing) draw(rng *rand.Rand, s settings, g grid, k kind) {
 		case pieceLine:
 			d.line(b, c, n)
 		case pieceRing:
-			d.ring(b, c, n)
+			d.polygon(b, c, n, holes)
 		}
 		d.ends = append(d.ends, len(d.pos)/d.stride)
 	}
+}
+
+// holesIn is the holes the kind drawn from ps has: the setting for a kind with
+// an outline, and none for points and lines, which holes leave as they were,
+// byte for byte.
+func holesIn(ps []piece, s settings) int64 {
+	if slices.Contains(ps, pieceRing) {
+		return int64(s.holes)
+	}
+	return 0
+}
+
+// polygon is an outline and its holes. Without holes it is the outline every
+// earlier file drew, with the same draws in the same order.
+func (d *drawing) polygon(b box, c, n, holes int64) {
+	if holes == 0 {
+		d.ring(b, c, n)
+		return
+	}
+	d.pierced(b, c, n, holes)
 }
 
 func (d *drawing) reset(s settings) {
@@ -284,6 +354,64 @@ func (d *drawing) half(b box, count, edge, sign int64) {
 	}
 }
 
+// holePoints is how many points every hole has, and holePositions what one
+// writes: those and the first again.
+const (
+	holePoints    = 4
+	holePositions = holePoints + 1
+)
+
+// pierced is an outline of n points with holes inside it, every one of them
+// strictly inside and none touching another - simple by construction, like
+// the outline alone.
+//
+// The outline alone lets its halves come back to the middle row between
+// points, and with two points a half the free part of the middle can be a
+// single step wide. So here each half keeps gap rows or more from the middle,
+// and its first and last points stand one step in from the ends. Between
+// those two columns the band of 2*gap-1 rows round the middle is inside the
+// outline whatever was drawn. The holes are drawn in that band, one to a cell,
+// each by ring at four points.
+//
+// What keeps a hole off the outline and off its neighbours is a margin, and the
+// margin is a share of the space rather than a step. At fifteen decimal places
+// a step is 10^-15 degrees, below what a double tells apart at a longitude
+// of a hundred - read by GEOS, holes a step apart touched and cut the polygon
+// in two (measured 2026-10-07). So a hole keeps a quarter of its cell clear on
+// either side and reaches only half way to the outline above and below it.
+// needs makes the box wide enough, and refuseHoles keeps n at six or more,
+// two points a half.
+func (d *drawing) pierced(b box, c, n, holes int64) {
+	first := len(d.pos)
+	bottom := (n - 2) / 2
+	gap := max(2, b.h/2)
+	d.add(b.x0, c)
+	d.pinned(b, bottom, c-gap, -1, b.h-gap)
+	d.add(b.x0+b.w, c)
+	from := len(d.pos)
+	d.pinned(b, n-2-bottom, c+gap, 1, b.h-gap)
+	d.reverse(from)
+	d.pos = append(d.pos, d.pos[first:first+d.stride]...)
+
+	// A cell no wider than a quarter of the globe, so no edge of a hole is
+	// half the globe long either, when the outline is wide for its points.
+	cell := min((b.w-2)/holes, d.g.lon/2)
+	margin := max(1, cell/holeCell)
+	for j := int64(0); j < holes; j++ {
+		at := b.x0 + 1 + j*cell + margin
+		d.ring(box{x0: at, w: cell - 2*margin, h: max(1, gap/2)}, c, holePoints)
+	}
+}
+
+// pinned is one half of a pierced outline: count points, the first one step in
+// from the left end and the last one step in from the right, the rest between
+// them in slots as half places them, all from edge outwards by up to spread.
+func (d *drawing) pinned(b box, count, edge, sign, spread int64) {
+	d.add(b.x0+1, edge+sign*d.rng.Int64N(spread+1))
+	d.half(box{x0: b.x0 + 1, w: b.w - 2, h: spread + 1}, count-2, edge, sign)
+	d.add(b.x0+b.w-1, edge+sign*d.rng.Int64N(spread+1))
+}
+
 // reverse turns round the positions from index from to the end.
 func (d *drawing) reverse(from int) {
 	st := d.stride
@@ -300,8 +428,9 @@ func (d *drawing) reverse(from int) {
 func (d *drawing) worst(s settings, g grid, k kind) {
 	d.reset(s)
 	widest := []int64{-g.lon, -g.lat, g.low}[:d.stride]
+	holes := int(holesIn(pieces[k], s))
 	for _, p := range pieces[k] {
-		for i := 0; i < positions(p, s.vertices); i++ {
+		for i := 0; i < positions(p, s.vertices, holes); i++ {
 			d.pos = append(d.pos, widest...)
 		}
 		d.ends = append(d.ends, len(d.pos)/d.stride)
@@ -309,14 +438,53 @@ func (d *drawing) worst(s settings, g grid, k kind) {
 }
 
 // positions is how many positions a piece of n points writes. An outline
-// repeats its first point at the end.
-func positions(p piece, n int) int {
+// repeats its first point at the end, and so does every hole after it.
+func positions(p piece, n, holes int) int {
 	switch p {
 	case pieceLine:
 		return n
 	case pieceRing:
-		return n + 1
+		return n + 1 + holes*holePositions
 	default:
 		return 1
+	}
+}
+
+// extent is the box a set of positions lies in, in the coordinates they were
+// drawn in - a longitude past 180 degrees not yet wrapped round - so a box
+// across the antimeridian is one interval here and two only when written.
+type extent struct {
+	lo, hi [3]int64
+	set    bool
+}
+
+// extent is the box this drawing lies in. A drawing of no positions, a
+// feature with no place, has none.
+func (d *drawing) extent() extent {
+	var x extent
+	for i := 0; i+d.stride <= len(d.pos); i += d.stride {
+		x.add(d.pos[i : i+d.stride])
+	}
+	return x
+}
+
+func (x *extent) add(p []int64) {
+	if !x.set {
+		copy(x.lo[:], p)
+		copy(x.hi[:], p)
+		x.set = true
+		return
+	}
+	for j, v := range p {
+		x.lo[j] = min(x.lo[j], v)
+		x.hi[j] = max(x.hi[j], v)
+	}
+}
+
+// grow widens x to take in y as well.
+func (x *extent) grow(y extent, stride int) {
+	if y.set {
+		x.add(y.lo[:stride])
+		x.add(y.hi[:stride])
 	}
 }
