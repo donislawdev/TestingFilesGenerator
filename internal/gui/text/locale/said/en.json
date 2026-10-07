@@ -1685,6 +1685,11 @@
     "hash": "sha256-f2b3d3aeda55",
     "other": "a collection holds whole features, and the largest one these settings can draw needs that much"
   },
+  "geojson.AskForFewerPoints": {
+    "description": "Said by internal/format/geojson - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-d36b2eba39c1",
+    "other": "Ask for {{.Most}} points or fewer, or for a higher precision."
+  },
   "geojson.EachPointNeedsAStep": {
     "description": "Said by internal/format/geojson - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Precision}}, {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-2cbc901989bd",

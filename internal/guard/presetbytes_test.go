@@ -91,7 +91,10 @@ func TestEjectingAPresetGivesTheBytesItAlwaysGave(t *testing.T) {
 		// (docs/MP4-2026-10-07.md section 10): MP4 is a format more, so the
 		// set has its smallest film, 3312 B. A Changed entry and no major -
 		// no file any release made changes.
-		{id: "empty-and-minimal", args: preset.Args{}, bytes: 9574, sum: "3fd628031191f01a2559da100384dcfbecd31bb4ab6629156c0a3ac74f190921"},
+		// Moved a fifth time on 2026-10-07, under the same decision: geojson is
+		// a format more, so the set has its smallest collection, 875 B
+		// (docs/GEOJSON-2026-10-07.md).
+		{id: "empty-and-minimal", args: preset.Args{}, bytes: 9885, sum: "2a02ad1ec2e2c2ff7f19b87906ecf3ca910e1af5e806b135467824c28fb4fc24"},
 		{id: "empty-and-minimal", args: preset.Args{"formats": "jpg,png,txt"}, bytes: 1472, sum: "19b12800372395ad3bf5cba6407ca654d7ed51eba3a5bc5436f76a94bc09253c"},
 		// The preset of unusual file names, measured 2026-09-25 on its first
 		// build: the default, and a format whose extension is a byte longer,

@@ -21,10 +21,6 @@ const (
 	// spaces after the feature, which GDAL read at 20 MB without a word.
 	// docs/GEOJSON-2026-10-07.md section 5, the owner's decision.
 	noteCap = 1 << 20
-
-	// maxIDDigits bounds the width of a feature number, as in the json format:
-	// a feature is at least one byte, and a size is an int64.
-	maxIDDigits = 19
 )
 
 // records builds the features of the collection, one at a time, for

@@ -335,6 +335,7 @@
   "format.ZipTheDirectoryCouldNotBe": { "hash": "sha256-7eb26b5ea426", "other": "zip: nie udało się nazwać katalogu {{.Name}}: {{.Err}}" },
   "format.ZipTheFileInsideCannotBe": { "hash": "sha256-8f5ef3b82380", "other": "zip: plik {{.Format}} w środku nie może powstać: {{.Err}}" },
   "geojson.ACollectionHoldsWholeFeatures": { "hash": "sha256-f2b3d3aeda55", "other": "kolekcja składa się z całych obiektów, a największy, jaki te ustawienia mogą narysować, potrzebuje tyle" },
+  "geojson.AskForFewerPoints": { "hash": "sha256-d36b2eba39c1", "other": "Poproś o {{.Most}} punktów lub mniej albo o wyższą precyzję." },
   "geojson.EachPointNeedsAStep": { "hash": "sha256-2cbc901989bd", "other": "każdy punkt potrzebuje własnego kroku długości geograficznej, a przy precyzji {{.Precision}} kula ziemska ma miejsce na {{.Most}} - poproś o tyle lub mniej albo o wyższą precyzję" },
   "html.HasToBeStructure": { "hash": "sha256-1a83745fa4b2", "other": "musi to być {{.Document}} albo {{.Fragment}}" },
   "html.MinimumFragment": { "hash": "sha256-e716d4f229d7", "other": "fragment zawiera całe bloki, a jeden z nich potrzebuje tyle" },

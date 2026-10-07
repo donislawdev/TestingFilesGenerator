@@ -2277,8 +2277,15 @@ def geo_ring(ring, settings):
 
 
 def geo_feature(number, feat, settings, kinds):
+    if not isinstance(feat, dict):
+        fail(f"feature {number} is {type(feat).__name__} rather than an object")
     if list(feat) != GEOJSON_FEATURE_KEYS or feat["type"] != "Feature":
         fail(f"feature {number} has the members {list(feat)}, not {GEOJSON_FEATURE_KEYS}")
+    # Both may be null in RFC 7946, and this tool writes neither null - a
+    # feature without a place or without properties is a file it did not make.
+    if not isinstance(feat["geometry"], dict) or not isinstance(feat["properties"], dict):
+        fail(f"feature {number} has a geometry of {type(feat['geometry']).__name__} and properties of "
+             f"{type(feat['properties']).__name__} - this tool writes an object for both")
     if feat["id"] != str(number):
         fail(f"feature {number} carries the id {feat['id']}, so the ids do not run 1..N")
     want = kinds[(number - 1) % len(kinds)]
@@ -2295,6 +2302,10 @@ def geo_feature(number, feat, settings, kinds):
     dims, n = (3 if settings["altitude"] else 2), settings["vertices"]
     for piece, coords in geo_pieces(feat["geometry"]):
         runs = {"Point": [[coords]], "LineString": [coords], "Polygon": coords}[piece]
+        # One outline and no holes - with none at all the loop below would have
+        # nothing to check and a polygon of no rings would pass.
+        if piece == "Polygon" and len(runs) != 1:
+            fail(f"feature {number}: a polygon has {len(runs)} rings and this tool writes one")
         count = {"Point": 1, "LineString": n, "Polygon": n + 1}[piece]
         for run in runs:
             if len(run) != count:
@@ -2345,12 +2356,19 @@ def check_geojson(data, settings=None):
     if not isinstance(doc, dict) or list(doc) != ["type", "features"] or doc["type"] != "FeatureCollection":
         fail("the root is not a FeatureCollection with its type and its features")
     feats = doc["features"]
-    if not feats:
-        fail("the collection has no feature")
+    if not isinstance(feats, list) or not feats:
+        fail(f"the features member is {type(feats).__name__} with nothing in it rather than an array of features")
     kinds = GEOJSON_KINDS if settings["geometry"] == "mixed" else [
         next(k for k in GEOJSON_KINDS if k.lower() == settings["geometry"])]
-    for number, feat in enumerate(feats, start=1):
-        geo_feature(number, feat, settings, kinds)
+    # The checks above name the shapes this tool could get wrong. A shape
+    # nobody thought of - a number where an array goes, deep inside - still has
+    # to come out as a refusal with a reason rather than a Python traceback,
+    # because a crash also turns a guard red and proves nothing (review of #171).
+    try:
+        for number, feat in enumerate(feats, start=1):
+            geo_feature(number, feat, settings, kinds)
+    except (TypeError, KeyError, IndexError, AttributeError, ValueError) as exc:
+        fail(f"a feature is not shaped the way this tool writes one: {type(exc).__name__}: {exc}")
     spaces = geo_layout(text, doc, settings["formatting"])
     note = len(feats[-1]["properties"]["note"])
     if note > GEOJSON_NOTE_CAP or (spaces and note != GEOJSON_NOTE_CAP):

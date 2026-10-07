@@ -179,10 +179,10 @@ because it turns other people's test suites red.
 
 ### Changed
 
-- **`empty-and-minimal` now includes the films.** The preset builds the
+- **`empty-and-minimal` now includes the films and GeoJSON.** The preset builds the
   smallest file of every format this build has, so with `formats` left at
-  `all` it gains a `webm` and an `mp4` target, and the recipe
-  `tfg preset eject empty-and-minimal` prints is two targets longer. A manifest from a run of that preset records the
+  `all` it gains a `webm`, an `mp4` and a `geojson` target, and the recipe
+  `tfg preset eject empty-and-minimal` prints is three targets longer. A manifest from a run of that preset records the
   hash of that recipe, so its `recipe_hash` differs from one written before.
   No generated file changes, and a run that names its `formats` is untouched.
 - **An empty text box in the window reads "not set"** instead of "worked out

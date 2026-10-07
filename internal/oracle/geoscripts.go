@@ -117,9 +117,9 @@ def geometry(g):
 with open(path, encoding="utf-8") as f:
     doc = json.load(f)
 for feature in doc["features"]:
-    s = shape(geometry(feature["geometry"]))
-    if not s.is_valid:
-        print("FAIL feature %s %s: %s" % (feature["id"], feature["geometry"]["type"], explain_validity(s)))
+    shaped = shape(geometry(feature["geometry"]))
+    if not shaped.is_valid:
+        print("FAIL feature %s %s: %s" % (feature["id"], feature["geometry"]["type"], explain_validity(shaped)))
         sys.exit(1)
 print("OK %d features, every geometry valid" % len(doc["features"]))
 `

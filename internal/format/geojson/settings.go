@@ -191,5 +191,11 @@ func refuseCrowded(s settings, most int64) error {
 		Reason: core.Says("geojson.EachPointNeedsAStep",
 			"each point needs its own step of longitude, and at precision %d the globe has room for %d - ask for that many or fewer, or for a higher precision",
 			core.A("Precision", s.precision), core.A("Most", most)),
+		// The same advice again on its own, for the reader that asks for the
+		// parts by name - tfg validate --json puts it under fix, which was
+		// empty without it (review of #171). The command line prints the
+		// reason, so the advice stays there as well.
+		Remedy: core.Says("geojson.AskForFewerPoints",
+			"Ask for %d points or fewer, or for a higher precision.", core.A("Most", most)),
 	}
 }
