@@ -39,9 +39,13 @@ because it turns other people's test suites red.
   are - `width`, `height` and `quality`. The picture is the gradient with the
   self describing label the image formats draw, with the clock under the
   label and the square below. On a picture too small for the clock the film
-  says so in the manifest. It can be up to 4096 pixels wide and at most
-  4096x2304 pixels in all, the largest the built-in encoder writes
-  correctly - a larger one is refused with a pair that fits. The manifest says what a
+  says so in the manifest. Either side can be up to 16384 pixels and the
+  picture up to 8192x4352 pixels in all, the largest any AV1 level
+  describes, so 7680x4320 and 8192x4320 films can be made - a larger
+  picture is refused before anything is written. A picture taller than 8704
+  pixels belongs to no AV1 level, which a player may hold against it. An 8K
+  film takes a few seconds and up to about 1.3 GB of memory on sixteen
+  threads. The manifest says what a
   test can check: `duration_ms`, `frame_count`, `frame_rate`,
   `keyframe_count`, `change_count`, `change_interval_ms`, `width`, `height`,
   `compression: av1` and `audio: false`. A length that does not end on a

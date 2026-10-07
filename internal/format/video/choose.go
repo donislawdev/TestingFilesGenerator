@@ -240,9 +240,6 @@ func named(formatID string, r format.Request, s Settings, c Choice) (Choice, Str
 	if err := checkJointLimits(formatID, w, h); err != nil {
 		return Choice{}, Stream{}, err
 	}
-	if err := checkOneTile(formatID, w, h); err != nil {
-		return Choice{}, Stream{}, err
-	}
 	tiles, reserve, err := sampleReserve(w, h, c.Seed, c.Label, s.Timeline, c.QIndex)
 	if err != nil {
 		return Choice{}, Stream{}, err
@@ -268,28 +265,6 @@ func checkJointLimits(formatID string, w, h int) error {
 		}
 	}
 	return nil
-}
-
-// checkOneTile refuses a picture that would need a second AV1 tile, before
-// the encoder makes a frame nobody can decode out of it.
-//
-// The declared limit counts pixels and this counts blocks of 64 by 64, each
-// side rounded up, which is what the encoder goes by - 4000x2359 is under the
-// pixels and one block too many. Said as a setting the request can change,
-// not as a fault of the program.
-func checkOneTile(formatID string, w, h int) error {
-	blocks := ((w + 63) / 64) * ((h + 63) / 64)
-	if blocks <= tileBlocks {
-		return nil
-	}
-	return &format.PropertyValueError{
-		Format: formatID, Key: imagedim.SettingWidth + " and " + imagedim.SettingHeight,
-		Subject: core.Says("format.TwoSettings", "%s and %s", core.A("Of", core.LabelTerm(imagedim.SettingWidth)), core.A("By", core.LabelTerm(imagedim.SettingHeight))),
-		Value:   fmt.Sprintf("%dx%d", w, h),
-		Reason: core.Says("video.MoreThanOneTile",
-			"a %dx%d picture is %d blocks of 64 by 64 pixels once its sides are rounded up to whole blocks, and the encoder codes one AV1 tile, which holds %d. Ask for a smaller pair, such as 4096x2304 or 3840x2160",
-			core.A("Width", w), core.A("Height", h), core.A("Blocks", blocks), core.A("Most", tileBlocks)),
-	}
 }
 
 // Facts is what a film's plan tells the manifest. The keys an image and a

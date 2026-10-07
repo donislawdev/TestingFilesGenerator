@@ -171,6 +171,19 @@ type tileBounds struct {
 	maxLog2Rows, minLog2Tiles int
 }
 
+// maxArea is maxTileAreaSb as tile_info derives it for tiles of coded sizes,
+// 06.bitstream.syntax.md lines 1243-1247: the whole frame while it fits one
+// tile, and once it does not, the frame shifted right by minLog2Tiles plus
+// one - a quarter to a half of MAX_TILE_AREA. A row of tiles is at most this
+// over the widest column, and a height tile_info cannot code is no height.
+func (b tileBounds) maxArea() int {
+	area := b.sbRows * b.sbCols
+	if b.minLog2Tiles > 0 {
+		area >>= b.minLog2Tiles + 1
+	}
+	return area
+}
+
 func boundsOf(width, height int) tileBounds {
 	b := tileBounds{sbCols: sbOf(width), sbRows: sbOf(height)}
 	b.minLog2Cols = tileLog2(maxTileWidth/superblock, b.sbCols)

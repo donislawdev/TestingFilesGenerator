@@ -280,6 +280,12 @@ func TestEveryTileOfAFilmIsGav1dsCodingOfItsPixelsAndDecodesAsItDoesAlone(t *tes
 		{map[string]string{"width": "640", "height": "360", "duration": "3s", "change_interval": "100ms"}, 4 << 20, rangeOf(30)},
 		{map[string]string{"width": "1001", "height": "563", "duration": "12s"}, 4 << 20, rangeOf(12)},
 		{map[string]string{"width": "1920", "height": "1080", "duration": "2s"}, 4 << 20, rangeOf(2)},
+		// Wider than a tile can be, so the rest of the width is cut in two,
+		// and a row cut for the area tile_info leaves a tile. Then wider and
+		// only a superblock and a pixel tall, where the columns are narrowed so
+		// a row of tiles can be two superblocks (grid.go, cutToFit).
+		{map[string]string{"width": "4240", "height": "1000", "duration": "2s"}, 4 << 20, rangeOf(2)},
+		{map[string]string{"width": "4097", "height": "65", "duration": "3s"}, 4 << 20, rangeOf(3)},
 	}
 	tilesAsked, mostTiles := 0, 0
 	for _, c := range cases {

@@ -351,6 +351,11 @@
       "bytes": 65536,
       "sha256": "8ff27de05a089745a6510703c5c593651fc604cf0e3bd30c336adfad484f79b3",
       "measured_on": "2026-10-07"
+    },
+    "webm_wide": {
+      "bytes": 524288,
+      "sha256": "270aab596f2a59abe47cf9ab35236964b88dcd1be2ea24247cbce8c72c3c1cd0",
+      "measured_on": "2026-10-07"
     }
   },
   "remeasured": [
