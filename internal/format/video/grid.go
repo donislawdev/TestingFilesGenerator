@@ -115,11 +115,8 @@ func cutEach(sizes []int, most int) []int {
 	for _, s := range sizes {
 		n := (s + most - 1) / most
 		for k := range n {
-			part := s / n
-			if k >= n-s%n {
-				part++
-			}
-			out = append(out, part)
+			// (k+s%n)/n is one for the last s%n parts and nought before them.
+			out = append(out, s/n+(k+s%n)/n)
 		}
 	}
 	return out

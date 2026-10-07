@@ -124,7 +124,7 @@ type crew struct {
 // newCrew is the crew for a film of at most this many tiles to code. A film of
 // one tile takes no helper, and neither does a process of one thread.
 func newCrew(f *film, ks keyer, qindex int, jobs int64) *crew {
-	c := &crew{film: f, keys: ks, qindex: qindex, own: f.painter()}
+	c := &crew{film: f, keys: ks, qindex: qindex, own: f.painter(ks)}
 	if most := min(int64(runtime.GOMAXPROCS(0)-1), jobs-1); most > 0 {
 		c.most = int(most)
 		c.queue = make(chan *job, c.ahead()*len(ks.tiles))
@@ -169,7 +169,7 @@ func (c *crew) offer(j *job) {
 func (c *crew) help() {
 	defer c.wg.Done()
 	defer helping.Add(-1)
-	p := c.film.painter()
+	p := c.film.painter(c.keys)
 	for j := range c.queue {
 		if c.stopped.Load() {
 			continue
@@ -192,8 +192,8 @@ func (c *crew) code(p *painter, j *job, beside bool) {
 		j.coded, j.err = c.encode(j.change, beside)
 		return
 	}
-	r := c.keys.tiles[j.tile].rect
-	j.coded, j.err = encodeTile(p.drawIn(j.look, r), r, c.qindex)
+	src, at := p.source(j.look, c.keys.tiles[j.tile].rect)
+	j.coded, j.err = encodeTile(src, at, c.qindex)
 }
 
 // wait is the tile of j, coded here when no helper has taken it.

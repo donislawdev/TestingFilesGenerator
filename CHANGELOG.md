@@ -44,8 +44,8 @@ because it turns other people's test suites red.
   describes, so 7680x4320 and 8192x4320 films can be made - a larger
   picture is refused before anything is written. A picture taller than 8704
   pixels belongs to no AV1 level, which a player may hold against it. An 8K
-  film takes a few seconds and up to about 1.3 GB of memory on sixteen
-  threads. The manifest says what a
+  film takes a few seconds and about 250 MB of memory, sixteen of them made
+  at once about 1.1 GB. The manifest says what a
   test can check: `duration_ms`, `frame_count`, `frame_rate`,
   `keyframe_count`, `change_count`, `change_interval_ms`, `width`, `height`,
   `compression: av1` and `audio: false`. A length that does not end on a

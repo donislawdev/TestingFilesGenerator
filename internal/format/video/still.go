@@ -56,12 +56,13 @@ func (t tileCoded) writeRest(w *bitWriter) {
 	}
 }
 
-// encodeTile codes the part r of a picture as a picture of its own. gav1d
-// reads its source a row at a time by the stride and never past Width and
-// Height (av1/encode_intra.go, residualEdge, the edge clamped to sw-1 and
-// sh-1), so the tile is read where it lies in the picture's planes rather
-// than copied out of them. r starts on an even row and column, as a tile does,
-// so its chroma is the picture's.
+// encodeTile codes the part r of the planes p as a picture of its own - p the
+// film's planes and r a tile no picture changes, or a painter's planes of one
+// tile and r all of them (painter.source). gav1d reads its source a row at a
+// time by the stride and never past Width and Height (av1/encode_intra.go,
+// residualEdge, the edge clamped to sw-1 and sh-1), so the tile is read where
+// it lies rather than copied out. r starts on an even row and column, as a
+// tile does, so its chroma is the picture's.
 //
 // gav1d's output is read here by the specification rather than by what
 // gav1d's writer happens to do, and anything other than the one shape this

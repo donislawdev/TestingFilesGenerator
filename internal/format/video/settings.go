@@ -106,6 +106,12 @@ func Properties() []format.Property {
 // the largest picture an AV1 level describes. In pixels rather than
 // megapixels, because 35 651 584 read as "36 megapixels" would be a limit
 // nobody can aim at.
+//
+// Memory is not what bounds it, and AVIF's bound of that kind is not here by
+// choice: a film keeps its picture as planes, a byte and a half a pixel, and
+// its painters one tile each (picture.go), so a 7680x4320 film peaked at 187
+// to 241 MB on sixteen threads, and sixteen of them written at once at 1.1 GB
+// (measured 2026-10-07).
 func JointLimits() []format.JointLimit {
 	return []format.JointLimit{{
 		Of: imagedim.SettingWidth, By: imagedim.SettingHeight, Max: maxPixels,
