@@ -403,3 +403,18 @@ func intProperty(id string, props map[string]string, key string, fallback, min, 
 	}
 	return n, nil
 }
+
+// ContentSummary is what a container holds, in the manifest, so a test can
+// assert on it without opening the file. One copy for every container, so the
+// key names a test reads cannot differ between them.
+func ContentSummary(groups []format.Content) []map[string]any {
+	out := make([]map[string]any, 0, len(groups))
+	for _, g := range groups {
+		out = append(out, map[string]any{
+			"format": g.Format,
+			"count":  g.Count,
+			"bytes":  g.Bytes,
+		})
+	}
+	return out
+}

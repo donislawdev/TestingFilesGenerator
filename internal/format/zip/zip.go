@@ -291,7 +291,7 @@ func describe(target int64, label string, m memo, groups []format.Content) forma
 		Determinism: format.DeterminismByte,
 		Properties: map[string]any{
 			"entries":  len(m.children),
-			"contains": contentSummary(groups),
+			"contains": archive.ContentSummary(groups),
 			"method":   "store",
 			// Where the files sit, and whether the directories are named.
 			// Written every time rather than only when nested, like method
@@ -391,20 +391,6 @@ func pad(m *memo, p *format.Plan, r format.Request, target, bare int64, label st
 	}
 	p.Properties["padding_entry"] = fillerName
 	return nil
-}
-
-// contentSummary is what the archive holds, in the manifest, so a test can
-// assert on it without unpacking the file.
-func contentSummary(groups []format.Content) []map[string]any {
-	out := make([]map[string]any, 0, len(groups))
-	for _, g := range groups {
-		out = append(out, map[string]any{
-			"format": g.Format,
-			"count":  g.Count,
-			"bytes":  g.Bytes,
-		})
-	}
-	return out
 }
 
 // describeGroups is the same thing for a person reading an error.
