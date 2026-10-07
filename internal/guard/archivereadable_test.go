@@ -103,6 +103,13 @@ func standardReaderFor(id string) (func([]byte) error, bool) {
 			_, err := stdzip.NewReader(bytes.NewReader(b), int64(len(b)))
 			return err
 		}, true
+	case "eml":
+		// Read to the last byte of every part, because a message is only
+		// refused where a part is broken - see emlgo_test.go.
+		return func(b []byte) error {
+			_, _, err := goReadMail(b)
+			return err
+		}, true
 	}
 	return nil, false
 }

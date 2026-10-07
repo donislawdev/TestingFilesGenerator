@@ -181,6 +181,11 @@ var structurallyChecked = map[string]bool{
 	// layer knows how many decimal places and which winding were ordered
 	// (docs/GEOJSON-2026-10-07.md section 3).
 	"geojson": true,
+	// Since 2026-10-07, from its first day: four mail readers took a message
+	// with no From line and a header line of 2000 characters without a word,
+	// and only this layer knows where each name was ordered to be written
+	// (docs/EML-2026-10-07.md section 5.1).
+	"eml": true,
 }
 
 func TestTheStructuralCheckerCoversEveryFormatItShould(t *testing.T) {

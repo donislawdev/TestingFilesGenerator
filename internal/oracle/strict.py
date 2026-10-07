@@ -2550,6 +2550,268 @@ def geo_collection_box(doc, boxes, located, settings):
         geo_bbox("the collection", doc["bbox"], lo, hi, settings["precision"])
 
 
+EML_INTERNATIONAL = "Zażółć gęślą jaźń. 日本語のテキストです。"
+EML_WIDE_PREFIX = "Załącznik_日本語_"
+EML_BASE64_LINE = re.compile(rb"^[A-Za-z0-9+/]+={0,2}$")
+EML_NAME = re.compile(r"^(?:" + EML_WIDE_PREFIX + r")?[a-z0-9]+_\d{4}\.[a-z0-9.]+$")
+
+
+def check_eml(data, settings=None):
+    """A mail message to RFC 5322 and MIME, made the way it was ordered.
+
+    Measured 2026-10-07 (docs/EML-2026-10-07.md section 5.1): Python's email
+    package, mailparser, MimeKit and Go's standard library took a message with
+    no From line, a header line of 2000 characters and a line of base64 13 336
+    long without a word, and two of them returned the wrong bytes of a broken
+    attachment in silence. What only this layer asks: the header lines in their
+    order and once each, no line past 998 characters and none past 78 but a
+    media type too long to fold, every line ending the way line_endings says,
+    the boundaries nowhere inside a part, the text in the encoding and the
+    character set ordered with the same words in both parts of alternative,
+    base64 in full lines of 76, and every name written where and how
+    filename_style and headers say.
+    """
+    given = settings or {}
+    s = {k: given.get(k, v) for k, v in (
+        ("body", "plain"), ("text_encoding", "7bit"), ("headers", "ascii"),
+        ("line_endings", "crlf"), ("filename_style", "rfc2231"), ("attachments", "0"))}
+    eol = b"\r\n" if s["line_endings"] == "crlf" else b"\n"
+    eml_line_endings(data, eol)
+    for number, line in enumerate(data.split(eol), start=1):
+        eml_line_length(number, line)
+    head, body = eml_split(data, eol, "the message")
+    fields = eml_fields(head, eol, "the message")
+    eml_headers(fields, s)
+    leaves = []
+    eml_entity(dict(fields), body, eol, s, leaves, top=True)
+    texts = [leaf for leaf in leaves if leaf["kind"] == "text"]
+    files = [leaf for leaf in leaves if leaf["kind"] == "file"]
+    want_texts = {"plain": ["text/plain"], "html": ["text/html"], "alternative": ["text/plain", "text/html"]}[s["body"]]
+    if [leaf["type"] for leaf in texts] != want_texts:
+        fail(f"the text parts are {[leaf['type'] for leaf in texts]}, and body={s['body']} makes {want_texts}")
+    if len(texts) == 2 and eml_words(texts[0]["text"]) != eml_words(re.sub(r"<[^>]*>", " ", texts[1]["text"])):
+        fail("the two parts of alternative do not carry the same words")
+    if len(files) != int(s["attachments"]):
+        fail(f"{len(files)} attached files, and {s['attachments']} were ordered")
+    ok(f"{len(files)} attached files, {sum(len(f['bytes']) for f in files)} B of them, body {s['body']}, "
+       f"text {s['text_encoding']}, headers {s['headers']}, names {s['filename_style']}")
+
+
+def eml_line_endings(data, eol):
+    """Every line ends in eol and in nothing else - no lone carriage return, and
+    no line feed without its return when the endings are crlf."""
+    if eol == b"\n":
+        if b"\r" in data:
+            fail("a carriage return in a message whose lines end in lf")
+        return
+    if re.search(rb"\r(?!\n)|(?<!\r)\n", data):
+        fail("a carriage return or a line feed on its own in a message whose lines end in crlf")
+
+
+def eml_line_length(number, line):
+    """RFC 5322 section 2.1.1: no line past 998 characters, and none past 78 -
+    but a line that is one media type too long to fold, which a sender can do
+    nothing about."""
+    text = line.decode("utf-8", "replace")
+    if len(text) > 998:
+        fail(f"line {number} is {len(text)} characters, past the 998 RFC 5322 allows")
+    if len(text) > 78 and not re.fullmatch(r"Content-Type: [a-z]+/[a-z0-9.+-]+;?", text):
+        fail(f"line {number} is {len(text)} characters, past the 78 RFC 5322 asks for: {text[:60]!r}")
+
+
+def eml_split(data, eol, where):
+    """The header lines of an entity and what follows the blank line after them."""
+    cut = data.find(eol + eol)
+    if cut < 0:
+        fail(f"{where} has no blank line after its header lines")
+    return data[:cut], data[cut + 2 * len(eol):]
+
+
+def eml_fields(head, eol, where):
+    """The header fields, unfolded, as (name, value) in their order."""
+    out = []
+    for line in head.split(eol):
+        if line[:1] in (b" ", b"\t"):
+            if not out:
+                fail(f"{where} starts with a folded line")
+            out[-1] = (out[-1][0], out[-1][1] + line.decode("utf-8"))
+            continue
+        name, sep, value = line.decode("utf-8").partition(": ")
+        if not sep:
+            fail(f"{where} has a header line with no name: {line[:40]!r}")
+        out.append((name, value))
+    return out
+
+
+def eml_headers(fields, s):
+    """The lines a message opens with, in order and once each - From and Date
+    are the two RFC 5322 requires - and written the way headers says."""
+    import email.utils
+
+    names = [name for name, _ in fields]
+    want = ["From", "To", "Date", "Message-ID", "Subject", "MIME-Version", "Content-Type"]
+    if names[:7] != want or names[7:] not in ([], ["Content-Transfer-Encoding"]):
+        fail(f"the message opens with {names}, not {want}")
+    values = dict(fields)
+    if values["MIME-Version"] != "1.0":
+        fail(f"MIME-Version is {values['MIME-Version']!r}")
+    if not re.fullmatch(r"<[0-9a-f]{16}@example\.com>", values["Message-ID"]):
+        fail(f"the Message-ID {values['Message-ID']!r} is not the one this tool writes")
+    if email.utils.parsedate_to_datetime(values["Date"]) is None:
+        fail(f"the Date {values['Date']!r} is not an RFC 5322 date")
+    people = " ".join(values[k] for k in ("From", "To", "Subject"))
+    wide = any(ord(c) > 127 for c in people)
+    words = "=?UTF-8?B?" in people
+    if (s["headers"], wide, words) not in (("ascii", False, False), ("encoded", False, True), ("utf8", True, False)):
+        fail(f"headers={s['headers']} and the From, To and Subject lines hold "
+             f"{'letters outside ASCII' if wide else 'ASCII only'}{' and encoded words' if words else ''}")
+    for key, address in (("From", "alice@example.com"), ("To", "bob@example.org")):
+        if not values[key].endswith(" <" + address + ">"):
+            fail(f"{key} is {values[key]!r}, not an address in a domain RFC 2606 keeps for examples")
+
+
+def eml_params(value):
+    """A header value as its first word and its parameters, quotes kept."""
+    parts = re.findall(r'(?:[^;"]|"[^"]*")+', value)
+    params = {}
+    for p in parts[1:]:
+        key, _, v = p.strip().partition("=")
+        params[key] = v
+    return parts[0].strip(), params
+
+
+def eml_entity(headers, body, eol, s, leaves, top):
+    """One entity: a multipart one walked part by part, a leaf judged as text or
+    as an attached file."""
+    kind, params = eml_params(headers["Content-Type"])
+    if not kind.startswith("multipart/"):
+        leaves.append(eml_text(kind, params, headers, body, s) if "Content-Disposition" not in headers
+                      else eml_file(kind, params, headers, body, eol, s))
+        return
+    boundary = params.get("boundary", "").strip('"').encode()
+    if not boundary.startswith(b"=_"):
+        fail(f"the boundary {boundary!r} is not one that base64 and quoted-printable cannot produce")
+    opener, close = b"--" + boundary + eol, eol + b"--" + boundary + b"--"
+    end = body.rfind(close)
+    if not body.startswith(opener) or end < 0:
+        fail(f"{kind} does not open with its boundary or has no closing one")
+    if body[end + len(close):] != (eol if top else b""):
+        fail(f"{kind} has something after its closing boundary")
+    for piece in body[len(opener):end].split(eol + b"--" + boundary + eol):
+        if any(line.startswith(b"--" + boundary) for line in piece.split(eol)):
+            fail(f"the boundary of {kind} appears inside one of its parts")
+        part_head, part_body = eml_split(piece, eol, f"a part of {kind}")
+        eml_entity(dict(eml_fields(part_head, eol, f"a part of {kind}")), part_body, eol, s, leaves, top=False)
+
+
+def eml_text(kind, params, headers, body, s):
+    """A text part in the character set and the encoding text_encoding orders,
+    with the line in Polish and Japanese exactly when it is not 7bit."""
+    charset = "us-ascii" if s["text_encoding"] == "7bit" else "utf-8"
+    if params.get("charset") != charset or headers.get("Content-Transfer-Encoding") != s["text_encoding"]:
+        fail(f"a {kind} part says charset {params.get('charset')} in {headers.get('Content-Transfer-Encoding')}, "
+             f"and text_encoding={s['text_encoding']} makes {charset} in {s['text_encoding']}")
+    eol = "\r\n" if s["line_endings"] == "crlf" else "\n"
+    if s["text_encoding"] == "quoted-printable":
+        text = eml_unquote(body, eol.encode())
+    else:
+        text = body.decode("utf-8" if s["text_encoding"] == "8bit" else "ascii")
+    if (EML_INTERNATIONAL in text) != (s["text_encoding"] != "7bit"):
+        fail(f"the {kind} part {'lacks' if s['text_encoding'] != '7bit' else 'carries'} the line in Polish and Japanese")
+    for line in text.split(eol):
+        if line.startswith(("From ", "--")) or line == ".":
+            fail(f"a line of the {kind} part starts the way a boundary, an mbox file or SMTP reads: {line[:20]!r}")
+    return {"kind": "text", "type": kind, "text": text}
+
+
+def eml_unquote(body, eol):
+    """Quoted-printable decoded, after the lines are checked against RFC 2045
+    section 6.7: at most 76 characters, no space at the end, no = that is not
+    a soft break or two upper case hexadecimal digits."""
+    out = bytearray()
+    for line in body.split(eol):
+        if len(line) > 76 or line[-1:] in (b" ", b"\t"):
+            fail(f"a quoted-printable line is {len(line)} characters or ends in white space")
+        soft = line.endswith(b"=")
+        line = line[:-1] if soft else line
+        if re.search(rb"=(?![0-9A-F]{2})", line):
+            fail(f"a quoted-printable line holds an = that is not =XX: {line[:40]!r}")
+        out += re.sub(rb"=([0-9A-F]{2})", lambda m: bytes([int(m.group(1), 16)]), line)
+        if not soft:
+            out += eol
+    return bytes(out[: -len(eol)]).decode("utf-8")
+
+
+def eml_words(text):
+    return re.findall(r"[^\s<>]+", text)
+
+
+def eml_file(kind, params, headers, body, eol, s):
+    """An attached file: base64 in full lines of 76, and its name where and how
+    filename_style and headers put it."""
+    disposition, dparams = eml_params(headers["Content-Disposition"])
+    if disposition != "attachment" or headers.get("Content-Transfer-Encoding") != "base64":
+        fail(f"an attached {kind} file is {disposition} in {headers.get('Content-Transfer-Encoding')}, not attachment in base64")
+    lines = body.split(eol) if body else []
+    for i, line in enumerate(lines):
+        if not EML_BASE64_LINE.match(line) or (i < len(lines) - 1 and len(line) != 76) or len(line) > 76:
+            fail(f"line {i + 1} of an attached {kind} file is not a line of base64 76 long: {line[:40]!r}")
+    import base64
+
+    data = base64.b64decode(b"".join(lines), validate=True)
+    name = eml_file_name(kind, params, dparams, s)
+    if not EML_NAME.match(name) or name.startswith(EML_WIDE_PREFIX) != (s["headers"] != "ascii"):
+        fail(f"an attached file is named {name!r}, not the way headers={s['headers']} names one")
+    return {"kind": "file", "type": kind, "name": name, "bytes": data}
+
+
+def eml_file_name(kind, params, dparams, s):
+    """The name of an attached file, read from where filename_style says it is
+    and nowhere else, decoded the way it says it is written."""
+    import base64
+    from urllib.parse import unquote
+
+    style, encoded = s["filename_style"], s["headers"] == "encoded"
+    in_type = "name" in params
+    in_disposition = sorted(k for k in dparams if k.startswith("filename"))
+    want_type = style != "rfc2231"
+    if in_type != want_type or bool(in_disposition) == (style == "content-type"):
+        fail(f"filename_style={style} and the name is {'in' if in_type else 'not in'} Content-Type and "
+             f"{'in' if in_disposition else 'not in'} Content-Disposition")
+    names = []
+    if in_type:
+        names.append(eml_quoted(params["name"], encoded))
+    if in_disposition == ["filename"]:
+        names.append(eml_quoted(dparams["filename"], encoded and style == "rfc2047"))
+    elif in_disposition:
+        if not encoded or style == "rfc2047":
+            fail(f"filename_style={style} with headers={s['headers']} writes the name in RFC 2231 form")
+        joined = "".join(dparams[k] for k in sorted(in_disposition, key=lambda k: int(re.sub(r"\D", "", k) or 0)))
+        if not joined.startswith("UTF-8''"):
+            fail(f"an RFC 2231 name does not say UTF-8: {joined[:30]!r}")
+        names.append(unquote(joined[len("UTF-8''"):], encoding="utf-8", errors="strict"))
+    if len(set(names)) != 1:
+        fail(f"the attached {kind} file has two names: {names}")
+    return names[0]
+
+
+def eml_quoted(value, encoded):
+    """A name in quotes, as it is or as RFC 2047 words when encoded is true."""
+    import base64
+
+    if not (value.startswith('"') and value.endswith('"')):
+        fail(f"a name is not in quotes: {value[:40]!r}")
+    inner = value[1:-1]
+    words = re.findall(r"=\?UTF-8\?B\?([A-Za-z0-9+/=]+)\?=", inner)
+    if not encoded:
+        if words:
+            fail(f"a name is in encoded words that headers does not ask for: {inner[:40]!r}")
+        return inner
+    if not words or re.sub(r"=\?UTF-8\?B\?[A-Za-z0-9+/=]+\?=", "", inner).strip():
+        fail(f"a name is not encoded words and nothing else: {inner[:40]!r}")
+    return b"".join(base64.b64decode(w) for w in words).decode("utf-8")
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
           "svg": check_svg, "html": check_html, "targz": check_targz,
@@ -2558,12 +2820,13 @@ CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip
           "webm": check_webm, "mp4": check_mp4,
           "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx,
           "txt": check_txt, "md": check_md,
-          "yaml": check_yaml, "toml": check_toml, "geojson": check_geojson}
+          "yaml": check_yaml, "toml": check_toml, "geojson": check_geojson,
+          "eml": check_eml}
 
 # Checks that take the shape of the file as well as its bytes. Everything else
 # is handed the bytes alone, so adding a setting to one check cannot change how
 # any other one is called.
-TAKES_SETTINGS = {"csv", "txt", "md", "json", "xml", "html", "geojson"}
+TAKES_SETTINGS = {"csv", "txt", "md", "json", "xml", "html", "geojson", "eml"}
 
 if __name__ == "__main__":
     if len(sys.argv) < 3 or sys.argv[1] not in CHECKS:

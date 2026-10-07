@@ -521,6 +521,31 @@
     "one": "{{.Count}} paragraph",
     "other": "{{.Count}} paragraphs"
   },
+  "eml.AMessageHoldsItsHeaderLines": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-5b3dd4df2ace",
+    "other": "a message holds its header lines, its parts and every attached file in base64, which is about a third larger than the file itself"
+  },
+  "eml.AMessageThisLargeCannotBe": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-ff6a6f0065c8",
+    "other": "a message this large cannot be counted to the byte in this build"
+  },
+  "eml.AskForAttachmentsOrFewer": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Max}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-2145e05752c5",
+    "other": "Ask for {{.Max}} attachments or fewer."
+  },
+  "eml.AskForSmallerAttachments": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-871e78c75c85",
+    "other": "Ask for fewer or smaller attachments."
+  },
+  "eml.TheAttachedFileCannotBe": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Err}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-cb66d6df0c0f",
+    "other": "eml: the attached {{.Format}} file cannot be made: {{.Err}}"
+  },
   "engine.CannotCreateOutDir": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Dir}}, {{.Cause}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-324037f71709",

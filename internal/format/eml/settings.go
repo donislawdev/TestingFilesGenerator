@@ -60,7 +60,7 @@ const (
 
 // attachmentsGroup is the block the attachment settings sit in, on both
 // surfaces.
-const attachmentsGroup = "Attachments"
+const attachmentsGroup = "Attached files"
 
 // defaultAttachments is none: a message is text first, and a file attached by
 // default would put base64 in front of somebody who asked for a mail.
@@ -170,7 +170,7 @@ func textProperties() []format.Property {
 			Default: ASCII,
 			Detail: "Whether the subject, the names of the sender and the recipient and the names of attached files " +
 				"carry letters outside ASCII, and how. encoded writes them the way RFC 2047 and RFC 2231 say. " +
-				"utf8 writes them as they are (RFC 6532), and Python's email package reads that and reports a defect in the From line.",
+				"utf8 writes them as they are (RFC 6532), and Python's email package reads that and reports a defect in the From and To lines.",
 		},
 		{
 			Name: LineEndings, Kind: format.PropertyChoice,
@@ -224,7 +224,8 @@ func filenameStyle() format.Property {
 			"rfc2047 is the encoded form RFC 2047 forbids inside a name, and many readers decode it anyway. " +
 			"both writes the two, and content-type puts the name only where old mail programs looked for it. " +
 			"Go's standard library reads no name from content-type and the encoded text itself from rfc2047. " +
-			"With names in plain ASCII, rfc2047 and both write the same bytes.",
+			"Unless headers is encoded a name is written as it is and only where it goes changes, " +
+			"so rfc2047 and both write the same bytes.",
 		Group: attachmentsGroup,
 	}
 }
