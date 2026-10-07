@@ -172,6 +172,10 @@ var structurallyChecked = map[string]bool{
 	// the rest, and only reading the container sees the frames that are not
 	// there (docs/WIDEO-2026-10-06.md section 9.5).
 	"webm": true,
+	// Since 2026-10-07. A movie box whose sample lengths disagree with the
+	// samples plays as far as a decoder gets, and only the tables read against
+	// the media data say so (docs/MP4-2026-10-07.md section 5).
+	"mp4": true,
 }
 
 func TestTheStructuralCheckerCoversEveryFormatItShould(t *testing.T) {

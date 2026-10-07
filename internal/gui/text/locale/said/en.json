@@ -1796,6 +1796,11 @@
     "hash": "sha256-bb90fafec850",
     "other": "{{.Path}} cannot be read as a manifest: {{.Detail}}"
   },
+  "mp4.MinimumReasonPictures": {
+    "description": "Said by internal/format/mp4 - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Duration}}, {{.FPS}}, {{.Interval}}, {{.Width}}, {{.Height}}, {{.Change}}, {{.Bytes}}, {{.Free}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-2d553380ec9d",
+    "other": "a film of {{.Duration}} at {{.FPS}} frames a second with a key frame every {{.Interval}} and a new {{.Width}}x{{.Height}} picture every {{.Change}} takes {{.Bytes}} B, and the file always carries a free box, which costs {{.Free}} B even when it holds nothing"
+  },
   "pdf.Carrying": {
     "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.What}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-83e9af0cb805",
@@ -3141,8 +3146,18 @@
     "hash": "sha256-a53588601259",
     "other": "use one of: {{.Known}}"
   },
+  "video.AskForBOrMoreFilmPictures": {
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Floor}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-faee56eaa68b",
+    "other": "Ask for {{.Floor}} B or more, or a shorter film, fewer frames a second, key frames further apart or a new picture less often"
+  },
+  "video.AskForBOrMorePictures": {
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Floor}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-504e7380dc2f",
+    "other": "Ask for {{.Floor}} B or more, or a shorter film, fewer frames a second, key frames further apart, a new picture less often or a smaller picture"
+  },
   "video.NoClock": {
-    "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Width}}, {{.Height}}, written the way the program writes them - keep each spelled exactly that way.",
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Width}}, {{.Height}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-9fb32f58b247",
     "other": "The picture is {{.Width}}x{{.Height}} and the clock needs more room, so this film shows no clock. The square still steps across it where it has room to move."
   },
@@ -3170,16 +3185,6 @@
     "description": "Said by internal/format/wav - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-b8bfddcdab7d",
     "other": ", or drop the label"
-  },
-  "webm.AskForBOrMoreFilmPictures": {
-    "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Floor}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-faee56eaa68b",
-    "other": "Ask for {{.Floor}} B or more, or a shorter film, fewer frames a second, key frames further apart or a new picture less often"
-  },
-  "webm.AskForBOrMorePictures": {
-    "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Floor}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-504e7380dc2f",
-    "other": "Ask for {{.Floor}} B or more, or a shorter film, fewer frames a second, key frames further apart, a new picture less often or a smaller picture"
   },
   "webm.MinimumReasonPictures": {
     "description": "Said by internal/format/webm - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Duration}}, {{.FPS}}, {{.Interval}}, {{.Width}}, {{.Height}}, {{.Change}}, {{.Bytes}}, {{.Void}}, written the way the program writes them - keep each spelled exactly that way.",

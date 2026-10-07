@@ -87,7 +87,11 @@ func TestEjectingAPresetGivesTheBytesItAlwaysGave(t *testing.T) {
 		// than at the longest gav1d could, so the smallest film went from
 		// 3294 B to 3284 B - the same film, a bound ten bytes closer to it
 		// (docs/WEBM-WYDAJNOSC-2026-10-06.md section 10).
-		{id: "empty-and-minimal", args: preset.Args{}, bytes: 9272, sum: "44600851ef3be72e73df2082c4a653416407efc770ca56bec62de87cf0f41905"},
+		// Moved a fourth time on 2026-10-07, the owner's decision of the day
+		// (docs/MP4-2026-10-07.md section 10): MP4 is a format more, so the
+		// set has its smallest film, 3312 B. A Changed entry and no major -
+		// no file any release made changes.
+		{id: "empty-and-minimal", args: preset.Args{}, bytes: 9574, sum: "3fd628031191f01a2559da100384dcfbecd31bb4ab6629156c0a3ac74f190921"},
 		{id: "empty-and-minimal", args: preset.Args{"formats": "jpg,png,txt"}, bytes: 1472, sum: "19b12800372395ad3bf5cba6407ca654d7ed51eba3a5bc5436f76a94bc09253c"},
 		// The preset of unusual file names, measured 2026-09-25 on its first
 		// build: the default, and a format whose extension is a byte longer,

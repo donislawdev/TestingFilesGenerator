@@ -40,15 +40,14 @@ package avif
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
 	"io"
-	"math/rand/v2"
 	"strconv"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagedim"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/isobmff"
 )
 
 const (
@@ -56,12 +55,7 @@ const (
 
 	// boxHeader is what every box costs before its content: a four byte
 	// length and a four character name.
-	boxHeader = 8
-
-	// maxFreePayload keeps a single box inside the four byte length field the
-	// container uses by default. Anything larger is spread over several boxes,
-	// which is measured to work rather than assumed.
-	maxFreePayload = 1<<31 - boxHeader
+	boxHeader = isobmff.BoxHeader
 
 	minDimension = 1
 	maxDimension = 16384
@@ -432,73 +426,5 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	if _, err := w.Write(coded); err != nil {
 		return err
 	}
-	return writePadding(ctx, w, m.seed, pad)
-}
-
-// writePadding fills the rest of the file with free boxes, without ever
-// holding their content.
-//
-// Several boxes rather than one when the padding is larger than a box length
-// can say. The step below keeps the leftover from landing between one and
-// seven bytes, which no box could then carry.
-func writePadding(ctx context.Context, w io.Writer, seed uint64, total int64) error {
-	rng := core.NewRand(seed)
-	buf := make([]byte, 32*1024)
-
-	for total > 0 {
-		payload := nextPayload(total)
-		if err := writeBoxHeader(w, payload); err != nil {
-			return err
-		}
-		if err := writeFiller(ctx, w, buf, rng, payload); err != nil {
-			return err
-		}
-		total -= boxHeader + payload
-	}
-	return nil
-}
-
-// nextPayload is how much filler the next free box carries.
-//
-// A box states its length in four bytes, so padding larger than that is spread
-// over several boxes. The step down is what keeps the leftover from landing
-// between one and seven bytes, which no box could then carry.
-func nextPayload(total int64) int64 {
-	payload := total - boxHeader
-	if payload <= maxFreePayload {
-		return payload
-	}
-	payload = maxFreePayload
-	if total-boxHeader-payload < boxHeader {
-		payload -= boxHeader
-	}
-	return payload
-}
-
-func writeBoxHeader(w io.Writer, payload int64) error {
-	var b [boxHeader]byte
-	binary.BigEndian.PutUint32(b[:4], uint32(boxHeader+payload))
-	copy(b[4:], "free")
-	_, err := w.Write(b[:])
-	return err
-}
-
-func writeFiller(ctx context.Context, w io.Writer, buf []byte, rng *rand.Rand, size int64) error {
-	for left := size; left > 0; {
-		n := int64(len(buf))
-		if left < n {
-			n = left
-		}
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-		}
-		core.FillRandomLE(buf[:n], rng)
-		if _, err := w.Write(buf[:n]); err != nil {
-			return err
-		}
-		left -= n
-	}
-	return nil
+	return isobmff.WritePadding(ctx, w, m.seed, pad)
 }

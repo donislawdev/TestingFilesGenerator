@@ -175,6 +175,21 @@ func goldenCases() map[string]engine.Target {
 		"webm_wide": {ID: "g", Format: "webm", Sizes: engine.Uniform(1, 524288), Label: true,
 			Properties: map[string]string{"width": "4240", "height": "1000", "duration": "2s"}},
 
+		// MP4, the same films in ISO base media boxes (docs/MP4-2026-10-07.md):
+		// its stream is the WebM's, which TestAnMP4CarriesTheFramesOfTheWebMOfTheSameRequest
+		// holds frame for frame, so what these pin is the container - the sample
+		// tables of one key frame and of several, chunks of one tile and of
+		// tiles, and a free box a byte longer.
+		"mp4_64kib": {ID: "g", Format: "mp4", Sizes: engine.Uniform(1, 65536), Label: true},
+		"mp4_named": {ID: "g", Format: "mp4", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "64", "height": "48", "duration": "2s", "keyframe_interval": "1s", "frame_rate": "25"}},
+		"mp4_odd_size": {ID: "g", Format: "mp4", Sizes: engine.Uniform(1, 65537), Label: true,
+			Properties: map[string]string{"width": "64", "height": "48"}},
+		"mp4_tiles": {ID: "g", Format: "mp4", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"width": "640", "height": "360", "duration": "3s"}},
+		"mp4_wide": {ID: "g", Format: "mp4", Sizes: engine.Uniform(1, 524288), Label: true,
+			Properties: map[string]string{"width": "4240", "height": "1000", "duration": "2s"}},
+
 		// An odd size. The free box takes any length at all, so this is the case
 		// that would catch padding that could only step in twos.
 		"jxl_odd_size": {ID: "g", Format: "jxl", Sizes: engine.Uniform(1, 65537), Label: true,

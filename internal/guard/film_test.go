@@ -1,10 +1,8 @@
 package guard
 
 import (
-	"encoding/binary"
 	"errors"
 	"fmt"
-	"math"
 	"os"
 	"path/filepath"
 	"slices"
@@ -21,9 +19,10 @@ import (
 // of animation_test.go, where a GIF the plan called animated came out still.
 //
 // The reader knows WebM's elements and AV1's headers as far as the questions
-// below need, and no further. What it does not understand it refuses, so a
-// change in the writer that this reader cannot follow fails loudly rather than
-// being read as something it is not.
+// below need, and no further, and filmmp4_test.go reads MP4 into the same
+// shape. What it does not understand it refuses, so a change in the writer
+// that this reader cannot follow fails loudly rather than being read as
+// something it is not.
 
 type filmBlock struct {
 	ts   int64
@@ -31,163 +30,43 @@ type filmBlock struct {
 	data []byte
 }
 
-type webmFilm struct {
+// filmRead is a film of either container, as the questions below ask it.
+type filmRead struct {
 	durationMs   float64
 	width        int
 	height       int
 	codecPrivate []byte
 	blocks       []filmBlock
-	cuePoints    int
-	// tail is the IDs of the segment's last two elements, the padding and
+	// index is how many places a player can start from the container lists:
+	// the cue points of a WebM, the sync samples of an MP4.
+	index int
+	// tail is the IDs of a WebM segment's last two elements, the padding and
 	// then the Cues (docs/WIDEO-2026-10-06.md section 15).
 	tail [2]uint64
+	// ends says what is wrong with how the file ends - where its padding
+	// sits - and is empty when nothing is.
+	ends string
+}
+
+// filmFormats are the containers a film is made in. The questions of the
+// container are asked of each.
+var filmFormats = []string{"webm", "mp4"}
+
+// walkFilm reads a film of either container.
+func walkFilm(id string, b []byte) (filmRead, error) {
+	switch id {
+	case "webm":
+		return walkWebM(b)
+	case "mp4":
+		return walkMP4(b)
+	}
+	return filmRead{}, fmt.Errorf("no reader for films in %s", id)
 }
 
 func filmOne(t *testing.T, target engine.Target) ([]byte, map[string]any) {
 	t.Helper()
 	b, facts, _ := filmWithSeed(t, target)
 	return b, facts
-}
-
-// ebmlVint reads an element ID (keeping its marker) or a size (without it).
-func ebmlVint(b []byte, keepMarker bool) (value uint64, length int, err error) {
-	if len(b) == 0 {
-		return 0, 0, fmt.Errorf("the file ends where an element should start")
-	}
-	length = 1
-	for mask := byte(0x80); length <= 8 && b[0]&mask == 0; mask >>= 1 {
-		length++
-	}
-	if length > 8 || length > len(b) {
-		return 0, 0, fmt.Errorf("a variable length number runs past the end")
-	}
-	value = uint64(b[0])
-	if !keepMarker {
-		value &= uint64(0xFF >> length)
-	}
-	for _, c := range b[1:length] {
-		value = value<<8 | uint64(c)
-	}
-	return value, length, nil
-}
-
-// ebmlElements walks a run of elements, each exactly covering the next, and
-// refuses one whose size runs past the run.
-func ebmlElements(b []byte, each func(id uint64, body []byte) error) error {
-	for pos := 0; pos < len(b); {
-		id, n, err := ebmlVint(b[pos:], true)
-		if err != nil {
-			return err
-		}
-		size, m, err := ebmlVint(b[pos+n:], false)
-		if err != nil {
-			return err
-		}
-		start := pos + n + m
-		if uint64(len(b)-start) < size {
-			return fmt.Errorf("element %#x at %d says %d B and %d remain", id, pos, size, len(b)-start)
-		}
-		if err := each(id, b[start:start+int(size)]); err != nil {
-			return err
-		}
-		pos = start + int(size)
-	}
-	return nil
-}
-
-func beUint(b []byte) uint64 {
-	var v uint64
-	for _, c := range b {
-		v = v<<8 | uint64(c)
-	}
-	return v
-}
-
-func walkWebM(b []byte) (webmFilm, error) {
-	var f webmFilm
-	sawSegment := false
-	err := ebmlElements(b, func(id uint64, body []byte) error {
-		switch id {
-		case 0x1A45DFA3:
-			return nil
-		case 0x18538067:
-			sawSegment = true
-			return walkSegment(&f, body)
-		}
-		return fmt.Errorf("a top level element %#x that is neither the EBML header nor the segment", id)
-	})
-	if err == nil && !sawSegment {
-		err = fmt.Errorf("no segment")
-	}
-	return f, err
-}
-
-func walkSegment(f *webmFilm, body []byte) error {
-	return ebmlElements(body, func(id uint64, el []byte) error {
-		f.tail = [2]uint64{f.tail[1], id}
-		switch id {
-		case 0x1549A966: // Info
-			return ebmlElements(el, func(id uint64, v []byte) error {
-				if id == 0x4489 {
-					f.durationMs = math.Float64frombits(binary.BigEndian.Uint64(v))
-				}
-				return nil
-			})
-		case 0x1654AE6B: // Tracks
-			return walkTracks(f, el)
-		case 0x1F43B675: // Cluster
-			return walkCluster(f, el)
-		case 0x1C53BB6B: // Cues
-			return ebmlElements(el, func(id uint64, _ []byte) error {
-				if id == 0xBB {
-					f.cuePoints++
-				}
-				return nil
-			})
-		}
-		return nil
-	})
-}
-
-func walkTracks(f *webmFilm, el []byte) error {
-	return ebmlElements(el, func(id uint64, entry []byte) error {
-		return ebmlElements(entry, func(id uint64, v []byte) error {
-			switch id {
-			case 0x63A2:
-				f.codecPrivate = v
-			case 0xE0:
-				return ebmlElements(v, func(id uint64, d []byte) error {
-					switch id {
-					case 0xB0:
-						f.width = int(beUint(d))
-					case 0xBA:
-						f.height = int(beUint(d))
-					}
-					return nil
-				})
-			}
-			return nil
-		})
-	})
-}
-
-func walkCluster(f *webmFilm, el []byte) error {
-	var clusterTs int64
-	return ebmlElements(el, func(id uint64, v []byte) error {
-		switch id {
-		case 0xE7:
-			clusterTs = int64(beUint(v))
-		case 0xA3:
-			if len(v) < 4 || v[0] != 0x81 {
-				return fmt.Errorf("a block that is not on track 1")
-			}
-			rel := int64(int16(binary.BigEndian.Uint16(v[1:3])))
-			f.blocks = append(f.blocks, filmBlock{ts: clusterTs + rel, key: v[3]&0x80 != 0, data: v[4:]})
-		default:
-			return fmt.Errorf("a cluster holds element %#x", id)
-		}
-		return nil
-	})
 }
 
 // av1Frame is what one OBU of a sample says about showing pictures.
@@ -300,8 +179,8 @@ func showRuleBroken(blocks []filmBlock) (int, string) {
 	return -1, ""
 }
 
-func filmTarget(bytes int64, props map[string]string) engine.Target {
-	return engine.Target{ID: "film", Format: "webm", Sizes: engine.Uniform(1, bytes), Label: true, Properties: props}
+func filmTarget(id string, bytes int64, props map[string]string) engine.Target {
+	return engine.Target{ID: "film", Format: id, Sizes: engine.Uniform(1, bytes), Label: true, Properties: props}
 }
 
 // The stream's one shape: a key frame, its hidden copy, and every other frame
@@ -318,17 +197,19 @@ func TestAFilmNeverShowsAKeyFrameASecondTime(t *testing.T) {
 		{"duration": "2s", "keyframe_interval": "1s", "frame_rate": "1"},
 		{"duration": "40ms", "frame_rate": "25"},
 	}
-	for _, props := range cases {
-		b, _ := filmOne(t, filmTarget(64*1024, props))
-		f, err := walkWebM(b)
-		if err != nil {
-			t.Fatalf("%v: reading the film back: %v", props, err)
-		}
-		if len(f.blocks) == 0 {
-			t.Fatalf("%v: the film has no frames, so nothing here was checked", props)
-		}
-		if i, why := showRuleBroken(f.blocks); i >= 0 {
-			t.Errorf("%v: frame %d %s - a stream libaom refuses", props, i, why)
+	for _, id := range filmFormats {
+		for _, props := range cases {
+			b, _ := filmOne(t, filmTarget(id, 64*1024, props))
+			f, err := walkFilm(id, b)
+			if err != nil {
+				t.Fatalf("%s %v: reading the film back: %v", id, props, err)
+			}
+			if len(f.blocks) == 0 {
+				t.Fatalf("%s %v: the film has no frames, so nothing here was checked", id, props)
+			}
+			if i, why := showRuleBroken(f.blocks); i >= 0 {
+				t.Errorf("%s %v: frame %d %s - a stream libaom refuses", id, props, i, why)
+			}
 		}
 	}
 }
@@ -342,51 +223,62 @@ func TestAFilmHoldsTheFramesTheManifestDeclares(t *testing.T) {
 		{"duration": "59.9s", "frame_rate": "30"},
 		{"duration": "1h", "frame_rate": "60"},
 	}
-	for _, props := range cases {
-		b, facts := filmOne(t, filmTarget(2*1024*1024, props))
-		f, err := walkWebM(b)
-		if err != nil {
-			t.Fatalf("%v: reading the film back: %v", props, err)
+	for _, id := range filmFormats {
+		for _, props := range cases {
+			b, facts := filmOne(t, filmTarget(id, 2*1024*1024, props))
+			f, err := walkFilm(id, b)
+			if err != nil {
+				t.Fatalf("%s %v: reading the film back: %v", id, props, err)
+			}
+			filmAgreesWithItsManifest(t, id+" "+fmt.Sprint(props), f, facts)
 		}
-		frames, _ := facts["frame_count"].(int64)
-		keys, _ := facts["keyframe_count"].(int64)
-		durationMs, _ := facts["duration_ms"].(int64)
-		fps, _ := facts["frame_rate"].(int)
-		if frames == 0 || fps == 0 {
-			t.Fatalf("%v: the manifest declares %d frames at %d a second, so nothing here was checked", props, frames, fps)
-		}
-		if int64(len(f.blocks)) != frames {
-			t.Errorf("%v: the file holds %d frames and the manifest declares %d", props, len(f.blocks), frames)
-		}
-		if f.durationMs != float64(durationMs) {
-			t.Errorf("%v: the file says it lasts %v ms and the manifest %d ms", props, f.durationMs, durationMs)
-		}
-		var seenKeys int64
-		interval, _ := facts["keyframe_interval_ms"].(int64)
-		every := interval * int64(fps) / 1000
-		for i, blk := range f.blocks {
-			if blk.key {
-				seenKeys++
-				if every > 0 && int64(i)%every != 0 {
-					t.Errorf("%v: frame %d is a key frame and the interval puts them every %d frames", props, i, every)
-				}
+	}
+}
+
+// filmAgreesWithItsManifest asks a film read back whether it holds what its
+// manifest declares: the frames, their length, the key frames where the
+// interval puts them and each in the container's index, the picture's size,
+// and the padding where the container keeps it.
+func filmAgreesWithItsManifest(t *testing.T, name string, f filmRead, facts map[string]any) {
+	t.Helper()
+	frames, _ := facts["frame_count"].(int64)
+	keys, _ := facts["keyframe_count"].(int64)
+	durationMs, _ := facts["duration_ms"].(int64)
+	fps, _ := facts["frame_rate"].(int)
+	if frames == 0 || fps == 0 || len(f.blocks) == 0 {
+		t.Fatalf("%s: the manifest declares %d frames at %d a second and the file holds %d, so nothing here was checked", name, frames, fps, len(f.blocks))
+	}
+	if int64(len(f.blocks)) != frames {
+		t.Errorf("%s: the file holds %d frames and the manifest declares %d", name, len(f.blocks), frames)
+	}
+	if f.durationMs != float64(durationMs) {
+		t.Errorf("%s: the file says it lasts %v ms and the manifest %d ms", name, f.durationMs, durationMs)
+	}
+	var seenKeys int64
+	interval, _ := facts["keyframe_interval_ms"].(int64)
+	every := interval * int64(fps) / 1000
+	for i, blk := range f.blocks {
+		if blk.key {
+			seenKeys++
+			if every > 0 && int64(i)%every != 0 {
+				t.Errorf("%s: frame %d is a key frame and the interval puts them every %d frames", name, i, every)
 			}
 		}
-		if seenKeys != keys || int64(f.cuePoints) != keys {
-			t.Errorf("%v: %d key frames and %d cue points, and the manifest declares %d key frames", props, seenKeys, f.cuePoints, keys)
-		}
-		if w, _ := facts["width"].(int); w != f.width {
-			t.Errorf("%v: the track is %d px wide and the manifest says %d", props, f.width, w)
-		}
-		if h, _ := facts["height"].(int); h != f.height {
-			t.Errorf("%v: the track is %d px tall and the manifest says %d", props, f.height, h)
-		}
-		if f.tail != [2]uint64{0xEC, 0x1C53BB6B} {
-			t.Errorf("%v: the segment ends in elements %#x and %#x, and it ends in the padding and then the Cues", props, f.tail[0], f.tail[1])
-		}
-		if last := f.blocks[len(f.blocks)-1].ts; last >= int64(durationMs) {
-			t.Errorf("%v: the last frame starts at %d ms, at or after the film's end at %d ms", props, last, durationMs)
-		}
+	}
+	if seenKeys != keys || int64(f.index) != keys {
+		t.Errorf("%s: %d key frames and %d in the index, and the manifest declares %d key frames", name, seenKeys, f.index, keys)
+	}
+	if w, _ := facts["width"].(int); w != f.width {
+		t.Errorf("%s: the track is %d px wide and the manifest says %d", name, f.width, w)
+	}
+	if h, _ := facts["height"].(int); h != f.height {
+		t.Errorf("%s: the track is %d px tall and the manifest says %d", name, f.height, h)
+	}
+	if f.ends != "" {
+		t.Errorf("%s: %s", name, f.ends)
+	}
+	if last := f.blocks[len(f.blocks)-1].ts; last >= durationMs {
+		t.Errorf("%s: the last frame starts at %d ms, at or after the film's end at %d ms", name, last, durationMs)
 	}
 }
 
@@ -454,23 +346,25 @@ func TestALengthThatDoesNotEndOnAFrameIsRefusedWithTheTwoNearest(t *testing.T) {
 		{map[string]string{"keyframe_interval": "1.05s"}, "keyframe_interval", "Ask for 1s or 1.1s"},
 		{map[string]string{"duration": "24h", "keyframe_interval": "500ms"}, "keyframe_interval", "Ask for 900ms or longer, or a shorter film"}, // 864ms is not on a frame at 30 fps
 	}
-	for _, c := range cases {
-		_, err := engine.Plan([]engine.Target{filmTarget(1024*1024, c.props)}, engine.Options{OutDir: t.TempDir(), Seed: goldenSeed, Command: "test"})
-		var refused *format.PropertyValueError
-		if !errors.As(err, &refused) {
-			t.Errorf("%v was not refused as a setting it cannot have: %v", c.props, err)
-			continue
+	for _, id := range filmFormats {
+		for _, c := range cases {
+			_, err := engine.Plan([]engine.Target{filmTarget(id, 1024*1024, c.props)}, engine.Options{OutDir: t.TempDir(), Seed: goldenSeed, Command: "test"})
+			var refused *format.PropertyValueError
+			if !errors.As(err, &refused) {
+				t.Errorf("%s %v was not refused as a setting it cannot have: %v", id, c.props, err)
+				continue
+			}
+			// The way out is in the sentence the command line prints, which
+			// is the reason - a remedy beside it would reach the window alone.
+			if refused.Key != c.key || !strings.HasSuffix(refused.Error(), c.offered) {
+				t.Errorf("%s %v was refused about %q as %q - expected %q ending in %q", id, c.props, refused.Key, refused.Error(), c.key, c.offered)
+			}
 		}
-		// The way out is in the sentence the command line prints, which is
-		// the reason - a remedy beside it would reach the window alone.
-		if refused.Key != c.key || !strings.HasSuffix(refused.Error(), c.offered) {
-			t.Errorf("%v was refused about %q as %q - expected %q ending in %q", c.props, refused.Key, refused.Error(), c.key, c.offered)
-		}
-	}
-	// And a length that does end on a frame is not refused at all.
-	for _, props := range []map[string]string{{"duration": "1.1s"}, {"duration": "1.125s", "frame_rate": "24"}, {"duration": "40ms", "frame_rate": "25"}} {
-		if _, err := engine.Plan([]engine.Target{filmTarget(1024*1024, props)}, engine.Options{OutDir: t.TempDir(), Seed: goldenSeed, Command: "test"}); err != nil {
-			t.Errorf("%v ends on a frame and was refused: %v", props, err)
+		// And a length that does end on a frame is not refused at all.
+		for _, props := range []map[string]string{{"duration": "1.1s"}, {"duration": "1.125s", "frame_rate": "24"}, {"duration": "40ms", "frame_rate": "25"}} {
+			if _, err := engine.Plan([]engine.Target{filmTarget(id, 1024*1024, props)}, engine.Options{OutDir: t.TempDir(), Seed: goldenSeed, Command: "test"}); err != nil {
+				t.Errorf("%s %v ends on a frame and was refused: %v", id, props, err)
+			}
 		}
 	}
 }
@@ -492,47 +386,50 @@ func TestAFilmPictureChangesWhereTheManifestSays(t *testing.T) {
 		{"duration": "2s", "change_interval": "1h"},
 	}
 	moving, tiled := 0, 0
-	for _, props := range cases {
-		b, facts := filmOne(t, filmTarget(2*1024*1024, props))
-		if filmTileCount(t, b) > 1 {
-			tiled++
-		}
-		path := filepath.Join(t.TempDir(), "film.webm")
-		if err := os.WriteFile(path, b, 0o600); err != nil {
-			t.Fatal(err)
-		}
-		got, res := oracle.PictureChanges(path)
-		if !res.Available {
-			t.Skipf("%s is not installed, so no picture was looked at - a skip, not a pass", res.Tool)
-		}
-		if res.Err != nil {
-			t.Errorf("%v: %v", props, res.Err)
-			continue
-		}
-		count, _ := facts["change_count"].(int64)
-		interval, _ := facts["change_interval_ms"].(int64)
-		fps, _ := facts["frame_rate"].(int)
-		if count == 0 || interval == 0 || fps == 0 {
-			t.Fatalf("%v: the manifest declares %d changes every %d ms at %d frames a second, so nothing here was checked", props, count, interval, fps)
-		}
-		want := make([]int64, count)
-		for c := range want {
-			want[c] = int64(c) * interval * int64(fps) / 1000
-		}
-		if !slices.Equal(got, want) {
-			t.Errorf("%v: the decoded picture changes at frames %v and the manifest puts the changes at %v", props, got, want)
-		}
-		if count > 1 {
-			moving++
+	for _, id := range filmFormats {
+		for _, props := range cases {
+			b, facts := filmOne(t, filmTarget(id, 2*1024*1024, props))
+			if filmTileCount(t, id, b) > 1 {
+				tiled++
+			}
+			path := filepath.Join(t.TempDir(), "film."+id)
+			if err := os.WriteFile(path, b, 0o600); err != nil {
+				t.Fatal(err)
+			}
+			got, res := oracle.PictureChanges(path)
+			if !res.Available {
+				t.Skipf("%s is not installed, so no picture was looked at - a skip, not a pass", res.Tool)
+			}
+			if res.Err != nil {
+				t.Errorf("%s %v: %v", id, props, res.Err)
+				continue
+			}
+			count, _ := facts["change_count"].(int64)
+			interval, _ := facts["change_interval_ms"].(int64)
+			fps, _ := facts["frame_rate"].(int)
+			if count == 0 || interval == 0 || fps == 0 {
+				t.Fatalf("%s %v: the manifest declares %d changes every %d ms at %d frames a second, so nothing here was checked", id, props, count, interval, fps)
+			}
+			want := make([]int64, count)
+			for c := range want {
+				want[c] = int64(c) * interval * int64(fps) / 1000
+			}
+			if !slices.Equal(got, want) {
+				t.Errorf("%s %v: the decoded picture changes at frames %v and the manifest puts the changes at %v", id, props, got, want)
+			}
+			if count > 1 {
+				moving++
+			}
 		}
 	}
-	if moving < 3 {
+	if moving < 3*len(filmFormats) {
 		t.Fatalf("only %d of the films had a picture that moves, so the guard did not ask its question", moving)
 	}
 	// Asserted, not assumed: a picture cut into tiles is coded a tile at a
 	// time, and a tile kept from an earlier picture is where a picture that
-	// should move could stand still.
-	if tiled < 2 {
+	// should move could stand still - in MP4 also from the first of its two
+	// passes.
+	if tiled < 2*len(filmFormats) {
 		t.Fatalf("only %d of the films were cut into tiles, so the guard did not ask about tiles", tiled)
 	}
 }
@@ -556,34 +453,36 @@ func TestEveryFrameOfAFilmSurvivesItsReferenceTool(t *testing.T) {
 		// Wider than one tile can be (grid.go, cutToFit).
 		{"width": "4240", "height": "1000", "duration": "2s"},
 	}
-	tiled := 0
-	for _, props := range cases {
-		b, facts := filmOne(t, filmTarget(4*1024*1024, props))
-		if filmTileCount(t, b) > 1 {
-			tiled++
+	tiled := map[string]int{}
+	for _, id := range filmFormats {
+		for _, props := range cases {
+			b, facts := filmOne(t, filmTarget(id, 4*1024*1024, props))
+			if filmTileCount(t, id, b) > 1 {
+				tiled[id]++
+			}
+			path := filepath.Join(t.TempDir(), "film."+id)
+			if err := os.WriteFile(path, b, 0o600); err != nil {
+				t.Fatal(err)
+			}
+			res := checker.Check(path)
+			if !res.Available {
+				t.Skipf("%s is not installed, so no film was decoded - a skip, not a pass", checker.Name)
+			}
+			if res.Err != nil {
+				t.Errorf("%s %v: %v", id, props, res.Err)
+				continue
+			}
+			frames, _ := facts["frame_count"].(int64)
+			got, ok := oracle.DecodedFrames(res.Output)
+			if !ok || int64(got) != frames {
+				t.Errorf("%s %v: libaom decoded %d frames and the manifest declares %d", id, props, got, frames)
+			}
 		}
-		path := filepath.Join(t.TempDir(), "film.webm")
-		if err := os.WriteFile(path, b, 0o600); err != nil {
-			t.Fatal(err)
+		// A frame of tiles is the one whose tile_info and tile sizes this tool
+		// writes itself, so at least one film of each container has to be one.
+		if tiled[id] == 0 {
+			t.Fatalf("no %s film was cut into tiles, so libaom was never asked about a frame of tiles", id)
 		}
-		res := checker.Check(path)
-		if !res.Available {
-			t.Skipf("%s is not installed, so no film was decoded - a skip, not a pass", checker.Name)
-		}
-		if res.Err != nil {
-			t.Errorf("%v: %v", props, res.Err)
-			continue
-		}
-		frames, _ := facts["frame_count"].(int64)
-		got, ok := oracle.DecodedFrames(res.Output)
-		if !ok || int64(got) != frames {
-			t.Errorf("%v: libaom decoded %d frames and the manifest declares %d", props, got, frames)
-		}
-	}
-	// A frame of tiles is the one whose tile_info and tile sizes this tool
-	// writes itself, so at least one film has to be one.
-	if tiled == 0 {
-		t.Fatalf("no film was cut into tiles, so libaom was never asked about a frame of tiles")
 	}
 }
 
@@ -600,20 +499,22 @@ func TestEveryFrameOfAFilmSurvivesItsReferenceTool(t *testing.T) {
 // are the four the old bound refused, cheap to plan, and the two longest
 // sides - not 8192x4352 itself, whose plan codes a sample of 8K pictures.
 func TestAFilmPictureLargerThanAnyAV1LevelIsRefusedNotBroken(t *testing.T) {
-	plan := func(w, h string) error {
-		props := map[string]string{"width": w, "height": h, "duration": "1s"}
-		_, err := engine.Plan([]engine.Target{filmTarget(32*1024*1024, props)}, engine.Options{OutDir: t.TempDir(), Seed: goldenSeed, Command: "test"})
-		return err
-	}
-	for _, size := range [][2]string{{"8192", "4353"}, {"8193", "4352"}, {"16384", "2177"}, {"16385", "64"}, {"64", "16385"}} {
-		var refused *format.PropertyValueError
-		if err := plan(size[0], size[1]); !errors.As(err, &refused) {
-			t.Errorf("%sx%s was not refused as a setting: %v", size[0], size[1], err)
+	for _, id := range filmFormats {
+		plan := func(w, h string) error {
+			props := map[string]string{"width": w, "height": h, "duration": "1s"}
+			_, err := engine.Plan([]engine.Target{filmTarget(id, 32*1024*1024, props)}, engine.Options{OutDir: t.TempDir(), Seed: goldenSeed, Command: "test"})
+			return err
 		}
-	}
-	for _, size := range [][2]string{{"4096", "2305"}, {"4000", "2359"}, {"4097", "64"}, {"4352", "512"}, {"16384", "64"}, {"64", "16384"}} {
-		if err := plan(size[0], size[1]); err != nil {
-			t.Errorf("%sx%s is inside every bound the format declares and was refused: %v", size[0], size[1], err)
+		for _, size := range [][2]string{{"8192", "4353"}, {"8193", "4352"}, {"16384", "2177"}, {"16385", "64"}, {"64", "16385"}} {
+			var refused *format.PropertyValueError
+			if err := plan(size[0], size[1]); !errors.As(err, &refused) {
+				t.Errorf("%s %sx%s was not refused as a setting: %v", id, size[0], size[1], err)
+			}
+		}
+		for _, size := range [][2]string{{"4096", "2305"}, {"4000", "2359"}, {"4097", "64"}, {"4352", "512"}, {"16384", "64"}, {"64", "16384"}} {
+			if err := plan(size[0], size[1]); err != nil {
+				t.Errorf("%s %sx%s is inside every bound the format declares and was refused: %v", id, size[0], size[1], err)
+			}
 		}
 	}
 }
@@ -641,19 +542,21 @@ func TestAFilmOfANamedSizeKeepsEveryPictureInsideItsReserve(t *testing.T) {
 		{16 << 20, map[string]string{"width": "320", "height": "180", "duration": "2m", "change_interval": "100ms"}},
 	}
 	tiled := 0
-	for _, c := range cases {
-		b, facts := filmOne(t, filmTarget(c.bytes, c.props))
-		if filmTileCount(t, b) > 1 {
-			tiled++
-		}
-		if changes, _ := facts["change_count"].(int64); changes <= 10 {
-			t.Fatalf("%v: %d pictures, which planning codes whole, so the sample was not asked", c.props, changes)
-		}
-		if int64(len(b)) != c.bytes {
-			t.Errorf("%v: the film is %d B and %d B were asked for", c.props, len(b), c.bytes)
+	for _, id := range filmFormats {
+		for _, c := range cases {
+			b, facts := filmOne(t, filmTarget(id, c.bytes, c.props))
+			if filmTileCount(t, id, b) > 1 {
+				tiled++
+			}
+			if changes, _ := facts["change_count"].(int64); changes <= 10 {
+				t.Fatalf("%s %v: %d pictures, which planning codes whole, so the sample was not asked", id, c.props, changes)
+			}
+			if int64(len(b)) != c.bytes {
+				t.Errorf("%s %v: the film is %d B and %d B were asked for", id, c.props, len(b), c.bytes)
+			}
 		}
 	}
-	if tiled == 0 {
-		t.Fatalf("no film was cut into tiles, so no reserve of tiles was asked")
+	if tiled < len(filmFormats) {
+		t.Fatalf("%d films were cut into tiles, so no reserve of tiles was asked of each container", tiled)
 	}
 }

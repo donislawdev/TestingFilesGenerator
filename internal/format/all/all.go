@@ -20,6 +20,7 @@ import (
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/jxl"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/logfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/md"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/mp4"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/pdf"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/png"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/pptx"

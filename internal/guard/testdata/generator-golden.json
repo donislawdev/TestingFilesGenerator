@@ -356,6 +356,31 @@
       "bytes": 524288,
       "sha256": "270aab596f2a59abe47cf9ab35236964b88dcd1be2ea24247cbce8c72c3c1cd0",
       "measured_on": "2026-10-07"
+    },
+    "mp4_64kib": {
+      "bytes": 65536,
+      "sha256": "5b20b432d9e2287ef0f861331d0ddecea22d8e519351794d95d24abbca13ba65",
+      "measured_on": "2026-10-07"
+    },
+    "mp4_named": {
+      "bytes": 65536,
+      "sha256": "195a999065d1f6f873db51d70b9ffe3d36b5773966d3db037cfacab1e2f76efa",
+      "measured_on": "2026-10-07"
+    },
+    "mp4_odd_size": {
+      "bytes": 65537,
+      "sha256": "c7fd6880cb58015925172ecb80ee0743d32f740a53585f8698daf51d37c3df45",
+      "measured_on": "2026-10-07"
+    },
+    "mp4_tiles": {
+      "bytes": 65536,
+      "sha256": "4ca1c1c7d2d018d527da7d6d067573b65d15629dce931b20e1d95402b868a587",
+      "measured_on": "2026-10-07"
+    },
+    "mp4_wide": {
+      "bytes": 524288,
+      "sha256": "ae5d267ff067caf04aa42e72916f67a89a19584d2ea30445a955202571fc45c3",
+      "measured_on": "2026-10-07"
     }
   },
   "remeasured": [

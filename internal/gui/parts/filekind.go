@@ -153,6 +153,7 @@ var fileKinds = map[string]fileKind{
 	"zip":   kindArchive,
 	"wav":   kindSound,
 	"webm":  kindMoving,
+	"mp4":   kindMoving,
 	"csv":   kindWords,
 	"html":  kindWords,
 	"json":  kindWords,

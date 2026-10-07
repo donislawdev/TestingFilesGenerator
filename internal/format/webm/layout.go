@@ -82,43 +82,22 @@ func (l layout) next(first int64) int64 {
 	return min(s.Frames, (first/s.KeyEvery+1)*s.KeyEvery, (first/s.ChangeEvery+1)*s.ChangeEvery, first+span)
 }
 
-// The three kinds of sample a frame carries.
-const (
-	keySample  = iota // the picture as a key frame, the sequence header first
-	copySample        // the picture as a hidden copy, and the frame showing it
-	showSample        // the current picture shown again
-	kinds
-)
-
-// kindAt is what frame i of the cluster opening at frame first carries.
-//
-// Only a cluster's first two frames can carry a picture. A key frame opens its
-// cluster, and the frame after it carries the hidden copy, because a shown key
-// frame cannot be shown again - unless that frame opens a change, which opens
-// a cluster of its own. A change opens its cluster with the copy and the frame
-// that shows it. Every other frame shows the current picture again.
-func (l layout) kindAt(first, i int64) int {
-	s := l.stream
-	switch {
-	case i == first && s.IsKey(i):
-		return keySample
-	case i == first && s.StartsChange(i), i == first+1 && s.IsKey(first):
-		return copySample
-	}
-	return showSample
-}
-
 // clusterContent is what the cluster of frames [first, last) holds, given how
-// long each kind of sample is - counted from kindAt for the two frames that can
-// carry a picture, so the length written before a cluster and the blocks
-// written in it come from one answer.
-func (l layout) clusterContent(first, last int64, lens [kinds]int) uint64 {
+// long each kind of sample is (video.Timeline.SampleAt), so the length written
+// before a cluster and the blocks written in it come from one answer.
+//
+// Only a cluster's first two frames can carry a picture. A key frame and a
+// change each open a cluster, and the frame after a key frame - the only
+// other one that carries a picture - is the second of the key frame's cluster
+// or opens a change and its own, because a cluster runs thirty seconds and a
+// second is at least one frame.
+func (l layout) clusterContent(first, last int64, lens [video.SampleKinds]int) uint64 {
 	total := uintElementLen(idTimestamp, uint64(l.stream.StartMs(first)))
 	for i := first; i < min(first+2, last); i++ {
-		total += blockLen(lens[l.kindAt(first, i)])
+		total += blockLen(lens[l.stream.SampleAt(i)])
 	}
 	if rest := last - first - 2; rest > 0 {
-		total += uint64(rest) * blockLen(lens[showSample])
+		total += uint64(rest) * blockLen(lens[video.ShowSample])
 	}
 	return total
 }
@@ -127,8 +106,7 @@ func (l layout) clusterContent(first, last int64, lens [kinds]int) uint64 {
 // reserve - what planning promises, because no film of this stream comes to
 // more.
 func (l layout) boundBytes() int64 {
-	key, copied, shown := l.stream.BoundBytes()
-	lens := [kinds]int{keySample: key, copySample: copied, showSample: shown}
+	lens := l.stream.BoundBytes()
 	body := l.front() + l.cuesLen()
 	for first := int64(0); first < l.stream.Frames; {
 		last := l.next(first)

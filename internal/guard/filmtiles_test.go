@@ -236,11 +236,20 @@ func frameOBU(sample []byte) ([]byte, int, error) {
 // filmTileCount is how many tiles the first frame of a film is cut into, read
 // from the file - for the guards that have to know they asked about a film of
 // tiles rather than a film of one.
-func filmTileCount(t *testing.T, film []byte) int {
+func filmTileCount(t *testing.T, id string, film []byte) int {
 	t.Helper()
-	f, err := walkWebM(film)
-	if err != nil || len(f.blocks) == 0 {
+	f, err := walkFilm(id, film)
+	if err != nil {
 		t.Fatalf("reading the film back: %v", err)
+	}
+	return tilesOf(t, f)
+}
+
+// tilesOf is how many tiles the first frame of a film read back is cut into.
+func tilesOf(t *testing.T, f filmRead) int {
+	t.Helper()
+	if len(f.blocks) == 0 {
+		t.Fatalf("the film holds no frames, so it has no tiles to count")
 	}
 	frame, before, err := frameOBU(f.blocks[0].data)
 	if err != nil {
@@ -311,7 +320,7 @@ func rangeOf(n int64) []int64 {
 // one frame.
 func tilesOfFilmHold(t *testing.T, props map[string]string, size int64, changes []int64) (int, int) {
 	t.Helper()
-	b, facts, seed := filmWithSeed(t, filmTarget(size, props))
+	b, facts, seed := filmWithSeed(t, filmTarget("webm", size, props))
 	f, err := walkWebM(b)
 	if err != nil {
 		t.Fatalf("%v: reading the film back: %v", props, err)

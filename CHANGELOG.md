@@ -32,8 +32,8 @@ because it turns other people's test suites red.
   coding as well as the bytes, so the time it says is left holds. The frames
   between changes cost a few bytes each, so an hour at thirty
   frames a second with a change every second fits in about a megabyte
-  (1 075 831 B at the smallest), and a `change_interval` as long as the film
-  or longer keeps one picture throughout (977 434 B for that hour). Set
+  (1 072 231 B at the smallest), and a `change_interval` as long as the film
+  or longer keeps one picture throughout (977 374 B for that hour). Set
   `duration`, `change_interval`, `frame_rate` (whole rates from 1 to 60),
   `keyframe_interval` - how far apart the frames a player can start from
   are - `width`, `height` and `quality`. The picture is the gradient with the
@@ -55,6 +55,20 @@ because it turns other people's test suites red.
   AV1 plays in current browsers, and an older player or a pipeline that
   expects H.264 may refuse it - which is a test worth having. The window
   lists it under Video.
+- **Films: the `mp4` format.** The same films in an MP4 file: the same
+  settings, the same moving picture and the same manifest keys as `webm`, at
+  the exact size you ask for, and a WebM and an MP4 made from the same
+  settings carry the same AV1 frames. The index of the film comes first in
+  the file, so a browser starts playing before the whole file is in. To write
+  that index the film is coded twice, the second time from what the first
+  kept, which costs seconds - an hour of 1920x1080 changing every second is
+  coded in under one. The padding is free boxes at the end, so every size
+  from the smallest film up can be made, 5 GB and more included. A frame
+  between changes costs about 8 bytes, so an hour at thirty frames a second
+  with a change every second is 938 423 B at the smallest, and 867 623 B
+  with one picture throughout. The smallest film at the default settings is
+  3312 B. A pipeline that expects H.264 in an MP4 may refuse AV1, which is a
+  test worth having.
 - **A length of time as a setting.** `duration`, `change_interval` and `keyframe_interval` take
   `10s`, `1m30s`, `1h`, `500ms` or `59.9s`, to the millisecond. A bare number
   is refused rather than read as seconds, and so is a length that does not
@@ -146,10 +160,10 @@ because it turns other people's test suites red.
 
 ### Changed
 
-- **`empty-and-minimal` now includes a film.** The preset builds the smallest
-  file of every format this build has, so with `formats` left at `all` it
-  gains a `webm` target, and the recipe `tfg preset eject empty-and-minimal`
-  prints is a target longer. A manifest from a run of that preset records the
+- **`empty-and-minimal` now includes the films.** The preset builds the
+  smallest file of every format this build has, so with `formats` left at
+  `all` it gains a `webm` and an `mp4` target, and the recipe
+  `tfg preset eject empty-and-minimal` prints is two targets longer. A manifest from a run of that preset records the
   hash of that recipe, so its `recipe_hash` differs from one written before.
   No generated file changes, and a run that names its `formats` is untouched.
 - **An empty text box in the window reads "not set"** instead of "worked out
