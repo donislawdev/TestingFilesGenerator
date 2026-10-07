@@ -102,13 +102,20 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 func fit(m *message, r format.Request) ([]format.Note, error) {
 	bare := m.size()
 	if r.Bytes < bare {
+		// The reason a tester needs is the base64, when there is anything
+		// attached - and a sentence about attached files is wrong for a
+		// message that has none.
+		reason := core.Says("eml.AMessageHoldsItsHeaderLinesAndText", "a message holds its header lines and the lines that open its text")
+		if len(m.children) > 0 {
+			reason = core.Says("eml.AMessageHoldsItsHeaderLines", "a message holds its header lines, its parts and every attached file in base64, "+
+				"which is about a third larger than the file itself")
+		}
 		return nil, &format.BelowMinimumError{
 			Format:    "EML",
 			Requested: r.Bytes,
 			Minimum:   bare,
-			Reason: core.Says("eml.AMessageHoldsItsHeaderLines", "a message holds its header lines, its parts and every attached file in base64, "+
-				"which is about a third larger than the file itself"),
-			Hint: core.Says("format.AskForBOrMore", "Ask for %d B or more.", core.A("Min", bare)),
+			Reason:    reason,
+			Hint:      core.Says("format.AskForBOrMore", "Ask for %d B or more.", core.A("Min", bare)),
 		}
 	}
 	if !r.Label {

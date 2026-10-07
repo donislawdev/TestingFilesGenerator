@@ -526,6 +526,11 @@
     "hash": "sha256-5b3dd4df2ace",
     "other": "a message holds its header lines, its parts and every attached file in base64, which is about a third larger than the file itself"
   },
+  "eml.AMessageHoldsItsHeaderLinesAndText": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-1e727c17f578",
+    "other": "a message holds its header lines and the lines that open its text"
+  },
   "eml.AMessageThisLargeCannotBe": {
     "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-ff6a6f0065c8",
