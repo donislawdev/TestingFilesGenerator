@@ -2579,11 +2579,19 @@ def check_eml(data, settings=None):
     eml_line_endings(data, eol)
     for number, line in enumerate(data.split(eol), start=1):
         eml_line_length(number, line)
-    head, body = eml_split(data, eol, "the message")
-    fields = eml_fields(head, eol, "the message")
-    eml_headers(fields, s)
+    # A message this tool did not write can break the walk in ways nobody
+    # listed - bytes that are not UTF-8, a part with no Content-Type, base64
+    # that does not decode. Each has to come out as a refusal with a reason,
+    # not a traceback, because a crash turns a guard red and says nothing
+    # (the lesson of check_geojson, review of #171, asked again in #173).
     leaves = []
-    eml_entity(dict(fields), body, eol, s, leaves, top=True)
+    try:
+        head, body = eml_split(data, eol, "the message")
+        fields = eml_fields(head, eol, "the message")
+        eml_headers(fields, s)
+        eml_entity(dict(fields), body, eol, s, leaves, top=True)
+    except (UnicodeDecodeError, KeyError, ValueError, IndexError, TypeError) as exc:
+        fail(f"a part is not shaped the way this tool writes one: {type(exc).__name__}: {exc}")
     texts = [leaf for leaf in leaves if leaf["kind"] == "text"]
     files = [leaf for leaf in leaves if leaf["kind"] == "file"]
     want_texts = {"plain": ["text/plain"], "html": ["text/html"], "alternative": ["text/plain", "text/html"]}[s["body"]]

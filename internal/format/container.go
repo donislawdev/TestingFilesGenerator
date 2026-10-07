@@ -56,8 +56,11 @@ func (e *NotAContainerError) Said() core.Said {
 }
 
 // ContentsConflictError is contains stated beside format properties saying the
-// same thing. Picking one would build an archive holding something other than
+// same thing. Picking one would build a container holding something other than
 // what the recipe says, and the recipe is what somebody reads in a review.
+//
+// It speaks of files rather than of an archive since a mail message became a
+// container (review of #173).
 type ContentsConflictError struct {
 	Format string
 	Keys   []string
@@ -69,11 +72,11 @@ func (e *ContentsConflictError) Error() string { return e.Said().String() }
 func (e *ContentsConflictError) Said() core.Said {
 	if len(e.Keys) == 1 {
 		return core.Says("format.ContentsConflictOne",
-			"%s: contains and the %s property both say what the archive holds. Keep contains and drop the properties, or the other way round",
+			"%s: contains and the %s property both say which files it holds. Keep contains and drop the property, or the other way round",
 			core.A("Format", e.Format), core.A("Key", e.Keys[0]))
 	}
 	return core.Says("format.ContentsConflict",
-		"%s: contains and the %s properties both say what the archive holds. Keep contains and drop the properties, or the other way round",
+		"%s: contains and the %s properties both say which files it holds. Keep contains and drop the properties, or the other way round",
 		core.A("Format", e.Format), core.A("Keys", strings.Join(e.Keys, ", ")))
 }
 

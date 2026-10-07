@@ -1271,13 +1271,13 @@
   },
   "format.ContentsConflict": {
     "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Keys}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-c02ff58536fe",
-    "other": "{{.Format}}: contains and the {{.Keys}} properties both say what the archive holds. Keep contains and drop the properties, or the other way round"
+    "hash": "sha256-f8af78b330b1",
+    "other": "{{.Format}}: contains and the {{.Keys}} properties both say which files it holds. Keep contains and drop the properties, or the other way round"
   },
   "format.ContentsConflictOne": {
     "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Key}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-274eb866ce96",
-    "other": "{{.Format}}: contains and the {{.Key}} property both say what the archive holds. Keep contains and drop the properties, or the other way round"
+    "hash": "sha256-44b774ac5486",
+    "other": "{{.Format}}: contains and the {{.Key}} property both say which files it holds. Keep contains and drop the property, or the other way round"
   },
   "format.CountOf": {
     "description": "Said by internal/format - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Number}}, {{.Unit}}, written the way the program writes them - keep each spelled exactly that way.",

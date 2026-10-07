@@ -262,7 +262,7 @@ func TestContentsThatCannotBeHonouredAreRefusedWithTheRightCode(t *testing.T) {
 			name: "contents stated twice",
 			body: "  - id: a\n    format: zip\n    contains: [{format: pdf, count: 1, size: 4kb}]\n    properties: {entries: 2}\n",
 			code: cli.ExitRecipe,
-			says: "both say what the archive holds",
+			says: "both say which files it holds",
 		},
 		{
 			name: "a group with no size",

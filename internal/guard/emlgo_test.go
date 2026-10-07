@@ -144,7 +144,7 @@ func TestGosStandardLibraryReadsEveryEMLTheWayItWasMeasured(t *testing.T) {
 			}
 			written := emlName(props, "pdf", n+1, ".pdf")
 			want := goNameFor(props, written)
-			if want == "=?UTF-8?B?" && strings.HasPrefix(f.name, want) || f.name == want {
+			if (want == "=?UTF-8?B?" && strings.HasPrefix(f.name, want)) || f.name == want {
 				disagreed += boolInt(want != written)
 				continue
 			}

@@ -1,0 +1,8 @@
+{
+  "name": "tfg-reference-mailparser",
+  "private": true,
+  "description": "mailparser for the eml reference tool guard, installed by the reference tools job with npm ci from the lockfile beside this file.",
+  "dependencies": {
+    "mailparser": "3.9.36"
+  }
+}

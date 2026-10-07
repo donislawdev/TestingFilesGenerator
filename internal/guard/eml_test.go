@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -60,29 +61,39 @@ func TestEveryEMLSettingSurvivesItsReferenceTool(t *testing.T) {
 		t.Fatal(err)
 	}
 	dir := t.TempDir()
-	parsed, byNode := 0, 0
-	for i, base := range emlCases {
-		for _, count := range []string{"0", "2"} {
-			props := withAttachments(base, count, "txt", "1kb")
-			smallest := d.SmallestAccepted(format.Request{Properties: props})
-			for _, size := range []int64{smallest, smallest + 1, smallest + 2, 20000} {
-				path := filepath.Join(dir, strconv.Itoa(i)+"_"+count+"_"+strconv.FormatInt(size, 10)+".eml")
-				b, _ := writeEML(t, d, size, uint64(31+i), props)
-				if err := os.WriteFile(path, b, 0o600); err != nil {
-					t.Fatal(err)
-				}
-				py, node := emlSurvivesReaders(t, path, props, size)
-				parsed, byNode = parsed+py, byNode+node
+	var parsed, byNode atomic.Int64
+	// Each case in a subtest of its own, run side by side: every message is a
+	// file of its own and every reader a process of its own, and one after
+	// another the 144 messages kept the job waiting on interpreters starting
+	// (review of #173). The group returns when every case has.
+	t.Run("cases", func(t *testing.T) {
+		for i, base := range emlCases {
+			for _, count := range []string{"0", "2"} {
+				t.Run(strconv.Itoa(i)+"_"+count, func(t *testing.T) {
+					t.Parallel()
+					props := withAttachments(base, count, "txt", "1kb")
+					smallest := d.SmallestAccepted(format.Request{Properties: props})
+					for _, size := range []int64{smallest, smallest + 1, smallest + 2, 20000} {
+						path := filepath.Join(dir, strconv.Itoa(i)+"_"+count+"_"+strconv.FormatInt(size, 10)+".eml")
+						b, _ := writeEML(t, d, size, uint64(31+i), props)
+						if err := os.WriteFile(path, b, 0o600); err != nil {
+							t.Fatal(err)
+						}
+						py, node := emlSurvivesReaders(t, path, props, size)
+						parsed.Add(int64(py))
+						byNode.Add(int64(node))
+					}
+				})
 			}
 		}
-	}
+	})
 	// Where mailparser is named it has to have read something, or the step
 	// that installed it and this guard disagree about where it is.
-	if os.Getenv("TFG_MAILPARSER") != "" && byNode == 0 {
+	if os.Getenv("TFG_MAILPARSER") != "" && byNode.Load() == 0 {
 		t.Errorf("TFG_MAILPARSER names %q and mailparser read no message", os.Getenv("TFG_MAILPARSER"))
 	}
-	t.Logf("%d messages read by python, %d by mailparser", parsed, byNode)
-	if parsed == 0 {
+	t.Logf("%d messages read by python, %d by mailparser", parsed.Load(), byNode.Load())
+	if parsed.Load() == 0 {
 		t.Skip("python is not installed, so no message was read - a skip, not a pass")
 	}
 }
