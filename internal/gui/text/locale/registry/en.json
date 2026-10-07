@@ -499,6 +499,11 @@
     "hash": "sha256-584cb925e6ad",
     "other": "docx"
   },
+  "Choice.format.geojson": {
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-64bce794becb",
+    "other": "geojson"
+  },
   "Choice.format.gif": {
     "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3b34c6906f7e",
@@ -688,6 +693,46 @@
     "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-39fa9ec190ee",
     "other": "60"
+  },
+  "Choice.geometry.geometrycollection": {
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-c86a75e30348",
+    "other": "geometrycollection"
+  },
+  "Choice.geometry.linestring": {
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-5f381815f5ce",
+    "other": "linestring"
+  },
+  "Choice.geometry.mixed": {
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-3f8fee624f43",
+    "other": "mixed"
+  },
+  "Choice.geometry.multilinestring": {
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-f1d6790bc746",
+    "other": "multilinestring"
+  },
+  "Choice.geometry.multipoint": {
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-0ebeeffc0a24",
+    "other": "multipoint"
+  },
+  "Choice.geometry.multipolygon": {
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-d9cfa92a41b7",
+    "other": "multipolygon"
+  },
+  "Choice.geometry.point": {
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-251fecd592e5",
+    "other": "point"
+  },
+  "Choice.geometry.polygon": {
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-2b3b18120924",
+    "other": "polygon"
   },
   "Choice.ip_version.mixed": {
     "description": "One entry of the ip_version list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
@@ -879,6 +924,16 @@
     "hash": "sha256-992a93455c71",
     "other": "fixed"
   },
+  "Choice.winding.reversed": {
+    "description": "One entry of the winding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-bc64f64fb479",
+    "other": "reversed"
+  },
+  "Choice.winding.rfc7946": {
+    "description": "One entry of the winding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-38755035559d",
+    "other": "rfc7946"
+  },
   "Detail.damage/zero-head.bytes": {
     "description": "The sentence under the bytes setting of the zero-head damage, after what it takes.",
     "hash": "sha256-8700126f6712",
@@ -938,6 +993,41 @@
     "description": "The sentence under the paragraphs setting of the docx format, after what it takes.",
     "hash": "sha256-5d0141e9b1da",
     "other": "How many paragraphs of text the document holds. The rest of the size you asked for is carried by a part of the package that is not shown."
+  },
+  "Detail.format/geojson.altitude": {
+    "description": "The sentence under the altitude setting of the geojson format, after what it takes.",
+    "hash": "sha256-702be3958a4b",
+    "other": "Whether every position carries a third number, the height in metres from -400 to 8848. A program that reads two numbers a position has to ignore it or refuse the file."
+  },
+  "Detail.format/geojson.antimeridian": {
+    "description": "The sentence under the antimeridian setting of the geojson format, after what it takes.",
+    "hash": "sha256-e7755a355839",
+    "other": "Whether every line and outline crosses the 180th meridian without being cut in two. RFC 7946 asks for such shapes to be cut, and readers differ - read as flat coordinates, a crossing outline crosses itself and runs the other way round. A single point cannot cross and is placed beside it."
+  },
+  "Detail.format/geojson.formatting": {
+    "description": "The sentence under the formatting setting of the geojson format, after what it takes.",
+    "hash": "sha256-ed33a04494ed",
+    "other": "How the document is laid out. Every reader accepts all three - minified puts the whole file on one line and ends without a newline, and indented puts every number on its own line, which makes the same features several times larger."
+  },
+  "Detail.format/geojson.geometry": {
+    "description": "The sentence under the geometry setting of the geojson format, after what it takes.",
+    "hash": "sha256-8d7e42488248",
+    "other": "Which kind of geometry each feature carries. With mixed the seven kinds take turns, so a file of seven features or more holds every one of them."
+  },
+  "Detail.format/geojson.precision": {
+    "description": "The sentence under the precision setting of the geojson format, after what it takes.",
+    "hash": "sha256-c34064661db8",
+    "other": "How many decimal places every coordinate is written with. Six is about ten centimetres on the ground, the figure RFC 7946 gives."
+  },
+  "Detail.format/geojson.vertices": {
+    "description": "The sentence under the vertices setting of the geojson format, after what it takes.",
+    "hash": "sha256-12c16dec92e1",
+    "other": "How many points every line, outline and MultiPoint has. A feature larger than 1 MiB is followed by spaces that fill the last bytes, and at precision 3 or less fewer points fit, because each needs its own step of longitude."
+  },
+  "Detail.format/geojson.winding": {
+    "description": "The sentence under the winding setting of the geojson format, after what it takes.",
+    "hash": "sha256-c36536a3a1bc",
+    "other": "Which way polygon outlines run - rfc7946 is counter-clockwise and reversed is clockwise. RFC 7946 tells readers to accept both, and they disagree about which side of the outline is inside. Points and lines do not change."
   },
   "Detail.format/gif.frames": {
     "description": "The sentence under the frames setting of the gif format, after what it takes.",
@@ -1469,6 +1559,11 @@
     "hash": "sha256-a1fb88e6372c",
     "other": "Word (Office Open XML)"
   },
+  "Format.geojson": {
+    "description": "What the geojson format is called, beside its id in a list of formats. The name of a standard stays as it is - only a name that describes the file is translated.",
+    "hash": "sha256-84fe8f7f1c87",
+    "other": "GeoJSON"
+  },
   "Format.gif": {
     "description": "What the gif format is called, beside its id in a list of formats. The name of a standard stays as it is - only a name that describes the file is translated.",
     "hash": "sha256-9a8783e957eb",
@@ -1669,6 +1764,16 @@
     "hash": "sha256-e213c161d5ce",
     "other": "Allow"
   },
+  "Label.altitude": {
+    "description": "The name beside the box of a setting a recipe writes as altitude.",
+    "hash": "sha256-cbc2e75740ca",
+    "other": "Altitude"
+  },
+  "Label.antimeridian": {
+    "description": "The name beside the box of a setting a recipe writes as antimeridian.",
+    "hash": "sha256-cd0da1397b61",
+    "other": "Antimeridian"
+  },
   "Label.author": {
     "description": "The name beside the box of a setting a recipe writes as author.",
     "hash": "sha256-d95082a2ee57",
@@ -1844,6 +1949,11 @@
     "hash": "sha256-2c447e8d0598",
     "other": "Frames"
   },
+  "Label.geometry": {
+    "description": "The name beside the box of a setting a recipe writes as geometry.",
+    "hash": "sha256-fa9da5754ccf",
+    "other": "Geometry"
+  },
   "Label.header": {
     "description": "The name beside the box of a setting a recipe writes as header.",
     "hash": "sha256-ba5caa4285a8",
@@ -1924,6 +2034,11 @@
     "hash": "sha256-3ce7c43387ea",
     "other": "Pdf version"
   },
+  "Label.precision": {
+    "description": "The name beside the box of a setting a recipe writes as precision.",
+    "hash": "sha256-b5d65f0ae389",
+    "other": "Precision"
+  },
   "Label.producer": {
     "description": "The name beside the box of a setting a recipe writes as producer.",
     "hash": "sha256-98ee4021c6f1",
@@ -1999,10 +2114,20 @@
     "hash": "sha256-7e8cd2056da7",
     "other": "Title"
   },
+  "Label.vertices": {
+    "description": "The name beside the box of a setting a recipe writes as vertices.",
+    "hash": "sha256-f5af129ea336",
+    "other": "Vertices"
+  },
   "Label.width": {
     "description": "The name beside the box of a setting a recipe writes as width.",
     "hash": "sha256-3019947b6daf",
     "other": "Width"
+  },
+  "Label.winding": {
+    "description": "The name beside the box of a setting a recipe writes as winding.",
+    "hash": "sha256-a886eddec337",
+    "other": "Winding"
   },
   "Licence.1": {
     "description": "One paragraph of the licence notice on the About screen. The first is the name and the copyright line and stays as it is. The program's name and the licence's name stay as they are.",
@@ -2269,6 +2394,11 @@
     "hash": "sha256-0e624a1a135e",
     "other": "columns"
   },
+  "Unit.decimal places": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 decimal places. Written the way the language puts a noun after a number.",
+    "hash": "sha256-f1df938ba37a",
+    "other": "decimal places"
+  },
   "Unit.entries per second": {
     "description": "What a number counts, after it, as in: from 1 to 20000 entries per second. Written the way the language puts a noun after a number.",
     "hash": "sha256-90ad5144c654",
@@ -2303,6 +2433,11 @@
     "description": "What a number counts, after it, as in: from 1 to 20000 pixels. Written the way the language puts a noun after a number.",
     "hash": "sha256-6ec9c2b0eb14",
     "other": "pixels"
+  },
+  "Unit.points": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 points. Written the way the language puts a noun after a number.",
+    "hash": "sha256-c54a061dfcc1",
+    "other": "points"
   },
   "Unit.rows": {
     "description": "What a number counts, after it, as in: from 1 to 20000 rows. Written the way the language puts a noun after a number.",

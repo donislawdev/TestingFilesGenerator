@@ -258,6 +258,8 @@
     "slides": "snímků",
     "hertz": "hertzů",
     "megapixels": "megapixelů",
+    "decimal places": "desetinných míst",
+    "points": "bodů",
     "million cells": "milionů buněk",
     "entries per second": "položek za sekundu",
     "files": "souborů",
@@ -308,7 +310,7 @@
     },
     {
       "q": "Které formáty přijdou dál?",
-      "a": "7z, mp3 a mp4. Dnes funguje od začátku do konce {{ .Facts.FormatCount }} formátů."
+      "a": "7z a mp3. Dnes funguje od začátku do konce {{ .Facts.FormatCount }} formátů."
     },
     {
       "q": "Na kterých systémech to mohu spustit?",

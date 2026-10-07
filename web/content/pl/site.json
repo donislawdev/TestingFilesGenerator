@@ -255,6 +255,8 @@
     "slides": "slajdów",
     "hertz": "herców",
     "megapixels": "megapikseli",
+    "decimal places": "miejsc po przecinku",
+    "points": "punktów",
     "million cells": "milionów komórek",
     "entries per second": "wpisów na sekundę",
     "files": "plików",
@@ -305,7 +307,7 @@
     },
     {
       "q": "Jakie formaty są następne w kolejce?",
-      "a": "7z, mp3 i mp4. Formatów działających dziś od początku do końca jest {{ .Facts.FormatCount }}."
+      "a": "7z i mp3. Formatów działających dziś od początku do końca jest {{ .Facts.FormatCount }}."
     },
     {
       "q": "Na jakich systemach to działa?",

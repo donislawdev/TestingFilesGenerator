@@ -176,6 +176,11 @@ var structurallyChecked = map[string]bool{
 	// samples plays as far as a decoder gets, and only the tables read against
 	// the media data say so (docs/MP4-2026-10-07.md section 5).
 	"mp4": true,
+	// Since 2026-10-07, and from its first day: GDAL took a feature with no
+	// geometry member and a latitude of 120 without a word, and only this
+	// layer knows how many decimal places and which winding were ordered
+	// (docs/GEOJSON-2026-10-07.md section 3).
+	"geojson": true,
 }
 
 func TestTheStructuralCheckerCoversEveryFormatItShould(t *testing.T) {

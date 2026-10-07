@@ -258,6 +258,8 @@
     "slides": "Folien",
     "hertz": "Hertz",
     "megapixels": "Megapixel",
+    "decimal places": "Nachkommastellen",
+    "points": "Punkte",
     "million cells": "Millionen Zellen",
     "entries per second": "Einträge pro Sekunde",
     "files": "Dateien",
@@ -308,7 +310,7 @@
     },
     {
       "q": "Welche Formate kommen als Nächstes?",
-      "a": "7z, mp3 und mp4. {{ .Facts.FormatCount }} Formate funktionieren heute durchgängig."
+      "a": "7z und mp3. {{ .Facts.FormatCount }} Formate funktionieren heute durchgängig."
     },
     {
       "q": "Auf welchen Systemen läuft es?",

@@ -258,6 +258,8 @@
     "slides": "슬라이드",
     "hertz": "헤르츠",
     "megapixels": "메가픽셀",
+    "decimal places": "소수 자릿수",
+    "points": "점",
     "million cells": "백만 셀",
     "entries per second": "초당 항목 수",
     "files": "파일",
@@ -308,7 +310,7 @@
     },
     {
       "q": "다음에는 어떤 형식이 추가되나요?",
-      "a": "7z, mp3, mp4입니다. 현재 {{ .Facts.FormatCount }}가지 형식이 처음부터 끝까지 동작합니다."
+      "a": "7z와 mp3입니다. 현재 {{ .Facts.FormatCount }}가지 형식이 처음부터 끝까지 동작합니다."
     },
     {
       "q": "어떤 시스템에서 실행할 수 있나요?",

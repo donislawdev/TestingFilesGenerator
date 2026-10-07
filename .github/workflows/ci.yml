@@ -1362,7 +1362,16 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            p7zip-full ffmpeg poppler-utils inkscape python3-pil python3-yaml
+            p7zip-full ffmpeg poppler-utils inkscape python3-pil python3-yaml gdal-bin
+
+          # GeoJSON is read by GDAL and its shapes judged by shapely, which is
+          # GEOS underneath (docs/GEOJSON-2026-10-07.md). shapely goes in for
+          # the same interpreter the oracle reaches for, as Pillow does below.
+          # Both are asked for their version, so a tool that did not install
+          # stops this step rather than turning the GeoJSON guards into skips.
+          python -m pip install --break-system-packages shapely
+          ogrinfo --version
+          python -c "import shapely; print('shapely', shapely.__version__, 'GEOS', shapely.geos_version_string)"
 
           # The distribution's Pillow cannot open an AVIF - measured on this
           # runner, PIL.UnidentifiedImageError on a file the structural checker

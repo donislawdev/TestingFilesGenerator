@@ -2154,6 +2154,211 @@ def check_mp4(data):
     ok(f"{len(lengths)} frames, {len(keys)} key frames, every one a sync sample, the tables agree with the media data")
 
 
+class GeoNumber(str):
+    """A number exactly as the file wrote it, so its decimal places can be counted."""
+
+
+GEOJSON_KINDS = ["Point", "LineString", "Polygon", "MultiPoint", "MultiLineString",
+                 "MultiPolygon", "GeometryCollection"]
+GEOJSON_FEATURE_KEYS = ["type", "id", "geometry", "properties"]
+GEOJSON_PROPERTY_KEYS = ["name", "amount", "active", "retired", "tags", "address", "note"]
+# The longest the closing note gets before spaces take the rest, measured
+# against GDAL on 2026-10-07 (docs/GEOJSON-2026-10-07.md section 5).
+GEOJSON_NOTE_CAP = 1 << 20
+
+
+def geo_dump(value, indent, depth=0):
+    """The text a layout makes of a value - JSON.stringify(x, null, 2) indented,
+    no whitespace at all otherwise - with numbers as the file wrote them."""
+    if isinstance(value, GeoNumber):
+        return str(value)
+    if value is True or value is False:
+        return "true" if value else "false"
+    if value is None:
+        return "null"
+    if isinstance(value, str):
+        import json
+        return json.dumps(value)
+    if isinstance(value, dict):
+        items = [f'"{k}":' + (" " if indent else "") + geo_dump(v, indent, depth + 1) for k, v in value.items()]
+        open_, close = "{", "}"
+    else:
+        items = [geo_dump(v, indent, depth + 1) for v in value]
+        open_, close = "[", "]"
+    if not indent:
+        return open_ + ",".join(items) + close
+    pad = "\n" + "  " * (depth + 1)
+    return open_ + pad + ("," + pad).join(items) + "\n" + "  " * depth + close
+
+
+def geo_layout(text, doc, layout):
+    """The file against the text its layout makes of its own content.
+
+    Returns how many spaces stand after the last feature - the one place a
+    byte may be other than the rule says, and only once the note is full.
+    """
+    feats = doc["features"]
+    if layout == "indented":
+        expected, last = geo_dump(doc, True) + "\n", geo_dump(feats[-1], True, 2)
+    elif layout == "minified":
+        expected, last = geo_dump(doc, False), geo_dump(feats[-1], False)
+    elif layout == "record-per-line":
+        expected = ('{"type":"FeatureCollection","features":[\n'
+                    + ",\n".join(geo_dump(f, False) for f in feats) + "\n]}\n")
+        last = geo_dump(feats[-1], False)
+    else:
+        fail(f"the geojson check was told formatting={layout!r}, which is not a layout this tool writes")
+    if text == expected:
+        return 0
+    cut = expected.rindex(last) + len(last)
+    spaces = len(text) - len(expected)
+    if (spaces <= 0 or not text.startswith(expected[:cut]) or not text.endswith(expected[cut:])
+            or text[cut:cut + spaces].strip(" ")):
+        at = next(i for i, (a, b) in enumerate(zip(text, expected)) if a != b) if text[:cut] != expected[:cut] else cut
+        fail(f"the file is not laid out {layout}: it parts from the rule at byte {at}, "
+             f"{text[max(0, at - 30):at + 30]!r}")
+    return spaces
+
+
+def geo_pieces(geom):
+    """(what the piece is, its coordinates) for every part of a geometry."""
+    kind = geom["type"]
+    if kind == "GeometryCollection":
+        members = geom["geometries"]
+        if [m["type"] for m in members] != ["Point", "LineString", "Polygon"]:
+            fail(f"a collection holds {[m['type'] for m in members]}, not a point, a line and a polygon")
+        return [(m["type"], m["coordinates"]) for m in members]
+    single = {"MultiPoint": "LineString", "MultiLineString": "LineString", "MultiPolygon": "Polygon"}
+    if kind in ("MultiLineString", "MultiPolygon"):
+        if len(geom["coordinates"]) != 2:
+            fail(f"a {kind} has {len(geom['coordinates'])} parts, not two")
+        return [(single[kind], c) for c in geom["coordinates"]]
+    return [(single.get(kind, kind), geom["coordinates"])]
+
+
+def geo_position(pos, places, dims):
+    if len(pos) != dims:
+        fail(f"a position has {len(pos)} numbers and {dims} were ordered")
+    for i, n in enumerate(pos):
+        if not isinstance(n, GeoNumber):
+            fail(f"a position holds {n!r}, which is not a number")
+        whole, dot, frac = n.lstrip("-").partition(".")
+        if (dot != "") != (places > 0) or len(frac) != places:
+            fail(f"{n} is not written with {places} decimal places")
+        if n.startswith("-") and not (whole + frac).strip("0"):
+            fail(f"{n} is a negative zero")
+    lon, lat = float(pos[0]), float(pos[1])
+    if not (-180 <= lon <= 180 and -85 <= lat <= 85):
+        fail(f"the position {list(map(str, pos))} is outside longitude -180..180 or latitude -85..85")
+    if dims == 3 and not -400 <= float(pos[2]) <= 8848:
+        fail(f"the height {pos[2]} is outside -400..8848 metres")
+
+
+def geo_crosses(run):
+    return any(abs(float(a[0]) - float(b[0])) > 180 for a, b in zip(run, run[1:]))
+
+
+def geo_ring(ring, settings):
+    """An outline: closed, as many points as ordered, wound the ordered way."""
+    if ring[0] != ring[-1]:
+        fail("an outline does not end where it starts")
+    xs = [float(p[0]) for p in ring]
+    if settings["antimeridian"]:
+        for i in range(1, len(xs)):
+            while xs[i] - xs[i - 1] > 180:
+                xs[i] -= 360
+            while xs[i] - xs[i - 1] < -180:
+                xs[i] += 360
+    ys = [float(p[1]) for p in ring]
+    area = sum(xs[i] * ys[i + 1] - xs[i + 1] * ys[i] for i in range(len(ring) - 1)) / 2
+    if (area > 0) != (settings["winding"] == "rfc7946"):
+        fail(f"an outline runs {'counter-clockwise' if area > 0 else 'clockwise'} "
+             f"and winding={settings['winding']} was ordered")
+
+
+def geo_feature(number, feat, settings, kinds):
+    if list(feat) != GEOJSON_FEATURE_KEYS or feat["type"] != "Feature":
+        fail(f"feature {number} has the members {list(feat)}, not {GEOJSON_FEATURE_KEYS}")
+    if feat["id"] != str(number):
+        fail(f"feature {number} carries the id {feat['id']}, so the ids do not run 1..N")
+    want = kinds[(number - 1) % len(kinds)]
+    if feat["geometry"]["type"] != want:
+        fail(f"feature {number} is a {feat['geometry']['type']} and geometry={settings['geometry']} makes it a {want}")
+    props = feat["properties"]
+    if list(props) != GEOJSON_PROPERTY_KEYS:
+        fail(f"feature {number} has the properties {list(props)}, not {GEOJSON_PROPERTY_KEYS}")
+    # Every value type JSON has, one each - the format document's promise, not
+    # whatever the generator happens to write.
+    types = [type(props[k]) for k in GEOJSON_PROPERTY_KEYS]
+    if types != [str, GeoNumber, bool, type(None), list, dict, str]:
+        fail(f"feature {number} has properties of the types {[t.__name__ for t in types]}")
+    dims, n = (3 if settings["altitude"] else 2), settings["vertices"]
+    for piece, coords in geo_pieces(feat["geometry"]):
+        runs = {"Point": [[coords]], "LineString": [coords], "Polygon": coords}[piece]
+        count = {"Point": 1, "LineString": n, "Polygon": n + 1}[piece]
+        for run in runs:
+            if len(run) != count:
+                fail(f"feature {number}: a {piece} piece has {len(run)} positions and {count} were ordered")
+            for pos in run:
+                geo_position(pos, settings["precision"], dims)
+            if piece != "Point" and geo_crosses(run) != settings["antimeridian"]:
+                fail(f"feature {number}: a {piece} {'crosses' if geo_crosses(run) else 'does not cross'} "
+                     f"the antimeridian and antimeridian={str(settings['antimeridian']).lower()} was ordered")
+            if piece == "Polygon":
+                geo_ring(run, settings)
+
+
+def check_geojson(data, settings=None):
+    """A FeatureCollection to RFC 7946, made the way it was ordered.
+
+    Parsing is CPython's json, and GDAL reads the same file in the reference
+    tool beside this. What only this layer asks: that every number carries the
+    decimal places ordered, that every outline is closed and wound the way
+    winding says - with longitudes unwrapped where antimeridian says the shape
+    crosses, because read flat such an outline is wound the other way and
+    crosses itself (measured 2026-10-07) - that the kinds take turns as
+    geometry says, that the ids run 1..N, and that the file is byte for byte
+    the text its layout makes of its own content.
+
+    Measured 2026-10-07: GDAL takes a feature with no geometry member and a
+    latitude of 120 without a word. Both are refused here.
+    """
+    import json
+
+    given = settings or {}
+    settings = {
+        "geometry": given.get("geometry", "mixed"),
+        "formatting": given.get("formatting", "record-per-line"),
+        "precision": int(given.get("precision", "6")),
+        "altitude": given.get("altitude", "false") == "true",
+        "vertices": int(given.get("vertices", "8")),
+        "winding": given.get("winding", "rfc7946"),
+        "antimeridian": given.get("antimeridian", "false") == "true",
+    }
+    if data.startswith(b"\xef\xbb\xbf"):
+        fail("the file starts with a byte order mark")
+    try:
+        text = data.decode("utf-8")
+        doc = json.loads(text, parse_int=GeoNumber, parse_float=GeoNumber)
+    except (UnicodeDecodeError, ValueError) as exc:
+        fail(f"not valid UTF-8 JSON: {exc}")
+    if not isinstance(doc, dict) or list(doc) != ["type", "features"] or doc["type"] != "FeatureCollection":
+        fail("the root is not a FeatureCollection with its type and its features")
+    feats = doc["features"]
+    if not feats:
+        fail("the collection has no feature")
+    kinds = GEOJSON_KINDS if settings["geometry"] == "mixed" else [
+        next(k for k in GEOJSON_KINDS if k.lower() == settings["geometry"])]
+    for number, feat in enumerate(feats, start=1):
+        geo_feature(number, feat, settings, kinds)
+    spaces = geo_layout(text, doc, settings["formatting"])
+    note = len(feats[-1]["properties"]["note"])
+    if note > GEOJSON_NOTE_CAP or (spaces and note != GEOJSON_NOTE_CAP):
+        fail(f"the last note is {note} B with {spaces} spaces after the feature - "
+             f"spaces may only follow a note of exactly {GEOJSON_NOTE_CAP} B")
+    ok(f"{len(feats)} features, {settings['geometry']}, {spaces} trailing spaces")
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
           "svg": check_svg, "html": check_html, "targz": check_targz,
@@ -2162,12 +2367,12 @@ CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip
           "webm": check_webm, "mp4": check_mp4,
           "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx,
           "txt": check_txt, "md": check_md,
-          "yaml": check_yaml, "toml": check_toml}
+          "yaml": check_yaml, "toml": check_toml, "geojson": check_geojson}
 
 # Checks that take the shape of the file as well as its bytes. Everything else
 # is handed the bytes alone, so adding a setting to one check cannot change how
 # any other one is called.
-TAKES_SETTINGS = {"csv", "txt", "md", "json", "xml", "html"}
+TAKES_SETTINGS = {"csv", "txt", "md", "json", "xml", "html", "geojson"}
 
 if __name__ == "__main__":
     if len(sys.argv) < 3 or sys.argv[1] not in CHECKS:

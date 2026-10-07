@@ -258,6 +258,8 @@
     "slides": "slayt",
     "hertz": "hertz",
     "megapixels": "megapiksel",
+    "decimal places": "ondalık basamak",
+    "points": "nokta",
     "million cells": "milyon hücre",
     "entries per second": "saniyedeki girdi",
     "files": "dosya",
@@ -308,7 +310,7 @@
     },
     {
       "q": "Sırada hangi biçimler var?",
-      "a": "7z, mp3 ve mp4. Bugün {{ .Facts.FormatCount }} biçim uçtan uca çalışıyor."
+      "a": "7z ve mp3. Bugün {{ .Facts.FormatCount }} biçim uçtan uca çalışıyor."
     },
     {
       "q": "Hangi sistemlerde çalıştırabilirim?",

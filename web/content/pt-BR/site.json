@@ -258,6 +258,8 @@
     "slides": "slides",
     "hertz": "hertz",
     "megapixels": "megapixels",
+    "decimal places": "casas decimais",
+    "points": "pontos",
     "million cells": "milhões de células",
     "entries per second": "entradas por segundo",
     "files": "arquivos",
@@ -308,7 +310,7 @@
     },
     {
       "q": "Quais formatos vêm a seguir?",
-      "a": "7z, mp3 e mp4. Hoje {{ .Facts.FormatCount }} formatos funcionam de ponta a ponta."
+      "a": "7z e mp3. Hoje {{ .Facts.FormatCount }} formatos funcionam de ponta a ponta."
     },
     {
       "q": "Em quais sistemas posso rodar?",

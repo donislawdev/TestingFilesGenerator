@@ -258,6 +258,8 @@
     "slides": "trang chiếu",
     "hertz": "hertz",
     "megapixels": "megapixel",
+    "decimal places": "chữ số thập phân",
+    "points": "điểm",
     "million cells": "triệu ô",
     "entries per second": "mục mỗi giây",
     "files": "tệp",
@@ -308,7 +310,7 @@
     },
     {
       "q": "Những định dạng nào sắp có?",
-      "a": "7z, mp3 và mp4. Hôm nay có {{ .Facts.FormatCount }} định dạng hoạt động trọn vẹn từ đầu đến cuối."
+      "a": "7z và mp3. Hôm nay có {{ .Facts.FormatCount }} định dạng hoạt động trọn vẹn từ đầu đến cuối."
     },
     {
       "q": "Tôi chạy nó trên những hệ thống nào?",
