@@ -120,9 +120,10 @@ because it turns other people's test suites red.
   stops taking them apart past 513 without a word. `recipients` puts up to
   100 000 addresses in To, each on a line of its own, past the 1 MiB of header
   mailparser refuses. `charset` writes the text in `iso-8859-2` or
-  `windows-1250`, which write ą, ś and ź as different bytes, and MimeKit with
-  no code page provider reads both as Latin-1. `text_encoding=base64` writes
-  the whole text in base64. `filename_style=none` writes no name at all.
+  `windows-1250`, which write three Polish letters as different bytes, and
+  MimeKit with no code page provider reads both as Latin-1.
+  `text_encoding=base64` writes the whole text in base64.
+  `filename_style=none` writes no name at all.
 - **GeoJSON: holes, features with no place, both types of id, and bbox.**
   `holes` gives every polygon up to 100 000 holes of four points, each running
   the other way round to its outline as RFC 7946 asks. Holes need 6 or more

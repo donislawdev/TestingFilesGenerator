@@ -2261,18 +2261,18 @@
   },
   "Label.inline": {
     "description": "The name beside the box of a setting a recipe writes as inline.",
-    "hash": "sha256-99ed40acbd94",
-    "other": "Inline"
+    "hash": "sha256-1e6245009d67",
+    "other": "Pictures"
   },
   "Label.inline_format": {
     "description": "The name beside the box of a setting a recipe writes as inline_format.",
-    "hash": "sha256-5d3af84212e4",
-    "other": "Inline format"
+    "hash": "sha256-d2a00a20bba2",
+    "other": "Picture format"
   },
   "Label.inline_size": {
     "description": "The name beside the box of a setting a recipe writes as inline_size.",
-    "hash": "sha256-69eeacfdcaf7",
-    "other": "Inline size"
+    "hash": "sha256-28a0f4295d32",
+    "other": "Picture size"
   },
   "Label.ip_version": {
     "description": "The name beside the box of a setting a recipe writes as ip_version.",
