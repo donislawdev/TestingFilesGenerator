@@ -40,6 +40,7 @@ var notThroughTheCatalogue = map[string]string{
 	"NoWindowInThisBuild":     "written to standard error by a window binary with no window in it, so it is terminal text and D9 keeps the terminal English forever.",
 	"PlaceholderNameTemplate": "an example of a file name template, so it is a value somebody could type rather than a sentence. Translating it would produce an example that does not work.",
 	"SupportURL":              "an address.",
+	"respelled":               "the English labels of a few setting keys. They reach a translator through the registry catalogue, as Label entries beside every other label, rather than through this package's - TestEveryLabelWrittenByHandBelongsToADeclaredSetting asks that they do.",
 }
 
 // wordsIn is every string literal a declaration states for itself, ignoring the
@@ -97,7 +98,7 @@ func wordsIn(node ast.Node) []string {
 
 func TestEverySentenceInTheTextPackageGoesThroughTheCatalogue(t *testing.T) {
 	checked, offenders := 0, map[string][]string{}
-	for _, name := range []string{"screens.go", "text.go"} {
+	for _, name := range []string{"screens.go", "text.go", "labels.go"} {
 		path := filepath.Join("../gui/text", name)
 		file, err := parser.ParseFile(token.NewFileSet(), path, nil, 0)
 		if err != nil {
