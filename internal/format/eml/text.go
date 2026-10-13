@@ -1,6 +1,8 @@
 package eml
 
 import (
+	"encoding/base64"
+	"fmt"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -21,10 +23,49 @@ const (
 	chunkSize = 32 * 1024
 )
 
-// international is the line in Polish and Japanese that quoted-printable and
-// 8bit add to the text - two byte letters and three byte ones, which is what
-// those encodings are for.
-const international = "Zażółć gęślą jaźń. 日本語のテキストです。"
+// international is the line in Polish and Japanese that quoted-printable, 8bit
+// and base64 add to the text in UTF-8 - two byte letters and three byte ones,
+// which is what those encodings are for. A character set without Japanese
+// carries the Polish half, which holds the three letters ISO-8859-2 and
+// Windows-1250 write as different bytes.
+const (
+	polish        = "Zażółć gęślą jaźń."
+	international = polish + " 日本語のテキストです。"
+)
+
+// singleByte is how ISO-8859-2 and Windows-1250 write the letters of the
+// Polish line, checked against Python's codecs on 2026-10-13
+// (docs/EML-2-2026-10-13.md section 7) rather than written from memory. Every
+// other character of the line is ASCII.
+var singleByte = map[string]map[rune]byte{
+	CharsetLatin2: {
+		'ą': 0xb1, 'ć': 0xe6, 'ę': 0xea, 'ł': 0xb3, 'ń': 0xf1, 'ó': 0xf3, 'ś': 0xb6, 'ź': 0xbc, 'ż': 0xbf,
+	},
+	CharsetWindows1250: {
+		'ą': 0xb9, 'ć': 0xe6, 'ę': 0xea, 'ł': 0xb3, 'ń': 0xf1, 'ó': 0xf3, 'ś': 0x9c, 'ź': 0x9f, 'ż': 0xbf,
+	},
+}
+
+// encodedLine is the international line in the character set the text is
+// written in.
+func (s settings) encodedLine() string {
+	table, ok := singleByte[s.charset]
+	if !ok {
+		return international
+	}
+	out := make([]byte, 0, len(polish))
+	for _, r := range polish {
+		b, known := table[r]
+		if r < 0x80 {
+			b, known = byte(r), true
+		}
+		if !known {
+			panic(fmt.Sprintf("eml: %q has no byte in %s", r, s.charset))
+		}
+		out = append(out, b)
+	}
+	return string(out)
+}
 
 // words are lower case and plain, so no line of the text can begin with
 // "From " (which mbox files rewrite), with "--" (which reads as a boundary) or
@@ -40,25 +81,27 @@ var words = []string{
 	"ticket", "today", "update", "value", "week", "while", "words", "write", "year",
 }
 
-// charset is what the text parts declare.
-func (s settings) charset() string {
+// declared is the character set the text parts declare: the one asked for,
+// or us-ascii for text that is plain ASCII.
+func (s settings) declared() string {
 	if s.international() {
-		return "utf-8"
+		return s.charset
 	}
 	return "us-ascii"
 }
 
 // internationalLine is the line in Polish and Japanese the way the text is
-// encoded, or nothing for 7bit.
+// encoded, or nothing for 7bit. In base64 it is the text before encoding,
+// which the part encodes with the rest.
 func (s settings) internationalLine(open, close string) string {
 	if !s.international() {
 		return ""
 	}
-	line := open + international + close
+	line := open + s.encodedLine() + close
 	if s.encoding == QuotedPrintable {
 		line = quotedPrintable(line, s.eol)
 	}
-	return line + s.eol
+	return line + s.textEOL()
 }
 
 // quotedPrintable is text in quoted-printable (RFC 2045 section 6.7): every
@@ -152,4 +195,44 @@ func endInALetter(buf []byte) []byte {
 		buf[len(buf)-1] = 'x'
 	}
 	return buf
+}
+
+// encodeText writes one text part's body: as it is, or through base64 when
+// text_encoding asks for it - in lines of 76, with the text inside in its
+// canonical form, and blanks empty lines after it, which every reader measured
+// on 2026-10-13 skips (docs/EML-2-2026-10-13.md section 7). While the message
+// is only being sized, the text is counted once as it is and the base64 is
+// worked out from that.
+func (m *message) encodeText(o *out, write func(*out), blanks int) {
+	if m.s.encoding != Base64 {
+		write(o)
+		return
+	}
+	plain := out{eol: m.s.textEOL()}
+	write(&plain)
+	want := encodedLength(plain.n, len(m.s.eol))
+	if o.w == nil || o.err != nil {
+		o.n += want
+	} else {
+		base64Text(o, m.s, write, want)
+	}
+	for i := 0; i < blanks; i++ {
+		o.put(m.s.eol)
+	}
+}
+
+// base64Text writes the text through base64 into the file.
+func base64Text(o *out, s settings, write func(*out), want int64) {
+	l := lines{w: o.w, eol: s.eol}
+	enc := base64.NewEncoder(base64.StdEncoding, &l)
+	inner := out{w: enc, ctx: o.ctx, eol: s.textEOL(), scratch: o.scratch}
+	write(&inner)
+	o.scratch = inner.scratch
+	if o.err = inner.err; o.err == nil {
+		o.err = enc.Close()
+	}
+	o.n += l.n
+	if o.err == nil && l.n != want {
+		o.err = core.Defect(fmt.Errorf("eml: the text came out as %d B of base64 where its plan gives %d B", l.n, want))
+	}
 }

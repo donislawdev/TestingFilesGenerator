@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -27,9 +28,13 @@ const (
 	// line before it continues on the next, short enough that the line stays
 	// under 78 characters and cut never inside a %XX.
 	percentRun = 48
+
+	// messageType is what a message inside a message is (RFC 2046 section
+	// 5.2.1), and it is the one part that goes as it is rather than in base64.
+	messageType = "message/rfc822"
 )
 
-// child is one attached file, planned before a byte is written.
+// child is one attached file or picture, planned before a byte is written.
 type child struct {
 	desc format.Descriptor
 	plan format.Plan
@@ -38,38 +43,51 @@ type child struct {
 	// contentType and disposition are the two header values, parameters and
 	// folding included, worked out once while planning.
 	contentType, disposition string
-	// encoded is how many bytes the file takes in base64 with its line
-	// breaks - not the header lines above it, and not the line break the next
-	// boundary brings.
+	// cid is a picture's Content-ID, without its angle brackets, and nothing
+	// for an attached file.
+	cid string
+	// encoded is how many bytes the file takes in the message - base64 with
+	// its line breaks, or the message itself for a message - and not the
+	// header lines above it or the line break the next boundary brings.
 	encoded int64
 }
 
-// planChildren plans every file the message carries.
+// raw says the file goes into the message as it is: a message, which RFC 2046
+// section 5.2.1 allows in 7bit, 8bit or binary and never in base64.
+func (c *child) raw() bool { return c.desc.MediaType == messageType }
+
+// planChildren plans every file the message carries: the attached files, then
+// the forwarded message depth asks for, then the pictures.
 //
 // The files are real files of another format, each valid on its own, with
 // seeds derived from the message's seed and their place in it (RC4), numbered
 // per format across the whole message - the archives' rules, for their
-// reasons (zip/children.go).
-func planChildren(r format.Request, groups []format.Content, s settings) ([]child, error) {
+// reasons (zip/children.go). The order is the order the seeds were given in
+// before pictures and depth existed, so neither moves an attached file.
+func planChildren(r format.Request, groups []format.Content, s settings) (children, pics []child, err error) {
 	total := 0
 	for _, g := range groups {
 		total += g.Count
 	}
-	p := planner{r: r, s: s, out: make([]child, 0, total), numbered: map[string]int{}}
+	p := planner{r: r, s: s, out: make([]child, 0, total+1), numbered: map[string]int{}}
 	for _, g := range groups {
 		desc, err := format.Get(g.Format)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if err := p.add(desc, g); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
-	return p.out, nil
+	if err := p.forward(); err != nil {
+		return nil, nil, err
+	}
+	pics, err = p.addPictures(s)
+	return p.out, pics, err
 }
 
 // planner is planChildren's place in the message as it goes: how many files
-// came before, how many of each format, and how many bytes of base64 so far.
+// came before, how many of each format, and how many bytes of them so far.
 type planner struct {
 	r        format.Request
 	s        settings
@@ -81,22 +99,76 @@ type planner struct {
 // add plans the files of one group.
 func (p *planner) add(desc format.Descriptor, g format.Content) error {
 	for i := 0; i < g.Count; i++ {
-		cp, err := desc.Generator.Plan(format.Request{Bytes: g.Bytes, Seed: core.FileSeed(p.r.Seed, len(p.out)), Label: p.r.Label})
+		c, err := p.plan(desc, g.Bytes, len(p.out))
 		if err != nil {
-			return core.Refuse(core.Says("eml.TheAttachedFileCannotBe", "eml: the attached %s file cannot be made: %w", core.A("Format", g.Format), core.A("Err", err)))
+			return err
 		}
-		if cp.Bytes > maxMessage {
-			return tooLarge(cp.Bytes)
-		}
-		p.numbered[g.Format]++
-		c := child{desc: desc, plan: cp, name: fileName(p.s, g.Format, p.numbered[g.Format], desc.Extension)}
-		c.encoded = encodedLength(cp.Bytes, len(p.s.eol))
-		if p.sum += c.encoded; p.sum > maxMessage {
-			return tooLarge(p.sum)
-		}
-		c.contentType, c.disposition = nameHeaders(p.s, desc.MediaType, c.name)
-		p.out = append(p.out, c)
+		p.attachment(c)
 	}
+	return nil
+}
+
+// attachment names a planned file and puts it among the attached ones.
+func (p *planner) attachment(c child) {
+	p.numbered[c.desc.ID]++
+	c.name = fileName(p.s, c.desc.ID, p.numbered[c.desc.ID], c.desc.Extension)
+	c.contentType, c.disposition = nameHeaders(p.s, c.desc.MediaType, c.name, "attachment")
+	p.out = append(p.out, c)
+}
+
+// plan plans one file of a size with the seed of its place, and counts what it
+// adds to the message.
+func (p *planner) plan(desc format.Descriptor, size int64, place int) (child, error) {
+	cp, err := desc.Generator.Plan(p.request(desc, size, place))
+	if err != nil {
+		return child{}, core.Refuse(core.Says("eml.TheAttachedFileCannotBe", "eml: the attached %s file cannot be made: %w", core.A("Format", desc.ID), core.A("Err", err)))
+	}
+	if cp.Bytes > maxMessage {
+		return child{}, tooLarge(cp.Bytes)
+	}
+	c := child{desc: desc, plan: cp, encoded: encodedLength(cp.Bytes, len(p.s.eol))}
+	if c.raw() {
+		c.encoded = cp.Bytes
+	}
+	if p.sum += c.encoded; p.sum > maxMessage {
+		return child{}, tooLarge(p.sum)
+	}
+	return c, nil
+}
+
+// request is what a file is asked for with. A message inside a message ends
+// its lines the way the one around it does - a file with two kinds of line
+// ending is a broken file, not a test of either.
+func (p *planner) request(desc format.Descriptor, size int64, place int) format.Request {
+	r := format.Request{Bytes: size, Seed: core.FileSeed(p.r.Seed, place), Label: p.r.Label}
+	if desc.MediaType == messageType {
+		r.Properties = map[string]string{LineEndings: p.s.endings}
+	}
+	return r
+}
+
+// forward plans the message depth asks for inside this one: the smallest
+// message one level less deep, its size worked out from what it carries -
+// which is nothing but the next one.
+func (p *planner) forward() error {
+	if p.s.depth < 2 {
+		return nil
+	}
+	desc, err := format.Get("eml")
+	if err != nil {
+		return err
+	}
+	r := p.request(desc, 0, len(p.out))
+	r.Properties[MessageDepth] = strconv.Itoa(p.s.depth - 1)
+	r.SizeFromContents, r.Contains = true, []format.Content{}
+	cp, err := desc.Generator.Plan(r)
+	if err != nil {
+		return err
+	}
+	if p.sum += cp.Bytes; p.sum > maxMessage {
+		return tooLarge(p.sum)
+	}
+	p.attachment(child{desc: desc, plan: cp, encoded: cp.Bytes})
 	return nil
 }
 
@@ -133,10 +205,11 @@ func fileName(s settings, id string, n int, ext string) string {
 }
 
 // nameHeaders are the Content-Type and Content-Disposition values of one
-// attached file, with its name where filename_style puts it and written the
-// way headers says. Each parameter goes on a line of its own, so no name pushes
-// a line past 78 characters. docs/EML-2026-10-07.md section 10.3 has the table.
-func nameHeaders(s settings, mediaType, name string) (contentType, disposition string) {
+// attached file or picture, with its name where filename_style puts it and
+// written the way headers says. Each parameter goes on a line of its own, so no
+// name pushes a line past 78 characters. docs/EML-2026-10-07.md section 10.3
+// has the table.
+func nameHeaders(s settings, mediaType, name, disposition string) (contentType, dispositionValue string) {
 	var inType, inDisposition []string
 	switch s.names {
 	case RFC2231:
@@ -147,10 +220,10 @@ func nameHeaders(s settings, mediaType, name string) (contentType, disposition s
 	case Both:
 		inType = []string{quotedParam(s, "name", name)}
 		inDisposition = rfc2231Params(s, name)
-	default:
+	case ContentType:
 		inType = []string{quotedParam(s, "name", name)}
 	}
-	return withParams(s, mediaType, inType), withParams(s, "attachment", inDisposition)
+	return withParams(s, mediaType, inType), withParams(s, disposition, inDisposition)
 }
 
 // withParams is a header value with its parameters, each folded onto a line
@@ -216,15 +289,26 @@ func percentEncoded(text string) string {
 	return b.String()
 }
 
-// attach writes one attached file: its header lines, a blank line and the
-// file itself in base64, made by its own generator as it is written.
+// attach writes one attached file or picture: its header lines, a blank line
+// and the file itself, made by its own generator as it is written - in base64,
+// or as it is for a message.
 func (m *message) attach(o *out, c *child) {
 	eol := m.s.eol
 	o.put("Content-Type: ", c.contentType, eol)
 	o.put("Content-Disposition: ", c.disposition, eol)
-	o.put("Content-Transfer-Encoding: base64", eol, eol)
+	if c.cid != "" {
+		o.put("Content-ID: <", c.cid, ">", eol)
+	}
+	if !c.raw() {
+		o.put("Content-Transfer-Encoding: base64", eol)
+	}
+	o.put(eol)
 	if o.w == nil || o.err != nil {
 		o.n += c.encoded
+		return
+	}
+	if c.raw() {
+		m.attachRaw(o, c)
 		return
 	}
 	o.lines = lines{w: o.w, eol: eol}
@@ -238,10 +322,39 @@ func (m *message) attach(o *out, c *child) {
 		return
 	}
 	o.n += o.lines.n
-	if o.lines.n != c.encoded {
-		o.err = core.Defect(fmt.Errorf("eml: the attached %s file came out as %d B of base64 where its plan gives %d B",
-			c.desc.ID, o.lines.n, c.encoded))
+	o.expect(c, o.lines.n)
+}
+
+// attachRaw writes a message inside the message as it is.
+func (m *message) attachRaw(o *out, c *child) {
+	w := counted{w: o.w}
+	if err := c.desc.Generator.Write(o.ctx, &w, c.plan); err != nil {
+		o.err = err
+		return
 	}
+	o.n += w.n
+	o.expect(c, w.n)
+}
+
+// expect turns a file that came out other than its plan into a defect - the
+// size of the whole message rests on it.
+func (o *out) expect(c *child, got int64) {
+	if got != c.encoded && o.err == nil {
+		o.err = core.Defect(fmt.Errorf("eml: the attached %s file came out as %d B where its plan gives %d B",
+			c.desc.ID, got, c.encoded))
+	}
+}
+
+// counted is a writer that keeps count.
+type counted struct {
+	w io.Writer
+	n int64
+}
+
+func (c *counted) Write(p []byte) (int, error) {
+	n, err := c.w.Write(p)
+	c.n += int64(n)
+	return n, err
 }
 
 // lines cuts base64 into lines of 76 characters. The break goes in front of

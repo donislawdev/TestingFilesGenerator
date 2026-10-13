@@ -89,7 +89,7 @@ Linux has no equivalent to sign them with.
 go install -tags noasm github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest
 ```
 
-**From source.** Needs Go 1.27.0 or newer, and nothing else:
+**From source.** Needs Go 1.27.2 or newer, and nothing else:
 
 ```
 git clone https://github.com/donislawdev/TestingFilesGenerator
@@ -619,7 +619,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `txt`, `md`, `xml` | `encoding`, `bom` |
 | `json` | `formatting` |
 | `geojson` | `geometry`, `formatting`, `precision`, `altitude`, `vertices`, `holes`, `winding`, `antimeridian`, `unlocated`, `ids`, `bbox` |
-| `eml` | `body`, `text_encoding`, `headers`, `line_endings`, `attachments`, `attachment_format`, `attachment_size`, `filename_style` |
+| `eml` | `body`, `text_encoding`, `charset`, `headers`, `recipients`, `line_endings`, `attachments`, `attachment_format`, `attachment_size`, `filename_style`, `message_depth`, `inline`, `inline_format`, `inline_size` |
 | `svg` | `width`, `height` |
 | `html` | `structure` |
 | `yaml`, `toml` | none in this build - the document is a fixed shape, and a size is the only thing to ask for |

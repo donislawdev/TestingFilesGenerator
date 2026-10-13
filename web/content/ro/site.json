@@ -269,6 +269,7 @@
     "format ids separated by commas, or all": "id-uri de format separate prin virgule, sau all",
     "extensions separated by commas": "extensii separate prin virgule",
     "the id of a format, as tfg formats lists them": "id-ul unui format, așa cum îl listează tfg formats",
+    "the id of a picture format, as tfg formats lists them": "id-ul unui format de imagine, așa cum îl listează tfg formats",
     "the password, in plain text": "parola, în text simplu",
     "any text": "orice text",
     "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "o dată precum 2024-02-29 sau 2024-02-29T13:45:00+02:00, sau none"

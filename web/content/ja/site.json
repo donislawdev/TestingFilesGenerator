@@ -269,6 +269,7 @@
     "format ids separated by commas, or all": "カンマ区切りの形式ID、またはall",
     "extensions separated by commas": "カンマ区切りの拡張子",
     "the id of a format, as tfg formats lists them": "tfg formatsが一覧表示する形式のID",
+    "the id of a picture format, as tfg formats lists them": "tfg formatsが一覧表示する画像形式のID",
     "the password, in plain text": "パスワード（平文）",
     "any text": "任意のテキスト",
     "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "2024-02-29や2024-02-29T13:45:00+02:00のような日付、またはnone"
