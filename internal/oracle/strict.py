@@ -2550,10 +2550,17 @@ def geo_collection_box(doc, boxes, located, settings):
         geo_bbox("the collection", doc["bbox"], lo, hi, settings["precision"])
 
 
-EML_INTERNATIONAL = "Zażółć gęślą jaźń. 日本語のテキストです。"
+EML_POLISH = "Zażółć gęślą jaźń."
+EML_INTERNATIONAL = EML_POLISH + " 日本語のテキストです。"
 EML_WIDE_PREFIX = "Załącznik_日本語_"
 EML_BASE64_LINE = re.compile(rb"^[A-Za-z0-9+/]+={0,2}$")
-EML_NAME = re.compile(r"^(?:" + EML_WIDE_PREFIX + r")?[a-z0-9]+_\d{4}\.[a-z0-9.]+$")
+EML_NAME = re.compile(r"^(?:" + EML_WIDE_PREFIX + r")?[a-z0-9]+_\d{4,5}\.[a-z0-9.]+$")
+EML_CID = re.compile(r"^<(inline_\d{4,5}\.[0-9a-f]{16}@example\.com)>$")
+EML_IMG = re.compile(r'<img src="cid:([^"]+)">')
+EML_CODECS = {"us-ascii": "ascii", "utf-8": "utf-8", "iso-8859-2": "iso-8859-2", "windows-1250": "cp1250"}
+EML_DEFAULTS = (("body", "plain"), ("text_encoding", "7bit"), ("charset", "utf-8"), ("headers", "ascii"),
+                ("recipients", "1"), ("line_endings", "crlf"), ("filename_style", "rfc2231"),
+                ("attachments", "0"), ("attachment_format", "txt"), ("message_depth", "1"), ("inline", "0"))
 
 
 def check_eml(data, settings=None):
@@ -2564,17 +2571,18 @@ def check_eml(data, settings=None):
     no From line, a header line of 2000 characters and a line of base64 13 336
     long without a word, and two of them returned the wrong bytes of a broken
     attachment in silence. What only this layer asks: the header lines in their
-    order and once each, no line past 998 characters and none past 78 but a
-    media type too long to fold, every line ending the way line_endings says,
-    the boundaries nowhere inside a part, the text in the encoding and the
-    character set ordered with the same words in both parts of alternative,
-    base64 in full lines of 76, and every name written where and how
-    filename_style and headers say.
+    order and once each, every address of To, no line past 998 characters and
+    none past 78 but a media type too long to fold, every line ending the way
+    line_endings says, the boundaries nowhere inside a part, the text in the
+    encoding and the character set ordered with the same words in both parts of
+    alternative, base64 in full lines of 76, every name written where and how
+    filename_style and headers say, every picture the HTML points at and nothing
+    else, and every message inside judged the same way - one after another
+    rather than by recursion, because depth goes to 2000 and Python's own
+    recursion does not (docs/EML-2-2026-10-13.md section 7).
     """
     given = settings or {}
-    s = {k: given.get(k, v) for k, v in (
-        ("body", "plain"), ("text_encoding", "7bit"), ("headers", "ascii"),
-        ("line_endings", "crlf"), ("filename_style", "rfc2231"), ("attachments", "0"))}
+    s = {k: given.get(k, v) for k, v in EML_DEFAULTS}
     eol = b"\r\n" if s["line_endings"] == "crlf" else b"\n"
     eml_line_endings(data, eol)
     for number, line in enumerate(data.split(eol), start=1):
@@ -2584,25 +2592,81 @@ def check_eml(data, settings=None):
     # that does not decode. Each has to come out as a refusal with a reason,
     # not a traceback, because a crash turns a guard red and says nothing
     # (the lesson of check_geojson, review of #171, asked again in #173).
-    leaves = []
     try:
-        head, body = eml_split(data, eol, "the message")
-        fields = eml_fields(head, eol, "the message")
-        eml_headers(fields, s)
-        eml_entity(dict(fields), body, eol, s, leaves, top=True)
+        found = eml_message(data, eol, s)
+        deepest = eml_inside(found["messages"], eol, s)
     except (UnicodeDecodeError, KeyError, ValueError, IndexError, TypeError) as exc:
         fail(f"a part is not shaped the way this tool writes one: {type(exc).__name__}: {exc}")
-    texts = [leaf for leaf in leaves if leaf["kind"] == "text"]
-    files = [leaf for leaf in leaves if leaf["kind"] == "file"]
+    eml_counts(found, deepest, s)
+    files = found["files"]
+    ok(f"{len(files)} attached files, {sum(len(f['bytes']) for f in files)} B of them, "
+       f"{len(found['pictures'])} pictures, {len(found['messages'])} messages inside, {deepest} deep, "
+       f"body {s['body']}, text {s['text_encoding']} in {s['charset']}, headers {s['headers']}, "
+       f"names {s['filename_style']}, {s['recipients']} recipients")
+
+
+def eml_inside(messages, eol, s):
+    """Every message inside a message, judged as the smallest message the
+    generator makes - defaults, the line endings of the one around it, and at
+    most one message inside it in turn - and how many messages deep they go."""
+    inner = {k: v for k, v in EML_DEFAULTS}
+    inner["line_endings"], inner["message_depth"] = s["line_endings"], "any"
+    deepest = 1
+    queue = [(m, 2) for m in messages]
+    while queue:
+        data, level = queue.pop()
+        deepest = max(deepest, level)
+        found = eml_message(data, eol, inner)
+        if len(found["files"]) or len(found["pictures"]) or len(found["messages"]) > 1:
+            fail(f"a message {level} deep carries more than the one message a message inside holds")
+        queue.extend((m, level + 1) for m in found["messages"])
+    return deepest
+
+
+def eml_counts(found, deepest, s):
+    """What the message carries against what was ordered: the attached files,
+    the messages inside - attached ones and the one depth forwards - the
+    pictures, and how deep the messages go."""
+    attached = int(s["attachments"])
+    messages = (attached if s["attachment_format"] == "eml" else 0) + (1 if int(s["message_depth"]) > 1 else 0)
+    files = 0 if s["attachment_format"] == "eml" else attached
+    if len(found["files"]) != files:
+        fail(f"{len(found['files'])} attached files, and {files} were ordered")
+    if len(found["messages"]) != messages:
+        fail(f"{len(found['messages'])} messages inside, and {messages} were ordered")
+    if len(found["pictures"]) != int(s["inline"]):
+        fail(f"{len(found['pictures'])} pictures, and {s['inline']} were ordered")
+    want = max(int(s["message_depth"]), 2 if messages else 1)
+    if deepest != want:
+        fail(f"the messages go {deepest} deep, and message_depth={s['message_depth']} makes {want}")
+
+
+def eml_message(data, eol, s):
+    """One message: its header lines, its parts, and its text parts judged
+    together - what it carries is returned for the caller to count."""
+    head, body = eml_split(data, eol, "the message")
+    fields = eml_fields(head, eol, "the message")
+    eml_headers(fields, s)
+    found = {"texts": [], "files": [], "pictures": [], "messages": []}
+    eml_entity(dict(fields), body, eol, s, found, top=True)
+    eml_texts(found, s)
+    return found
+
+
+def eml_texts(found, s):
+    """The text parts: the ones body orders, the same words in both parts of
+    alternative, and in the HTML one picture for every picture the message
+    carries beside it."""
+    texts = found["texts"]
     want_texts = {"plain": ["text/plain"], "html": ["text/html"], "alternative": ["text/plain", "text/html"]}[s["body"]]
-    if [leaf["type"] for leaf in texts] != want_texts:
-        fail(f"the text parts are {[leaf['type'] for leaf in texts]}, and body={s['body']} makes {want_texts}")
+    if [t["type"] for t in texts] != want_texts:
+        fail(f"the text parts are {[t['type'] for t in texts]}, and body={s['body']} makes {want_texts}")
     if len(texts) == 2 and eml_words(texts[0]["text"]) != eml_words(re.sub(r"<[^>]*>", " ", texts[1]["text"])):
         fail("the two parts of alternative do not carry the same words")
-    if len(files) != int(s["attachments"]):
-        fail(f"{len(files)} attached files, and {s['attachments']} were ordered")
-    ok(f"{len(files)} attached files, {sum(len(f['bytes']) for f in files)} B of them, body {s['body']}, "
-       f"text {s['text_encoding']}, headers {s['headers']}, names {s['filename_style']}")
+    shown = EML_IMG.findall(texts[-1]["text"]) if texts[-1]["type"] == "text/html" else []
+    cids = [p["cid"] for p in found["pictures"]]
+    if shown != [c for c in cids if c]:
+        fail(f"the HTML shows {shown} and the pictures beside it are {cids}")
 
 
 def eml_line_endings(data, eol):
@@ -2663,7 +2727,10 @@ def eml_headers(fields, s):
     values = dict(fields)
     if values["MIME-Version"] != "1.0":
         fail(f"MIME-Version is {values['MIME-Version']!r}")
-    if not re.fullmatch(r"<[0-9a-f]{16}@example\.com>", values["Message-ID"]):
+    # One more digit is how a text in base64 with crlf reaches an odd size
+    # (docs/EML-2-2026-10-13.md section 8), and nothing else may carry it.
+    digits = "16,17" if (s["text_encoding"], s["line_endings"]) == ("base64", "crlf") else "16"
+    if not re.fullmatch(r"<[0-9a-f]{" + digits + r"}@example\.com>", values["Message-ID"]):
         fail(f"the Message-ID {values['Message-ID']!r} is not the one this tool writes")
     if email.utils.parsedate_to_datetime(values["Date"]) is None:
         fail(f"the Date {values['Date']!r} is not an RFC 5322 date")
@@ -2673,9 +2740,20 @@ def eml_headers(fields, s):
     if (s["headers"], wide, words) not in (("ascii", False, False), ("encoded", False, True), ("utf8", True, False)):
         fail(f"headers={s['headers']} and the From, To and Subject lines hold "
              f"{'letters outside ASCII' if wide else 'ASCII only'}{' and encoded words' if words else ''}")
-    for key, address in (("From", "alice@example.com"), ("To", "bob@example.org")):
-        if not values[key].endswith(" <" + address + ">"):
-            fail(f"{key} is {values[key]!r}, not an address in a domain RFC 2606 keeps for examples")
+    if not values["From"].endswith(" <alice@example.com>"):
+        fail(f"From is {values['From']!r}, not an address in a domain RFC 2606 keeps for examples")
+    eml_recipients(values["To"], int(s["recipients"]))
+
+
+def eml_recipients(to, count):
+    """To: the first recipient by name, then every other one by address alone,
+    numbered, all in domains RFC 2606 keeps for examples."""
+    addresses = to.split(",")
+    if not addresses[0].endswith(" <bob@example.org>"):
+        fail(f"To starts with {addresses[0][:60]!r}, not an address in a domain RFC 2606 keeps for examples")
+    want = [" recipient%06d@example.org" % n for n in range(2, count + 1)]
+    if len(addresses) != count or addresses[1:] != want:
+        fail(f"To holds {len(addresses)} addresses, and recipients={count} orders them numbered from 2")
 
 
 def eml_params(value):
@@ -2688,14 +2766,15 @@ def eml_params(value):
     return parts[0].strip(), params
 
 
-def eml_entity(headers, body, eol, s, leaves, top):
-    """One entity: a multipart one walked part by part, a leaf judged as text or
-    as an attached file."""
+def eml_entity(headers, body, eol, s, found, top):
+    """One entity: a multipart one walked part by part, a leaf judged as text,
+    as an attached file, as a picture or as a message inside."""
     kind, params = eml_params(headers["Content-Type"])
     if not kind.startswith("multipart/"):
-        leaves.append(eml_text(kind, params, headers, body, s) if "Content-Disposition" not in headers
-                      else eml_file(kind, params, headers, body, eol, s))
+        eml_leaf(kind, params, headers, body, eol, s, found)
         return
+    if kind == "multipart/related" and params.get("type") != '"text/html"':
+        fail(f"multipart/related says its root is {params.get('type')}, and its root is the HTML (RFC 2387 3.1)")
     boundary = params.get("boundary", "").strip('"').encode()
     if not boundary.startswith(b"=_"):
         fail(f"the boundary {boundary!r} is not one that base64 and quoted-printable cannot produce")
@@ -2709,27 +2788,72 @@ def eml_entity(headers, body, eol, s, leaves, top):
         if any(line.startswith(b"--" + boundary) for line in piece.split(eol)):
             fail(f"the boundary of {kind} appears inside one of its parts")
         part_head, part_body = eml_split(piece, eol, f"a part of {kind}")
-        eml_entity(dict(eml_fields(part_head, eol, f"a part of {kind}")), part_body, eol, s, leaves, top=False)
+        eml_entity(dict(eml_fields(part_head, eol, f"a part of {kind}")), part_body, eol, s, found, top=False)
+
+
+def eml_leaf(kind, params, headers, body, eol, s, found):
+    """A part that holds no parts, put where it belongs."""
+    if kind == "message/rfc822":
+        eml_name_of(kind, params, headers, s, "attachment")
+        if "Content-Transfer-Encoding" in headers:
+            fail(f"a message inside is in {headers['Content-Transfer-Encoding']}, and RFC 2046 5.2.1 keeps it as it is")
+        found["messages"].append(body)
+    elif "Content-ID" in headers:
+        found["pictures"].append(eml_file(kind, params, headers, body, eol, s, "inline"))
+    elif "Content-Disposition" in headers:
+        # A picture beside a plain text is inline and has no Content-ID, as
+        # nothing points at it. Anything else with a disposition is attached.
+        inline = eml_params(headers["Content-Disposition"])[0] == "inline"
+        if inline and s["body"] != "plain":
+            fail(f"a {kind} part is inline with no Content-ID, and only a plain text carries pictures that way")
+        leaf = eml_file(kind, params, headers, body, eol, s, "inline" if inline else "attachment")
+        found["pictures" if inline else "files"].append(leaf)
+    else:
+        found["texts"].append(eml_text(kind, params, headers, body, s))
 
 
 def eml_text(kind, params, headers, body, s):
     """A text part in the character set and the encoding text_encoding orders,
-    with the line in Polish and Japanese exactly when it is not 7bit."""
-    charset = "us-ascii" if s["text_encoding"] == "7bit" else "utf-8"
-    if params.get("charset") != charset or headers.get("Content-Transfer-Encoding") != s["text_encoding"]:
+    with the line in Polish - and in Japanese where the character set has it -
+    exactly when it is not 7bit."""
+    encoding = s["text_encoding"]
+    charset = "us-ascii" if encoding == "7bit" else s["charset"]
+    if params.get("charset") != charset or headers.get("Content-Transfer-Encoding") != encoding:
         fail(f"a {kind} part says charset {params.get('charset')} in {headers.get('Content-Transfer-Encoding')}, "
-             f"and text_encoding={s['text_encoding']} makes {charset} in {s['text_encoding']}")
-    eol = "\r\n" if s["line_endings"] == "crlf" else "\n"
-    if s["text_encoding"] == "quoted-printable":
-        text = eml_unquote(body, eol.encode())
+             f"and text_encoding={encoding} with charset={s['charset']} makes {charset} in {encoding}")
+    eol = "\r\n" if s["line_endings"] == "crlf" or encoding == "base64" else "\n"
+    if encoding == "quoted-printable":
+        raw = eml_unquote(body, eol.encode())
+    elif encoding == "base64":
+        raw = eml_base64_text(body, b"\r\n" if s["line_endings"] == "crlf" else b"\n")
     else:
-        text = body.decode("utf-8" if s["text_encoding"] == "8bit" else "ascii")
-    if (EML_INTERNATIONAL in text) != (s["text_encoding"] != "7bit"):
-        fail(f"the {kind} part {'lacks' if s['text_encoding'] != '7bit' else 'carries'} the line in Polish and Japanese")
+        raw = body
+    text = raw.decode(EML_CODECS[charset])
+    wide = encoding != "7bit"
+    if (EML_POLISH in text) != wide or ("日本語" in text) != (wide and charset == "utf-8"):
+        fail(f"the {kind} part does not carry the line text_encoding={encoding} with charset={s['charset']} makes")
     for line in text.split(eol):
         if line.startswith(("From ", "--")) or line == ".":
             fail(f"a line of the {kind} part starts the way a boundary, an mbox file or SMTP reads: {line[:20]!r}")
     return {"kind": "text", "type": kind, "text": text}
+
+
+def eml_base64_text(body, eol):
+    """A text in base64: full lines of 76 but the last, then nothing but the
+    empty lines that bring the message to its size."""
+    import base64
+
+    lines = body.split(eol) if body else []
+    while lines and lines[-1] == b"":
+        lines.pop()
+    eml_base64_lines(lines, "the text")
+    return base64.b64decode(b"".join(lines), validate=True)
+
+
+def eml_base64_lines(lines, what):
+    for i, line in enumerate(lines):
+        if not EML_BASE64_LINE.match(line) or (i < len(lines) - 1 and len(line) != 76) or len(line) > 76:
+            fail(f"line {i + 1} of {what} is not a line of base64 76 long: {line[:40]!r}")
 
 
 def eml_unquote(body, eol):
@@ -2747,43 +2871,57 @@ def eml_unquote(body, eol):
         out += re.sub(rb"=([0-9A-F]{2})", lambda m: bytes([int(m.group(1), 16)]), line)
         if not soft:
             out += eol
-    return bytes(out[: -len(eol)]).decode("utf-8")
+    return bytes(out[: -len(eol)])
 
 
 def eml_words(text):
     return re.findall(r"[^\s<>]+", text)
 
 
-def eml_file(kind, params, headers, body, eol, s):
-    """An attached file: base64 in full lines of 76, and its name where and how
-    filename_style and headers put it."""
-    disposition, dparams = eml_params(headers["Content-Disposition"])
-    if disposition != "attachment" or headers.get("Content-Transfer-Encoding") != "base64":
-        fail(f"an attached {kind} file is {disposition} in {headers.get('Content-Transfer-Encoding')}, not attachment in base64")
+def eml_file(kind, params, headers, body, eol, s, disposition):
+    """An attached file or a picture: base64 in full lines of 76, its
+    disposition, its Content-ID when the HTML points at it, and its name where
+    and how filename_style and headers put it."""
+    if headers.get("Content-Transfer-Encoding") != "base64":
+        fail(f"a {kind} file is in {headers.get('Content-Transfer-Encoding')}, not base64")
+    cid = None
+    if "Content-ID" in headers:
+        match = EML_CID.match(headers["Content-ID"])
+        if not match:
+            fail(f"the Content-ID {headers['Content-ID']!r} is not the one this tool writes")
+        cid = match.group(1)
     lines = body.split(eol) if body else []
-    for i, line in enumerate(lines):
-        if not EML_BASE64_LINE.match(line) or (i < len(lines) - 1 and len(line) != 76) or len(line) > 76:
-            fail(f"line {i + 1} of an attached {kind} file is not a line of base64 76 long: {line[:40]!r}")
+    eml_base64_lines(lines, f"a {kind} file")
     import base64
 
     data = base64.b64decode(b"".join(lines), validate=True)
+    name = eml_name_of(kind, params, headers, s, disposition)
+    return {"kind": "file", "type": kind, "name": name, "bytes": data, "cid": cid}
+
+
+def eml_name_of(kind, params, headers, s, disposition):
+    """The disposition a part is written with, and its name read from where
+    filename_style says it is."""
+    got, dparams = eml_params(headers["Content-Disposition"])
+    if got != disposition:
+        fail(f"a {kind} part is {got}, not {disposition}")
     name = eml_file_name(kind, params, dparams, s)
-    if not EML_NAME.match(name) or name.startswith(EML_WIDE_PREFIX) != (s["headers"] != "ascii"):
-        fail(f"an attached file is named {name!r}, not the way headers={s['headers']} names one")
-    return {"kind": "file", "type": kind, "name": name, "bytes": data}
+    if name is not None and (not EML_NAME.match(name) or name.startswith(EML_WIDE_PREFIX) != (s["headers"] != "ascii")):
+        fail(f"a {kind} part is named {name!r}, not the way headers={s['headers']} names one")
+    return name
 
 
 def eml_file_name(kind, params, dparams, s):
     """The name of an attached file, read from where filename_style says it is
-    and nowhere else, decoded the way it says it is written."""
-    import base64
+    and nowhere else, decoded the way it says it is written - or none."""
     from urllib.parse import unquote
 
     style, encoded = s["filename_style"], s["headers"] == "encoded"
     in_type = "name" in params
     in_disposition = sorted(k for k in dparams if k.startswith("filename"))
-    want_type = style != "rfc2231"
-    if in_type != want_type or bool(in_disposition) == (style == "content-type"):
+    want_type = style in ("rfc2047", "both", "content-type")
+    want_disposition = style in ("rfc2231", "rfc2047", "both")
+    if in_type != want_type or bool(in_disposition) != want_disposition:
         fail(f"filename_style={style} and the name is {'in' if in_type else 'not in'} Content-Type and "
              f"{'in' if in_disposition else 'not in'} Content-Disposition")
     names = []
@@ -2798,8 +2936,10 @@ def eml_file_name(kind, params, dparams, s):
         if not joined.startswith("UTF-8''"):
             fail(f"an RFC 2231 name does not say UTF-8: {joined[:30]!r}")
         names.append(unquote(joined[len("UTF-8''"):], encoding="utf-8", errors="strict"))
+    if style == "none":
+        return None
     if len(set(names)) != 1:
-        fail(f"the attached {kind} file has two names: {names}")
+        fail(f"the {kind} part has two names: {names}")
     return names[0]
 
 

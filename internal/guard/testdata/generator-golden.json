@@ -461,6 +461,46 @@
       "bytes": 65536,
       "sha256": "425f762165582768bafa0c687a33f030cc8fc88d3ecd1631716819ebce65c546",
       "measured_on": "2026-10-07"
+    },
+    "eml_odd_base64_long_id": {
+      "bytes": 8193,
+      "sha256": "97f5d2ae8a9f3eaa344096e917301d2e74affb72cb8f6190a04215805bd190a0",
+      "measured_on": "2026-10-13"
+    },
+    "eml_8kib_base64_lf_alternative_1250": {
+      "bytes": 8192,
+      "sha256": "a9e398f1e5ea92c812ffde9ce6e8e356ff1c212fc1ae376eb9d736fbe6de589a",
+      "measured_on": "2026-10-13"
+    },
+    "eml_8kib_latin2_quoted": {
+      "bytes": 8192,
+      "sha256": "04e00a6d0ffdc188db73e961947e2649d1e0f91dc0a0c14bea262fce4ad8b2a6",
+      "measured_on": "2026-10-13"
+    },
+    "eml_8kib_recipients_encoded": {
+      "bytes": 8192,
+      "sha256": "d0d7f3e695251f686e9a8aa529f579fe523ad3dfb461f82fe93c4440312b8c07",
+      "measured_on": "2026-10-13"
+    },
+    "eml_64kib_pictures_alternative_no_names": {
+      "bytes": 65536,
+      "sha256": "8b1ad7a9369f7973ae74397eac8a738a6eb470d3ea0b9d30c0a21ae981a7eb78",
+      "measured_on": "2026-10-13"
+    },
+    "eml_64kib_pictures_beside_plain_lf": {
+      "bytes": 65536,
+      "sha256": "830d1d8c28f1d0006b175499c762b7114f66bdee73a853e81a159d2b8ac4463e",
+      "measured_on": "2026-10-13"
+    },
+    "eml_64kib_forwarded_three_deep": {
+      "bytes": 65536,
+      "sha256": "4fda0fe5c031130ab2935a9390a030b6dcabe0f46aa1472d3fc4a7998fcd65b9",
+      "measured_on": "2026-10-13"
+    },
+    "eml_64kib_attached_messages_lf": {
+      "bytes": 65536,
+      "sha256": "8d8045da422be2a910b0a3caae7c0c0dbb8a2cb7a2284c912e4f9caa16bde2d8",
+      "measured_on": "2026-10-13"
     }
   },
   "remeasured": [

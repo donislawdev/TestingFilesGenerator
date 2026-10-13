@@ -458,6 +458,32 @@ func mailGoldenCases() map[string]engine.Target {
 			Properties: map[string]string{"attachments": "1", "attachment_format": "pdf", "attachment_size": "8kb", "headers": "encoded", "filename_style": "rfc2047"}},
 		"eml_64kib_attached_content_type": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"attachments": "3", "attachment_format": "png", "attachment_size": "4kb", "filename_style": "content-type"}},
+
+		// The second set (docs/EML-2-2026-10-13.md), one case for each new
+		// path: a text in base64 at an odd size, which takes the long
+		// Message-ID, and in alternative with lf and Windows-1250, a single
+		// byte character set in quoted-printable, fifty recipients with the
+		// first named in encoded words, pictures shown by alternative with no
+		// names and beside a plain text with lf, three messages deep, and two
+		// messages attached as they are - each read by the structural checker
+		// in the state its name gives when its value was recorded.
+		"eml_odd_base64_long_id": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 8193), Label: true,
+			Properties: map[string]string{"text_encoding": "base64"}},
+		"eml_8kib_base64_lf_alternative_1250": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"text_encoding": "base64", "line_endings": "lf", "body": "alternative", "charset": "windows-1250"}},
+		"eml_8kib_latin2_quoted": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"text_encoding": "quoted-printable", "charset": "iso-8859-2"}},
+		"eml_8kib_recipients_encoded": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"recipients": "50", "headers": "encoded"}},
+		"eml_64kib_pictures_alternative_no_names": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"inline": "2", "inline_size": "4kb", "body": "alternative", "filename_style": "none",
+				"attachments": "1", "attachment_format": "pdf", "attachment_size": "8kb"}},
+		"eml_64kib_pictures_beside_plain_lf": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"inline": "2", "inline_format": "gif", "inline_size": "2kb", "line_endings": "lf"}},
+		"eml_64kib_forwarded_three_deep": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"message_depth": "3"}},
+		"eml_64kib_attached_messages_lf": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"attachments": "2", "attachment_format": "eml", "attachment_size": "2kb", "line_endings": "lf"}},
 	}
 }
 

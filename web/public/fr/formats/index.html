@@ -523,12 +523,22 @@
     <tr>
       <td></td>
       <td><code>text_encoding</code></td>
-      <td>7bit, 8bit, quoted-printable</td>
+      <td>7bit, 8bit, base64, quoted-printable</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>charset</code></td>
+      <td>iso-8859-2, utf-8, windows-1250</td>
     </tr>
     <tr>
       <td></td>
       <td><code>headers</code></td>
       <td>ascii, encoded, utf8</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>recipients</code></td>
+      <td>1 - 100000</td>
     </tr>
     <tr>
       <td></td>
@@ -553,7 +563,27 @@
     <tr>
       <td></td>
       <td><code>filename_style</code></td>
-      <td>both, content-type, rfc2047, rfc2231</td>
+      <td>both, content-type, none, rfc2047, rfc2231</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>message_depth</code></td>
+      <td>1 - 2000</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>inline</code></td>
+      <td>0 - 10000</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>inline_format</code></td>
+      <td>l&#39;identifiant d&#39;un format d&#39;image, comme le liste tfg formats</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>inline_size</code></td>
+      <td>une taille comme 2mb</td>
     </tr>
     <tr>
       <td><code>geojson</code></td>

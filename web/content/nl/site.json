@@ -269,6 +269,7 @@
     "format ids separated by commas, or all": "formaat-id's gescheiden door komma's, of all",
     "extensions separated by commas": "extensies gescheiden door komma's",
     "the id of a format, as tfg formats lists them": "de id van een formaat, zoals tfg formats ze opsomt",
+    "the id of a picture format, as tfg formats lists them": "de id van een afbeeldingsformaat, zoals tfg formats ze opsomt",
     "the password, in plain text": "het wachtwoord, als platte tekst",
     "any text": "willekeurige tekst",
     "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "een datum zoals 2024-02-29 of 2024-02-29T13:45:00+02:00, of none"

@@ -52,17 +52,25 @@ for key in ("subject", "from", "to", "date", "message-id"):
     if value is not None:
         defects += ["%s:%s" % (key, type(d).__name__) for d in getattr(value, "defects", ())]
 
-parts = []
-for part in msg.walk():
+# A walk of our own rather than msg.walk(), for two reasons. It stops at a
+# message inside a message, which mailparser does not go into either, so the
+# two lists compare. And it is not recursive, so a message hundreds deep
+# measures the package rather than this script.
+parts, stack = [], [msg]
+while stack:
+    part = stack.pop()
+    defects += [type(d).__name__ for d in part.defects]
+    if part.get_content_type() == "message/rfc822":
+        parts.append({"name": part.get_filename(), "message": True})
+        continue
     if part.is_multipart():
+        stack.extend(reversed(part.get_payload()))
         continue
     if part.get_content_disposition() == "attachment":
         data = part.get_payload(decode=True) or b""
         parts.append({"name": part.get_filename(), "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()})
     else:
         part.get_content()
-for part in msg.walk():
-    defects += [type(d).__name__ for d in part.defects]
 
 unexpected = sorted(set(d for d in defects if d not in allowed))
 if unexpected:
@@ -101,11 +109,18 @@ const fs = require("fs");
 const [module, path] = process.argv.slice(1);
 const { simpleParser } = require(module);
 simpleParser(fs.readFileSync(path)).then((m) => {
-  const attachments = m.attachments.map((a) => ({
-    name: a.filename === undefined ? null : a.filename,
-    bytes: a.content.length,
-    sha256: crypto.createHash("sha256").update(a.content).digest("hex"),
-  }));
+  // Pictures the text shows are left out, because mailparser lists them and
+  // Python's email package does not (measured 2026-10-13), and a message
+  // inside a message is named rather than hashed, because Python cannot give
+  // its bytes back as they were.
+  const attachments = m.attachments.filter((a) => a.contentDisposition !== "inline").map((a) =>
+    a.contentType === "message/rfc822"
+      ? { name: a.filename === undefined ? null : a.filename, message: true }
+      : {
+          name: a.filename === undefined ? null : a.filename,
+          bytes: a.content.length,
+          sha256: crypto.createHash("sha256").update(a.content).digest("hex"),
+        });
   console.log("OK " + JSON.stringify({ subject: m.subject, attachments }));
 }).catch((e) => {
   console.log("FAIL " + e.message);

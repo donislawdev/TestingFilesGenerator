@@ -19,7 +19,7 @@ module github.com/donislawdev/TestingFilesGenerator
 // which version it is. Kept honest by TestTheBuildFloorIsThePinnedToolchainAndTheReadmeSaysSo,
 // which also holds the sentence in README.md against this number. See
 // docs/STACK.md.
-go 1.27.0
+go 1.27.2
 
 // How the line above got to the number it carries. There used to be a separate
 // "toolchain" directive here saying which compiler produces our binaries, and
@@ -67,6 +67,14 @@ go 1.27.0
 // closes a level zero stream went from five bytes to two. It measures the
 // framing now, so the next release moves the bytes again but does not stop the
 // format from being written.
+//
+// Raised to 1.27.2 on 2026-10-13 because govulncheck reported ten standard
+// library vulnerabilities reachable from the window binary under 1.27.0, in
+// net/http, net/textproto, crypto/tls and html/template, all fixed in 1.27.2.
+// The command line binary links none of those packages. The byte stability
+// guards were run under 1.27.2 the same day - all 104 golden values and every
+// pinned standard library path - and none shifted, so D11 holds and no major
+// version is owed.
 
 require (
 	fyne.io/fyne/v2 v2.8.1

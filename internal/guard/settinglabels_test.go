@@ -49,6 +49,35 @@ func TestNoSettingWearsItsRecipeKeyAsALabel(t *testing.T) {
 	t.Logf("%d declared setting(s), none of them showing a recipe key as its label", checked)
 }
 
+// A label written by hand rather than spelled out of its key still belongs to
+// a setting something declares.
+//
+// The list is keyed by the recipe key, so renaming the key leaves the entry
+// behind: the window goes back to the spelled-out word, and nothing turns red
+// because nothing is wrong with either half on its own. Asked through the words
+// the catalogue is written from, so what is asserted is that the hand-written
+// label is the one a translator is given.
+func TestEveryLabelWrittenByHandBelongsToADeclaredSetting(t *testing.T) {
+	declared := map[string]string{}
+	for _, w := range text.RegistryWords() {
+		declared[w.Key] = w.English
+	}
+	keys := text.RespelledKeys()
+	if len(keys) == 0 {
+		t.Fatal("no label is written by hand, so this guard checked nothing - if that is on purpose, it goes with the list")
+	}
+	for _, key := range keys {
+		english, ok := declared[text.LabelKey(key)]
+		switch {
+		case !ok:
+			t.Errorf("a label is written by hand for %q and no format, preset, damage or tool declares a setting by that key", key)
+		case english != text.EnglishLabel(key):
+			t.Errorf("%q is labelled %q by hand and the catalogue gives a translator %q", key, text.EnglishLabel(key), english)
+		}
+	}
+	t.Logf("%d label(s) written by hand, each one a declared setting", len(keys))
+}
+
 // And the key is still one hover away.
 //
 // This is what makes the label change a translation rather than a loss. The

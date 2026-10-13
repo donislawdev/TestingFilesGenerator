@@ -268,15 +268,19 @@ const DefaultSizeText = defaultSizeText
 
 // Door is how a container names its contents, for GroupsThrough.
 //
-// The rules are one set for every container - both doors at once refused, the
-// container never inside itself, one ceiling on both - and what differs is the
-// words: which keys, how many files when nothing says, and the noun in the
-// sentence that asks for fewer.
+// The rules are one set for every container - both doors at once refused, one
+// ceiling on both - and what differs is the words: which keys, how many files
+// when nothing says, and the noun in the sentence that asks for fewer.
 type Door struct {
 	Members      format.Members
 	DefaultCount int
 	// Fewer is the remedy when more files are asked for than MaxMembers.
 	Fewer core.Said
+	// Nests says the container may hold a file of its own format. An archive
+	// inside an archive of the same kind is refused, and a message carries a
+	// message as message/rfc822, which is how mail is forwarded (RFC 2046
+	// section 5.2.1, docs/EML-2-2026-10-13.md section 8).
+	Nests bool
 }
 
 // archiveDoor is the door both archives share.
@@ -300,7 +304,7 @@ func GroupsThrough(id string, r format.Request, door Door) ([]format.Content, er
 	// which is a legitimate thing to ask for, and it is a different statement
 	// from saying nothing at all.
 	if r.Contains != nil {
-		return fromContains(id, r, stated, door.Fewer)
+		return fromContains(id, r, stated, door)
 	}
 
 	if r.SizeFromContents {
@@ -324,7 +328,7 @@ func GroupsThrough(id string, r format.Request, door Door) ([]format.Content, er
 	if v, ok := r.Properties[keys.Format]; ok && v != "" {
 		entryFmt = v
 	}
-	if entryFmt == id {
+	if entryFmt == id && !door.Nests {
 		return nil, &format.NestingUnsupportedError{Format: id}
 	}
 	return []format.Content{{Format: entryFmt, Count: entries, Bytes: entrySize}}, nil
@@ -335,13 +339,13 @@ func GroupsThrough(id string, r format.Request, door Door) ([]format.Content, er
 // Split out of Groups so the branching stays under the ceiling the shape gates
 // hold, and because it is one subject: everything here is about a contains list
 // and nothing about it reads a property.
-func fromContains(id string, r format.Request, stated []string, fewer core.Said) ([]format.Content, error) {
+func fromContains(id string, r format.Request, stated []string, door Door) ([]format.Content, error) {
 	if len(stated) > 0 {
 		return nil, &format.ContentsConflictError{Format: id, Keys: stated}
 	}
 	asked := 0
 	for _, g := range r.Contains {
-		if g.Format == id {
+		if g.Format == id && !door.Nests {
 			return nil, &format.NestingUnsupportedError{Format: id}
 		}
 		asked += g.Count
@@ -357,7 +361,7 @@ func fromContains(id string, r format.Request, stated []string, fewer core.Said)
 		// to the exit code: a plain error here would have landed on 1 while
 		// the same request through entries lands on 4, which is the same
 		// disagreement one level further down.
-		return nil, tooMany(id, "contains", asked, fewer)
+		return nil, tooMany(id, "contains", asked, door.Fewer)
 	}
 	return r.Contains, nil
 }

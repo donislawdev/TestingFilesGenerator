@@ -107,6 +107,23 @@ because it turns other people's test suites red.
   against RFC 5322, which none of the three does. The smallest message at
   the default settings is 289 B. mailparser refuses a message of more than
   1000 MIME entities, which 999 attached files and the text reach.
+- **Mail: pictures in the text, messages inside messages, many recipients,
+  base64 text and two more character sets.** `inline`, `inline_format` and
+  `inline_size` give the text pictures of any picture format. Beside an HTML
+  each one has a Content-ID and the HTML shows it through `cid:`, and beside
+  a plain text they follow it as pictures to show inline. Readers count them
+  differently: mailparser lists every picture among the attachments, Python's
+  email package lists them when the HTML is alone, and MimeKit never does.
+  `attachment_format=eml` attaches a message as it is, the way mail is
+  forwarded, and `message_depth` puts up to 2000 messages inside each other -
+  Python 3.14's email package runs out of recursion at around 490, and MimeKit
+  stops taking them apart past 513 without a word. `recipients` puts up to
+  100 000 addresses in To, each on a line of its own, past the 1 MiB of header
+  mailparser refuses. `charset` writes the text in `iso-8859-2` or
+  `windows-1250`, which write three Polish letters as different bytes, and
+  MimeKit with no code page provider reads both as Latin-1.
+  `text_encoding=base64` writes the whole text in base64.
+  `filename_style=none` writes no name at all.
 - **GeoJSON: holes, features with no place, both types of id, and bbox.**
   `holes` gives every polygon up to 100 000 holes of four points, each running
   the other way round to its outline as RFC 7946 asks. Holes need 6 or more
@@ -271,6 +288,14 @@ because it turns other people's test suites red.
   About on show, Ctrl+Enter used to run Generate on the last work tab you had
   left, which you could not see, and Escape could stop a run there. On a tab
   with nothing to run the three keys now do nothing.
+
+### Security
+
+- **Built with Go 1.27.2.** It fixes ten vulnerabilities in the Go standard
+  library, in `net/http`, `net/textproto`, `crypto/tls` and `html/template`,
+  that the desktop window could reach through its toolkit. The command line
+  tool does not use the network and was not affected. Building from source
+  now needs Go 1.27.2.
 
 ## [0.4.0] - 2026-09-25
 

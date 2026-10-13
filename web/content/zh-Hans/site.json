@@ -269,6 +269,7 @@
     "format ids separated by commas, or all": "以逗号分隔的格式 id，或 all",
     "extensions separated by commas": "以逗号分隔的扩展名",
     "the id of a format, as tfg formats lists them": "格式的 id，与 tfg formats 列出的一致",
+    "the id of a picture format, as tfg formats lists them": "图片格式的 id，与 tfg formats 列出的一致",
     "the password, in plain text": "明文密码",
     "any text": "任意文本",
     "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "形如 2024-02-29 或 2024-02-29T13:45:00+02:00 的日期，或 none"

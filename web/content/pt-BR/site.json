@@ -269,6 +269,7 @@
     "format ids separated by commas, or all": "ids de formato separados por vírgulas, ou all",
     "extensions separated by commas": "extensões separadas por vírgulas",
     "the id of a format, as tfg formats lists them": "o id de um formato, como o tfg formats lista",
+    "the id of a picture format, as tfg formats lists them": "o id de um formato de imagem, como o tfg formats lista",
     "the password, in plain text": "a senha, em texto simples",
     "any text": "qualquer texto",
     "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "uma data como 2024-02-29 ou 2024-02-29T13:45:00+02:00, ou none"

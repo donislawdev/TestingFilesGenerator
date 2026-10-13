@@ -61,7 +61,7 @@ func minimumBytes() int64 {
 	if err != nil {
 		panic(fmt.Sprintf("eml: the default settings do not parse: %v", err))
 	}
-	return newMessage(s, 0, nil).size()
+	return newMessage(s, 0, nil, nil).size()
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
@@ -73,11 +73,11 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	if err != nil {
 		return format.Plan{}, err
 	}
-	children, err := planChildren(r, groups, s)
+	children, pics, err := planChildren(r, groups, s)
 	if err != nil {
 		return format.Plan{}, err
 	}
-	m := newMessage(s, r.Seed, children)
+	m := newMessage(s, r.Seed, children, pics)
 
 	var notes []format.Note
 	target := r.Bytes
@@ -86,7 +86,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	} else if notes, err = fit(m, r); err != nil {
 		return format.Plan{}, err
 	}
-	share(m, target-m.size())
+	share(m, target)
 	if got := m.size(); got != target {
 		return format.Plan{}, core.Defect(fmt.Errorf("eml: the message comes to %d B and %d B were planned", got, target))
 	}
@@ -105,8 +105,8 @@ func fit(m *message, r format.Request) ([]format.Note, error) {
 		// attached - and a sentence about attached files is wrong for a
 		// message that has none.
 		reason := core.Says("eml.AMessageHoldsItsHeaderLinesAndText", "a message holds its header lines and the lines that open its text")
-		if len(m.children) > 0 {
-			reason = core.Says("eml.AMessageHoldsItsHeaderLines", "a message holds its header lines, its parts and every attached file in base64, "+
+		if len(m.children)+len(m.pictures) > 0 {
+			reason = core.Says("eml.AMessageHoldsItsHeaderLines", "a message holds its header lines, its parts and every file it carries in base64, "+
 				"which is about a third larger than the file itself")
 		}
 		return nil, &format.BelowMinimumError{
@@ -152,10 +152,15 @@ func settle(m *message, r format.Request) int64 {
 	return size
 }
 
-// share hands the bytes still owed to the words of the text. alternative has
-// the same words in both parts, so it takes them two at a time, and an odd one
-// becomes the space parity puts in the HTML.
-func share(m *message, rest int64) {
+// share hands the bytes still owed to the words of the text, so the message
+// comes to target. alternative has the same words in both parts, so it takes
+// them two at a time, and an odd one becomes the space parity puts in the HTML.
+func share(m *message, target int64) {
+	if m.s.encoding == Base64 {
+		shareBase64(m, target)
+		return
+	}
+	rest := target - m.size()
 	if m.s.body != Alternative {
 		m.text = rest
 		return
@@ -164,11 +169,33 @@ func share(m *message, rest int64) {
 	m.text = rest / 2
 }
 
+// shareBase64 is share for a text in base64, where the words grow the message
+// four characters at a time and a line break at a time. The most words that
+// fit are found by halving - the size only grows with them - and what is left,
+// less than a step, goes to empty lines after the text and, for the odd byte
+// crlf leaves, to one more digit in the Message-ID.
+func shareBase64(m *message, target int64) {
+	lo, hi := int64(0), target
+	for lo < hi {
+		m.text = lo + (hi-lo+1)/2
+		if m.size() <= target {
+			lo = m.text
+		} else {
+			hi = m.text - 1
+		}
+	}
+	m.text = lo
+	left := target - m.size()
+	eol := int64(len(m.s.eol))
+	m.blanks, m.longID = int(left/eol), left%eol == 1
+}
+
 // describe is the plan and what reaches the manifest - public names under
 // rule 10, approved on 2026-10-07 (docs/EML-2026-10-07.md section 10.5).
 func describe(m *message, groups []format.Content, target int64) format.Plan {
 	var raw, encoded int64
-	for _, c := range m.children {
+	attached := m.children[:len(m.children)-forwarded(m)]
+	for _, c := range attached {
 		raw += c.plan.Bytes
 		encoded += c.encoded
 	}
@@ -179,16 +206,19 @@ func describe(m *message, groups []format.Content, target int64) format.Plan {
 		Properties: map[string]any{
 			Body:                         m.s.body,
 			TextEncoding:                 m.s.encoding,
+			Charset:                      m.s.declared(),
 			Headers:                      m.s.headers,
+			Recipients:                   m.s.recipients,
 			LineEndings:                  m.s.endings,
 			FilenameStyle:                m.s.names,
-			Attachments:                  len(m.children),
+			Attachments:                  len(attached),
+			MessageDepth:                 m.s.depth,
 			"contains":                   archive.ContentSummary(groups),
 			"attachment_bytes":           raw,
 			"attachment_encoded_bytes":   encoded,
 			"mime_entities":              m.entities(),
 			"subject":                    m.id.subject,
-			"message_id":                 m.id.messageID,
+			"message_id":                 m.messageID(),
 			format.PropertyLabelEmbedded: m.label != "",
 		},
 		Memo: m,
@@ -199,7 +229,32 @@ func describe(m *message, groups []format.Content, target int64) format.Plan {
 		p.Properties[AttachmentFormat] = groups[0].Format
 		p.Properties[AttachmentSize] = groups[0].Bytes
 	}
+	describePictures(p.Properties, m)
 	return p
+}
+
+// forwarded is how many of the children are the message depth asks for
+// rather than files somebody attached: one or none.
+func forwarded(m *message) int {
+	if m.s.depth > 1 {
+		return 1
+	}
+	return 0
+}
+
+// describePictures adds the pictures to what reaches the manifest - always
+// their settings, so a test reads the same keys whether there are any or not.
+func describePictures(props map[string]any, m *message) {
+	var raw, encoded int64
+	for _, c := range m.pictures {
+		raw += c.plan.Bytes
+		encoded += c.encoded
+	}
+	props[Inline] = len(m.pictures)
+	props[InlineFormat] = m.s.pictures.format
+	props[InlineSize] = m.s.pictures.size
+	props["inline_bytes"] = raw
+	props["inline_encoded_bytes"] = encoded
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {

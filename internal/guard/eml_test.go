@@ -19,7 +19,11 @@ import (
 
 // emlCases is every value of every setting, one at a time, then the
 // combinations where the settings meet: names outside ASCII in every style,
-// both line endings under quoted-printable, and alternative with all of it.
+// both line endings under quoted-printable, and alternative with all of it -
+// and since 2026-10-13 the second set: base64 text in both line endings and in
+// alternative, both single byte character sets in every encoding that carries
+// them, no names, several recipients with encoded names, pictures beside HTML,
+// alternative and plain text, and messages forwarded inside messages.
 var emlCases = []map[string]string{
 	{},
 	{eml.Body: eml.HTML},
@@ -40,6 +44,18 @@ var emlCases = []map[string]string{
 	{eml.Body: eml.Alternative, eml.TextEncoding: eml.QuotedPrintable, eml.Headers: eml.Encoded,
 		eml.FilenameStyle: eml.Both, eml.LineEndings: eml.LF},
 	{eml.Body: eml.Alternative, eml.TextEncoding: eml.EightBit, eml.Headers: eml.UTF8, eml.FilenameStyle: eml.RFC2047},
+	{eml.TextEncoding: eml.Base64},
+	{eml.TextEncoding: eml.Base64, eml.LineEndings: eml.LF, eml.Body: eml.Alternative},
+	{eml.TextEncoding: eml.EightBit, eml.Charset: eml.CharsetLatin2},
+	{eml.TextEncoding: eml.QuotedPrintable, eml.Charset: eml.CharsetWindows1250, eml.Body: eml.HTML},
+	{eml.TextEncoding: eml.Base64, eml.Charset: eml.CharsetLatin2, eml.Body: eml.Alternative},
+	{eml.FilenameStyle: eml.NoName},
+	{eml.Recipients: "4", eml.Headers: eml.Encoded},
+	{eml.Inline: "2", eml.InlineSize: "1kb", eml.Body: eml.HTML},
+	{eml.Inline: "1", eml.InlineSize: "1kb", eml.Body: eml.Alternative, eml.TextEncoding: eml.QuotedPrintable, eml.FilenameStyle: eml.NoName},
+	{eml.Inline: "2", eml.InlineSize: "1kb", eml.LineEndings: eml.LF},
+	{eml.MessageDepth: "3"},
+	{eml.MessageDepth: "2", eml.LineEndings: eml.LF, eml.Body: eml.Alternative, eml.TextEncoding: eml.Base64},
 }
 
 // Three readers and a scanner, each asked what the others cannot answer
@@ -72,7 +88,10 @@ func TestEveryEMLSettingSurvivesItsReferenceTool(t *testing.T) {
 				t.Run(strconv.Itoa(i)+"_"+count, func(t *testing.T) {
 					t.Parallel()
 					props := withAttachments(base, count, "txt", "1kb")
-					smallest := d.SmallestAccepted(format.Request{Properties: props})
+					// Asked with the label the messages are written with: the
+					// messages depth forwards carry labels of their own, so
+					// their size, and the smallest message, depends on it.
+					smallest := d.SmallestAccepted(format.Request{Properties: props, Label: true})
 					for _, size := range []int64{smallest, smallest + 1, smallest + 2, 20000} {
 						path := filepath.Join(dir, strconv.Itoa(i)+"_"+count+"_"+strconv.FormatInt(size, 10)+".eml")
 						b, _ := writeEML(t, d, size, uint64(31+i), props)
@@ -163,8 +182,9 @@ func TestAnEMLTooSmallForItsLabelSaysItCarriesNone(t *testing.T) {
 // Below the smallest message the settings allow is refused with the four
 // parts every refusal of size has (D6), and with the reason a tester needs:
 // the files travel in base64, a third larger. A message inside a message is
-// refused as nesting, the way an archive inside an archive is.
-func TestEMLRefusesASizeBelowItsAttachmentsInBase64AndItselfInside(t *testing.T) {
+// no longer refused - mail is forwarded that way - and has a guard of its own,
+// TestAMessageCarriesAMessageAsItIs.
+func TestEMLRefusesASizeBelowItsAttachmentsInBase64(t *testing.T) {
 	d, err := format.Get("eml")
 	if err != nil {
 		t.Fatal(err)
@@ -177,11 +197,6 @@ func TestEMLRefusesASizeBelowItsAttachmentsInBase64AndItselfInside(t *testing.T)
 	}
 	if below.Minimum <= 3*64<<10*4/3 || !strings.Contains(below.Reason.String(), "base64") {
 		t.Errorf("the refusal gives the minimum %d B and the reason %q", below.Minimum, below.Reason)
-	}
-	_, err = d.Generator.Plan(format.Request{Bytes: 1 << 20, Seed: 1, Properties: withAttachments(nil, "1", "eml", "4kb")})
-	var nested *format.NestingUnsupportedError
-	if !errors.As(err, &nested) {
-		t.Errorf("a message attached to a message was not refused as nesting: %v", err)
 	}
 }
 

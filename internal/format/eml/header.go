@@ -55,12 +55,16 @@ type identity struct {
 	date      string
 	// subject is the subject as a person reads it, before any encoding.
 	subject string
-	// boundary separates the parts of multipart/mixed and inner those of
-	// multipart/alternative. Both carry "=_", which neither base64 nor
-	// quoted-printable can produce, and they differ in their last letter so
-	// that neither is the start of the other - RFC 2046 lets a reader match a
-	// boundary at the start of a longer line.
-	boundary, inner string
+	// longMessageID is the same with one more digit, which a message in
+	// base64 with crlf line endings carries when its size is odd - the one
+	// byte nothing else in it can give (docs/EML-2-2026-10-13.md section 8).
+	longMessageID string
+	// boundary separates the parts of multipart/mixed, inner those of
+	// multipart/alternative and related those of multipart/related. All carry
+	// "=_", which neither base64 nor quoted-printable can produce, and they
+	// differ in their last letter so that none is the start of another - RFC
+	// 2046 lets a reader match a boundary at the start of a longer line.
+	boundary, inner, related string
 	// from, to and subjectLine are the header values as they are written,
 	// encoded words and folding included. Worked out once here, because the
 	// message is counted several times while it is planned and a header built
@@ -76,14 +80,16 @@ func identify(seed uint64, s settings) identity {
 	}
 	subject += " " + core.SeedLabel(seed)
 	return identity{
-		messageID:   "<" + hex + "@example.com>",
-		date:        time.Unix(dateEpoch+int64(seed%dateWindow), 0).UTC().Format("Mon, 02 Jan 2006 15:04:05 -0700"),
-		subject:     subject,
-		boundary:    "=_tfg_" + hex + "_m",
-		inner:       "=_tfg_" + hex + "_a",
-		from:        phrase(s, from) + " <" + fromAddress + ">",
-		to:          phrase(s, to) + " <" + toAddress + ">",
-		subjectLine: phrase(s, subject),
+		messageID:     "<" + hex + "@example.com>",
+		longMessageID: "<" + hex + "0@example.com>",
+		date:          time.Unix(dateEpoch+int64(seed%dateWindow), 0).UTC().Format("Mon, 02 Jan 2006 15:04:05 -0700"),
+		subject:       subject,
+		boundary:      "=_tfg_" + hex + "_m",
+		inner:         "=_tfg_" + hex + "_a",
+		related:       "=_tfg_" + hex + "_r",
+		from:          phrase(s, from) + " <" + fromAddress + ">",
+		to:            phrase(s, to) + " <" + toAddress + ">",
+		subjectLine:   phrase(s, subject),
 	}
 }
 
@@ -91,11 +97,63 @@ func identify(seed uint64, s settings) identity {
 func (m *message) head(o *out) {
 	eol := m.s.eol
 	o.put("From: ", m.id.from, eol)
-	o.put("To: ", m.id.to, eol)
+	o.put("To: ", m.id.to)
+	m.moreRecipients(o)
+	o.put(eol)
 	o.put("Date: ", m.id.date, eol)
-	o.put("Message-ID: ", m.id.messageID, eol)
+	o.put("Message-ID: ", m.messageID(), eol)
 	o.put("Subject: ", m.id.subjectLine, eol)
 	o.put("MIME-Version: 1.0", eol)
+}
+
+// messageID is the Message-ID line's value as this message writes it.
+func (m *message) messageID() string {
+	if m.longID {
+		return m.id.longMessageID
+	}
+	return m.id.messageID
+}
+
+// recipientWidth is how long every address after the first is - six digits,
+// enough for maxRecipients, so the size of a message does not depend on which
+// addresses it holds.
+const recipientWidth = len("recipient000002@example.org")
+
+// moreRecipients writes the addresses after the first, each folded onto a line
+// of its own. Counted rather than walked while the message is only being
+// sized, and built in the scratch buffer while it is written, because a
+// hundred thousand of them kept in the plan would be 3 MB per file in a run
+// that holds every plan at once (engine/planmemory.go).
+func (m *message) moreRecipients(o *out) {
+	extra := int64(m.s.recipients - 1)
+	if extra <= 0 {
+		return
+	}
+	if o.w == nil || o.err != nil {
+		o.n += extra * int64(2+len(m.s.eol)+recipientWidth)
+		return
+	}
+	buf := o.scratch[:0]
+	for i := 2; i <= m.s.recipients && !o.cancelled(); i++ {
+		buf = append(append(buf, ','), m.s.eol...)
+		buf = appendRecipient(append(buf, ' '), i)
+		if len(buf) >= chunkSize {
+			o.bytes(buf)
+			buf = buf[:0]
+		}
+	}
+	o.bytes(buf)
+	o.scratch = buf
+}
+
+// appendRecipient appends the address of recipient n, its number in six
+// digits.
+func appendRecipient(buf []byte, n int) []byte {
+	buf = append(buf, "recipient"...)
+	for d := 100000; d >= 1; d /= 10 {
+		buf = append(buf, byte('0'+n/d%10))
+	}
+	return append(buf, "@example.org"...)
 }
 
 // phrase is text for a header line, written the way headers says: as it is

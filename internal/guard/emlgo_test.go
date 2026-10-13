@@ -37,6 +37,23 @@ type goPart struct {
 	name      string
 	attached  bool
 	data      []byte
+	// transfer and cid are the Content-Transfer-Encoding and Content-ID
+	// lines as they are written.
+	transfer, cid string
+}
+
+// kind is what a leaf is to a test: an attached file, a message inside, a
+// picture the text shows, or text.
+func (p goPart) kind() string {
+	switch {
+	case p.mediaType == "message/rfc822":
+		return "message"
+	case p.attached:
+		return "file"
+	case strings.HasPrefix(p.mediaType, "image/"):
+		return "picture"
+	}
+	return "text"
 }
 
 // goReadMail reads a message the way a Go service does and returns its leaves.
@@ -46,13 +63,19 @@ func goReadMail(b []byte) ([]goPart, *mail.Message, error) {
 		return nil, nil, fmt.Errorf("ReadMessage: %w", err)
 	}
 	var out []goPart
-	err = goWalk(&out, msg.Header.Get("Content-Type"), msg.Header.Get("Content-Transfer-Encoding"), "", "", msg.Body)
+	err = goWalk(&out, msg.Header, "", msg.Body)
 	return out, msg, err
 }
 
-// goWalk reads one entity, going down into a multipart one - alternative
-// inside mixed is the shape eml writes.
-func goWalk(out *[]goPart, contentType, transfer, disposition, name string, body io.Reader) error {
+// goHeader is the one method of a header goWalk asks, so a message and a part
+// can be read alike.
+type goHeader interface{ Get(string) string }
+
+// goWalk reads one entity, going down into a multipart one - alternative and
+// related inside mixed are the shapes eml writes. A message inside is a leaf,
+// as it is to a service that reads the message it was handed.
+func goWalk(out *[]goPart, h goHeader, name string, body io.Reader) error {
+	contentType, transfer := h.Get("Content-Type"), h.Get("Content-Transfer-Encoding")
 	mediaType, params, err := mime.ParseMediaType(contentType)
 	if err != nil {
 		return fmt.Errorf("ParseMediaType %q: %w", contentType, err)
@@ -67,8 +90,7 @@ func goWalk(out *[]goPart, contentType, transfer, disposition, name string, body
 			if err != nil {
 				return fmt.Errorf("NextPart: %w", err)
 			}
-			if err := goWalk(out, p.Header.Get("Content-Type"), p.Header.Get("Content-Transfer-Encoding"),
-				p.Header.Get("Content-Disposition"), p.FileName(), p); err != nil {
+			if err := goWalk(out, p.Header, p.FileName(), p); err != nil {
 				return err
 			}
 		}
@@ -82,7 +104,8 @@ func goWalk(out *[]goPart, contentType, transfer, disposition, name string, body
 	if err != nil {
 		return fmt.Errorf("reading a %s part: %w", mediaType, err)
 	}
-	*out = append(*out, goPart{mediaType: mediaType, name: name, attached: strings.HasPrefix(disposition, "attachment"), data: data})
+	*out = append(*out, goPart{mediaType: mediaType, name: name, data: data, transfer: transfer, cid: h.Get("Content-ID"),
+		attached: mediaType != "message/rfc822" && strings.HasPrefix(h.Get("Content-Disposition"), "attachment")})
 	return nil
 }
 
@@ -118,25 +141,25 @@ func TestGosStandardLibraryReadsEveryEMLTheWayItWasMeasured(t *testing.T) {
 	disagreed := 0
 	for i, props := range emlCases {
 		props = withAttachments(props, "2", "pdf", "4kb")
-		b, plan := writeEML(t, d, 40000+int64(i)*101, uint64(70+i), props)
-		parts, _, err := goReadMail(b)
+		b, plan := writeEML(t, d, 60000+int64(i)*101, uint64(70+i), props)
+		parts, msg, err := goReadMail(b)
 		if err != nil {
 			t.Fatalf("%v: the standard library refused the message: %v", props, err)
 		}
-		var files []goPart
-		var texts []string
+		byKind := map[string][]goPart{}
 		for _, p := range parts {
-			if p.attached {
-				files = append(files, p)
-			} else {
-				texts = append(texts, p.mediaType)
-			}
+			byKind[p.kind()] = append(byKind[p.kind()], p)
 		}
-		if want := textsFor(props[eml.Body]); strings.Join(texts, " ") != want {
-			t.Errorf("%v: the text parts are %v, and body orders %s", props, texts, want)
+		files := byKind["file"]
+		if want := textsFor(props[eml.Body]); strings.Join(mediaTypes(byKind["text"]), " ") != want {
+			t.Errorf("%v: the text parts are %v, and body orders %s", props, mediaTypes(byKind["text"]), want)
 		}
-		if len(files) != 2 {
-			t.Fatalf("%v: %d attached files read, 2 ordered", props, len(files))
+		if len(files) != 2 || len(byKind["picture"]) != atoi(props[eml.Inline]) || len(byKind["message"]) != forwardedBy(props) {
+			t.Fatalf("%v: %d attached files, %d pictures and %d messages inside read", props,
+				len(files), len(byKind["picture"]), len(byKind["message"]))
+		}
+		if to, err := mail.ParseAddressList(msg.Header.Get("To")); err != nil || len(to) != max(1, atoi(props[eml.Recipients])) {
+			t.Errorf("%v: To reads as %d addresses (%v)", props, len(to), err)
 		}
 		for n, f := range files {
 			if want := childBytes(t, "pdf", 4<<10, core.FileSeed(uint64(70+i), n)); !bytes.Equal(f.data, want) {
@@ -171,17 +194,44 @@ func textsFor(body string) string {
 }
 
 // entitiesAbove is how many entities hold the leaves: the message itself as
-// multipart/mixed, and multipart/alternative when body orders it.
+// multipart/mixed, multipart/alternative when body orders it, and
+// multipart/related when an HTML shows pictures.
 func entitiesAbove(props map[string]string) int {
+	n := 1
 	if props[eml.Body] == eml.Alternative {
-		return 2
+		n++
 	}
-	return 1
+	if atoi(props[eml.Inline]) > 0 && props[eml.Body] != eml.Plain && props[eml.Body] != "" {
+		n++
+	}
+	return n
+}
+
+// mediaTypes are the media types of leaves, in their order.
+func mediaTypes(parts []goPart) []string {
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		out = append(out, p.mediaType)
+	}
+	return out
+}
+
+// forwardedBy is how many messages inside a case carries beside its files:
+// the one depth forwards, or none.
+func forwardedBy(props map[string]string) int {
+	if atoi(props[eml.MessageDepth]) > 1 {
+		return 1
+	}
+	return 0
 }
 
 // emlName is the name the generator gives an attached file, spelled here from
-// the rule rather than read from the generator, so the two can disagree.
+// the rule rather than read from the generator, so the two can disagree - and
+// nothing where filename_style writes no name.
 func emlName(props map[string]string, id string, n int, ext string) string {
+	if props[eml.FilenameStyle] == eml.NoName {
+		return ""
+	}
 	name := fmt.Sprintf("%s_%04d%s", id, n, ext)
 	if props[eml.Headers] == eml.Encoded || props[eml.Headers] == eml.UTF8 {
 		name = "Załącznik_日本語_" + name
