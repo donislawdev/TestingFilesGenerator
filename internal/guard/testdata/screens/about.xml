@@ -40,8 +40,8 @@
 				</container>
 			</container>
 			<widget pos="0,70" size="1092x1221" type="*widget.Scroll">
-				<container size="1092x2053">
-					<container pos="136,0" size="820x2053">
+				<container size="1092x2240">
+					<container pos="136,0" size="820x2240">
 						<container size="820x49">
 							<container pos="16,0" size="788x49">
 								<container size="788x24">
@@ -138,6 +138,37 @@
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x163" strokeColor="button" strokeWidth="1"/>
 							<container size="820x163">
 								<container pos="16,16" size="788x131">
+									<text bold size="788x20" textSize="17">Source code</text>
+									<container pos="0,36" size="788x94">
+										<container size="788x16">
+											<widget pos="-6,-6" size="800x28" type="*widget.Label">
+												<widget size="800x28" type="*widget.RichText">
+													<text pos="6,6" size="772x16">Opens the project page on GitHub in your browser - the source code, the releases and the place to report a problem.</text>
+												</widget>
+											</widget>
+										</container>
+										<container pos="0,32" size="788x28">
+											<widget size="59x28" type="*parts.Button">
+												<rectangle pos="-2,-2" radius="6" size="63x32" strokeColor="hyperlink"/>
+												<rectangle fillColor="button" radius="6" size="57x27" strokeColor="inputBorder" strokeWidth="1"/>
+												<text alignment="center" bold pos="6,6" size="47x16">GitHub</text>
+											</widget>
+										</container>
+										<container pos="0,77" size="788x16">
+											<widget pos="-6,-6" size="800x28" type="*widget.Label">
+												<widget size="800x28" type="*widget.RichText">
+													<text pos="6,6" size="361x16">https://github.com/donislawdev/TestingFilesGenerator</text>
+												</widget>
+											</widget>
+										</container>
+									</container>
+								</container>
+							</container>
+						</container>
+						<container pos="0,775" size="820x163">
+							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x163" strokeColor="button" strokeWidth="1"/>
+							<container size="820x163">
+								<container pos="16,16" size="788x131">
 									<text bold size="788x20" textSize="17">Support</text>
 									<container pos="0,36" size="788x94">
 										<container size="788x16">
@@ -166,7 +197,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,775" size="820x850">
+						<container pos="0,962" size="820x850">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x850" strokeColor="button" strokeWidth="1"/>
 							<container size="820x850">
 								<container pos="16,16" size="788x818">
@@ -892,7 +923,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,1650" size="820x277">
+						<container pos="0,1837" size="820x277">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x277" strokeColor="button" strokeWidth="1"/>
 							<container size="820x277">
 								<container pos="16,16" size="788x245">
@@ -1089,7 +1120,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,1951" size="820x102">
+						<container pos="0,2138" size="820x102">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x102" strokeColor="button" strokeWidth="1"/>
 							<container size="820x102">
 								<container pos="16,16" size="788x70">
@@ -1133,8 +1164,8 @@
 					<linearGradient pos="0,-8" size="1092x8"/>
 				</widget>
 				<widget pos="1086,0" size="6x1221" type="*widget.scrollBarArea">
-					<widget pos="3,0" size="3x726" type="*widget.scrollBar">
-						<rectangle fillColor="scrollbar" radius="3" size="3x726"/>
+					<widget pos="3,0" size="3x665" type="*widget.scrollBar">
+						<rectangle fillColor="scrollbar" radius="3" size="3x665"/>
 					</widget>
 				</widget>
 			</widget>

@@ -1,0 +1,88 @@
+# Once a week, every known vulnerability in what the main branch depends on,
+# into the Security tab of the repository.
+#
+# The other half of osv-pull-request.yml. A pull request is stopped only for
+# what it adds, by the owner's decision of 2026-10-14, so a vulnerability that
+# was published against something main already uses has to show up somewhere
+# else - and that place is here. Weekly because an advisory is published on
+# its own schedule, not on ours: a tree nobody touches for a month still gets
+# new findings.
+#
+# The run is red while anything is found, and the results go up either way. A
+# clean upload is what closes the alerts of the week before, so an upload that
+# happened only on findings would leave fixed alerts open for ever. Red so that
+# a finding is also a failed run with a notice, rather than a line in a tab
+# somebody has to remember to open.
+#
+# The same scanner and the same arguments as the pull request workflow, so the
+# two cannot come to disagree about what counts. The reasons for each argument
+# are written there.
+name: OSV weekly
+
+on:
+  schedule:
+    # Monday 05:17 UTC, an hour after the weekly fuzzing in ci.yml.
+    - cron: "17 5 * * 1"
+  # By hand, from the Actions tab, after a fix is merged and before the next
+  # Monday - the alerts it closes close on the next upload.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: vulnerabilities in main (OSV)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # The upload to the Security tab. Granted to this job only and to nothing
+      # a pull request runs.
+      security-events: write
+      # Read by the upload to name the run it belongs to - the action's own
+      # workflow grants it for the same step (github/codeql-action issue 2117).
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: scan
+        id: scan
+        uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc  # v2.6.0
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --format=json
+            --output=osv-results.json
+            --no-call-analysis=go
+            --recursive
+            ./
+
+      - name: the scan completed
+        if: steps.scan.outcome == 'failure'
+        run: |
+          if [ ! -s osv-results.json ]; then
+            echo "::error::The scanner wrote no osv-results.json, so the scan did not complete and there is nothing to upload. Read the scan step above for the cause."
+            exit 1
+          fi
+
+      # Writes the results for the Security tab and fails the job when there
+      # is any, which is after the file is written - the upload below runs
+      # either way.
+      - name: results for the Security tab
+        uses: google/osv-scanner-action/osv-reporter-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc  # v2.6.0
+        with:
+          scan-args: |-
+            --new=osv-results.json
+            --output=osv-results.sarif
+            --gh-annotations=false
+            --fail-on-vuln=true
+
+      - name: upload to the Security tab
+        if: ${{ !cancelled() && hashFiles('osv-results.sarif') != '' }}
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2  # v4.38.2
+        with:
+          sarif_file: osv-results.sarif
+          category: osv-scanner

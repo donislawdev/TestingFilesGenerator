@@ -606,12 +606,12 @@
 									<container pos="16,0" size="788x77">
 										<container size="788x77">
 											<container size="788x28">
-												<widget pos="296,0" size="87x28" type="*parts.Button">
+												<widget pos="317,0" size="87x28" type="*parts.Button">
 													<rectangle pos="-2,-2" radius="6" size="91x32" strokeColor="hyperlink"/>
 													<rectangle fillColor="button" radius="6" size="86x27" strokeColor="inputBorder" strokeWidth="1"/>
 													<text alignment="center" bold pos="16,6" size="55x16">Preview</text>
 												</widget>
-												<widget pos="396,0" size="95x28" type="*parts.Button">
+												<widget pos="416,0" size="95x28" type="*parts.Button">
 													<rectangle pos="-2,-2" radius="6" size="99x32" strokeColor="hyperlink"/>
 													<rectangle fillColor="hyperlink" radius="6" size="95x28"/>
 													<text alignment="center" bold color="foregroundOnError" pos="16,6" size="63x16">Generate</text>
@@ -640,9 +640,14 @@
 														<image fillMode="contain" pos="16,4" rsc="heart.svg" size="iconInlineSize" themed="error"/>
 														<text alignment="center" color="placeholder" pos="40,7" size="40x14" textSize="12">Donate</text>
 													</widget>
-													<container pos="100,0" size="24x28">
+													<widget pos="100,0" size="71x28" type="*parts.Button">
+														<rectangle pos="-2,-2" radius="6" size="75x32" strokeColor="hyperlink"/>
+														<rectangle radius="6" size="71x28"/>
+														<text alignment="center" color="placeholder" pos="16,7" size="39x14" textSize="12">GitHub</text>
+													</widget>
+													<container pos="175,0" size="24x28">
 													</container>
-													<widget pos="128,0" size="113x28" type="*parts.Button">
+													<widget pos="203,0" size="113x28" type="*parts.Button">
 														<rectangle pos="-2,-2" radius="6" size="117x32" strokeColor="hyperlink"/>
 														<rectangle fillColor="button" radius="6" size="112x27" strokeColor="inputBorder" strokeWidth="1"/>
 														<text alignment="center" bold pos="16,6" size="81x16">Add a batch</text>

@@ -316,7 +316,7 @@ func menuWidth(c *Chooser) float32 {
 	th, size := Theme(), theme.TextSize()
 	// The VALUES, and not the placeholder. The toolkit puts its own default
 	// placeholder in when the field is empty and does it while the renderer is
-	// made - fyne v2.8.1 widget/select.go line 94, read in the pinned module -
+	// made - fyne v2.8.2 widget/select.go line 98, read in the pinned module -
 	// so a menu measured before it has been drawn has no placeholder and a
 	// menu measured after it has been drawn has "(Select one)". Until
 	// 2026-09-16 this line measured whatever was set, and the same menu came

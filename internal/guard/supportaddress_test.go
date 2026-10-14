@@ -59,3 +59,21 @@ func TestTheSupportAddressStandsOnItsOwnLine(t *testing.T) {
 	t.Errorf("the About screen names %q only inside a longer line, so somebody copying it\n"+
 		"has to pick it out of a sentence. The screen says:\n%s", text.SupportURL, shown)
 }
+
+// The project's address is readable on the About screen too, on a line of its
+// own, since the GitHub button arrived on 2026-10-14 - one decision with the
+// two guards above, for the same reason: the button hands the address to the
+// desktop, a desktop with no browser does nothing, and the window stays quiet
+// about that because the address is written here.
+func TestTheProjectAddressStandsOnItsOwnLine(t *testing.T) {
+	shown := textIn(window.About(newFakeHost(t)))
+
+	for _, line := range strings.Split(shown, "\n") {
+		if strings.TrimSpace(line) == text.RepositoryURL {
+			return
+		}
+	}
+	t.Errorf("the About screen does not carry %q as a line of its own, so somebody whose\n"+
+		"desktop cannot open the GitHub button has no address to type. The screen says:\n%s",
+		text.RepositoryURL, shown)
+}

@@ -112,7 +112,7 @@ func (m *menuLook) showKind() {
 // placeKind stands the picture where the toolkit starts the value's words and
 // moves the words along by the picture and a gap. The words are found by type,
 // the way accent finds the arrow: the toolkit's renderer holds exactly one
-// RichText (fyne v2.8.1 widget/select.go, CreateRenderer).
+// RichText (fyne v2.8.2 widget/select.go, CreateRenderer).
 //
 // Placed by the toolkit's own arithmetic rather than by moving whatever is
 // there, so running it twice gives the same picture: the words start at the

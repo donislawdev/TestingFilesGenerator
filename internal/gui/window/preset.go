@@ -100,7 +100,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	// chooser, because they are the answer to the question that card asks.
 	p.body = p.tips.Over(container.NewBorder(
 		nil,
-		p.footer(rail(append([]fyne.CanvasObject{donateButton(host)}, links...)...)),
+		p.footer(rail(append(outwardButtons(host), links...)...)),
 		nil, nil,
 		(p.keepScroll(container.NewVScroll(parts.Screen(
 			parts.Titled(text.TabPresets(), text.SubtitlePreset()),

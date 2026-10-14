@@ -63,6 +63,11 @@ func About(h Host) fyne.CanvasObject {
 		// as a page of the application rather than as the one screen that was
 		// left as it was.
 		parts.Section(text.SectionLicence(), parts.Prose(paragraphs(text.Licence(version.LicenceNotice)))),
+		// Under the licence, which says the source is free, the page where it
+		// is. Since 2026-10-14, with the same button the bar of every other
+		// screen carries and its address under it, for the reason the Support
+		// card gives below.
+		linkCard(text.SectionSource(), text.DetailGitHub(), gitHub(h, parts.Secondary), text.RepositoryURL),
 		// The support address, in words, on the one screen somebody reads when
 		// they are deciding what this program costs them.
 		//
@@ -81,10 +86,7 @@ func About(h Host) fyne.CanvasObject {
 		// whole strip of the window for one quiet word, while this card named
 		// the same address as words nobody could press. The address stays
 		// under the button for the reason above.
-		parts.Section(text.SectionSupport(),
-			parts.Prose(text.DetailDonate()),
-			container.NewHBox(donate(h, parts.Secondary)),
-			parts.Prose(text.SupportURL)),
+		linkCard(text.SectionSupport(), text.DetailDonate(), donate(h, parts.Secondary), text.SupportURL),
 	)
 	sections = append(sections, carried()...)
 	// The title with its sentence under it, as on the other three screens.
@@ -102,6 +104,18 @@ func About(h Host) fyne.CanvasObject {
 	// the list of what the binary carries now, and a licence notice that cannot
 	// be read to the end is the one kind of notice that fails at its only job.
 	return container.NewVScroll(page)
+}
+
+// linkCard is a card whose button leads out of the program: what pressing it
+// does, the button, and the address it goes to on a line of its own, for
+// somebody whose desktop opens nothing. Support was the only one until
+// 2026-10-14 and Source code made it two, so the shape has a name now rather
+// than two copies that could come to differ (GUI rule 7).
+func linkCard(heading, detail string, button *parts.Button, address string) fyne.CanvasObject {
+	return parts.Section(heading,
+		parts.Prose(detail),
+		container.NewHBox(button),
+		parts.Prose(address))
 }
 
 // carried is what this binary contains that somebody else wrote, read out of
