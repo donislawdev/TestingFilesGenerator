@@ -170,7 +170,10 @@ func writeSingleSymbolCode(w *bitWriter, symbol uint32, eightBit bool) {
 }
 
 // writeStream emits the whole bitstream. row is called once per row and hands
-// back width*3 bytes in red, green, blue order.
+// back width*3 bytes in red, green, blue order, or nil to stop there - a run
+// that was cancelled, whose file is thrown away, so the stream left short is
+// never read (O279: until 2026-10-14 the rows went on to the last one after a
+// stop, 5.2 s for a picture of 600 MB).
 func writeStream(w *bitWriter, width, height int, row func(y int) []byte) {
 	w.write(0x2F, 8)
 	w.write(uint32(width-1), 14)
@@ -190,6 +193,9 @@ func writeStream(w *bitWriter, width, height int, row func(y int) []byte) {
 
 	for y := 0; y < height; y++ {
 		px := row(y)
+		if px == nil {
+			return
+		}
 		for x := 0; x < width; x++ {
 			// Green first. That is the order the format reads a pixel in, and
 			// getting it wrong produces a picture that decodes cleanly with

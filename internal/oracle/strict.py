@@ -819,7 +819,12 @@ def html_pictures(text, settings):
 
 def html_picture_verdict(kind, n, raw):
     """One picture judged by its own format's check. Those end the process with
-    their verdict, so each is caught here and only a failure is passed on."""
+    their verdict, so each is caught here and only a failure is passed on.
+
+    A check can also stop on bytes it did not expect - check_png unpacks a
+    checksum that is not there when a chunk runs to the very end - and that is
+    a verdict about the picture too, so it is given as one rather than as a
+    traceback (review of #178)."""
     import contextlib
     import io
 
@@ -831,6 +836,8 @@ def html_picture_verdict(kind, n, raw):
         if exc.code not in (0, None):
             fail(f"picture {n} is not a good {kind} file: {said.getvalue().strip()}")
         return
+    except Exception as exc:
+        fail(f"picture {n} is not a good {kind} file: {type(exc).__name__}: {str(exc)[:120]}")
     fail(f"the {kind} check gave no verdict on picture {n}")
 
 

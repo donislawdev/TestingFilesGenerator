@@ -34,6 +34,9 @@ func writePicture(ctx context.Context, w io.Writer, m memo) (int64, error) {
 		if y%64 == 0 && stopped == nil {
 			stopped = interrupted(ctx)
 		}
+		if stopped != nil {
+			return nil
+		}
 		if y < bandH {
 			copyBandRow(row, band, y, m.width)
 		} else {

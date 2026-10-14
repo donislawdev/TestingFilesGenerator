@@ -65,7 +65,13 @@ func minimumBytes() int64 {
 	return newMessage(s, 0, nil, nil).size()
 }
 
-func (generator) Plan(r format.Request) (format.Plan, error) {
+func (g generator) Plan(r format.Request) (format.Plan, error) {
+	return g.PlanContext(context.Background(), r)
+}
+
+// PlanContext is Plan, stoppable between one file the message carries and the
+// next.
+func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan, error) {
 	s, err := parse(r.Properties)
 	if err != nil {
 		return format.Plan{}, err
@@ -74,7 +80,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	if err != nil {
 		return format.Plan{}, err
 	}
-	children, pics, err := planChildren(r, groups, s)
+	children, pics, err := planChildren(ctx, r, groups, s)
 	if err != nil {
 		return format.Plan{}, err
 	}

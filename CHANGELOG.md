@@ -277,6 +277,18 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **Ctrl+C waited for a file that holds thousands of files to be planned.**
+  A zip, a tar.gz, a mail message or a page with ten thousand small pictures
+  inside took over a minute to plan, and a run stopped in that minute went
+  on until the end of it - in CI long enough for the grace period to run
+  out. Planning now stops between one file inside and the next, and says
+  it stopped rather than that a file could not be made.
+
+- **A stopped run went on writing a WebP picture to its last row.** A
+  600 MB picture took five more seconds to stop. It now stops within a few
+  rows, as the other picture formats do. Files that are not stopped keep
+  their bytes.
+
 - **Choosing another tool on the Tools tab left the boxes in the wrong
   place.** The section kept the height of the tool chosen before, so a
   setting could stand under it with its list hidden, or an empty band was

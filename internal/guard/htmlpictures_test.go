@@ -6,6 +6,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -13,6 +15,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	pic "github.com/donislawdev/TestingFilesGenerator/internal/format/picture"
+	"github.com/donislawdev/TestingFilesGenerator/internal/oracle"
 )
 
 // The pictures a page carries inside itself, from 2026-10-14
@@ -150,5 +153,34 @@ func TestEveryFormatWithPicturesDeclaresThemAlike(t *testing.T) {
 	}
 	if carriers < 2 {
 		t.Errorf("%d formats carry pictures, and eml and html both do", carriers)
+	}
+}
+
+// TestTheStructuralCheckGivesAVerdictOnABrokenPicture holds the review of #178:
+// a picture the size it should be whose bytes stop a format's own check part
+// way - a PNG whose last chunk runs to the very end, so its checksum is not
+// there to unpack - is a verdict about the picture, not a traceback that
+// reads as the checker saying nothing useful.
+func TestTheStructuralCheckGivesAVerdictOnABrokenPicture(t *testing.T) {
+	props := map[string]string{"inline": "1", "inline_size": "4kb"}
+	body := writeEncoded(t, "html", 65536, props)
+	m := htmlPictureLine.FindSubmatchIndex(body)
+	if m == nil {
+		t.Fatal("the page carries no picture line, so there is nothing to break")
+	}
+	broken := append([]byte("\x89PNG\r\n\x1a\n"), 0, 0, 0x0f, 0xf0)
+	broken = append(broken, "IHDR"...)
+	broken = append(broken, make([]byte, 4096-len(broken))...)
+	page := append(append(append([]byte{}, body[:m[8]]...), base64.StdEncoding.EncodeToString(broken)...), body[m[9]:]...)
+	path := filepath.Join(t.TempDir(), "broken.html")
+	if err := os.WriteFile(path, page, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	res := oracle.Strict("html", path, htmlSettingWords(props)...)
+	if !res.Available {
+		t.Skip("the structural check needs python")
+	}
+	if res.Err == nil || !strings.HasPrefix(res.Err.Error(), "picture 1 is not a good png file") {
+		t.Errorf("a page with a broken picture was answered with %v, not a verdict on the picture", res.Err)
 	}
 }

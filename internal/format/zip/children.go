@@ -1,6 +1,7 @@
 package zip
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -23,7 +24,7 @@ import (
 // Members are numbered across the whole archive rather than per group, so the
 // seed of a member does not move when a group above it changes count. That is
 // untouchable rule 2 applied one level down.
-func planChildren(r format.Request, groups []format.Content, layout archive.Layout) ([]child, error) {
+func planChildren(ctx context.Context, r format.Request, groups []format.Content, layout archive.Layout) ([]child, error) {
 	// The directory chain depends only on the depth, so it is built once here
 	// rather than once per entry.
 	prefix := layout.Prefix()
@@ -48,13 +49,13 @@ func planChildren(r format.Request, groups []format.Content, layout archive.Layo
 		}
 		for i := 0; i < g.Count; i++ {
 			childSeed := core.FileSeed(r.Seed, index)
-			cp, err := desc.Generator.Plan(format.Request{
+			cp, err := format.PlanWith(ctx, desc.Generator, format.Request{
 				Bytes: g.Bytes,
 				Seed:  childSeed,
 				Label: r.Label,
 			})
 			if err != nil {
-				return nil, core.Refuse(core.Says("format.ZipTheFileInsideCannotBe", "zip: the %s file inside cannot be made: %w", core.A("Format", g.Format), core.A("Err", err)))
+				return nil, format.StopOr(ctx, core.Refuse(core.Says("format.ZipTheFileInsideCannotBe", "zip: the %s file inside cannot be made: %w", core.A("Format", g.Format), core.A("Err", err))))
 			}
 			numbered[g.Format]++
 			out = append(out, child{

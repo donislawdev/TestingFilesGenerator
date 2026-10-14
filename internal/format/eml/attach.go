@@ -1,6 +1,7 @@
 package eml
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -64,12 +65,12 @@ func (c *child) raw() bool { return c.desc.MediaType == messageType }
 // per format across the whole message - the archives' rules, for their
 // reasons (zip/children.go). The order is the order the seeds were given in
 // before pictures and depth existed, so neither moves an attached file.
-func planChildren(r format.Request, groups []format.Content, s settings) (children, pics []child, err error) {
+func planChildren(ctx context.Context, r format.Request, groups []format.Content, s settings) (children, pics []child, err error) {
 	total := 0
 	for _, g := range groups {
 		total += g.Count
 	}
-	p := planner{r: r, s: s, out: make([]child, 0, total+1), numbered: map[string]int{}}
+	p := planner{ctx: ctx, r: r, s: s, out: make([]child, 0, total+1), numbered: map[string]int{}}
 	for _, g := range groups {
 		desc, err := format.Get(g.Format)
 		if err != nil {
@@ -89,6 +90,7 @@ func planChildren(r format.Request, groups []format.Content, s settings) (childr
 // planner is planChildren's place in the message as it goes: how many files
 // came before, how many of each format, and how many bytes of them so far.
 type planner struct {
+	ctx      context.Context
 	r        format.Request
 	s        settings
 	out      []child
@@ -119,9 +121,9 @@ func (p *planner) attachment(c child) {
 // plan plans one file of a size with the seed of its place, and counts what it
 // adds to the message.
 func (p *planner) plan(desc format.Descriptor, size int64, place int) (child, error) {
-	cp, err := desc.Generator.Plan(p.request(desc, size, place))
+	cp, err := format.PlanWith(p.ctx, desc.Generator, p.request(desc, size, place))
 	if err != nil {
-		return child{}, core.Refuse(core.Says("eml.TheAttachedFileCannotBe", "eml: the attached %s file cannot be made: %w", core.A("Format", desc.ID), core.A("Err", err)))
+		return child{}, format.StopOr(p.ctx, core.Refuse(core.Says("eml.TheAttachedFileCannotBe", "eml: the attached %s file cannot be made: %w", core.A("Format", desc.ID), core.A("Err", err))))
 	}
 	if cp.Bytes > maxMessage {
 		return child{}, tooLarge(cp.Bytes)
@@ -161,7 +163,7 @@ func (p *planner) forward() error {
 	r := p.request(desc, 0, len(p.out))
 	r.Properties[MessageDepth] = strconv.Itoa(p.s.depth - 1)
 	r.SizeFromContents, r.Contains = true, []format.Content{}
-	cp, err := desc.Generator.Plan(r)
+	cp, err := format.PlanWith(p.ctx, desc.Generator, r)
 	if err != nil {
 		return err
 	}

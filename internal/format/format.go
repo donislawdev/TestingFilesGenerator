@@ -733,6 +733,45 @@ type Generator interface {
 	Write(ctx context.Context, w io.Writer, p Plan) error
 }
 
+// ContextPlanner is a Generator whose Plan can be stopped part of the way
+// through, which is what a format that holds other files needs.
+//
+// A container plans every file inside it from inside its own Plan, and the
+// engine asks for a stop only between one file and the next. Ten thousand
+// small pngs in a page took 72 s to plan on 2026-10-14, the same in a mail
+// message, a zip and a tar.gz, and a stopped run waited for all of it - under
+// SIGTERM in CI long enough for SIGKILL to arrive (review of #178,
+// docs/HTML-3-2026-10-14.md section 11).
+type ContextPlanner interface {
+	PlanContext(ctx context.Context, r Request) (Plan, error)
+}
+
+// PlanWith plans r with g, stoppable as far as g is: asked once before it
+// starts, and between the files inside it when g is a ContextPlanner.
+//
+// A container plans its files through this too, so a container inside a
+// container stops as soon as the outer one does.
+func PlanWith(ctx context.Context, g Generator, r Request) (Plan, error) {
+	if err := ctx.Err(); err != nil {
+		return Plan{}, err
+	}
+	if c, ok := g.(ContextPlanner); ok {
+		return c.PlanContext(ctx, r)
+	}
+	return g.Plan(r)
+}
+
+// StopOr is what a container returns when a file inside it could not be
+// planned: the stop itself when the run was stopped, so it reaches the command
+// line as a stop with its own exit code rather than as a file that cannot be
+// made, and err otherwise.
+func StopOr(ctx context.Context, err error) error {
+	if stop := ctx.Err(); stop != nil {
+		return stop
+	}
+	return err
+}
+
 // BelowMinimumError is refusing a size a format cannot deliver.
 //
 // It carries four things on purpose: which format, what its minimum is, why

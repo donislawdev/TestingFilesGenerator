@@ -64,7 +64,7 @@ func (p pictureLine) bytes() int64 {
 // asking for one more changes none of the others. The format is asked whether
 // it is a picture even when none are asked for: a value the setting cannot
 // take is a mistake either way, and eml refuses it the same way.
-func planPictures(r format.Request, s picture.Settings) ([]pictureLine, int64, error) {
+func planPictures(ctx context.Context, r format.Request, s picture.Settings) ([]pictureLine, int64, error) {
 	desc, ok, err := picture.Of(s.Format)
 	if err != nil {
 		return nil, 0, err
@@ -79,10 +79,10 @@ func planPictures(r format.Request, s picture.Settings) ([]pictureLine, int64, e
 	out := make([]pictureLine, 0, s.Count)
 	var sum int64
 	for i := 0; i < s.Count; i++ {
-		cp, err := desc.Generator.Plan(format.Request{Bytes: s.Size, Seed: core.FileSeed(r.Seed, i), Label: r.Label})
+		cp, err := format.PlanWith(ctx, desc.Generator, format.Request{Bytes: s.Size, Seed: core.FileSeed(r.Seed, i), Label: r.Label})
 		if err != nil {
-			return nil, 0, core.Refuse(core.Says("html.ThePictureCannotBe", "html: the %s picture cannot be made: %w",
-				core.A("Format", desc.ID), core.A("Err", err)))
+			return nil, 0, format.StopOr(ctx, core.Refuse(core.Says("html.ThePictureCannotBe", "html: the %s picture cannot be made: %w",
+				core.A("Format", desc.ID), core.A("Err", err))))
 		}
 		if cp.Bytes > maxPage {
 			return nil, 0, pageTooLarge(cp.Bytes)

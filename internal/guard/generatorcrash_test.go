@@ -117,7 +117,11 @@ func TestAGeneratorThatCrashesWhileWritingCostsOneFile(t *testing.T) {
 // borrowed encoder.
 func TestEveryCallIntoAGeneratorGoesThroughTheCrashWrapper(t *testing.T) {
 	const wrapper = "crash.go"
-	calls := []string{"Generator.Plan(", "Generator.Write("}
+	// format.PlanWith is how the wrapper plans since 2026-10-14, so a
+	// container can be stopped between the files inside it - and it calls the
+	// generator, so anywhere else in the engine it is a way round the wrapper.
+	calls := []string{"format.PlanWith(", "Generator.Write("}
+	direct := "Generator.Plan("
 
 	dir := filepath.Join(repoRoot(t), "internal", "engine")
 	entries, err := os.ReadDir(dir)
@@ -134,7 +138,7 @@ func TestEveryCallIntoAGeneratorGoesThroughTheCrashWrapper(t *testing.T) {
 			t.Fatalf("reading %s: %v", e.Name(), err)
 		}
 		read++
-		for _, call := range calls {
+		for _, call := range append(calls, direct) {
 			if strings.Contains(string(body), call) {
 				t.Errorf("%s calls %s itself, so a panic in there ends the process",
 					e.Name(), strings.TrimSuffix(call, "("))

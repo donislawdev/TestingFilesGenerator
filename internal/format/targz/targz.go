@@ -191,7 +191,12 @@ type memo struct {
 	extraLen  int64
 }
 
-func (generator) Plan(r format.Request) (format.Plan, error) {
+func (g generator) Plan(r format.Request) (format.Plan, error) {
+	return g.PlanContext(context.Background(), r)
+}
+
+// PlanContext is Plan, stoppable between one file inside and the next.
+func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan, error) {
 	// Before anything else, because every size below is worked out from this
 	// and a framing this tool does not understand has to be a refusal rather
 	// than an archive of the wrong length. See framing.go.
@@ -220,7 +225,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	}
 
 	m := memo{seed: r.Seed, own: own, layout: layout, squeeze: squeeze}
-	if m.children, err = planChildren(r, groups, layout); err != nil {
+	if m.children, err = planChildren(ctx, r, groups, layout); err != nil {
 		return format.Plan{}, err
 	}
 
@@ -253,7 +258,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 // Members are numbered across the whole archive rather than per group, so the
 // seed of a member does not move when a group above it changes count. That is
 // untouchable rule 2 applied one level down.
-func planChildren(r format.Request, groups []format.Content, layout archive.Layout) ([]child, error) {
+func planChildren(ctx context.Context, r format.Request, groups []format.Content, layout archive.Layout) ([]child, error) {
 	// The directory chain depends only on the depth, so it is built once here
 	// rather than once per entry.
 	prefix := layout.Prefix()
@@ -268,13 +273,13 @@ func planChildren(r format.Request, groups []format.Content, layout archive.Layo
 			return nil, err
 		}
 		for i := 0; i < g.Count; i++ {
-			cp, err := desc.Generator.Plan(format.Request{
+			cp, err := format.PlanWith(ctx, desc.Generator, format.Request{
 				Bytes: g.Bytes,
 				Seed:  core.FileSeed(r.Seed, index),
 				Label: r.Label,
 			})
 			if err != nil {
-				return nil, core.Defect(fmt.Errorf("targz: the %s file inside cannot be made: %w", g.Format, err))
+				return nil, format.StopOr(ctx, core.Defect(fmt.Errorf("targz: the %s file inside cannot be made: %w", g.Format, err)))
 			}
 			numbered[g.Format]++
 			out = append(out, child{

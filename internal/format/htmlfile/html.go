@@ -78,13 +78,18 @@ type memo struct {
 	pictureBytes int64
 }
 
-func (generator) Plan(r format.Request) (format.Plan, error) {
+func (g generator) Plan(r format.Request) (format.Plan, error) {
+	return g.PlanContext(context.Background(), r)
+}
+
+// PlanContext is Plan, stoppable between one picture and the next.
+func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan, error) {
 	s, err := settingsOf(r.Properties)
 	if err != nil {
 		return format.Plan{}, err
 	}
 
-	pictures, pictureBytes, err := planPictures(r, s.pictures)
+	pictures, pictureBytes, err := planPictures(ctx, r, s.pictures)
 	if err != nil {
 		return format.Plan{}, err
 	}

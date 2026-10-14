@@ -128,7 +128,12 @@ type memo struct {
 	target int64
 }
 
-func (generator) Plan(r format.Request) (format.Plan, error) {
+func (g generator) Plan(r format.Request) (format.Plan, error) {
+	return g.PlanContext(context.Background(), r)
+}
+
+// PlanContext is Plan, stoppable between one file inside and the next.
+func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan, error) {
 	groups, err := archive.Groups("zip", r)
 	if err != nil {
 		return format.Plan{}, err
@@ -150,7 +155,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	}
 
 	m := memo{seed: r.Seed, lock: lock, layout: layout, squeeze: squeeze}
-	if m.children, err = planChildren(r, groups, layout); err != nil {
+	if m.children, err = planChildren(ctx, r, groups, layout); err != nil {
 		return format.Plan{}, err
 	}
 

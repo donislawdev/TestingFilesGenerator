@@ -80,7 +80,10 @@ const (
 // container planning its children calls them from inside its own Plan, so a
 // child crashing is caught here too - and named as the container, because the
 // container is what this was asked to plan.
-func planWithoutCrashing(desc format.Descriptor, r format.Request) (p format.Plan, err error) {
+//
+// The context reaches a container's own planning (format.PlanWith), so a stop
+// lands between two of the files inside it rather than after the last.
+func planWithoutCrashing(ctx context.Context, desc format.Descriptor, r format.Request) (p format.Plan, err error) {
 	defer func() {
 		v := recover()
 		if v == nil {
@@ -88,7 +91,7 @@ func planWithoutCrashing(desc format.Descriptor, r format.Request) (p format.Pla
 		}
 		err = &GeneratorCrashError{Format: desc.ID, While: crashPlanning, Value: v}
 	}()
-	return desc.Generator.Plan(r)
+	return format.PlanWith(ctx, desc.Generator, r)
 }
 
 // writeWithoutCrashing is the same around the write, so a crash costs one file
