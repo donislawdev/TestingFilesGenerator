@@ -466,6 +466,17 @@ func pageGoldenCases() map[string]engine.Target {
 			Properties: map[string]string{"inline": "3", "inline_size": "2kb"}},
 		"html_odd_fragment_pictures_svg": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 16385), Label: true,
 			Properties: map[string]string{"structure": "fragment", "nesting": "2", "inline": "2", "inline_format": "svg", "inline_size": "1kb"}},
+		// A page on one line and a page with styles: the sheet beside the
+		// catalogue's own on one line, the short attributes, and the
+		// attributes on everything a fragment writes - the label, the
+		// paragraphs in other scripts, a picture's paragraph and the blocks.
+		"html_16kib_minified_every_embedded": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 16384), Label: true,
+			Properties: map[string]string{"formatting": "minified", "elements": "every", "styles": "embedded"}},
+		"html_8kib_minified_inline": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"formatting": "minified", "styles": "inline"}},
+		"html_odd_fragment_inline_international_pictures": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 8193), Label: true,
+			Properties: map[string]string{"structure": "fragment", "styles": "inline", "characters": "international",
+				"nesting": "2", "inline": "1", "inline_size": "1kb"}},
 	}
 }
 

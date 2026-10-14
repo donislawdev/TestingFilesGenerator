@@ -29,6 +29,11 @@ const (
 	smallPicture = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEUlEQVR42mNwaDiAFTEMLQkAYvNgAQlPC90AAAAASUVORK5CYII="
 	sound        = "data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAACAgICAgICAgICAgICAgICA"
 
+	// preformatted is the text of the pre element, the one place in the
+	// catalogue where a line break is text rather than layout. A page on one
+	// line has to keep it, so it is named here and found by name.
+	preformatted = "preformatted   text\n  keeps   its spaces"
+
 	// catalogueHead is what the catalogue puts in the head of a page. base
 	// names no address, so it changes nothing a link resolves to, and the icon
 	// is empty data so a browser asks nobody for one.
@@ -52,8 +57,7 @@ const (
 <h5>Fifth level</h5>
 <h6>Sixth level</h6>
 <blockquote cite="#text"><p>A quotation in a block.</p></blockquote>
-<pre><code>preformatted   text
-  keeps   its spaces</code></pre>
+<pre><code>` + preformatted + `</code></pre>
 <hr>
 <dl><dt>Term</dt><dd>Its description.</dd></dl>
 <ol start="3" reversed><li>three</li><li>two</li></ol>
@@ -143,7 +147,7 @@ func (s settings) catalogueHeadFor() string {
 	if !s.every || s.shape != structureDocument {
 		return ""
 	}
-	return catalogueHead
+	return s.spelling()[headCatalogue]
 }
 
 // catalogueBlocks is what the catalogue adds to the body.
@@ -151,5 +155,5 @@ func (s settings) catalogueBlocks() string {
 	if !s.every {
 		return ""
 	}
-	return catalogueBody
+	return s.spelling()[bodyCatalogue]
 }

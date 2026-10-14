@@ -689,13 +689,14 @@ HTML_INTERNATIONAL = [
 ]
 
 
-def html_settings(text, shape, settings):
+def html_settings(text, shape, settings, nl):
     """What nesting, characters and elements ordered is in the file.
 
     Read from the TEXT rather than from a tree, for the reason the shape check
     gives: a tolerant parser builds a tree out of anything, and the two readers
     measured with the deepest pages either flatten the levels (Chromium) or
     drop them (libxml2), so a tree would report something other than the file.
+    nl is what ends a line of the page, nothing when it is one line.
     """
     # ASCII digits and the declared range, checked before int(): str.isdigit
     # also says yes to "²", which int() then refuses with a traceback instead
@@ -706,27 +707,38 @@ def html_settings(text, shape, settings):
     want = int(nesting)
     body = text
     if shape == "document":
-        start = text.find("<body>\n")
+        start = text.find("<body>" + nl)
         if start < 0:
             fail("the page has no body to look for the levels in")
-        body = text[start + len("<body>\n"):text.rfind("</body>")]
-    if body.startswith("<h1>"):
+        body = text[start + len("<body>" + nl):text.rfind("</body>")]
+    elif settings.get("styles") == "embedded":
+        # A fragment opens with its style sheet, in front of the label.
+        end = body.find("</style>" + nl)
+        if end < 0:
+            fail("styles=embedded was ordered and the fragment has no style sheet to read past")
+        body = body[end + len("</style>" + nl):]
+    if re.match(r"<h1[ >]", body):
         # The label sits outside the levels, so a reader that drops the deep
         # ones still shows which file it read.
-        body = body[body.index("</h1>\n") + len("</h1>\n"):]
+        body = body[body.index("</h1>" + nl) + len("</h1>" + nl):]
+    div_open, div_close = "<div>" + nl, "</div>" + nl
     opened = 0
-    while body.startswith("<div>\n", opened * 6):
+    while body.startswith(div_open, opened * len(div_open)):
         opened += 1
     closed, end = 0, len(body)
-    while end >= 7 and body[end - 7:end] == "</div>\n":
-        closed, end = closed + 1, end - 7
+    while end >= len(div_close) and body[end - len(div_close):end] == div_close:
+        closed, end = closed + 1, end - len(div_close)
     if opened != want or closed != want:
         fail(f"nesting={want} was ordered and the content opens {opened} levels and closes {closed}")
 
+    # The paragraphs and the pictures are looked for as written, so the style
+    # attributes come off first. That they are there at all is html_styles'
+    # question, asked before this one.
+    bare = re.sub(r' style="[^"]*"', "", text) if settings.get("styles") == "inline" else text
     chars = settings.get("characters", "ascii")
     if chars == "international":
         for piece in HTML_INTERNATIONAL:
-            if piece not in text:
+            if piece not in bare:
                 fail(f"characters=international was ordered and the page does not carry {ascii(piece)}")
     elif chars == "ascii":
         stray = sorted({c for c in text if c != "\n" and not (" " <= c <= "~")})
@@ -755,7 +767,7 @@ def html_settings(text, shape, settings):
         fail(f"the html check was told elements={elements!r}, which is not one this tool writes")
     if "script" in names:
         fail("the page carries a script, which no setting of this format writes")
-    html_pictures(text, settings)
+    html_pictures(bare, settings, nl)
 
 
 # The picture formats a page may carry and what each is called inside it - its
@@ -769,8 +781,9 @@ HTML_PICTURE_TYPES = {
 }
 # One picture's line, as the generator writes it: the base64 on one line,
 # because the Nu HTML Checker calls a line break inside src an error
-# (docs/HTML-3-2026-10-14.md section 1).
-HTML_PICTURE = re.compile(r'<p><img alt="inline_([0-9]{4,5})(\.[a-z]+)" src="data:([a-z0-9.+/-]+);base64,([A-Za-z0-9+/=]*)"></p>\n')
+# (docs/HTML-3-2026-10-14.md section 1). What ends the line is added where it
+# is known - a line break, or nothing on a page of one line.
+HTML_PICTURE = r'<p><img alt="inline_([0-9]{4,5})(\.[a-z]+)" src="data:([a-z0-9.+/-]+);base64,([A-Za-z0-9+/=]*)"></p>'
 
 
 def html_size(word):
@@ -781,7 +794,7 @@ def html_size(word):
     return int(match.group(1)) * {None: 1, "b": 1, "kb": 1024, "mb": 1024 ** 2, "gb": 1024 ** 3}[match.group(2)]
 
 
-def html_pictures(text, settings):
+def html_pictures(text, settings, nl):
     """The pictures inline ordered: as many as were asked, numbered in order,
     each of the format and size asked and each a file its own check accepts.
 
@@ -797,11 +810,11 @@ def html_pictures(text, settings):
         fail(f"the html check was told inline_format={kind!r}, which is not a picture format")
     size = html_size(settings.get("inline_size", "8kb"))
     ext, media = HTML_PICTURE_TYPES[kind]
-    found = HTML_PICTURE.findall(text)
+    found = re.findall(HTML_PICTURE + re.escape(nl), text)
     if len(found) != int(count):
         fail(f"inline={count} was ordered and the page carries {len(found)} pictures")
     if "base64," in text and text.count('<img alt="inline_') != len(found):
-        fail("a picture of the page is not on a line of its own in the shape this tool writes")
+        fail("a picture of the page is not in a paragraph of its own in the shape this tool writes")
     import base64
     import binascii
 
@@ -839,6 +852,78 @@ def html_picture_verdict(kind, n, raw):
     except Exception as exc:
         fail(f"picture {n} is not a good {kind} file: {type(exc).__name__}: {str(exc)[:120]}")
     fail(f"the {kind} check gave no verdict on picture {n}")
+
+
+def html_layout(text, settings):
+    """The layout formatting ordered, and what ends a line of it: a page of
+    lines ends every one of them, the last included, and a page of one line
+    has no line break anywhere and no newline at the end."""
+    layout = settings.get("formatting", "lines")
+    if layout == "minified":
+        breaks = text.count("\n") + text.count("\r")
+        if breaks:
+            fail(f"formatting=minified was ordered and the page has {breaks} line breaks")
+        return ""
+    if layout != "lines":
+        fail(f"the html check was told formatting={layout!r}, which is not one this tool writes")
+    if not text.endswith("\n") or text.count("\n") < 2:
+        fail("formatting=lines was ordered and the page is not lines ending in a line break")
+    return "\n"
+
+
+# The elements the style rules are for, written here from the setting's
+# meaning rather than imported, and what an embedded sheet and an attribute
+# must never carry: anything that names an address, which a page would fetch
+# when it is opened (decision D16).
+HTML_STYLED = ["h1", "h2", "p", "ul", "li", "table", "th", "td", "blockquote"]
+HTML_FETCHING_CSS = re.compile(r"url\(|@import|@font-face", re.IGNORECASE)
+
+
+def html_styles(text, shape, settings):
+    """Where styles ordered the rules, and nowhere else.
+
+    The catalogue of every element carries a sheet of its own in the head of a
+    page and no attribute, so it is counted out rather than mistaken for what
+    the setting wrote."""
+    styles = settings.get("styles", "none")
+    if styles not in ("none", "embedded", "inline"):
+        fail(f"the html check was told styles={styles!r}, which is not one this tool writes")
+    every = settings.get("elements") == "every"
+    own_sheets = text.count("<style") - (1 if every and shape == "document" else 0)
+    attributes = text.count(' style="')
+    for css in re.findall(r"<style>(.*?)</style>", text, re.DOTALL) + re.findall(r' style="([^"]*)"', text):
+        if HTML_FETCHING_CSS.search(css):
+            fail(f"the styles of the page name something to fetch: {css[:80]!r}")
+
+    if styles == "none":
+        if own_sheets or attributes:
+            fail(f"styles=none was ordered and the page carries {own_sheets} style sheets and {attributes} style attributes")
+        return
+    if styles == "embedded":
+        if own_sheets != 1 or attributes:
+            fail(f"styles=embedded was ordered and the page carries {own_sheets} style sheets of its own and {attributes} style attributes")
+        at = text.rfind("<style>") if shape == "document" else text.find("<style>")
+        sheet = text[at:text.find("</style>", at)]
+        missing = [e for e in HTML_STYLED if not re.search(r"(^|[}\s>])" + e + r"\s*\{", sheet)]
+        if missing:
+            fail(f"styles=embedded was ordered and the sheet has no rule for {missing}")
+        if shape == "fragment" and at != 0:
+            fail("styles=embedded was ordered and the sheet is not where a fragment opens")
+        if shape == "document" and not at < text.find("</head>"):
+            fail("styles=embedded was ordered and the sheet is not in the head of the page")
+        return
+    if own_sheets:
+        fail(f"styles=inline was ordered and the page carries {own_sheets} style sheets of its own")
+    outside = text
+    if every:
+        outside = text[:text.find("<header>")] + text[text.rfind("</footer>"):]
+    # The attributes are optional in the pattern, so a bare <p> is found and
+    # counted as bare - and the name has to end where they start, so p does
+    # not find pre nor th find thead.
+    tags = re.findall(r"<(" + "|".join(HTML_STYLED) + r")(\s[^>]*)?>", outside)
+    bare = [name for name, rest in tags if not rest.startswith(' style="')]
+    if not tags or bare:
+        fail(f"styles=inline was ordered and {len(bare)} of {len(tags)} elements it is for carry no style attribute: {bare[:6]}")
 
 
 def check_html(data, settings):
@@ -883,7 +968,9 @@ def check_html(data, settings):
     shape = settings.get("structure", "document")
     if shape not in ("document", "fragment"):
         fail(f"the html check was told structure={shape!r}, which is not one this tool writes")
-    html_settings(text, shape, settings)
+    nl = html_layout(text, settings)
+    html_styles(text, shape, settings)
+    html_settings(text, shape, settings, nl)
 
     opens = text.lower().startswith("<!doctype html>")
     closes = text.rstrip().endswith("</html>")

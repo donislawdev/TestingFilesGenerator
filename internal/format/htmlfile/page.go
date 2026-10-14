@@ -8,32 +8,11 @@ import "strings"
 // nesting, the paragraphs in other scripts, the catalogue, the blocks, and the
 // closing paragraph with everything it closes after it.
 
-const (
-	// The skeleton of a page, in two halves so the catalogue can put what it
-	// needs into the head between them. Joined they are the bytes every page
-	// opened with before there were settings.
-	headOpen = `<!DOCTYPE html>` + "\n" +
-		`<html lang="en">` + "\n" +
-		`<head>` + "\n" +
-		`<meta charset="utf-8">` + "\n" +
-		`<title></title>` + "\n"
-	headClose = `</head>` + "\n" +
-		`<body>` + "\n"
+// The markup itself - the skeleton, the label, the levels and the blocks - is
+// spelled in markup.go, in every layout and every way of carrying styles.
 
-	// The title is filled in per file when a label is wanted, so the empty pair
-	// above is what the smallest document carries.
-	emptyTitle = `<title></title>`
-
-	paraOpen  = "<p>"
-	paraClose = "</p>\n"
-	bodyClose = "</body>\n</html>\n"
-
-	// One level of nesting, each on a line of its own. A page whose levels
-	// shared a line would be a page of one very long line, which is a different
-	// question with a setting of its own to come.
-	divOpen  = "<div>\n"
-	divClose = "</div>\n"
-)
+// emptyTitle is the title a page carries until a label fills it in.
+const emptyTitle = `<title></title>`
 
 // byteOrderMark is the UTF-8 mark, the only one a page may carry: the standard
 // requires UTF-8 (docs/HTML-STRUCTURE-2026-09-08.md section 1). Written as its
@@ -41,12 +20,17 @@ const (
 var byteOrderMark = string([]byte{0xEF, 0xBB, 0xBF})
 
 // prologue is everything in front of the label: the mark, and the skeleton down
-// to the body with whatever the catalogue puts in the head - or for a fragment
-// nothing but the mark.
+// to the body with whatever the catalogue and the style sheet put in the head -
+// or for a fragment the mark and the sheet. A fragment has no head, and a sheet
+// at its very start is one a parser puts into the head it makes up, where the
+// Nu HTML Checker finds nothing wrong with it. Further down it would be a
+// sheet in the body, which the checker calls an error rule by rule
+// (docs/HTML-4-2026-10-14.md section 1).
 func (s settings) prologue() string {
-	p := ""
+	m := s.spelling()
+	p := m[sheet]
 	if s.shape == structureDocument {
-		p = headOpen + s.catalogueHeadFor() + headClose
+		p = m[headOpen] + s.catalogueHeadFor() + m[sheet] + m[headClose]
 	}
 	if s.bom {
 		p = byteOrderMark + p
@@ -59,12 +43,12 @@ func (s settings) prologue() string {
 // kept in the plan - a hundred thousand levels are 600 KB, and the engine holds
 // the plan of every file at once.
 func (s settings) opening() string {
-	return strings.Repeat(divOpen, s.nesting) + s.internationalBlocks() + s.catalogueBlocks()
+	return strings.Repeat(s.spelling()[divOpen], s.nesting) + s.internationalBlocks() + s.catalogueBlocks()
 }
 
 // openingBytes is the length of opening, worked out without building it.
 func (s settings) openingBytes() int64 {
-	return int64(s.nesting*len(divOpen) + len(s.internationalBlocks()) + len(s.catalogueBlocks()))
+	return int64(s.nesting*len(s.spelling()[divOpen]) + len(s.internationalBlocks()) + len(s.catalogueBlocks()))
 }
 
 // blocks is the body builder for these settings.
@@ -76,23 +60,28 @@ func (s settings) openingBytes() int64 {
 // nested a thousand deep with not one </div> - the right size, deterministic,
 // and nonsense.
 func (s settings) blocks() blocks {
-	tail := paraClose + strings.Repeat(divClose, s.nesting)
+	m := s.spelling()
+	tail := m[paraClose] + strings.Repeat(m[divClose], s.nesting)
 	if s.shape == structureDocument {
-		tail += bodyClose
+		tail += m[bodyClose]
 	}
-	return blocks{tail: tail}
+	return blocks{tail: tail, m: m}
 }
 
 // tailBytes is the length of what the last record ends with, worked out
 // without building it.
 func (s settings) tailBytes() int64 {
-	n := len(paraClose) + s.nesting*len(divClose)
+	m := s.spelling()
+	n := len(m[paraClose]) + s.nesting*len(m[divClose])
 	if s.shape == structureDocument {
-		n += len(bodyClose)
+		n += len(m[bodyClose])
 	}
 	return int64(n)
 }
 
 // adds says the settings put something into the page beyond the skeleton and
-// the blocks, which is what the refusal of a size too small has to name.
-func (s settings) adds() bool { return s.nesting > 0 || s.international || s.every || s.bom }
+// the blocks, which is what the refusal of a size too small has to name. A page
+// on one line is smaller than the same page on many, so formatting adds nothing.
+func (s settings) adds() bool {
+	return s.nesting > 0 || s.international || s.every || s.bom || s.styleName() != stylesNone
+}

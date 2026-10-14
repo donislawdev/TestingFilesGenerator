@@ -160,7 +160,7 @@ because it turns other people's test suites red.
 - **HTML: pictures inside the page.** `inline`, `inline_format` and
   `inline_size` - the same settings, with the same meaning, as the pictures
   of an `eml` message - write real pictures of any picture format into the
-  page as `data:` URLs, each on a line of its own above the blocks, so
+  page as `data:` URLs, each in a paragraph of its own above the blocks, so
   opening the page fetches nothing. Each picture is the very file its format
   writes on its own. The Nu HTML Checker finds nothing wrong with a page of
   any of the nine formats, Chromium shows every format but `tiff`, and
@@ -168,6 +168,23 @@ because it turns other people's test suites red.
   a picture past about 7.1 MB unless told to read huge trees - on Linux lxml
   took over 20 seconds over such a page, and with a 15 MB picture it lost the
   rest of the page as well. Files made without pictures keep their bytes.
+- **HTML: a page on one line, and styles.** `formatting=minified` puts the
+  whole page on one line with no newline at the end, the way a bundler
+  writes it, and the page shows the same as one written in lines. A program
+  reading line by line gets the whole page as one line - Go's
+  `bufio.Scanner` refuses a line past 64 KB unless given a larger buffer -
+  and text read by joining what the elements hold runs the last word of one
+  block into the first word of the next. The manifest says `line_ending:
+  none` for such a page. `styles=embedded` puts CSS rules in a style element,
+  in the head of a page and at the very start of a fragment, and
+  `styles=inline` puts the same rules in a style attribute on every heading,
+  paragraph, list, table and quote the page is filled with. The Nu HTML
+  Checker finds nothing wrong with either, and Chromium shows both the same.
+  DOMPurify with its defaults drops the style element without listing it as
+  removed and keeps the attributes, and lxml's `text_content` and
+  BeautifulSoup on html5lib count the rules as text of the page. No rule
+  names anything to fetch. Files made with the earlier settings keep their
+  bytes.
 - **A length of time as a setting.** `duration`, `change_interval` and `keyframe_interval` take
   `10s`, `1m30s`, `1h`, `500ms` or `59.9s`, to the millisecond. A bare number
   is refused rather than read as seconds, and so is a length that does not

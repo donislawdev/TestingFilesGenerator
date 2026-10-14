@@ -13,8 +13,9 @@ import (
 )
 
 // Pictures inside the page: real files of a picture format, each in a data:
-// URL (RFC 2397) on a line of its own, the way a page saved as one file
-// carries them. The settings are the ones a mail message has, with the same
+// URL (RFC 2397) in a paragraph of its own - on a line of its own too, unless
+// the whole page is one line - the way a page saved as one file carries them.
+// The settings are the ones a mail message has, with the same
 // names and the same meaning (package picture).
 //
 // Measured on 2026-10-14 on pages from this program (docs/HTML-3-2026-10-14.md
@@ -32,14 +33,11 @@ const picturesGroup = "Pictures in the page"
 // reason.
 const maxPage = int64(1) << 60
 
-// pictureClose ends the line a picture sits on.
-const pictureClose = `"></p>` + "\n"
-
 // pictureProperties are the settings of the pictures the page shows.
 func pictureProperties() []format.Property {
 	return picture.Properties(picturesGroup, picture.Details{
 		Count: "How many pictures the page shows, each one a real file of its format written into the page as a data: URL, so opening the page fetches nothing. " +
-			"They sit above the blocks, one to a line, and each says which it is in its alt text.",
+			"They sit above the blocks, each in a paragraph of its own, and each says which it is in its alt text.",
 		Format: "The format of the pictures. Any format whose files are pictures, such as png, jpg or gif. Chromium shows every one of them but tiff.",
 		Size: "How big each picture is. Inside the page it is base64 on one line, about a third larger. " +
 			"lxml, and BeautifulSoup on top of it, leave out a picture past about 7.1 MB unless told to read huge trees. " +
@@ -48,23 +46,23 @@ func pictureProperties() []format.Property {
 }
 
 // pictureLine is one picture, planned: the file, and the line it sits on up
-// to where the base64 starts.
+// to where the base64 starts and after it ends.
 type pictureLine struct {
-	desc format.Descriptor
-	plan format.Plan
-	open string
+	desc        format.Descriptor
+	plan        format.Plan
+	open, close string
 }
 
 // bytes is what the line takes in the page.
 func (p pictureLine) bytes() int64 {
-	return int64(len(p.open)) + base64Length(p.plan.Bytes) + int64(len(pictureClose))
+	return int64(len(p.open)) + base64Length(p.plan.Bytes) + int64(len(p.close))
 }
 
 // planPictures plans the pictures, each with the seed of its place (RC4), so
 // asking for one more changes none of the others. The format is asked whether
 // it is a picture even when none are asked for: a value the setting cannot
 // take is a mistake either way, and eml refuses it the same way.
-func planPictures(ctx context.Context, r format.Request, s picture.Settings) ([]pictureLine, int64, error) {
+func planPictures(ctx context.Context, r format.Request, s picture.Settings, m *markup) ([]pictureLine, int64, error) {
 	desc, ok, err := picture.Of(s.Format)
 	if err != nil {
 		return nil, 0, err
@@ -87,7 +85,7 @@ func planPictures(ctx context.Context, r format.Request, s picture.Settings) ([]
 		if cp.Bytes > maxPage {
 			return nil, 0, pageTooLarge(cp.Bytes)
 		}
-		line := pictureLine{desc: desc, plan: cp, open: pictureOpen(desc, i+1)}
+		line := pictureLine{desc: desc, plan: cp, open: pictureOpen(m, desc, i+1), close: m[pictureTail]}
 		if sum += line.bytes(); sum > maxPage {
 			return nil, 0, pageTooLarge(sum)
 		}
@@ -99,9 +97,9 @@ func planPictures(ctx context.Context, r format.Request, s picture.Settings) ([]
 // pictureOpen is a picture's line up to its base64. The alt text is the name
 // the picture has in a mail message, inline_0001.png, so a tester reading
 // either finds the same picture by the same name.
-func pictureOpen(desc format.Descriptor, n int) string {
+func pictureOpen(m *markup, desc format.Descriptor, n int) string {
 	name := fmt.Sprintf("inline_%04d%s", n, desc.Extension)
-	return `<p><img alt="` + name + `" src="data:` + desc.MediaType + `;base64,`
+	return m[pictureLead] + name + `" src="data:` + desc.MediaType + `;base64,`
 }
 
 // pageTooLarge refuses pictures that add up past maxPage.
@@ -152,7 +150,7 @@ func writePictures(ctx context.Context, w io.Writer, lines []pictureLine) error 
 			return core.Defect(fmt.Errorf("html: the %s picture came out as %d B of base64 where its plan gives %d B",
 				p.desc.ID, c.n, want))
 		}
-		if err := core.WriteAll(w, []byte(pictureClose)); err != nil {
+		if err := core.WriteAll(w, []byte(p.close)); err != nil {
 			return err
 		}
 	}

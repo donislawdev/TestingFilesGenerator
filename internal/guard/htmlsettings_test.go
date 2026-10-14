@@ -37,18 +37,46 @@ var htmlCombos = []map[string]string{
 	{"nesting": "600", "characters": "international", "elements": "every", "bom": "true"},
 	{"inline": "2", "inline_size": "1kb"},
 	{"inline": "1", "inline_format": "svg", "inline_size": "1kb", "structure": "fragment", "nesting": "2"},
+	{"formatting": "minified"},
+	{"formatting": "minified", "structure": "fragment", "nesting": "3"},
+	{"styles": "embedded"},
+	{"styles": "embedded", "structure": "fragment", "bom": "true"},
+	{"styles": "inline", "characters": "international"},
+	{"formatting": "minified", "styles": "inline", "elements": "every", "inline": "1", "inline_size": "1kb", "nesting": "2"},
+	{"formatting": "minified", "styles": "embedded", "elements": "every", "structure": "fragment"},
+}
+
+// htmlLineEnd is what ends a line of a page of these settings - nothing, when
+// the whole page is one line.
+func htmlLineEnd(props map[string]string) string {
+	if props["formatting"] == "minified" {
+		return ""
+	}
+	return "\n"
 }
 
 // htmlClosing is what a file of these settings ends with after its closing
 // paragraph, written here from the shape of HTML rather than taken from the
 // generator.
 func htmlClosing(props map[string]string) string {
+	nl := htmlLineEnd(props)
 	n, _ := strconv.Atoi(props["nesting"])
-	end := strings.Repeat("</div>\n", n)
+	end := strings.Repeat("</div>"+nl, n)
 	if props["structure"] != "fragment" {
-		end += "</body>\n</html>\n"
+		end += "</body>" + nl + "</html>" + nl
 	}
 	return end
+}
+
+// htmlEmptyEnd matches the end of the smallest file of these settings: an
+// empty closing paragraph, with the style it carries when styles are inline,
+// and what closes after it.
+func htmlEmptyEnd(props map[string]string) *regexp.Regexp {
+	open := `<p>`
+	if props["styles"] == "inline" {
+		open = `<p style="[^"]+">`
+	}
+	return regexp.MustCompile(open + `</p>` + regexp.QuoteMeta(htmlLineEnd(props)+htmlClosing(props)) + `\z`)
 }
 
 // TestEveryHTMLSettingAnswersForItsOwnMinimum holds the arithmetic of every
@@ -67,8 +95,8 @@ func TestEveryHTMLSettingAnswersForItsOwnMinimum(t *testing.T) {
 	for _, props := range htmlCombos {
 		floor := d.SmallestAccepted(format.Request{Seed: 7741, Label: true, Properties: props})
 		body := writeEncoded(t, "html", floor, props)
-		if want := "<p></p>\n" + htmlClosing(props); !bytes.HasSuffix(body, []byte(want)) {
-			t.Errorf("%v: the smallest file, %d B, does not end in an empty closing paragraph and %q, so its floor is not its own",
+		if want := htmlEmptyEnd(props); !want.Match(body) {
+			t.Errorf("%v: the smallest file, %d B, does not end in an empty closing paragraph and what closes after it (%s), so its floor is not its own",
 				props, floor, want)
 		}
 		_, err := d.Generator.Plan(format.Request{Bytes: floor - 1, Seed: 7741, Label: true, Properties: props})
@@ -141,11 +169,14 @@ func TestEveryHTMLSettingIsRecordedInTheManifest(t *testing.T) {
 		want  map[string]any
 	}{
 		{nil, map[string]any{"structure": "document", "nesting": 0, "characters": "ascii", "elements": "basic", "bom": false,
+			"formatting": "lines", "styles": "none", "line_ending": "lf",
 			"inline": 0, "inline_format": "png", "inline_size": int64(8192), "inline_bytes": int64(0), "inline_encoded_bytes": int64(0)}},
 		{map[string]string{"structure": "fragment", "nesting": "7", "characters": "international", "elements": "every", "bom": "true",
-			"inline": "2", "inline_format": "gif", "inline_size": "1kb"},
+			"formatting": "minified", "styles": "inline", "inline": "2", "inline_format": "gif", "inline_size": "1kb"},
 			map[string]any{"structure": "fragment", "nesting": 7, "characters": "international", "elements": "every", "bom": true,
+				"formatting": "minified", "styles": "inline", "line_ending": "none",
 				"inline": 2, "inline_format": "gif", "inline_size": int64(1024), "inline_bytes": int64(2048), "inline_encoded_bytes": int64(2736)}},
+		{map[string]string{"styles": "embedded"}, map[string]any{"formatting": "lines", "styles": "embedded", "line_ending": "lf"}},
 	} {
 		p, err := d.Generator.Plan(format.Request{Bytes: 65536, Seed: 7741, Label: true, Properties: c.props})
 		if err != nil {
@@ -164,7 +195,7 @@ func TestEveryHTMLSettingIsRecordedInTheManifest(t *testing.T) {
 // routes through the parser and have to meet.
 func TestTheDefaultHTMLSettingsAreTheBytesItAlwaysWrote(t *testing.T) {
 	spoken := map[string]string{"nesting": "0", "characters": "ascii", "elements": "basic", "bom": "false",
-		"inline": "0", "inline_format": "png", "inline_size": "8kb"}
+		"formatting": "lines", "styles": "none", "inline": "0", "inline_format": "png", "inline_size": "8kb"}
 	for _, size := range []int64{118, 119, 4096} {
 		if !bytes.Equal(writeEncoded(t, "html", size, nil), writeEncoded(t, "html", size, spoken)) {
 			t.Errorf("at %d B: saying nothing and saying every default produce different bytes", size)
@@ -192,6 +223,12 @@ func TestTheStructuralCheckIsToldEveryHTMLSetting(t *testing.T) {
 		{map[string]string{}, map[string]string{"inline": "1"}},
 		{map[string]string{"inline": "1", "inline_format": "gif", "inline_size": "1kb"}, map[string]string{"inline": "1", "inline_size": "1kb"}},
 		{map[string]string{"inline": "1", "inline_size": "1kb"}, map[string]string{"inline": "1", "inline_size": "2kb"}},
+		{map[string]string{"formatting": "minified"}, map[string]string{}},
+		{map[string]string{}, map[string]string{"formatting": "minified"}},
+		{map[string]string{"styles": "embedded"}, map[string]string{}},
+		{map[string]string{"styles": "inline"}, map[string]string{"styles": "embedded"}},
+		{map[string]string{}, map[string]string{"styles": "inline"}},
+		{map[string]string{"styles": "embedded", "structure": "fragment"}, map[string]string{"styles": "inline", "structure": "fragment"}},
 	} {
 		path := filepath.Join(dir, strconv.Itoa(i)+".html")
 		if err := os.WriteFile(path, writeEncoded(t, "html", 32768, c.made), 0o600); err != nil {
