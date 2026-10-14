@@ -994,7 +994,7 @@ jobs:
         # Pinned by commit like every other action here. The scan is evidence,
         # not the document: its job is to ask whether the built binaries contain
         # something the registry does not know about.
-        uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26  # v0.24.0
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c  # v0.24.0
         with:
           path: dist
           format: syft-json
@@ -1460,7 +1460,7 @@ jobs:
         # The corpus a failing run leaves behind is the whole value of the run,
         # and it lives in the runner's cache directory rather than the tree.
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: fuzz-findings
           path: |
