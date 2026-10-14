@@ -229,6 +229,10 @@ func TestTheStructuralCheckIsToldEveryHTMLSetting(t *testing.T) {
 		{map[string]string{"styles": "inline"}, map[string]string{"styles": "embedded"}},
 		{map[string]string{}, map[string]string{"styles": "inline"}},
 		{map[string]string{"styles": "embedded", "structure": "fragment"}, map[string]string{"styles": "inline", "structure": "fragment"}},
+		// On one line a rule follows the brace of the last one with nothing
+		// between them - the honest half of this row is what keeps the checker
+		// reading every rule there (review of #179).
+		{map[string]string{"styles": "embedded", "formatting": "minified"}, map[string]string{"styles": "inline", "formatting": "minified"}},
 	} {
 		path := filepath.Join(dir, strconv.Itoa(i)+".html")
 		if err := os.WriteFile(path, writeEncoded(t, "html", 32768, c.made), 0o600); err != nil {

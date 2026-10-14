@@ -3,10 +3,15 @@ package guard
 import (
 	"bytes"
 	"maps"
+	"os"
+	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/oracle"
 )
 
 // A page on one line and a page with styles, both 2026-10-14
@@ -28,6 +33,9 @@ var (
 	// attributes optional so a bare one is found as bare.
 	htmlSheetRule   = regexp.MustCompile(`([a-z0-9]+) ?\{ ?([^}]*?) ?\}`)
 	htmlStyledStart = regexp.MustCompile(`<(` + strings.Join(htmlStyledElements, "|") + `)(\s[^>]*)?>`)
+	// htmlDeclares is one declaration, a property and a value - what a rule
+	// has to hold to style anything at all.
+	htmlDeclares = regexp.MustCompile(`[a-z-]+\s*:\s*[^;\s]`)
 )
 
 // htmlTagNames is the tags of a page in order, a closing one with its slash,
@@ -171,6 +179,14 @@ func TestInlineStylesAreTheRulesOfTheSheet(t *testing.T) {
 		if len(sheet) != len(htmlStyledElements) {
 			t.Fatalf("%s: the sheet holds %d rules, and there are %d elements they are for", layout, len(sheet), len(htmlStyledElements))
 		}
+		// An empty rule matches an empty attribute, so without this a sheet and
+		// attributes that both say nothing would pass as one look (review of
+		// #179).
+		for name, css := range sheet {
+			if !htmlDeclares.MatchString(css) {
+				t.Errorf("%s: the rule for %s declares nothing: %q", layout, name, css)
+			}
+		}
 
 		props["styles"] = "inline"
 		page := writeEncoded(t, "html", 65536, props)
@@ -219,6 +235,60 @@ func TestAStyleSheetSitsWhereAParserPutsItInTheHead(t *testing.T) {
 			if bytes.Contains(styled, []byte(fetch)) {
 				t.Errorf("styles=%s: the page's styles carry %s, which a browser fetches when the page is opened", styles, fetch)
 			}
+		}
+	}
+}
+
+// TestTheStructuralCheckRefusesStylesThatSayNothingAndStrayCarriageReturns
+// holds the two holes the review of #179 found in the checker, each with a
+// verdict and not a traceback.
+//
+// A carriage return was refused only on a page of ASCII, so one in a page of
+// other scripts went through, and a fragment of CRLF lines ended in a
+// traceback. A sheet was asked for the names of its rules and an element for
+// the start of its attribute, so "p {}" and style="" passed - in both layouts.
+// Every page here is one the program wrote, broken one way.
+func TestTheStructuralCheckRefusesStylesThatSayNothingAndStrayCarriageReturns(t *testing.T) {
+	type broken struct {
+		props   map[string]string
+		spoil   func([]byte) []byte
+		verdict string
+	}
+	emptyRules := regexp.MustCompile(`\{[^}]*\}`)
+	emptyAttrs := regexp.MustCompile(` style="[^"]*"`)
+	oneCR := func(b []byte) []byte {
+		at := bytes.Index(b, []byte("</p>"))
+		return append(append(append([]byte{}, b[:at]...), '\r'), b[at:]...)
+	}
+	cases := []broken{
+		{map[string]string{"characters": "international"}, oneCR, "formatting=lines was ordered and the page has 1 carriage returns"},
+		{map[string]string{"characters": "international", "structure": "fragment"},
+			func(b []byte) []byte { return bytes.ReplaceAll(b, []byte("\n"), []byte("\r\n")) }, "formatting=lines was ordered and the page has"},
+	}
+	for _, layout := range []string{"lines", "minified"} {
+		cases = append(cases,
+			broken{map[string]string{"formatting": layout, "styles": "embedded"},
+				func(b []byte) []byte { return emptyRules.ReplaceAll(b, []byte("{}")) }, "styles=embedded was ordered and the sheet has no rule that declares anything"},
+			broken{map[string]string{"formatting": layout, "styles": "inline"},
+				func(b []byte) []byte { return emptyAttrs.ReplaceAll(b, []byte(` style=""`)) }, "styles=inline was ordered and"})
+	}
+	dir := t.TempDir()
+	for i, c := range cases {
+		page := writeEncoded(t, "html", 16384, c.props)
+		bad := c.spoil(page)
+		if bytes.Equal(bad, page) {
+			t.Fatalf("%v: breaking the page changed nothing, so there is nothing to refuse", c.props)
+		}
+		path := filepath.Join(dir, strconv.Itoa(i)+".html")
+		if err := os.WriteFile(path, bad, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		res := oracle.Strict("html", path, htmlSettingWords(c.props)...)
+		if !res.Available {
+			t.Skip("the structural check needs python")
+		}
+		if res.Err == nil || !strings.HasPrefix(res.Err.Error(), c.verdict) {
+			t.Errorf("%v: a page broken on purpose was answered with %v, and %q was the verdict owed", c.props, res.Err, c.verdict)
 		}
 	}
 }

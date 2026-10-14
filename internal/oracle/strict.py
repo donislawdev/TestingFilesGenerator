@@ -866,6 +866,11 @@ def html_layout(text, settings):
         return ""
     if layout != "lines":
         fail(f"the html check was told formatting={layout!r}, which is not one this tool writes")
+    # Asked here and not left to the ASCII check, which sees a carriage return
+    # only on a page of ASCII - one in a page of other scripts went through, and
+    # a fragment of CRLF lines ended in a traceback further down (review of #179).
+    if "\r" in text:
+        fail(f"formatting=lines was ordered and the page has {text.count(chr(13))} carriage returns, where its lines end in LF")
     if not text.endswith("\n") or text.count("\n") < 2:
         fail("formatting=lines was ordered and the page is not lines ending in a line break")
     return "\n"
@@ -877,6 +882,10 @@ def html_layout(text, settings):
 # when it is opened (decision D16).
 HTML_STYLED = ["h1", "h2", "p", "ul", "li", "table", "th", "td", "blockquote"]
 HTML_FETCHING_CSS = re.compile(r"url\(|@import|@font-face", re.IGNORECASE)
+# One declaration, a property and a value. A rule or an attribute without one
+# styles nothing - "p {}", style="" and style=";;" all name an element and say
+# nothing about it (review of #179).
+HTML_DECLARATION = re.compile(r"[a-z-]+\s*:\s*[^;\s]")
 
 
 def html_styles(text, shape, settings):
@@ -904,9 +913,15 @@ def html_styles(text, shape, settings):
             fail(f"styles=embedded was ordered and the page carries {own_sheets} style sheets of its own and {attributes} style attributes")
         at = text.rfind("<style>") if shape == "document" else text.find("<style>")
         sheet = text[at:text.find("</style>", at)]
-        missing = [e for e in HTML_STYLED if not re.search(r"(^|[}\s>])" + e + r"\s*\{", sheet)]
+        declared = {}
+        # A lookbehind and not a group: on one line the brace that ends a rule
+        # is all that stands before the next, and a group would eat it and
+        # skip every other rule.
+        for name, body in re.findall(r"(?<![a-z0-9-])([a-z0-9]+)\s*\{([^}]*)\}", sheet):
+            declared[name] = declared.get(name, False) or bool(HTML_DECLARATION.search(body))
+        missing = [e for e in HTML_STYLED if not declared.get(e)]
         if missing:
-            fail(f"styles=embedded was ordered and the sheet has no rule for {missing}")
+            fail(f"styles=embedded was ordered and the sheet has no rule that declares anything for {missing}")
         if shape == "fragment" and at != 0:
             fail("styles=embedded was ordered and the sheet is not where a fragment opens")
         if shape == "document" and not at < text.find("</head>"):
@@ -921,9 +936,10 @@ def html_styles(text, shape, settings):
     # counted as bare - and the name has to end where they start, so p does
     # not find pre nor th find thead.
     tags = re.findall(r"<(" + "|".join(HTML_STYLED) + r")(\s[^>]*)?>", outside)
-    bare = [name for name, rest in tags if not rest.startswith(' style="')]
+    bare = [name for name, rest in tags
+            if not (rest.startswith(' style="') and HTML_DECLARATION.search(rest[len(' style="'):rest.find('"', 8)]))]
     if not tags or bare:
-        fail(f"styles=inline was ordered and {len(bare)} of {len(tags)} elements it is for carry no style attribute: {bare[:6]}")
+        fail(f"styles=inline was ordered and {len(bare)} of {len(tags)} elements it is for carry no style that declares anything: {bare[:6]}")
 
 
 def check_html(data, settings):
