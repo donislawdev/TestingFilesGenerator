@@ -33,6 +33,9 @@ permissions:
 jobs:
   scan:
     name: vulnerabilities in main (OSV)
+    # By hand from another branch it would scan and upload that branch, and
+    # this workflow is about main. From the review of #181.
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -60,11 +63,13 @@ jobs:
             --recursive
             ./
 
-      - name: the scan completed
-        if: steps.scan.outcome == 'failure'
+      # Whatever the scan step returned. The reporter reads a file it cannot
+      # parse as one with no findings and writes a clean SARIF from it -
+      # measured 2026-10-14 on v2.6.0 - and a clean upload closes every alert.
+      - name: the scan wrote a whole result
         run: |
-          if [ ! -s osv-results.json ]; then
-            echo "::error::The scanner wrote no osv-results.json, so the scan did not complete and there is nothing to upload. Read the scan step above for the cause."
+          if ! jq -e '.results | type == "array"' osv-results.json > /dev/null 2>&1; then
+            echo "::error::osv-results.json is missing or is not a whole scan result, so the scan did not complete and nothing is uploaded. Read the scan step above for the cause."
             exit 1
           fi
 

@@ -28,6 +28,12 @@ on:
 permissions:
   contents: read
 
+# A push to the pull request makes the run before it pointless, and each run
+# scans the tree twice. The same grouping as dev-build.yml.
+concurrency:
+  group: osv-pull-request-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   scan:
     name: new vulnerabilities (OSV)
@@ -41,14 +47,21 @@ jobs:
           fetch-depth: 2
           persist-credentials: false
 
+      # Asserted rather than assumed, from the review of #181: with a commit
+      # of one parent here, HEAD^1 would be the pull request's own previous
+      # commit, and the comparison would find nothing new for the wrong reason.
       - name: the branch this merges into
-        run: git checkout --quiet --detach HEAD^1
+        run: |
+          parents=$(git rev-list --parents -n 1 HEAD | wc -w)
+          if [ "$parents" -ne 3 ]; then
+            echo "::error::The checkout is not the merge commit of this pull request ($((parents - 1)) parent(s)), so there is no base to compare against."
+            exit 1
+          fi
+          git checkout --quiet --detach HEAD^1
 
       # The scanner exits 1 when it finds something and with another code when
       # it cannot scan at all, and the step cannot tell the two apart. The
-      # results file can: a scan that did not complete writes none, and the
-      # check further down turns that into a failure rather than letting the
-      # reporter read a missing file as "nothing new".
+      # results file can, and the check further down reads it.
       #
       # --no-call-analysis=go because it cannot work here and fails loudly
       # when tried. It compiles the tree, and this tree refuses to compile
@@ -86,13 +99,17 @@ jobs:
             --recursive
             ./
 
-      - name: both scans completed
-        if: steps.old.outcome == 'failure' || steps.new.outcome == 'failure'
+      # Both files, whatever the scan steps returned. The reporter reads a file
+      # it cannot parse as one with no findings - measured 2026-10-14 on
+      # v2.6.0, from the review of #181: thirty findings cut short came out
+      # "No issues found", exit 0, and so did a missing file. Only a whole
+      # result goes on to be compared.
+      - name: both scans wrote a whole result
         run: |
           status=0
           for f in osv-old.json osv-new.json; do
-            if [ ! -s "$f" ]; then
-              echo "::error::The scanner wrote no $f, so the scan did not complete. Read the scan step above for the cause."
+            if ! jq -e '.results | type == "array"' "$f" > /dev/null 2>&1; then
+              echo "::error::$f is missing or is not a whole scan result, so the scan did not complete. Read the scan steps above for the cause."
               status=1
             fi
           done
