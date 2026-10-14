@@ -709,6 +709,11 @@
     "hash": "sha256-a258f543b0a6",
     "other": "indented"
   },
+  "Choice.formatting.lines": {
+    "description": "One entry of the formatting list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-5ea44c3961f1",
+    "other": "lines"
+  },
   "Choice.formatting.minified": {
     "description": "One entry of the formatting list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-1ddd424e287f",
@@ -1039,6 +1044,21 @@
     "hash": "sha256-7587669ca42e",
     "other": "fragment"
   },
+  "Choice.styles.embedded": {
+    "description": "One entry of the styles list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-9289140b1ac2",
+    "other": "embedded"
+  },
+  "Choice.styles.inline": {
+    "description": "One entry of the styles list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-995cf20a9c45",
+    "other": "inline"
+  },
+  "Choice.styles.none": {
+    "description": "One entry of the styles list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-140bedbf9c3f",
+    "other": "none"
+  },
   "Choice.text_encoding.7bit": {
     "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-af6ec1d82852",
@@ -1309,10 +1329,15 @@
     "hash": "sha256-ad89039f3061",
     "other": "Which elements the page uses. basic is headings, paragraphs, lists, tables and quotes. every adds a block that uses every element of the HTML standard at least once, all 22 kinds of input and small pictures and a sound inside the page, with no script and nothing fetched from a network. A fragment has no head, so it leaves out the eight elements that only a whole page holds."
   },
+  "Detail.format/html.formatting": {
+    "description": "The sentence under the formatting setting of the html format, after what it takes.",
+    "hash": "sha256-4aa9c84f745f",
+    "other": "How the page is laid out. minified puts the whole file on one line and ends without a newline, and it shows the same as lines. A program reading line by line gets the whole page as one line - Go's bufio.Scanner refuses a line past 64 KB unless given a larger buffer - and text read by joining what the elements hold runs the last word of one block into the first word of the next."
+  },
   "Detail.format/html.inline": {
     "description": "The sentence under the inline setting of the html format, after what it takes.",
-    "hash": "sha256-3815222270e4",
-    "other": "How many pictures the page shows, each one a real file of its format written into the page as a data: URL, so opening the page fetches nothing. They sit above the blocks, one to a line, and each says which it is in its alt text."
+    "hash": "sha256-83c55b41b56a",
+    "other": "How many pictures the page shows, each one a real file of its format written into the page as a data: URL, so opening the page fetches nothing. They sit above the blocks, each in a paragraph of its own, and each says which it is in its alt text."
   },
   "Detail.format/html.inline_format": {
     "description": "The sentence under the inline_format setting of the html format, after what it takes.",
@@ -1333,6 +1358,11 @@
     "description": "The sentence under the structure setting of the html format, after what it takes.",
     "hash": "sha256-40b00d44ba38",
     "other": "Whether the file is a whole page or only the blocks that would sit inside one. A fragment has no doctype, no html element and no body, which is what a content field or the body of an email really holds. It is far smaller, so the smallest fragment sits well below the smallest page."
+  },
+  "Detail.format/html.styles": {
+    "description": "The sentence under the styles setting of the html format, after what it takes.",
+    "hash": "sha256-072a4d7b066a",
+    "other": "Whether the page carries CSS, and where. embedded puts the rules in a style element, in the head of a page and at the very start of a fragment. inline puts the same rules in a style attribute on every heading, paragraph, list, table and quote the page is filled with, and the page looks the same. DOMPurify with its defaults drops the style element without listing it as removed and keeps the attributes. lxml's text_content and BeautifulSoup on html5lib count the rules as text of the page. The catalogue of every element takes the embedded rules and no attributes."
   },
   "Detail.format/ico.embed": {
     "description": "The sentence under the embed setting of the ico format, after what it takes.",
@@ -2498,6 +2528,11 @@
     "description": "The name beside the box of a setting a recipe writes as structure.",
     "hash": "sha256-7203c2b3dad3",
     "other": "Structure"
+  },
+  "Label.styles": {
+    "description": "The name beside the box of a setting a recipe writes as styles.",
+    "hash": "sha256-3626e7fdea1c",
+    "other": "Styles"
   },
   "Label.subject": {
     "description": "The name beside the box of a setting a recipe writes as subject.",

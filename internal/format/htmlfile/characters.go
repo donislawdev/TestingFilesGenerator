@@ -29,10 +29,11 @@ const (
 		`and entities &amp; &lt; &gt; &quot; &nbsp; &copy; &euro; &#8364; &#x1F600;.</p>` + "\n"
 )
 
-// internationalBlocks is what the setting adds, nothing for ascii.
+// internationalBlocks is what the setting adds, nothing for ascii, in the
+// spelling of the page.
 func (s settings) internationalBlocks() string {
 	if !s.international {
 		return ""
 	}
-	return international
+	return s.spelling()[scripts]
 }

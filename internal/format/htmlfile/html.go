@@ -56,10 +56,9 @@ func init() {
 		// than a comment.
 		Label:  format.LabelVisible,
 		Oracle: "python-html",
-		// Style sheets and a page on one line come later
-		// (docs/HTML-2-2026-10-14.md section 8). Declaring only what is here
-		// is what makes a recipe asking for them fail loudly instead of
-		// quietly producing something else.
+		// Links come later, if at all (docs/HTML-2-2026-10-14.md section 3,
+		// B4). Declaring only what is here is what makes a recipe asking for
+		// them fail loudly instead of quietly producing something else.
 		Properties:       properties(),
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
@@ -89,7 +88,7 @@ func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan
 		return format.Plan{}, err
 	}
 
-	pictures, pictureBytes, err := planPictures(ctx, r, s.pictures)
+	pictures, pictureBytes, err := planPictures(ctx, r, s.pictures, s.spelling())
 	if err != nil {
 		return format.Plan{}, err
 	}
@@ -110,8 +109,10 @@ func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan
 		Exact:       true,
 		Determinism: format.DeterminismByte,
 		Properties: map[string]any{
-			"encoding":    "utf-8",
-			"line_ending": "lf",
+			"encoding": "utf-8",
+			// none for a page on one line: it has no line to end, and lf
+			// would describe a file that is not there.
+			"line_ending": s.lineEnding(),
 			"doctype":     doctype,
 			"language":    "en",
 		},
@@ -154,9 +155,10 @@ func belowMinimum(s settings, requested, min int64) error {
 		// the reason names, whatever else was asked.
 		reason = core.Says("html.MinimumWithPictures", "the file holds whole blocks and every picture in base64, which is about a third larger than the picture itself, and together they need that much")
 	case s.adds():
-		reason = core.Says("html.MinimumWithSettings", "the file holds whole blocks and what %s, %s, %s and %s add to them, and together they need that much",
+		reason = core.Says("html.MinimumWithSettings", "the file holds whole blocks and what %s, %s, %s, %s and %s add to them, and together they need that much",
 			core.A("Nesting", core.LabelTerm(settingNesting)), core.A("Characters", core.LabelTerm(settingCharacters)),
-			core.A("Elements", core.LabelTerm(settingElements)), core.A("BOM", core.LabelTerm(textenc.SettingBOM)))
+			core.A("Elements", core.LabelTerm(settingElements)), core.A("BOM", core.LabelTerm(textenc.SettingBOM)),
+			core.A("Styles", core.LabelTerm(settingStyles)))
 	case s.shape == structureFragment:
 		reason = core.Says("html.MinimumFragment", "a fragment holds whole blocks, and one of them needs that much")
 	}
@@ -178,7 +180,8 @@ func belowMinimum(s settings, requested, min int64) error {
 // fit and what does it cost", and Plan answers "is this request askable at all".
 func labelledHead(s settings, r format.Request, min int64) (head, heading string, note *format.Note) {
 	label := core.Label("html", r.Bytes, r.Seed)
-	heading = "<h1>" + label + "</h1>\n"
+	m := s.spelling()
+	heading = m[labelOpen] + label + m[labelClose]
 
 	plain := s.prologue()
 	head, extra := plain, int64(0)
@@ -229,5 +232,5 @@ func minimumBytes() int64 { return minimumFor(settings{shape: structureDocument}
 // whole block, computed from the pieces Write uses rather than written down so
 // it cannot drift away from the template.
 func minimumFor(s settings) int64 {
-	return int64(len(s.prologue())) + s.openingBytes() + int64(len(paraOpen)) + s.tailBytes()
+	return int64(len(s.prologue())) + s.openingBytes() + int64(len(s.spelling()[paraOpen])) + s.tailBytes()
 }

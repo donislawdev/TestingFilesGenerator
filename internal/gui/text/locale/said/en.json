@@ -1785,6 +1785,11 @@
     "hash": "sha256-d471c09eb934",
     "other": "it has to be {{.Basic}} or {{.Every}}"
   },
+  "html.HasToBeFormatting": {
+    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Lines}}, {{.Minified}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-932932bf4b96",
+    "other": "it has to be {{.Lines}} or {{.Minified}}"
+  },
   "html.HasToBeNesting": {
     "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Max}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-ed9c43e64c22",
@@ -1794,6 +1799,11 @@
     "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Document}}, {{.Fragment}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-1a83745fa4b2",
     "other": "it has to be {{.Document}} or {{.Fragment}}"
+  },
+  "html.HasToBeStyles": {
+    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.None}}, {{.Embedded}}, {{.Inline}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-41656b094378",
+    "other": "it has to be {{.None}}, {{.Embedded}} or {{.Inline}}"
   },
   "html.MinimumFragment": {
     "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run.",
@@ -1811,9 +1821,9 @@
     "other": "the file holds whole blocks and every picture in base64, which is about a third larger than the picture itself, and together they need that much"
   },
   "html.MinimumWithSettings": {
-    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Nesting}}, {{.Characters}}, {{.Elements}}, {{.BOM}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-e1528b4b779d",
-    "other": "the file holds whole blocks and what {{.Nesting}}, {{.Characters}}, {{.Elements}} and {{.BOM}} add to them, and together they need that much"
+    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Nesting}}, {{.Characters}}, {{.Elements}}, {{.BOM}}, {{.Styles}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-fe52ba18f1bf",
+    "other": "the file holds whole blocks and what {{.Nesting}}, {{.Characters}}, {{.Elements}}, {{.BOM}} and {{.Styles}} add to them, and together they need that much"
   },
   "html.ThePictureCannotBe": {
     "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Err}}, written the way the program writes them - keep each spelled exactly that way.",

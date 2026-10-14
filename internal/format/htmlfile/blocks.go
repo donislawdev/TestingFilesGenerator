@@ -25,51 +25,56 @@ type blocks struct {
 	// tail is what the closing record ends with, which is the only thing the
 	// shape of the file changes down here.
 	tail string
+	// m is how the blocks are spelled. The words drawn are the same in every
+	// spelling, so one seed fills a page of one line and a page of many with
+	// the same blocks.
+	m *markup
 }
 
 // Shortest is the smallest closing record: an empty paragraph plus whatever
 // this shape closes after it.
-func (b blocks) Shortest() int64 { return int64(len(paraOpen) + len(b.tail)) }
+func (b blocks) Shortest() int64 { return int64(len(b.m[paraOpen]) + len(b.tail)) }
 
-func (blocks) Append(dst []byte, rng *rand.Rand) []byte {
+func (b blocks) Append(dst []byte, rng *rand.Rand) []byte {
+	m := b.m
 	switch rng.IntN(5) {
 	case 0:
-		dst = append(dst, "<h2>"...)
+		dst = append(dst, m[h2Open]...)
 		dst = appendPhrase(dst, rng, 2+rng.IntN(3))
-		return append(dst, "</h2>\n"...)
+		return append(dst, m[h2Close]...)
 	case 1:
-		dst = append(dst, "<ul>\n"...)
+		dst = append(dst, m[ulOpen]...)
 		for i, n := 0, 2+rng.IntN(3); i < n; i++ {
-			dst = append(dst, "<li>"...)
+			dst = append(dst, m[liOpen]...)
 			dst = appendPhrase(dst, rng, 3+rng.IntN(4))
-			dst = append(dst, "</li>\n"...)
+			dst = append(dst, m[liClose]...)
 		}
-		return append(dst, "</ul>\n"...)
+		return append(dst, m[ulClose]...)
 	case 2:
-		dst = append(dst, "<table>\n<tr><th>id</th><th>field</th><th>value</th></tr>\n"...)
+		dst = append(dst, m[tableOpen]...)
 		for i, n := 0, 2+rng.IntN(3); i < n; i++ {
-			dst = append(dst, "<tr><td>"...)
+			dst = append(dst, m[rowOpen]...)
 			dst = strconv.AppendInt(dst, int64(i+1), 10)
-			dst = append(dst, "</td><td>"...)
+			dst = append(dst, m[cellSep]...)
 			dst = append(dst, words[rng.IntN(len(words))]...)
-			dst = append(dst, "</td><td>"...)
+			dst = append(dst, m[cellSep]...)
 			dst = append(dst, words[rng.IntN(len(words))]...)
-			dst = append(dst, "</td></tr>\n"...)
+			dst = append(dst, m[rowClose]...)
 		}
-		return append(dst, "</table>\n"...)
+		return append(dst, m[tableClose]...)
 	case 3:
 		// A real page carries entities, and an ampersand left raw is the
 		// classic way a document stops being well formed. The fixture carries
 		// one on purpose.
-		dst = append(dst, "<blockquote><p>"...)
+		dst = append(dst, m[quoteOpen]...)
 		dst = appendPhrase(dst, rng, 4+rng.IntN(4))
 		dst = append(dst, " &amp; "...)
 		dst = appendPhrase(dst, rng, 2)
-		return append(dst, "</p></blockquote>\n"...)
+		return append(dst, m[quoteClose]...)
 	default:
-		dst = append(dst, paraOpen...)
+		dst = append(dst, m[paraOpen]...)
 		dst = appendPhrase(dst, rng, 12+rng.IntN(12))
-		return append(dst, paraClose...)
+		return append(dst, m[paraClose]...)
 	}
 }
 
@@ -79,7 +84,7 @@ func (blocks) Discard() {}
 
 func (b blocks) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
 	start := len(dst)
-	dst = append(dst, paraOpen...)
+	dst = append(dst, b.m[paraOpen]...)
 	used := int64(len(dst)-start) + int64(len(b.tail))
 	dst = appendFiller(dst, n-used)
 	return append(dst, b.tail...)

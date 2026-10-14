@@ -1,6 +1,7 @@
 package htmlfile
 
 import (
+	"slices"
 	"strconv"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -34,6 +35,19 @@ const (
 	settingElements = "elements"
 	elementsBasic   = "basic"
 	elementsEvery   = "every"
+
+	// The key JSON and GeoJSON lay their documents out with, and the same
+	// question here. A page has no record per line, so its default is the
+	// lines it has always been written in (docs/HTML-4-2026-10-14.md
+	// section 9).
+	settingFormatting  = "formatting"
+	formattingLines    = "lines"
+	formattingMinified = "minified"
+
+	settingStyles  = "styles"
+	stylesNone     = "none"
+	stylesEmbedded = "embedded"
+	stylesInline   = "inline"
 )
 
 // settings is what one page was asked for.
@@ -46,6 +60,10 @@ type settings struct {
 	international, every bool
 	// bom is a byte order mark in front of everything else.
 	bom bool
+	// minified puts the whole page on one line, and styles says where its
+	// style rules are, if anywhere.
+	minified bool
+	styles   string
 	// pictures are the pictures written into the page.
 	pictures picture.Settings
 }
@@ -78,7 +96,23 @@ func properties() []format.Property {
 		Detail: "Which elements the page uses. basic is headings, paragraphs, lists, tables and quotes. " +
 			"every adds a block that uses every element of the HTML standard at least once, all 22 kinds of input and small pictures and a sound inside the page, with no script and nothing fetched from a network. " +
 			"A fragment has no head, so it leaves out the eight elements that only a whole page holds.",
-	}, textenc.Axes(textenc.SettingBOM)[0]}
+	}, textenc.Axes(textenc.SettingBOM)[0], {
+		Name: settingFormatting, Kind: format.PropertyChoice,
+		Choices: []string{formattingLines, formattingMinified},
+		Default: formattingLines,
+		Detail: "How the page is laid out. minified puts the whole file on one line and ends without a newline, and it shows the same as lines. " +
+			"A program reading line by line gets the whole page as one line - Go's bufio.Scanner refuses a line past 64 KB unless given a larger buffer - " +
+			"and text read by joining what the elements hold runs the last word of one block into the first word of the next.",
+	}, {
+		Name: settingStyles, Kind: format.PropertyChoice,
+		Choices: []string{stylesNone, stylesEmbedded, stylesInline},
+		Default: stylesNone,
+		Detail: "Whether the page carries CSS, and where. embedded puts the rules in a style element, in the head of a page and at the very start of a fragment. " +
+			"inline puts the same rules in a style attribute on every heading, paragraph, list, table and quote the page is filled with, and the page looks the same. " +
+			"DOMPurify with its defaults drops the style element without listing it as removed and keeps the attributes. " +
+			"lxml's text_content and BeautifulSoup on html5lib count the rules as text of the page. " +
+			"The catalogue of every element takes the embedded rules and no attributes.",
+	}}
 	return append(own, pictureProperties()...)
 }
 
@@ -113,6 +147,21 @@ func settingsOf(props map[string]string) (settings, error) {
 			core.A("Basic", core.Choice{Of: settingElements, Value: elementsBasic}),
 			core.A("Every", core.Choice{Of: settingElements, Value: elementsEvery})))
 	}
+	if v, ok := choice(props, settingFormatting, formattingLines, formattingMinified); ok {
+		s.minified = v == formattingMinified
+	} else {
+		return settings{}, refused(props, settingFormatting, core.Says("html.HasToBeFormatting", "it has to be %s or %s",
+			core.A("Lines", core.Choice{Of: settingFormatting, Value: formattingLines}),
+			core.A("Minified", core.Choice{Of: settingFormatting, Value: formattingMinified})))
+	}
+	if v, ok := choice(props, settingStyles, stylesNone, stylesEmbedded, stylesInline); ok {
+		s.styles = v
+	} else {
+		return settings{}, refused(props, settingStyles, core.Says("html.HasToBeStyles", "it has to be %s, %s or %s",
+			core.A("None", core.Choice{Of: settingStyles, Value: stylesNone}),
+			core.A("Embedded", core.Choice{Of: settingStyles, Value: stylesEmbedded}),
+			core.A("Inline", core.Choice{Of: settingStyles, Value: stylesInline})))
+	}
 	var err error
 	if s.nesting, err = nestingOf(props); err != nil {
 		return settings{}, err
@@ -126,14 +175,14 @@ func settingsOf(props map[string]string) (settings, error) {
 	return s, err
 }
 
-// choice reads a setting of two values, the first of them the default, and
+// choice reads a setting of a few values, the first of them the default, and
 // says whether the value is one of them.
-func choice(props map[string]string, key, first, second string) (string, bool) {
+func choice(props map[string]string, key string, values ...string) (string, bool) {
 	v, ok := props[key]
 	if !ok || v == "" {
-		return first, true
+		return values[0], true
 	}
-	return v, v == first || v == second
+	return v, slices.Contains(values, v)
 }
 
 // refused is a value outside the two a setting takes. The sentence comes from
@@ -170,11 +219,17 @@ func (s settings) manifest() map[string]any {
 	if s.every {
 		elements = elementsEvery
 	}
+	layout := formattingLines
+	if s.minified {
+		layout = formattingMinified
+	}
 	return map[string]any{
 		settingStructure:   s.shape,
 		settingNesting:     s.nesting,
 		settingCharacters:  chars,
 		settingElements:    elements,
 		textenc.SettingBOM: s.bom,
+		settingFormatting:  layout,
+		settingStyles:      s.styleName(),
 	}
 }
