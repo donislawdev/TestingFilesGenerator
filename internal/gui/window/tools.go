@@ -169,7 +169,7 @@ func NewTools(host Host) *Tools {
 	))
 	t.view.body = t.tips.Over(container.NewBorder(
 		nil,
-		parts.ActionBar(rail(donateButton(host)), t.busy.row, roomToSpeak(bar, t.status, t.fault)),
+		parts.ActionBar(rail(outwardButtons(host)...), t.busy.row, roomToSpeak(bar, t.status, t.fault)),
 		nil, nil,
 		t.view.scroll,
 	))

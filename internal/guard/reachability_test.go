@@ -414,6 +414,56 @@ func TestTheDonateButtonOpensTheSupportPage(t *testing.T) {
 	}
 }
 
+// The GitHub button stands wherever Donate stands, and on every screen it opens
+// the project's page and nothing else.
+//
+// Wherever Donate stands is the owner's decision of 2026-10-14, and it is the
+// half that would go wrong quietly. The four bars are built by four screens,
+// and one built its own way would carry Donate and not GitHub while a guard
+// asking only the first screen stayed green. So every screen is asked, and the
+// two counts have to match - the About card included, which is not a bar.
+//
+// The address is asserted for the reason the Donate guard above gives: a wrong
+// one looks identical from the inside of this program.
+func TestTheGitHubButtonStandsBesideDonateAndOpensTheProjectPage(t *testing.T) {
+	host := newFakeHost(t)
+	window.Open(host)
+
+	pressed := 0
+	for _, name := range allTabs() {
+		screen := tabNamed(t, host.content, name)
+		donates := buttonsNamed(screen, text.ButtonDonate())
+		gitHubs := buttonsNamed(screen, text.ButtonGitHub())
+		if len(gitHubs) != len(donates) {
+			t.Errorf("the %q screen has %d Donate button(s) and %d GitHub button(s), "+
+				"and the two stand together. It carries: %v",
+				name, len(donates), len(gitHubs), buttonNames(screen))
+		}
+		for _, b := range gitHubs {
+			if b.Disabled() {
+				t.Errorf("the GitHub button on the %q screen is disabled", name)
+				continue
+			}
+			before := host.openedCount
+			b.OnTapped()
+			pressed++
+			if host.openedCount != before+1 {
+				t.Errorf("pressing GitHub on the %q screen asked the window to open %d addresses",
+					name, host.openedCount-before)
+			}
+			if host.opened != text.RepositoryURL {
+				t.Errorf("GitHub on the %q screen goes to %q and the project page is %q",
+					name, host.opened, text.RepositoryURL)
+			}
+		}
+	}
+	// Asserted rather than assumed: a lookup that stopped finding buttons would
+	// match zero against zero on every screen and report nothing.
+	if pressed == 0 {
+		t.Fatalf("no GitHub button was found on any of %v, so nothing was checked", allTabs())
+	}
+}
+
 // The address the button carries is the one in the sponsor file GitHub reads.
 //
 // Two places name where the money goes: this program and .github/FUNDING.yml.

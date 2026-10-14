@@ -364,14 +364,14 @@ func FirstScreen(h Host) fyne.CanvasObject {
 	return NewGenerate(h).Object()
 }
 
-// donateButton asks for money towards the work, at the left of the bar a screen
-// keeps its actions in.
+// outwardButtons are Donate, which asks for money towards the work, and
+// GitHub, at the left of the bar a screen keeps its actions in.
 //
 // Moved there from a strip above the tabs on 2026-08-19, on the owner's
 // decision. It is built per screen rather than once for the window, and that is
-// what the move costs: every screen has to place it, including About, which has
-// no run to start and gets a bar holding nothing else. The alternative was a
+// what the move costs: every screen has to place it. The alternative was a
 // second strip under the tabs, which is two bars at the foot of one window.
+// About has no bar since 2026-09-23 and carries both buttons in cards instead.
 //
 // It stays on every screen either way, which is not decoration - a button asking
 // for money that appears on some screens and not others is a button people
@@ -382,9 +382,14 @@ func FirstScreen(h Host) fyne.CanvasObject {
 // It opens the support page in whatever the desktop uses for the web. The
 // program fetches nothing and sends nothing, which is what keeps untouchable
 // rule 8 intact - see the carve out written into it on 2026-08-18.
-func donateButton(h Host) fyne.CanvasObject {
-	// The bar's size, so its words stand level with the buttons beside them.
-	return donate(h, parts.Quiet).InTheBar()
+//
+// GitHub stands beside it since 2026-10-14, on the owner's decision, and for
+// the same reason it is on every screen: it is the other button that leads out
+// of the program rather than into the work. One list for the four screens, so
+// a third button here is one line rather than four (GUI rule 5).
+func outwardButtons(h Host) []fyne.CanvasObject {
+	// The bar's size, so their words stand level with the buttons beside them.
+	return []fyne.CanvasObject{donate(h, parts.Quiet).InTheBar(), gitHub(h, parts.Quiet).InTheBar()}
 }
 
 // donate is the Donate button in the look of the place it stands, with the
@@ -392,6 +397,13 @@ func donateButton(h Host) fyne.CanvasObject {
 // the two cannot come to look like two different buttons (GUI rule 5).
 func donate(h Host, look parts.Look) *parts.Button {
 	return parts.NewButton(look, text.ButtonDonate(), func() { h.OpenLink(text.SupportURL) }).WithHeart()
+}
+
+// gitHub is the button to the project's page, built once for the bar and the
+// About card like donate. No picture in front of its word: the toolkit ships
+// no mark for the site, and GitHub's own is somebody else's trademark.
+func gitHub(h Host, look parts.Look) *parts.Button {
+	return parts.NewButton(look, text.ButtonGitHub(), func() { h.OpenLink(text.RepositoryURL) })
 }
 
 // chooserFor is the output directory box with a way to browse to one.

@@ -2,6 +2,8 @@ package text
 
 import (
 	"strings"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/legal"
 )
 
 // The sentence under each work screen's title, saying what the screen DOES
@@ -115,6 +117,7 @@ func SectionOutput() string        { return say("SectionOutput", "Output") }
 func SectionPreset() string        { return say("SectionPreset", "The question") }
 func SectionSettings() string      { return say("SectionSettings", "Settings") }
 func SectionLicence() string       { return say("SectionLicence", "Licence") }
+func SectionSource() string        { return say("SectionSource", "Source code") }
 func SectionSupport() string       { return say("SectionSupport", "Support") }
 
 // The three headings over what this binary carries that somebody else wrote.
@@ -773,6 +776,27 @@ func DetailDonate() string {
 // everything above it. An address is the same in every language, and a
 // translated one would be a broken one.
 const SupportURL = "https://donislawdev.com/support/"
+
+// ButtonGitHub opens the project's page on GitHub. Beside Donate since
+// 2026-10-14, on the owner's decision, on every screen Donate stands on.
+//
+// The name of the site rather than "Source code" or "Report a problem", because
+// the page is all of those at once - the code, the releases, the issues - and
+// the name is the word a person looking for any of them already has in mind.
+// Translated like every other word, although every language so far keeps it.
+func ButtonGitHub() string { return say("ButtonGitHub", "GitHub") }
+
+// DetailGitHub is what the button leads to, written under the heading of its
+// card on the About screen.
+func DetailGitHub() string {
+	return say("DetailGitHub", "Opens the project page on GitHub in your browser - the source code, the releases and the place to report a problem.")
+}
+
+// RepositoryURL is where the button goes. Not written here but read from the
+// bill of materials, which has named it since before the button existed, so
+// the two cannot come to point at different pages. Not translated, for the
+// reason SupportURL gives.
+const RepositoryURL = legal.Repository
 
 // The Preferences screen: which language the window speaks, and what it keeps
 // between runs. Nothing on it changes the files the window makes - a setting

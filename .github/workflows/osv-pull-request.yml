@@ -1,0 +1,131 @@
+# Blocks a pull request that brings in a vulnerability the main branch does not
+# already have, by any package manifest in the tree - go.mod and the pinned
+# Python packages the semgrep job installs.
+#
+# The owner's decision of 2026-10-14: a pull request is stopped only for what it
+# adds. What main already carries is reported once a week to the Security tab by
+# osv-weekly.yml, and does not hold up a change that did not cause it.
+#
+# How it tells the two apart. The tree is scanned twice, first as the branch it
+# merges into and then as the merge itself, and the reporter compares the two
+# results - the method of the action's own pull request workflow. That workflow
+# is not called as it is, because it keeps the job token in the checkout to
+# switch branches and asks for security-events: write to upload. Neither is
+# needed: the base is the first parent of the merge commit, which a fetch depth
+# of two already holds, and a pull request has nothing to upload.
+#
+# Next to the two gates that already read the same go.mod. "review new
+# dependencies" looks only at what the diff adds and only through GitHub's
+# advisories. "known vulnerabilities" is govulncheck, which counts only what our
+# code can reach. This one reads OSV, which also covers the Python packages, and
+# counts a vulnerable package whether or not anything calls it - see
+# --no-call-analysis below.
+name: OSV pull request
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+# A push to the pull request makes the run before it pointless, and each run
+# scans the tree twice. The same grouping as dev-build.yml.
+concurrency:
+  group: osv-pull-request-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    name: new vulnerabilities (OSV)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          # The merge commit and its two parents, the first of which is the
+          # branch this pull request merges into.
+          fetch-depth: 2
+          persist-credentials: false
+
+      # Asserted rather than assumed, from the review of #181: with a commit
+      # of one parent here, HEAD^1 would be the pull request's own previous
+      # commit, and the comparison would find nothing new for the wrong reason.
+      - name: the branch this merges into
+        run: |
+          parents=$(git rev-list --parents -n 1 HEAD | wc -w)
+          if [ "$parents" -ne 3 ]; then
+            echo "::error::The checkout is not the merge commit of this pull request ($((parents - 1)) parent(s)), so there is no base to compare against."
+            exit 1
+          fi
+          git checkout --quiet --detach HEAD^1
+
+      # The scanner exits 1 when it finds something and with another code when
+      # it cannot scan at all, and the step cannot tell the two apart. The
+      # results file can, and the check further down reads it.
+      #
+      # --no-call-analysis=go because it cannot work here and fails loudly
+      # when tried. It compiles the tree, and this tree refuses to compile
+      # without the tags in .github/build-tags and a C compiler with the
+      # headers of the window's toolkit, neither of which the scanner's image
+      # carries. Measured 2026-10-14: hundreds of compile errors in the log, and
+      # every Go advisory reported as if called anyway. Whether a vulnerable
+      # function is reachable is what the govulncheck job answers.
+      - name: scan the branch this merges into
+        id: old
+        uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc  # v2.6.0
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --format=json
+            --output=osv-old.json
+            --no-call-analysis=go
+            --recursive
+            ./
+
+      - name: the merge of this pull request
+        env:
+          MERGE: ${{ github.sha }}
+        run: git checkout --quiet --force --detach "$MERGE"
+
+      - name: scan the merge of this pull request
+        id: new
+        uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc  # v2.6.0
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --format=json
+            --output=osv-new.json
+            --no-call-analysis=go
+            --recursive
+            ./
+
+      # Both files, whatever the scan steps returned. The reporter reads a file
+      # it cannot parse as one with no findings - measured 2026-10-14 on
+      # v2.6.0, from the review of #181: thirty findings cut short came out
+      # "No issues found", exit 0, and so did a missing file. Only a whole
+      # result goes on to be compared.
+      - name: both scans wrote a whole result
+        run: |
+          status=0
+          for f in osv-old.json osv-new.json; do
+            if ! jq -e '.results | type == "array"' "$f" > /dev/null 2>&1; then
+              echo "::error::$f is missing or is not a whole scan result, so the scan did not complete. Read the scan steps above for the cause."
+              status=1
+            fi
+          done
+          exit "$status"
+
+      # Fails the job on anything in the second scan that is not in the first.
+      # The log of this step is the list: every finding with its package, the
+      # advisory and the version that fixes it. The annotations on the pull
+      # request are not - measured 2026-10-14 with findings in two files, one
+      # annotation came out, for one of them.
+      - name: what this pull request adds
+        uses: google/osv-scanner-action/osv-reporter-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc  # v2.6.0
+        with:
+          scan-args: |-
+            --old=osv-old.json
+            --new=osv-new.json
+            --output=osv-new.sarif
+            --gh-annotations=true
+            --fail-on-vuln=true

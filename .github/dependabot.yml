@@ -84,9 +84,18 @@ updates:
   # against immutable rule 11, which asks for a licence check on every one, and
   # against two gates that pin this graph on purpose. They are watched by a
   # scheduled job instead, which reports rather than proposes. O170.
+  #
+  # Grouped since 2026-10-14, when the file went from semgrep alone to every
+  # package it installs. Those move together - a semgrep release raises the
+  # floor of what it needs - and one pull request per package would leave
+  # each of them red against the others' old pins.
   - package-ecosystem: pip
     directory: "/.github"
     schedule:
       interval: weekly
     cooldown:
       default-days: 7
+    groups:
+      semgrep:
+        patterns:
+          - "*"

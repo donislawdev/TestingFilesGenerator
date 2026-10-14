@@ -29,9 +29,13 @@ import (
 	"strings"
 )
 
-// Where this project lives. Written here because an SBOM without a download
-// location is a document nobody can act on.
-const repository = "https://github.com/donislawdev/TestingFilesGenerator"
+// Repository is where this project lives. Written here because an SBOM without
+// a download location is a document nobody can act on.
+//
+// Exported since 2026-10-14, when the window got a button to the same page. One
+// address in one place: the window reads it from here rather than keeping a
+// copy, because two copies of an address are two places for it to go stale in.
+const Repository = "https://github.com/donislawdev/TestingFilesGenerator"
 
 // ourLicence is what this program is under.
 //
@@ -123,7 +127,7 @@ func namespace(d Document) string {
 		seed = d.Created
 	}
 	sum := sha256.Sum256([]byte(d.Version + "|" + seed))
-	return fmt.Sprintf("%s/spdx/%s-%x", repository, d.Version, sum[:8])
+	return fmt.Sprintf("%s/spdx/%s-%x", Repository, d.Version, sum[:8])
 }
 
 // add puts one binary in the document, with everything it carries beneath it.
@@ -133,7 +137,7 @@ func (doc *spdxDocument) add(binary Binary, version string) {
 		SPDXID:           root,
 		Name:             binary.Name,
 		VersionInfo:      version,
-		DownloadLocation: repository,
+		DownloadLocation: Repository,
 		FilesAnalyzed:    false,
 		LicenseConcluded: ourLicence,
 		LicenseDeclared:  ourLicence,

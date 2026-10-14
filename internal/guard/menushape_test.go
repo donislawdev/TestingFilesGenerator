@@ -216,7 +216,7 @@ func typingBoxesOn(screen fyne.CanvasObject) []*parts.Entry {
 // room its text takes, rather than against arithmetic repeated here. That is
 // deliberate for two reasons. A guard that recomputed parts.menuWidth would
 // agree with a wrong answer. And the string being measured is one the toolkit
-// puts in by itself - fyne v2.8.1 widget/select.go line 94 substitutes its
+// puts in by itself - fyne v2.8.2 widget/select.go line 98 substitutes its
 // default placeholder while the renderer is made - so the only party that knows
 // what a menu will end up showing is the menu.
 func TestAMenuIsWideEnoughForTheWordsTheToolkitPutsInIt(t *testing.T) {

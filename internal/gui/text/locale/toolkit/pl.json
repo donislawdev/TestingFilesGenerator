@@ -1,5 +1,6 @@
 {
   "(Parent)": { "hash": "sha256-c81daefccf15", "other": "(wyżej)" },
+  "(Select one)": { "hash": "sha256-fdfe6bf17ea5", "other": "(wybierz)" },
   "Advanced": { "hash": "sha256-9f088dbebd6c", "other": "Zaawansowane" },
   "Cancel": { "hash": "sha256-19766ed6ccb2", "other": "Anuluj" },
   "Confirm": { "hash": "sha256-eebdd24a77d9", "other": "Potwierdź" },

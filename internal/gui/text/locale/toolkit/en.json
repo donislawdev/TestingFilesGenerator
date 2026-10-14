@@ -1,5 +1,6 @@
 {
   "(Parent)": { "description": "A word of the graphics toolkit the window is built with - in its menus and dialogs. The window gives the toolkit these in the language it speaks.", "hash": "sha256-c81daefccf15", "other": "(Parent)" },
+  "(Select one)": { "description": "A word of the graphics toolkit the window is built with - in its menus and dialogs. The window gives the toolkit these in the language it speaks.", "hash": "sha256-fdfe6bf17ea5", "other": "(Select one)" },
   "Advanced": { "description": "A word of the graphics toolkit the window is built with - in its menus and dialogs. The window gives the toolkit these in the language it speaks.", "hash": "sha256-9f088dbebd6c", "other": "Advanced" },
   "Cancel": { "description": "A word of the graphics toolkit the window is built with - in its menus and dialogs. The window gives the toolkit these in the language it speaks.", "hash": "sha256-19766ed6ccb2", "other": "Cancel" },
   "Confirm": { "description": "A word of the graphics toolkit the window is built with - in its menus and dialogs. The window gives the toolkit these in the language it speaks.", "hash": "sha256-eebdd24a77d9", "other": "Confirm" },

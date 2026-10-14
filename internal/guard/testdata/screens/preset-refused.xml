@@ -452,6 +452,11 @@
 														<image fillMode="contain" pos="16,3" rsc="heart.svg" size="iconInlineSize" themed="error"/>
 														<text alignment="center" color="placeholder" pos="40,6" size="40x14" textSize="12">Donate</text>
 													</widget>
+													<widget pos="100,0" size="71x26" type="*parts.Button">
+														<rectangle pos="-2,-2" radius="6" size="75x30" strokeColor="hyperlink"/>
+														<rectangle radius="6" size="71x26"/>
+														<text alignment="center" color="placeholder" pos="16,6" size="39x14" textSize="12">GitHub</text>
+													</widget>
 												</container>
 											</container>
 										</container>

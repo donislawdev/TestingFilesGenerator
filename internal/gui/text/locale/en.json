@@ -124,6 +124,11 @@
     "hash": "sha256-49e49bb4401e",
     "other": "Generate"
   },
+  "ButtonGitHub": {
+    "description": "The words on a button.",
+    "hash": "sha256-f911e414cf6b",
+    "other": "GitHub"
+  },
   "ButtonOpenFolder": {
     "description": "The words on a button.",
     "hash": "sha256-6a9084025c4b",
@@ -223,6 +228,11 @@
     "description": "The longer explanation behind the button beside a field name.",
     "hash": "sha256-7923af561fdd",
     "other": "It reaches the manifest and nothing else reads it. Leave it alone where the right answer depends on the application's own policy."
+  },
+  "DetailGitHub": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-e3cd538a1d71",
+    "other": "Opens the project page on GitHub in your browser - the source code, the releases and the place to report a problem."
   },
   "DetailGroup": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -830,6 +840,11 @@
     "description": "The heading over a group of fields.",
     "hash": "sha256-74a883a037bc",
     "other": "Settings"
+  },
+  "SectionSource": {
+    "description": "The heading over a group of fields.",
+    "hash": "sha256-bf046c7395cb",
+    "other": "Source code"
   },
   "SectionSupport": {
     "description": "The heading over a group of fields.",

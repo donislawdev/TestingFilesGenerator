@@ -273,6 +273,11 @@ because it turns other people's test suites red.
 - **The window groups the settings of a format** when there are enough of
   them to need it. PDF shows its document properties under a heading of
   their own, and `tfg formats pdf` prints the same heading in the same place.
+- **A GitHub button beside Donate.** It opens the project's page in your
+  browser - the source code, the releases and the place to report a
+  problem. It stands on every screen Donate stands on, and About has it in a
+  card of its own with the address written out, for a desktop that opens
+  nothing.
 
 ### Changed
 
@@ -354,6 +359,11 @@ because it turns other people's test suites red.
   that the desktop window could reach through its toolkit. The command line
   tool does not use the network and was not affected. Building from source
   now needs Go 1.27.2.
+- **The window is built with Fyne 2.8.2 and `golang.org/x/net` 0.60.0.** The
+  version of `golang.org/x/net` before had five published vulnerabilities.
+  The window uses the package only to read the SVG pictures it draws, none
+  of the five is in code it reaches, and the command line tool does not
+  contain the package at all. No generated file changes.
 
 ## [0.4.0] - 2026-09-25
 

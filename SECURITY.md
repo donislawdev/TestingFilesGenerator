@@ -101,10 +101,12 @@ could post a summary comment on a pull request, which would need
 `pull-requests: write` - that scope is deliberately not granted, because a failing
 check already says what the comment would.
 
-The one workflow holding more is the one that publishes the website: `pages: write`
+Two workflows hold more. The one that publishes the website has `pages: write`
 and `id-token: write`. It has a single job, and it runs only for a push to this
 repository - a condition added on 2026-08-27 and held by a guard, because the event
-it triggers on fires with this repository's permissions.
+it triggers on fires with this repository's permissions. The weekly vulnerability
+scan has `security-events: write`, on its one job, to put its results in the
+Security tab. It runs on a schedule or by hand, never for a pull request.
 
 **Every action is pinned to a commit** rather than to a tag somebody else can
 repoint, and a guard refuses any workflow that names one another way.
@@ -112,7 +114,13 @@ repoint, and a guard refuses any workflow that names one another way.
 **Dependencies are checked on every pull request**, for known vulnerabilities and
 for licences. A licence GitHub cannot identify blocks the pull request, because for
 a GPL-3.0 project that ships a binary an unidentified licence is the one answer
-nobody can act on.
+nobody can act on. A pull request is also blocked when OSV-Scanner finds a known
+vulnerability in it that the main branch does not have, in Go modules or in the
+Python packages CI installs.
+
+**The main branch is scanned every week** by OSV-Scanner, and what it finds is
+listed in the repository's Security tab. A vulnerability published against
+something already in use shows up there, even when no pull request touches it.
 
 ## Code of conduct
 

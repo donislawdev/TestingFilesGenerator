@@ -224,6 +224,15 @@ BSD 3-Clause and systray is still Apache-2.0, byte for byte the same file it
 shipped before. One module fewer is why the count above went down by one, and
 the MIT line with it.
 
+The toolkit moved to v2.8.2 on 2026-10-14 and took three modules up with it -
+`github.com/fyne-io/oksvg`, `github.com/go-gl/glfw/v3.4/glfw` and
+`github.com/go-text/typesetting`. `golang.org/x/net` went to v0.60.0 on the
+same day on its own, because five published advisories name v0.57.0. Every
+licence file of the five, and the licence of the C library inside the glfw
+module, was compared with the one at the version before and is byte for byte
+the same. No module entered or left the graph, so the counts above did not
+move.
+
 Two arrived later than the rest. `github.com/FyshOS/fancyfs` came in on the
 same day with the folder picker, because the toolkit's dialog package
 imports it to decorate folder icons. Its licence was read before it was
@@ -252,7 +261,7 @@ is the module's own MIT, carried unchanged.
 
 | module | version | licence | copyright |
 |---|---|---|---|
-| `fyne.io/fyne/v2` | v2.8.1 | BSD-3-Clause | (C) 2018 Fyne.io developers (see AUTHORS) |
+| `fyne.io/fyne/v2` | v2.8.2 | BSD-3-Clause | (C) 2018 Fyne.io developers (see AUTHORS) |
 | `fyne.io/systray` | v1.12.3-0.20260810170012-af4e8e793ec4 | Apache-2.0 | 2014 Brave New Software Project, Inc. |
 | `github.com/BurntSushi/toml` | v1.6.0 | MIT | (c) 2013 TOML authors |
 | `github.com/FyshOS/fancyfs` | v0.0.1 | BSD-3-Clause | (C) 2025 FyshOS developers (see AUTHORS) |
@@ -260,11 +269,11 @@ is the module's own MIT, carried unchanged.
 | `github.com/clipperhouse/uax29/v2` | v2.2.0 | MIT | (c) 2020 Matt Sherman |
 | `github.com/fsnotify/fsnotify` | v1.9.0 | BSD-3-Clause | Copyright 2012 The Go Authors |
 | `github.com/fyne-io/image` | v0.1.1 | BSD-3-Clause | (c) 2022, Fyne.io |
-| `github.com/fyne-io/oksvg` | v0.2.0 | BSD-3-Clause | (c) 2018, Steven R Wiley |
+| `github.com/fyne-io/oksvg` | v0.2.1-0.20260918172519-a9af55fa95d9 | BSD-3-Clause | (c) 2018, Steven R Wiley |
 | `github.com/go-gl/gl` | v0.0.0-20260331235117-4566fea9a276 | MIT | (c) 2014 Eric Woroshow |
-| `github.com/go-gl/glfw/v3.4/glfw` | v0.1.0-pre.1.0.20260707082822-2a407d02d01a | BSD-3-Clause | (c) 2012 The glfw3-go Authors. All rights reserved. |
+| `github.com/go-gl/glfw/v3.4/glfw` | v0.1.0-pre.2 | BSD-3-Clause | (c) 2012 The glfw3-go Authors. All rights reserved. |
 | `github.com/go-text/render` | v0.2.1 | BSD-3-Clause | 2021 The go-text authors |
-| `github.com/go-text/typesetting` | v0.3.4 | BSD-3-Clause | 2021 The go-text authors |
+| `github.com/go-text/typesetting` | v0.3.5 | BSD-3-Clause | 2021 The go-text authors |
 | `github.com/godbus/dbus/v5` | v5.2.2 | BSD-2-Clause | (c) 2013, Georg Reinke (<guelfey at gmail dot com>), Google |
 | `github.com/jeandeaual/go-locale` | v0.0.0-20250612000132-0ef82f21eade | MIT | (c) 2020 Alexis Jeandeau |
 | `github.com/jsummers/gobmp` | v0.0.0-20230614200233-a9de23ed2e25 | MIT | (c) 2012-2015 Jason Summers |
@@ -276,7 +285,7 @@ is the module's own MIT, carried unchanged.
 | `github.com/srwiley/rasterx` | v0.0.0-20220730225603-2ab79fcdd4ef | BSD-3-Clause | (c) 2018, Steven R Wiley |
 | `github.com/yuin/goldmark` | v1.8.2 | MIT | (c) 2019 Yusuke Inuzuka |
 | `golang.org/x/image` | v0.46.0 | BSD-3-Clause | 2009 The Go Authors. |
-| `golang.org/x/net` | v0.57.0 | BSD-3-Clause | 2009 The Go Authors. |
+| `golang.org/x/net` | v0.60.0 | BSD-3-Clause | 2009 The Go Authors. |
 | `golang.org/x/sys` | v0.48.0 | BSD-3-Clause | 2009 The Go Authors. |
 
 The five licence texts follow, one copy each. They differ only in the copyright

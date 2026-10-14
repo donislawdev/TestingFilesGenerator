@@ -122,6 +122,39 @@ func TestTheDependencyGateRefusesALicenceThisProjectCannotDistribute(t *testing.
 			0,
 		},
 		{
+			// Measured on #181, 2026-10-14: the toolkit is reported with its
+			// fonts' licence beside its own, and both fonts are in the notices.
+			"the toolkit with the licence of the fonts it carries",
+			[]dep{{"change_type": "added", "ecosystem": "gomod",
+				"name": "fyne.io/fyne/v2", "version": "2.8.2", "license": "BSD-3-Clause AND OFL-1.1"}},
+			0,
+		},
+		{
+			// Allowing the fonts' licence allows that identifier, not anything
+			// it stands beside.
+			"the fonts' licence beside one this project cannot distribute",
+			[]dep{{"change_type": "added", "ecosystem": "gomod",
+				"name": "example.com/fonts", "version": "v1.0.0", "license": "OFL-1.1 AND GPL-2.0-only"}},
+			1,
+		},
+		{
+			// Measured on #181, 2026-10-14: typing_extensions and
+			// importlib_metadata came back with no licence. The file lists what
+			// the semgrep job installs on a runner, which nothing ships.
+			"a package the semgrep job installs, with no licence reported",
+			[]dep{{"change_type": "added", "ecosystem": "pip", "manifest": ".github/requirements-semgrep.txt",
+				"name": "typing_extensions", "version": "4.16.0", "license": nil}},
+			0,
+		},
+		{
+			// And the skip is that file, not the ecosystem: the same package
+			// listed anywhere else is asked like any other.
+			"the same package from any other manifest",
+			[]dep{{"change_type": "added", "ecosystem": "pip", "manifest": "requirements.txt",
+				"name": "typing_extensions", "version": "4.16.0", "license": nil}},
+			1,
+		},
+		{
 			"a dependency being REMOVED, which creates no obligation",
 			[]dep{{"change_type": "removed", "ecosystem": "gomod",
 				"name": "example.com/gpl2", "version": "v1.0.0", "license": "GPL-2.0-only"}},
