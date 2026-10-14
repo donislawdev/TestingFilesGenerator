@@ -139,6 +139,24 @@ because it turns other people's test suites red.
   antimeridian has its west edge greater than its east edge. GDAL opens a file
   whose bbox is wrong without a word, so a reader that relies on bbox needs a
   test of its own. Files made with the earlier settings keep their bytes.
+- **HTML: deep pages, text in other scripts, every element, and a byte order
+  mark.** `nesting` puts the content of a page inside up to 100 000 div
+  elements, each inside the last, with the label outside them. Readers part
+  ways early: lxml drops everything but the label from a page about 250
+  deep, Chromium keeps 511 levels and moves the deeper ones out, and jsdom,
+  parse5 and DOMPurify can run out of stack writing out a page from about
+  2 000 deep. `characters=international` adds paragraphs in Polish, Russian,
+  Japanese and Arabic, the Arabic right to left, with emoji, a letter written
+  as two code points and entities. `elements=every` adds a block that uses
+  every element of the HTML standard but script at least once, with all 22
+  kinds of input and small pictures and a sound written into the page, so
+  opening it fetches nothing - the Nu HTML Checker finds nothing wrong with
+  it, and pandoc's reader leaves out the header, the aside and the footer.
+  `bom` puts a byte order mark in front. A page with one is still HTML to
+  Chromium and to `file`, and plain text to the content sniffing the WHATWG
+  describes, which Go's `net/http` follows - so a filter that recognises
+  HTML by its first bytes can let it through. Files made with the earlier
+  settings keep their bytes.
 - **A length of time as a setting.** `duration`, `change_interval` and `keyframe_interval` take
   `10s`, `1m30s`, `1h`, `500ms` or `59.9s`, to the millisecond. A bare number
   is refused rather than read as seconds, and so is a length that does not

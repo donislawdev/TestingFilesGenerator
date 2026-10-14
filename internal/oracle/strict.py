@@ -655,6 +655,105 @@ def check_svg(data):
     ok(f"{shapes} drawable shapes out of {elements} elements")
 
 
+# The elements of the HTML standard, read from its index "List of elements" on
+# 2026-10-14 - 115 names (docs/HTML-2-2026-10-14.md section 11.1). Written here
+# from the standard and not imported from the generator, so the two cannot
+# agree on a list that lost a name.
+HTML_ELEMENTS = """a abbr address area article aside audio b base bdi bdo blockquote
+body br button canvas caption cite code col colgroup data datalist dd del details
+dfn dialog div dl dt em embed fieldset figcaption figure footer form h1 h2 h3 h4
+h5 h6 head header hgroup hr html i iframe img input ins kbd label legend li link
+main map mark math menu meta meter nav noscript object ol optgroup option output
+p picture pre progress q rp rt ruby s samp script search section select
+selectedcontent slot small source span strong style sub summary sup svg table
+tbody td template textarea tfoot th thead time title tr track u ul var video
+wbr""".split()
+# script is the one the catalogue leaves out on purpose (decision D3), and a
+# fragment has no head or skeleton to hold these eight.
+HTML_LEFT_OUT = {"script"}
+HTML_PAGE_ONLY = {"base", "body", "head", "html", "link", "meta", "style", "title"}
+HTML_INPUT_TYPES = """hidden text search tel url email password date month week
+time datetime-local number range color checkbox radio file submit image reset
+button""".split()
+
+# What characters=international has to carry, each written here on its own.
+HTML_INTERNATIONAL = [
+    '<p lang="pl">Zażółć gęślą jaźń.</p>',
+    '<p lang="ru">Это текст на русском языке.</p>',
+    '<p lang="ja">これは日本語のテキストです。</p>',
+    '<p lang="ar" dir="rtl">هذا نص باللغة العربية.</p>',
+    chr(0x1F600),
+    chr(0x1F469) + chr(0x200D) + chr(0x1F4BB),
+    "e" + chr(0x301),
+    "&nbsp; &copy; &euro; &#8364; &#x1F600;",
+]
+
+
+def html_settings(text, shape, settings):
+    """What nesting, characters and elements ordered is in the file.
+
+    Read from the TEXT rather than from a tree, for the reason the shape check
+    gives: a tolerant parser builds a tree out of anything, and the two readers
+    measured with the deepest pages either flatten the levels (Chromium) or
+    drop them (libxml2), so a tree would report something other than the file.
+    """
+    nesting = settings.get("nesting", "0")
+    if not nesting.isdigit():
+        fail(f"the html check was told nesting={nesting!r}, which is not a whole number")
+    want = int(nesting)
+    body = text
+    if shape == "document":
+        start = text.find("<body>\n")
+        if start < 0:
+            fail("the page has no body to look for the levels in")
+        body = text[start + len("<body>\n"):text.rfind("</body>")]
+    if body.startswith("<h1>"):
+        # The label sits outside the levels, so a reader that drops the deep
+        # ones still shows which file it read.
+        body = body[body.index("</h1>\n") + len("</h1>\n"):]
+    opened = 0
+    while body.startswith("<div>\n", opened * 6):
+        opened += 1
+    closed, end = 0, len(body)
+    while end >= 7 and body[end - 7:end] == "</div>\n":
+        closed, end = closed + 1, end - 7
+    if opened != want or closed != want:
+        fail(f"nesting={want} was ordered and the content opens {opened} levels and closes {closed}")
+
+    chars = settings.get("characters", "ascii")
+    if chars == "international":
+        for piece in HTML_INTERNATIONAL:
+            if piece not in text:
+                fail(f"characters=international was ordered and the page does not carry {ascii(piece)}")
+    elif chars == "ascii":
+        stray = sorted({c for c in text if c != "\n" and not (" " <= c <= "~")})
+        if stray:
+            fail(f"characters=ascii was ordered and the page holds {[hex(ord(c)) for c in stray[:6]]}")
+    else:
+        fail(f"the html check was told characters={chars!r}, which is not one this tool writes")
+
+    elements = settings.get("elements", "basic")
+    names = {m.lower() for m in re.findall(r"<([a-zA-Z][a-zA-Z0-9-]*)", text)}
+    if elements == "every":
+        wanted = [e for e in HTML_ELEMENTS if e not in HTML_LEFT_OUT]
+        if shape == "fragment":
+            wanted = [e for e in wanted if e not in HTML_PAGE_ONLY]
+        missing = [e for e in wanted if e not in names]
+        if missing:
+            fail(f"elements=every was ordered and the page has no {missing[:8]}")
+        types = set(re.findall(r'<input[^>]*\btype="([a-z-]+)"', text))
+        if any(t not in types for t in HTML_INPUT_TYPES):
+            fail(f"elements=every was ordered and these kinds of input are missing: "
+                 f"{[t for t in HTML_INPUT_TYPES if t not in types]}")
+    elif elements == "basic":
+        if "main" in names or "form" in names:
+            fail("elements=basic was ordered and the page carries the catalogue of every element")
+    else:
+        fail(f"the html check was told elements={elements!r}, which is not one this tool writes")
+    if "script" in names:
+        fail("the page carries a script, which no setting of this format writes")
+
+
 def check_html(data, settings):
     """Balanced, the shape that was ordered, and with real blocks in it.
 
@@ -670,6 +769,20 @@ def check_html(data, settings):
             "link", "meta", "param", "source", "track", "wbr"}
     BLOCKS = {"p", "h1", "h2", "h3", "ul", "ol", "table", "blockquote"}
 
+    settings = settings or {}
+    # Every setting is TOLD, for the reason the shape below gives: a checker that
+    # worked out what was ordered from the file would agree with whatever the
+    # file turned out to be.
+    if settings.get("bom", "false") not in ("true", "false"):
+        fail(f"the html check was told bom={settings.get('bom')!r}, which is not true or false")
+    mark = b"\xef\xbb\xbf"
+    if settings.get("bom") == "true":
+        if not data.startswith(mark):
+            fail("a byte order mark was ordered and the file does not open with one")
+        data = data[len(mark):]
+    elif data.startswith(mark):
+        fail("no byte order mark was ordered and the file opens with one")
+
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError as exc:
@@ -680,9 +793,10 @@ def check_html(data, settings):
     # agree with a fragment produced where a page was ordered, and with a page
     # produced where a fragment was. Those are the two defects this setting is
     # able to cause, so guessing here would leave nothing to catch them.
-    shape = (settings or {}).get("structure", "document")
+    shape = settings.get("structure", "document")
     if shape not in ("document", "fragment"):
         fail(f"the html check was told structure={shape!r}, which is not one this tool writes")
+    html_settings(text, shape, settings)
 
     opens = text.lower().startswith("<!doctype html>")
     closes = text.rstrip().endswith("</html>")
@@ -699,12 +813,17 @@ def check_html(data, settings):
             fail("a fragment was ordered and the file opens with a doctype, so it is a whole page")
         if closes:
             fail("a fragment was ordered and the file ends with a closing html tag")
-        for tag in ("<html", "<head", "<body"):
-            if tag in text.lower():
-                fail(f"a fragment was ordered and the file holds {tag}>, which belongs to a whole page")
+        # By the whole name: "<head" is also the start of <header>, which the
+        # catalogue of every element carries in a fragment as well.
+        for name in ("html", "head", "body"):
+            if re.search(r"<" + name + r"[\s>]", text, re.IGNORECASE):
+                fail(f"a fragment was ordered and the file holds <{name}>, which belongs to a whole page")
 
     entity = re.compile(r"&(?:[a-zA-Z][a-zA-Z0-9]{1,31}|#[0-9]+|#x[0-9a-fA-F]+);")
-    tag = re.compile(r"<(/?)([a-zA-Z][a-zA-Z0-9]*)([^>]*)>")
+    # A hyphen belongs to a name since the catalogue carries a custom element,
+    # and a name cut at it would still balance - <tfg> opened and closed - so
+    # the cut would never show.
+    tag = re.compile(r"<(/?)([a-zA-Z][a-zA-Z0-9-]*)([^>]*)>")
 
     stack, blocks, i = [], 0, 0
     for m in tag.finditer(text):

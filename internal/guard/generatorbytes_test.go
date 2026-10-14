@@ -395,7 +395,7 @@ func goldenCases() map[string]engine.Target {
 		// have to agree to the byte.
 		"targz_past_the_comment_limit": {ID: "g", Format: "targz", Sizes: engine.Uniform(1, 262144), Label: true},
 	}
-	for _, more := range []map[string]engine.Target{mapGoldenCases(), mailGoldenCases()} {
+	for _, more := range []map[string]engine.Target{mapGoldenCases(), mailGoldenCases(), pageGoldenCases()} {
 		for name, target := range more {
 			cases[name] = target
 		}
@@ -437,6 +437,27 @@ func mapGoldenCases() map[string]engine.Target {
 		"geojson_box_round_the_globe": {ID: "g", Format: "geojson", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"bbox": "true", "antimeridian": "true", "precision": "0", "vertices": "300",
 				"geometry": "linestring", "formatting": "minified", "ids": "string"}},
+	}
+}
+
+// pageGoldenCases are the golden cases of the html settings that came on
+// 2026-10-14, a table of their own for the reason mailGoldenCases gives.
+func pageGoldenCases() map[string]engine.Target {
+	return map[string]engine.Target{
+		// One case for each path the bytes take: levels of nesting with the
+		// paragraphs in other scripts, the catalogue of every element alone, a
+		// fragment with a mark and levels at an odd size - where nothing closes
+		// the body after the levels - and everything at once past the depth
+		// Chromium flattens. Each read by the structural checker, told every
+		// setting, when its value was recorded.
+		"html_8kib_nested_international": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"nesting": "3", "characters": "international"}},
+		"html_16kib_every": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 16384), Label: true,
+			Properties: map[string]string{"elements": "every"}},
+		"html_odd_fragment_bom_nested": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 8193), Label: true,
+			Properties: map[string]string{"structure": "fragment", "bom": "true", "nesting": "2"}},
+		"html_64kib_everything": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"nesting": "600", "characters": "international", "elements": "every", "bom": "true"}},
 	}
 }
 

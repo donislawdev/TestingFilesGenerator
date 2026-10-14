@@ -9,16 +9,11 @@ import (
 	"context"
 	"fmt"
 	"io"
-	// D11 promises the same bytes from the same seed, so a deliberate,
-	// reproducible generator is the product rather than a weakness. Nothing
-	// here ever makes a secret.
-	// nosemgrep: go.lang.security.audit.crypto.math_random.math-random-used
-	"math/rand/v2"
-	"strconv"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/textenc"
 )
 
 // Measured on 2026-08-01, a comment holds arbitrary bytes to 1 MiB both after
@@ -35,86 +30,7 @@ import (
 // The guards written against this format carry more of the weight than they do
 // for SVG, which has a renderer behind it.
 
-const (
-	generatorVersion = "1"
-
-	prologue = `<!DOCTYPE html>` + "\n" +
-		`<html lang="en">` + "\n" +
-		`<head>` + "\n" +
-		`<meta charset="utf-8">` + "\n" +
-		`<title></title>` + "\n" +
-		`</head>` + "\n" +
-		`<body>` + "\n"
-
-	// The title is filled in per file when a label is wanted, so the empty pair
-	// above is what the smallest document carries.
-	emptyTitle = `<title></title>`
-
-	paraOpen  = "<p>"
-	paraClose = "</p>\n"
-	bodyClose = "</body>\n</html>\n"
-
-	tailLast = paraClose + bodyClose
-
-	// tailFragment is what a fragment's closing record ends with. A fragment
-	// closes its last paragraph and stops, because it has no body and no
-	// document to close.
-	tailFragment = paraClose
-)
-
-// The shape of the file: a whole page, or only the blocks that would sit in one.
-const (
-	settingStructure  = "structure"
-	structureDocument = "document"
-	structureFragment = "fragment"
-)
-
-// structureOf reads the setting.
-//
-// A value outside the declared set has already been refused by the registry,
-// which checks every format against its declaration in one place. This branch
-// stays for the same reason the CSV dialect and the text encoding keep theirs:
-// this function is callable directly, a guard is such a caller, and a generator
-// that trusts its input is one registry change away from writing a file nobody
-// ordered.
-func structureOf(props map[string]string) (string, error) {
-	v, ok := props[settingStructure]
-	if !ok || v == "" {
-		return structureDocument, nil
-	}
-	switch v {
-	case structureDocument, structureFragment:
-		return v, nil
-	}
-	return "", &format.PropertyValueError{
-		Format: "html", Key: settingStructure, Value: v,
-		Reason: core.Says("html.HasToBeStructure", "it has to be %s or %s",
-			core.A("Document", core.Choice{Of: settingStructure, Value: structureDocument}),
-			core.A("Fragment", core.Choice{Of: settingStructure, Value: structureFragment})),
-	}
-}
-
-// prologueFor is the skeleton down to the body, empty for a fragment.
-func prologueFor(shape string) string {
-	if shape == structureFragment {
-		return ""
-	}
-	return prologue
-}
-
-// blocksFor is the body builder for one shape.
-//
-// The shape has to reach the BUILDER and not only the prologue, and that is the
-// part of this easy to miss: the bytes that close the body and the document sit
-// in the last RECORD rather than in a footer. A change that swapped only the
-// prologue would end a fragment with </body></html> - the right size,
-// deterministic, and nonsense.
-func blocksFor(shape string) blocks {
-	if shape == structureFragment {
-		return blocks{tail: tailFragment}
-	}
-	return blocks{tail: tailLast}
-}
+const generatorVersion = "1"
 
 func init() {
 	format.Register(format.Descriptor{
@@ -140,16 +56,11 @@ func init() {
 		// than a comment.
 		Label:  format.LabelVisible,
 		Oracle: "python-html",
-		// Element counts, inline CSS and JS, images, forms and the "every HTML5
-		// tag" variant come later. Declaring only what is here is what makes a
-		// recipe asking for them fail loudly instead of quietly producing
-		// something else.
-		Properties: []format.Property{{
-			Name: settingStructure, Kind: format.PropertyChoice,
-			Choices: []string{structureDocument, structureFragment},
-			Default: structureDocument,
-			Detail:  "Whether the file is a whole page or only the blocks that would sit inside one. A fragment has no doctype, no html element and no body, which is what a content field or the body of an email really holds. It is far smaller, so the smallest fragment sits well below the smallest page.",
-		}},
+		// Pictures inside the page, style sheets and a page on one line come
+		// later (docs/HTML-2-2026-10-14.md section 8). Declaring only what is
+		// here is what makes a recipe asking for them fail loudly instead of
+		// quietly producing something else.
+		Properties:       properties(),
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})
@@ -158,37 +69,27 @@ func init() {
 type generator struct{}
 
 type memo struct {
-	head      string // the whole skeleton down to <body>, title included
+	head      string // the prologue, title included
 	labelLine string // the visible heading, empty when absent
 	seed      uint64
-	shape     string
+	settings  settings
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
-	shape, err := structureOf(r.Properties)
+	s, err := settingsOf(r.Properties)
 	if err != nil {
 		return format.Plan{}, err
 	}
 
-	min := minimumFor(shape)
+	min := minimumFor(s)
 	if r.Bytes < min {
-		reason := core.Says("html.MinimumPage", "a page holds a head, a body and whole blocks, and one of each needs that much")
-		if shape == structureFragment {
-			reason = core.Says("html.MinimumFragment", "a fragment holds whole blocks, and one of them needs that much")
-		}
-		return format.Plan{}, &format.BelowMinimumError{
-			Format:    "HTML",
-			Requested: r.Bytes,
-			Minimum:   min,
-			Reason:    reason,
-			Hint:      core.Says("format.AskForBOrMore", "Ask for %d B or more.", core.A("Min", min)),
-		}
+		return format.Plan{}, belowMinimum(s, r.Bytes, min)
 	}
 
 	// A fragment has no doctype, and saying it has one would be the manifest
 	// describing a file that is not there.
 	doctype := "html"
-	if shape == structureFragment {
+	if s.shape == structureFragment {
 		doctype = "none"
 	}
 
@@ -197,18 +98,30 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		Exact:       true,
 		Determinism: format.DeterminismByte,
 		Properties: map[string]any{
-			"encoding":       "utf-8",
-			"line_ending":    "lf",
-			"doctype":        doctype,
-			"language":       "en",
-			settingStructure: shape,
+			"encoding":    "utf-8",
+			"line_ending": "lf",
+			"doctype":     doctype,
+			"language":    "en",
 		},
 	}
+	for k, v := range s.manifest() {
+		p.Properties[k] = v
+	}
+	if s.every && s.shape == structureFragment {
+		// The setting says every element, and a fragment cannot hold eight of
+		// them. Saying so here is what keeps the manifest from claiming a
+		// catalogue the file does not carry.
+		p.Notes = append(p.Notes, format.Note{
+			Code: "elements_left_out",
+			Detail: core.Says("html.FragmentLeavesOut", "A fragment has no head and no skeleton, so %s are not in it.",
+				core.A("Elements", core.Joined{Items: pageOnly, And: true})),
+		})
+	}
 
-	m := memo{seed: r.Seed, head: prologueFor(shape), shape: shape}
+	m := memo{seed: r.Seed, head: s.prologue(), settings: s}
 	if r.Label {
 		var note *format.Note
-		m.head, m.labelLine, note = labelledHead(shape, r, min)
+		m.head, m.labelLine, note = labelledHead(s, r, min)
 		if note != nil {
 			p.Notes = append(p.Notes, *note)
 		}
@@ -219,6 +132,26 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	return p, nil
 }
 
+// belowMinimum is the refusal of a size too small for these settings.
+func belowMinimum(s settings, requested, min int64) error {
+	reason := core.Says("html.MinimumPage", "a page holds a head, a body and whole blocks, and one of each needs that much")
+	switch {
+	case s.adds():
+		reason = core.Says("html.MinimumWithSettings", "the file holds whole blocks and what %s, %s, %s and %s add to them, and together they need that much",
+			core.A("Nesting", core.LabelTerm(settingNesting)), core.A("Characters", core.LabelTerm(settingCharacters)),
+			core.A("Elements", core.LabelTerm(settingElements)), core.A("BOM", core.LabelTerm(textenc.SettingBOM)))
+	case s.shape == structureFragment:
+		reason = core.Says("html.MinimumFragment", "a fragment holds whole blocks, and one of them needs that much")
+	}
+	return &format.BelowMinimumError{
+		Format:    "HTML",
+		Requested: requested,
+		Minimum:   min,
+		Reason:    reason,
+		Hint:      core.Says("format.AskForBOrMore", "Ask for %d B or more.", core.A("Min", min)),
+	}
+}
+
 // labelledHead works out what a labelled file carries: the head, the visible
 // heading, and a note instead of both when there is no room beside a whole
 // block.
@@ -226,23 +159,24 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 // Split out of Plan when that function reached the crowding threshold. The line
 // is what a part does rather than how long it is: this answers "does the label
 // fit and what does it cost", and Plan answers "is this request askable at all".
-func labelledHead(shape string, r format.Request, min int64) (head, heading string, note *format.Note) {
+func labelledHead(s settings, r format.Request, min int64) (head, heading string, note *format.Note) {
 	label := core.Label("html", r.Bytes, r.Seed)
 	heading = "<h1>" + label + "</h1>\n"
 
-	head, extra := prologueFor(shape), int64(0)
-	if shape == structureDocument {
+	plain := s.prologue()
+	head, extra := plain, int64(0)
+	if s.shape == structureDocument {
 		// The title and the heading say the same thing, which is what a page
 		// does - one for the tab and one for the reader. A fragment has no head
 		// to put a title in, so it carries only the heading, and the label is
 		// still visible because a heading is.
-		head = strings.Replace(prologue, emptyTitle, "<title>"+label+"</title>", 1)
-		extra = int64(len(head) - len(prologue))
+		head = strings.Replace(plain, emptyTitle, "<title>"+label+"</title>", 1)
+		extra = int64(len(head) - len(plain))
 	}
 	if extra+int64(len(heading))+min <= r.Bytes {
 		return head, heading, nil
 	}
-	return prologueFor(shape), "", &format.Note{
+	return plain, "", &format.Note{
 		Code:   "label_omitted",
 		Detail: core.Says("format.TheLabelNeedsBAndThis", "The label needs %d B and this file has no room for it beside a whole block. Its name and the manifest still identify it.", core.A("Length", len(heading))),
 	}
@@ -254,122 +188,26 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return core.Defect(fmt.Errorf("html: the plan was not produced by this generator"))
 	}
 
-	head := m.head + m.labelLine
+	// The label sits outside the levels of nesting, so a reader that drops
+	// elements past its depth - libxml2 does, measured on 2026-10-14 - still
+	// shows which file it read.
+	head := m.head + m.labelLine + m.settings.opening()
 	if err := core.WriteAll(w, []byte(head)); err != nil {
 		return err
 	}
 
 	rng := core.NewRand(m.seed)
-	return core.FillRecords(ctx, w, rng, p.Bytes-int64(len(head)), blocksFor(m.shape))
-}
-
-// blocks builds the body. A natural record is one complete block element and
-// the closing record is a paragraph stretched to land the byte count.
-//
-// Whole blocks only, for the same reason Markdown writes whole blocks: a table
-// or a list cut in the middle still renders, and it says something other than
-// it meant.
-type blocks struct {
-	// tail is what the closing record ends with, which is the only thing the
-	// shape of the file changes down here.
-	tail string
-}
-
-// Shortest is the smallest closing record: an empty paragraph plus whatever
-// this shape closes after it.
-func (b blocks) Shortest() int64 { return int64(len(paraOpen) + len(b.tail)) }
-
-func (blocks) Append(dst []byte, rng *rand.Rand) []byte {
-	switch rng.IntN(5) {
-	case 0:
-		dst = append(dst, "<h2>"...)
-		dst = appendPhrase(dst, rng, 2+rng.IntN(3))
-		return append(dst, "</h2>\n"...)
-	case 1:
-		dst = append(dst, "<ul>\n"...)
-		for i, n := 0, 2+rng.IntN(3); i < n; i++ {
-			dst = append(dst, "<li>"...)
-			dst = appendPhrase(dst, rng, 3+rng.IntN(4))
-			dst = append(dst, "</li>\n"...)
-		}
-		return append(dst, "</ul>\n"...)
-	case 2:
-		dst = append(dst, "<table>\n<tr><th>id</th><th>field</th><th>value</th></tr>\n"...)
-		for i, n := 0, 2+rng.IntN(3); i < n; i++ {
-			dst = append(dst, "<tr><td>"...)
-			dst = strconv.AppendInt(dst, int64(i+1), 10)
-			dst = append(dst, "</td><td>"...)
-			dst = append(dst, words[rng.IntN(len(words))]...)
-			dst = append(dst, "</td><td>"...)
-			dst = append(dst, words[rng.IntN(len(words))]...)
-			dst = append(dst, "</td></tr>\n"...)
-		}
-		return append(dst, "</table>\n"...)
-	case 3:
-		// A real page carries entities, and an ampersand left raw is the
-		// classic way a document stops being well formed. The fixture carries
-		// one on purpose.
-		dst = append(dst, "<blockquote><p>"...)
-		dst = appendPhrase(dst, rng, 4+rng.IntN(4))
-		dst = append(dst, " &amp; "...)
-		dst = appendPhrase(dst, rng, 2)
-		return append(dst, "</p></blockquote>\n"...)
-	default:
-		dst = append(dst, paraOpen...)
-		dst = appendPhrase(dst, rng, 12+rng.IntN(12))
-		return append(dst, paraClose...)
-	}
-}
-
-// Discard has nothing to put back. A block carries no state from one to the
-// next, so throwing one away leaves no trace to undo.
-func (blocks) Discard() {}
-
-func (b blocks) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
-	start := len(dst)
-	dst = append(dst, paraOpen...)
-	used := int64(len(dst)-start) + int64(len(b.tail))
-	dst = appendFiller(dst, n-used)
-	return append(dst, b.tail...)
-}
-
-func appendPhrase(dst []byte, rng *rand.Rand, n int) []byte {
-	for i := 0; i < n; i++ {
-		if i > 0 {
-			dst = append(dst, ' ')
-		}
-		dst = append(dst, words[rng.IntN(len(words))]...)
-	}
-	return dst
-}
-
-// appendFiller writes exactly n bytes of paragraph text out of readable words.
-//
-// It never emits an ampersand or an angle bracket, the two characters that
-// would have to be escaped - an escape would make the text longer than the
-// count asked for.
-// appendFiller stretches the closing paragraph to the byte.
-func appendFiller(dst []byte, n int64) []byte {
-	return core.AppendFiller(dst, words, n, nil)
+	return core.FillRecords(ctx, w, rng, p.Bytes-int64(len(head)), m.settings.blocks())
 }
 
 // minimumBytes is the smallest whole page, which is what the registry declares.
-// Every shape answers for its own, the way the JSON layouts do.
-func minimumBytes() int64 { return minimumFor(structureDocument) }
+// Every combination of settings answers for its own, the way the JSON layouts
+// do.
+func minimumBytes() int64 { return minimumFor(settings{shape: structureDocument}) }
 
-// minimumFor is the skeleton of one shape and one whole block, computed rather
-// than written down so it cannot drift away from the template.
-func minimumFor(shape string) int64 {
-	return int64(len(prologueFor(shape))) + blocksFor(shape).Shortest()
-}
-
-// words is the filler vocabulary. English by default, like the rest of the text
-// group.
-var words = []string{
-	"account", "anchor", "banner", "browser", "caption", "content", "control",
-	"default", "element", "feature", "footer", "gallery", "handler", "header",
-	"heading", "inline", "layout", "listing", "margin", "marker", "message",
-	"module", "navigation", "notice", "option", "padding", "preview", "profile",
-	"section", "selector", "sidebar", "summary", "template", "toolbar",
-	"tooltip", "viewport", "widget", "wrapper",
+// minimumFor is the prologue, what the settings open the body with and one
+// whole block, computed from the pieces Write uses rather than written down so
+// it cannot drift away from the template.
+func minimumFor(s settings) int64 {
+	return int64(len(s.prologue())) + s.openingBytes() + int64(len(paraOpen)) + s.tailBytes()
 }

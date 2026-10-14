@@ -179,6 +179,16 @@
     "hash": "sha256-a116c9ed46d6",
     "other": "plain"
   },
+  "Choice.characters.ascii": {
+    "description": "One entry of the characters list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-c543ece81605",
+    "other": "ascii"
+  },
+  "Choice.characters.international": {
+    "description": "One entry of the characters list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-1e3bb894756f",
+    "other": "international"
+  },
   "Choice.charset.iso-8859-2": {
     "description": "One entry of the charset list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-d7b4209b5c03",
@@ -253,6 +263,16 @@
     "description": "One entry of the delimiter list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-7508386a2056",
     "other": "tab"
+  },
+  "Choice.elements.basic": {
+    "description": "One entry of the elements list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-fbb7b5bf4ca3",
+    "other": "basic"
+  },
+  "Choice.elements.every": {
+    "description": "One entry of the elements list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-66a424a9a958",
+    "other": "every"
   },
   "Choice.embed.bmp": {
     "description": "One entry of the embed list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
@@ -1274,6 +1294,26 @@
     "hash": "sha256-3085ac44f0e0",
     "other": "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."
   },
+  "Detail.format/html.bom": {
+    "description": "The sentence under the bom setting of the html format, after what it takes.",
+    "hash": "sha256-a2d6a88583d6",
+    "other": "Whether the file opens with a byte order mark. A reader that has to guess the encoding needs one, and a reader that does not expect it shows it as stray characters at the start of the file."
+  },
+  "Detail.format/html.characters": {
+    "description": "The sentence under the characters setting of the html format, after what it takes.",
+    "hash": "sha256-846c2063c0e0",
+    "other": "Whether the page carries text outside ASCII. international adds paragraphs in Polish, Russian, Japanese and Arabic, the Arabic right to left, with emoji, a letter written as two code points and named and numbered entities. A program without a Japanese or Arabic font shows boxes in their place."
+  },
+  "Detail.format/html.elements": {
+    "description": "The sentence under the elements setting of the html format, after what it takes.",
+    "hash": "sha256-ad89039f3061",
+    "other": "Which elements the page uses. basic is headings, paragraphs, lists, tables and quotes. every adds a block that uses every element of the HTML standard at least once, all 22 kinds of input and small pictures and a sound inside the page, with no script and nothing fetched from a network. A fragment has no head, so it leaves out the eight elements that only a whole page holds."
+  },
+  "Detail.format/html.nesting": {
+    "description": "The sentence under the nesting setting of the html format, after what it takes.",
+    "hash": "sha256-cac70df12b4b",
+    "other": "How many div elements the content sits inside, each one inside the last. 0 puts it straight in the body, and the label stays outside so the page still says what it is. Chromium keeps 511 levels and moves the deeper ones out, and the Nu HTML Checker calls a page that deep an error. lxml drops the content of a page nested about 250 deep and keeps only the label, and jsdom, parse5 and DOMPurify can run out of stack writing out a page from about 2 000 deep."
+  },
   "Detail.format/html.structure": {
     "description": "The sentence under the structure setting of the html format, after what it takes.",
     "hash": "sha256-40b00d44ba38",
@@ -2079,6 +2119,11 @@
     "hash": "sha256-4c8906cf76f5",
     "other": "Channels"
   },
+  "Label.characters": {
+    "description": "The name beside the box of a setting a recipe writes as characters.",
+    "hash": "sha256-6fac39e2845b",
+    "other": "Characters"
+  },
   "Label.charset": {
     "description": "The name beside the box of a setting a recipe writes as charset.",
     "hash": "sha256-60c95b80aa06",
@@ -2138,6 +2183,11 @@
     "description": "The name beside the box of a setting a recipe writes as duration.",
     "hash": "sha256-4fc52a3c4c55",
     "other": "Duration"
+  },
+  "Label.elements": {
+    "description": "The name beside the box of a setting a recipe writes as elements.",
+    "hash": "sha256-e1ff7a906103",
+    "other": "Elements"
   },
   "Label.embed": {
     "description": "The name beside the box of a setting a recipe writes as embed.",
@@ -2323,6 +2373,11 @@
     "description": "The name beside the box of a setting a recipe writes as modified.",
     "hash": "sha256-e8ce5dcaf408",
     "other": "Modified"
+  },
+  "Label.nesting": {
+    "description": "The name beside the box of a setting a recipe writes as nesting.",
+    "hash": "sha256-f342629fc0e1",
+    "other": "Nesting"
   },
   "Label.orientation": {
     "description": "The name beside the box of a setting a recipe writes as orientation.",
