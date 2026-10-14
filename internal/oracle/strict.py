@@ -697,9 +697,12 @@ def html_settings(text, shape, settings):
     measured with the deepest pages either flatten the levels (Chromium) or
     drop them (libxml2), so a tree would report something other than the file.
     """
+    # ASCII digits and the declared range, checked before int(): str.isdigit
+    # also says yes to "²", which int() then refuses with a traceback instead
+    # of a verdict (review of #177).
     nesting = settings.get("nesting", "0")
-    if not nesting.isdigit():
-        fail(f"the html check was told nesting={nesting!r}, which is not a whole number")
+    if not re.fullmatch(r"[0-9]{1,6}", nesting) or int(nesting) > 100000:
+        fail(f"the html check was told nesting={nesting!r}, which is not a whole number from 0 to 100000")
     want = int(nesting)
     body = text
     if shape == "document":
@@ -815,9 +818,9 @@ def check_html(data, settings):
             fail("a fragment was ordered and the file ends with a closing html tag")
         # By the whole name: "<head" is also the start of <header>, which the
         # catalogue of every element carries in a fragment as well.
-        for name in ("html", "head", "body"):
-            if re.search(r"<" + name + r"[\s>]", text, re.IGNORECASE):
-                fail(f"a fragment was ordered and the file holds <{name}>, which belongs to a whole page")
+        skeleton = re.search(r"<(html|head|body)[\s>]", text, re.IGNORECASE)
+        if skeleton:
+            fail(f"a fragment was ordered and the file holds <{skeleton.group(1).lower()}>, which belongs to a whole page")
 
     entity = re.compile(r"&(?:[a-zA-Z][a-zA-Z0-9]{1,31}|#[0-9]+|#x[0-9a-fA-F]+);")
     # A hyphen belongs to a name since the catalogue carries a custom element,
