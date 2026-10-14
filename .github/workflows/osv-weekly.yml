@@ -27,6 +27,12 @@ on:
   # Monday - the alerts it closes close on the next upload.
   workflow_dispatch:
 
+# A run by hand while the Monday one is going waits for it rather than
+# uploading beside it. Not cancelled: each run is a whole scan worth keeping.
+concurrency:
+  group: osv-weekly
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
