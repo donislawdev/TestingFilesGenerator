@@ -35,7 +35,7 @@ func (pl *planning) files(ctx context.Context, t *Target, desc format.Descriptor
 	for idx, size := range t.Sizes {
 		fileSeed := core.FileSeed(targetSeed, idx)
 
-		p, err := planWithoutCrashing(desc, format.Request{
+		p, err := planWithoutCrashing(ctx, desc, format.Request{
 			Bytes:            size,
 			SizeFromContents: t.SizeFromContents,
 			Contains:         t.Contains,

@@ -5,6 +5,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/picture"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/textenc"
 )
 
@@ -45,12 +46,14 @@ type settings struct {
 	international, every bool
 	// bom is a byte order mark in front of everything else.
 	bom bool
+	// pictures are the pictures written into the page.
+	pictures picture.Settings
 }
 
 // properties is the declaration of every setting, in the order both surfaces
-// show them.
+// show them: the page, then the pictures in it.
 func properties() []format.Property {
-	return []format.Property{{
+	own := []format.Property{{
 		Name: settingStructure, Kind: format.PropertyChoice,
 		Choices: []string{structureDocument, structureFragment},
 		Default: structureDocument,
@@ -76,6 +79,7 @@ func properties() []format.Property {
 			"every adds a block that uses every element of the HTML standard at least once, all 22 kinds of input and small pictures and a sound inside the page, with no script and nothing fetched from a network. " +
 			"A fragment has no head, so it leaves out the eight elements that only a whole page holds.",
 	}, textenc.Axes(textenc.SettingBOM)[0]}
+	return append(own, pictureProperties()...)
 }
 
 // settingsOf reads the settings.
@@ -118,7 +122,8 @@ func settingsOf(props map[string]string) (settings, error) {
 		return settings{}, err
 	}
 	s.bom = codec.HasBOM()
-	return s, nil
+	s.pictures, err = picture.Read("html", props)
+	return s, err
 }
 
 // choice reads a setting of two values, the first of them the default, and
@@ -155,7 +160,8 @@ func nestingOf(props map[string]string) (int, error) {
 }
 
 // manifest is what the manifest records about the settings, every one of them
-// whatever was asked, so a reader never has to know a default.
+// whatever was asked, so a reader never has to know a default. The pictures
+// are recorded by describePictures, beside what they came to.
 func (s settings) manifest() map[string]any {
 	chars, elements := charactersASCII, elementsBasic
 	if s.international {

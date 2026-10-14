@@ -22,11 +22,12 @@ package htmlfile
 // with no letter outside ASCII, and every script with nothing but paragraphs.
 
 const (
-	// picture is an 8 by 8 PNG of one colour, 74 bytes, and sound 16 samples of
-	// silence as an 8 bit WAV at 8 kHz, 60 bytes. Both were made once and are
-	// written here as they are, so the page is the same on every run.
-	picture = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEUlEQVR42mNwaDiAFTEMLQkAYvNgAQlPC90AAAAASUVORK5CYII="
-	sound   = "data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAACAgICAgICAgICAgICAgICA"
+	// smallPicture is an 8 by 8 PNG of one colour, 74 bytes, and sound 16
+	// samples of silence as an 8 bit WAV at 8 kHz, 60 bytes. Both were made
+	// once and are written here as they are, so the page is the same on every
+	// run.
+	smallPicture = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEUlEQVR42mNwaDiAFTEMLQkAYvNgAQlPC90AAAAASUVORK5CYII="
+	sound        = "data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAACAgICAgICAgICAgICAgICA"
 
 	// catalogueHead is what the catalogue puts in the head of a page. base
 	// names no address, so it changes nothing a link resolves to, and the icon
@@ -97,7 +98,7 @@ const (
 <label>radio <input type="radio" name="radio"></label>
 <label>file <input type="file" name="file"></label>
 <input type="submit" value="submit">
-<input type="image" src="` + picture + `" alt="image button" width="8" height="8">
+<input type="image" src="` + smallPicture + `" alt="image button" width="8" height="8">
 <input type="reset" value="reset">
 <input type="button" value="button">
 </fieldset>
@@ -113,15 +114,15 @@ const (
 </article>
 <article id="media">
 <h2>Media</h2>
-<figure><img src="` + picture + `" alt="a picture" width="8" height="8" usemap="#map"><figcaption>A picture with a map.</figcaption></figure>
+<figure><img src="` + smallPicture + `" alt="a picture" width="8" height="8" usemap="#map"><figcaption>A picture with a map.</figcaption></figure>
 <map name="map"><area shape="rect" coords="0,0,8,8" href="#media" alt="the whole picture"></map>
-<picture><source srcset="` + picture + `" type="image/png"><img src="` + picture + `" alt="a picture with a source" width="8" height="8"></picture>
+<picture><source srcset="` + smallPicture + `" type="image/png"><img src="` + smallPicture + `" alt="a picture with a source" width="8" height="8"></picture>
 <audio controls src="` + sound + `">an audio player</audio>
-<video controls width="64" height="48" poster="` + picture + `"><source src="data:video/mp4," type="video/mp4"><track kind="captions" src="data:text/vtt,WEBVTT" srclang="en" label="English">a video player</video>
+<video controls width="64" height="48" poster="` + smallPicture + `"><source src="data:video/mp4," type="video/mp4"><track kind="captions" src="data:text/vtt,WEBVTT" srclang="en" label="English">a video player</video>
 <canvas width="8" height="8">a canvas</canvas>
 <svg width="16" height="16" viewBox="0 0 16 16"><rect width="16" height="16" fill="#4080c0"/></svg>
-<object data="` + picture + `" type="image/png" width="8" height="8">an object</object>
-<embed src="` + picture + `" type="image/png" width="8" height="8">
+<object data="` + smallPicture + `" type="image/png" width="8" height="8">an object</object>
+<embed src="` + smallPicture + `" type="image/png" width="8" height="8">
 <iframe srcdoc="&lt;p&gt;A frame with its own document.&lt;/p&gt;" sandbox title="an inline frame"></iframe>
 </article>
 </main>

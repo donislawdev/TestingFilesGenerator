@@ -458,6 +458,14 @@ func pageGoldenCases() map[string]engine.Target {
 			Properties: map[string]string{"structure": "fragment", "bom": "true", "nesting": "2"}},
 		"html_64kib_everything": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"nesting": "600", "characters": "international", "elements": "every", "bom": "true"}},
+		// Pictures inside the page: the default format, and an odd size in a
+		// fragment inside levels, with a format whose own bytes are text. Each
+		// picture is the file its format writes alone, so these also pin the
+		// seeds the pictures are given (RC4).
+		"html_32kib_pictures": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 32768), Label: true,
+			Properties: map[string]string{"inline": "3", "inline_size": "2kb"}},
+		"html_odd_fragment_pictures_svg": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 16385), Label: true,
+			Properties: map[string]string{"structure": "fragment", "nesting": "2", "inline": "2", "inline_format": "svg", "inline_size": "1kb"}},
 	}
 }
 

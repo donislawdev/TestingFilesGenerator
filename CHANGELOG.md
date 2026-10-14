@@ -157,6 +157,17 @@ because it turns other people's test suites red.
   describes, which Go's `net/http` follows - so a filter that recognises
   HTML by its first bytes can let it through. Files made with the earlier
   settings keep their bytes.
+- **HTML: pictures inside the page.** `inline`, `inline_format` and
+  `inline_size` - the same settings, with the same meaning, as the pictures
+  of an `eml` message - write real pictures of any picture format into the
+  page as `data:` URLs, each on a line of its own above the blocks, so
+  opening the page fetches nothing. Each picture is the very file its format
+  writes on its own. The Nu HTML Checker finds nothing wrong with a page of
+  any of the nine formats, Chromium shows every format but `tiff`, and
+  DOMPurify keeps them all. lxml, and BeautifulSoup on top of it, leave out
+  a picture past about 7.1 MB unless told to read huge trees - on Linux lxml
+  took over 20 seconds over such a page, and with a 15 MB picture it lost the
+  rest of the page as well. Files made without pictures keep their bytes.
 - **A length of time as a setting.** `duration`, `change_interval` and `keyframe_interval` take
   `10s`, `1m30s`, `1h`, `500ms` or `59.9s`, to the millisecond. A bare number
   is refused rather than read as seconds, and so is a length that does not
@@ -265,6 +276,18 @@ because it turns other people's test suites red.
   folder shows the folder the tool worked in.
 
 ### Fixed
+
+- **Ctrl+C waited for a file that holds thousands of files to be planned.**
+  A zip, a tar.gz, a mail message or a page with ten thousand small pictures
+  inside took over a minute to plan, and a run stopped in that minute went
+  on until the end of it - in CI long enough for the grace period to run
+  out. Planning now stops between one file inside and the next, and says
+  it stopped rather than that a file could not be made.
+
+- **A stopped run went on writing a WebP picture to its last row.** A
+  600 MB picture took five more seconds to stop. It now stops within a few
+  rows, as the other picture formats do. Files that are not stopped keep
+  their bytes.
 
 - **Choosing another tool on the Tools tab left the boxes in the wrong
   place.** The section kept the height of the tool chosen before, so a

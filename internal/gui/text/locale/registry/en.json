@@ -1309,6 +1309,21 @@
     "hash": "sha256-ad89039f3061",
     "other": "Which elements the page uses. basic is headings, paragraphs, lists, tables and quotes. every adds a block that uses every element of the HTML standard at least once, all 22 kinds of input and small pictures and a sound inside the page, with no script and nothing fetched from a network. A fragment has no head, so it leaves out the eight elements that only a whole page holds."
   },
+  "Detail.format/html.inline": {
+    "description": "The sentence under the inline setting of the html format, after what it takes.",
+    "hash": "sha256-3815222270e4",
+    "other": "How many pictures the page shows, each one a real file of its format written into the page as a data: URL, so opening the page fetches nothing. They sit above the blocks, one to a line, and each says which it is in its alt text."
+  },
+  "Detail.format/html.inline_format": {
+    "description": "The sentence under the inline_format setting of the html format, after what it takes.",
+    "hash": "sha256-0c0288233958",
+    "other": "The format of the pictures. Any format whose files are pictures, such as png, jpg or gif. Chromium shows every one of them but tiff."
+  },
+  "Detail.format/html.inline_size": {
+    "description": "The sentence under the inline_size setting of the html format, after what it takes.",
+    "hash": "sha256-2433610ca9da",
+    "other": "How big each picture is. Inside the page it is base64 on one line, about a third larger. lxml, and BeautifulSoup on top of it, leave out a picture past about 7.1 MB unless told to read huge trees. On Linux lxml took over 20 seconds over such a page, and with a 15 MB picture it lost the rest of the page as well."
+  },
   "Detail.format/html.nesting": {
     "description": "The sentence under the nesting setting of the html format, after what it takes.",
     "hash": "sha256-cac70df12b4b",
@@ -1968,6 +1983,11 @@
     "description": "The heading over a block of settings of the eml format.",
     "hash": "sha256-c741ca3d02e5",
     "other": "Pictures in the text"
+  },
+  "Group.format/html.Pictures in the page": {
+    "description": "The heading over a block of settings of the html format.",
+    "hash": "sha256-af608b8ed33a",
+    "other": "Pictures in the page"
   },
   "Group.format/pdf.Document properties": {
     "description": "The heading over a block of settings of the pdf format.",

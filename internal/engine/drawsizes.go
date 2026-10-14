@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"context"
 	"errors"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -44,7 +45,7 @@ func firstWritable(desc format.Descriptor, r format.Request, from, limit int64) 
 	var first error
 	for at := from; at <= limit; {
 		r.Bytes = at
-		_, err := planWithoutCrashing(desc, r)
+		_, err := planWithoutCrashing(context.Background(), desc, r)
 		if err == nil {
 			return at, nil
 		}
@@ -128,7 +129,7 @@ func drawSizes(t *Target, desc format.Descriptor, targetSeed uint64) error {
 		// Asked again at the low end so the format words its own refusal, with
 		// the number the person actually wrote.
 		first.Bytes = t.Range.Min
-		if _, err := planWithoutCrashing(desc, first); err != nil {
+		if _, err := planWithoutCrashing(context.Background(), desc, first); err != nil {
 			return err
 		}
 	}
