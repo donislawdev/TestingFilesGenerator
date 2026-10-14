@@ -43,9 +43,10 @@ import sys
 # ABSENT on purpose. It is famously incompatible with GPL-3.0 and it is exactly
 # the kind of entry that looks fine in a list of open source licences and is not.
 #
-# Every identifier below except the last was measured in this repository's own
-# dependency graph on 2026-08-27, so the list describes what we actually have
-# rather than what somebody expected us to have.
+# Every identifier below except the last two was measured in this repository's
+# own dependency graph on 2026-08-27, so the list describes what we actually have
+# rather than what somebody expected us to have. The last two carry their own
+# reasons beside them.
 ALLOWED = frozenset({
     "0BSD", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "CC0-1.0", "ISC",
     "MIT", "MIT-0", "MPL-2.0", "Unlicense", "Zlib",
@@ -60,6 +61,17 @@ ALLOWED = frozenset({
     # here. Without this entry three modules already in the tree would be
     # blocked the next time they moved.
     "LicenseRef-scancode-google-patent-license-golang",
+
+    # Fonts. GitHub reports fyne.io/fyne/v2 as "BSD-3-Clause AND OFL-1.1",
+    # measured on 2026-10-14 for both v2.8.1 and v2.8.2, because the toolkit
+    # carries Noto Sans and Inter Symbols in theme/font. Both are already
+    # compiled into the window and named in THIRD-PARTY-NOTICES.md with the
+    # full licence text, beside the Inter this project embeds itself. The OFL
+    # permits a font to be bundled with any software, and a font is data the
+    # program draws with rather than code linked into it, so it puts nothing
+    # on the GPL-3.0 code around it. Recorded here on the day the toolkit
+    # moved, which was the first time the gate saw it.
+    "OFL-1.1",
 })
 
 # Packages whose licence GitHub cannot resolve and which a person has already
@@ -94,11 +106,25 @@ EXCEPTIONS = {
 # refuses to let slide. That guard is what makes this skip honest.
 SKIPPED_ECOSYSTEMS = frozenset({"actions"})
 
+# Manifests of the tools CI installs, skipped for the same reason as the
+# actions above: what they list runs on a CI runner and is never in anything
+# this project ships.
+#
+# Named one file at a time rather than as the pip ecosystem, so a Python
+# dependency of anything shipped would still be asked. The semgrep requirements
+# went from one line to every package a clean install brings on 2026-10-14, so
+# that vulnerability scanners read what CI really installs, and that put 65 new
+# names in front of this gate - four of them with a licence GitHub leaves empty
+# or describes with an identifier of its own. Vulnerabilities in this file are
+# still checked, by the dependency review action and by OSV-Scanner.
+SKIPPED_MANIFESTS = frozenset({".github/requirements-semgrep.txt"})
+
 
 def added(review):
     return [d for d in review
             if str(d.get("change_type", "")) == "added"
-            and str(d.get("ecosystem", "")).lower() not in SKIPPED_ECOSYSTEMS]
+            and str(d.get("ecosystem", "")).lower() not in SKIPPED_ECOSYSTEMS
+            and str(d.get("manifest", "")) not in SKIPPED_MANIFESTS]
 
 
 def parts_of(expression):

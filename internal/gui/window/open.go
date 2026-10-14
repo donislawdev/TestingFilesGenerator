@@ -369,9 +369,9 @@ func FirstScreen(h Host) fyne.CanvasObject {
 //
 // Moved there from a strip above the tabs on 2026-08-19, on the owner's
 // decision. It is built per screen rather than once for the window, and that is
-// what the move costs: every screen has to place it, including About, which has
-// no run to start and gets a bar holding nothing else. The alternative was a
+// what the move costs: every screen has to place it. The alternative was a
 // second strip under the tabs, which is two bars at the foot of one window.
+// About has no bar since 2026-09-23 and carries both buttons in cards instead.
 //
 // It stays on every screen either way, which is not decoration - a button asking
 // for money that appears on some screens and not others is a button people
