@@ -46,13 +46,20 @@ const (
 	liOpen
 	liClose
 	ulClose
+	// The table opens on a line of its own and its head row on the next, so
+	// an indented page can put the row a level further in.
 	tableOpen
+	tableHead
 	rowOpen
 	cellSep
 	rowClose
 	tableClose
 	quoteOpen
 	quoteClose
+	// The list of links around its items, which are spelled as the items of
+	// any list.
+	linksOpen
+	linksClose
 	// The paragraphs in other scripts, and a picture's line around its name
 	// and its base64.
 	scripts
@@ -95,14 +102,20 @@ var plain = markup{
 	liOpen:    "<li>",
 	liClose:   "</li>\n",
 	ulClose:   "</ul>\n",
-	tableOpen: "<table>\n<tr><th>id</th><th>field</th><th>value</th></tr>\n",
+	tableOpen: "<table>\n",
+	tableHead: "<tr><th>id</th><th>field</th><th>value</th></tr>\n",
 	rowOpen:   "<tr><td>",
 	cellSep:   "</td><td>",
 	rowClose:  "</td></tr>\n",
 	// The table closes and the quote holds a paragraph.
-	tableClose:    "</table>\n",
-	quoteOpen:     "<blockquote><p>",
-	quoteClose:    "</p></blockquote>\n",
+	tableClose: "</table>\n",
+	quoteOpen:  "<blockquote><p>",
+	quoteClose: "</p></blockquote>\n",
+	// The id is what the first link points at, and one no document property
+	// has: DOMPurify 3.4.17 takes out an id that would shadow one - links and
+	// forms both, measured on 2026-10-14 - and the link would point nowhere.
+	linksOpen:     `<ul id="tfg-links">` + "\n",
+	linksClose:    "</ul>\n",
 	scripts:       international,
 	pictureLead:   `<p><img alt="`,
 	pictureTail:   `"></p>` + "\n",
@@ -249,16 +262,17 @@ func (s settings) styleName() string {
 	return s.styles
 }
 
-// spelling is how these settings spell a page.
+// spelling is how these settings spell a page. An indented page is spelled as
+// a page of lines and indented as it is written.
 func (s settings) spelling() *markup {
-	return spellings[spellingKey{s.minified, s.styleName()}]
+	return spellings[spellingKey{s.minified(), s.styleName()}]
 }
 
 // lineEnding is what the manifest says the lines of the page end with: none for
 // a page on one line, which has no line to end, where lf would describe a file
 // that is not there.
 func (s settings) lineEnding() string {
-	if s.minified {
+	if s.minified() {
 		return "none"
 	}
 	return "lf"

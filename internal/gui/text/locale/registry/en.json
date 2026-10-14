@@ -1331,8 +1331,8 @@
   },
   "Detail.format/html.formatting": {
     "description": "The sentence under the formatting setting of the html format, after what it takes.",
-    "hash": "sha256-4aa9c84f745f",
-    "other": "How the page is laid out. minified puts the whole file on one line and ends without a newline, and it shows the same as lines. A program reading line by line gets the whole page as one line - Go's bufio.Scanner refuses a line past 64 KB unless given a larger buffer - and text read by joining what the elements hold runs the last word of one block into the first word of the next."
+    "hash": "sha256-6d6322985c6f",
+    "other": "How the page is laid out. minified puts the whole file on one line and ends without a newline. indented puts two spaces in front of a line for every element it sits in, and leaves the text of pre as it is. All three show the same. A program reading line by line gets a minified page as one line - Go's bufio.Scanner refuses a line past 64 KB unless given a larger buffer - and text read by joining what the elements hold runs the last word of one block into the first word of the next. Indented with nesting puts more spaces in front of every line with each level, so nesting 1000 makes a page of at least 1.9 MB."
   },
   "Detail.format/html.inline": {
     "description": "The sentence under the inline setting of the html format, after what it takes.",
@@ -1348,6 +1348,11 @@
     "description": "The sentence under the inline_size setting of the html format, after what it takes.",
     "hash": "sha256-2433610ca9da",
     "other": "How big each picture is. Inside the page it is base64 on one line, about a third larger. lxml, and BeautifulSoup on top of it, leave out a picture past about 7.1 MB unless told to read huge trees. On Linux lxml took over 20 seconds over such a page, and with a 15 MB picture it lost the rest of the page as well."
+  },
+  "Detail.format/html.links": {
+    "description": "The sentence under the links setting of the html format, after what it takes.",
+    "hash": "sha256-c07164812721",
+    "other": "How many links the page carries, in a list above the pictures and the blocks. They go through 18 kinds in turn and then repeat - a link to the list itself, relative, to the folder above, from the root, a query alone, absolute with a query and a fragment, http, without a scheme, percent encoded, an international domain, a port, mailto:, tel:, ftp:, a download, a new window, nofollow and data: - and the text of each says which it is. Every address is on a domain kept for examples. DOMPurify with its defaults takes out the data: address and the target that opens a new window, and it ran out of 8 GB of memory over a million links, which lxml read in 3 seconds. The catalogue of every element has six links of its own, which this does not count."
   },
   "Detail.format/html.nesting": {
     "description": "The sentence under the nesting setting of the html format, after what it takes.",
@@ -2146,8 +2151,8 @@
   },
   "Label.bom": {
     "description": "The name beside the box of a setting a recipe writes as bom.",
-    "hash": "sha256-e39338101951",
-    "other": "Bom"
+    "hash": "sha256-1471d8c7a9cf",
+    "other": "BOM"
   },
   "Label.bulk": {
     "description": "The name beside the box of a setting a recipe writes as bulk.",
@@ -2408,6 +2413,11 @@
     "description": "The name beside the box of a setting a recipe writes as line_endings.",
     "hash": "sha256-c948fba2b0dd",
     "other": "Line endings"
+  },
+  "Label.links": {
+    "description": "The name beside the box of a setting a recipe writes as links.",
+    "hash": "sha256-9024c197d849",
+    "other": "Links"
   },
   "Label.message_depth": {
     "description": "The name beside the box of a setting a recipe writes as message_depth.",

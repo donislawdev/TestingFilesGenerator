@@ -43,6 +43,14 @@ const (
 	settingFormatting  = "formatting"
 	formattingLines    = "lines"
 	formattingMinified = "minified"
+	formattingIndented = "indented"
+
+	settingLinks = "links"
+	// maxLinks is a list of about 70 MB, past the one threshold measured on
+	// 2026-10-14: DOMPurify sanitized a hundred thousand links in 4.7 s and
+	// ran out of an 8 GB heap over a million, which lxml read in 2.9 s and
+	// jsdom in 31 s (docs/HTML-5-2026-10-14.md section 10).
+	maxLinks = 1000000
 
 	settingStyles  = "styles"
 	stylesNone     = "none"
@@ -60,10 +68,12 @@ type settings struct {
 	international, every bool
 	// bom is a byte order mark in front of everything else.
 	bom bool
-	// minified puts the whole page on one line, and styles says where its
+	// links is how many links the list carries, none when it is 0.
+	links int
+	// formatting is how the page is laid out, and styles says where its
 	// style rules are, if anywhere.
-	minified bool
-	styles   string
+	formatting string
+	styles     string
 	// pictures are the pictures written into the page.
 	pictures picture.Settings
 }
@@ -96,13 +106,20 @@ func properties() []format.Property {
 		Detail: "Which elements the page uses. basic is headings, paragraphs, lists, tables and quotes. " +
 			"every adds a block that uses every element of the HTML standard at least once, all 22 kinds of input and small pictures and a sound inside the page, with no script and nothing fetched from a network. " +
 			"A fragment has no head, so it leaves out the eight elements that only a whole page holds.",
+	}, {
+		Name: settingLinks, Kind: format.PropertyInt,
+		Min: 0, Max: maxLinks,
+		Default: "0",
+		Detail:  linksDetail,
 	}, textenc.Axes(textenc.SettingBOM)[0], {
 		Name: settingFormatting, Kind: format.PropertyChoice,
-		Choices: []string{formattingLines, formattingMinified},
+		Choices: []string{formattingLines, formattingMinified, formattingIndented},
 		Default: formattingLines,
-		Detail: "How the page is laid out. minified puts the whole file on one line and ends without a newline, and it shows the same as lines. " +
-			"A program reading line by line gets the whole page as one line - Go's bufio.Scanner refuses a line past 64 KB unless given a larger buffer - " +
-			"and text read by joining what the elements hold runs the last word of one block into the first word of the next.",
+		Detail: "How the page is laid out. minified puts the whole file on one line and ends without a newline. " +
+			"indented puts two spaces in front of a line for every element it sits in, and leaves the text of pre as it is. All three show the same. " +
+			"A program reading line by line gets a minified page as one line - Go's bufio.Scanner refuses a line past 64 KB unless given a larger buffer - " +
+			"and text read by joining what the elements hold runs the last word of one block into the first word of the next. " +
+			"Indented with nesting puts more spaces in front of every line with each level, so nesting 1000 makes a page of at least 1.9 MB.",
 	}, {
 		Name: settingStyles, Kind: format.PropertyChoice,
 		Choices: []string{stylesNone, stylesEmbedded, stylesInline},
@@ -147,12 +164,13 @@ func settingsOf(props map[string]string) (settings, error) {
 			core.A("Basic", core.Choice{Of: settingElements, Value: elementsBasic}),
 			core.A("Every", core.Choice{Of: settingElements, Value: elementsEvery})))
 	}
-	if v, ok := choice(props, settingFormatting, formattingLines, formattingMinified); ok {
-		s.minified = v == formattingMinified
+	if v, ok := choice(props, settingFormatting, formattingLines, formattingMinified, formattingIndented); ok {
+		s.formatting = v
 	} else {
-		return settings{}, refused(props, settingFormatting, core.Says("html.HasToBeFormatting", "it has to be %s or %s",
+		return settings{}, refused(props, settingFormatting, core.Says("html.HasToBeFormatting", "it has to be %s, %s or %s",
 			core.A("Lines", core.Choice{Of: settingFormatting, Value: formattingLines}),
-			core.A("Minified", core.Choice{Of: settingFormatting, Value: formattingMinified})))
+			core.A("Minified", core.Choice{Of: settingFormatting, Value: formattingMinified}),
+			core.A("Indented", core.Choice{Of: settingFormatting, Value: formattingIndented})))
 	}
 	if v, ok := choice(props, settingStyles, stylesNone, stylesEmbedded, stylesInline); ok {
 		s.styles = v
@@ -163,7 +181,12 @@ func settingsOf(props map[string]string) (settings, error) {
 			core.A("Inline", core.Choice{Of: settingStyles, Value: stylesInline})))
 	}
 	var err error
-	if s.nesting, err = nestingOf(props); err != nil {
+	if s.nesting, err = wholeNumber(props, settingNesting, maxNesting,
+		core.Says("html.HasToBeNesting", "it has to be a whole number from 0 to %d", core.A("Max", maxNesting))); err != nil {
+		return settings{}, err
+	}
+	if s.links, err = wholeNumber(props, settingLinks, maxLinks,
+		core.Says("html.HasToBeLinks", "it has to be a whole number from 0 to %d", core.A("Max", maxLinks))); err != nil {
 		return settings{}, err
 	}
 	codec, err := textenc.Parse("html", props)
@@ -192,20 +215,32 @@ func refused(props map[string]string, key string, reason core.Said) error {
 	return &format.PropertyValueError{Format: "html", Key: key, Value: props[key], Reason: reason}
 }
 
-// nestingOf reads how deep the content sits.
-func nestingOf(props map[string]string) (int, error) {
-	v, ok := props[settingNesting]
+// wholeNumber reads a setting that is a count from 0 to max, 0 when it is not
+// set. The sentence comes from the caller, for the reason refused gives.
+func wholeNumber(props map[string]string, key string, max int, reason core.Said) (int, error) {
+	v, ok := props[key]
 	if !ok || v == "" {
 		return 0, nil
 	}
 	n, err := strconv.Atoi(v)
-	if err != nil || n < 0 || n > maxNesting {
-		return 0, &format.PropertyValueError{
-			Format: "html", Key: settingNesting, Value: v,
-			Reason: core.Says("html.HasToBeNesting", "it has to be a whole number from 0 to %d", core.A("Max", maxNesting)),
-		}
+	if err != nil || n < 0 || n > max {
+		return 0, &format.PropertyValueError{Format: "html", Key: key, Value: v, Reason: reason}
 	}
 	return n, nil
+}
+
+// minified says the page is on one line, and indented that every line of it
+// is indented by the elements it sits in.
+func (s settings) minified() bool { return s.formatting == formattingMinified }
+func (s settings) indented() bool { return s.formatting == formattingIndented }
+
+// formattingName is the value of formatting, lines for settings made without
+// one.
+func (s settings) formattingName() string {
+	if s.formatting == "" {
+		return formattingLines
+	}
+	return s.formatting
 }
 
 // manifest is what the manifest records about the settings, every one of them
@@ -219,17 +254,14 @@ func (s settings) manifest() map[string]any {
 	if s.every {
 		elements = elementsEvery
 	}
-	layout := formattingLines
-	if s.minified {
-		layout = formattingMinified
-	}
 	return map[string]any{
 		settingStructure:   s.shape,
 		settingNesting:     s.nesting,
 		settingCharacters:  chars,
 		settingElements:    elements,
+		settingLinks:       s.links,
 		textenc.SettingBOM: s.bom,
-		settingFormatting:  layout,
+		settingFormatting:  s.formattingName(),
 		settingStyles:      s.styleName(),
 	}
 }

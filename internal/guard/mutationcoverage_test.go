@@ -249,7 +249,11 @@ var provenByProbe = map[string]string{
 
 var (
 	testDeclaration = regexp.MustCompile(`(?m)^func (Test\w+)\(`)
-	mutationTarget  = regexp.MustCompile(`"(Test\w+)"`)
+	// Either quote: Python writes a string in single quotes as readily as in
+	// double ones, and an entry written by repr() comes out in single. With
+	// only the double quote read, nine of the guards this reported as unproven
+	// on 2026-10-14 had entries it could not see (O280).
+	mutationTarget = regexp.MustCompile(`["'](Test\w+)["']`)
 )
 
 func TestEveryGuardIsEitherProvenByMutationOrListedAsNotProven(t *testing.T) {

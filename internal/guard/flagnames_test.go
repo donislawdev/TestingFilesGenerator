@@ -113,7 +113,11 @@ func TestNoMessageBelowTheSurfacesIsWrittenInFlagSpelling(t *testing.T) {
 				if err != nil {
 					return true
 				}
-				if flagLike.MatchString(value) {
+				// "xn--" is the prefix every international domain name has in
+				// ASCII (RFC 3490), never a flag - an html page links to one
+				// (docs/HTML-5-2026-10-14.md). Only those four characters are
+				// taken out, so a flag beside one is still found.
+				if flagLike.MatchString(strings.ReplaceAll(value, "xn--", "")) {
 					found++
 					t.Errorf("%s writes a setting in command line spelling:\n  %q\n"+
 						"This text is shown by the window too, and there are no flags on it.",

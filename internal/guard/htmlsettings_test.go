@@ -44,6 +44,12 @@ var htmlCombos = []map[string]string{
 	{"styles": "inline", "characters": "international"},
 	{"formatting": "minified", "styles": "inline", "elements": "every", "inline": "1", "inline_size": "1kb", "nesting": "2"},
 	{"formatting": "minified", "styles": "embedded", "elements": "every", "structure": "fragment"},
+	{"links": "1"},
+	{"links": "40", "structure": "fragment", "nesting": "2"},
+	{"formatting": "indented"},
+	{"formatting": "indented", "structure": "fragment", "nesting": "3", "bom": "true"},
+	{"formatting": "indented", "styles": "inline", "elements": "every", "links": "20", "inline": "1", "inline_size": "1kb", "nesting": "2"},
+	{"formatting": "indented", "styles": "embedded", "characters": "international", "structure": "fragment"},
 }
 
 // htmlLineEnd is what ends a line of a page of these settings - nothing, when
@@ -55,26 +61,52 @@ func htmlLineEnd(props map[string]string) string {
 	return "\n"
 }
 
+// htmlBodyDepth is how many elements the content of a page sits in before the
+// levels: html and body, or none in a fragment.
+func htmlBodyDepth(props map[string]string) int {
+	if props["structure"] == "fragment" {
+		return 0
+	}
+	return 2
+}
+
+// htmlIndent is the indentation of a line depth levels deep on a page of
+// these settings - two spaces a level when it is indented, nothing otherwise.
+func htmlIndent(props map[string]string, depth int) string {
+	if props["formatting"] != "indented" {
+		return ""
+	}
+	return strings.Repeat("  ", depth)
+}
+
 // htmlClosing is what a file of these settings ends with after its closing
 // paragraph, written here from the shape of HTML rather than taken from the
-// generator.
+// generator: each level closed at the depth it opened at, then the body a
+// level in and the document at the margin.
 func htmlClosing(props map[string]string) string {
 	nl := htmlLineEnd(props)
 	n, _ := strconv.Atoi(props["nesting"])
-	end := strings.Repeat("</div>"+nl, n)
+	end := ""
+	for k := n - 1; k >= 0; k-- {
+		end += htmlIndent(props, htmlBodyDepth(props)+k) + "</div>" + nl
+	}
 	if props["structure"] != "fragment" {
-		end += "</body>" + nl + "</html>" + nl
+		end += htmlIndent(props, 1) + "</body>" + nl + "</html>" + nl
 	}
 	return end
 }
 
 // htmlEmptyEnd matches the end of the smallest file of these settings: an
-// empty closing paragraph, with the style it carries when styles are inline,
-// and what closes after it.
+// empty closing paragraph at the depth of the content, with the style it
+// carries when styles are inline, and what closes after it.
 func htmlEmptyEnd(props map[string]string) *regexp.Regexp {
 	open := `<p>`
 	if props["styles"] == "inline" {
 		open = `<p style="[^"]+">`
+	}
+	if props["formatting"] == "indented" {
+		n, _ := strconv.Atoi(props["nesting"])
+		open = regexp.QuoteMeta("\n"+htmlIndent(props, htmlBodyDepth(props)+n)) + open
 	}
 	return regexp.MustCompile(open + `</p>` + regexp.QuoteMeta(htmlLineEnd(props)+htmlClosing(props)) + `\z`)
 }
@@ -169,8 +201,9 @@ func TestEveryHTMLSettingIsRecordedInTheManifest(t *testing.T) {
 		want  map[string]any
 	}{
 		{nil, map[string]any{"structure": "document", "nesting": 0, "characters": "ascii", "elements": "basic", "bom": false,
-			"formatting": "lines", "styles": "none", "line_ending": "lf",
+			"formatting": "lines", "styles": "none", "line_ending": "lf", "links": 0,
 			"inline": 0, "inline_format": "png", "inline_size": int64(8192), "inline_bytes": int64(0), "inline_encoded_bytes": int64(0)}},
+		{map[string]string{"formatting": "indented", "links": "25"}, map[string]any{"formatting": "indented", "line_ending": "lf", "links": 25}},
 		{map[string]string{"structure": "fragment", "nesting": "7", "characters": "international", "elements": "every", "bom": "true",
 			"formatting": "minified", "styles": "inline", "inline": "2", "inline_format": "gif", "inline_size": "1kb"},
 			map[string]any{"structure": "fragment", "nesting": 7, "characters": "international", "elements": "every", "bom": true,
@@ -195,7 +228,7 @@ func TestEveryHTMLSettingIsRecordedInTheManifest(t *testing.T) {
 // routes through the parser and have to meet.
 func TestTheDefaultHTMLSettingsAreTheBytesItAlwaysWrote(t *testing.T) {
 	spoken := map[string]string{"nesting": "0", "characters": "ascii", "elements": "basic", "bom": "false",
-		"formatting": "lines", "styles": "none", "inline": "0", "inline_format": "png", "inline_size": "8kb"}
+		"formatting": "lines", "styles": "none", "links": "0", "inline": "0", "inline_format": "png", "inline_size": "8kb"}
 	for _, size := range []int64{118, 119, 4096} {
 		if !bytes.Equal(writeEncoded(t, "html", size, nil), writeEncoded(t, "html", size, spoken)) {
 			t.Errorf("at %d B: saying nothing and saying every default produce different bytes", size)
@@ -233,6 +266,15 @@ func TestTheStructuralCheckIsToldEveryHTMLSetting(t *testing.T) {
 		// between them - the honest half of this row is what keeps the checker
 		// reading every rule there (review of #179).
 		{map[string]string{"styles": "embedded", "formatting": "minified"}, map[string]string{"styles": "inline", "formatting": "minified"}},
+		// An indented page told it is lines, and the other way round: the
+		// checker reads every line's indentation, so either is a line it
+		// refuses. And links counted to the one, not taken from the page.
+		{map[string]string{"formatting": "indented", "nesting": "2"}, map[string]string{"nesting": "2"}},
+		{map[string]string{"nesting": "2"}, map[string]string{"formatting": "indented", "nesting": "2"}},
+		{map[string]string{"formatting": "indented", "elements": "every"}, map[string]string{"elements": "every"}},
+		{map[string]string{"links": "19"}, map[string]string{"links": "18"}},
+		{map[string]string{"links": "19"}, map[string]string{}},
+		{map[string]string{}, map[string]string{"links": "1"}},
 	} {
 		path := filepath.Join(dir, strconv.Itoa(i)+".html")
 		if err := os.WriteFile(path, writeEncoded(t, "html", 32768, c.made), 0o600); err != nil {

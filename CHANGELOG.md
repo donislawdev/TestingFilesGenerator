@@ -185,6 +185,24 @@ because it turns other people's test suites red.
   BeautifulSoup on html5lib count the rules as text of the page. No rule
   names anything to fetch. Files made with the earlier settings keep their
   bytes.
+- **HTML: links, and an indented page.** `links` puts a list of that many
+  links above the pictures and the blocks. They go through 18 kinds in turn -
+  a link to the list itself, relative, to the folder above, from the root, a
+  query alone, absolute with a query and a fragment, `http`, without a
+  scheme, percent encoded, an international domain, a port, `mailto:`,
+  `tel:`, `ftp:`, a download, a new window, `nofollow` and `data:` - and the
+  text of each says which it is. Every address is on a domain kept for
+  examples. The Nu HTML Checker finds nothing wrong with any of them, and
+  jsdom, lxml, BeautifulSoup and Python's `urljoin` resolve them alike.
+  DOMPurify with its defaults takes out the `data:` address and the target
+  that opens a new window, and it ran out of 8 GB of memory over a million
+  links, which lxml read in 3 seconds. The manifest records `links`.
+  `formatting=indented` puts two spaces in front of a line for every element
+  it sits in and leaves the text of `pre` as it is - Chromium places every
+  element of it where it places them on the page of lines, and the Nu HTML
+  Checker finds nothing wrong with it. With `nesting` the spaces grow with
+  every level, so `nesting` 1000 makes a page of at least 1.9 MB. Files made
+  with the earlier settings keep their bytes.
 - **A length of time as a setting.** `duration`, `change_interval` and `keyframe_interval` take
   `10s`, `1m30s`, `1h`, `500ms` or `59.9s`, to the millisecond. A bare number
   is refused rather than read as seconds, and so is a length that does not
@@ -298,6 +316,9 @@ because it turns other people's test suites red.
   folder shows the folder the tool worked in.
 
 ### Fixed
+
+- **The window called the byte order mark setting "Bom".** It reads "BOM" now,
+  on `txt`, `md`, `xml` and `html` alike.
 
 - **Ctrl+C waited for a file that holds thousands of files to be planned.**
   A zip, a tar.gz, a mail message or a page with ten thousand small pictures

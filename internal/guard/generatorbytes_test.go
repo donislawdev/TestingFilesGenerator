@@ -474,6 +474,14 @@ func pageGoldenCases() map[string]engine.Target {
 			Properties: map[string]string{"formatting": "minified", "elements": "every", "styles": "embedded"}},
 		"html_8kib_minified_inline": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 8192), Label: true,
 			Properties: map[string]string{"formatting": "minified", "styles": "inline"}},
+		// Levels of nesting on one line, in a page and in a fragment: what
+		// closes the levels and the document is the end of the file, and these
+		// hold it to the bytes it had while it sat in the last block. Measured
+		// with the binary of main before that moved (docs/HTML-5-2026-10-14.md).
+		"html_odd_minified_nested_embedded_international": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 8193), Label: true,
+			Properties: map[string]string{"formatting": "minified", "nesting": "40", "styles": "embedded", "characters": "international"}},
+		"html_8kib_fragment_minified_nested": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"structure": "fragment", "formatting": "minified", "nesting": "3"}},
 		"html_odd_fragment_inline_international_pictures": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 8193), Label: true,
 			Properties: map[string]string{"structure": "fragment", "styles": "inline", "characters": "international",
 				"nesting": "2", "inline": "1", "inline_size": "1kb"}},

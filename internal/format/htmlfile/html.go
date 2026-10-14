@@ -56,9 +56,9 @@ func init() {
 		// than a comment.
 		Label:  format.LabelVisible,
 		Oracle: "python-html",
-		// Links come later, if at all (docs/HTML-2-2026-10-14.md section 3,
-		// B4). Declaring only what is here is what makes a recipe asking for
-		// them fail loudly instead of quietly producing something else.
+		// Declaring only what is here is what makes a recipe asking for
+		// something else fail loudly instead of quietly producing a page
+		// without it.
 		Properties:       properties(),
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
@@ -88,7 +88,7 @@ func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan
 		return format.Plan{}, err
 	}
 
-	pictures, pictureBytes, err := planPictures(ctx, r, s.pictures, s.spelling())
+	pictures, pictureBytes, err := planPictures(ctx, r, s)
 	if err != nil {
 		return format.Plan{}, err
 	}
@@ -155,9 +155,10 @@ func belowMinimum(s settings, requested, min int64) error {
 		// the reason names, whatever else was asked.
 		reason = core.Says("html.MinimumWithPictures", "the file holds whole blocks and every picture in base64, which is about a third larger than the picture itself, and together they need that much")
 	case s.adds():
-		reason = core.Says("html.MinimumWithSettings", "the file holds whole blocks and what %s, %s, %s, %s and %s add to them, and together they need that much",
+		reason = core.Says("html.MinimumWithSettings", "the file holds whole blocks and what %s, %s, %s, %s, %s, %s and %s add to them, and together they need that much",
 			core.A("Nesting", core.LabelTerm(settingNesting)), core.A("Characters", core.LabelTerm(settingCharacters)),
-			core.A("Elements", core.LabelTerm(settingElements)), core.A("BOM", core.LabelTerm(textenc.SettingBOM)),
+			core.A("Elements", core.LabelTerm(settingElements)), core.A("Links", core.LabelTerm(settingLinks)),
+			core.A("BOM", core.LabelTerm(textenc.SettingBOM)), core.A("Formatting", core.LabelTerm(settingFormatting)),
 			core.A("Styles", core.LabelTerm(settingStyles)))
 	case s.shape == structureFragment:
 		reason = core.Says("html.MinimumFragment", "a fragment holds whole blocks, and one of them needs that much")
@@ -182,6 +183,10 @@ func labelledHead(s settings, r format.Request, min int64) (head, heading string
 	label := core.Label("html", r.Bytes, r.Seed)
 	m := s.spelling()
 	heading = m[labelOpen] + label + m[labelClose]
+	if s.indented() {
+		// The label sits in the body, outside the levels.
+		heading = indentation(s.bodyDepth()) + heading
+	}
 
 	plain := s.prologue()
 	head, extra := plain, int64(0)
@@ -211,16 +216,27 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	// The label sits outside the levels of nesting, so a reader that drops
 	// elements past its depth - libxml2 does, measured on 2026-10-14 - still
 	// shows which file it read.
-	head := m.head + m.labelLine + m.settings.opening()
+	c, in := m.settings.content(), m.settings.indents()
+	head := m.head + m.labelLine
 	if err := core.WriteAll(w, []byte(head)); err != nil {
 		return err
 	}
-	if err := writePictures(ctx, w, m.pictures); err != nil {
+	if err := c.writeOpening(ctx, w, in); err != nil {
+		return err
+	}
+	if err := c.writeLinks(ctx, w, in); err != nil {
+		return err
+	}
+	if err := writePictures(ctx, w, m.pictures, in.lead); err != nil {
 		return err
 	}
 
 	rng := core.NewRand(m.seed)
-	return core.FillRecords(ctx, w, rng, p.Bytes-int64(len(head))-m.pictureBytes, m.settings.blocks())
+	filled := p.Bytes - int64(len(head)) - c.openingBytes() - c.linksBytes() - m.pictureBytes - c.closingBytes()
+	if err := core.FillRecords(ctx, w, rng, filled, c.blocks(in)); err != nil {
+		return err
+	}
+	return c.writeClosing(ctx, w, in)
 }
 
 // minimumBytes is the smallest whole page, which is what the registry declares.
@@ -228,9 +244,11 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 // do.
 func minimumBytes() int64 { return minimumFor(settings{shape: structureDocument}) }
 
-// minimumFor is the prologue, what the settings open the body with and one
-// whole block, computed from the pieces Write uses rather than written down so
-// it cannot drift away from the template.
+// minimumFor is the prologue, what the settings open the body with, one whole
+// block and what closes the levels and the document, computed from the pieces
+// Write uses rather than written down so it cannot drift away from the
+// template.
 func minimumFor(s settings) int64 {
-	return int64(len(s.prologue())) + s.openingBytes() + int64(len(s.spelling()[paraOpen])) + s.tailBytes()
+	c := s.content()
+	return int64(len(s.prologue())) + c.openingBytes() + c.linksBytes() + c.shortestRecord() + c.closingBytes()
 }

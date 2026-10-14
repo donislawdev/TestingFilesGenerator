@@ -46,23 +46,25 @@ func pictureProperties() []format.Property {
 }
 
 // pictureLine is one picture, planned: the file, and the line it sits on up
-// to where the base64 starts and after it ends.
+// to where the base64 starts and after it ends. An indented page writes the
+// depth of its content in front of the line, which the plan does not keep.
 type pictureLine struct {
 	desc        format.Descriptor
 	plan        format.Plan
 	open, close string
 }
 
-// bytes is what the line takes in the page.
-func (p pictureLine) bytes() int64 {
-	return int64(len(p.open)) + base64Length(p.plan.Bytes) + int64(len(p.close))
+// bytes is what the line takes in the page, its indentation lead bytes long.
+func (p pictureLine) bytes(lead int64) int64 {
+	return lead + int64(len(p.open)) + base64Length(p.plan.Bytes) + int64(len(p.close))
 }
 
 // planPictures plans the pictures, each with the seed of its place (RC4), so
 // asking for one more changes none of the others. The format is asked whether
 // it is a picture even when none are asked for: a value the setting cannot
 // take is a mistake either way, and eml refuses it the same way.
-func planPictures(ctx context.Context, r format.Request, s picture.Settings, m *markup) ([]pictureLine, int64, error) {
+func planPictures(ctx context.Context, r format.Request, page settings) ([]pictureLine, int64, error) {
+	s, m := page.pictures, page.spelling()
 	desc, ok, err := picture.Of(s.Format)
 	if err != nil {
 		return nil, 0, err
@@ -86,7 +88,7 @@ func planPictures(ctx context.Context, r format.Request, s picture.Settings, m *
 			return nil, 0, pageTooLarge(cp.Bytes)
 		}
 		line := pictureLine{desc: desc, plan: cp, open: pictureOpen(m, desc, i+1), close: m[pictureTail]}
-		if sum += line.bytes(); sum > maxPage {
+		if sum += line.bytes(page.leadBytes()); sum > maxPage {
 			return nil, 0, pageTooLarge(sum)
 		}
 		out = append(out, line)
@@ -130,8 +132,11 @@ func describePictures(props map[string]any, s picture.Settings, lines []pictureL
 // writePictures writes every picture's line, each file made by its own
 // generator as it is written, so a picture of a hundred megabytes never sits in
 // memory.
-func writePictures(ctx context.Context, w io.Writer, lines []pictureLine) error {
+func writePictures(ctx context.Context, w io.Writer, lines []pictureLine, lead string) error {
 	for _, p := range lines {
+		if err := core.WriteAll(w, []byte(lead)); err != nil {
+			return err
+		}
 		if err := core.WriteAll(w, []byte(p.open)); err != nil {
 			return err
 		}
