@@ -5,12 +5,15 @@ import (
 	"context"
 	"errors"
 	"maps"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/oracle"
 )
 
 // An indented page and a page of links, both 2026-10-14
@@ -206,6 +209,75 @@ func TestTheLinksAreTheKindsInTurnOnDomainsKeptForExamples(t *testing.T) {
 					t.Errorf("%v: link %d names %s, which is not a domain kept for examples", props, i+1, h[1])
 				}
 			}
+		}
+	}
+}
+
+// TestTheStructuralCheckRefusesAListOfLinksThatIsMoreThanItsLinks holds the
+// hole the review of #185 led to in the checker, with a verdict for each.
+//
+// The checker counted the links between the list and the next closing tag. A
+// list closed only at the end of the page carried every block inside it, and a
+// line that was no link sat between two that were, and both counted right. In
+// a page of lines or on one line nothing else saw it - the tags still balance,
+// and only an indented page has its indentation read. Every page here is one
+// the program wrote, broken one way.
+func TestTheStructuralCheckRefusesAListOfLinksThatIsMoreThanItsLinks(t *testing.T) {
+	const holds = "links=5 was ordered and the list of links holds something other than links"
+	type broken struct {
+		props   map[string]string
+		spoil   func(page []byte, nl string) []byte
+		verdict string
+	}
+	head := []byte(`<ul id="tfg-links">`)
+	closedAtTheEnd := func(b []byte, nl string) []byte {
+		list := bytes.Index(b, head)
+		end := list + bytes.Index(b[list:], []byte("</ul>"))
+		out := append(append([]byte{}, b[:end]...), b[end+len("</ul>"+nl):]...)
+		if at := bytes.LastIndex(out, []byte("</body>")); at >= 0 {
+			return append(append(append([]byte{}, out[:at]...), "</ul>"+nl...), out[at:]...)
+		}
+		return append(out, "</ul>"+nl...)
+	}
+	notALink := func(b []byte, nl string) []byte {
+		at := bytes.Index(b, head) + len(head) + len(nl)
+		return append(append(append([]byte{}, b[:at]...), "<li>not a link</li>"+nl...), b[at:]...)
+	}
+	neverClosed := func(b []byte, _ string) []byte {
+		list := bytes.Index(b, head)
+		return append(append([]byte{}, b[:list]...), bytes.ReplaceAll(b[list:], []byte("</ul>"), nil)...)
+	}
+	var cases []broken
+	for _, layout := range []string{"lines", "minified"} {
+		page := map[string]string{"links": "5", "formatting": layout}
+		fragment := map[string]string{"links": "5", "formatting": layout, "structure": "fragment"}
+		cases = append(cases,
+			broken{page, closedAtTheEnd, holds},
+			broken{fragment, closedAtTheEnd, holds},
+			broken{page, notALink, holds},
+			broken{page, neverClosed, "links=5 was ordered and the list of links is never closed"})
+	}
+	dir := t.TempDir()
+	for i, c := range cases {
+		nl := "\n"
+		if c.props["formatting"] == "minified" {
+			nl = ""
+		}
+		page := writeEncoded(t, "html", 16384, c.props)
+		bad := c.spoil(page, nl)
+		if bytes.Equal(bad, page) {
+			t.Fatalf("%v: breaking the page changed nothing, so there is nothing to refuse", c.props)
+		}
+		path := filepath.Join(dir, strconv.Itoa(i)+".html")
+		if err := os.WriteFile(path, bad, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		res := oracle.Strict("html", path, htmlSettingWords(c.props)...)
+		if !res.Available {
+			t.Skip("the structural check needs python")
+		}
+		if res.Err == nil || !strings.HasPrefix(res.Err.Error(), c.verdict) {
+			t.Errorf("%v, case %d: a page broken on purpose was answered with %v, and %q was the verdict owed", c.props, i, res.Err, c.verdict)
 		}
 	}
 }

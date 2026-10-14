@@ -940,7 +940,8 @@ def html_links(text, settings, nl):
     if not re.fullmatch(r"[0-9]{1,7}", count) or int(count) > 1000000:
         fail(f"the html check was told links={count!r}, which is not a whole number from 0 to 1000000")
     want = int(count)
-    start = text.find('<ul id="tfg-links">' + nl)
+    head = '<ul id="tfg-links">' + nl
+    start = text.find(head)
     if want == 0:
         if start >= 0:
             fail("links=0 was ordered and the page carries a list of links")
@@ -948,7 +949,20 @@ def html_links(text, settings, nl):
     if start < 0:
         fail(f"links={want} was ordered and the page has no list of links")
     end = text.find("</ul>" + nl, start)
-    items = re.findall(r'<li><a href="([^"]*)"[^>]*>[^<]+</a></li>' + re.escape(nl), text[start:end])
+    if end < 0:
+        fail(f"links={want} was ordered and the list of links is never closed")
+    # The list is its links and nothing else. Read item by item, a list closed
+    # only at the end of the page carried every block inside it and still
+    # counted right, in the two layouts no indentation is checked in (review of
+    # #185). Matches that do not overlap and add up to the whole list are the
+    # whole list.
+    inside = text[start + len(head):end]
+    items, covered = [], 0
+    for m in re.finditer(r'<li><a href="([^"]*)"[^>]*>[^<]+</a></li>' + re.escape(nl), inside):
+        items.append(m.group(1))
+        covered += m.end() - m.start()
+    if covered != len(inside):
+        fail(f"links={want} was ordered and the list of links holds something other than links")
     if len(items) != want:
         fail(f"links={want} was ordered and the list carries {len(items)} links")
     for n, href in enumerate(items):
