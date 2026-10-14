@@ -6,6 +6,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/archive"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/picture"
 )
 
 // Setting names. Public names under rule 10, so each is spelled once.
@@ -110,7 +111,7 @@ type settings struct {
 	// messages deep the message goes, itself counted.
 	recipients int
 	depth      int
-	pictures   pictures
+	pictures   picture.Settings
 }
 
 // international says whether the text carries the line in Polish (and in
@@ -174,7 +175,7 @@ func parse(props map[string]string) (settings, error) {
 	if s.depth, err = strconv.Atoi(values[MessageDepth]); err != nil {
 		return settings{}, core.Defect(err)
 	}
-	s.pictures, err = readPictures(values)
+	s.pictures, err = picture.Parse(values)
 	return s, err
 }
 

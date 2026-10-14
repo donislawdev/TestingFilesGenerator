@@ -18,6 +18,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/archive"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/picture"
 )
 
 const generatorVersion = "1"
@@ -242,19 +243,15 @@ func forwarded(m *message) int {
 	return 0
 }
 
-// describePictures adds the pictures to what reaches the manifest - always
-// their settings, so a test reads the same keys whether there are any or not.
+// describePictures adds the pictures to what reaches the manifest, in the
+// words html uses for its own.
 func describePictures(props map[string]any, m *message) {
 	var raw, encoded int64
 	for _, c := range m.pictures {
 		raw += c.plan.Bytes
 		encoded += c.encoded
 	}
-	props[Inline] = len(m.pictures)
-	props[InlineFormat] = m.s.pictures.format
-	props[InlineSize] = m.s.pictures.size
-	props["inline_bytes"] = raw
-	props["inline_encoded_bytes"] = encoded
+	picture.Describe(props, m.s.pictures, len(m.pictures), raw, encoded)
 }
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {

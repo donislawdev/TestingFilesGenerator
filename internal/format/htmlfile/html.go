@@ -56,9 +56,9 @@ func init() {
 		// than a comment.
 		Label:  format.LabelVisible,
 		Oracle: "python-html",
-		// Pictures inside the page, style sheets and a page on one line come
-		// later (docs/HTML-2-2026-10-14.md section 8). Declaring only what is
-		// here is what makes a recipe asking for them fail loudly instead of
+		// Style sheets and a page on one line come later
+		// (docs/HTML-2-2026-10-14.md section 8). Declaring only what is here
+		// is what makes a recipe asking for them fail loudly instead of
 		// quietly producing something else.
 		Properties:       properties(),
 		GeneratorVersion: generatorVersion,
@@ -73,6 +73,9 @@ type memo struct {
 	labelLine string // the visible heading, empty when absent
 	seed      uint64
 	settings  settings
+	pictures  []pictureLine
+	// pictureBytes is what the lines of the pictures take, together.
+	pictureBytes int64
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
@@ -81,7 +84,11 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
-	min := minimumFor(s)
+	pictures, pictureBytes, err := planPictures(r, s.pictures)
+	if err != nil {
+		return format.Plan{}, err
+	}
+	min := minimumFor(s) + pictureBytes
 	if r.Bytes < min {
 		return format.Plan{}, belowMinimum(s, r.Bytes, min)
 	}
@@ -107,6 +114,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	for k, v := range s.manifest() {
 		p.Properties[k] = v
 	}
+	describePictures(p.Properties, s.pictures, pictures)
 	if s.every && s.shape == structureFragment {
 		// The setting says every element, and a fragment cannot hold eight of
 		// them. Saying so here is what keeps the manifest from claiming a
@@ -118,7 +126,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		})
 	}
 
-	m := memo{seed: r.Seed, head: s.prologue(), settings: s}
+	m := memo{seed: r.Seed, head: s.prologue(), settings: s, pictures: pictures, pictureBytes: pictureBytes}
 	if r.Label {
 		var note *format.Note
 		m.head, m.labelLine, note = labelledHead(s, r, min)
@@ -136,6 +144,10 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 func belowMinimum(s settings, requested, min int64) error {
 	reason := core.Says("html.MinimumPage", "a page holds a head, a body and whole blocks, and one of each needs that much")
 	switch {
+	case s.pictures.Count > 0:
+		// The pictures are what a tester raises the size for, so they are what
+		// the reason names, whatever else was asked.
+		reason = core.Says("html.MinimumWithPictures", "the file holds whole blocks and every picture in base64, which is about a third larger than the picture itself, and together they need that much")
 	case s.adds():
 		reason = core.Says("html.MinimumWithSettings", "the file holds whole blocks and what %s, %s, %s and %s add to them, and together they need that much",
 			core.A("Nesting", core.LabelTerm(settingNesting)), core.A("Characters", core.LabelTerm(settingCharacters)),
@@ -195,9 +207,12 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	if err := core.WriteAll(w, []byte(head)); err != nil {
 		return err
 	}
+	if err := writePictures(ctx, w, m.pictures); err != nil {
+		return err
+	}
 
 	rng := core.NewRand(m.seed)
-	return core.FillRecords(ctx, w, rng, p.Bytes-int64(len(head)), m.settings.blocks())
+	return core.FillRecords(ctx, w, rng, p.Bytes-int64(len(head))-m.pictureBytes, m.settings.blocks())
 }
 
 // minimumBytes is the smallest whole page, which is what the registry declares.

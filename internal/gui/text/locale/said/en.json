@@ -1755,6 +1755,21 @@
     "hash": "sha256-6d00afc49eb9",
     "other": "an outline keeps its middle free for holes only with two points above it and two below - ask for {{.Least}} vertices or more, or for no holes"
   },
+  "html.APageThisLargeCannotBe": {
+    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-fcc13b4d27c7",
+    "other": "a page this large cannot be counted to the byte in this build"
+  },
+  "html.APictureInThePageIs": {
+    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-485930df62e0",
+    "other": "a picture in the page has to be a file of a picture format"
+  },
+  "html.AskForSmallerPictures": {
+    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-acf878874a21",
+    "other": "Ask for fewer or smaller pictures."
+  },
   "html.FragmentLeavesOut": {
     "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Elements}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-47bec476fafe",
@@ -1790,10 +1805,25 @@
     "hash": "sha256-3745440d090a",
     "other": "a page holds a head, a body and whole blocks, and one of each needs that much"
   },
+  "html.MinimumWithPictures": {
+    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-af57b5e328fe",
+    "other": "the file holds whole blocks and every picture in base64, which is about a third larger than the picture itself, and together they need that much"
+  },
   "html.MinimumWithSettings": {
     "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Nesting}}, {{.Characters}}, {{.Elements}}, {{.BOM}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-e1528b4b779d",
     "other": "the file holds whole blocks and what {{.Nesting}}, {{.Characters}}, {{.Elements}} and {{.BOM}} add to them, and together they need that much"
+  },
+  "html.ThePictureCannotBe": {
+    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Err}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-2c602605a691",
+    "other": "html: the {{.Format}} picture cannot be made: {{.Err}}"
+  },
+  "html.UseOneOfThePictureFormats": {
+    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Formats}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-a6669f6abe6b",
+    "other": "Use one of: {{.Formats}}."
   },
   "json.HasToBeStyle": {
     "description": "Said by internal/format/jsonfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Indented}}, {{.Minified}}, {{.RecordPerLine}}, written the way the program writes them - keep each spelled exactly that way.",

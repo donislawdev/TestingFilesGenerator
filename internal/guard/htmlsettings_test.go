@@ -16,7 +16,8 @@ import (
 
 // HTML gained four settings on 2026-10-14 - nesting, characters, elements and
 // bom - measured on eight readers before a line was written
-// (docs/HTML-2-2026-10-14.md section 11). Every guard here reads the BYTES, for
+// (docs/HTML-2-2026-10-14.md section 11), and the pictures the same day
+// (docs/HTML-3-2026-10-14.md). Every guard here reads the BYTES, for
 // the reason htmlfragment_test.go gives: the tolerant reader beside this one
 // accepts anything, and the two that build the deepest trees either flatten
 // the levels (Chromium) or drop them with their content (libxml2), so a tree
@@ -34,6 +35,8 @@ var htmlCombos = []map[string]string{
 	{"bom": "true"},
 	{"bom": "true", "structure": "fragment"},
 	{"nesting": "600", "characters": "international", "elements": "every", "bom": "true"},
+	{"inline": "2", "inline_size": "1kb"},
+	{"inline": "1", "inline_format": "svg", "inline_size": "1kb", "structure": "fragment", "nesting": "2"},
 }
 
 // htmlClosing is what a file of these settings ends with after its closing
@@ -137,9 +140,12 @@ func TestEveryHTMLSettingIsRecordedInTheManifest(t *testing.T) {
 		props map[string]string
 		want  map[string]any
 	}{
-		{nil, map[string]any{"structure": "document", "nesting": 0, "characters": "ascii", "elements": "basic", "bom": false}},
-		{map[string]string{"structure": "fragment", "nesting": "7", "characters": "international", "elements": "every", "bom": "true"},
-			map[string]any{"structure": "fragment", "nesting": 7, "characters": "international", "elements": "every", "bom": true}},
+		{nil, map[string]any{"structure": "document", "nesting": 0, "characters": "ascii", "elements": "basic", "bom": false,
+			"inline": 0, "inline_format": "png", "inline_size": int64(8192), "inline_bytes": int64(0), "inline_encoded_bytes": int64(0)}},
+		{map[string]string{"structure": "fragment", "nesting": "7", "characters": "international", "elements": "every", "bom": "true",
+			"inline": "2", "inline_format": "gif", "inline_size": "1kb"},
+			map[string]any{"structure": "fragment", "nesting": 7, "characters": "international", "elements": "every", "bom": true,
+				"inline": 2, "inline_format": "gif", "inline_size": int64(1024), "inline_bytes": int64(2048), "inline_encoded_bytes": int64(2736)}},
 	} {
 		p, err := d.Generator.Plan(format.Request{Bytes: 65536, Seed: 7741, Label: true, Properties: c.props})
 		if err != nil {
@@ -153,11 +159,12 @@ func TestEveryHTMLSettingIsRecordedInTheManifest(t *testing.T) {
 	}
 }
 
-// TestTheDefaultHTMLSettingsAreTheBytesItAlwaysWrote is the way back, for the
-// four settings at once: saying nothing and saying every default out loud are
-// two routes through the parser and have to meet.
+// TestTheDefaultHTMLSettingsAreTheBytesItAlwaysWrote is the way back, for every
+// setting at once: saying nothing and saying every default out loud are two
+// routes through the parser and have to meet.
 func TestTheDefaultHTMLSettingsAreTheBytesItAlwaysWrote(t *testing.T) {
-	spoken := map[string]string{"nesting": "0", "characters": "ascii", "elements": "basic", "bom": "false"}
+	spoken := map[string]string{"nesting": "0", "characters": "ascii", "elements": "basic", "bom": "false",
+		"inline": "0", "inline_format": "png", "inline_size": "8kb"}
 	for _, size := range []int64{118, 119, 4096} {
 		if !bytes.Equal(writeEncoded(t, "html", size, nil), writeEncoded(t, "html", size, spoken)) {
 			t.Errorf("at %d B: saying nothing and saying every default produce different bytes", size)
@@ -181,6 +188,10 @@ func TestTheStructuralCheckIsToldEveryHTMLSetting(t *testing.T) {
 		{map[string]string{}, map[string]string{"elements": "every"}},
 		{map[string]string{"bom": "true"}, map[string]string{"bom": "false"}},
 		{map[string]string{}, map[string]string{"bom": "true"}},
+		{map[string]string{"inline": "2", "inline_size": "1kb"}, map[string]string{"inline": "1", "inline_size": "1kb"}},
+		{map[string]string{}, map[string]string{"inline": "1"}},
+		{map[string]string{"inline": "1", "inline_format": "gif", "inline_size": "1kb"}, map[string]string{"inline": "1", "inline_size": "1kb"}},
+		{map[string]string{"inline": "1", "inline_size": "1kb"}, map[string]string{"inline": "1", "inline_size": "2kb"}},
 	} {
 		path := filepath.Join(dir, strconv.Itoa(i)+".html")
 		if err := os.WriteFile(path, writeEncoded(t, "html", 32768, c.made), 0o600); err != nil {

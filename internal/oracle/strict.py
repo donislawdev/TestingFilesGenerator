@@ -755,6 +755,83 @@ def html_settings(text, shape, settings):
         fail(f"the html check was told elements={elements!r}, which is not one this tool writes")
     if "script" in names:
         fail("the page carries a script, which no setting of this format writes")
+    html_pictures(text, settings)
+
+
+# The picture formats a page may carry and what each is called inside it - its
+# extension in the alt text and its media type in the data: URL - written here
+# from the formats' own declarations on 2026-10-14 rather than imported.
+HTML_PICTURE_TYPES = {
+    "avif": (".avif", "image/avif"), "bmp": (".bmp", "image/bmp"), "gif": (".gif", "image/gif"),
+    "ico": (".ico", "image/vnd.microsoft.icon"), "jpg": (".jpg", "image/jpeg"), "jxl": (".jxl", "image/jxl"),
+    "png": (".png", "image/png"), "svg": (".svg", "image/svg+xml"), "tiff": (".tiff", "image/tiff"),
+    "webp": (".webp", "image/webp"),
+}
+# One picture's line, as the generator writes it: the base64 on one line,
+# because the Nu HTML Checker calls a line break inside src an error
+# (docs/HTML-3-2026-10-14.md section 1).
+HTML_PICTURE = re.compile(r'<p><img alt="inline_([0-9]{4,5})(\.[a-z]+)" src="data:([a-z0-9.+/-]+);base64,([A-Za-z0-9+/=]*)"></p>\n')
+
+
+def html_size(word):
+    """A size as a recipe writes it, in units of 1024 or as a byte count."""
+    match = re.fullmatch(r"([0-9]{1,15})(b|kb|mb|gb)?", word.lower())
+    if not match:
+        fail(f"the html check was told inline_size={word!r}, which is not a size this tool takes")
+    return int(match.group(1)) * {None: 1, "b": 1, "kb": 1024, "mb": 1024 ** 2, "gb": 1024 ** 3}[match.group(2)]
+
+
+def html_pictures(text, settings):
+    """The pictures inline ordered: as many as were asked, numbered in order,
+    each of the format and size asked and each a file its own check accepts.
+
+    TOLD, never counted from the page and believed, for the reason the shape
+    check gives. The catalogue of every element carries pictures of its own,
+    and they are told apart by their alt text.
+    """
+    count = settings.get("inline", "0")
+    if not re.fullmatch(r"[0-9]{1,5}", count) or int(count) > 10000:
+        fail(f"the html check was told inline={count!r}, which is not a whole number from 0 to 10000")
+    kind = settings.get("inline_format", "png")
+    if kind not in HTML_PICTURE_TYPES:
+        fail(f"the html check was told inline_format={kind!r}, which is not a picture format")
+    size = html_size(settings.get("inline_size", "8kb"))
+    ext, media = HTML_PICTURE_TYPES[kind]
+    found = HTML_PICTURE.findall(text)
+    if len(found) != int(count):
+        fail(f"inline={count} was ordered and the page carries {len(found)} pictures")
+    if "base64," in text and text.count('<img alt="inline_') != len(found):
+        fail("a picture of the page is not on a line of its own in the shape this tool writes")
+    import base64
+    import binascii
+
+    for n, (number, got_ext, got_media, b64) in enumerate(found, start=1):
+        if int(number) != n or got_ext != ext or got_media != media:
+            fail(f"picture {n} is inline_{number}{got_ext} in {got_media}, and inline_{n:04d}{ext} in {media} was ordered")
+        try:
+            raw = base64.b64decode(b64, validate=True)
+        except binascii.Error as exc:
+            fail(f"picture {n} is not base64: {exc}")
+        if len(raw) != size:
+            fail(f"picture {n} is {len(raw)} B, and inline_size={size} B was ordered")
+        html_picture_verdict(kind, n, raw)
+
+
+def html_picture_verdict(kind, n, raw):
+    """One picture judged by its own format's check. Those end the process with
+    their verdict, so each is caught here and only a failure is passed on."""
+    import contextlib
+    import io
+
+    said = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(said):
+            CHECKS[kind](raw)
+    except SystemExit as exc:
+        if exc.code not in (0, None):
+            fail(f"picture {n} is not a good {kind} file: {said.getvalue().strip()}")
+        return
+    fail(f"the {kind} check gave no verdict on picture {n}")
 
 
 def check_html(data, settings):
