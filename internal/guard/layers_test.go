@@ -171,7 +171,7 @@ var sameLayerAllowed = map[string][]string{
 	"internal/format/yamlfile":   {"internal/format"},
 	"internal/format/tomlfile":   {"internal/format", "internal/format/textenc"},
 	"internal/format/xmlfile":    {"internal/format", "internal/format/textenc"},
-	"internal/format/htmlfile":   {"internal/format"},
+	"internal/format/htmlfile":   {"internal/format", "internal/format/textenc"},
 	"internal/format/svgfile":    {"internal/format", "internal/format/imagedim"},
 	"internal/format/bmp":        {"internal/format", "internal/format/imagelabel", "internal/format/imagedim"},
 	"internal/format/opc":        {"internal/format"},

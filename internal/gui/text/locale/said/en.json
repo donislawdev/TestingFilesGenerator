@@ -1755,6 +1755,26 @@
     "hash": "sha256-6d00afc49eb9",
     "other": "an outline keeps its middle free for holes only with two points above it and two below - ask for {{.Least}} vertices or more, or for no holes"
   },
+  "html.FragmentLeavesOut": {
+    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Elements}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-47bec476fafe",
+    "other": "A fragment has no head and no skeleton, so {{.Elements}} are not in it."
+  },
+  "html.HasToBeCharacters": {
+    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.ASCII}}, {{.International}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-135f7b4d551c",
+    "other": "it has to be {{.ASCII}} or {{.International}}"
+  },
+  "html.HasToBeElements": {
+    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Basic}}, {{.Every}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-d471c09eb934",
+    "other": "it has to be {{.Basic}} or {{.Every}}"
+  },
+  "html.HasToBeNesting": {
+    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Max}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-ed9c43e64c22",
+    "other": "it has to be a whole number from 0 to {{.Max}}"
+  },
   "html.HasToBeStructure": {
     "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Document}}, {{.Fragment}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-1a83745fa4b2",
@@ -1769,6 +1789,11 @@
     "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-3745440d090a",
     "other": "a page holds a head, a body and whole blocks, and one of each needs that much"
+  },
+  "html.MinimumWithSettings": {
+    "description": "Said by internal/format/htmlfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Nesting}}, {{.Characters}}, {{.Elements}}, {{.BOM}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-e1528b4b779d",
+    "other": "the file holds whole blocks and what {{.Nesting}}, {{.Characters}}, {{.Elements}} and {{.BOM}} add to them, and together they need that much"
   },
   "json.HasToBeStyle": {
     "description": "Said by internal/format/jsonfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Indented}}, {{.Minified}}, {{.RecordPerLine}}, written the way the program writes them - keep each spelled exactly that way.",

@@ -57,9 +57,25 @@
       "sha256": "659e48806e3abe402148f8246921769d66f3ea9d2f73e94888a3fb7abcf76977",
       "measured_on": "2026-08-29"
     },
+    "html_16kib_every": {
+      "bytes": 16384,
+      "sha256": "68b1ebd280622c1aa3489480267742e4c3612f4e7c76ac9bac67b78b2948943d"
+    },
+    "html_64kib_everything": {
+      "bytes": 65536,
+      "sha256": "716512ac2db8bdadafed56cd909a60d7c4de4c2d31ed0516eee9a9f5b5a6df5c"
+    },
     "html_8kib": {
       "bytes": 8192,
       "sha256": "7fcd7bd8fa49fb5e7392ef33d8f1537c96dabb2157bbda7cfe2eba75c02513a7"
+    },
+    "html_8kib_nested_international": {
+      "bytes": 8192,
+      "sha256": "26fe8e7ff4be5165778b11aef372de12c39a07fcb1271e9ef29701ebb2ac3bbd"
+    },
+    "html_odd_fragment_bom_nested": {
+      "bytes": 8193,
+      "sha256": "9dde31f7afb6857f78283ccc516ea3f609d31d60f08fa19f335f869aa0f494f7"
     },
     "ico_32kib": {
       "bytes": 32768,
