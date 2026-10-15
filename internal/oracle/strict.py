@@ -3828,7 +3828,12 @@ def check_rtf(data, settings=None):
     if not text.endswith("}"):
         fail("the document does not end with the brace that closes it")
     paras, deepest = rtf_read(text, settings)
-    nesting = int(settings.get("nesting", "0"))
+    # Told before it is read, the way html_settings is: a value that is not a
+    # number is a verdict, not a traceback (review of #191).
+    raw = settings.get("nesting", "0")
+    if not re.fullmatch(r"[0-9]{1,8}", raw) or int(raw) > 10000000:
+        fail(f"the rtf check was told nesting={raw!r}, which is not a whole number from 0 to 10000000")
+    nesting = int(raw)
     trailing = len(text) - len(text.rstrip("}"))
     if trailing != nesting + 1:
         fail(f"the document ends with {trailing} closing brace(s), and nesting {nesting} closes {nesting + 1}")
@@ -3852,10 +3857,12 @@ def rtf_international(paras, text, settings):
     """The five paragraphs in other scripts, each read back to the sentence,
     when characters is international, and no escape at all when it is ascii."""
     if settings.get("characters") != "international":
-        # \u with its number, not \uc - the header declares \uc1 in every file.
-        for mark in (r"\\u-?[0-9]", r"\\'", r"\\rtlpar"):
-            if re.search(mark, text):
-                fail(f"characters ascii, and the document carries {mark!r}")
+        # A number and a right to left paragraph are words rtf_read does not
+        # allow an ascii document, so they are refused there. A code page byte
+        # is not a word, and under codepage rtf_read lets it through - so it
+        # is the one mark asked here (review of #191).
+        if RTF_BS + "'" in text:
+            fail("characters ascii, and the document carries a code page byte")
         return
     norm = [unicodedata.normalize("NFC", p) for p in paras]
     for sentence in RTF_SCRIPTS:
@@ -3868,19 +3875,21 @@ def rtf_international(paras, text, settings):
 
 def rtf_every(text, settings):
     """With every, each part where text hides, the properties and the page
-    header and footer in front of the label. With basic, none of them."""
-    if settings.get("elements") == "every":
-        for piece in RTF_EVERY_PIECES:
-            if piece not in text:
-                fail(f"elements every, and no {piece!r}")
-        first = text.find("tfg - rtf - ") if "tfg - rtf - " in text else len(text)
-        for piece in RTF_EVERY_PIECES[:3]:
-            if text.find(piece) > first:
-                fail(f"{piece!r} comes after the first paragraph, and RTF puts it in front of the text")
+    header and footer in front of the label.
+
+    With basic there is nothing to ask here: every word of those parts is
+    missing from the words rtf_read allows a basic document, so a basic file
+    carrying one is refused there, and a second check of the same words could
+    never fail (review of #191)."""
+    if settings.get("elements") != "every":
         return
-    for word in ("footnote", "annotation", "field", "header", "footer", "info", "page", "sect"):
-        if re.search(r"\\" + word + r"(?![a-z])", text):
-            fail(f"elements basic, and the document carries \\{word}")
+    for piece in RTF_EVERY_PIECES:
+        if piece not in text:
+            fail(f"elements every, and no {piece!r}")
+    first = text.find("tfg - rtf - ") if "tfg - rtf - " in text else len(text)
+    for piece in RTF_EVERY_PIECES[:3]:
+        if text.find(piece) > first:
+            fail(f"{piece!r} comes after the first paragraph, and RTF puts it in front of the text")
 
 
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,

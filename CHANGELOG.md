@@ -56,8 +56,9 @@ because it turns other people's test suites red.
   every place a document keeps text a reader may show or leave out -
   document properties, a page header and footer, a footnote, a comment,
   hidden text, a link, a bookmark and groups a reader has to skip or does not
-  know - and each part says where it is. Six readers returned five different
-  sets of them. `nesting` puts the content up to 10 000 000 groups deep. The
+  know - and each part says where it is. LibreOffice and striprtf returned the
+  same parts, and every other reader a set of its own, with two versions of
+  pandoc apart as well. `nesting` puts the content up to 10 000 000 groups deep. The
   smallest document is 65 B, and the manifest records every setting and the
   code page the header declares. A large document is a long one to read:
   at 100 MiB pandoc took 95 s and 9.6 GB of memory, and LibreOffice had not
@@ -363,8 +364,9 @@ because it turns other people's test suites red.
   gains an `rtf` target of 65 B, and the recipe `tfg preset eject
   empty-and-minimal` prints is one target longer. A manifest from a run of
   that preset records the hash of that recipe, so its `recipe_hash` differs
-  from one written before. No generated file changes, and a run that names
-  its `formats` is untouched.
+  from one written before. Every file the preset wrote before is written as
+  it was, the `rtf` file is the only new one, and a run that names its
+  `formats` is untouched.
 
 - **The `eml` settings say what Thunderbird and MimeKit do with them.**
   Measured with Thunderbird 157.0.1 and MimeKit 4.18.1. `charset` says that
