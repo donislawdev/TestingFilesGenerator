@@ -94,12 +94,25 @@ def warm(trees) -> str:
     return "\n".join(faults)
 
 
+def first_complaint(output: str) -> str:
+    """The compiler's first complaint, the line a BROKEN verdict carries.
+
+    On CI the verdict is all there is - fifteen BROKEN entries of the first
+    run had to be built again by hand to learn why (2026-10-15). Go prints the
+    path relative to the directory it ran in, so a worker tree's own path does
+    not reach the report. Empty when no line names a Go file.
+    """
+    return next((line.strip() for line in output.splitlines() if ".go:" in line), "")
+
+
 def check_canary_in(tree) -> bool:
     """True when a non compiling mutation is correctly reported as BROKEN.
 
     Runs in a worker tree like every other entry, so the real repository is
     never mutated - not even by the one entry that is meant to leave the tree
-    unable to compile.
+    unable to compile. The complaint has to come through as well, naming the
+    file and the variable the canary added, or a BROKEN below says nothing
+    about why.
     """
     label, rel, old, new, test = CANARY
     path = tree.file(rel)
@@ -109,13 +122,19 @@ def check_canary_in(tree) -> bool:
         return False
 
     with mutation_applied(path, original, original.replace(old.encode(), new.encode(), 1)):
-        compiled = run_test(test, tree.path).compiled
+        result = run_test(test, tree.path)
 
-    if compiled:
+    if result.compiled:
         print(f"HOLE  {label}\n      a tree that does not compile was reported as compiling, "
               f"so every BROKEN below is unreliable")
         return False
-    print(f"ok    {label}\n      the broken tree was detected")
+    complaint = first_complaint(result.output)
+    if Path(rel).name not in complaint or "orphan" not in complaint:
+        print(f"HOLE  {label}\n      the compiler's complaint about {rel} did not reach the verdict, "
+              f"so every BROKEN below says nothing about why\n"
+              f"      {complaint or 'no output line names a Go file'}")
+        return False
+    print(f"ok    {label}\n      the broken tree was detected\n      {complaint}")
     return True
 
 
@@ -257,11 +276,7 @@ def judge(index: int, entry, tree, budget, deadline: float,
     if result.capped:
         return Outcome(index, "CAPPED", label, rel, test, secs, result.capped)
     if not result.compiled:
-        # The compiler's first complaint goes with the verdict. On CI the
-        # verdict is all there is - fifteen BROKEN entries of the first run
-        # had to be built again by hand to learn why (2026-10-15).
-        complaint = next((line.strip() for line in result.output.splitlines() if ".go:" in line), "")
-        return Outcome(index, "BROKEN", label, rel, test, secs, complaint)
+        return Outcome(index, "BROKEN", label, rel, test, secs, first_complaint(result.output))
     if result.passed:
         reason = unjudged_reason(test, tree.path)
         if reason:
