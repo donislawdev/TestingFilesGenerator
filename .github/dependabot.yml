@@ -89,6 +89,13 @@ updates:
   # package it installs. Those move together - a semgrep release raises the
   # floor of what it needs - and one pull request per package would leave
   # each of them red against the others' old pins.
+  #
+  # Grouping alone was not enough. Dependabot raised every line of the list on
+  # its own, past what semgrep allows, and pip refused the set (#184: boltons
+  # 26.2.0 against semgrep's boltons~=21.0). Since 2026-10-15 the list is
+  # compiled from requirements-semgrep.in by pip-compile, and an .in file in
+  # the directory makes Dependabot run pip-compile itself, so what it proposes
+  # is a set pip resolved. How to compile it by hand is written in the .in file.
   - package-ecosystem: pip
     directory: "/.github"
     schedule:
