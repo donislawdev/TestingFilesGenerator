@@ -229,7 +229,8 @@ func TestEveryHTMLSettingIsRecordedInTheManifest(t *testing.T) {
 func TestTheDefaultHTMLSettingsAreTheBytesItAlwaysWrote(t *testing.T) {
 	spoken := map[string]string{"nesting": "0", "characters": "ascii", "elements": "basic", "bom": "false",
 		"formatting": "lines", "styles": "none", "links": "0", "inline": "0", "inline_format": "png", "inline_size": "8kb"}
-	for _, size := range []int64{118, 119, 4096} {
+	smallest := htmlMinimum(t)
+	for _, size := range []int64{smallest, smallest + 1, 4096} {
 		if !bytes.Equal(writeEncoded(t, "html", size, nil), writeEncoded(t, "html", size, spoken)) {
 			t.Errorf("at %d B: saying nothing and saying every default produce different bytes", size)
 		}

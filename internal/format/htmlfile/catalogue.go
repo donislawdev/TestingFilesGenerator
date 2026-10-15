@@ -42,15 +42,22 @@ const (
 		`<meta name="description" content="Every element of the HTML standard, each one at least once">` + "\n" +
 		"<style>\nmark { background: #ffeb3b }\n</style>\n"
 
+	// catalogueBody is the elements themselves. The forms article is
+	// tfg-forms rather than forms for the reason the links list is tfg-links:
+	// an id that shadows a document property is taken out by DOMPurify 3.4.17,
+	// and the two links to it then lead nowhere (O282, until 2026-10-15). The
+	// hidden field is named tfg-hidden for the same reason - a name hidden
+	// shadows document.hidden, DOMPurify took it out, and the field left a
+	// submitted form without one (measured 2026-10-15).
 	catalogueBody = `<header>
 <hgroup><h1>Every element</h1><p>Every element of the HTML standard, each one at least once.</p></hgroup>
-<nav><ul><li><a href="#text">Text</a></li><li><a href="#tables">Tables</a></li><li><a href="#forms">Forms</a></li><li><a href="#media">Media</a></li></ul></nav>
+<nav><ul><li><a href="#text">Text</a></li><li><a href="#tables">Tables</a></li><li><a href="#tfg-forms">Forms</a></li><li><a href="#media">Media</a></li></ul></nav>
 <search><form><label>Search <input type="search" name="q"></label> <button type="submit">Find</button></form></search>
 </header>
 <main>
 <article id="text">
 <h2>Text</h2>
-<p>Plain <a href="#forms">link</a>, <abbr title="HyperText Markup Language">HTML</abbr>, <b>bold</b>, <bdi>name</bdi>, <bdo dir="rtl">reversed</bdo>, <cite>a title</cite>, <code>code()</code>, <data value="42">forty two</data>, <del>removed</del>, <dfn>term</dfn>, <em>stressed</em>, <i>alternate</i>, <ins>added</ins>, <kbd>Ctrl</kbd>, <mark>marked</mark>, <q>quoted</q>, <s>no longer accurate</s>, <samp>output</samp>, <small>fine print</small>, <span>span</span>, <strong>important</strong>, H<sub>2</sub>O, x<sup>2</sup>, <time datetime="2026-10-14">14 October 2026</time>, <u>annotated</u>, <var>n</var>, long<wbr>word, a line<br>break.</p>
+<p>Plain <a href="#tfg-forms">link</a>, <abbr title="HyperText Markup Language">HTML</abbr>, <b>bold</b>, <bdi>name</bdi>, <bdo dir="rtl">reversed</bdo>, <cite>a title</cite>, <code>code()</code>, <data value="42">forty two</data>, <del>removed</del>, <dfn>term</dfn>, <em>stressed</em>, <i>alternate</i>, <ins>added</ins>, <kbd>Ctrl</kbd>, <mark>marked</mark>, <q>quoted</q>, <s>no longer accurate</s>, <samp>output</samp>, <small>fine print</small>, <span>span</span>, <strong>important</strong>, H<sub>2</sub>O, x<sup>2</sup>, <time datetime="2026-10-14">14 October 2026</time>, <u>annotated</u>, <var>n</var>, long<wbr>word, a line<br>break.</p>
 <p><ruby>base<rp>(</rp><rt>annotation</rt><rp>)</rp></ruby> and <math><mi>x</mi><mo>=</mo><mn>2</mn></math> and <slot name="note">slot fallback</slot> and <tfg-note>a custom element</tfg-note>.</p>
 <h3>Third level</h3>
 <h4>Fourth level</h4>
@@ -78,12 +85,12 @@ const (
 <tfoot><tr><td colspan="3">footer row</td></tr></tfoot>
 </table>
 </article>
-<article id="forms">
+<article id="tfg-forms">
 <h2>Forms</h2>
 <form>
 <fieldset>
 <legend>Every type of input</legend>
-<label>hidden <input type="hidden" name="hidden" value="h"></label>
+<label>hidden <input type="hidden" name="tfg-hidden" value="h"></label>
 <label>text <input type="text" name="text"></label>
 <label>search <input type="search" name="search"></label>
 <label>tel <input type="tel" name="tel"></label>

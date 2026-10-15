@@ -14,6 +14,29 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Breaking
+
+- **An HTML page with no label has a title that says Page.** The smallest
+  page and every page written with `--clean` carried an empty title, which
+  the HTML standard does not allow and the Nu HTML Checker reports as an
+  error. They now carry `<title>Page</title>`, a word that says nothing
+  about this tool, since `--clean` is there to keep it out of the file.
+  Pages with a label are unchanged. The smallest HTML page grows from 118 B
+  to 122 B, so 118 B to 121 B are now refused, and `tfg preset eject
+  empty-and-minimal` prints 122 where it printed 118 - a manifest from a run
+  of that preset records a different `recipe_hash`.
+- **The catalogue of every element renames its forms section and its hidden
+  field.** With `elements=every` the forms section is `id="tfg-forms"` and
+  the hidden field is `name="tfg-hidden"`, the way the list of links has
+  always been `tfg-links`. DOMPurify removes an id or a name that shadows a
+  property of the document, so after sanitising, the two links to the forms
+  section led nowhere and the hidden field left a submitted form without its
+  name. The smallest catalogue grows from 6924 B to 6944 B.
+- **A newsletter's page says its language.** With `layout=newsletter` the
+  HTML part opens with `<html lang="en">`, as the pages of the `html` format
+  do. The smallest newsletter grows by 10 B, and by 12 B in quoted-printable
+  and base64. A message laid out `simple` is unchanged.
+
 ### Added
 
 - **Films: the `webm` format.** A WebM video with an AV1 picture and no
@@ -312,6 +335,13 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The `eml` settings say what Thunderbird and MimeKit do with them.**
+  Measured with Thunderbird 157.0.1 and MimeKit 4.18.1. `charset` says that
+  MimeKit reads Latin-2 and Windows-1250 right once a code page provider is
+  registered. `message_depth` says that Thunderbird shows 32 levels in full,
+  and past that shows only the headers of the 32nd message inside, without a
+  word. `filename_style` says that Thunderbird calls an attachment with no
+  name Part 1.2, Part 1.3 and so on.
 - **`empty-and-minimal` now includes the films, GeoJSON and mail.** The preset builds the
   smallest file of every format this build has, so with `formats` left at
   `all` it gains a `webm`, an `mp4`, a `geojson` and an `eml` target, and the recipe

@@ -1093,6 +1093,12 @@ def check_html(data, settings):
             fail("the document does not open with an HTML5 doctype")
         if not closes:
             fail("the document does not end with a closing html tag")
+        # A title with text in it. The standard asks a title for text, and the
+        # Nu HTML Checker calls an empty one an error - which every page with no
+        # label had until 2026-10-15, the smallest and every --clean one (O277).
+        title = re.search(r"<title>(.*?)</title>", text, re.S | re.I)
+        if not title or not title.group(1).strip():
+            fail("the document has no title with text in it, which the HTML standard asks of every document")
     else:
         # A fragment is what a content field or the body of an email holds. The
         # skeleton being ABSENT is the whole of what was ordered, so its
@@ -3196,6 +3202,9 @@ def eml_frame(text, s, unsubscribe):
         return
     page = [
         (lines[0] == "<!DOCTYPE html>", "doctype"),
+        # The language of the page, as the html format's pages say theirs - the
+        # Nu HTML Checker asks for it (until 2026-10-15 the newsletter had none).
+        ('<html lang="en">' in body, "language of the page"),
         (eml_sheet(body), "style sheet in its head"),
         (body.count('<table role="presentation"') == 2, "two tables of presentation"),
         (re.search(r'<table role="presentation" class="frame" width="600"', body), "frame 600 wide"),

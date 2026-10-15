@@ -458,6 +458,13 @@ func pageGoldenCases() map[string]engine.Target {
 			Properties: map[string]string{"structure": "fragment", "bom": "true", "nesting": "2"}},
 		"html_64kib_everything": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"nesting": "600", "characters": "international", "elements": "every", "bom": "true"}},
+		// The two pages no label fills the title of, which carry the
+		// placeholder: the smallest document, where the label has no room, and
+		// a page under --clean. No case held either until 2026-10-15, when the
+		// placeholder went from empty to Page and moved bytes nothing pinned
+		// (O277, docs/HTML-6-2026-10-15.md).
+		"html_smallest_page": {ID: "g", Format: "html", Sizes: engine.Uniform(1, 122), Label: true},
+		"html_4kib_clean":    {ID: "g", Format: "html", Sizes: engine.Uniform(1, 4096), Label: false},
 		// Pictures inside the page: the default format, and an odd size in a
 		// fragment inside levels, with a format whose own bytes are text. Each
 		// picture is the file its format writes alone, so these also pin the

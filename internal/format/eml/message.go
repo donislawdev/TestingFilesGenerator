@@ -189,7 +189,7 @@ func (m *message) plain(o *out) {
 // the pictures before them, in its frame.
 func (m *message) html(o *out) {
 	eol := o.eol
-	o.put(m.frame.htmlBefore, "<html>")
+	o.put(m.frame.htmlBefore, m.frame.htmlTag)
 	if m.parity {
 		o.put(" ")
 	}

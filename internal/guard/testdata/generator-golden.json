@@ -59,11 +59,11 @@
     },
     "html_16kib_every": {
       "bytes": 16384,
-      "sha256": "68b1ebd280622c1aa3489480267742e4c3612f4e7c76ac9bac67b78b2948943d"
+      "sha256": "32c2fb8daabcea4f03ffc063ee1d0ee01eb455baa4fe79b71c07a37c39fc2bcf"
     },
     "html_16kib_minified_every_embedded": {
       "bytes": 16384,
-      "sha256": "7a59d88af571b893c097f96d400e8bac59b2ec0a426b75cc5ed56209fbba8fa8"
+      "sha256": "4a62bca9c9957bb812e143db41b540d15994b38839b469e20f1a10b49f5a7b63"
     },
     "html_32kib_pictures": {
       "bytes": 32768,
@@ -71,7 +71,17 @@
     },
     "html_64kib_everything": {
       "bytes": 65536,
-      "sha256": "716512ac2db8bdadafed56cd909a60d7c4de4c2d31ed0516eee9a9f5b5a6df5c"
+      "sha256": "2e07a60929e3ee72da1578b427d7244cd629550ab721f9fc19d9d37a9521f0d9"
+    },
+    "html_smallest_page": {
+      "bytes": 122,
+      "sha256": "8e3c920f7bee76a67ab07285a39c92111c4d1b5ff4a868af577c09ec694f9091",
+      "measured_on": "2026-10-15"
+    },
+    "html_4kib_clean": {
+      "bytes": 4096,
+      "sha256": "a7468f446aef6b555c4775cedd4447a37ed6e086b6ae3496071bbece702d64b2",
+      "measured_on": "2026-10-15"
     },
     "html_8kib": {
       "bytes": 8192,
@@ -548,11 +558,21 @@
     },
     "eml_8kib_newsletter_alternative_quoted": {
       "bytes": 8192,
-      "sha256": "e6133ca16273e281428b0e589f78b9097b96ab86d17e5af63214e4e1b4a92ad1",
+      "sha256": "27e3688910812ba5b68a4ef0f595ee98fb0556eda9f2c18ef391fc486d6f2ff3",
       "measured_on": "2026-10-15"
     }
   },
   "remeasured": [
+    {
+      "on": "2026-10-15",
+      "why": "A page with no label to fill its title carries Page there now, where it carried an empty title - the smallest document and every page under --clean, in every size. The Nu HTML Checker calls an empty title an error, so every such page was invalid HTML since 2026-08-01 (O277). Page rather than the tool's name, because --clean is there to keep the tool's description out of the file. The smallest html page goes from 118 B to 122 B. The catalogue of every element names its forms article tfg-forms, and its two links to it, because DOMPurify takes out an id that shadows document.forms and the links then led nowhere (O282) - the reason the links list is tfg-links. Its hidden field is named tfg-hidden, because a name hidden shadows document.hidden and DOMPurify took that out too, leaving the field out of a submitted form. The page of a newsletter says its language, <html lang=\"en\">, as the html format's pages always did, written in the frame so quoted-printable gives its = as =3D. A message laid out simple is unchanged. This is a breaking change by the owner's decision of 2026-10-15, docs/HTML-6-2026-10-15.md. The two placeholder pages had no golden case and have one from today. Guarded from now on by the structural checker, which refuses a document without a title with text in it and a newsletter page without its language.",
+      "files": [
+        "eml_8kib_newsletter_alternative_quoted",
+        "html_16kib_every",
+        "html_16kib_minified_every_embedded",
+        "html_64kib_everything"
+      ]
+    },
     {
       "on": "2026-10-06",
       "why": "A film's picture changes now. Every change_interval, one second by default, the clock in it moves on and a square takes a step, because a film that showed one picture for its whole length looked to a viewer like a photograph at thirty frames a second - the owner's report, the same day the format was merged. Each change is a picture coded on its own, the Void that pads the file moved from the end to just before the Cues so the SeekHead can point at them before the pictures are coded, and the ladder's ceilings were measured again with the clock and the square in the picture. No release carried webm before this, so its bytes were nobody's contract yet and this is not a breaking change. Sizes are unchanged and the smallest film at the default settings went from 3044 B to 3294 B. Guarded from now on by TestAFilmPictureChangesWhereTheManifestSays, which asks libaom's decoded frames where the picture changes, and TestAFilmOfANamedSizeKeepsEveryPictureInsideItsReserve.",
