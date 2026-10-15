@@ -228,7 +228,10 @@ var provenByProbe = map[string]string{
 		"a number removed from the middle of a range, and the summary table in CLAUDE.md announcing a range the document no longer defines. All three went red.",
 
 	"TestEveryGuardIsEitherProvenByMutationOrListedAsNotProven": "checked 2026-08-01 three ways: a guard added with neither a mutation nor an entry, " +
-		"an entry naming a guard that was renamed away, and a guard left on the list after it gained a mutation. All three went red.",
+		"an entry naming a guard that was renamed away, and a guard left on the list after it gained a mutation. All three went red. " +
+		"And 2026-10-14 (review of #185): the name read between two quote classes again, with an empty group kept for the second " +
+		"capture. Red with the canary's own message. Not a mutation entry, because on the machine with tools/ this guard was " +
+		"red that day before anything was broken, ten old findings, so a runner would have called any entry caught.",
 
 	"TestEveryLinkBetweenDocumentsLeadsSomewhere": "checked 2026-08-01 by adding a link to a document that does not exist. It went red.",
 
@@ -249,10 +252,33 @@ var provenByProbe = map[string]string{
 
 var (
 	testDeclaration = regexp.MustCompile(`(?m)^func (Test\w+)\(`)
-	mutationTarget  = regexp.MustCompile(`"(Test\w+)"`)
+	// Either quote: Python writes a string in single quotes as readily as in
+	// double ones, and an entry written by repr() comes out in single. With
+	// only the double quote read, nine of the guards this reported as unproven
+	// on 2026-10-14 had entries it could not see (O280). A pair of the same
+	// quote, each in its own alternative: two classes side by side also read
+	// 'TestFoo" out of the middle of a longer string (review of #185).
+	mutationTarget = regexp.MustCompile(`"(Test\w+)"|'(Test\w+)'`)
 )
 
+// mutationTargets is every guard name the mutation list holds as a whole
+// string, in either quote.
+func mutationTargets(body string) map[string]bool {
+	named := map[string]bool{}
+	for _, m := range mutationTarget.FindAllStringSubmatch(body, -1) {
+		named[m[1]+m[2]] = true
+	}
+	return named
+}
+
 func TestEveryGuardIsEitherProvenByMutationOrListedAsNotProven(t *testing.T) {
+	// The canary, before the list is looked for, so a fresh checkout runs it
+	// too: both quotes read, a quote of one kind closed by the other not.
+	sample := `("a", "f.go", "x", "y", "TestDouble"), ('b', 'f.go', 'x', 'y', 'TestSingle'), "'TestMixed"`
+	if got := mutationTargets(sample); len(got) != 2 || !got["TestDouble"] || !got["TestSingle"] {
+		t.Fatalf("the mutation list is read wrongly: %v from %s, and TestDouble and TestSingle alone were in it", got, sample)
+	}
+
 	root := repoRoot(t)
 
 	// The mutation list lives in tools/, which is excluded from the repository,
@@ -265,10 +291,7 @@ func TestEveryGuardIsEitherProvenByMutationOrListedAsNotProven(t *testing.T) {
 		return
 	}
 
-	named := map[string]bool{}
-	for _, m := range mutationTarget.FindAllStringSubmatch(string(body), -1) {
-		named[m[1]] = true
-	}
+	named := mutationTargets(string(body))
 	if len(named) == 0 {
 		t.Fatal("the mutation list names no test at all - this guard would pass without checking anything")
 	}

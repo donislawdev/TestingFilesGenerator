@@ -77,6 +77,10 @@
       "bytes": 8192,
       "sha256": "7fcd7bd8fa49fb5e7392ef33d8f1537c96dabb2157bbda7cfe2eba75c02513a7"
     },
+    "html_8kib_fragment_minified_nested": {
+      "bytes": 8192,
+      "sha256": "9adc4dd5cfe3d34a349195e3dda5b94c7dc3de3a1bf2a8c8e676afd60492e53f"
+    },
     "html_8kib_minified_inline": {
       "bytes": 8192,
       "sha256": "3cdeab67f740f775efa438a83ac45006b81ca46db81e850e885c180ecf926288"
@@ -96,6 +100,10 @@
     "html_odd_fragment_pictures_svg": {
       "bytes": 16385,
       "sha256": "c654ffeef0bd8f07115f647620c47ca12849d7a26614bf389682fe1e7e3ad5fd"
+    },
+    "html_odd_minified_nested_embedded_international": {
+      "bytes": 8193,
+      "sha256": "4026208c4fa88a9e4d73f4cc45c3d9343e4ceb2d4836861bee2d1794cb7ea73e"
     },
     "ico_32kib": {
       "bytes": 32768,

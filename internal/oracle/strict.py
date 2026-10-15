@@ -767,6 +767,7 @@ def html_settings(text, shape, settings, nl):
         fail(f"the html check was told elements={elements!r}, which is not one this tool writes")
     if "script" in names:
         fail("the page carries a script, which no setting of this format writes")
+    html_links(bare, settings, nl)
     html_pictures(bare, settings, nl)
 
 
@@ -857,23 +858,119 @@ def html_picture_verdict(kind, n, raw):
 def html_layout(text, settings):
     """The layout formatting ordered, and what ends a line of it: a page of
     lines ends every one of them, the last included, and a page of one line
-    has no line break anywhere and no newline at the end."""
+    has no line break anywhere and no newline at the end. An indented page is a
+    page of lines with two spaces in front of each for every element it sits
+    in - checked here line by line, and given back without them, so every check
+    after this one reads the page it would read written in lines."""
     layout = settings.get("formatting", "lines")
     if layout == "minified":
         breaks = text.count("\n") + text.count("\r")
         if breaks:
             fail(f"formatting=minified was ordered and the page has {breaks} line breaks")
-        return ""
-    if layout != "lines":
+        return "", text
+    if layout not in ("lines", "indented"):
         fail(f"the html check was told formatting={layout!r}, which is not one this tool writes")
     # Asked here and not left to the ASCII check, which sees a carriage return
     # only on a page of ASCII - one in a page of other scripts went through, and
     # a fragment of CRLF lines ended in a traceback further down (review of #179).
     if "\r" in text:
-        fail(f"formatting=lines was ordered and the page has {text.count(chr(13))} carriage returns, where its lines end in LF")
+        fail(f"formatting={layout} was ordered and the page has {text.count(chr(13))} carriage returns, where its lines end in LF")
     if not text.endswith("\n") or text.count("\n") < 2:
-        fail("formatting=lines was ordered and the page is not lines ending in a line break")
-    return "\n"
+        fail(f"formatting={layout} was ordered and the page is not lines ending in a line break")
+    return "\n", html_indentation(text, layout == "indented")
+
+
+HTML_VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
+
+
+def html_indentation(text, indented):
+    """Every line indented by the elements open where it starts - two spaces a
+    level, one level fewer for a line that starts by closing one - or, on a
+    page of lines, by nothing. The text of pre is text and takes none. Given
+    back without the indentation.
+
+    The depth is counted here from the tags themselves, written from the
+    standard's list of void elements rather than from the generator, so the two
+    cannot agree on a wrong one."""
+    out, depth, in_pre = [], 0, False
+    tag = re.compile(r"<(/?)([a-zA-Z][a-zA-Z0-9-]*)([^>]*)>")
+    for number, line in enumerate(text[:-1].split("\n"), start=1):
+        if in_pre:
+            out.append(line)
+        else:
+            body = line.lstrip(" ")
+            lead = depth - 1 if body.startswith("</") else depth
+            want = 2 * max(lead, 0) if indented else 0
+            if len(line) - len(body) != want:
+                fail(f"line {number} is indented {len(line) - len(body)} spaces where the elements around it make {want}: {body[:40]!r}")
+            out.append(body)
+        for m in tag.finditer(line):
+            closing, name, rest = m.group(1) == "/", m.group(2).lower(), m.group(3)
+            if name in HTML_VOID or rest.endswith("/"):
+                continue
+            if name == "pre":
+                in_pre = not closing
+            depth += -1 if closing else 1
+    return "\n".join(out) + "\n"
+
+
+# The links links= orders, in the order a page carries them, written here from
+# the setting's meaning rather than imported. Every address is relative, on a
+# domain RFC 2606 keeps for examples, or one of mailto:, tel: and data:.
+HTML_LINKS = [
+    "#tfg-links", "page-2.html", "../folder/page-3.html", "/root/page-4.html", "?page=5",
+    "https://example.com/path/page.html?a=1&amp;b=2#part", "http://example.org/",
+    "//example.net/scheme-relative", "https://example.com/caf%C3%A9?q=two%20words",
+    "https://xn--bcher-kva.example/", "https://example.com:8443/port",
+    "mailto:someone@example.com?subject=Hello%20there", "tel:+1-555-0100", "ftp://example.com/file.txt",
+    "https://example.com/files/report.pdf", "https://example.org/new", "https://example.net/sponsored",
+    "data:text/plain,hello",
+]
+HTML_LINK_HOST = re.compile(r"^(?:[a-z]+:)?//([^/:?#]+)")
+HTML_LINK_HOSTS = {"example.com", "example.net", "example.org"}
+
+
+def html_links(text, settings, nl):
+    """The links links= ordered: a list of them where the list is, the kinds in
+    turn, and not one address that could reach a real host.
+
+    TOLD, never counted and believed. The catalogue of every element carries
+    links of its own, outside the list, which is found by its id."""
+    count = settings.get("links", "0")
+    if not re.fullmatch(r"[0-9]{1,7}", count) or int(count) > 1000000:
+        fail(f"the html check was told links={count!r}, which is not a whole number from 0 to 1000000")
+    want = int(count)
+    head = '<ul id="tfg-links">' + nl
+    start = text.find(head)
+    if want == 0:
+        if start >= 0:
+            fail("links=0 was ordered and the page carries a list of links")
+        return
+    if start < 0:
+        fail(f"links={want} was ordered and the page has no list of links")
+    end = text.find("</ul>" + nl, start)
+    if end < 0:
+        fail(f"links={want} was ordered and the list of links is never closed")
+    # The list is its links and nothing else. Read item by item, a list closed
+    # only at the end of the page carried every block inside it and still
+    # counted right, in the two layouts no indentation is checked in (review of
+    # #185). Matches that do not overlap and add up to the whole list are the
+    # whole list.
+    inside = text[start + len(head):end]
+    items, covered = [], 0
+    for m in re.finditer(r'<li><a href="([^"]*)"[^>]*>[^<]+</a></li>' + re.escape(nl), inside):
+        items.append(m.group(1))
+        covered += m.end() - m.start()
+    if covered != len(inside):
+        fail(f"links={want} was ordered and the list of links holds something other than links")
+    if len(items) != want:
+        fail(f"links={want} was ordered and the list carries {len(items)} links")
+    for n, href in enumerate(items):
+        if href != HTML_LINKS[n % len(HTML_LINKS)]:
+            fail(f"link {n + 1} goes to {href!r}, and the kinds in turn make {HTML_LINKS[n % len(HTML_LINKS)]!r}")
+        host = HTML_LINK_HOST.match(href)
+        if host and not (host.group(1) in HTML_LINK_HOSTS or host.group(1).endswith(".example")):
+            fail(f"link {n + 1} goes to {host.group(1)}, which is not a domain kept for examples")
 
 
 # The elements the style rules are for, written here from the setting's
@@ -984,9 +1081,9 @@ def check_html(data, settings):
     shape = settings.get("structure", "document")
     if shape not in ("document", "fragment"):
         fail(f"the html check was told structure={shape!r}, which is not one this tool writes")
-    nl = html_layout(text, settings)
-    html_styles(text, shape, settings)
-    html_settings(text, shape, settings, nl)
+    nl, flat = html_layout(text, settings)
+    html_styles(flat, shape, settings)
+    html_settings(flat, shape, settings, nl)
 
     opens = text.lower().startswith("<!doctype html>")
     closes = text.rstrip().endswith("</html>")

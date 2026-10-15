@@ -150,10 +150,28 @@ func (s settings) catalogueHeadFor() string {
 	return s.spelling()[headCatalogue]
 }
 
-// catalogueBlocks is what the catalogue adds to the body.
-func (s settings) catalogueBlocks() string {
-	if !s.every {
-		return ""
+// appendCatalogue appends what the catalogue adds to the body, at the depth of
+// its content.
+func (c content) appendCatalogue(dst []byte, lead string) []byte {
+	s := c.s
+	switch {
+	case !s.every:
+		return dst
+	case s.indented():
+		return appendLaidOut(dst, s.laid().catalogue, lead)
 	}
-	return s.spelling()[bodyCatalogue]
+	return append(dst, s.spelling()[bodyCatalogue]...)
+}
+
+// catalogueBytes is what appendCatalogue appends, worked out without building
+// it.
+func (c content) catalogueBytes() int64 {
+	s := c.s
+	switch {
+	case !s.every:
+		return 0
+	case s.indented():
+		return laidOutBytes(s.laid().catalogue, s.leadBytes())
+	}
+	return int64(len(s.spelling()[bodyCatalogue]))
 }

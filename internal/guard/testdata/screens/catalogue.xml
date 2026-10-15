@@ -2559,13 +2559,13 @@
 															<rectangle radius="4" size="24x24" strokeColor="hyperlink"/>
 															<rectangle fillColor="inputBackground" pos="2,2" radius="4" size="20x20" strokeColor="inputBorder" strokeWidth="1"/>
 														</widget>
-														<container pos="32,3" size="29x16">
-															<text color="rgba(211,211,215,255)" size="29x16">Bom</text>
-															<widget size="29x16" type="*parts.NameTap">
-																<rectangle size="29x16"/>
+														<container pos="32,3" size="32x16">
+															<text color="rgba(211,211,215,255)" size="32x16">BOM</text>
+															<widget size="32x16" type="*parts.NameTap">
+																<rectangle size="32x16"/>
 															</widget>
 														</container>
-														<widget pos="69,0" size="24x24" type="*parts.DetailButton">
+														<widget pos="72,0" size="24x24" type="*parts.DetailButton">
 															<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 															<rectangle radius="6" size="24x24"/>
 															<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>

@@ -134,11 +134,12 @@ func ourPackage(p string) (string, bool) {
 
 // allowedURLs are the addresses that may appear as literals in shipped code.
 //
-// Every one of them but the last two is an XML namespace, which is an
-// identifier and not an address: it names a vocabulary, it is written INTO the
-// files this tool generates, and nothing ever fetches it. They are here anyway,
-// because a scan that guessed which URLs are "only identifiers" would be
-// guessing at exactly the shape somebody would use to hide one.
+// Most of them are XML namespaces, which are identifiers and not addresses:
+// a namespace names a vocabulary, it is written INTO the files this tool
+// generates, and nothing ever fetches it. The links of an html page are
+// written into the page the same way. They are here anyway, because a scan
+// that guessed which URLs are "only identifiers" would be guessing at exactly
+// the shape somebody would use to hide one.
 var allowedURLs = map[string]string{
 	"internal/format/docx/docx.go|http://schemas.openxmlformats.org/officeDocument/2006/relationships": "OPC namespace, written into the document",
 	"internal/format/docx/docx.go|http://schemas.openxmlformats.org/wordprocessingml/2006/main":        "WordprocessingML namespace",
@@ -155,6 +156,18 @@ var allowedURLs = map[string]string{
 	"internal/version/version.go|https://www.gnu.org/licenses/gpl-3.0.html":                            "where the GPL text is, named by the licence notice this tool prints",
 	"internal/gui/text/screens.go|https://donislawdev.com/support/": "the support page, handed to the system browser on a click - " +
 		"untouchable rule 8 permits this and permits nothing else like it",
+	// The links an html page carries when links is set, written INTO the page
+	// on domains RFC 2606 keeps for examples, and never followed by anything in
+	// this program (docs/HTML-5-2026-10-14.md section 2.1).
+	"internal/format/htmlfile/links.go|https://example.com/path/page.html?a=1&amp;b=2#part": "a link written into a page, on a domain kept for examples",
+	"internal/format/htmlfile/links.go|http://example.org/":                                 "a link written into a page, on a domain kept for examples",
+	"internal/format/htmlfile/links.go|https://example.com/caf%C3%A9?q=two%20words":         "a link written into a page, on a domain kept for examples",
+	"internal/format/htmlfile/links.go|https://xn--bcher-kva.example/":                      "a link written into a page, on a top level domain kept for examples",
+	"internal/format/htmlfile/links.go|https://example.com:8443/port":                       "a link written into a page, on a domain kept for examples",
+	"internal/format/htmlfile/links.go|ftp://example.com/file.txt":                          "a link written into a page, on a domain kept for examples",
+	"internal/format/htmlfile/links.go|https://example.com/files/report.pdf":                "a link written into a page, on a domain kept for examples",
+	"internal/format/htmlfile/links.go|https://example.org/new":                             "a link written into a page, on a domain kept for examples",
+	"internal/format/htmlfile/links.go|https://example.net/sponsored":                       "a link written into a page, on a domain kept for examples",
 	"internal/legal/companions.go|https://github.com/pal1000/mesa-dist-win/releases/download/26.2.0/mesa3d-26.2.0-release-msvc.7z": "where the software " +
 		"renderer's bytes were downloaded FROM, by the release workflow and never by the program: written into the bill of " +
 		"materials as the package's download location, and compared with the workflow's pin by a guard",

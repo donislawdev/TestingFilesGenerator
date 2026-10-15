@@ -29,11 +29,28 @@ const (
 		`and entities &amp; &lt; &gt; &quot; &nbsp; &copy; &euro; &#8364; &#x1F600;.</p>` + "\n"
 )
 
-// internationalBlocks is what the setting adds, nothing for ascii, in the
-// spelling of the page.
-func (s settings) internationalBlocks() string {
-	if !s.international {
-		return ""
+// appendInternational appends what the setting adds, nothing for ascii, in the
+// spelling of the page and at the depth of its content.
+func (c content) appendInternational(dst []byte, lead string) []byte {
+	s := c.s
+	switch {
+	case !s.international:
+		return dst
+	case s.indented():
+		return appendLaidOut(dst, s.laid().scripts, lead)
 	}
-	return s.spelling()[scripts]
+	return append(dst, s.spelling()[scripts]...)
+}
+
+// internationalBytes is what appendInternational appends, worked out without
+// building it.
+func (c content) internationalBytes() int64 {
+	s := c.s
+	switch {
+	case !s.international:
+		return 0
+	case s.indented():
+		return laidOutBytes(s.laid().scripts, s.leadBytes())
+	}
+	return int64(len(s.spelling()[scripts]))
 }

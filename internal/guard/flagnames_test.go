@@ -77,11 +77,58 @@ func packagesBelowTheSurfaces(t *testing.T) []string {
 	return out
 }
 
+// flagLike is a dash pair followed by a letter. "|---|---|" in generated
+// markdown is three dashes and does not match, and neither does a range or an
+// em dash written as two.
+var flagLike = regexp.MustCompile(`--[a-z]`)
+
+// spellsAFlag says whether a text holds a dash pair followed by a letter other
+// than the "xn--" every international domain name opens a label with in ASCII
+// (RFC 3490) - an html page links to one (docs/HTML-5-2026-10-14.md).
+//
+// Forgiven by where the two dashes stand, not by taking the prefix out of the
+// text first: taken out, "xn---limit" became "-limit" and the flag in it was
+// gone (review of #185). Two matches cannot overlap, because a match ends on a
+// letter and the next one would have to start on a dash, so the matches found
+// are every dash pair there is.
+func spellsAFlag(value string) bool {
+	for _, at := range flagLike.FindAllStringIndex(value, -1) {
+		if !opensAnInternationalLabel(value, at[0]) {
+			return true
+		}
+	}
+	return false
+}
+
+// opensAnInternationalLabel says whether the dash pair at i is the one of an
+// "xn--" starting a label - at the start of the text, or after a character
+// that cannot be part of a name. "max-xn--limit" is a name with a flag in it.
+func opensAnInternationalLabel(value string, i int) bool {
+	if i < 2 || value[i-2:i] != "xn" {
+		return false
+	}
+	if i == 2 {
+		return true
+	}
+	c := value[i-3]
+	inName := c == '-' || '0' <= c && c <= '9' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z'
+	return !inName
+}
+
 func TestNoMessageBelowTheSurfacesIsWrittenInFlagSpelling(t *testing.T) {
-	// A dash pair followed by a letter. "|---|---|" in generated markdown is
-	// three dashes and does not match, and neither does a range or an em dash
-	// written as two.
-	flagLike := regexp.MustCompile(`--[a-z]`)
+	// The canary: what the reading must find and what it must leave alone, so
+	// a change to what is forgiven shows here rather than as a quiet pass.
+	for value, flag := range map[string]bool{
+		"Raise --limit above it":                    true,
+		"https://xn--bcher-kva.example/":            false,
+		"xn---limit":                                true,
+		"max-xn--limit":                             true,
+		"https://xn--bcher-kva.example/ or --limit": true,
+	} {
+		if spellsAFlag(value) != flag {
+			t.Fatalf("%q was read as a flag: %v. It is %v, so this guard reads text wrongly", value, !flag, flag)
+		}
+	}
 
 	dirs := packagesBelowTheSurfaces(t)
 	scanned, found := 0, 0
@@ -113,7 +160,7 @@ func TestNoMessageBelowTheSurfacesIsWrittenInFlagSpelling(t *testing.T) {
 				if err != nil {
 					return true
 				}
-				if flagLike.MatchString(value) {
+				if spellsAFlag(value) {
 					found++
 					t.Errorf("%s writes a setting in command line spelling:\n  %q\n"+
 						"This text is shown by the window too, and there are no flags on it.",

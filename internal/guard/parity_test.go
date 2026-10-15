@@ -201,6 +201,7 @@ var reachableFromTheWindow = []string{
 	"property:html.inline",
 	"property:html.inline_format",
 	"property:html.inline_size",
+	"property:html.links",
 	"property:html.nesting",
 	"property:html.structure",
 	"property:html.styles",

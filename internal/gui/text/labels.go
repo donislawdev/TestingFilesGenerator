@@ -40,12 +40,14 @@ func EnglishLabel(key string) string {
 // respelled are the keys whose spelling out is a word somebody meeting the
 // window for the first time does not know. Inline is what MIME calls a picture
 // the text shows (the owner's decision of 2026-10-14,
-// docs/EML-2-2026-10-13.md section 8). The key is still one hover away.
+// docs/EML-2-2026-10-13.md section 8). The key is still one hover away. bom is
+// an abbreviation, and spelled out of the key it read "Bom" (O278).
 //
 // Keyed by the recipe key rather than declared on a format's setting, because
 // a label belongs to the key: every format, preset and tool declaring one key
 // shares one Label entry in the catalogue.
 var respelled = map[string]string{
+	"bom":           "BOM",
 	"inline":        "Pictures",
 	"inline_format": "Picture format",
 	"inline_size":   "Picture size",

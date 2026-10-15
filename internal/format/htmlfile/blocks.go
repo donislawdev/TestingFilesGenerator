@@ -22,21 +22,23 @@ import (
 // or a list cut in the middle still renders, and it says something other than
 // it meant.
 type blocks struct {
-	// tail is what the closing record ends with, which is the only thing the
-	// shape of the file changes down here.
-	tail string
 	// m is how the blocks are spelled. The words drawn are the same in every
 	// spelling, so one seed fills a page of one line and a page of many with
 	// the same blocks.
 	m *markup
+	// lead is the indentation of a block and inner the one of a list's items
+	// and a table's rows, both empty unless the page is indented.
+	lead, inner string
 }
 
-// Shortest is the smallest closing record: an empty paragraph plus whatever
-// this shape closes after it.
-func (b blocks) Shortest() int64 { return int64(len(b.m[paraOpen]) + len(b.tail)) }
+// Shortest is the smallest closing record: an empty paragraph.
+func (b blocks) Shortest() int64 {
+	return int64(len(b.lead) + len(b.m[paraOpen]) + len(b.m[paraClose]))
+}
 
 func (b blocks) Append(dst []byte, rng *rand.Rand) []byte {
 	m := b.m
+	dst = append(dst, b.lead...)
 	switch rng.IntN(5) {
 	case 0:
 		dst = append(dst, m[h2Open]...)
@@ -45,14 +47,19 @@ func (b blocks) Append(dst []byte, rng *rand.Rand) []byte {
 	case 1:
 		dst = append(dst, m[ulOpen]...)
 		for i, n := 0, 2+rng.IntN(3); i < n; i++ {
+			dst = append(dst, b.inner...)
 			dst = append(dst, m[liOpen]...)
 			dst = appendPhrase(dst, rng, 3+rng.IntN(4))
 			dst = append(dst, m[liClose]...)
 		}
+		dst = append(dst, b.lead...)
 		return append(dst, m[ulClose]...)
 	case 2:
 		dst = append(dst, m[tableOpen]...)
+		dst = append(dst, b.inner...)
+		dst = append(dst, m[tableHead]...)
 		for i, n := 0, 2+rng.IntN(3); i < n; i++ {
+			dst = append(dst, b.inner...)
 			dst = append(dst, m[rowOpen]...)
 			dst = strconv.AppendInt(dst, int64(i+1), 10)
 			dst = append(dst, m[cellSep]...)
@@ -61,6 +68,7 @@ func (b blocks) Append(dst []byte, rng *rand.Rand) []byte {
 			dst = append(dst, words[rng.IntN(len(words))]...)
 			dst = append(dst, m[rowClose]...)
 		}
+		dst = append(dst, b.lead...)
 		return append(dst, m[tableClose]...)
 	case 3:
 		// A real page carries entities, and an ampersand left raw is the
@@ -84,10 +92,11 @@ func (blocks) Discard() {}
 
 func (b blocks) AppendExact(dst []byte, rng *rand.Rand, n int64) []byte {
 	start := len(dst)
+	dst = append(dst, b.lead...)
 	dst = append(dst, b.m[paraOpen]...)
-	used := int64(len(dst)-start) + int64(len(b.tail))
+	used := int64(len(dst)-start) + int64(len(b.m[paraClose]))
 	dst = appendFiller(dst, n-used)
-	return append(dst, b.tail...)
+	return append(dst, b.m[paraClose]...)
 }
 
 func appendPhrase(dst []byte, rng *rand.Rand, n int) []byte {
