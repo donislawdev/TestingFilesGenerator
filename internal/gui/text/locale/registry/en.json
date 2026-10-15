@@ -869,6 +869,16 @@
     "hash": "sha256-3e8286044388",
     "other": "v6"
   },
+  "Choice.layout.newsletter": {
+    "description": "One entry of the layout list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-dd6f465f6810",
+    "other": "newsletter"
+  },
+  "Choice.layout.simple": {
+    "description": "One entry of the layout list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-a7a39b72f297",
+    "other": "simple"
+  },
   "Choice.level_mix.debug": {
     "description": "One entry of the level_mix list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-0b8e9e995d8d",
@@ -1223,6 +1233,11 @@
     "description": "The sentence under the inline_size setting of the eml format, after what it takes.",
     "hash": "sha256-e9458e263f67",
     "other": "How big each picture is. Like an attached file it travels in base64, about a third larger."
+  },
+  "Detail.format/eml.layout": {
+    "description": "The sentence under the layout setting of the eml format, after what it takes.",
+    "hash": "sha256-848dda056f39",
+    "other": "How the text is laid out. simple is the text alone. newsletter wraps it the way a mailing list does - a title, a Read more button and a footer with an unsubscribe link, in a table 600 pixels wide styled both by a style sheet and by style attributes, and the plain text writes out the addresses the HTML puts behind its links. It adds List-Id, List-Unsubscribe and List-Unsubscribe-Post, by which mail systems tell bulk mail apart, and the manifest gives the unsubscribe address as unsubscribe_url. The message has no DKIM signature, so a mail program that follows RFC 8058 offers no one-click unsubscribe. Messages inside stay simple."
   },
   "Detail.format/eml.line_endings": {
     "description": "The sentence under the line_endings setting of the eml format, after what it takes.",
@@ -2393,6 +2408,11 @@
     "description": "The name beside the box of a setting a recipe writes as keywords.",
     "hash": "sha256-8bfdb93cafaa",
     "other": "Keywords"
+  },
+  "Label.layout": {
+    "description": "The name beside the box of a setting a recipe writes as layout.",
+    "hash": "sha256-a511909161e1",
+    "other": "Layout"
   },
   "Label.level_mix": {
     "description": "The name beside the box of a setting a recipe writes as level_mix.",

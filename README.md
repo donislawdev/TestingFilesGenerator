@@ -632,7 +632,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `txt`, `md`, `xml` | `encoding`, `bom` |
 | `json` | `formatting` |
 | `geojson` | `geometry`, `formatting`, `precision`, `altitude`, `vertices`, `holes`, `winding`, `antimeridian`, `unlocated`, `ids`, `bbox` |
-| `eml` | `body`, `text_encoding`, `charset`, `headers`, `recipients`, `line_endings`, `attachments`, `attachment_format`, `attachment_size`, `filename_style`, `message_depth`, `inline`, `inline_format`, `inline_size` |
+| `eml` | `body`, `layout`, `text_encoding`, `charset`, `headers`, `recipients`, `line_endings`, `attachments`, `attachment_format`, `attachment_size`, `filename_style`, `message_depth`, `inline`, `inline_format`, `inline_size` |
 | `svg` | `width`, `height` |
 | `html` | `structure`, `nesting`, `characters`, `elements`, `links`, `bom`, `formatting`, `styles`, `inline`, `inline_format`, `inline_size` |
 | `yaml`, `toml` | none in this build - the document is a fixed shape, and a size is the only thing to ask for |

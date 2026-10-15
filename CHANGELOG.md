@@ -203,6 +203,19 @@ because it turns other people's test suites red.
   Checker finds nothing wrong with it. With `nesting` the spaces grow with
   every level, so `nesting` 1000 makes a page of at least 1.9 MB. Files made
   with the earlier settings keep their bytes.
+- **EML: a newsletter.** `layout=newsletter` puts the text in the frame a
+  mailing list sends - a title, a Read more button and a footer with an
+  unsubscribe link, in a table 600 pixels wide styled both by a style sheet
+  and by style attributes - and the plain text writes out the addresses the HTML
+  puts behind its links. The message carries `List-Id`, `List-Unsubscribe`
+  with a `mailto:` and an `https` address, and `List-Unsubscribe-Post`, and
+  the manifest gives the address as `unsubscribe_url`. Python's email package
+  and mailparser read all three lines, and the Nu HTML Checker finds no error
+  in the frame, only the table attributes it calls obsolete. There is no
+  DKIM signature, so a mail
+  program that follows RFC 8058 offers no one-click unsubscribe. Nothing in
+  the frame is fetched when the message is opened. Messages made with the
+  earlier settings keep their bytes.
 - **A length of time as a setting.** `duration`, `change_interval` and `keyframe_interval` take
   `10s`, `1m30s`, `1h`, `500ms` or `59.9s`, to the millisecond. A bare number
   is refused rather than read as seconds, and so is a length that does not

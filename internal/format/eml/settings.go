@@ -12,6 +12,7 @@ import (
 // Setting names. Public names under rule 10, so each is spelled once.
 const (
 	Body          = "body"
+	Layout        = "layout"
 	TextEncoding  = "text_encoding"
 	Charset       = "charset"
 	Headers       = "headers"
@@ -30,6 +31,12 @@ const (
 	Plain       = "plain"
 	HTML        = "html"
 	Alternative = "alternative"
+)
+
+// The values of layout.
+const (
+	Simple     = "simple"
+	Newsletter = "newsletter"
 )
 
 // The values of text_encoding, spelled the way Content-Transfer-Encoding
@@ -97,6 +104,7 @@ const (
 // settings is every choice a message is made with, read once in Plan.
 type settings struct {
 	body     string
+	layout   string
 	encoding string
 	// charset is the one asked for. What the text parts declare is
 	// declared(), which is us-ascii whenever the text is plain ASCII.
@@ -158,6 +166,7 @@ func parse(props map[string]string) (settings, error) {
 	}
 	s := settings{
 		body:     values[Body],
+		layout:   values[Layout],
 		encoding: values[TextEncoding],
 		charset:  values[Charset],
 		headers:  values[Headers],
@@ -217,6 +226,7 @@ func textProperties() []format.Property {
 			Detail: "Which text the message carries. plain is one text part and html one HTML part. " +
 				"alternative carries both with the same words, and a mail program shows one of them.",
 		},
+		layoutProperty(),
 		{
 			Name: TextEncoding, Kind: format.PropertyChoice,
 			Choices: []string{SevenBit, EightBit, Base64, QuotedPrintable},
@@ -244,6 +254,23 @@ func textProperties() []format.Property {
 				"Python, MimeKit, mailparser and Go's standard library all read lf too, " +
 				"so the difference shows in programs that split the lines themselves.",
 		},
+	}
+}
+
+// layoutProperty is whether the text stands alone or in a newsletter
+// (docs/EML-3-2026-10-15.md).
+func layoutProperty() format.Property {
+	return format.Property{
+		Name: Layout, Kind: format.PropertyChoice,
+		Choices: []string{Newsletter, Simple},
+		Default: Simple,
+		Detail: "How the text is laid out. simple is the text alone. " +
+			"newsletter wraps it the way a mailing list does - a title, a Read more button and a footer with an unsubscribe link, " +
+			"in a table 600 pixels wide styled both by a style sheet and by style attributes, and the plain text writes out the addresses the HTML puts behind its links. " +
+			"It adds List-Id, List-Unsubscribe and List-Unsubscribe-Post, by which mail systems tell bulk mail apart, " +
+			"and the manifest gives the unsubscribe address as unsubscribe_url. " +
+			"The message has no DKIM signature, so a mail program that follows RFC 8058 offers no one-click unsubscribe. " +
+			"Messages inside stay simple.",
 	}
 }
 

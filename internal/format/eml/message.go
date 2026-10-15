@@ -37,14 +37,19 @@ type message struct {
 	// writes it, and images the lines that show the pictures, encoded once
 	// rather than at every count.
 	plainLine, htmlLine, images string
+	// frame is what stands around the words - a newsletter, or the body
+	// element alone.
+	frame frame
 }
 
 func newMessage(s settings, seed uint64, children, pics []child) *message {
+	id := identify(seed, s)
 	return &message{
-		s: s, id: identify(seed, s), children: children, pictures: pics, seed: seed,
+		s: s, id: id, children: children, pictures: pics, seed: seed,
 		plainLine: s.internationalLine("", ""),
 		htmlLine:  s.internationalLine("<p>", "</p>"),
 		images:    imageLines(s, pics),
+		frame:     newFrame(s, id),
 	}
 }
 
@@ -167,32 +172,34 @@ func (m *message) textPart(o *out, contentType string, write func(*out), last bo
 }
 
 // plain is the text part: the label, the line in Polish and Japanese, and the
-// words that bring the message to its size. Its lines end the way the text's
-// do, which inside base64 is not the way the file's do.
+// words that bring the message to its size, in its frame. Its lines end the
+// way the text's do, which inside base64 is not the way the file's do.
 func (m *message) plain(o *out) {
+	o.put(m.frame.plainOpen)
 	if m.label != "" {
 		o.put(m.label, o.eol)
 	}
 	o.put(m.plainLine)
 	fill(o, m.text, m.seed)
+	o.put(m.frame.plainClose)
 }
 
 // html is the same text as HTML, the words in one paragraph - line breaks
 // inside a paragraph are white space, so the lines keep the text's width - and
-// the pictures before them.
+// the pictures before them, in its frame.
 func (m *message) html(o *out) {
 	eol := o.eol
-	o.put("<html>")
+	o.put(m.frame.htmlBefore, "<html>")
 	if m.parity {
 		o.put(" ")
 	}
-	o.put("<body>", eol)
+	o.put(m.frame.htmlOpen)
 	if m.label != "" {
 		o.put("<p>", m.label, "</p>", eol)
 	}
 	o.put(m.htmlLine, m.images, "<p>", eol)
 	fill(o, m.text, m.seed)
-	o.put(eol, "</p>", eol, "</body></html>")
+	o.put(eol, "</p>", eol, m.frame.htmlClose)
 }
 
 // out is where a message goes - a file, or nowhere while it is being counted.

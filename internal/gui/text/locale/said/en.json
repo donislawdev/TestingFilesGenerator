@@ -536,6 +536,11 @@
     "hash": "sha256-ff6a6f0065c8",
     "other": "a message this large cannot be counted to the byte in this build"
   },
+  "eml.ANewsletterHoldsItsHeaderLinesAndFrame": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-2336a62a9061",
+    "other": "a newsletter holds its header lines and the frame around its text"
+  },
   "eml.APictureInTheTextIs": {
     "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-ac868d5a013c",

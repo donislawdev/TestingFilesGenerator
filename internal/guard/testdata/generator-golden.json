@@ -545,6 +545,11 @@
       "bytes": 65536,
       "sha256": "8d8045da422be2a910b0a3caae7c0c0dbb8a2cb7a2284c912e4f9caa16bde2d8",
       "measured_on": "2026-10-13"
+    },
+    "eml_8kib_newsletter_alternative_quoted": {
+      "bytes": 8192,
+      "sha256": "e6133ca16273e281428b0e589f78b9097b96ab86d17e5af63214e4e1b4a92ad1",
+      "measured_on": "2026-10-15"
     }
   },
   "remeasured": [
