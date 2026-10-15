@@ -1,6 +1,6 @@
 // Package eml generates mail messages (RFC 5322 with MIME): a text, in plain
-// text, HTML or both, and real files of other formats attached to it in
-// base64.
+// text, HTML or both, alone or in the frame of a newsletter, and real files of
+// other formats attached to it in base64.
 //
 // What makes this format worth its place is what a system that takes mail in
 // does with it - a helpdesk turning messages into tickets, a gateway scanning
@@ -112,6 +112,9 @@ func fit(m *message, r format.Request) ([]format.Note, error) {
 		// attached - and a sentence about attached files is wrong for a
 		// message that has none.
 		reason := core.Says("eml.AMessageHoldsItsHeaderLinesAndText", "a message holds its header lines and the lines that open its text")
+		if m.s.layout == Newsletter {
+			reason = core.Says("eml.ANewsletterHoldsItsHeaderLinesAndFrame", "a newsletter holds its header lines and the frame around its text")
+		}
 		if len(m.children)+len(m.pictures) > 0 {
 			reason = core.Says("eml.AMessageHoldsItsHeaderLines", "a message holds its header lines, its parts and every file it carries in base64, "+
 				"which is about a third larger than the file itself")
@@ -212,6 +215,7 @@ func describe(m *message, groups []format.Content, target int64) format.Plan {
 		Determinism: format.DeterminismByte,
 		Properties: map[string]any{
 			Body:                         m.s.body,
+			Layout:                       m.s.layout,
 			TextEncoding:                 m.s.encoding,
 			Charset:                      m.s.declared(),
 			Headers:                      m.s.headers,
@@ -235,6 +239,11 @@ func describe(m *message, groups []format.Content, target int64) format.Plan {
 	if len(groups) == 1 {
 		p.Properties[AttachmentFormat] = groups[0].Format
 		p.Properties[AttachmentSize] = groups[0].Bytes
+	}
+	// Only a newsletter has an address to unsubscribe at, and a key that is
+	// there for every message would name one that does not exist.
+	if m.s.layout == Newsletter {
+		p.Properties[UnsubscribeURL] = m.id.unsubscribe
 	}
 	describePictures(p.Properties, m)
 	return p

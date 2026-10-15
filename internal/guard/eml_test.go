@@ -23,7 +23,8 @@ import (
 // and since 2026-10-13 the second set: base64 text in both line endings and in
 // alternative, both single byte character sets in every encoding that carries
 // them, no names, several recipients with encoded names, pictures beside HTML,
-// alternative and plain text, and messages forwarded inside messages.
+// alternative and plain text, and messages forwarded inside messages - and
+// since 2026-10-15 newsletters.
 var emlCases = []map[string]string{
 	{},
 	{eml.Body: eml.HTML},
@@ -56,6 +57,14 @@ var emlCases = []map[string]string{
 	{eml.Inline: "2", eml.InlineSize: "1kb", eml.LineEndings: eml.LF},
 	{eml.MessageDepth: "3"},
 	{eml.MessageDepth: "2", eml.LineEndings: eml.LF, eml.Body: eml.Alternative, eml.TextEncoding: eml.Base64},
+	// A newsletter in each text, each encoding of it, with pictures in its
+	// frame and a message forwarded inside it (docs/EML-3-2026-10-15.md).
+	{eml.Layout: eml.Newsletter},
+	{eml.Layout: eml.Newsletter, eml.Body: eml.Alternative, eml.TextEncoding: eml.QuotedPrintable},
+	{eml.Layout: eml.Newsletter, eml.Body: eml.HTML, eml.TextEncoding: eml.EightBit, eml.LineEndings: eml.LF,
+		eml.Inline: "1", eml.InlineSize: "1kb"},
+	{eml.Layout: eml.Newsletter, eml.Body: eml.Alternative, eml.TextEncoding: eml.Base64, eml.Charset: eml.CharsetLatin2},
+	{eml.Layout: eml.Newsletter, eml.Body: eml.Alternative, eml.Headers: eml.Encoded, eml.MessageDepth: "2"},
 }
 
 // Three readers and a scanner, each asked what the others cannot answer

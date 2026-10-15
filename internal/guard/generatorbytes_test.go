@@ -532,6 +532,8 @@ func mailGoldenCases() map[string]engine.Target {
 			Properties: map[string]string{"message_depth": "3"}},
 		"eml_64kib_attached_messages_lf": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"attachments": "2", "attachment_format": "eml", "attachment_size": "2kb", "line_endings": "lf"}},
+		"eml_8kib_newsletter_alternative_quoted": {ID: "m", Format: "eml", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"layout": "newsletter", "body": "alternative", "text_encoding": "quoted-printable"}},
 	}
 }
 

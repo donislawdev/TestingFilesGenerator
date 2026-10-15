@@ -166,6 +166,7 @@ var reachableFromTheWindow = []string{
 	"property:eml.attachment_size",
 	"property:eml.attachments",
 	"property:eml.body",
+	"property:eml.layout",
 	"property:eml.charset",
 	"property:eml.filename_style",
 	"property:eml.headers",

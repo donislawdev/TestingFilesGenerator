@@ -70,6 +70,9 @@ type identity struct {
 	// message is counted several times while it is planned and a header built
 	// at every count is an allocation the resource guard counts too.
 	from, to, subjectLine string
+	// unsubscribe is the https address a newsletter unsubscribes at, the
+	// message's digits its opaque part (docs/EML-3-2026-10-15.md).
+	unsubscribe string
 }
 
 func identify(seed uint64, s settings) identity {
@@ -90,6 +93,7 @@ func identify(seed uint64, s settings) identity {
 		from:          phrase(s, from) + " <" + fromAddress + ">",
 		to:            phrase(s, to) + " <" + toAddress + ">",
 		subjectLine:   phrase(s, subject),
+		unsubscribe:   unsubscribeWeb + hex,
 	}
 }
 
@@ -103,6 +107,7 @@ func (m *message) head(o *out) {
 	o.put("Date: ", m.id.date, eol)
 	o.put("Message-ID: ", m.messageID(), eol)
 	o.put("Subject: ", m.id.subjectLine, eol)
+	o.put(m.frame.headers)
 	o.put("MIME-Version: 1.0", eol)
 }
 

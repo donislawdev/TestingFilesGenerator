@@ -2964,9 +2964,25 @@ EML_NAME = re.compile(r"^(?:" + EML_WIDE_PREFIX + r")?[a-z0-9]+_\d{4,5}\.[a-z0-9
 EML_CID = re.compile(r"^<(inline_\d{4,5}\.[0-9a-f]{16}@example\.com)>$")
 EML_IMG = re.compile(r'<img src="cid:([^"]+)">')
 EML_CODECS = {"us-ascii": "ascii", "utf-8": "utf-8", "iso-8859-2": "iso-8859-2", "windows-1250": "cp1250"}
-EML_DEFAULTS = (("body", "plain"), ("text_encoding", "7bit"), ("charset", "utf-8"), ("headers", "ascii"),
+EML_DEFAULTS = (("body", "plain"), ("layout", "simple"), ("text_encoding", "7bit"), ("charset", "utf-8"), ("headers", "ascii"),
                 ("recipients", "1"), ("line_endings", "crlf"), ("filename_style", "rfc2231"),
                 ("attachments", "0"), ("attachment_format", "txt"), ("message_depth", "1"), ("inline", "0"))
+# A newsletter, written here from the setting's meaning rather than imported
+# (docs/EML-3-2026-10-15.md): the list in a domain kept for examples, where to
+# unsubscribe - a mailto address, then the https one whose opaque part is the
+# message's own sixteen digits - and the lines of the plain text around its
+# words, the addresses in brackets.
+EML_LIST_FIELDS = ["List-Id", "List-Unsubscribe", "List-Unsubscribe-Post"]
+EML_LIST_ID = "Example Newsletter <newsletter.example.com>"
+EML_UNSUBSCRIBE_MAIL = "mailto:unsubscribe@example.com?subject=unsubscribe"
+EML_UNSUBSCRIBE_WEB = "https://example.com/unsubscribe/"
+EML_READ_MORE = "https://example.com/newsletter"
+EML_PLAIN_OPEN = ["Example Newsletter", ""]
+EML_PLAIN_CLOSE = ["", f"Read more ({EML_READ_MORE})", "",
+                   "You receive this because you subscribed to Example Newsletter."]
+# What a mail program would fetch on opening the HTML: a style sheet by
+# address, an import or a font from one. A picture is checked by its src.
+EML_FETCHING = re.compile(r"url\(|@import|<link\b", re.IGNORECASE)
 
 
 def check_eml(data, settings=None):
@@ -2983,7 +2999,9 @@ def check_eml(data, settings=None):
     encoding and the character set ordered with the same words in both parts of
     alternative, base64 in full lines of 76, every name written where and how
     filename_style and headers say, every picture the HTML points at and nothing
-    else, and every message inside judged the same way - one after another
+    else, a newsletter's frame and the list header lines with one address to
+    unsubscribe at in all of them, nothing an HTML part would fetch on opening,
+    and every message inside judged the same way - one after another
     rather than by recursion, because depth goes to 2000 and Python's own
     recursion does not (docs/EML-2-2026-10-13.md section 7).
     """
@@ -3007,7 +3025,7 @@ def check_eml(data, settings=None):
     files = found["files"]
     ok(f"{len(files)} attached files, {sum(len(f['bytes']) for f in files)} B of them, "
        f"{len(found['pictures'])} pictures, {len(found['messages'])} messages inside, {deepest} deep, "
-       f"body {s['body']}, text {s['text_encoding']} in {s['charset']}, headers {s['headers']}, "
+       f"body {s['body']}, layout {s['layout']}, text {s['text_encoding']} in {s['charset']}, headers {s['headers']}, "
        f"names {s['filename_style']}, {s['recipients']} recipients")
 
 
@@ -3052,8 +3070,7 @@ def eml_message(data, eol, s):
     together - what it carries is returned for the caller to count."""
     head, body = eml_split(data, eol, "the message")
     fields = eml_fields(head, eol, "the message")
-    eml_headers(fields, s)
-    found = {"texts": [], "files": [], "pictures": [], "messages": []}
+    found = {"texts": [], "files": [], "pictures": [], "messages": [], "unsubscribe": eml_headers(fields, s)}
     eml_entity(dict(fields), body, eol, s, found, top=True)
     eml_texts(found, s)
     return found
@@ -3061,18 +3078,68 @@ def eml_message(data, eol, s):
 
 def eml_texts(found, s):
     """The text parts: the ones body orders, the same words in both parts of
-    alternative, and in the HTML one picture for every picture the message
-    carries beside it."""
+    alternative - what the HTML shows against the plain text without the
+    addresses it writes out - each part in the frame layout orders, and in the
+    HTML one picture for every picture the message carries beside it."""
     texts = found["texts"]
     want_texts = {"plain": ["text/plain"], "html": ["text/html"], "alternative": ["text/plain", "text/html"]}[s["body"]]
     if [t["type"] for t in texts] != want_texts:
         fail(f"the text parts are {[t['type'] for t in texts]}, and body={s['body']} makes {want_texts}")
-    if len(texts) == 2 and eml_words(texts[0]["text"]) != eml_words(re.sub(r"<[^>]*>", " ", texts[1]["text"])):
+    if len(texts) == 2 and eml_spoken(texts[0]["text"]) != eml_words(eml_shown(texts[1]["text"])):
         fail("the two parts of alternative do not carry the same words")
+    for t in texts:
+        eml_frame(t, s, found["unsubscribe"])
     shown = EML_IMG.findall(texts[-1]["text"]) if texts[-1]["type"] == "text/html" else []
     cids = [p["cid"] for p in found["pictures"]]
     if shown != [c for c in cids if c]:
         fail(f"the HTML shows {shown} and the pictures beside it are {cids}")
+
+
+def eml_shown(html):
+    """What a person reads in the HTML: no head, whose title and styles are
+    not shown, and no tags."""
+    return re.sub(r"<[^>]*>", " ", re.sub(r"<head>.*?</head>", " ", html, flags=re.DOTALL))
+
+
+def eml_spoken(plain):
+    """The words of the plain text without the addresses a newsletter writes
+    out where the HTML puts them behind its links."""
+    return [w for w in eml_words(plain) if "://" not in w]
+
+
+def eml_frame(text, s, unsubscribe):
+    """A text part in the frame layout orders: a newsletter's lines around the
+    plain text, and its page around the HTML - two tables of presentation 600
+    wide, styles in a sheet and on its elements, the button and the link to
+    unsubscribe at the address List-Unsubscribe gives - and with simple none of
+    it. Nothing in any HTML may be fetched when it is opened."""
+    body, lines = text["text"], text["text"].splitlines()
+    html = text["type"] == "text/html"
+    if html:
+        sources = re.findall(r'\bsrc="([^"]*)"', body)
+        if EML_FETCHING.search(body) or any(not src.startswith("cid:") for src in sources):
+            fail(f"the HTML holds something a mail program fetches on opening it: {sources[:4]}")
+    framed = "Example Newsletter" in body or "<table" in body
+    if s["layout"] == "simple":
+        if framed:
+            fail(f"layout=simple and the {text['type']} part is in the frame of a newsletter")
+        return
+    if not html:
+        if lines[:2] != EML_PLAIN_OPEN or lines[-5:] != EML_PLAIN_CLOSE + [f"Unsubscribe ({unsubscribe})"]:
+            fail(f"layout=newsletter and the plain text opens {lines[:2]} and closes {lines[-5:]}, not with the frame of a newsletter")
+        return
+    page = [
+        (lines[0] == "<!DOCTYPE html>", "doctype"),
+        (re.search(r"<head>.*<style>[^<]*\{[^}]*:[^}]*\}[^<]*</style>.*</head>", body, re.DOTALL), "style sheet in its head"),
+        (body.count('<table role="presentation"') == 2, "two tables of presentation"),
+        (re.search(r'<table role="presentation" class="frame" width="600"', body), "frame 600 wide"),
+        (body.count(' style="') >= 6, "styles on its elements"),
+        (re.search(r'<a class="button" href="' + re.escape(EML_READ_MORE) + r'"[^>]*>\s*Read more</a>', body), "button"),
+        (f'<a href="{unsubscribe}">Unsubscribe</a>' in body, "link to unsubscribe at the address in List-Unsubscribe"),
+    ]
+    missing = [what for present, what in page if not present]
+    if missing:
+        fail(f"layout=newsletter and the HTML lacks: {', '.join(missing)}")
 
 
 def eml_line_endings(data, eol):
@@ -3123,12 +3190,16 @@ def eml_fields(head, eol, where):
 
 def eml_headers(fields, s):
     """The lines a message opens with, in order and once each - From and Date
-    are the two RFC 5322 requires - and written the way headers says."""
+    are the two RFC 5322 requires - and written the way headers says. A
+    newsletter's are the address it unsubscribes at, which is returned."""
     import email.utils
 
+    if s["layout"] not in ("simple", "newsletter"):
+        fail(f"the eml check was told layout={s['layout']!r}, which is not one this tool writes")
     names = [name for name, _ in fields]
-    want = ["From", "To", "Date", "Message-ID", "Subject", "MIME-Version", "Content-Type"]
-    if names[:7] != want or names[7:] not in ([], ["Content-Transfer-Encoding"]):
+    lists = EML_LIST_FIELDS if s["layout"] == "newsletter" else []
+    want = ["From", "To", "Date", "Message-ID", "Subject"] + lists + ["MIME-Version", "Content-Type"]
+    if names[:len(want)] != want or names[len(want):] not in ([], ["Content-Transfer-Encoding"]):
         fail(f"the message opens with {names}, not {want}")
     values = dict(fields)
     if values["MIME-Version"] != "1.0":
@@ -3149,6 +3220,21 @@ def eml_headers(fields, s):
     if not values["From"].endswith(" <alice@example.com>"):
         fail(f"From is {values['From']!r}, not an address in a domain RFC 2606 keeps for examples")
     eml_recipients(values["To"], int(s["recipients"]))
+    return eml_list_fields(values) if lists else None
+
+
+def eml_list_fields(values):
+    """What a newsletter adds after Subject: the list (RFC 2919), a mailto
+    address and then the https one RFC 8058 requires (RFC 2369), whose opaque
+    part is the message's own digits, and the one-click pair. The https
+    address is returned for the footers to point at."""
+    web = EML_UNSUBSCRIBE_WEB + values["Message-ID"][1:17]
+    want = {"List-Id": EML_LIST_ID, "List-Unsubscribe": f"<{EML_UNSUBSCRIBE_MAIL}>, <{web}>",
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"}
+    for name, value in want.items():
+        if values[name] != value:
+            fail(f"{name} is {values[name]!r}, and a newsletter writes {value!r}")
+    return web
 
 
 def eml_recipients(to, count):
