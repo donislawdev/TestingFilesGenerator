@@ -282,7 +282,7 @@ func charsetProperty() format.Property {
 		Default: CharsetUTF8,
 		Detail: "The character set of the text when text_encoding is not 7bit. iso-8859-2 and windows-1250 hold Polish and no Japanese, " +
 			"and they write ą, ś and ź as different bytes, so a program that takes one for the other shows the wrong letters. " +
-			"MimeKit reads both as Latin-1 until a code page provider is registered, and right once one is. Go's standard library converts no character set at all. " +
+			"MimeKit with no code page provider registered tries UTF-8 and then Latin-1, which shows the Polish letters of both wrong, and reads them right once one is. Go's standard library converts no character set at all. " +
 			"With 7bit the text is plain ASCII and says us-ascii, whatever this is set to.",
 	}
 }

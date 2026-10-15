@@ -47,7 +47,7 @@ func newMessage(s settings, seed uint64, children, pics []child) *message {
 	return &message{
 		s: s, id: id, children: children, pictures: pics, seed: seed,
 		plainLine: s.internationalLine("", ""),
-		htmlLine:  s.internationalLine("<p>", "</p>"),
+		htmlLine:  s.htmlInternationalLine(),
 		images:    imageLines(s, pics),
 		frame:     newFrame(s, id),
 	}

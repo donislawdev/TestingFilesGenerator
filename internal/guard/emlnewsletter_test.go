@@ -139,6 +139,12 @@ func TestTheEMLCheckRefusesANewsletterBrokenOnPurpose(t *testing.T) {
 		// nothing read before (docs/HTML-6-2026-10-15.md).
 		{newsletter, newsletter, replaced(`<html lang="en">`, "<html>"),
 			"layout=newsletter and the HTML lacks: language of the page"},
+		// Each half of the line in Polish and Japanese says its language, since
+		// the page says English (review of #190).
+		{newsletter, newsletter, replaced(`<span lang="pl">`, "<span>"),
+			"layout=newsletter and the HTML lacks: the Polish line marked as Polish"},
+		{newsletter, newsletter, replaced(`<span lang="ja">`, "<span>"),
+			"layout=newsletter and the HTML lacks: the Japanese line marked as Japanese"},
 	}
 	dir := t.TempDir()
 	for i, c := range cases {

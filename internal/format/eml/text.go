@@ -30,7 +30,8 @@ const (
 // Windows-1250 write as different bytes.
 const (
 	polish        = "Zażółć gęślą jaźń."
-	international = polish + " 日本語のテキストです。"
+	japanese      = "日本語のテキストです。"
+	international = polish + " " + japanese
 )
 
 // singleByte is how ISO-8859-2 and Windows-1250 write the letters of the
@@ -97,7 +98,36 @@ func (s settings) internationalLine(open, close string) string {
 	if !s.international() {
 		return ""
 	}
-	line := open + s.encodedLine() + close
+	return s.textLine(open + s.encodedLine() + close)
+}
+
+// htmlInternationalLine is the line as the HTML part writes it. A newsletter's
+// page says it is English (<html lang="en">), so there each half says which
+// language it is in a span of its own - the Polish half, and the Japanese one
+// where the character set holds it - or a screen reader reads both as English
+// (review of #190, as the html format marks its paragraphs in other scripts).
+// A message laid out simple says no language anywhere and keeps the bytes it
+// always wrote.
+func (s settings) htmlInternationalLine() string {
+	if s.layout != Newsletter {
+		return s.internationalLine("<p>", "</p>")
+	}
+	if !s.international() {
+		return ""
+	}
+	// Two lines rather than one where the Japanese half comes: the spans make
+	// the line 83 characters, past the 78 RFC 5322 asks for, and 8bit has no
+	// soft line break to keep it under (measured by the structural checker).
+	// A line break inside a paragraph is white space, as the space it replaces.
+	if _, single := singleByte[s.charset]; single {
+		return s.textLine(`<p><span lang="pl">` + s.encodedLine() + `</span></p>`)
+	}
+	return s.textLine(`<p><span lang="pl">`+polish+`</span>`) + s.textLine(`<span lang="ja">`+japanese+`</span></p>`)
+}
+
+// textLine is one line of the text in the encoding the text is written in,
+// with the text's line ending.
+func (s settings) textLine(line string) string {
 	if s.encoding == QuotedPrintable {
 		line = quotedPrintable(line, s.eol)
 	}

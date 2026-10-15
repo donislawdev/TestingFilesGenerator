@@ -34,8 +34,11 @@ because it turns other people's test suites red.
   name. The smallest catalogue grows from 6924 B to 6944 B.
 - **A newsletter's page says its language.** With `layout=newsletter` the
   HTML part opens with `<html lang="en">`, as the pages of the `html` format
-  do. The smallest newsletter grows by 10 B, and by 12 B in quoted-printable
-  and base64. A message laid out `simple` is unchanged.
+  do, and the line in Polish and Japanese marks each half with its own
+  language, `<span lang="pl">` and `<span lang="ja">`, so a screen reader
+  does not read them as English. The smallest newsletter grows by 10 B in
+  7bit, and by 57 B to 78 B with 8bit, quoted-printable and base64, which
+  carry that line. A message laid out `simple` is unchanged.
 
 ### Added
 
@@ -337,8 +340,8 @@ because it turns other people's test suites red.
 
 - **The `eml` settings say what Thunderbird and MimeKit do with them.**
   Measured with Thunderbird 157.0.1 and MimeKit 4.18.1. `charset` says that
-  MimeKit reads Latin-2 and Windows-1250 right once a code page provider is
-  registered. `message_depth` says that Thunderbird shows 32 levels in full,
+  MimeKit with no code page provider tries UTF-8 and then Latin-1, and reads
+  Latin-2 and Windows-1250 right once one is registered. `message_depth` says that Thunderbird shows 32 levels in full,
   and past that shows only the headers of the 32nd message inside, without a
   word. `filename_style` says that Thunderbird calls an attachment with no
   name Part 1.2, Part 1.3 and so on.

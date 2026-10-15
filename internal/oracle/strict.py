@@ -1096,8 +1096,12 @@ def check_html(data, settings):
         # A title with text in it. The standard asks a title for text, and the
         # Nu HTML Checker calls an empty one an error - which every page with no
         # label had until 2026-10-15, the smallest and every --clean one (O277).
-        title = re.search(r"<title>(.*?)</title>", text, re.S | re.I)
-        if not title or not title.group(1).strip():
+        # Found rather than matched: a lazy pattern over a page of many
+        # unclosed <title> tags reads the rest of the page from each of them,
+        # the quadratic shape eml_head left behind (review of #190).
+        start = text.find("<title>")
+        end = text.find("</title>", start) if start >= 0 else -1
+        if end < 0 or not text[start + len("<title>"):end].strip():
             fail("the document has no title with text in it, which the HTML standard asks of every document")
     else:
         # A fragment is what a content field or the body of an email holds. The
@@ -3212,6 +3216,12 @@ def eml_frame(text, s, unsubscribe):
         (re.search(r'<a class="button" href="' + re.escape(EML_READ_MORE) + r'"[^>]*>\s*Read more</a>', body), "button"),
         (f'<a href="{unsubscribe}">Unsubscribe</a>' in body, "link to unsubscribe at the address in List-Unsubscribe"),
     ]
+    if s["text_encoding"] != "7bit":
+        # Each half of the line in Polish and Japanese says its language, since
+        # the page around it says English (review of #190).
+        page.append(('<span lang="pl">' in body, "the Polish line marked as Polish"))
+        if s["charset"] == "utf-8":
+            page.append(('<span lang="ja">' in body, "the Japanese line marked as Japanese"))
     missing = [what for present, what in page if not present]
     if missing:
         fail(f"layout=newsletter and the HTML lacks: {', '.join(missing)}")
