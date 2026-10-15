@@ -19,11 +19,13 @@ git status. That code now lives here as well, and it proves the restore instead
 of assuming it.
 """
 import contextlib
+import functools
 import hashlib
 import json
 import os
 import shutil
 import subprocess
+import tempfile
 import threading
 import time
 from collections.abc import Iterator
@@ -480,9 +482,50 @@ def measured_ceiling(workers: int) -> int:
     return max(floor, available - reserve)
 
 
+@functools.cache
+def go_cache() -> Path | None:
+    """Where go keeps its build cache, asked once. None when go cannot say."""
+    if not GO:
+        return None
+    r = subprocess.run([GO, "env", "GOCACHE"], capture_output=True, text=True)
+    path = r.stdout.strip()
+    if r.returncode != 0 or not path or path == "off":
+        return None
+    return Path(path)
+
+
+def on_disk(path: Path) -> Path:
+    """The nearest part of path that exists, so a volume can be asked about it."""
+    while not path.exists() and path.parent != path:
+        path = path.parent
+    return path
+
+
+def disk_needs(entries: int, workers: int) -> list[tuple[Path, int]]:
+    """Each volume a run writes to, as a path on it, and the bytes it needs there.
+
+    The worker trees and the test binaries go under the temporary directory,
+    and the build cache under GOCACHE. The checkout itself is only read. Until
+    2026-10-15 the check asked about the volume of the checkout, which is the
+    one volume a run does not fill - right on a machine where all three share
+    a disk, and wrong anywhere they do not (a review of #193). A volume
+    holding both is asked for the sum.
+    """
+    temp = Path(tempfile.gettempdir())
+    cache = go_cache() or temp
+    needs: dict[int, list] = {}
+    for path, extra in ((temp, workers * TREE_BYTES), (cache, entries * CACHE_BYTES_PER_ENTRY)):
+        device = os.stat(on_disk(path)).st_dev
+        if device in needs:
+            needs[device][1] += extra
+        else:
+            needs[device] = [path, extra]
+    return [(path, extra) for path, extra in needs.values()]
+
+
 def free_bytes() -> int:
-    """Bytes free on the volume the tree lives on."""
-    return shutil.disk_usage(ROOT).free
+    """Bytes free on the fullest of the volumes a run writes to."""
+    return min(shutil.disk_usage(on_disk(path)).free for path, _ in disk_needs(0, 0))
 
 
 def no_room_for(entries: int, workers: int = 1) -> str:
@@ -495,15 +538,18 @@ def no_room_for(entries: int, workers: int = 1) -> str:
     # Worker trees are counted too. Measured 2026-09-01: 82.8 MiB per copy
     # with .git, rounded up to 90 in pool.TREE_BYTES. Six of them is half a
     # gigabyte that the sequential runner never had to find.
-    trees = workers * TREE_BYTES
-    need = entries * CACHE_BYTES_PER_ENTRY + DISK_FLOOR_BYTES + trees
-    free = free_bytes()
-    if free >= need:
+    short = []
+    for path, extra in disk_needs(entries, workers):
+        need = extra + DISK_FLOOR_BYTES
+        free = shutil.disk_usage(on_disk(path)).free
+        if free < need:
+            short.append(f"the volume of {path} needs about {need / 1024**3:.1f} GB "
+                         f"and {free / 1024**3:.1f} GB is free")
+    if not short:
         return ""
-    return (f"{entries} entries need about {need / 1024**3:.1f} GB - "
-            f"{CACHE_BYTES_PER_ENTRY / 1024**2:.0f} MB each as measured, plus the "
-            f"{DISK_FLOOR_BYTES / 1024**3:.0f} GB floor and {trees / 1024**2:.0f} MB "
-            f"of worker trees - and {free / 1024**3:.1f} GB is free.\n"
+    return (f"{entries} entries need {CACHE_BYTES_PER_ENTRY / 1024**2:.0f} MB each of build "
+            f"cache as measured, {workers * TREE_BYTES / 1024**2:.0f} MB of worker trees and "
+            f"the {DISK_FLOOR_BYTES / 1024**3:.0f} GB floor - {'. '.join(short)}.\n"
             f"  go clean -cache gives back what earlier runs left behind.")
 
 
@@ -562,8 +608,9 @@ def below_floor() -> str:
     above is this machine's number and anything else on the disk is free to
     move while a run is going.
     """
-    free = free_bytes()
-    if free >= DISK_FLOOR_BYTES:
-        return ""
-    return (f"{free / 1024**3:.2f} GB free, under the "
-            f"{DISK_FLOOR_BYTES / 1024**3:.0f} GB floor")
+    for path, _ in disk_needs(0, 0):
+        free = shutil.disk_usage(on_disk(path)).free
+        if free < DISK_FLOOR_BYTES:
+            return (f"{free / 1024**3:.2f} GB free on the volume of {path}, under the "
+                    f"{DISK_FLOOR_BYTES / 1024**3:.0f} GB floor")
+    return ""

@@ -26,7 +26,7 @@ import time
 from pathlib import Path
 
 from entries import MUTATIONS
-from pool import DEFAULT_WORKERS, TreeDamaged, drop_trees, make_trees
+from pool import DEFAULT_WORKERS, TreeDamaged, TreesNotMade, drop_trees, make_trees
 from runner import (
     record_proof, proofs_recorded, require_go, unbuilt_files, unjudged_reason,
     ROOT, Budget, TreeCorrupted, below_floor, free_bytes, measured_ceiling,
@@ -232,7 +232,8 @@ def judge(index: int, entry, tree, budget, deadline: float,
         original = tree.read(rel)
     except TreeDamaged as damage:
         tree.rebuild()
-        return Outcome(index, "DAMAGED", label, rel, test, 0.0, str(damage))
+        return Outcome(index, "DAMAGED", label, rel, test, 0.0,
+                       f"{damage} - the worker tree was rebuilt")
 
     if old.encode() not in original:
         return Outcome(index, "SKIP", label, rel, test, 0.0,
@@ -249,7 +250,8 @@ def judge(index: int, entry, tree, budget, deadline: float,
         # The damage cannot leave a worker copy, so the answer is a fresh copy
         # and a verdict that says the entry proved nothing.
         tree.rebuild()
-        return Outcome(index, "DAMAGED", label, rel, test, 0.0, str(damage))
+        return Outcome(index, "DAMAGED", label, rel, test, 0.0,
+                       f"{damage} - the worker tree was rebuilt")
 
     secs = result.seconds
     if result.capped:
@@ -271,7 +273,7 @@ def say(out: Outcome) -> None:
         print(f"SKIP  {out.label}\n      {out.detail}", flush=True)
     elif out.verdict == "DAMAGED":
         print(f"DAMAGED {out.label}\n      {out.detail}\n"
-              f"      the worker tree was rebuilt - this entry proved nothing, run it again",
+              f"      this entry proved nothing, run it again",
               flush=True)
     elif out.verdict == "CAPPED":
         print(f"CAPPED [{out.secs:5.2f}s] {out.label}\n"
@@ -330,6 +332,18 @@ def dispatch(entries, trees, budget, deadline: float | None = None,
                 return
             try:
                 done.put(judge(index, entry, tree, budget, deadline, unbuilt))
+            except Exception as error:
+                # Anything judge did not turn into a verdict - a rebuild that
+                # could not delete or copy, a process that could not start.
+                # Before 2026-10-15 the thread died with it, the entry had no
+                # verdict at all, and a run could still end "all caught" (a
+                # review of #193). The entry is DAMAGED, and the worker stops,
+                # because a tree that failed this way cannot be trusted with
+                # the next one. The others go on.
+                label, rel, _, _, test = entry
+                done.put(Outcome(index, "DAMAGED", label, rel, test, 0.0,
+                                 f"worker {tree.slot} failed and stopped - {error!r}"))
+                return
             finally:
                 # Belt and braces over the release inside run_test, and the
                 # reason is what a leak would DO rather than how likely it is.
@@ -372,6 +386,15 @@ def dispatch(entries, trees, budget, deadline: float | None = None,
         say(out)
         if out.verdict == "ok":
             record_proof(out.label, ROOT / out.rel)
+
+    # Asserted rather than assumed: every entry handed in has a verdict, or the
+    # run says why not. When every worker has stopped, entries are left in the
+    # queue that nobody took, and without this they vanished from the count.
+    judged = {o.index for o in outcomes}
+    never = sum(1 for index, _ in entries if index not in judged)
+    if never and not stopped_because:
+        stopped_because.append(f"{never} entries were never judged - every worker "
+                               f"that could take them had stopped")
 
     return outcomes, (stopped_because[0] if stopped_because else "")
 
@@ -501,7 +524,15 @@ def main() -> int:
           f"{workers} workers, {ceiling / 1024**3:.1f} GB shared memory ceiling, "
           f"{deadline:.0f} s per entry, {len(unbuilt)} Go file(s) not built here")
 
-    trees = make_trees(workers)
+    try:
+        trees = make_trees(workers)
+    except (TreesNotMade, OSError) as error:
+        # Said in words and written to the report, so a part that could not
+        # start reads as stopped rather than as a part that never answered.
+        print(f"no entry was run - the worker trees could not be made:\n  {error}")
+        report["stopped"] = f"the worker trees could not be made - {error}"
+        write_report(args.json, report)
+        return 2
     budget = Budget(ceiling)
     try:
         cold = warm(trees)

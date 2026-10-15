@@ -181,6 +181,10 @@ class WorkerTree:
         self._first.clear()
 
 
+class TreesNotMade(Exception):
+    """The worker trees could not be set up, so no entry can run."""
+
+
 class TreeDamaged(Exception):
     """A worker tree holds something other than what it started with.
 
@@ -205,7 +209,18 @@ def make_trees(count: int, say=print) -> list[WorkerTree]:
     started = time.perf_counter()
     # Copied fresh every run, so nothing an earlier run left in a tree can
     # reach this one - only the path is the same, which is all the cache needs.
+    #
+    # The sweep above cannot fail loudly - it clears read-only bits and goes
+    # on - so a file it could not delete leaves the directory behind. A file
+    # held open on Windows is enough. Refused here in words, rather than
+    # with the traceback of a mkdir or a copy into a tree that is half there
+    # (a review of #193).
     parent = Path(tempfile.gettempdir()) / TREES
+    if parent.exists():
+        left = sorted(p.name for p in parent.iterdir())
+        raise TreesNotMade(f"{parent} is still there after the sweep, holding "
+                           f"{', '.join(left) or 'nothing'} - something has a file "
+                           f"in it open. Close it, delete the directory and run again.")
     parent.mkdir()
     trees = []
     for slot in range(count):
