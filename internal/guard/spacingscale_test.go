@@ -194,29 +194,59 @@ func TestTheGapBetweenSectionsIsWiderThanTheGapBetweenFields(t *testing.T) {
 	if len(gaps) == 0 {
 		t.Fatal("the generate screen shows fewer than two sections, so there is no gap to measure")
 	}
-	upper, lower := fieldCell(t, generate, text.FieldFormat()), fieldCell(t, generate, text.FieldTargetID())
+	// The pair is found down a column rather than named, so it follows the
+	// layout (a review of #195): the first field with another under it in
+	// its own column, the way the guard above walks the form.
+	names := []string{text.FieldFormat(), text.FieldSize(), text.FieldCount(), text.FieldTargetID(),
+		text.FieldNameTemplate(), text.FieldOutputDir(), text.FieldSeed()}
+	var boxes []band
+	for _, label := range names {
+		_, box := nameAndBox(t, generate, label)
+		boxes = append(boxes, box)
+	}
+	above, below := -1, -1
+	for i := range names {
+		if j := nextInColumn(boxes, i); j >= 0 {
+			above, below = i, j
+			break
+		}
+	}
+	// In the state this is about, or it proves nothing.
+	if above < 0 {
+		t.Fatal("no field on the generate screen stands under another in its column, so there is no gap between two fields to compare with - the layout changed, not the spacing")
+	}
+	upper, lower := fieldCell(t, generate, names[above], names), fieldCell(t, generate, names[below], names)
 	between := lower.Y - (upper.Y + upper.Height)
-	// In the state this is about, or it proves nothing: the two fields one
-	// under the other in one column, with room between them.
-	if off := lower.X - upper.X; off > 1 || off < -1 || between <= 0 {
-		t.Fatalf("the format field (x=%.1f, ends at y=%.1f) and the batch name (x=%.1f, starts at y=%.1f) do not stand "+
-			"one under the other, so there is no gap between two fields to compare with", upper.X, upper.Y+upper.Height, lower.X, lower.Y)
+	if between <= 0 {
+		t.Fatalf("%q ends at y=%.1f and %q under it starts at y=%.1f, so there is no room between two fields to compare with",
+			names[above], upper.Y+upper.Height, names[below], lower.Y)
 	}
 	for _, gap := range gaps {
 		// By more than a pixel, because a layout lands on fractions and two
 		// gaps drawn from one token can differ by one.
 		if gap <= between+1 {
-			t.Errorf("two sections are %.1f px apart and two fields inside one are %.1f px apart."+
-				" A section boundary has to be the wider of the two or it groups nothing", gap, between)
+			t.Errorf("two sections are %.1f px apart and two fields inside one (%q over %q) are %.1f px apart."+
+				" A section boundary has to be the wider of the two or it groups nothing", gap, names[above], names[below], between)
 		}
 	}
 }
 
-// fieldCell is the whole of one field as the grid placed it: the outermost
-// thing in the field's column that holds both its name and its box.
-func fieldCell(t *testing.T, screen fyne.CanvasObject, label string) band {
+// fieldCell is the whole of one field as the grid placed it: the tallest thing
+// in the field's column that holds its name and its box and the name of no
+// other field. The last condition is what keeps it to one field when the grid
+// itself is one column wide and as wide as the box (a review of #195).
+func fieldCell(t *testing.T, screen fyne.CanvasObject, label string, others []string) band {
 	t.Helper()
 	name, box := nameAndBox(t, screen, label)
+	var foreign []band
+	for _, other := range others {
+		if other == label {
+			continue
+		}
+		if words, ok := labelBox(screen, other); ok {
+			foreign = append(foreign, words)
+		}
+	}
 	var cell band
 	atAbsolute(screen, func(o fyne.CanvasObject, at fyne.Position) {
 		if _, is := o.(*fyne.Container); !is {
@@ -232,12 +262,17 @@ func fieldCell(t *testing.T, screen fyne.CanvasObject, label string) band {
 		if at.Y > name.Y || at.Y+size.Height < box.Y+box.Height {
 			return
 		}
+		for _, words := range foreign {
+			if words.X >= at.X-1 && words.X <= at.X+size.Width && words.Y >= at.Y-1 && words.Y+words.Height <= at.Y+size.Height+1 {
+				return
+			}
+		}
 		if size.Height > cell.Height {
 			cell = band{X: at.X, Y: at.Y, Width: size.Width, Height: size.Height}
 		}
 	})
 	if cell.Height == 0 {
-		t.Fatalf("nothing as wide as the box of %q holds its name and its box", label)
+		t.Fatalf("nothing as wide as the box of %q holds its name and its box and no other field", label)
 	}
 	return cell
 }

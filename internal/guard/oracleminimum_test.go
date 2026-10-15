@@ -93,7 +93,10 @@ func TestEveryFormatSurvivesItsReferenceToolAtItsSmallest(t *testing.T) {
 	}
 
 	t.Logf("smallest files put past a reference tool: %d checked, %d format(s) skipped for a missing tool", checked, skipped)
+	// A skip of its own when every format skipped, so the guard as a whole
+	// does not read as passed having put nothing past anything (a review of
+	// #195).
 	if checked == 0 && skipped > 0 {
-		t.Log("NOTHING was verified against an external tool on this machine")
+		t.Skip("NOTHING was verified against an external tool on this machine")
 	}
 }

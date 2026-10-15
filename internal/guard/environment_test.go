@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"os/exec"
@@ -77,18 +78,26 @@ func TestADirectoryWeCannotWriteInIsAPermissionProblem(t *testing.T) {
 // and only the owner's machine, east of UTC, could tell. The zone is set in a
 // child process of its own rather than here, because time.Local is a variable
 // every goroutine of this binary reads and the race detector runs these guards.
+// Not through TZ, which Go on Windows does not read: measured on 2026-10-16,
+// TZ=Asia/Kathmandu and TZ=UTC both left a program on this machine in CEST.
 func TestTheRecordedTimeDoesNotDependOnTheLocalZone(t *testing.T) {
 	if os.Getenv(awayFromUTCChild) == "1" {
 		recordedTimeAwayFromUTC(t)
 		return
 	}
-	run := exec.Command(os.Args[0], "-test.run=^TestTheRecordedTimeDoesNotDependOnTheLocalZone$", "-test.v")
+	// A ceiling on the child, so one that hangs ends this guard rather than
+	// the whole run. And the child's own PASS line rather than the word: a
+	// pattern that matched nothing ends with "no tests to run" and PASS too
+	// (a review of #195).
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	run := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestTheRecordedTimeDoesNotDependOnTheLocalZone$", "-test.v")
 	run.Env = append(os.Environ(), awayFromUTCChild+"=1")
 	out, err := run.CombinedOutput()
 	if err != nil {
 		t.Fatalf("the manifest's time moved with the zone:\n%s", out)
 	}
-	if !strings.Contains(string(out), "PASS") {
+	if !strings.Contains(string(out), "--- PASS: TestTheRecordedTimeDoesNotDependOnTheLocalZone") {
 		t.Fatalf("the child said nothing about passing, which means it never ran:\n%s", out)
 	}
 }

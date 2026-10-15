@@ -353,7 +353,7 @@ func TestTheWindowsWordsForARefusalShowANameNobodyCanReadAsAnEscape(t *testing.T
 	txt := func(id, name string) engine.Target {
 		return engine.Target{ID: id, Format: "txt", Sizes: engine.Uniform(1, 1024), NameTmpl: name}
 	}
-	run := func(out string, targets ...engine.Target) error {
+	runTargets := func(out string, targets ...engine.Target) error {
 		opt := engine.Options{OutDir: out, ManifestName: "manifest.json"}
 		planned, err := engine.Plan(targets, opt)
 		if err != nil {
@@ -372,14 +372,14 @@ func TestTheWindowsWordsForARefusalShowANameNobodyCanReadAsAnEscape(t *testing.T
 	if err := os.WriteFile(filepath.Join(dir, name), []byte("mine"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	windowSaysEscaped(t, "a refusal of a taken name", run(dir, txt("g", name)), "photo", rightToLeft, "gpj.txt")
+	windowSaysEscaped(t, "a refusal of a taken name", runTargets(dir, txt("g", name)), "photo", rightToLeft, "gpj.txt")
 
 	parent := t.TempDir()
 	file := filepath.Join(parent, "out"+rightToLeft+"file")
 	if err := os.WriteFile(file, []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	windowSaysEscaped(t, "a refusal of an output directory that is a file", run(file, txt("g", "g.txt")), "out", rightToLeft, "file")
+	windowSaysEscaped(t, "a refusal of an output directory that is a file", runTargets(file, txt("g", "g.txt")), "out", rightToLeft, "file")
 
 	held := filepath.Join(parent, "held"+zeroWidth+"dir")
 	if err := os.MkdirAll(held, 0o755); err != nil {
@@ -388,7 +388,7 @@ func TestTheWindowsWordsForARefusalShowANameNobodyCanReadAsAnEscape(t *testing.T
 	if err := os.WriteFile(engine.RunLockPath(held), nil, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	windowSaysEscaped(t, "a refusal of a held directory", run(held, txt("g", "g.txt")), "held", zeroWidth, "dir")
+	windowSaysEscaped(t, "a refusal of a held directory", runTargets(held, txt("g", "g.txt")), "held", zeroWidth, "dir")
 }
 
 // windowSaysEscaped is saysEscaped of a refusal in the words the window puts

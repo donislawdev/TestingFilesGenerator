@@ -125,6 +125,12 @@ func TestABoxForANumberIsTheWidthOfANumber(t *testing.T) {
 		// scored that change a HOLE.
 		w.Resize(fyne.NewSize(content.MinSize().Width, 760))
 		content.Refresh()
+		// In the state this is about, or it proves nothing (a review of #195):
+		// a resize the window ignored would measure the wide layout again.
+		if got, least := content.Size().Width, content.MinSize().Width; got > least+1 {
+			t.Fatalf("%s: the form is %.0f px wide after a resize to its least width of %.0f px, so this did not measure the narrowest layout",
+				screenName, got, least)
+		}
 		for _, label := range numeric {
 			box := entryUnder(t, content, label)
 			if got := box.Size().Width; got < parts.NumericWidth-1 {

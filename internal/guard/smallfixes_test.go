@@ -199,16 +199,40 @@ func TestEveryCIJobHasACeilingOnItsTime(t *testing.T) {
 		}
 		for name, job := range workflow.Jobs {
 			jobs++
-			if _, has := job["timeout-minutes"]; !has {
+			minutes, has := job["timeout-minutes"]
+			if !has {
 				t.Errorf("%s: the job %s has no timeout-minutes of its own, so it holds a runner for six hours when it hangs.\n"+
 					"A step's timeout-minutes does not count - it ends that step, and the job waits on whatever comes next.",
 					filepath.Base(path), name)
+				continue
+			}
+			// A number of minutes, and more than none. The key with nothing
+			// after it reads as null and passed the version that asked only
+			// whether it was there (a review of #195).
+			if !someMinutes(minutes) {
+				t.Errorf("%s: the job %s has timeout-minutes: %v, which is not a number of minutes above none",
+					filepath.Base(path), name, minutes)
 			}
 		}
 	}
 	if jobs == 0 {
 		t.Fatal("no job was found in any workflow, so this guard would pass without checking anything")
 	}
+}
+
+// someMinutes is whether a decoded timeout-minutes is a number above nought.
+func someMinutes(v any) bool {
+	switch n := v.(type) {
+	case uint64:
+		return n > 0
+	case int64:
+		return n > 0
+	case int:
+		return n > 0
+	case float64:
+		return n > 0
+	}
+	return false
 }
 
 // The window binary is built. Nothing built it, so it could stop compiling and
