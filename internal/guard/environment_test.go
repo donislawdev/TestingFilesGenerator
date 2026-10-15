@@ -1,8 +1,10 @@
 package guard
 
 import (
+	"context"
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -47,6 +49,14 @@ func TestADirectoryWeCannotWriteInIsAPermissionProblem(t *testing.T) {
 	if strings.Contains(errOut, "already exists") {
 		t.Errorf("a permission problem is reported as a name that is taken:\n%s", errOut)
 	}
+	// And as what it is. The first thing a run creates in the directory is the
+	// lock that keeps a second run out, so this is where the refusal comes from,
+	// and a failure there that is not "something is already there" is reported
+	// as one. Without this the guard passed on a refusal calling the directory
+	// busy with another run - which says nothing about a taken name either.
+	if !strings.Contains(errOut, "cannot start a run in") {
+		t.Errorf("a directory nobody can write in is not reported as a run that could not start there:\n%s", errOut)
+	}
 	if n := strings.Count(errOut, "tfg: "); n != 1 {
 		t.Errorf("one fault produced %d messages:\n%s", n, errOut)
 	}
@@ -61,7 +71,50 @@ func TestADirectoryWeCannotWriteInIsAPermissionProblem(t *testing.T) {
 // California describe the same instant the same way. A local time would make
 // two manifests of the same run look like different runs, and a reader
 // comparing them has no way to tell which.
+//
+// Asked in a zone that is not UTC, because in UTC the two are the same text.
+// The runners keep their clocks in UTC, so a manifest that recorded local time
+// passed here on every one of them - the mutation run of 2026-10-15 found it,
+// and only the owner's machine, east of UTC, could tell. The zone is set in a
+// child process of its own rather than here, because time.Local is a variable
+// every goroutine of this binary reads and the race detector runs these guards.
+// Not through TZ, which Go on Windows does not read: measured on 2026-10-16,
+// TZ=Asia/Kathmandu and TZ=UTC both left a program on this machine in CEST.
 func TestTheRecordedTimeDoesNotDependOnTheLocalZone(t *testing.T) {
+	if os.Getenv(awayFromUTCChild) == "1" {
+		recordedTimeAwayFromUTC(t)
+		return
+	}
+	// A ceiling on the child, so one that hangs ends this guard rather than
+	// the whole run. And the child's own PASS line rather than the word: a
+	// pattern that matched nothing ends with "no tests to run" and PASS too
+	// (a review of #195).
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	run := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestTheRecordedTimeDoesNotDependOnTheLocalZone$", "-test.v")
+	run.Env = append(os.Environ(), awayFromUTCChild+"=1")
+	out, err := run.CombinedOutput()
+	if err != nil {
+		t.Fatalf("the manifest's time moved with the zone:\n%s", out)
+	}
+	if !strings.Contains(string(out), "--- PASS: TestTheRecordedTimeDoesNotDependOnTheLocalZone") {
+		t.Fatalf("the child said nothing about passing, which means it never ran:\n%s", out)
+	}
+}
+
+const awayFromUTCChild = "TFG_AWAY_FROM_UTC_CHILD"
+
+// recordedTimeAwayFromUTC is the guard above, in a process whose local zone is
+// five hours and forty five minutes east of UTC - a zone no runner and no
+// developer's machine is likely to be in already.
+func recordedTimeAwayFromUTC(t *testing.T) {
+	t.Helper()
+	time.Local = time.FixedZone("UTC+05:45", 5*60*60+45*60)
+	// In the state this is about, or it proves nothing.
+	if now := time.Now().Format(time.RFC3339); strings.HasSuffix(now, "Z") {
+		t.Fatalf("the local time reads %s, which is UTC, so this cannot tell a local time from a universal one", now)
+	}
+
 	dir := t.TempDir()
 	code, stdout, errOut := run(t,
 		"generate", "--format", "txt", "--size", "1kb", "--json", "--out", dir)

@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
@@ -333,4 +334,71 @@ func TestTheWindowShowsADirectoryNobodyCanReadAsAnEscape(t *testing.T) {
 		}
 		saysNothingUnseen(t, "the window's refusal of "+out, said)
 	}
+}
+
+// The window's own words for the same four refusals the command line is asked
+// about above: two names that collide, a name already taken, an output
+// directory that is a file, and one another run is holding.
+//
+// The command line escapes a whole message on its way out (describeError,
+// O241), which covers the name each of these sentences escapes as well - so
+// the guards above stay green with either of the two taken away, and the CI
+// run of 2026-10-15 scored all four of these escapes as HOLES. The window has
+// no such funnel for a refusal it puts under a box: parts.Fields hands
+// text.Refusal of the error to the box as it is. A sentence the engine wrote
+// reaches the screen with only the escape it made itself, so that escape is
+// asked for here, through the words the window would say, and nowhere is it
+// covered twice.
+func TestTheWindowsWordsForARefusalShowANameNobodyCanReadAsAnEscape(t *testing.T) {
+	txt := func(id, name string) engine.Target {
+		return engine.Target{ID: id, Format: "txt", Sizes: engine.Uniform(1, 1024), NameTmpl: name}
+	}
+	runTargets := func(out string, targets ...engine.Target) error {
+		opt := engine.Options{OutDir: out, ManifestName: "manifest.json"}
+		planned, err := engine.Plan(targets, opt)
+		if err != nil {
+			return err
+		}
+		_, err = engine.Run(context.Background(), planned, opt)
+		return err
+	}
+
+	_, collide := engine.Plan([]engine.Target{txt("lower", "a"+zeroWidth+".txt"), txt("upper", "A"+zeroWidth+".txt")},
+		engine.Options{OutDir: t.TempDir(), ManifestName: "manifest.json"})
+	windowSaysEscaped(t, "a refusal of two names that collide", collide, "A", zeroWidth, ".txt")
+
+	dir := t.TempDir()
+	name := "photo" + rightToLeft + "gpj.txt"
+	if err := os.WriteFile(filepath.Join(dir, name), []byte("mine"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	windowSaysEscaped(t, "a refusal of a taken name", runTargets(dir, txt("g", name)), "photo", rightToLeft, "gpj.txt")
+
+	parent := t.TempDir()
+	file := filepath.Join(parent, "out"+rightToLeft+"file")
+	if err := os.WriteFile(file, []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	windowSaysEscaped(t, "a refusal of an output directory that is a file", runTargets(file, txt("g", "g.txt")), "out", rightToLeft, "file")
+
+	held := filepath.Join(parent, "held"+zeroWidth+"dir")
+	if err := os.MkdirAll(held, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(engine.RunLockPath(held), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	windowSaysEscaped(t, "a refusal of a held directory", runTargets(held, txt("g", "g.txt")), "held", zeroWidth, "dir")
+}
+
+// windowSaysEscaped is saysEscaped of a refusal in the words the window puts
+// under a box, after asserting there was a refusal to read.
+func windowSaysEscaped(t *testing.T, what string, err error, stem, unseen, rest string) {
+	t.Helper()
+	if err == nil {
+		t.Fatalf("%s did not happen, so this guard checked nothing", what)
+	}
+	said := text.Refusal(err, "")
+	saysNothingUnseen(t, what+", in the window's words", said)
+	saysEscaped(t, what+", in the window's words", said, stem, unseen, rest)
 }

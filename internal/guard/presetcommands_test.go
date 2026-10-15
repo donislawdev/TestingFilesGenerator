@@ -406,6 +406,12 @@ func TestEveryPresetEndingHasTheCodeItShould(t *testing.T) {
 		{"the same distance twice", []string{"preset", "show", "size-boundaries", "--spread", "1B,1B"}, cli.ExitFormat},
 		{"the same distance spelled two ways", []string{"preset", "show", "size-boundaries", "--spread", "1024,1kb"}, cli.ExitFormat},
 		{"a distance carrying a character a name cannot", []string{"preset", "show", "size-boundaries", "--spread", "1\rB"}, cli.ExitFormat},
+		// A space reads as a size and parses as one, and nothing after the
+		// whitelist in checkDistance refuses it: without that check it became
+		// part of a file name, 10mb_over_1 kb.pdf, measured 2026-10-15. The
+		// carriage return above is refused by the recipe's own check of an id
+		// as well, so it cannot tell whether the whitelist is there.
+		{"a distance with a space inside it", []string{"preset", "show", "size-boundaries", "--spread", "1 kb"}, cli.ExitFormat},
 		// A set no format here can build. FORMAT rather than RECIPE, because
 		// the request is well formed and it is the floor of a format that puts
 		// the smallest file of the set out of reach.

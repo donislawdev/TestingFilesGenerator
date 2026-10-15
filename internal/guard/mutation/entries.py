@@ -166,11 +166,11 @@ MUTATIONS = [
     ),
     # --- a preset renders a recipe that still means what it says (2026-09-06) ---
     (
-        "the whitelist on a spread value goes, so a carriage return reaches the document raw",
+        "the whitelist on a spread value goes, so a space reaches a file name",
         "internal/preset/sizeboundaries.go",
         'if bad := firstUnusable(piece); bad != "" {',
         'if bad := firstUnusable(piece); false && bad != "" {',
-        "TestEveryPresetRendersARecipeThatParsesBack",
+        "TestEveryPresetEndingHasTheCodeItShould",
     ),
     # --- two one word findings, and a third the guard for them found (2026-09-06) ---
     (
@@ -347,7 +347,7 @@ MUTATIONS = [
     ),
     # --- the write path claims every name it writes under (2026-09-06) ---
     (
-        "the claim believes os.Stat, so a link pointing at nothing reads as a free name",
+        "the claim believes os.Stat, so a link pointing at nothing is refused in the system's words rather than as a name in use",
         "internal/core/createnew.go",
         "_, lookErr := os.Lstat(path)",
         "_, lookErr := os.Stat(path)",
@@ -1914,8 +1914,8 @@ MUTATIONS = [
     (
         "the window stops saying where the files will go, so the only field that decides it is off the screen",
         "internal/gui/window/runline.go",
-        "	return text.WritingTo(l.where(dir))",
-        "	return \"\"",
+        "\treturn text.RunLine(int(sum.files), sum.totalText(), sum.formats, l.where(dir))",
+        "\treturn text.RunLine(int(sum.files), sum.totalText(), sum.formats, \"\")",
         "TestWhereTheFilesGoIsSaidOutsideTheScrollingPart",
     ),
     (
@@ -2293,7 +2293,7 @@ MUTATIONS = [
     (
         # Two screens draw a field from the same declaration through different
         # code, and only one of them got the width on the first try.
-        "the batch screen draws a number in a box the width of the form",
+        "the batch screen draws a number in one column of the grid, too narrow for the words it shows when left alone",
         "internal/gui/window/recipefolds.go",
         "			parts.ShapedFor(b.declared[i], f.Control))",
         "			f.Control)",
@@ -3070,8 +3070,8 @@ MUTATIONS = [
         # pdf has one case, measured by counting Format: fields in the file.
         "a format quietly stops having its bytes pinned anywhere",
         "internal/guard/generatorbytes_test.go",
-        '"pdf_16kib": {ID: "g", Format: "pdf", Sizes: engine.Uniform(1, 16384), Label: true},',
-        '"pdf_16kib": {ID: "g", Format: "txt", Sizes: engine.Uniform(1, 16384), Label: true},',
+        "\"png_64kib\": {ID: \"g\", Format: \"png\",",
+        "\"png_64kib\": {ID: \"g\", Format: \"txt\",",
         "TestEveryFormatHasAGoldenValue",
     ),
     (
@@ -4123,7 +4123,7 @@ MUTATIONS = [
         # The real defect, put back. Capping the column stopped a field at
         # 820 px, which is still a paragraph's width offered for the digit 0.
         # Measured before the fix: the seed was 397 px and the count 399.
-        "a box for a number goes back to taking the whole column",
+        "a box for a number loses its floor, so in the narrowest window it is drawn narrower than a number",
         "internal/gui/parts/parts.go",
         "\treturn Sized(NumericWidth, control)",
         "\treturn control",
@@ -4511,11 +4511,11 @@ MUTATIONS = [
         # The colour the open list had until 2026-08-12: the input colour to the
         # byte, over a panel 3.8 L* away, with no border. Reported from a
         # screenshot as a list where everything runs together.
-        "an open list goes back to the colour of an input box",
+        "the menu's surface drops to the colour of an input box, so the rung of the ladder above a button's face is missing",
         "internal/gui/parts/theme.go",
         "theme.ColorNameMenuBackground: hex(0x57, 0x57, 0x5F),",
         "theme.ColorNameMenuBackground: hex(0x39, 0x39, 0x3F),",
-        "TestAnOpenListIsToldFromTheFormBehindIt",
+        "TestTheLadderClimbsInEvenSteps",
     ),
     (
         # The toolkit's own behaviour, put back: a list of thirteen formats
@@ -4751,9 +4751,9 @@ MUTATIONS = [
         # half that asks two canvases, and by the taller one leaving more than
         # a row of its half unused.
         "the open list's ceiling is the same in every window again",
-        "internal/gui/parts/openlist.go",
-        "rows := float32(math.Floor(float64(canvasHeight * listShare / row)))",
-        "rows := float32(math.Floor(float64(800 * listShare / row)))",
+        "internal/gui/parts/ring.go",
+        "ceiling := wholeRows(canvasHeight*listShare - head)",
+        "ceiling := wholeRows(800*listShare - head)",
         "TestTheOpenListCoversHalfTheWindowAndGrowsWithIt",
     ),
     (
@@ -5250,15 +5250,6 @@ MUTATIONS = [
     "TestTheFolderOfferGoesAwayWhenTheNextRunStarts",
 ),
 (
-    # A shortcut that worked on a hidden button would reach a state the screen
-    # does not offer - Escape cancelling a run that is not going.
-    "a shortcut presses a button the screen has taken out of use",
-    "internal/gui/window/runactions.go",
-    "if b == nil || b.Disabled() || !b.Visible() || b.OnTapped == nil {",
-    "if b == nil || b.OnTapped == nil {",
-    "TestAShortcutCannotStartASecondRunDuringTheFirst",
-),
-(
     # Escape has to be harmless while nothing is running. Broken the other way
     # round - by making it start a run instead of stopping one - because a
     # guard about the ABSENCE of an effect cannot be reddened by removing one.
@@ -5582,13 +5573,6 @@ MUTATIONS = [
         "if limit < 1 {",
         "if limit == 0 {",
         "TestABoundaryLimitIsRefusedAtBothEnds",
-    ),
-    (
-        "the screen wires its fields for typing a second time",
-        "internal/gui/parts/fields.go",
-        "\ts.tell = tell\n}",
-        "\ts.tell = tell\n\tfor _, f := range s.list {\n\t\ts.listen(f.Setting, f.Control)\n\t}\n}",
-        "TestAFieldWiredBeforeTheScreenListensReportsOnce",
     ),
     (
         "the walk of the directory stops asking whether it was cancelled",
@@ -6277,13 +6261,6 @@ MUTATIONS = [
         "TestWorkingOutTheCostCanBeStopped",
     ),
     (
-        "planning stops noticing that it was asked to stop",
-        "internal/engine/plantarget.go",
-        "\t\tif err := ctx.Err(); err != nil {",
-        "\t\tif false {",
-        "TestWorkingOutTheCostCanBeStopped",
-    ),
-    (
         "a cleanup report goes back to counting only blocked files as kept",
         "internal/cli/cleanup.go",
         "\treport.Removed, report.Kept = removed, len(outcomes)-removed",
@@ -6428,8 +6405,8 @@ MUTATIONS = [
         # its words. Four values come out cut off and the guard names each.
         "a row gives its words less room than it promised, so values are cut off in the open list",
         "internal/gui/parts/listrow.go",
-        "r.label.Resize(fyne.NewSize(size.Width-left-right, text.Height))",
-        "r.label.Resize(fyne.NewSize(size.Width-left-right-rowGutter*3, text.Height))",
+        "room := size.Width - left - right\n",
+        "room := size.Width - left - right - rowGutter*3\n",
         "TestEveryValueInAMenuFitsInTheListItOpens",
     ),
     (
@@ -11492,14 +11469,14 @@ MUTATIONS = [
         "internal/engine/names.go",
         "which differ only in case. Most filesystems treat those as one file, so one would be written over the other and the manifest would describe both\",\n\t\t\tcore.A(\"First\", owner.id), core.A(\"Second\", id), core.A(\"FirstName\", core.Shown(owner.name)), core.A(\"SecondName\", core.Shown(name)))",
         "which differ only in case. Most filesystems treat those as one file, so one would be written over the other and the manifest would describe both\",\n\t\t\tcore.A(\"First\", owner.id), core.A(\"Second\", id), core.A(\"FirstName\", owner.name), core.A(\"SecondName\", name))",
-        "TestARefusalShowsANameNobodyCanReadAsAnEscape",
+        "TestTheWindowsWordsForARefusalShowANameNobodyCanReadAsAnEscape",
     ),
     (
         "a refusal of a taken name prints the path raw",
         "internal/engine/errors.go",
         "remove the file first\",\n\t\tcore.A(\"Path\", core.Shown(e.Path)))",
         "remove the file first\",\n\t\tcore.A(\"Path\", e.Path))",
-        "TestARefusalShowsANameNobodyCanReadAsAnEscape",
+        "TestTheWindowsWordsForARefusalShowANameNobodyCanReadAsAnEscape",
     ),
     (
         "the files of a boundary set are listed raw",
@@ -11534,14 +11511,14 @@ MUTATIONS = [
         "internal/engine/preflight.go",
         "\"the output directory %s is a file, not a directory\", core.A(\"Dir\", core.Shown(opt.OutDir)))",
         "\"the output directory %s is a file, not a directory\", core.A(\"Dir\", opt.OutDir))",
-        "TestTheLinesAboutARunShowANameNobodyCanReadAsAnEscape",
+        "TestTheWindowsWordsForARefusalShowANameNobodyCanReadAsAnEscape",
     ),
     (
         "a refusal of a held directory prints it raw",
         "internal/engine/errors.go",
         "core.A(\"Dir\", core.Shown(e.Dir)), core.A(\"Lock\", core.Shown(e.Path)))",
         "core.A(\"Dir\", e.Dir), core.A(\"Lock\", e.Path))",
-        "TestTheLinesAboutARunShowANameNobodyCanReadAsAnEscape",
+        "TestTheWindowsWordsForARefusalShowANameNobodyCanReadAsAnEscape",
     ),
     (
         # A right to left override typed into a comment of shipped code - the
@@ -11792,13 +11769,6 @@ MUTATIONS = [
         "text.InstructionsNotSaved(saved.Missed.Path, core.ShownText(text.Refusal(saved.Missed.Err, \"\")))",
         "TestTheWindowSaysInstructionsItCouldNotWriteWithTheEscape",
     ),
-    (
-        "the window says why the instructions were not written in the system's raw words",
-        "internal/gui/window/run.go",
-        "text.InstructionsNotSaved(core.Shown(saved.Missed.Path), core.ShownText(text.Refusal(saved.Missed.Err, \"\")))",
-        "text.InstructionsNotSaved(core.Shown(saved.Missed.Path), text.Refusal(saved.Missed.Err, \"\"))",
-        "TestTheWindowSaysInstructionsItCouldNotWriteWithTheEscape",
-    ),
     # --- the WinGet and Chocolatey packages and their renderer (2026-09-25) ---
     (
         "the Chocolatey nuspec is written under the template's name instead of the package's",
@@ -11957,8 +11927,8 @@ MUTATIONS = [
     (
         "a checksum file saved with a byte order mark is refused",
         ".github/scripts/build_packages.py",
-        '    with open(path, encoding="utf-8-sig") as handle:',
-        '    with open(path, encoding="utf-8") as handle:',
+        "text = data.decode(\"utf-8-sig\").replace(\"\\r\\n\", \"\\n\")",
+        "text = data.decode(\"utf-8\").replace(\"\\r\\n\", \"\\n\")",
         "TestEverySpellingOfAChecksumFileRendersTheSamePackages",
     ),
     (
@@ -12775,10 +12745,10 @@ MUTATIONS = [
         'TestSavingAManifestTellsAnEmptySlotFromAnUnreadableOne',
     ),
     (
-        'every failure to take the manifest name is called a collision',
+        "every failure to take the run's lock is called another run writing there",
         'internal/engine/engine.go',
-        'if errors.Is(err, fs.ErrExist) {\n\t\treturn nil, &CollisionError{Path: manifestPath, Manifest: true}',
-        'if !errors.Is(err, fs.ErrExist) {\n\t\treturn nil, &CollisionError{Path: manifestPath, Manifest: true}',
+        "\t\tif errors.Is(err, fs.ErrExist) {\n\t\t\treturn res, &RunInProgressError{Path: lockPath, Dir: opt.OutDir}",
+        "\t\tif !errors.Is(err, fs.ErrExist) {\n\t\t\treturn res, &RunInProgressError{Path: lockPath, Dir: opt.OutDir}",
         'TestADirectoryWeCannotWriteInIsAPermissionProblem',
     ),
     (

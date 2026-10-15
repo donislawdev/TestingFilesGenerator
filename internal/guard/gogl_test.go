@@ -2,6 +2,7 @@ package guard
 
 import (
 	"encoding/json"
+	"go/build"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -312,18 +313,32 @@ func firstDifferingLine(a, b string) int {
 // generated file with C in its comments, and no guard reading the shape of
 // this module's code sees it. A walk that stopped skipping would hand that
 // file to fourteen guards at once, and they would all be right to refuse it.
+//
+// Whether the walk lists a package of that module is asked only where the
+// module holds a package this build sees. Its files use cgo, so with cgo off -
+// the mutation runners build that way - packages() would find nothing in it
+// even after walking in: the run of 2026-10-15 scored the walk that stopped
+// skipping as a HOLE on those runners and caught it where cgo is on. That one
+// question skips there, as a subtest, and the list of skipped modules is
+// asked everywhere, because it does not depend on cgo (a review of #195).
 func TestANestedModuleIsNotAPackageOfThisModule(t *testing.T) {
 	root := repoRoot(t)
 	generated := filepath.Join(root, filepath.FromSlash(bindingCopy), "v2.1", "gl", "package.go")
 	if _, err := os.Stat(generated); err != nil {
 		t.Fatalf("the nested module this guard expects to be skipped is not there: %v", err)
 	}
-	for _, p := range packages(t) {
-		if strings.HasPrefix(p.rel, "third_party/") {
-			t.Errorf("packages() lists %s, which is inside another module.\n"+
-				"A directory with its own go.mod is outside \"./...\" and has to be outside this walk.", p.rel)
+	listed := packages(t)
+	t.Run("no package of it is listed", func(t *testing.T) {
+		if _, err := build.ImportDir(filepath.Dir(generated), 0); err != nil {
+			t.Skipf("this build sees no package in %s (%v), so a walk into it would list nothing and this cannot tell", bindingCopy, err)
 		}
-	}
+		for _, p := range listed {
+			if strings.HasPrefix(p.rel, "third_party/") {
+				t.Errorf("packages() lists %s, which is inside another module.\n"+
+					"A directory with its own go.mod is outside \"./...\" and has to be outside this walk.", p.rel)
+			}
+		}
+	})
 	// And the walk skipped exactly that module. A go.mod dropped into a
 	// first party directory would take it out of every guard that reads
 	// packages(), and nothing but this line would say so.

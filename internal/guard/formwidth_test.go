@@ -115,6 +115,29 @@ func TestABoxForANumberIsTheWidthOfANumber(t *testing.T) {
 					screenName, label, got, parts.NumericWidth*2)
 			}
 		}
+
+		// And the other bound, in the narrowest window the form allows. A
+		// number's box asks for NumericWidth, and that is what makes the grid
+		// lay a narrow window out in fewer, wider columns. Measured on
+		// 2026-10-15 in a 580 px window: 262 px boxes, and 123 px - narrower than a
+		// number - with parts.Numeric handing the control over unsized. At the
+		// width above the two look the same, which is how the mutation run
+		// scored that change a HOLE.
+		w.Resize(fyne.NewSize(content.MinSize().Width, 760))
+		content.Refresh()
+		// In the state this is about, or it proves nothing (a review of #195):
+		// a resize the window ignored would measure the wide layout again.
+		if got, least := content.Size().Width, content.MinSize().Width; got > least+1 {
+			t.Fatalf("%s: the form is %.0f px wide after a resize to its least width of %.0f px, so this did not measure the narrowest layout",
+				screenName, got, least)
+		}
+		for _, label := range numeric {
+			box := entryUnder(t, content, label)
+			if got := box.Size().Width; got < parts.NumericWidth-1 {
+				t.Errorf("%s: in the narrowest window the box for %q is %.0f px wide, under the %d px of a number",
+					screenName, label, got, parts.NumericWidth)
+			}
+		}
 		w.Close()
 	}
 }

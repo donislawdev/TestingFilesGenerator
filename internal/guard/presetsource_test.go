@@ -39,20 +39,25 @@ var hostileParameterValues = []string{
 
 // Every preset renders a recipe that means what it says, whatever it is given.
 //
-// internal/preset builds its source by writing strings into a template, which an
+// internal/preset built its source by writing strings into a template, which an
 // outside review on 2026-09-05 raised as finding S8: nothing in the shape of
-// that code stops a value from carrying a newline or a colon into the document.
-// What keeps it safe today is firstUnusable, a whitelist of the characters a
-// size is written with, and the review's point was that the whitelist has to be
-// remembered by whoever adds the next preset.
+// that code stopped a value from carrying a newline or a colon into the
+// document. What kept it safe then was firstUnusable, a whitelist of the
+// characters a size is written with, and the review's point was that the
+// whitelist has to be remembered by whoever adds the next preset.
 //
 // The review's remedy - composing through recipe.Compose, which lets the
-// encoder quote - was measured and turned down. It is in
-// docs/SECURITY-REVIEW-2026-09-06.md section 13 with the numbers: the source
-// comes out 627 B rather than 965 B, and internal/cli/preset.go records
-// recipe.Hash of exactly those bytes as recipe_hash in the manifest. Changing
-// the renderer changes that hash for everybody who runs a preset, which is a
-// promise about other people's records rather than a tidy.
+// encoder quote - was turned down that week for what it does to recipe_hash
+// (docs/SECURITY-REVIEW-2026-09-06.md section 13), and arrived anyway with the
+// presets of 2026-09-22 (#120): plan.source composes through it today.
+//
+// So two things hold this now, and neither is the whitelist. Measured on
+// 2026-10-15 with firstUnusable switched off: the encoder quoted every value,
+// and "1\rB" was refused by the recipe's own check of a target id. Which is why
+// no single change breaks this guard, and why it is proven by hand rather than
+// by a mutation (provenByProbe). The whitelist still does a job of its own - a
+// distance's text becomes a file name - and TestEveryPresetEndingHasTheCodeItShould
+// asks that with a space in it.
 //
 // So the guarantee is held by asking rather than by rewriting: whatever any
 // preset is given, the source it produces either is refused with a sentence or

@@ -176,6 +176,15 @@ func TestTwoSectionsAreTheSameDistanceApartOnEveryScreen(t *testing.T) {
 // sections 7 px apart were uniform on the generate screen and still wrong,
 // because a boundary drawn more weakly than the padding inside a panel groups
 // the wrong things.
+//
+// The gap inside a section is the room between two FIELDS, each the whole of
+// what the grid places - its name, its box and the line kept under the box for
+// a refusal. Until 2026-10-15 this measured from the format box to the name of
+// the size, which stand side by side since the grid of 2026-09-23: -55 px, so
+// every section gap was wider than it and the guard was green whatever the
+// sections were given. Found by the mutation run, which drew the sections 16 px
+// apart and saw nothing. Measured that day: 24 px between two sections, 15.9
+// between the format and the batch name under it.
 func TestTheGapBetweenSectionsIsWiderThanTheGapBetweenFields(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
@@ -185,13 +194,87 @@ func TestTheGapBetweenSectionsIsWiderThanTheGapBetweenFields(t *testing.T) {
 	if len(gaps) == 0 {
 		t.Fatal("the generate screen shows fewer than two sections, so there is no gap to measure")
 	}
-	between := gapBelowField(t, generate, text.FieldFormat(), text.FieldSize())
-	for _, gap := range gaps {
-		if gap <= between {
-			t.Errorf("two sections are %.1f px apart and two fields inside one are %.1f px apart."+
-				" A section boundary has to be the wider of the two or it groups nothing", gap, between)
+	// The pair is found down a column rather than named, so it follows the
+	// layout (a review of #195): the first field with another under it in
+	// its own column, the way the guard above walks the form.
+	names := []string{text.FieldFormat(), text.FieldSize(), text.FieldCount(), text.FieldTargetID(),
+		text.FieldNameTemplate(), text.FieldOutputDir(), text.FieldSeed()}
+	var boxes []band
+	for _, label := range names {
+		_, box := nameAndBox(t, generate, label)
+		boxes = append(boxes, box)
+	}
+	above, below := -1, -1
+	for i := range names {
+		if j := nextInColumn(boxes, i); j >= 0 {
+			above, below = i, j
+			break
 		}
 	}
+	// In the state this is about, or it proves nothing.
+	if above < 0 {
+		t.Fatal("no field on the generate screen stands under another in its column, so there is no gap between two fields to compare with - the layout changed, not the spacing")
+	}
+	upper, lower := fieldCell(t, generate, names[above], names), fieldCell(t, generate, names[below], names)
+	between := lower.Y - (upper.Y + upper.Height)
+	if between <= 0 {
+		t.Fatalf("%q ends at y=%.1f and %q under it starts at y=%.1f, so there is no room between two fields to compare with",
+			names[above], upper.Y+upper.Height, names[below], lower.Y)
+	}
+	for _, gap := range gaps {
+		// By more than a pixel, because a layout lands on fractions and two
+		// gaps drawn from one token can differ by one.
+		if gap <= between+1 {
+			t.Errorf("two sections are %.1f px apart and two fields inside one (%q over %q) are %.1f px apart."+
+				" A section boundary has to be the wider of the two or it groups nothing", gap, names[above], names[below], between)
+		}
+	}
+}
+
+// fieldCell is the whole of one field as the grid placed it: the tallest thing
+// in the field's column that holds its name and its box and the name of no
+// other field. The last condition is what keeps it to one field when the grid
+// itself is one column wide and as wide as the box (a review of #195).
+func fieldCell(t *testing.T, screen fyne.CanvasObject, label string, others []string) band {
+	t.Helper()
+	name, box := nameAndBox(t, screen, label)
+	var foreign []band
+	for _, other := range others {
+		if other == label {
+			continue
+		}
+		if words, ok := labelBox(screen, other); ok {
+			foreign = append(foreign, words)
+		}
+	}
+	var cell band
+	atAbsolute(screen, func(o fyne.CanvasObject, at fyne.Position) {
+		if _, is := o.(*fyne.Container); !is {
+			return
+		}
+		size := o.Size()
+		if off := size.Width - box.Width; off > 1 || off < -1 {
+			return
+		}
+		if at.X > box.X+1 || at.X+size.Width < box.X+box.Width-1 {
+			return
+		}
+		if at.Y > name.Y || at.Y+size.Height < box.Y+box.Height {
+			return
+		}
+		for _, words := range foreign {
+			if words.X >= at.X-1 && words.X <= at.X+size.Width && words.Y >= at.Y-1 && words.Y+words.Height <= at.Y+size.Height+1 {
+				return
+			}
+		}
+		if size.Height > cell.Height {
+			cell = band{X: at.X, Y: at.Y, Width: size.Width, Height: size.Height}
+		}
+	})
+	if cell.Height == 0 {
+		t.Fatalf("nothing as wide as the box of %q holds its name and its box and no other field", label)
+	}
+	return cell
 }
 
 // tabContent is one screen of the window, laid out, by the name on its tab.

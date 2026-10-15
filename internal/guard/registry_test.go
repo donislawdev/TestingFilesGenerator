@@ -217,9 +217,12 @@ func TestEveryFormatHasARowInTheFidelityChecklist(t *testing.T) {
 
 	body, err := os.ReadFile(path)
 	if err != nil {
-		t.Logf("SKIPPED: docs/MVP-FORMATS.md is not here, so nothing was compared. "+
+		// A skip rather than a line in the log and a pass, since 2026-10-15:
+		// the mutation run takes a pass for a verdict, and on a checkout
+		// without docs/ it scored the two mutations of this guard as HOLES
+		// when nothing had been compared at all.
+		t.Skipf("docs/MVP-FORMATS.md is not here, so nothing was compared. "+
 			"The internal documents are excluded from the repository, so this check only runs on a machine that has them. (%v)", err)
-		return
 	}
 
 	section, ok := fidelityChecklist(string(body))

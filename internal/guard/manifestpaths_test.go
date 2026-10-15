@@ -168,21 +168,39 @@ func TestVerifyNeverReachesOutsideTheDirectory(t *testing.T) {
 // a name no disk has, the file is reported unreachable, cleanup leaves it and
 // ends with 5 anyway. The code was right by accident while the manifest was
 // being resolved exactly as before.
+//
+// Two spellings, because each system reaches a different check. A path from
+// this system's own temporary directory starts with a separator on Linux and
+// macOS, so there the check for a leading separator refused it and the check
+// for a volume letter was never reached - the mutation run of 2026-10-15
+// scored that check a HOLE on the runners and caught it on Windows. A volume
+// written out reaches it everywhere, which is the point of reading a manifest
+// with the same rules on every system.
 func TestAManifestPathIsNeverAbsolute(t *testing.T) {
-	out, victim := outsideVictim(t)
-	mf := escapingManifest(t, out, filepath.ToSlash(victim), 21)
+	for _, c := range []struct {
+		what string
+		path func(victim string) string
+	}{
+		{"this system's absolute path", func(victim string) string { return filepath.ToSlash(victim) }},
+		{"a path naming a disk volume", func(string) string { return "C:/somewhere/else/victim.txt" }},
+	} {
+		t.Run(c.what, func(t *testing.T) {
+			out, victim := outsideVictim(t)
+			mf := escapingManifest(t, out, c.path(victim), 21)
 
-	code, _, errOut := run(t, "cleanup", mf, "--yes", "--force")
-	victimSurvives(t, victim)
+			code, _, errOut := run(t, "cleanup", mf, "--yes", "--force")
+			victimSurvives(t, victim)
 
-	if code != cli.ExitIO {
-		t.Errorf("exit %d, expected %d - an absolute path in a manifest is refused, not resolved:\n%s", code, cli.ExitIO, errOut)
-	}
-	if !strings.Contains(errOut, "cannot be read as a manifest") {
-		t.Errorf("the manifest was acted on rather than turned away - an absolute path has to be refused at the door, not discovered to be unreachable later:\n%s", errOut)
-	}
-	if !strings.Contains(errOut, "outside") {
-		t.Errorf("the refusal does not say what is wrong with the path:\n%s", errOut)
+			if code != cli.ExitIO {
+				t.Errorf("exit %d, expected %d - an absolute path in a manifest is refused, not resolved:\n%s", code, cli.ExitIO, errOut)
+			}
+			if !strings.Contains(errOut, "cannot be read as a manifest") {
+				t.Errorf("the manifest was acted on rather than turned away - an absolute path has to be refused at the door, not discovered to be unreachable later:\n%s", errOut)
+			}
+			if !strings.Contains(errOut, "outside") {
+				t.Errorf("the refusal does not say what is wrong with the path:\n%s", errOut)
+			}
+		})
 	}
 }
 

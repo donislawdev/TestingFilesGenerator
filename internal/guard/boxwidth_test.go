@@ -78,10 +78,9 @@ func TestABoxIsWideEnoughForItsOwnPlaceholder(t *testing.T) {
 				continue
 			}
 			hint := placeholderShownFor(p)
-			words := fyne.MeasureText(hint, theme.TextSize(), fyne.TextStyle{})
-			if got := typedInWidth(control); got < words.Width {
-				t.Errorf("%s.%s shows %q, which needs %.0f px, in a box %.0f px wide - so it is cut off",
-					d.ID, p.Name, hint, words.Width, got)
+			if needs, got := boxNeededFor(hint), typedInWidth(control); got < needs {
+				t.Errorf("%s.%s shows %q, which needs a box of %.0f px, in a box %.0f px wide - so it is cut off",
+					d.ID, p.Name, hint, needs, got)
 			}
 			checked++
 		}
@@ -104,6 +103,20 @@ func placeholderShownFor(p format.Property) string {
 		return text.PlaceholderWorkedOut()
 	}
 	return text.PlaceholderLeftEmpty(p.Default)
+}
+
+// boxNeededFor is how wide a box has to be to show words without cutting
+// them: the words, and the two paddings on each side the toolkit lays an
+// entry's text out inside.
+//
+// Written out here rather than asked of parts.roomFor, which says the same
+// thing, because a guard that called it would agree with it whatever it said.
+// One copy for both screens since a review of #195: the single batch screen
+// compared the words with the whole box, the batch screen with the room inside
+// it, and "worked out from the size" - 165 px of words - fits the first in a
+// 179 px box and not the second.
+func boxNeededFor(words string) float32 {
+	return fyne.MeasureText(words, theme.TextSize(), fyne.TextStyle{}).Width + theme.InnerPadding()*2 + theme.Padding()*2
 }
 
 // formatsLaidOut opens the window, puts it on a canvas and hands back a way to
@@ -259,9 +272,21 @@ func TestABoxForANumberIsNotAsWideAsTheFormOnTheBatchScreen(t *testing.T) {
 				t.Errorf("%s declares %q and the batch screen draws no field for it", d.ID, p.Name)
 				continue
 			}
-			if width := typedInWidth(control); width > float32(parts.ColumnWidth)/2 {
+			width := typedInWidth(control)
+			if width > float32(parts.ColumnWidth)/2 {
 				t.Errorf("on the batch screen %s.%s holds a %s and its box is %.0f px of a %.0f px column",
 					d.ID, p.Name, p.Kind, width, float32(parts.ColumnWidth))
+			}
+			// And no narrower than what it shows when left alone, which is the
+			// half the grid made the one that matters: since 2026-09-23 a box
+			// left unshaped takes one column, 179 px here, and "worked out from
+			// the size" needs 189 px of box (boxNeededFor). Measured on
+			// 2026-10-15, shaped 374 px and unshaped 179, and until then this
+			// guard asked only for the ceiling, which both pass.
+			hint := placeholderShownFor(p)
+			if needs := boxNeededFor(hint); width < needs {
+				t.Errorf("on the batch screen %s.%s shows %q, which needs %.0f px, in a box %.0f px wide - so it is cut off",
+					d.ID, p.Name, hint, needs, width)
 			}
 			checked++
 		}
