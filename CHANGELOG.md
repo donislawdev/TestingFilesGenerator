@@ -82,8 +82,8 @@ because it turns other people's test suites red.
   of them: LibreOffice turns the one without a scheme into a `file://`
   address, pandoc 3.1 and 3.7 drop every link with its text, and RichEdit
   returns each address in front of its text. The manifest records the
-  pictures in the keys a page and a message use, `picture_data` and
-  `links`.
+  pictures under the keys a page and a message use, and adds `picture_data`
+  and `links`.
 - **Films: the `webm` format.** A WebM video with an AV1 picture and no
   sound, at the exact size you ask for, like every other format. Its length
   is a setting of its own, independent of the size. The picture moves: every
