@@ -47,6 +47,16 @@ jobs:
           fetch-depth: 2
           persist-credentials: false
 
+      # The two OSV actions below are pinned by commit, but they run a Docker
+      # image named by a tag, and a tag can be pushed again. The runner has
+      # already pulled that image while setting this job up, so this compares
+      # it with the digest in .github/osv-scanner-digest before anything runs
+      # it (O281). Here, before the checkout of the branch this merges into,
+      # so the digest read is the pull request's own: a Dependabot update that
+      # writes the new one would otherwise be held to the old one for ever.
+      - name: the scanner image is the one recorded
+        run: bash .github/scripts/osv_scanner_image.sh
+
       # Asserted rather than assumed, from the review of #181: with a commit
       # of one parent here, HEAD^1 would be the pull request's own previous
       # commit, and the comparison would find nothing new for the wrong reason.
@@ -77,7 +87,7 @@ jobs:
         with:
           scan-args: |-
             --format=json
-            --output=osv-old.json
+            --output-file=osv-old.json
             --no-call-analysis=go
             --recursive
             ./
@@ -94,7 +104,7 @@ jobs:
         with:
           scan-args: |-
             --format=json
-            --output=osv-new.json
+            --output-file=osv-new.json
             --no-call-analysis=go
             --recursive
             ./
@@ -120,12 +130,18 @@ jobs:
       # advisory and the version that fixes it. The annotations on the pull
       # request are not - measured 2026-10-14 with findings in two files, one
       # annotation came out, for one of them.
+      #
+      # table:#stdout is that list, and it has to be named. Once anything else
+      # goes to a terminal stream - the annotations here - the reporter stops
+      # printing the table on its own, measured 2026-10-15 on v2.6.0 (3100
+      # bytes of log down to none). Named, the SARIF, the annotations and the
+      # table come out byte for byte as they did under the deprecated
+      # --output and --gh-annotations (docs/OSV-2-2026-10-15.md).
       - name: what this pull request adds
         uses: google/osv-scanner-action/osv-reporter-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc  # v2.6.0
         with:
           scan-args: |-
             --old=osv-old.json
             --new=osv-new.json
-            --output=osv-new.sarif
-            --gh-annotations=true
+            --output-files=sarif:osv-new.sarif,gh-annotations:#stderr,table:#stdout
             --fail-on-vuln=true

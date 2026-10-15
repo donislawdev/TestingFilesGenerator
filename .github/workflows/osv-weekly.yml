@@ -57,6 +57,14 @@ jobs:
         with:
           persist-credentials: false
 
+      # The image the OSV actions run, against the digest recorded in
+      # .github/osv-scanner-digest, before anything runs it. The reasons are
+      # written beside the same step in osv-pull-request.yml (O281). When it
+      # fails, nothing is scanned and no SARIF is written, so the upload below
+      # finds no file and the alerts of the week before stay as they were.
+      - name: the scanner image is the one recorded
+        run: bash .github/scripts/osv_scanner_image.sh
+
       - name: scan
         id: scan
         uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc  # v2.6.0
@@ -64,7 +72,7 @@ jobs:
         with:
           scan-args: |-
             --format=json
-            --output=osv-results.json
+            --output-file=osv-results.json
             --no-call-analysis=go
             --recursive
             ./
@@ -81,14 +89,15 @@ jobs:
 
       # Writes the results for the Security tab and fails the job when there
       # is any, which is after the file is written - the upload below runs
-      # either way.
+      # either way. table:#stdout keeps the list in the log of this step, the
+      # way the deprecated --output printed it, measured byte for byte
+      # 2026-10-15 (docs/OSV-2-2026-10-15.md).
       - name: results for the Security tab
         uses: google/osv-scanner-action/osv-reporter-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc  # v2.6.0
         with:
           scan-args: |-
             --new=osv-results.json
-            --output=osv-results.sarif
-            --gh-annotations=false
+            --output-files=sarif:osv-results.sarif,table:#stdout
             --fail-on-vuln=true
 
       - name: upload to the Security tab
