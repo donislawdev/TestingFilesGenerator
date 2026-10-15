@@ -742,7 +742,8 @@ func TestAnHTMLDocumentIsBalancedAndCarriesBlocks(t *testing.T) {
 		"ul": true, "ol": true, "table": true, "blockquote": true,
 	}
 
-	for _, size := range []int64{118, 119, 4097, densitySize} {
+	smallest := htmlMinimum(t)
+	for _, size := range []int64{smallest, smallest + 1, 4097, densitySize} {
 		t.Run(sizeText(size), func(t *testing.T) {
 			body := generateBytes(t, "html", size)
 			if int64(len(body)) != size {
