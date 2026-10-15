@@ -994,6 +994,16 @@
     "hash": "sha256-8f65223004a7",
     "other": "1.7"
   },
+  "Choice.picture_data.binary": {
+    "description": "One entry of the picture_data list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-9a3a45d01531",
+    "other": "binary"
+  },
+  "Choice.picture_data.hex": {
+    "description": "One entry of the picture_data list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-128df13c1e54",
+    "other": "hex"
+  },
   "Choice.quote_style.all": {
     "description": "One entry of the quote_style list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-5ef5ef0364b6",
@@ -1634,10 +1644,35 @@
     "hash": "sha256-b0177e3841f3",
     "other": "Which parts the document uses. basic is headings, paragraphs with bold and italic words, lists, tables and indented quotes. every adds document properties, a page header and footer, a footnote, a comment, hidden text, a link, a bookmark, a group every reader has to skip, a word no reader knows and line, tab, page and section breaks, and each part says where it is. Tika returns the most of them, the header, the footer and the comment among them. LibreOffice, striprtf and RichEdit return the hidden text as text, RichEdit with the address of the link, and pandoc returns the footnote and leaves the hidden text out."
   },
+  "Detail.format/rtf.inline": {
+    "description": "The sentence under the inline setting of the rtf format, after what it takes.",
+    "hash": "sha256-10dd52bc4b54",
+    "other": "How many pictures the document shows, each a real file of its format in a paragraph of its own that starts with its name, such as inline_0001.png. They sit above the blocks, at 96 pixels to the inch and never wider than 6 inches. LibreOffice, pandoc and Tika return each file as it was written. RichEdit shows the same picture and writes it out again smaller."
+  },
+  "Detail.format/rtf.inline_format": {
+    "description": "The sentence under the inline_format setting of the rtf format, after what it takes.",
+    "hash": "sha256-929d6bcd9c5e",
+    "other": "The format of the pictures, png or jpg - the two picture formats RTF has a name for. Any other format is refused."
+  },
+  "Detail.format/rtf.inline_size": {
+    "description": "The sentence under the inline_size setting of the rtf format, after what it takes.",
+    "hash": "sha256-4024e523b3e9",
+    "other": "How big each picture is. Written in hex it takes twice as many bytes in the document, with a line end every 128 characters. Written binary it takes its own size."
+  },
+  "Detail.format/rtf.links": {
+    "description": "The sentence under the links setting of the rtf format, after what it takes.",
+    "hash": "sha256-9e3ca1ff09e6",
+    "other": "How many links the document carries, each a HYPERLINK field in a paragraph of its own, above the pictures and the blocks. They go through 17 kinds in turn and then repeat - a link to a bookmark in the document, relative, to the folder above, from the root, absolute with a query and a fragment, absolute with a location, http, without a scheme, percent encoded, an international domain, a port, mailto:, tel:, ftp:, a new window, a screen tip and data: - and the text of each says which it is. Every address is on a domain kept for examples. LibreOffice turns the link without a scheme into a file:// address and rewrites the relative ones from where it saves the document. pandoc 3.12 leaves the bookmark link without an address, pandoc 3.1 and 3.7 drop every link with its text, and RichEdit returns the address of each link in front of its text. LibreOffice took over 11 minutes over a million links. The catalogue of every part has one link of its own, which this does not count."
+  },
   "Detail.format/rtf.nesting": {
     "description": "The sentence under the nesting setting of the rtf format, after what it takes.",
     "hash": "sha256-e1d640adb186",
     "other": "How many groups the content sits inside, each one inside the last. 0 puts it straight in the document, and the label stays outside so the file still says what it is. No reader measured lost the content at 10 000 000 levels, but LibreOffice took 18.5 GB of memory over them and pandoc 14.5 GB, against about 2 GB each at 1 000 000."
+  },
+  "Detail.format/rtf.picture_data": {
+    "description": "The sentence under the picture_data setting of the rtf format, after what it takes.",
+    "hash": "sha256-f91b5cd2e506",
+    "other": "How the bytes of each picture are written, which changes nothing while inline is 0. hex writes them as text, twice as large, the way LibreOffice writes them. binary writes them as they are, so the document is no longer text, and a program that counts braces or reads it as text loses its place. pandoc changes the line ends inside a binary picture, so no png comes out whole, and it can lose the text after the picture or refuse the whole document. LibreOffice, Tika and RichEdit read both."
   },
   "Detail.format/rtf.text_encoding": {
     "description": "The sentence under the text_encoding setting of the rtf format, after what it takes.",
@@ -2094,6 +2129,11 @@
     "hash": "sha256-7115a778ab47",
     "other": "Document properties"
   },
+  "Group.format/rtf.Pictures in the document": {
+    "description": "The heading over a block of settings of the rtf format.",
+    "hash": "sha256-1652b4354ef8",
+    "other": "Pictures in the document"
+  },
   "Input.checksum-check.checksum_file": {
     "description": "The sentence under the checksum_file box of the checksum-check tool.",
     "hash": "sha256-90d7baf0d228",
@@ -2538,6 +2578,11 @@
     "description": "The name beside the box of a setting a recipe writes as pdf_version.",
     "hash": "sha256-3ce7c43387ea",
     "other": "Pdf version"
+  },
+  "Label.picture_data": {
+    "description": "The name beside the box of a setting a recipe writes as picture_data.",
+    "hash": "sha256-b13e9c47f34a",
+    "other": "Picture data"
   },
   "Label.precision": {
     "description": "The name beside the box of a setting a recipe writes as precision.",

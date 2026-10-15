@@ -33,6 +33,13 @@ var rtfCases = []map[string]string{
 	{rtf.Nesting: "1000"},
 	{rtf.Characters: rtf.International, rtf.TextEncoding: rtf.Both, rtf.Elements: rtf.Every, rtf.Nesting: "50"},
 	{rtf.Characters: rtf.International, rtf.TextEncoding: rtf.Codepage, rtf.Elements: rtf.Every},
+	// The pictures and the links (docs/RTF-2-2026-10-15.md), small enough that
+	// a document of 20 000 B still has room for blocks.
+	{"inline": "2", "inline_size": "2kb"},
+	{"inline": "1", "inline_format": "jpg", "inline_size": "2kb"},
+	{"inline": "2", "inline_size": "2kb", rtf.PictureData: rtf.Binary},
+	{rtf.Links: "40"},
+	{rtf.Links: "18", "inline": "1", "inline_size": "1kb", rtf.Characters: rtf.International, rtf.Elements: rtf.Every, rtf.Nesting: "5"},
 }
 
 // rtfPolish, rtfRussian, rtfJapanese and rtfArabic are the sentences
@@ -83,7 +90,7 @@ func TestEveryRTFSettingSurvivesItsReferenceTool(t *testing.T) {
 					if err := os.WriteFile(path, b, 0o600); err != nil {
 						t.Fatal(err)
 					}
-					s, pd := rtfSurvivesReaders(t, path, props, p, c.size)
+					s, pd := rtfSurvivesReaders(t, path, b, props, p, c.size)
 					strict.Add(int64(s))
 					byPandoc.Add(int64(pd))
 				}
@@ -98,7 +105,7 @@ func TestEveryRTFSettingSurvivesItsReferenceTool(t *testing.T) {
 
 // rtfSurvivesReaders asks the checker and pandoc about one document and says
 // which of them read it.
-func rtfSurvivesReaders(t *testing.T, path string, props map[string]string, p format.Plan, size int64) (strict, byPandoc int) {
+func rtfSurvivesReaders(t *testing.T, path string, body []byte, props map[string]string, p format.Plan, size int64) (strict, byPandoc int) {
 	t.Helper()
 	labelled, _ := p.Properties[format.PropertyLabelEmbedded].(bool)
 	s := oracle.Strict("rtf", path, rtfSettings(props, labelled)...)
@@ -107,6 +114,12 @@ func rtfSurvivesReaders(t *testing.T, path string, props map[string]string, p fo
 	}
 	if s.Err != nil {
 		t.Fatalf("%v at %d B: %v", props, size, s.Err)
+	}
+	if props["inline"] != "" && props["inline"] != "0" && props[rtf.PictureData] == rtf.Binary {
+		if rtfPandocBreaksBinaryPictures(t, path, body, props, size) {
+			return 1, 1
+		}
+		return 1, 0
 	}
 	text, warnings, res := oracle.PandocRTF(path)
 	if !res.Available {
@@ -119,7 +132,53 @@ func rtfSurvivesReaders(t *testing.T, path string, props map[string]string, p fo
 		t.Fatalf("%v at %d B: the manifest says the label is there %v, and pandoc read it %v", props, size, labelled, got)
 	}
 	rtfPandocReadings(t, norm.NFC.String(text), props, size)
+	rtfPandocKeepsHexPictures(t, path, body, props, size)
 	return 1, 1
+}
+
+// rtfPandocKeepsHexPictures is pandoc's reading of pictures in hex, measured on
+// its three versions: every picture written out as the very file the document
+// carries, which is what the sentence of inline says of it.
+func rtfPandocKeepsHexPictures(t *testing.T, path string, body []byte, props map[string]string, size int64) {
+	t.Helper()
+	want := rtfPicturesOf(t, body)
+	got, warnings, res := oracle.PandocRTFPictures(path, t.TempDir())
+	if !res.Available {
+		return
+	}
+	if res.Err != nil || warnings != "" || len(got) != len(want) {
+		t.Fatalf("%v at %d B: pandoc read %d of %d pictures, %v %s", props, size, len(got), len(want), res.Err, warnings)
+	}
+	for i := range want {
+		if !bytes.Equal(got[i], want[i].data) {
+			t.Fatalf("%v at %d B: pandoc wrote picture %d out as %d B other than the %d B the document carries", props, size, i+1, len(got[i]), len(want[i].data))
+		}
+	}
+}
+
+// rtfPandocBreaksBinaryPictures is the canary of picture_data: pandoc was
+// measured on three versions to turn the line ends inside a binary picture
+// into line feeds, so no png came out whole, and to refuse the document once
+// the shift reached the closing brace. The day it reads one whole, the
+// sentence that says so has to change. Says whether pandoc was there to ask.
+func rtfPandocBreaksBinaryPictures(t *testing.T, path string, body []byte, props map[string]string, size int64) bool {
+	t.Helper()
+	want := rtfPicturesOf(t, body)
+	got, _, res := oracle.PandocRTFPictures(path, t.TempDir())
+	if !res.Available {
+		return false
+	}
+	if res.Err != nil {
+		return true
+	}
+	for i, g := range got {
+		for _, w := range want {
+			if bytes.Equal(g, w.data) {
+				t.Fatalf("%v at %d B: pandoc wrote picture %d out whole from binary, and picture_data says no png comes out whole - the sentence has to change", props, size, i+1)
+			}
+		}
+	}
+	return true
 }
 
 // rtfPandocReadings is what pandoc was measured to make of the paragraphs in
@@ -218,6 +277,10 @@ func TestTheRTFManifestRecordsEverySetting(t *testing.T) {
 	want := map[string]any{
 		"characters": "ascii", "text_encoding": "unicode", "elements": "basic", "nesting": 0,
 		"code_page": 1252, format.PropertyLabelEmbedded: true,
+		// The second piece, approved the same day (docs/RTF-2-2026-10-15.md 9),
+		// and the five keys of the pictures a page and a message carry too.
+		"links": 0, "picture_data": "hex",
+		"inline": 0, "inline_format": "png", "inline_size": int64(8192), "inline_bytes": int64(0), "inline_encoded_bytes": int64(0),
 	}
 	if len(p.Properties) != len(want) {
 		t.Errorf("the manifest carries %d keys, %v, and the approved list is %d", len(p.Properties), p.Properties, len(want))
@@ -240,7 +303,7 @@ func TestAnRTFCutAtAnySizeEndsOnItsBraces(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, props := range []map[string]string{{}, {rtf.Nesting: "3"}, {rtf.Characters: rtf.International, rtf.Elements: rtf.Every}} {
+	for _, props := range []map[string]string{{}, {rtf.Nesting: "3"}, {rtf.Characters: rtf.International, rtf.Elements: rtf.Every}, {rtf.Links: "18"}} {
 		smallest := d.SmallestAccepted(format.Request{Properties: props, Label: true})
 		closing := 1
 		if props[rtf.Nesting] != "" {

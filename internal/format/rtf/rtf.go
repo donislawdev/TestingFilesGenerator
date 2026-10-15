@@ -60,14 +60,26 @@ type memo struct {
 	seed     uint64
 	// labelLine is the paragraph that carries the label, empty when absent.
 	labelLine string
+	pictures  []pictureLine
+	// pictureBytes is what the paragraphs of the pictures take, together.
+	pictureBytes int64
 }
 
-func (generator) Plan(r format.Request) (format.Plan, error) {
+func (g generator) Plan(r format.Request) (format.Plan, error) {
+	return g.PlanContext(context.Background(), r)
+}
+
+// PlanContext is Plan, stoppable between one picture and the next.
+func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan, error) {
 	s, err := settingsOf(r.Properties)
 	if err != nil {
 		return format.Plan{}, err
 	}
-	min := s.layout().fixedBytes()
+	pictures, pictureBytes, err := planPictures(ctx, r, s)
+	if err != nil {
+		return format.Plan{}, err
+	}
+	min := s.layout().fixedBytes() + pictureBytes
 	if r.Bytes < min {
 		return format.Plan{}, belowMinimum(s, r.Bytes, min)
 	}
@@ -78,7 +90,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		Determinism: format.DeterminismByte,
 		Properties:  s.manifest(),
 	}
-	m := memo{settings: s, seed: r.Seed}
+	describePictures(p.Properties, s.pictures, pictures)
+	m := memo{settings: s, seed: r.Seed, pictures: pictures, pictureBytes: pictureBytes}
 	if r.Label {
 		line := labelLine(core.Label("rtf", r.Bytes, r.Seed))
 		if min+int64(len(line)) <= r.Bytes {
@@ -105,9 +118,17 @@ func labelLine(label string) string {
 // belowMinimum is the refusal of a size too small for these settings.
 func belowMinimum(s settings, requested, min int64) error {
 	reason := core.Says("rtf.MinimumDocument", "a document holds its header and its font table, and the two need that much")
-	if s.adds() {
-		reason = core.Says("rtf.MinimumWithSettings", "a document holds its header and its font table and what %s, %s and %s add to them, and together they need that much",
-			core.A("Characters", core.LabelTerm(Characters)), core.A("Elements", core.LabelTerm(Elements)), core.A("Nesting", core.LabelTerm(Nesting)))
+	switch {
+	case s.pictures.Count > 0 && s.binary:
+		// The pictures are what a tester raises the size for, so they are what
+		// the reason names, whatever else was asked - the way a page does.
+		reason = core.Says("rtf.MinimumWithBinaryPictures", "a document holds its header, its font table and every picture byte for byte, and together they need that much")
+	case s.pictures.Count > 0:
+		reason = core.Says("rtf.MinimumWithPictures", "a document holds its header, its font table and every picture in hex, which is twice the size of the picture itself, and together they need that much")
+	case s.adds():
+		reason = core.Says("rtf.MinimumWithSettings", "a document holds its header and its font table and what %s, %s, %s and %s add to them, and together they need that much",
+			core.A("Characters", core.LabelTerm(Characters)), core.A("Elements", core.LabelTerm(Elements)), core.A("Nesting", core.LabelTerm(Nesting)),
+			core.A("Links", core.LabelTerm(Links)))
 	}
 	return &format.BelowMinimumError{
 		Format:    "RTF",
@@ -135,7 +156,13 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	if err := core.WriteAll(w, []byte(l.body)); err != nil {
 		return err
 	}
-	filled := p.Bytes - l.fixedBytes() - int64(len(m.labelLine))
+	if err := writeLinks(ctx, w, m.settings.links); err != nil {
+		return err
+	}
+	if err := writePictures(ctx, w, m.pictures); err != nil {
+		return err
+	}
+	filled := p.Bytes - l.fixedBytes() - m.pictureBytes - int64(len(m.labelLine))
 	if err := core.FillRecords(ctx, w, core.NewRand(m.seed), filled, blocks{}); err != nil {
 		return err
 	}
@@ -147,13 +174,15 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 
 // layout is what a document of these settings holds whatever its size: the
 // header with the font table, and with every the properties, the page header
-// and the footer, the groups of nesting, and the paragraphs the settings add.
-// The blocks and the closing words go between the paragraphs and the braces
-// that close the groups, and the last brace closes the document.
+// and the footer, the groups of nesting, the paragraphs the settings add and
+// the links. The pictures, planned apart because each is a file of its own,
+// the blocks and the closing words go between those and the braces that close
+// the groups, and the last brace closes the document.
 type layout struct {
 	head   string
 	levels int
 	body   string
+	links  int64
 }
 
 func (s settings) layout() layout {
@@ -164,6 +193,7 @@ func (s settings) layout() layout {
 	l := layout{
 		head:   `{\rtf1\ansi\ansicpg` + strconv.Itoa(declaredCodePage) + `\deff0\uc1` + fonts + "\r\n",
 		levels: s.nesting,
+		links:  linksBytes(s.links),
 	}
 	if s.every {
 		l.head += catalogueHead
@@ -177,10 +207,11 @@ func (s settings) layout() layout {
 	return l
 }
 
-// fixedBytes is everything but the label, the blocks and the closing words: the
-// smallest document of these settings without its label.
+// fixedBytes is everything but the label, the pictures, the blocks and the
+// closing words: the smallest document of these settings without its label and
+// its pictures.
 func (l layout) fixedBytes() int64 {
-	return int64(len(l.head)) + 2*int64(l.levels) + int64(len(l.body)) + 1
+	return int64(len(l.head)) + 2*int64(l.levels) + int64(len(l.body)) + l.links + 1
 }
 
 // minimumBytes is the smallest document, which is what the registry declares.

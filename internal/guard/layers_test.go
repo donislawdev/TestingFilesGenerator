@@ -190,7 +190,7 @@ var sameLayerAllowed = map[string][]string{
 	"internal/format/zip":        {"internal/format", "internal/format/imagelabel", "internal/format/archive"},
 	"internal/format/targz":      {"internal/format", "internal/format/archive"},
 	"internal/format/eml":        {"internal/format", "internal/format/archive", "internal/format/picture"},
-	"internal/format/rtf":        {"internal/format"},
+	"internal/format/rtf":        {"internal/format", "internal/format/picture"},
 	"internal/format/tiff":       {"internal/format", "internal/format/imagelabel", "internal/format/imagedim"},
 	"internal/format/webp":       {"internal/format", "internal/format/imagelabel", "internal/format/imagedim"},
 	"internal/format/avif":       {"internal/format", "internal/format/imagelabel", "internal/format/imagedim", "internal/format/isobmff"},

@@ -3680,6 +3680,8 @@ def rtf_read(data, settings):
         allowed |= RTF_WORDS_INTERNATIONAL
     if settings.get("elements") == "every":
         allowed |= RTF_WORDS_EVERY
+    if settings.get("links", "0") != "0":
+        allowed |= RTF_LINK_WORDS
     fonts = rtf_fonts(data)
     toks = list(rtf_tokens(data))
     stack, state, depth, deepest = [], RtfState(), 0, 0
@@ -3813,11 +3815,172 @@ def rtf_page_fallback(unit, back, page, enc):
         fail(f"the fallback of \\u{unit} is {got.hex()} and {page} writes {want.hex()}")
 
 
+RTF_LINK_WORDS = {"field", "fldinst", "fldrslt", "bkmkstart", "bkmkend"}
+# The kinds of link the list goes through, held here on their own rather than
+# taken from the generator (docs/RTF-2-2026-10-15.md section 2.5). A switch of
+# a field has its backslash escaped.
+RTF_LINK_KINDS = [
+    ("HYPERLINK " + RTF_BS * 2 + 'l "tfg_links"', "link to a bookmark in this document"),
+    ('HYPERLINK "page-2.rtf"', "relative link"),
+    ('HYPERLINK "../folder/page-3.rtf"', "link to the folder above"),
+    ('HYPERLINK "/root/page-4.rtf"', "link from the root"),
+    ('HYPERLINK "https://example.com/path/page.html?a=1&b=2#part"', "absolute link with a query and a fragment"),
+    ('HYPERLINK "https://example.com/path/page.html" ' + RTF_BS * 2 + 'l "part"', "absolute link with a location"),
+    ('HYPERLINK "http://example.org/"', "http link"),
+    ('HYPERLINK "//example.net/scheme-relative"', "link without a scheme"),
+    ('HYPERLINK "https://example.com/caf%C3%A9?q=two%20words"', "percent encoded link"),
+    ('HYPERLINK "https://xn--bcher-kva.example/"', "international domain link"),
+    ('HYPERLINK "https://example.com:8443/port"', "link with a port"),
+    ('HYPERLINK "mailto:someone@example.com?subject=Hello%20there"', "mail link"),
+    ('HYPERLINK "tel:+1-555-0100"', "phone link"),
+    ('HYPERLINK "ftp://example.com/file.txt"', "ftp link"),
+    ('HYPERLINK "https://example.org/new" ' + RTF_BS * 2 + 't "_blank"', "link to a new window"),
+    ('HYPERLINK "https://example.net/tip" ' + RTF_BS * 2 + 'o "This sentence is the screen tip of a link."', "link with a screen tip"),
+    ('HYPERLINK "data:text/plain,hello"', "data link"),
+]
+RTF_CATALOGUE_LINK = "{" + RTF_BS + "field{" + RTF_BS + "*" + RTF_BS + 'fldinst HYPERLINK "https://example.com/tfg/link"}'
+# The picture formats RTF names, the word that names each and its extension.
+RTF_BLIPS = {"png": ("pngblip", ".png"), "jpg": ("jpegblip", ".jpg")}
+RTF_PICT = re.compile(rb"\{\\pict\\([a-z]+)\\picw([0-9]{1,5})\\pich([0-9]{1,5})\\picwgoal([0-9]{1,5})\\pichgoal([0-9]{1,5})(?:\\bin([0-9]{1,19}) )?")
+RTF_HEX_LINE = re.compile(rb"\r\n([0-9a-f]{1,128})")
+RTF_PICTURE_NAME = re.compile(rb"(?:^|[\n{])inline_([0-9]{4,5})(\.[a-z]+) $")
+
+
+def rtf_cut_pictures(data):
+    """Every picture group cut out of the bytes before anything reads them as
+    text, and each read on its own: with \\bin exactly the count it names,
+    in hex lines of 128 digits after a line end each, and then the brace that
+    closes it. A picture of 100 MB in hex would be 200 million tokens, and the
+    bytes of a binary one are not text at all. The name in front stays in the
+    paragraph, where every reader shows it.
+
+    Searched in order from where the last picture ended, so bytes inside a
+    binary picture are never taken for the start of another."""
+    out, pictures, i = [], [], 0
+    start = b"{" + RTF_BS.encode() + b"pict"
+    while True:
+        j = data.find(start, i)
+        if j < 0:
+            break
+        n = len(pictures) + 1
+        m = RTF_PICT.match(data, j)
+        if not m:
+            fail(f"picture {n} starts in a way the generator never writes: {data[j:j + 90]!r}")
+        k = m.end()
+        if m.group(6) is not None:
+            size = int(m.group(6))
+            raw = data[k:k + size]
+            if len(raw) != size:
+                fail(f"picture {n} says {size} B follow its \\bin, and the document ends {len(raw)} B later")
+            k += size
+        else:
+            lines = []
+            while (line := RTF_HEX_LINE.match(data, k)) is not None:
+                lines.append(line.group(1))
+                k = line.end()
+            if not lines or any(len(x) != 128 for x in lines[:-1]) or len(lines[-1]) % 2:
+                fail(f"picture {n} is not hex in lines of 128 digits, each after a line end: {data[m.end():m.end() + 40]!r}")
+            raw = bytes.fromhex(b"".join(lines).decode("ascii"))
+        if data[k:k + 1] != b"}":
+            fail(f"after the data of picture {n} stands {data[k:k + 16]!r}, not the brace that closes it")
+        name = RTF_PICTURE_NAME.search(data[max(0, j - 24):j])
+        pictures.append({"blip": m.group(1).decode(), "w": int(m.group(2)), "h": int(m.group(3)),
+                         "gw": int(m.group(4)), "gh": int(m.group(5)), "binary": m.group(6) is not None,
+                         "raw": raw, "name": name and (int(name.group(1)), name.group(2).decode())})
+        out.append(data[i:j])
+        i = k + 1
+    out.append(data[i:])
+    return b"".join(out), pictures
+
+
+def rtf_pixels(kind, raw):
+    """The width and height a png or jpg file says it is."""
+    if kind == "png":
+        if raw[12:16] != b"IHDR":
+            fail("a png picture without IHDR where the signature ends")
+        return struct.unpack(">II", raw[16:24])
+    i = 2
+    while i + 9 <= len(raw):
+        if raw[i] != 0xFF:
+            fail(f"a jpg picture with {raw[i]:#04x} where a marker should stand, at {i}")
+        if raw[i + 1] in (0xC0, 0xC1, 0xC2, 0xC3):
+            h, w = struct.unpack(">HH", raw[i + 5:i + 9])
+            return w, h
+        i += 2 + struct.unpack(">H", raw[i + 2:i + 4])[0]
+    fail("a jpg picture without a frame header to say its size")
+
+
+def rtf_pictures(pictures, settings):
+    """The pictures inline ordered, TOLD rather than counted and believed:
+    as many as were asked, numbered in order, each of the format and size
+    asked, written the way picture_data says, sized in pixels as the file
+    says and on the page at 96 to the inch and no wider than the column, and
+    each a file its own check accepts."""
+    count = settings.get("inline", "0")
+    if not re.fullmatch(r"[0-9]{1,5}", count) or int(count) > 10000:
+        fail(f"the rtf check was told inline={count!r}, which is not a whole number from 0 to 10000")
+    kind = settings.get("inline_format", "png")
+    if kind not in RTF_BLIPS:
+        fail(f"the rtf check was told inline_format={kind!r}, and RTF names only png and jpg")
+    data = settings.get("picture_data", "hex")
+    if data not in ("hex", "binary"):
+        fail(f"the rtf check was told picture_data={data!r}, which is neither hex nor binary")
+    size = html_size(settings.get("inline_size", "8kb"))
+    if len(pictures) != int(count):
+        fail(f"inline={count} was ordered and the document carries {len(pictures)} pictures")
+    blip, ext = RTF_BLIPS[kind]
+    for n, p in enumerate(pictures, start=1):
+        if p["name"] != (n, ext) or p["blip"] != blip:
+            fail(f"picture {n} is named {p['name']} with \\{p['blip']}, and inline_{n:04d}{ext} with \\{blip} was ordered")
+        if p["binary"] != (data == "binary"):
+            fail(f"picture {n} is written {'binary' if p['binary'] else 'in hex'}, and picture_data={data} was ordered")
+        if len(p["raw"]) != size:
+            fail(f"picture {n} is {len(p['raw'])} B, and inline_size={size} B was ordered")
+        html_picture_verdict(kind, n, p["raw"])
+        w, h = rtf_pixels(kind, p["raw"])
+        gw, gh = (w * 15, h * 15) if w * 15 <= 8640 else (8640, h * 8640 // w)
+        if (p["w"], p["h"], p["gw"], p["gh"]) != (w, h, gw, gh):
+            fail(f"picture {n} says {p['w']}x{p['h']} pixels and {p['gw']}x{p['gh']} twips, and the file is {w}x{h}, which is {gw}x{gh}")
+
+
+def rtf_links(text, settings):
+    """The links ordered: as many fields as were asked besides the one of the
+    catalogue, the kinds in turn, each with its own text, inside the bookmark
+    the first kind points at.
+
+    With links 0 there is no bookmark to ask about: a basic document carrying
+    one is refused by the words rtf_read allows, and the only writer of the
+    bookmark is the loop over the links, which a count of 0 never enters."""
+    raw = settings.get("links", "0")
+    if not re.fullmatch(r"[0-9]{1,7}", raw) or int(raw) > 1000000:
+        fail(f"the rtf check was told links={raw!r}, which is not a whole number from 0 to 1000000")
+    n = int(raw)
+    field = re.compile(r"\{\\field\{\\\*\\fldinst (HYPERLINK [^{}]*)\}\{\\fldrslt ([^{}]*)\}\}")
+    found = [(m.start(), m.end(), m.group(1), m.group(2)) for m in field.finditer(text)
+             if not text.startswith(RTF_CATALOGUE_LINK, m.start())]
+    if len(found) != n:
+        fail(f"links={n} was ordered and the document carries {len(found)} links besides the catalogue's")
+    for i, (_, _, inst, said) in enumerate(found):
+        want = RTF_LINK_KINDS[i % len(RTF_LINK_KINDS)]
+        if (inst, said) != want:
+            fail(f"link {i + 1} is {inst!r} saying {said!r}, and the kinds in turn give {want[0]!r} saying {want[1]!r}")
+    start = "{" + RTF_BS + "*" + RTF_BS + "bkmkstart tfg_links}"
+    end = "{" + RTF_BS + "*" + RTF_BS + "bkmkend tfg_links}"
+    if n == 0:
+        return
+    if text.count(start) != 1 or text.count(end) != 1:
+        fail("the bookmark of the list stands other than once at each end")
+    if text[found[0][0] - len(start):found[0][0]] != start or text[found[-1][1]:found[-1][1] + len(end)] != end:
+        fail("the bookmark of the list does not open right before the first link and close right after the last")
+
+
 def check_rtf(data, settings=None):
-    """The document is 7 bit text, its groups balance and close at the last
-    byte, and it holds what characters, text_encoding, elements, nesting and
-    the label ordered - read here by a reader of its own."""
+    """The document is 7 bit text but for its binary pictures, its groups
+    balance and close at the last byte, and it holds what characters,
+    text_encoding, elements, nesting, links, the pictures and the label
+    ordered - read here by a reader of its own."""
     settings = settings or {}
+    data, pictures = rtf_cut_pictures(data)
     bad = [b for b in data if b > 0x7E or (b < 0x20 and b not in (0x0D, 0x0A))]
     if bad:
         fail(f"{len(bad)} byte(s) outside 7 bit text, the first {bad[0]:#04x} - the generator writes every letter outside ASCII as an escape")
@@ -3842,7 +4005,9 @@ def check_rtf(data, settings=None):
     rtf_label(paras, settings)
     rtf_international(paras, text, settings)
     rtf_every(text, settings)
-    ok(f"{len(paras)} paragraph(s), {deepest} group(s) deep")
+    rtf_pictures(pictures, settings)
+    rtf_links(text, settings)
+    ok(f"{len(paras)} paragraph(s), {deepest} group(s) deep, {len(pictures)} picture(s)")
 
 
 def rtf_label(paras, settings):

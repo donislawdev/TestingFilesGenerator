@@ -178,6 +178,17 @@ var allowedURLs = map[string]string{
 	// RFC 2606 keeps for examples. A field is never followed by opening the
 	// document, and this program never follows it (docs/RTF-2026-10-15.md).
 	"internal/format/rtf/catalogue.go|https://example.com/tfg/link": "a link written into a document, on a domain kept for examples",
+	// The kinds of link the list of an RTF document goes through, every one on
+	// a domain RFC 2606 keeps for examples (docs/RTF-2-2026-10-15.md 2.5).
+	"internal/format/rtf/links.go|https://example.com/path/page.html?a=1&b=2#part": "a link written into a document, on a domain kept for examples",
+	"internal/format/rtf/links.go|https://example.com/path/page.html":              "a link written into a document, on a domain kept for examples",
+	"internal/format/rtf/links.go|http://example.org/":                             "a link written into a document, on a domain kept for examples",
+	"internal/format/rtf/links.go|https://example.com/caf%C3%A9?q=two%20words":     "a link written into a document, on a domain kept for examples",
+	"internal/format/rtf/links.go|https://xn--bcher-kva.example/":                  "a link written into a document, on a top level domain kept for examples",
+	"internal/format/rtf/links.go|https://example.com:8443/port":                   "a link written into a document, on a domain kept for examples",
+	"internal/format/rtf/links.go|ftp://example.com/file.txt":                      "a link written into a document, on a domain kept for examples",
+	"internal/format/rtf/links.go|https://example.org/new":                         "a link written into a document, on a domain kept for examples",
+	"internal/format/rtf/links.go|https://example.net/tip":                         "a link written into a document, on a domain kept for examples",
 	"internal/legal/companions.go|https://github.com/pal1000/mesa-dist-win/releases/download/26.2.0/mesa3d-26.2.0-release-msvc.7z": "where the software " +
 		"renderer's bytes were downloaded FROM, by the release workflow and never by the program: written into the bill of " +
 		"materials as the package's download location, and compared with the workflow's pin by a guard",

@@ -3251,15 +3251,50 @@
     "hash": "sha256-6b426dee7162",
     "other": "write version: {{.SchemaVersion}}"
   },
+  "rtf.ADocumentThisLargeCannotBe": {
+    "description": "Said by internal/format/rtf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-3026003f221c",
+    "other": "a document this large cannot be counted to the byte in this build"
+  },
+  "rtf.APictureInTheDocumentIs": {
+    "description": "Said by internal/format/rtf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-b4581f4ef7ea",
+    "other": "a picture in an RTF document has to be one of the two picture formats RTF has a name for"
+  },
+  "rtf.AskForSmallerPictures": {
+    "description": "Said by internal/format/rtf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-acf878874a21",
+    "other": "Ask for fewer or smaller pictures."
+  },
   "rtf.MinimumDocument": {
     "description": "Said by internal/format/rtf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-0dd8e6a8cceb",
     "other": "a document holds its header and its font table, and the two need that much"
   },
+  "rtf.MinimumWithBinaryPictures": {
+    "description": "Said by internal/format/rtf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-2e9be5d44951",
+    "other": "a document holds its header, its font table and every picture byte for byte, and together they need that much"
+  },
+  "rtf.MinimumWithPictures": {
+    "description": "Said by internal/format/rtf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-af82d88ed136",
+    "other": "a document holds its header, its font table and every picture in hex, which is twice the size of the picture itself, and together they need that much"
+  },
   "rtf.MinimumWithSettings": {
-    "description": "Said by internal/format/rtf - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Characters}}, {{.Elements}}, {{.Nesting}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-576cd6d8e42b",
-    "other": "a document holds its header and its font table and what {{.Characters}}, {{.Elements}} and {{.Nesting}} add to them, and together they need that much"
+    "description": "Said by internal/format/rtf - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Characters}}, {{.Elements}}, {{.Nesting}}, {{.Links}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-e6c4b3b7e88a",
+    "other": "a document holds its header and its font table and what {{.Characters}}, {{.Elements}}, {{.Nesting}} and {{.Links}} add to them, and together they need that much"
+  },
+  "rtf.ThePictureCannotBe": {
+    "description": "Said by internal/format/rtf - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Err}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-8e3654e254a6",
+    "other": "rtf: the {{.Format}} picture cannot be made: {{.Err}}"
+  },
+  "rtf.UseOneOfThePictureFormats": {
+    "description": "Said by internal/format/rtf - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Formats}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-a6669f6abe6b",
+    "other": "Use one of: {{.Formats}}."
   },
   "textenc.HasToBeEncoding": {
     "description": "Said by internal/format/textenc - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.UTF8}}, {{.UTF16LE}}, {{.UTF16BE}}, written the way the program writes them - keep each spelled exactly that way.",
