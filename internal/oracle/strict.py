@@ -3646,12 +3646,23 @@ class RtfState:
 
 
 def rtf_fonts(data):
-    """The fonts the table declares, number to code page."""
-    m = re.search(r"\{\\fonttbl((?:\{\\f[0-9]+[^{}]*;\})+)\}", data)
-    if not m:
+    """The fonts the table declares, number to code page.
+
+    Read entry by entry rather than with one expression for the whole table:
+    a repeated group of entries whose inside can also match a semicolon backs
+    off exponentially on a long table that never closes (CodeQL py/redos on
+    the first version, review of #191). Every entry is one group with no
+    group inside it, so the table ends at the first two closing braces."""
+    start = data.find("{" + RTF_BS + "fonttbl{")
+    end = data.find("}}", start)
+    if start < 0 or end < 0:
         fail("no font table, which the header of every document has to carry")
     fonts = {}
-    for num, rest in re.findall(r"\{\\f([0-9]+)([^{}]*);\}", m.group(1)):
+    for entry in data[start + len("{" + RTF_BS + "fonttbl"):end + 1].split("}")[:-1]:
+        m = re.fullmatch(r"\{\\f([0-9]+)([^{};]*);", entry)
+        if not m:
+            fail(f"a font table entry the generator never writes: {entry[:60]!r}")
+        num, rest = m.group(1), m.group(2)
         cs = re.search(r"\\fcharset([0-9]+)", rest)
         fonts[int(num)] = RTF_CHARSETS.get(int(cs.group(1)) if cs else 0)
         if fonts[int(num)] is None:
