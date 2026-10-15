@@ -15,8 +15,8 @@ version: 2
 # It does NOT delay security fixes. Cooldown applies to version updates, and
 # Dependabot security updates are a separate mechanism.
 #
-# Two things about this repository that a reviewer needs to know before merging
-# any of these, and neither is obvious from the diff:
+# Three things about this repository that a reviewer needs to know before
+# merging any of these, and none is obvious from the diff:
 #
 #   1. A dependency bump can change the bytes of a generated file, and this
 #      project promises those bytes inside a major version (D11). The byte
@@ -32,6 +32,14 @@ version: 2
 #      cannot land quietly - immutable rule 11 asks for a licence check on
 #      every one of them, and GPL-3.0 makes that a real question rather than
 #      a formality.
+#
+#   3. An update of google/osv-scanner-action goes red too, in the job
+#      "new vulnerabilities (OSV)", until the digest of its new Docker image
+#      is written to .github/osv-scanner-digest in the same pull request. The
+#      action is pinned by commit but runs an image named by a tag, so the
+#      digest is what holds the image still (O281). Read what the release
+#      changed, then take the digest from the "Pull down action image" lines
+#      of that red run and check it against the release before writing it.
 #
 # None of these are merged on a green tick alone. Every one is read before it
 # is accepted: which files of the module changed between the two versions
