@@ -3251,6 +3251,16 @@
     "hash": "sha256-6b426dee7162",
     "other": "write version: {{.SchemaVersion}}"
   },
+  "rtf.MinimumDocument": {
+    "description": "Said by internal/format/rtf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-0dd8e6a8cceb",
+    "other": "a document holds its header and its font table, and the two need that much"
+  },
+  "rtf.MinimumWithSettings": {
+    "description": "Said by internal/format/rtf - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Characters}}, {{.Elements}}, {{.Nesting}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-576cd6d8e42b",
+    "other": "a document holds its header and its font table and what {{.Characters}}, {{.Elements}} and {{.Nesting}} add to them, and together they need that much"
+  },
   "textenc.HasToBeEncoding": {
     "description": "Said by internal/format/textenc - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.UTF8}}, {{.UTF16LE}}, {{.UTF16BE}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-cf8214cf1fa6",

@@ -23,7 +23,7 @@
 
 **Testing Files Generator** is a tool for QA engineers and developers who need real
 files to test against - an upload form, a parser, anything that takes a file and
-has an opinion about it. You pick one of its 30 formats and the size you want,
+has an opinion about it. You pick one of its 31 formats and the size you want,
 and you get **exactly that**: ask for a 10 MB PDF and you get a PDF that a reader
 will open, at 10 MB to the byte. Every run also leaves a manifest saying **what
 your system should do with each file**, which is the part other generators leave
@@ -36,7 +36,7 @@ needs it finds out it exists.
 
 - **Hit an exact size, to the byte** - ask for 10485761 bytes and get exactly
   that, never a silently rounded file.
-- **Write 30 real formats** - a generated PNG opens in an image viewer, a DOCX
+- **Write 31 real formats** - a generated PNG opens in an image viewer, a DOCX
   opens in Word, a ZIP extracts. Not padded zeros with an extension.
 - **Say what should happen to each file** - the manifest carries an expected
   outcome, so your test reads the assertion instead of you writing it out.
@@ -174,7 +174,7 @@ owns it, at the exact size you asked for:
 
 | group | formats |
 |---|---|
-| 📄 **Documents** | `pdf`, `docx` (Word), `xlsx` (Excel), `pptx` (PowerPoint) |
+| 📄 **Documents** | `pdf`, `docx` (Word), `xlsx` (Excel), `pptx` (PowerPoint), `rtf` (Rich Text Format) |
 | 🖼️ **Images** | `png`, `jpg`, `bmp`, `gif`, `ico`, `svg`, `tiff`, `webp`, `avif`, `jxl` |
 | 📝 **Text and markup** | `txt`, `md`, `csv`, `json`, `xml`, `html`, `log` |
 | ⚙️ **Configuration** | `yaml`, `toml` |
@@ -627,6 +627,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `docx` | `paragraphs` |
 | `xlsx` | `rows`, `columns` |
 | `pptx` | `slides` |
+| `rtf` | `characters`, `text_encoding`, `elements`, `nesting` |
 | `csv` | `delimiter`, `line_ending`, `header`, `quote_style`, `columns` |
 | `log` | `entry_format`, `timestamps`, `rate`, `methods`, `status_mix`, `level_mix`, `ip_version`, `line_ending` |
 | `txt`, `md`, `xml` | `encoding`, `bom` |

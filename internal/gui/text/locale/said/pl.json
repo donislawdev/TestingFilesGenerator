@@ -647,6 +647,8 @@
   "recipe.WriteTheNameAsAWord": { "hash": "sha256-effad2028c85", "other": "zapisz nazwę jako słowo" },
   "recipe.WriteTheNameOnItsOwn": { "hash": "sha256-da431c8ff106", "other": "zapisz samą nazwę albo mapę zaczynającą się od type" },
   "recipe.WriteVersion": { "hash": "sha256-6b426dee7162", "other": "wpisz version: {{.SchemaVersion}}" },
+  "rtf.MinimumDocument": { "hash": "sha256-0dd8e6a8cceb", "other": "dokument zawiera nagłówek i tablicę fontów, a te dwa potrzebują tyle" },
+  "rtf.MinimumWithSettings": { "hash": "sha256-576cd6d8e42b", "other": "dokument zawiera nagłówek i tablicę fontów oraz to, co dokładają do nich {{.Characters}}, {{.Elements}} i {{.Nesting}}, a razem potrzebują tyle" },
   "textenc.HasToBeEncoding": { "hash": "sha256-cf8214cf1fa6", "other": "musi to być {{.UTF8}}, {{.UTF16LE}} albo {{.UTF16BE}}" },
   "tool.AToolIsNamedExactlyAnd": { "hash": "sha256-756a78c6f204", "other": "narzędzie podaje się dokładną nazwą, a najbliższa nazwa do pomylonej może robić coś innego" },
   "tool.NameTheToWorkOn": { "hash": "sha256-3dac06c6319b", "other": "wskaż, na czym narzędzie ma pracować: {{.Kind}}" },

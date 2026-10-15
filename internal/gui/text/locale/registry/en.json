@@ -644,6 +644,11 @@
     "hash": "sha256-1512e97a4b84",
     "other": "pptx"
   },
+  "Choice.format.rtf": {
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-b97d62f2e9e5",
+    "other": "rtf"
+  },
   "Choice.format.svg": {
     "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-acdb1373d176",
@@ -1084,10 +1089,30 @@
     "hash": "sha256-371a286d5872",
     "other": "base64"
   },
+  "Choice.text_encoding.both": {
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-ff7772053abf",
+    "other": "both"
+  },
+  "Choice.text_encoding.codepage": {
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-0b653bac8180",
+    "other": "codepage"
+  },
+  "Choice.text_encoding.literal": {
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-829f8d848b44",
+    "other": "literal"
+  },
   "Choice.text_encoding.quoted-printable": {
     "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-7956a9e2a40b",
     "other": "quoted-printable"
+  },
+  "Choice.text_encoding.unicode": {
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-2fcf76a4c3c7",
+    "other": "unicode"
   },
   "Choice.timestamps.advancing": {
     "description": "One entry of the timestamps list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
@@ -1599,6 +1624,26 @@
     "hash": "sha256-b62241b390bf",
     "other": "How many slides the presentation holds. The rest of the size you asked for is carried by a part of the package that is not shown."
   },
+  "Detail.format/rtf.characters": {
+    "description": "The sentence under the characters setting of the rtf format, after what it takes.",
+    "hash": "sha256-a66dbdb2f6f9",
+    "other": "Whether the document carries text outside ASCII. international adds paragraphs in Polish, Russian, Japanese and Arabic, the Arabic right to left, and one with emoji, a letter written as two code points, the three characters RTF escapes and the ones it names, such as the dashes and the quotes. A program without a Japanese or Arabic font shows boxes in their place."
+  },
+  "Detail.format/rtf.elements": {
+    "description": "The sentence under the elements setting of the rtf format, after what it takes.",
+    "hash": "sha256-b0177e3841f3",
+    "other": "Which parts the document uses. basic is headings, paragraphs with bold and italic words, lists, tables and indented quotes. every adds document properties, a page header and footer, a footnote, a comment, hidden text, a link, a bookmark, a group every reader has to skip, a word no reader knows and line, tab, page and section breaks, and each part says where it is. Tika returns the most of them, the header, the footer and the comment among them. LibreOffice, striprtf and RichEdit return the hidden text as text, RichEdit with the address of the link, and pandoc returns the footnote and leaves the hidden text out."
+  },
+  "Detail.format/rtf.nesting": {
+    "description": "The sentence under the nesting setting of the rtf format, after what it takes.",
+    "hash": "sha256-e1d640adb186",
+    "other": "How many groups the content sits inside, each one inside the last. 0 puts it straight in the document, and the label stays outside so the file still says what it is. No reader measured lost the content at 10 000 000 levels, but LibreOffice took 18.5 GB of memory over them and pandoc 14.5 GB, against about 2 GB each at 1 000 000."
+  },
+  "Detail.format/rtf.text_encoding": {
+    "description": "The sentence under the text_encoding setting of the rtf format, after what it takes.",
+    "hash": "sha256-e6a5e55837f3",
+    "other": "How the letters outside ASCII are written, which changes nothing while characters is ascii. unicode writes each one as a number with a question mark after it for a reader that does not know numbers. both puts the letter in the code page of its font after the number, two bytes for Japanese, the way Word writes it. codepage writes only the code page bytes, and the emoji still as numbers, since no code page holds them. literal writes the question mark as a plain character. LibreOffice, Tika and the RichEdit control of Windows read all four. pandoc shows codepage text in the wrong letters and drops the character after every letter written literal, and pandoc 3.1 and 3.7 drop the emoji in all four. striprtf returns an emoji as two halves, which Python refuses to write as UTF-8."
+  },
   "Detail.format/svg.height": {
     "description": "The sentence under the height setting of the svg format, after what it takes.",
     "hash": "sha256-093ec883d633",
@@ -1963,6 +2008,11 @@
     "description": "What the pptx format is called, beside its id in a list of formats. The name of a standard stays as it is - only a name that describes the file is translated.",
     "hash": "sha256-33f651fb2245",
     "other": "PowerPoint (Office Open XML)"
+  },
+  "Format.rtf": {
+    "description": "What the rtf format is called, beside its id in a list of formats. The name of a standard stays as it is - only a name that describes the file is translated.",
+    "hash": "sha256-57bbafd25bb0",
+    "other": "Rich Text Format"
   },
   "Format.svg": {
     "description": "What the svg format is called, beside its id in a list of formats. The name of a standard stays as it is - only a name that describes the file is translated.",

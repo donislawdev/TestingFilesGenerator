@@ -1362,7 +1362,18 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            p7zip-full ffmpeg poppler-utils inkscape python3-pil python3-yaml gdal-bin
+            p7zip-full ffmpeg poppler-utils inkscape python3-pil python3-yaml gdal-bin pandoc
+
+          # RTF is read by pandoc, the one of five readers measured that is
+          # an apt install here (docs/RTF-2026-10-15.md section 6.1). Its
+          # readings of good files - wrong letters in codepage, a dropped
+          # character after every letter written literal, hidden text left
+          # out - are held by the RTF guard as what the settings tell a user,
+          # and 3.1.3 and 3.7.0.2 read every file of that measurement alike.
+          # Asked for its version, so a pandoc that did not install stops this
+          # step rather than turning the RTF guard into a skip. Without a pipe:
+          # under pipefail a reader that stops early can fail a good install.
+          pandoc --version
 
           # GeoJSON is read by GDAL and its shapes judged by shapely, which is
           # GEOS underneath (docs/GEOJSON-2026-10-07.md). shapely goes in for

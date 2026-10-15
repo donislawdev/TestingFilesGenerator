@@ -155,6 +155,7 @@ var fileKinds = map[string]fileKind{
 	"docx":    kindDocument,
 	"pdf":     kindDocument,
 	"pptx":    kindDocument,
+	"rtf":     kindDocument,
 	"xlsx":    kindDocument,
 	"targz":   kindArchive,
 	"zip":     kindArchive,
