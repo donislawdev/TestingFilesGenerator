@@ -109,7 +109,11 @@ whose test suites depend on it.
   library will not do.
 - **Every change in behaviour comes with a test that fails without it.** A green
   suite is not evidence on its own. The question to answer in the pull request
-  is "which test would go red if this change were undone".
+  is "which test would go red if this change were undone". Each test in
+  `internal/guard` is also broken on purpose by an entry in
+  `internal/guard/mutation/entries.py`, and the `mutation` check on a pull
+  request runs the entries the change reaches. A new test needs an entry there,
+  or a line in `internal/guard/mutationcoverage_test.go` saying why it has none.
 - **Words a user reads are English, with a flat hyphen and no semicolons.** That
   covers the README, the changelog, `--help`, every message, and every comment
   in the code. A test enforces the punctuation.
@@ -123,7 +127,9 @@ whose test suites depend on it.
 - Keep it to one subject. A pull request that fixes a bug and tidies three
   unrelated files is one that cannot be reviewed or reverted cleanly.
 - CI has to be green. It builds and tests on Windows, Linux and macOS, runs the
-  linters, and checks the dependency and supply chain gates.
+  linters, and checks the dependency and supply chain gates. The `mutation`
+  check reports a break no test noticed as a warning and does not block the
+  merge for now.
 - The commit message and the pull request are public and permanent. Do not put
   anything in them you would not show a stranger.
 - Pull requests are merged by the maintainer, as a squash.

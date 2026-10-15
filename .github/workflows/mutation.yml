@@ -1,0 +1,171 @@
+# Mutation testing: every guard broken on purpose, to see that it notices.
+#
+# A green suite says the code does what the guards check. It does not say the
+# guards check anything - that sentence needs each one broken on purpose, and
+# internal/guard/mutation/entries.py holds one entry per break. Until
+# 2026-10-15 the entries lived outside the repository and ran on one machine,
+# where a full pass took over an hour and was rarely run. Of 1779 entries that
+# day, 236 had been proven against the code as it stood.
+#
+# Two kinds of run, one path through the same jobs:
+#
+#   - weekly, and by hand from the Actions tab: every entry, cut into sixteen
+#     parts that run side by side. Red when a mutation is not caught. This is
+#     what catches a guard that stopped reaching its code through a change in
+#     a third file, which no selection by file can see.
+#   - on a pull request: only the entries the change reaches - the file an
+#     entry mutates, the file its guard is in, or the entry itself. Reported
+#     and never red for now, while the runner earns trust on these machines.
+#
+# The plan job decides how many entries and parts there are, each part judges
+# its own share in disposable copies of the tree, and the report job puts the
+# parts together. A part that never reports is a failure there rather than a
+# smaller run.
+name: mutation
+
+on:
+  pull_request:
+  schedule:
+    # Sunday night. Monday morning already holds the fuzzing job of ci.yml at
+    # 04:17, the OSV scan at 05:17 and the tool versions at 06:00, and this
+    # run takes sixteen of the twenty jobs a free plan runs at once.
+    - cron: "37 1 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to the same pull request makes the older run worthless, so it
+# is cancelled rather than left to hold sixteen machines.
+concurrency:
+  group: mutation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  GO_VERSION: "1.27.2"
+  # Built as the test job builds on Linux, so a verdict here is about the
+  # guards CI actually runs. Entries on files only a cgo build or only
+  # Windows compiles come back UNJUDGED, said out loud in the report.
+  CGO_ENABLED: "0"
+
+jobs:
+  plan:
+    name: which entries
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      entries: ${{ steps.plan.outputs.entries }}
+      parts: ${{ steps.plan.outputs.parts }}
+      shards: ${{ steps.plan.outputs.shards }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+          # The whole history, because a pull request is compared with its
+          # base and the base has to be here to be compared with.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: what the runner needs
+        run: pip install -r .github/requirements-mutation.txt
+
+      - name: the plan
+        id: plan
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+        run: |
+          python internal/guard/mutation/mutate.py --plan ${BASE:+--changed "$BASE"} >> "$GITHUB_OUTPUT"
+          if grep -qx 'entries=0' "$GITHUB_OUTPUT"; then
+            echo "No mutation entry is reached by this change, so none was run." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  run:
+    name: part ${{ matrix.shard }}
+    needs: plan
+    if: needs.plan.outputs.entries != '0'
+    runs-on: ubuntu-latest
+    # A part of the weekly run is about 110 entries at three at a time. The
+    # first run measures what that costs here, and this ceiling is far above
+    # it so that a hang ends as a part that did not report.
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.plan.outputs.shards) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: false
+          cache: true
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: what the runner needs
+        run: pip install -r .github/requirements-mutation.txt
+
+      - name: the entries of this part
+        # Never red on its own. The verdicts go to the JSON file and the
+        # report job decides - and a step that crashed before writing it is
+        # found there as a part that did not report.
+        continue-on-error: true
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || '' }}
+          SHARD: ${{ matrix.shard }}
+          PARTS: ${{ needs.plan.outputs.parts }}
+        run: >
+          python internal/guard/mutation/mutate.py ${BASE:+--changed "$BASE"}
+          --shard "$SHARD/$PARTS" --workers 3 --json "result-$SHARD.json"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        if: always()
+        with:
+          name: mutation-result-${{ matrix.shard }}
+          path: result-*.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  report:
+    name: what the run found
+    needs: [plan, run]
+    if: always() && needs.plan.result == 'success' && needs.plan.outputs.entries != '0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.14"
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        # A run in which no part reported has nothing to download, and that
+        # is for the report to say rather than for this step to fail on.
+        continue-on-error: true
+        with:
+          pattern: mutation-result-*
+          path: results
+          merge-multiple: true
+
+      - name: the verdict
+        env:
+          ENTRIES: ${{ needs.plan.outputs.entries }}
+          PARTS: ${{ needs.plan.outputs.parts }}
+          # Red on the weekly run and on a run by hand. On a pull request the
+          # same findings are warnings until the runner has earned trust here.
+          GATE: ${{ github.event_name != 'pull_request' && '--gate' || '' }}
+        run: >
+          python internal/guard/mutation/report.py --dir results
+          --entries "$ENTRIES" --shards "$PARTS" $GATE
