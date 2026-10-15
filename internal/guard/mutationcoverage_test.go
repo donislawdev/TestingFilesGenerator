@@ -13,7 +13,7 @@ import (
 //
 // Mutation is what turns "this test would be red if I broke that" from a
 // sentence into a fact, and the list of mutations is kept by hand in
-// tools/mutate/mutate.py. Kept by hand means somebody eventually does not add
+// internal/guard/mutation/entries.py. Kept by hand means somebody eventually does not add
 // one - and this is not hypothetical. Two rows of the regression surface said a
 // locality guard was proven by mutation and no entry named one. Found by this
 // test on 2026-08-01, not by reading.
@@ -118,7 +118,7 @@ var notProvenByMutation = map[string]bool{
 //   - there is no product code underneath it. It reads documents and compares
 //     lists, so a substitution in a .go file never reaches it.
 //   - the substitution that would break it is not a literal. Entries in
-//     mutate.py are read with ast.literal_eval, so a break that needs ninety
+//     entries.py are read with ast.literal_eval, so a break that needs ninety
 //     generated lines cannot be written as one.
 //
 // A separate list rather than a note in the one above, because "unproven" and
@@ -148,7 +148,7 @@ var provenByProbe = map[string]string{
 		"git update-index --chmod=-x on .github/scripts/make_app_bundle.sh made it red, naming the file, the mode it found and the command that fixes it. " +
 		"Putting the bit back made it green again. " +
 		"A probe rather than a mutation entry because what it reads is not text: the thing that can be wrong is a FILE MODE recorded in the git index, " +
-		"and entries in mutate.py substitute one string for another inside a file, which never touches a mode. " +
+		"and entries in entries.py substitute one string for another inside a file, which never touches a mode. " +
 		"Worth having at all because this failure is invisible on the machine it is written on - Windows has no such bit and git bash ignores it, " +
 		"so the script looks fine, passes every guard that reads it as text, and the FIRST release build stops on it with exit 126. " +
 		"That is not hypothetical: make_app_bundle.sh went in as 100644 and this guard is what found it.",
@@ -176,18 +176,7 @@ var provenByProbe = map[string]string{
 		"to after the goroutine that writes the files, builds, and runs the guard. Reported CAUGHT, and the file was restored. " +
 		"A probe rather than a mutation entry for two reasons, and the first one is the interesting one. The obvious substitution - deleting the handle - does NOT compile, because cancel is then unused, " +
 		"and a mutation that does not compile proves nothing while reporting as though it did. The faithful version is a MOVE of fifteen lines rather than a substitution of one piece of text for another, " +
-		"and mutate.py entries have to be literals.",
-
-	"TestTabbingReachesTheControlsAndSaysInWhatOrder": "broken by hand on 2026-08-13: parts.Row was made to Hide the row it builds, and the guard went red naming four controls - " +
-		"the size box, the seed box and two explanation buttons - then green again when it was put back. " +
-		"That break is the real failure mode rather than an invented one. Visible() on a child answers for the CHILD, so a control inside a hidden container still reports itself visible " +
-		"while the focus chain, which walks the visible tree, steps straight past it. A section quietly hidden is exactly how a screen stops being operable from the keyboard without looking any different in a screenshot. " +
-		"Not a mutation entry because no substitution of one piece of text for another produces that state today: the failure lives in the disagreement between two ways of asking what is visible, " +
-		"and nothing in the tree says Hide for a substitution to aim at. " +
-		"The clause about the strip, added 2026-09-15 when the strip became ours and its words learnt to hold the keyboard, was broken by hand the same way: " +
-		"hiding every word in parts.Tabbed made it red naming all four words on every screen, and green again when the lines came out. " +
-		"Taking the words' FocusGained away is not a break this guard can be shown - the product itself refuses to compile, because the strip focuses its own words in two places, " +
-		"so that half is held by the compiler rather than by a test.",
+		"and the entries in entries.py have to be literals.",
 
 	"TestTheTaskbarIconIsTheSameDrawingAsTheWindowIcon": "checked 2026-08-13 with tools/probes/exe-icon.ps1, run on both binaries. " +
 		"It reported 7 of 7 icon images inside tfg-gui.exe and 0 of 7 inside tfg.exe, which is the right answer for a command line with no window. " +
@@ -222,7 +211,7 @@ var provenByProbe = map[string]string{
 
 	"TestNoFunctionOrFileHasGrownPastWhatAPersonCanFollow": "checked 2026-08-02 three ways, with tools/probes/probe-shape.py: a function grown past 80 lines of code went red, " +
 		"a file grown past 550 went red, and the same function padded with 90 lines of COMMENT stayed green - so the ceiling is on code and not on explaining. " +
-		"A probe rather than a mutation because the substitution is ninety lines long and mutate.py entries have to be literals.",
+		"A probe rather than a mutation because the substitution is ninety lines long and the entries in entries.py have to be literals.",
 
 	"TestEveryIdentifierAReferencePointsAtExists": "checked 2026-08-01 three ways: a reference to a decision that does not exist, " +
 		"a number removed from the middle of a range, and the summary table in CLAUDE.md announcing a range the document no longer defines. All three went red.",
@@ -271,6 +260,9 @@ func mutationTargets(body string) map[string]bool {
 	return named
 }
 
+// mutationEntries is the list of mutations, relative to the root.
+const mutationEntries = "internal/guard/mutation/entries.py"
+
 func TestEveryGuardIsEitherProvenByMutationOrListedAsNotProven(t *testing.T) {
 	// The canary, before the list is looked for, so a fresh checkout runs it
 	// too: both quotes read, a quote of one kind closed by the other not.
@@ -281,14 +273,13 @@ func TestEveryGuardIsEitherProvenByMutationOrListedAsNotProven(t *testing.T) {
 
 	root := repoRoot(t)
 
-	// The mutation list lives in tools/, which is excluded from the repository,
-	// so a fresh checkout has nothing to compare against. That skips out loud
-	// rather than passing quietly.
-	body, err := os.ReadFile(filepath.Join(root, "tools", "mutate", "mutate.py"))
+	// The list is tracked since 2026-10-15. Before that it lived in a
+	// directory outside the repository, this guard returned early on every CI
+	// run, and eight guards gathered there with nothing breaking them. A list
+	// that is missing now is a fault, not a reason to look away.
+	body, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(mutationEntries)))
 	if err != nil {
-		t.Logf("SKIPPED: tools/mutate/mutate.py is not here, so nothing was compared. "+
-			"That directory is excluded from the repository, so this check only runs on a machine that has it. (%v)", err)
-		return
+		t.Fatalf("the mutation list could not be read, so no guard was compared with it: %v", err)
 	}
 
 	named := mutationTargets(string(body))
@@ -317,7 +308,7 @@ func TestEveryGuardIsEitherProvenByMutationOrListedAsNotProven(t *testing.T) {
 			unproven++
 		default:
 			t.Errorf("%s is a guard nothing breaks on purpose.\n"+
-				"  Write a mutation for it in tools/mutate/mutate.py, or put it on provenByProbe with what you broke, or on notProvenByMutation to say out loud that it is unproven.\n"+
+				"  Write a mutation for it in "+mutationEntries+", or put it on provenByProbe with what you broke, or on notProvenByMutation to say out loud that it is unproven.\n"+
 				"  Pick a break that leaves the size and the exit code right, or the mutation only re-proves what other guards already catch.", name)
 		}
 	}
@@ -344,7 +335,7 @@ func TestEveryGuardIsEitherProvenByMutationOrListedAsNotProven(t *testing.T) {
 	}
 	for name := range named {
 		if !exists[name] && strings.HasPrefix(name, "Test") {
-			t.Errorf("tools/mutate/mutate.py aims at %s and no such guard exists - that mutation proves nothing", name)
+			t.Errorf("%s aims at %s and no such guard exists - that mutation proves nothing", mutationEntries, name)
 		}
 	}
 

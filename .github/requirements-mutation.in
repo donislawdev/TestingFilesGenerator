@@ -1,0 +1,20 @@
+# What the mutation runner needs beyond Python itself, pinned, in a file a bot
+# can edit.
+#
+# The runner is internal/guard/mutation/mutate.py, and CI runs it from
+# .github/workflows/mutation.yml. It uses psutil for one thing: watching the
+# memory of the whole process tree an entry starts, so that a mutation which
+# removes a limit cannot take the machine down with it. It is never linked into
+# either binary and go.mod never sees it.
+#
+# Licence read from the pinned version rather than recalled, on 2026-10-15:
+# BSD-3-Clause, stated by the wheel metadata and carried in full in the LICENSE
+# file beside it.
+#
+# requirements-mutation.txt next to this file is compiled from it by
+# pip-compile, the same way requirements-semgrep.txt is, so Dependabot proposes
+# a set pip can install. To compile it by hand, from the root of the
+# repository:
+#
+#   docker run --rm -v "$PWD/.github:/w" -w /w python:3.14-slim sh -c "pip install -q pip==26.1.1 pip-tools==7.5.3 && pip-compile --strip-extras --no-emit-index-url --output-file=requirements-mutation.txt requirements-mutation.in"
+psutil==7.2.2
