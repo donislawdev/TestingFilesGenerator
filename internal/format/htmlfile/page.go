@@ -9,8 +9,13 @@ package htmlfile
 // The markup itself - the skeleton, the label, the levels and the blocks - is
 // spelled in markup.go, in every layout and every way of carrying styles.
 
-// emptyTitle is the title a page carries until a label fills it in.
-const emptyTitle = `<title></title>`
+// placeholderTitle is the title a page carries when no label fills it in: at
+// the smallest sizes, and in every page under --clean. Not empty, because the
+// standard asks a title for text and the Nu HTML Checker calls an empty one an
+// error (O277). A word that says nothing about this tool, because --clean is
+// there to keep the tool's description out of the file
+// (docs/HTML-6-2026-10-15.md).
+const placeholderTitle = `<title>Page</title>`
 
 // byteOrderMark is the UTF-8 mark, the only one a page may carry: the standard
 // requires UTF-8 (docs/HTML-STRUCTURE-2026-09-08.md section 1). Written as its

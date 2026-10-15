@@ -195,7 +195,7 @@ func labelledHead(s settings, r format.Request, min int64) (head, heading string
 		// does - one for the tab and one for the reader. A fragment has no head
 		// to put a title in, so it carries only the heading, and the label is
 		// still visible because a heading is.
-		head = strings.Replace(plain, emptyTitle, "<title>"+label+"</title>", 1)
+		head = strings.Replace(plain, placeholderTitle, "<title>"+label+"</title>", 1)
 		extra = int64(len(head) - len(plain))
 	}
 	if extra+int64(len(heading))+min <= r.Bytes {

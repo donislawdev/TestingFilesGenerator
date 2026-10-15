@@ -97,7 +97,11 @@ func TestEjectingAPresetGivesTheBytesItAlwaysGave(t *testing.T) {
 		// Moved a sixth time on 2026-10-07, under the same decision: eml is a
 		// format more, so the set has its smallest message, 289 B
 		// (docs/EML-2026-10-07.md).
-		{id: "empty-and-minimal", args: preset.Args{}, bytes: 10190, sum: "9530e0e5427d2d92cf05f47a5dcd4fc1755d67a9155ea65482e296f4d571adbe"},
+		// Moved a seventh time on 2026-10-15, by the owner's decision of that
+		// day to change bytes: the smallest html page went from 118 B to 122 B
+		// when its empty title became Page (O277, docs/HTML-6-2026-10-15.md).
+		// The recipe keeps its length, only the number in it moves.
+		{id: "empty-and-minimal", args: preset.Args{}, bytes: 10190, sum: "10a8d738e3c73b995e94e546256807a00c24cad1d01e4372a623618eb35afb44"},
 		{id: "empty-and-minimal", args: preset.Args{"formats": "jpg,png,txt"}, bytes: 1472, sum: "19b12800372395ad3bf5cba6407ca654d7ed51eba3a5bc5436f76a94bc09253c"},
 		// The preset of unusual file names, measured 2026-09-25 on its first
 		// build: the default, and a format whose extension is a byte longer,

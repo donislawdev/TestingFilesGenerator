@@ -282,7 +282,7 @@ func charsetProperty() format.Property {
 		Default: CharsetUTF8,
 		Detail: "The character set of the text when text_encoding is not 7bit. iso-8859-2 and windows-1250 hold Polish and no Japanese, " +
 			"and they write ą, ś and ź as different bytes, so a program that takes one for the other shows the wrong letters. " +
-			"MimeKit with no code page provider registered reads both as Latin-1, and Go's standard library converts no character set at all. " +
+			"MimeKit with no code page provider registered tries UTF-8 and then Latin-1, which shows the Polish letters of both wrong, and reads them right once one is. Go's standard library converts no character set at all. " +
 			"With 7bit the text is plain ASCII and says us-ascii, whatever this is set to.",
 	}
 }
@@ -341,7 +341,7 @@ func filenameStyle() format.Property {
 		Detail: "How the names of attached files and pictures are written. rfc2231 is the standard way. " +
 			"rfc2047 is the encoded form RFC 2047 forbids inside a name, and many readers decode it anyway. " +
 			"both writes the two, and content-type puts the name only where old mail programs looked for it. " +
-			"none writes no name at all, and a program that needs one has to make one up. " +
+			"none writes no name at all, and a program that needs one has to make one up - Thunderbird 157 calls them Part 1.2, Part 1.3 and so on. " +
 			"Go's standard library reads no name from content-type and the encoded text itself from rfc2047. " +
 			"Unless headers is encoded a name is written as it is and only where it goes changes, " +
 			"so rfc2047 and both write the same bytes.",
@@ -357,7 +357,8 @@ func depthProperty() format.Property {
 		Default: "1",
 		Detail: "How many messages deep the message goes. 1 is a message alone. 2 carries a forwarded message as an attachment, " +
 			"and each step adds one more inside the last, the smallest message each can be. " +
-			"Python 3.14's email package runs out of recursion at around 490, and MimeKit stops taking them apart past 513 without a word.",
+			"Python 3.14's email package runs out of recursion at around 490, and MimeKit stops taking them apart past 513 without a word. " +
+			"Thunderbird 157 shows up to 32 in full. Past that the 32nd message inside shows only its headers and nothing under it appears, without a word.",
 		Group: attachmentsGroup,
 	}
 }

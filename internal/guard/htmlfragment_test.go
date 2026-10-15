@@ -143,7 +143,8 @@ func TestEachHTMLShapeAnswersForItsOwnMinimum(t *testing.T) {
 // clothes of a feature. Saying nothing and saying "document" out loud are two
 // different routes through the parser and have to meet.
 func TestTheDefaultHTMLShapeIsTheBytesItAlwaysWrote(t *testing.T) {
-	for _, size := range []int64{118, 119, 400, 4096} {
+	smallest := htmlMinimum(t)
+	for _, size := range []int64{smallest, smallest + 1, 400, 4096} {
 		silent := writeEncoded(t, "html", size, nil)
 		spoken := writeEncoded(t, "html", size, shapeProps(shapeDocument))
 		if !bytes.Equal(silent, spoken) {
@@ -214,4 +215,17 @@ func TestTheStructuralCheckIsToldWhichHTMLShapeToExpect(t *testing.T) {
 				c.file, c.told)
 		}
 	}
+}
+
+// htmlMinimum is the smallest page the registry declares, asked rather than
+// written down. The two tests that ask for it were written with 118 B and 119 B
+// in them, and went red on 2026-10-15 when the minimum moved to 122 B for a
+// reason that had nothing to do with what they hold (O277).
+func htmlMinimum(t *testing.T) int64 {
+	t.Helper()
+	d, err := format.Get("html")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return d.MinBytes
 }

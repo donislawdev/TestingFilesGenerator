@@ -78,14 +78,15 @@ const (
 
 // plain is how a page has been spelled since 2026-08-01, the golden hashes
 // holding it there. The skeleton is in two halves so the catalogue and the
-// style sheet can go into the head between them, and the title is empty until a
-// label fills it - the empty pair is what the smallest document carries.
+// style sheet can go into the head between them, and the title says Page until
+// a label fills it - what the smallest document and every --clean one carry
+// (an empty title until 2026-10-15, O277).
 var plain = markup{
 	headOpen: `<!DOCTYPE html>` + "\n" +
 		`<html lang="en">` + "\n" +
 		`<head>` + "\n" +
 		`<meta charset="utf-8">` + "\n" +
-		emptyTitle + "\n",
+		placeholderTitle + "\n",
 	headClose: `</head>` + "\n" +
 		`<body>` + "\n",
 	bodyClose:  "</body>\n</html>\n",

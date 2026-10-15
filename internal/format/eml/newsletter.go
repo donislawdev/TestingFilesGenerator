@@ -44,15 +44,15 @@ type frame struct {
 	headers string
 	// plainOpen and plainClose stand before and after the plain text.
 	plainOpen, plainClose string
-	// htmlBefore stands before <html>, htmlOpen after it and htmlClose after
-	// the paragraph of words.
-	htmlBefore, htmlOpen, htmlClose string
+	// htmlBefore stands before the html element's start tag, htmlTag is that
+	// tag, htmlOpen stands after it and htmlClose after the paragraph of words.
+	htmlBefore, htmlTag, htmlOpen, htmlClose string
 }
 
 // simpleFrame is the frame of a message laid out simple: the body element and
 // nothing else, the bytes this format has always written.
 func simpleFrame(s settings) frame {
-	return frame{htmlOpen: "<body>" + s.textEOL(), htmlClose: "</body></html>"}
+	return frame{htmlTag: "<html>", htmlOpen: "<body>" + s.textEOL(), htmlClose: "</body></html>"}
 }
 
 // newsletterFrame is the frame of a newsletter, unsubscribe being the https
@@ -67,7 +67,13 @@ func newsletterFrame(s settings, unsubscribe string) frame {
 			"You receive this because you subscribed to "+newsletterName+".") +
 			frameLine(s, "Unsubscribe ("+unsubscribe+")"),
 		htmlBefore: frameLines(s, "<!DOCTYPE html>"),
-		htmlOpen:   frameLines(s, newsletterHead...),
+		// The page says its language, as the pages of the html format do. The
+		// Nu HTML Checker asks for it, and a screen reader reads the page in
+		// the voice it names (until 2026-10-15 the newsletter had none). In the
+		// frame rather than in the writer, so quoted-printable writes its = as
+		// =3D like every other attribute.
+		htmlTag:  frameLine(s, `<html lang="en">`),
+		htmlOpen: frameLines(s, newsletterHead...),
 		htmlClose: frameLines(s, newsletterFoot(unsubscribe)...) +
 			frameLine(s, "</html>"),
 	}

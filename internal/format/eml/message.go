@@ -47,7 +47,7 @@ func newMessage(s settings, seed uint64, children, pics []child) *message {
 	return &message{
 		s: s, id: id, children: children, pictures: pics, seed: seed,
 		plainLine: s.internationalLine("", ""),
-		htmlLine:  s.internationalLine("<p>", "</p>"),
+		htmlLine:  s.htmlInternationalLine(),
 		images:    imageLines(s, pics),
 		frame:     newFrame(s, id),
 	}
@@ -189,7 +189,7 @@ func (m *message) plain(o *out) {
 // the pictures before them, in its frame.
 func (m *message) html(o *out) {
 	eol := o.eol
-	o.put(m.frame.htmlBefore, "<html>")
+	o.put(m.frame.htmlBefore, m.frame.htmlTag)
 	if m.parity {
 		o.put(" ")
 	}
