@@ -2,6 +2,7 @@ package guard
 
 import (
 	"encoding/json"
+	"go/build"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -312,11 +313,20 @@ func firstDifferingLine(a, b string) int {
 // generated file with C in its comments, and no guard reading the shape of
 // this module's code sees it. A walk that stopped skipping would hand that
 // file to fourteen guards at once, and they would all be right to refuse it.
+//
+// Only where that module holds a package this build sees. Its files use cgo,
+// so with cgo off - the mutation runners build that way - packages() would
+// find nothing in it even after walking in, and the question has no answer
+// there: the run of 2026-10-15 scored the walk that stopped skipping as a HOLE
+// on those runners and caught it where cgo is on.
 func TestANestedModuleIsNotAPackageOfThisModule(t *testing.T) {
 	root := repoRoot(t)
 	generated := filepath.Join(root, filepath.FromSlash(bindingCopy), "v2.1", "gl", "package.go")
 	if _, err := os.Stat(generated); err != nil {
 		t.Fatalf("the nested module this guard expects to be skipped is not there: %v", err)
+	}
+	if _, err := build.ImportDir(filepath.Dir(generated), 0); err != nil {
+		t.Skipf("this build sees no package in %s (%v), so a walk into it would list nothing and this cannot tell", bindingCopy, err)
 	}
 	for _, p := range packages(t) {
 		if strings.HasPrefix(p.rel, "third_party/") {

@@ -253,6 +253,18 @@ func TestCreateNewCreatesOnlyWhenTheNameIsFree(t *testing.T) {
 					"Callers tell this apart from a disk failure with errors.Is(err, fs.ErrExist), "+
 					"and the engine turns it into its own wording that way.", c.what, err)
 			}
+			// And in this tool's words, which is what os.Lstat in CreateNew is
+			// for since the second create went (2026-09-29): it only chooses the
+			// sentence. With os.Stat there, a link pointing at nothing reads as
+			// no name at all, and the refusal is the system's "file exists"
+			// rather than the sentence about a name in use. It is the only shape
+			// here where the two differ, and it needs a symbolic link, so this
+			// half is proven where plantLink can make one.
+			var taken *core.NameTakenError
+			if !errors.As(err, &taken) {
+				t.Errorf("the refusal for %s is the system's words rather than the sentence about a name in use: %v",
+					c.what, err)
+			}
 			if got, rerr := os.ReadFile(victim); rerr != nil || string(got) != "ORIGINAL" {
 				t.Errorf("the file outside the directory changed: %q, %v", got, rerr)
 			}

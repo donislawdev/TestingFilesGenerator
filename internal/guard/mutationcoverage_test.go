@@ -125,6 +125,20 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	// Three guards each held by two layers, so no single substitution can redden
+	// them and each mutation of one layer scored a HOLE in the CI run of
+	// 2026-10-15. Broken that day in a worker tree, one layer at a time and then
+	// both: green, green, red, for all three.
+	"TestAShortcutCannotStartASecondRunDuringTheFirst": "broken on 2026-10-15 in two places at once: the check on the button in pressIfLive (runactions.go) and the refusal of onGenerate while the state is occupied (run.go, since 2026-09-21). " +
+		"With either one taken away alone the guard stayed green, because the other refused the second run. With both gone it went red saying the screen reports a run that wrote nothing, which is the second one.",
+	"TestAFieldWiredBeforeTheScreenListensReportsOnce": "broken on 2026-10-15 in two places at once: WhenTypedIn walking the fields it already has, and chainOnce chaining again rather than pointing the one handler it put in (both in parts/fields.go). " +
+		"With either alone the guard stayed green - a second wiring is pointed rather than chained, and without the walk nothing wires twice. With both it went red: typing into one box told the screen 2 times.",
+	"TestEveryPresetRendersARecipeThatParsesBack": "broken on 2026-10-15 in two places at once: the whitelist in checkDistance (preset/sizeboundaries.go) and the refusal in recipe.Compose of a character a recipe cannot hold (refuseUnwritable). " +
+		"With either alone the guard stayed green, 154 values tried. With both it went red: size-boundaries accepted spread=\"1\\rB\" and produced source the parser refuses. " +
+		"The whitelist's other job, a space reaching a file name, is the mutation on TestEveryPresetEndingHasTheCodeItShould.",
+	"TestARefusalShowsANameNobodyCanReadAsAnEscape": "broken on 2026-10-15 in three places at once: the escape of the two names in the refusal of a case collision (engine/names.go), the escape of the path in the refusal of a taken name (engine/errors.go), and the escape of the whole message on its way out of the command line (describeError in cli/errors.go). " +
+		"With any one of them gone the guard stayed green, because the line is escaped either way. With all three it went red: the refusal of two names that collide printed U+200B raw. " +
+		"The two escapes in the sentences are the mutations on TestTheWindowsWordsForARefusalShowANameNobodyCanReadAsAnEscape, where the window has no funnel to cover them.",
 	"TestAFolderThatCannotBeListedIsRefusedWholeAndVerifyStillStopsAtIt": "broken on 2026-09-30 in a Linux container (golang:1.27-alpine, the repository read only, an ordinary user), through the command line rather than through this test, which cannot build there without the window's libraries. " +
 		"With internal/audit/walk.go as it is, verify of a run with a folder nobody may list ended with 5 naming it. With the three lines that hand verify the first unreadable folder removed - the overlay put the mutated file in place - the same verify ended with 0 and said the directory matches. " +
 		"A probe rather than a mutation entry because this guard skips on Windows, where the runner runs, and would score NOT CAUGHT about a healthy guard.",

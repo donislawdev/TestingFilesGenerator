@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/goccy/go-yaml"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
@@ -167,64 +168,46 @@ func TestAManifestThatCannotReachStandardOutputIsNotASuccess(t *testing.T) {
 	}
 }
 
-// Every job in the workflow has a ceiling on how long it may run. Without one
+// Every job in every workflow has a ceiling on how long it may run. Without one
 // a hung job holds a runner until the GitHub default of six hours, and the
 // fuzzing job is the one most able to hang.
-// topLevelKey matches a key of the workflow itself, such as "on:" or "env:".
-// Anything else in column one is content somebody wrote inside a step.
-var topLevelKey = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_-]*:`)
-
+//
+// Read as YAML and asked of each job by name since 2026-10-15. The version
+// before counted the lines that start with timeout-minutes against the lines
+// that look like a job, and a step's own ceiling counts as one of those lines:
+// ci.yml has one, so a job that lost its ceiling still left as many ceilings as
+// jobs, and the mutation run scored it a HOLE. It also read ci.yml alone, and
+// the workflows written since had no guard at all.
 func TestEveryCIJobHasACeilingOnItsTime(t *testing.T) {
-	raw, err := os.ReadFile(filepath.Join("..", "..", ".github", "workflows", "ci.yml"))
-	if err != nil {
-		t.Skipf("the workflow is not here: %v", err)
+	files, err := filepath.Glob(filepath.Join("..", "..", ".github", "workflows", "*.yml"))
+	if err != nil || len(files) == 0 {
+		t.Skipf("the workflows are not here: %v", err)
 	}
-	text := string(raw)
 
-	// Counted rather than listed, so a job added later is covered without
-	// anybody remembering to come back here.
-	//
-	// Only the keys under "jobs:", which is the correction the first version of
-	// this needed: every key two spaces in also matched the triggers under
-	// "on:", so it demanded four ceilings that have nothing to run.
-	jobs, ceilings := 0, 0
-	inJobs := false
-	for _, line := range strings.Split(text, "\n") {
-		if strings.HasPrefix(line, "jobs:") {
-			inJobs = true
+	jobs := 0
+	for _, path := range files {
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("reading %s: %v", path, err)
+		}
+		var workflow struct {
+			Jobs map[string]map[string]any `yaml:"jobs"`
+		}
+		if err := yaml.Unmarshal(raw, &workflow); err != nil {
+			t.Errorf("%s does not read as YAML: %v", filepath.Base(path), err)
 			continue
 		}
-		// Leaving the block takes a top level key, not merely a line starting
-		// in column one. A shell string inside a "run:" step can carry those,
-		// and one did: the dependency gate listed its expected modules that
-		// way, this scan called the jobs block finished at the first of them,
-		// and from then on it counted one job instead of seven. Seven ceilings
-		// against one job is not fewer, so the guard was green whatever it was
-		// given - found by mutation on 2026-08-04, not by reading.
-		if inJobs && len(line) > 0 && !strings.HasPrefix(line, " ") && topLevelKey.MatchString(line) {
-			inJobs = false
-		}
-		trimmed := strings.TrimSpace(line)
-		// Commented out does not count, and that was mutation's correction:
-		// counting the text anywhere in the file left a commented ceiling
-		// counting as a real one, so the guard stayed green on a job that had
-		// lost its own.
-		if strings.HasPrefix(trimmed, "#") {
-			continue
-		}
-		if strings.HasPrefix(trimmed, "timeout-minutes:") {
-			ceilings++
-		}
-		if inJobs && strings.HasPrefix(line, "  ") && !strings.HasPrefix(line, "   ") &&
-			strings.HasSuffix(trimmed, ":") {
+		for name, job := range workflow.Jobs {
 			jobs++
+			if _, has := job["timeout-minutes"]; !has {
+				t.Errorf("%s: the job %s has no timeout-minutes of its own, so it holds a runner for six hours when it hangs.\n"+
+					"A step's timeout-minutes does not count - it ends that step, and the job waits on whatever comes next.",
+					filepath.Base(path), name)
+			}
 		}
 	}
 	if jobs == 0 {
-		t.Fatal("no job was found, so this guard would pass without checking anything")
-	}
-	if ceilings < jobs {
-		t.Errorf("%d job(s) and %d ceiling(s) - a job with no timeout-minutes holds a runner for six hours when it hangs", jobs, ceilings)
+		t.Fatal("no job was found in any workflow, so this guard would pass without checking anything")
 	}
 }
 

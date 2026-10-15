@@ -176,6 +176,15 @@ func TestTwoSectionsAreTheSameDistanceApartOnEveryScreen(t *testing.T) {
 // sections 7 px apart were uniform on the generate screen and still wrong,
 // because a boundary drawn more weakly than the padding inside a panel groups
 // the wrong things.
+//
+// The gap inside a section is the room between two FIELDS, each the whole of
+// what the grid places - its name, its box and the line kept under the box for
+// a refusal. Until 2026-10-15 this measured from the format box to the name of
+// the size, which stand side by side since the grid of 2026-09-23: -55 px, so
+// every section gap was wider than it and the guard was green whatever the
+// sections were given. Found by the mutation run, which drew the sections 16 px
+// apart and saw nothing. Measured that day: 24 px between two sections, 15.9
+// between the format and the batch name under it.
 func TestTheGapBetweenSectionsIsWiderThanTheGapBetweenFields(t *testing.T) {
 	ourTheme(t)
 	content, _ := laidOutWindow(t)
@@ -185,13 +194,52 @@ func TestTheGapBetweenSectionsIsWiderThanTheGapBetweenFields(t *testing.T) {
 	if len(gaps) == 0 {
 		t.Fatal("the generate screen shows fewer than two sections, so there is no gap to measure")
 	}
-	between := gapBelowField(t, generate, text.FieldFormat(), text.FieldSize())
+	upper, lower := fieldCell(t, generate, text.FieldFormat()), fieldCell(t, generate, text.FieldTargetID())
+	between := lower.Y - (upper.Y + upper.Height)
+	// In the state this is about, or it proves nothing: the two fields one
+	// under the other in one column, with room between them.
+	if off := lower.X - upper.X; off > 1 || off < -1 || between <= 0 {
+		t.Fatalf("the format field (x=%.1f, ends at y=%.1f) and the batch name (x=%.1f, starts at y=%.1f) do not stand "+
+			"one under the other, so there is no gap between two fields to compare with", upper.X, upper.Y+upper.Height, lower.X, lower.Y)
+	}
 	for _, gap := range gaps {
-		if gap <= between {
+		// By more than a pixel, because a layout lands on fractions and two
+		// gaps drawn from one token can differ by one.
+		if gap <= between+1 {
 			t.Errorf("two sections are %.1f px apart and two fields inside one are %.1f px apart."+
 				" A section boundary has to be the wider of the two or it groups nothing", gap, between)
 		}
 	}
+}
+
+// fieldCell is the whole of one field as the grid placed it: the outermost
+// thing in the field's column that holds both its name and its box.
+func fieldCell(t *testing.T, screen fyne.CanvasObject, label string) band {
+	t.Helper()
+	name, box := nameAndBox(t, screen, label)
+	var cell band
+	atAbsolute(screen, func(o fyne.CanvasObject, at fyne.Position) {
+		if _, is := o.(*fyne.Container); !is {
+			return
+		}
+		size := o.Size()
+		if off := size.Width - box.Width; off > 1 || off < -1 {
+			return
+		}
+		if at.X > box.X+1 || at.X+size.Width < box.X+box.Width-1 {
+			return
+		}
+		if at.Y > name.Y || at.Y+size.Height < box.Y+box.Height {
+			return
+		}
+		if size.Height > cell.Height {
+			cell = band{X: at.X, Y: at.Y, Width: size.Width, Height: size.Height}
+		}
+	})
+	if cell.Height == 0 {
+		t.Fatalf("nothing as wide as the box of %q holds its name and its box", label)
+	}
+	return cell
 }
 
 // tabContent is one screen of the window, laid out, by the name on its tab.
