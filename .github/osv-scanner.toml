@@ -1,0 +1,27 @@
+# Exceptions for the OSV scan of the files in this directory. OSV-Scanner reads
+# this file for the lockfiles beside it and for no other directory. One advisory
+# per entry, and every entry has a date it stops working on.
+#
+# The rule is to raise what can be raised - pull request #181 fixed thirty
+# findings rather than listing them here. An entry belongs here only when no
+# version anybody can install has the fix.
+
+# mcp 1.29.0, in requirements-semgrep.txt for the scanner and nothing else.
+#
+# Every semgrep release, 1.181.0 of 2026-10-14 included, asks for mcp==1.29.0
+# exactly, so no set pip can install holds the fixed 1.30.0. Dependabot's own
+# security update said the same on 2026-10-15: latest resolvable 1.29.0, lowest
+# fixed 1.30.0.
+#
+# The advisory is about an MCP server over Streamable HTTP keeping its sessions
+# without bound. The job runs `semgrep scan` and nothing else, which starts no
+# server and listens nowhere, on a runner that lives for one scan.
+#
+# When semgrep moves to a fixed mcp, Dependabot brings that release as a pull
+# request against requirements-semgrep.in, and this entry has nothing left to
+# hide - remove it then. If that has not happened by the date below, the weekly
+# scan goes red again, which is the reminder.
+[[IgnoredVulns]]
+id = "GHSA-84m7-p3x7-pcfv"
+ignoreUntil = 2026-11-15
+reason = "semgrep pins mcp==1.29.0 in every release, and the advisory is about an MCP HTTP server, which semgrep scan never starts"
