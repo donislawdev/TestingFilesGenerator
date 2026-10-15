@@ -24,9 +24,15 @@ set -euo pipefail
 file="${1:-.github/osv-scanner-digest}"
 repository="ghcr.io/google/osv-scanner-action"
 
-expected=$(tr -d '[:space:]' 2>/dev/null < "$file" || true)
-if ! [[ "$expected" =~ ^sha256:[0-9a-f]{64}$ ]]; then
-  echo "::error::$file does not hold one sha256 digest, so there is nothing to compare the scanner image with."
+# One digest and nothing else, white space allowed around it and none inside
+# it - the shape TestTheScannerImageIsCheckedBeforeItRuns asks of the file.
+# Taking every space out first, as this once did, joined a digest split in two
+# into one that passed (review of #187).
+raw=$(cat -- "$file" 2>/dev/null || true)
+if [[ "$raw" =~ ^[[:space:]]*(sha256:[0-9a-f]{64})[[:space:]]*$ ]]; then
+  expected="${BASH_REMATCH[1]}"
+else
+  echo "::error::$file does not hold one sha256 digest, so there is nothing to compare the scanner image with. Write one line to it: sha256: and the 64 lowercase hexadecimal characters of the image the OSV actions run, which the Set up job section of a run prints after Digest."
   exit 1
 fi
 

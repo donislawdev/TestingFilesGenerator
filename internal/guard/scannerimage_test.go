@@ -1,8 +1,11 @@
 package guard
 
 import (
+	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -23,16 +26,10 @@ import (
 // from the base, and the Dependabot pull request that writes a new one would
 // be held to the old one for as long as it stayed open.
 //
-// What this does NOT check, and it is checked another way. That the script
-// behaves, and that the runner still pulls the image before the first step.
-// The script needs Docker and the image, which a Go test on any of the three
-// systems does not have, and running bash from a test here starts a different
-// bash than a lookup finds (releasenote_test.go). It was run by hand on the
-// same image, four ways (docs/OSV-2-2026-10-15.md): the recorded digest passes,
-// a digest one character off fails and prints the one pulled, a file of the
-// wrong shape fails, and no image at all fails rather than passing. Whether
-// the runner pulls first is read from the log of a run, and the script fails
-// if it stops doing so.
+// That the script behaves is the next test's question, asked of the script
+// itself with a docker that answers from files. What neither checks is that
+// the runner still pulls the image before the first step - that is read from
+// the log of a run, and the script fails if it stops doing so.
 
 const (
 	scannerDigestFile  = "osv-scanner-digest"
@@ -46,9 +43,12 @@ const (
 func TestTheScannerImageIsCheckedBeforeItRuns(t *testing.T) {
 	root := repoRoot(t)
 	dir := filepath.Join(root, ".github", "workflows")
+	// Failed rather than skipped: the workflows are part of this repository,
+	// and a skip here would pass the day they moved and the check went with
+	// them (review of #187).
 	entries, err := os.ReadDir(dir)
 	if err != nil {
-		t.Skipf("the workflows are not here: %v", err)
+		t.Fatalf("the workflows are not in %s, so nothing here can say whether the scanner image is checked: %v", dir, err)
 	}
 
 	recorded, err := os.ReadFile(filepath.Join(root, ".github", scannerDigestFile))
@@ -233,4 +233,155 @@ func (j workflowJob) stepBody(at int) []string {
 		body = append(body, line)
 	}
 	return body
+}
+
+// scannerDockerStub answers the two questions osv_scanner_image.sh asks docker,
+// from files in $SCANNER_STUB: "ids" is what image ls lists, "digests-<id>" is
+// what image inspect prints for an id, and "fails" makes every call fail the
+// way docker does with no daemon. Anything else it is asked is an error, so a
+// script that started asking something new would not pass by accident.
+const scannerDockerStub = `#!/bin/sh
+if [ -f "$SCANNER_STUB/fails" ]; then
+  echo "Cannot connect to the Docker daemon" >&2
+  exit 1
+fi
+case "$1 $2" in
+"image ls") cat "$SCANNER_STUB/ids" 2>/dev/null; exit 0 ;;
+"image inspect") for last; do :; done; cat "$SCANNER_STUB/digests-$last" 2>/dev/null; exit 0 ;;
+esac
+echo "docker stub: not a question this stub answers: $*" >&2
+exit 2
+`
+
+// scannerScriptCase is one runner the script is put in front of.
+type scannerScriptCase struct {
+	name    string
+	digest  *string           // the digest file, or nil for none at all
+	ids     []string          // the images of the scanner on the runner
+	pulled  map[string]string // the digest each id was pulled as
+	noDock  bool              // docker cannot be asked at all
+	passes  bool
+	because string // a piece of the output that says why
+}
+
+// TestTheScannerImageScriptRefusesEveryImageButTheRecordedOne runs
+// .github/scripts/osv_scanner_image.sh itself, with a docker in front of the
+// real one that answers from files.
+//
+// What it defends. The check before every OSV scan is this script, and the
+// guard above only asks whether it is called. A script reduced to "exit 0"
+// passed every test there was (review of #187). Each case here is a runner the
+// script has to refuse, or the one it has to let through, and each asserts the
+// reason it gives as well as its exit code, so a refusal for the wrong reason -
+// a docker that was never found, a file that was never read - does not count.
+//
+// The image ids are the stub's own, img1 and img2, and the recorded image has
+// to be named by id in the output. A run that reached the real docker instead
+// could not print them, so the test knows it is talking to the stub.
+//
+// On Windows the bash a lookup finds has to be Git's (uname says Msys). Bare
+// names on this machine have started WSL instead (docs/ENVIRONMENT.md), and a
+// Linux bash would answer a question about a different system - the test says
+// so and stops there rather than reporting about the wrong one.
+func TestTheScannerImageScriptRefusesEveryImageButTheRecordedOne(t *testing.T) {
+	bash := scannerTestBash(t)
+	script := filepath.ToSlash(filepath.Join(repoRoot(t), ".github", "scripts", scannerImageScript))
+	if _, err := os.Stat(script); err != nil {
+		t.Fatalf("%s is missing, so the step that calls it fails before every scan: %v", scannerImageScript, err)
+	}
+
+	const repository = "ghcr.io/google/osv-scanner-action@"
+	hex := strings.Repeat("71ad04ab", 8)
+	other := "sha256:" + strings.Repeat("d54770fe", 8)
+	recorded := "sha256:" + hex
+	text := func(s string) *string { return &s }
+
+	for _, c := range []scannerScriptCase{
+		{name: "the recorded image", digest: text(recorded + "\n"), ids: []string{"img1"},
+			pulled: map[string]string{"img1": repository + recorded}, passes: true, because: "img1 is " + repository + recorded},
+		{name: "white space around the digest", digest: text("  " + recorded + "\n\n"), ids: []string{"img1"},
+			pulled: map[string]string{"img1": repository + recorded}, passes: true, because: "img1 is " + repository + recorded},
+		{name: "another image behind the tag", digest: text(recorded), ids: []string{"img1"},
+			pulled: map[string]string{"img1": repository + other}, because: other},
+		{name: "two images, one of them another", digest: text(recorded), ids: []string{"img1", "img2"},
+			pulled: map[string]string{"img1": repository + recorded, "img2": repository + other}, because: "img2 is not the one recorded"},
+		{name: "no image on the runner", digest: text(recorded), because: "No image of"},
+		{name: "a digest split in two", digest: text("sha256:" + hex[:32] + " " + hex[32:] + "\n"), ids: []string{"img1"},
+			pulled: map[string]string{"img1": repository + recorded}, because: "does not hold one sha256 digest"},
+		{name: "two digests", digest: text(recorded + "\n" + recorded + "\n"), ids: []string{"img1"},
+			pulled: map[string]string{"img1": repository + recorded}, because: "does not hold one sha256 digest"},
+		{name: "a tag", digest: text("v2.6.0\n"), ids: []string{"img1"},
+			pulled: map[string]string{"img1": repository + recorded}, because: "does not hold one sha256 digest"},
+		{name: "no digest file", ids: []string{"img1"},
+			pulled: map[string]string{"img1": repository + recorded}, because: "does not hold one sha256 digest"},
+		{name: "docker cannot be asked", digest: text(recorded), noDock: true, because: "Cannot connect to the Docker daemon"},
+	} {
+		out, passed := runScannerScript(t, bash, script, c)
+		if passed != c.passes || !strings.Contains(out, c.because) {
+			t.Errorf("%s: the script %s, and it should %s, saying %q. It printed:\n%s",
+				c.name, verdictOf(passed), verdictOf(c.passes), c.because, out)
+		}
+	}
+}
+
+// verdictOf names an exit.
+func verdictOf(passed bool) string {
+	if passed {
+		return "let the scan run"
+	}
+	return "stopped the scan"
+}
+
+// runScannerScript puts the script in front of one runner and reports what it
+// printed and whether it exited 0.
+func runScannerScript(t *testing.T, bash, script string, c scannerScriptCase) (string, bool) {
+	t.Helper()
+	stub := t.TempDir()
+	write := func(name, body string, mode os.FileMode) {
+		if err := os.WriteFile(filepath.Join(stub, name), []byte(body), mode); err != nil {
+			t.Fatalf("writing the stub's %s: %v", name, err)
+		}
+	}
+	write("docker", scannerDockerStub, 0o755)
+	write("ids", strings.Join(c.ids, "\n"), 0o644)
+	for id, digest := range c.pulled {
+		write("digests-"+id, digest+"\n", 0o644)
+	}
+	if c.noDock {
+		write("fails", "", 0o644)
+	}
+	digestFile := filepath.Join(stub, "recorded-digest")
+	if c.digest != nil {
+		write("recorded-digest", *c.digest, 0o644)
+	}
+
+	cmd := exec.Command(bash, script, filepath.ToSlash(digestFile))
+	cmd.Env = append(os.Environ(),
+		"PATH="+stub+string(os.PathListSeparator)+os.Getenv("PATH"),
+		"SCANNER_STUB="+filepath.ToSlash(stub))
+	out, err := cmd.CombinedOutput()
+	var exit *exec.ExitError
+	if err != nil && !errors.As(err, &exit) {
+		t.Fatalf("%s: bash did not run the script: %v", c.name, err)
+	}
+	return string(out), err == nil
+}
+
+// scannerTestBash is the bash the script runs under on this machine, or a
+// skip that says why there is none to trust.
+func scannerTestBash(t *testing.T) string {
+	t.Helper()
+	bash, err := exec.LookPath("bash")
+	if err != nil {
+		t.Skipf("no bash on this machine, so the script cannot be run here: %v. The Linux and macOS jobs run it.", err)
+	}
+	if runtime.GOOS != "windows" {
+		return bash
+	}
+	out, err := exec.Command(bash, "-c", "uname -o").Output()
+	if system := strings.TrimSpace(string(out)); err != nil || system != "Msys" {
+		t.Skipf("the bash found first is %s, which says it runs on %q rather than Msys, so it would answer "+
+			"for another system (docs/ENVIRONMENT.md). The Linux and macOS jobs run the script.", bash, system)
+	}
+	return bash
 }
