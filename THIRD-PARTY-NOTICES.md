@@ -286,7 +286,7 @@ is the module's own MIT, carried unchanged.
 | `github.com/yuin/goldmark` | v1.8.2 | MIT | (c) 2019 Yusuke Inuzuka |
 | `golang.org/x/image` | v0.46.0 | BSD-3-Clause | 2009 The Go Authors. |
 | `golang.org/x/net` | v0.60.0 | BSD-3-Clause | 2009 The Go Authors. |
-| `golang.org/x/sys` | v0.48.0 | BSD-3-Clause | 2009 The Go Authors. |
+| `golang.org/x/sys` | v0.49.0 | BSD-3-Clause | 2009 The Go Authors. |
 
 The five licence texts follow, one copy each. They differ only in the copyright
 line, which is in the table above for every module.
