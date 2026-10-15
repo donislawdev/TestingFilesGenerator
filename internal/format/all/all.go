@@ -26,6 +26,7 @@ import (
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/pdf"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/png"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/pptx"
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/rtf"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/svgfile"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/targz"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/tiff"

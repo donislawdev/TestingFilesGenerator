@@ -101,7 +101,11 @@ func TestEjectingAPresetGivesTheBytesItAlwaysGave(t *testing.T) {
 		// day to change bytes: the smallest html page went from 118 B to 122 B
 		// when its empty title became Page (O277, docs/HTML-6-2026-10-15.md).
 		// The recipe keeps its length, only the number in it moves.
-		{id: "empty-and-minimal", args: preset.Args{}, bytes: 10190, sum: "10a8d738e3c73b995e94e546256807a00c24cad1d01e4372a623618eb35afb44"},
+		// Moved an eighth time on 2026-10-15, under the decision of 2026-10-06:
+		// rtf is a format more, so the set has its smallest document, 65 B - one
+		// target, minimal_rtf, and nothing else in the recipe moves
+		// (docs/RTF-2026-10-15.md).
+		{id: "empty-and-minimal", args: preset.Args{}, bytes: 10497, sum: "0853827d3b55354dbe34c80025e0f298731522704218ce09801dda90f8e04034"},
 		{id: "empty-and-minimal", args: preset.Args{"formats": "jpg,png,txt"}, bytes: 1472, sum: "19b12800372395ad3bf5cba6407ca654d7ed51eba3a5bc5436f76a94bc09253c"},
 		// The preset of unusual file names, measured 2026-09-25 on its first
 		// build: the default, and a format whose extension is a byte longer,

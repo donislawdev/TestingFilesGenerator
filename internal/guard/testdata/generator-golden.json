@@ -560,6 +560,51 @@
       "bytes": 8192,
       "sha256": "5b4918a133ccb3708018ca9bc9c2e8882340d1073f408ae91a7c2ba164f2b528",
       "measured_on": "2026-10-15"
+    },
+    "rtf_8kib": {
+      "bytes": 8192,
+      "sha256": "65bdb29a90bba1c17cb8e337f98aa51bc789a607412b61c86f94ca595c830902",
+      "measured_on": "2026-10-15"
+    },
+    "rtf_8kib_unicode": {
+      "bytes": 8192,
+      "sha256": "472362d7ffd16045e7322f218dcd2d25d4f2e182b754f53974ef807e26a5b4bd",
+      "measured_on": "2026-10-15"
+    },
+    "rtf_8kib_both": {
+      "bytes": 8192,
+      "sha256": "6f8372d5dfbfe4a9864d48a35f3ec55442359f9989ad10cbb51699812e8f75a2",
+      "measured_on": "2026-10-15"
+    },
+    "rtf_8kib_codepage": {
+      "bytes": 8192,
+      "sha256": "445da631bd16790527c509f770b0c0a4d278f7cebf7c2656800477113bd5021e",
+      "measured_on": "2026-10-15"
+    },
+    "rtf_8kib_literal": {
+      "bytes": 8192,
+      "sha256": "80ccd723dd1306fffee140349be4e702475c72a220b4293264228f515c318e9e",
+      "measured_on": "2026-10-15"
+    },
+    "rtf_16kib_every": {
+      "bytes": 16384,
+      "sha256": "8aca70153633a5828b349a1af14359b79cc18f55ba4b1a93f1e8bcae48c67747",
+      "measured_on": "2026-10-15"
+    },
+    "rtf_8kib_nested": {
+      "bytes": 8192,
+      "sha256": "85c22389d3a64fb1d5ae02255e56d2f0effded912fc8497e82f0e17214f37488",
+      "measured_on": "2026-10-15"
+    },
+    "rtf_odd_clean": {
+      "bytes": 8193,
+      "sha256": "686ea1e1ce69c3403a93a5b4771229989bb904c91841d934a4af40c71d44234e",
+      "measured_on": "2026-10-15"
+    },
+    "rtf_32kib_everything": {
+      "bytes": 32768,
+      "sha256": "6451c067b5a67e9a8707228d3782aa0a9abca538cfa5bd0be4ece2dbf26a9c5d",
+      "measured_on": "2026-10-15"
     }
   },
   "remeasured": [

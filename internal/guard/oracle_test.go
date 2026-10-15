@@ -186,6 +186,11 @@ var structurallyChecked = map[string]bool{
 	// and only this layer knows where each name was ordered to be written
 	// (docs/EML-2026-10-07.md section 5.1).
 	"eml": true,
+	// Since 2026-10-15, from its first day: five readers took eleven of twelve
+	// broken documents, a control word of 40 letters and text after the last
+	// brace among them, and only this layer knows which fallback each letter
+	// was ordered to carry (docs/RTF-2026-10-15.md section 6.1).
+	"rtf": true,
 }
 
 func TestTheStructuralCheckerCoversEveryFormatItShould(t *testing.T) {

@@ -354,6 +354,9 @@ var checkers = map[string]Checker{
 
 	// Python's email package. See mailscripts.go.
 	"python-email": pythonEmail,
+
+	// pandoc's RTF reader. See rtfscripts.go.
+	"pandoc-rtf": pandocRTF,
 }
 
 // DecodedFrames is how many frames the libaom oracle decoded, read from what
@@ -565,7 +568,12 @@ func StrictKnows(formatID string) bool {
 		// The second, from the day it arrived (2026-10-07). The sample tables
 		// say how long every sample is, and only reading them against the
 		// media data says the tables and the samples agree.
-		"mp4":
+		//
+		// And rtf, from its first day, for the reason mail gave: five readers
+		// took eleven of twelve broken documents (docs/RTF-2026-10-15.md
+		// section 6.1 f), and none of them says whether a fallback agrees
+		// with the count before it.
+		"mp4", "rtf":
 		return true
 	}
 	return false

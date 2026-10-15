@@ -18,6 +18,7 @@ Prints "OK <detail>" or "FAIL <reason>".
 import re
 import struct
 import sys
+import unicodedata
 import zlib
 from html.parser import HTMLParser
 
@@ -3537,6 +3538,360 @@ def eml_quoted(value, encoded):
     return b"".join(base64.b64decode(w) for w in words).decode("utf-8")
 
 
+# RTF, written against the specification (RTF 1.6, read 2026-10-15) and the
+# measurement in docs/RTF-2026-10-15.md section 6.1. Five readers took eleven of
+# twelve broken files, so this is the layer that refuses them.
+
+RTF_BS = chr(92)
+# The code page each \fcharset the generator declares stands for.
+RTF_CHARSETS = {0: "cp1252", 238: "cp1250", 204: "cp1251", 128: "cp932", 178: "cp1256"}
+RTF_NAMED = {"emdash": chr(0x2014), "endash": chr(0x2013), "lquote": chr(0x2018), "rquote": chr(0x2019),
+             "ldblquote": chr(0x201C), "rdblquote": chr(0x201D), "bullet": chr(0x2022), "tab": "\t",
+             "line": "\n"}
+# The sentences characters=international adds, built from their code points
+# here rather than taken from the generator.
+RTF_ARABIC = "".join(chr(c) for c in (0x647, 0x630, 0x627, 0x20, 0x646, 0x635, 0x20, 0x628, 0x627, 0x644,
+                                      0x644, 0x63A, 0x629, 0x20, 0x627, 0x644, 0x639, 0x631, 0x628, 0x64A,
+                                      0x629, 0x2E))
+RTF_SCRIPTS = [
+    "Za" + chr(0x17C) + chr(0xF3) + chr(0x142) + chr(0x107) + " g" + chr(0x119) + chr(0x15B) + "l" + chr(0x105) +
+    " ja" + chr(0x17A) + chr(0x144) + ".",
+    "".join(chr(c) for c in (0x42D, 0x442, 0x43E)) + " " + "".join(chr(c) for c in (0x442, 0x435, 0x43A, 0x441, 0x442)) +
+    " " + chr(0x43D) + chr(0x430) + " " + "".join(chr(c) for c in (0x440, 0x443, 0x441, 0x441, 0x43A, 0x43E, 0x43C)) +
+    " " + "".join(chr(c) for c in (0x44F, 0x437, 0x44B, 0x43A, 0x435)) + ".",
+    "".join(chr(c) for c in (0x3053, 0x308C, 0x306F, 0x65E5, 0x672C, 0x8A9E, 0x306E, 0x30C6, 0x30AD, 0x30B9,
+                             0x30C8, 0x3067, 0x3059, 0x3002)),
+    RTF_ARABIC,
+    "Emoji " + chr(0x1F600) + " and a sequence " + chr(0x1F469) + chr(0x200D) + chr(0x1F4BB) +
+    ", a letter in two code points e" + chr(0x301) + ", the characters RTF escapes " + RTF_BS + " { }" +
+    " and the ones it names " + chr(0x2014) + " " + chr(0x2013) + " " + chr(0x2018) + "q" + chr(0x2019) +
+    " " + chr(0x201C) + "qq" + chr(0x201D) + " " + chr(0x2022) + ", a space that does not break" + chr(0xA0) +
+    "and the euro " + chr(0x20AC) + ".",
+]
+# Every control word the generator writes, by what asks for it. A word outside
+# these is a typo a tolerant reader would skip in silence.
+RTF_WORDS = {"rtf", "ansi", "ansicpg", "deff", "uc", "fonttbl", "f", "fswiss", "par", "pard",
+             "outlinelevel", "b", "i", "fs", "li", "fi", "pntext", "bullet", "tab", "pn", "pnlvlblt",
+             "pnindent", "pntxtb", "trowd", "cellx", "intbl", "cell", "row"}
+RTF_WORDS_INTERNATIONAL = {"fcharset", "fmodern", "rtlpar", "rtlch", "u", "emdash", "endash", "lquote",
+                           "rquote", "ldblquote", "rdblquote"}
+RTF_WORDS_EVERY = {"info", "title", "author", "keywords", "doccomm", "header", "footer", "super", "chftn",
+                   "footnote", "plain", "atnid", "atnauthor", "chatn", "annotation", "v", "field", "fldinst",
+                   "fldrslt", "bkmkstart", "bkmkend", "tfgunknown", "tfgword", "line", "page", "sect", "sectd"}
+RTF_EVERY_PIECES = ["{" + RTF_BS + "info{" + RTF_BS + "title ", "{" + RTF_BS + "header" + RTF_BS + "pard ",
+                    "{" + RTF_BS + "footer" + RTF_BS + "pard ", "{" + RTF_BS + "footnote" + RTF_BS + "pard",
+                    RTF_BS + "*" + RTF_BS + "annotation", "{" + RTF_BS + "v ",
+                    RTF_BS + "fldinst HYPERLINK \"https://example.com/", RTF_BS + "*" + RTF_BS + "bkmkstart ",
+                    "{" + RTF_BS + "*" + RTF_BS + "tfgunknown ", "{" + RTF_BS + "tfgword ",
+                    RTF_BS + "line ", RTF_BS + "page", RTF_BS + "sect" + RTF_BS + "sectd"]
+
+
+def rtf_tokens(text):
+    """The tokens of the document, in order: ("{",), ("}",), ("word", name,
+    parameter or None), ("hex", byte), ("sym", character), ("text", character)
+    and ("eol", character). A word longer than the 32 letters the
+    specification allows, a parameter outside a signed 16 bit number and a
+    \\' without two hex digits end the check."""
+    i, n = 0, len(text)
+    while i < n:
+        c = text[i]
+        if c in "{}":
+            yield (c,)
+            i += 1
+        elif c in "\r\n":
+            yield ("eol", c)
+            i += 1
+        elif c != RTF_BS:
+            yield ("text", c)
+            i += 1
+        else:
+            i = yield from rtf_control(text, i + 1)
+
+
+def rtf_control(text, i):
+    """One control word or control symbol after its backslash, and where the
+    next token starts."""
+    m = re.match(r"([a-z]+)(-?[0-9]+)? ?", text[i:i + 64])
+    if m:
+        name = m.group(1)
+        if len(name) > 32:
+            fail(f"a control word of {len(name)} letters, past the 32 the specification allows: {name[:40]}")
+        param = int(m.group(2)) if m.group(2) is not None else None
+        if param is not None and not -32768 <= param <= 32767:
+            fail(f"\\{name} carries {param}, outside a signed 16 bit number")
+        yield ("word", name, param)
+        return i + m.end()
+    if text[i:i + 1] == "'":
+        h = text[i + 1:i + 3]
+        if not re.fullmatch(r"[0-9a-f]{2}", h):
+            fail(f"\\' is followed by {h!r} rather than two lower case hex digits")
+        yield ("hex", int(h, 16))
+        return i + 3
+    if i >= len(text):
+        fail("the document ends with a backslash, which escapes nothing")
+    yield ("sym", text[i])
+    return i + 1
+
+
+class RtfState:
+    """What the reader has to remember per group: the font, the count of
+    fallback characters after a \\u, and whether the group is a destination
+    whose text is not the body."""
+
+    def __init__(self, font=0, uc=1, hidden=False):
+        self.font, self.uc, self.hidden = font, uc, hidden
+
+    def copy(self):
+        return RtfState(self.font, self.uc, self.hidden)
+
+
+def rtf_fonts(data):
+    """The fonts the table declares, number to code page.
+
+    Read entry by entry rather than with one expression for the whole table:
+    a repeated group of entries whose inside can also match a semicolon backs
+    off exponentially on a long table that never closes (CodeQL py/redos on
+    the first version, review of #191). Every entry is one group with no
+    group inside it, so the table ends at the first two closing braces."""
+    start = data.find("{" + RTF_BS + "fonttbl{")
+    end = data.find("}}", start)
+    if start < 0 or end < 0:
+        fail("no font table, which the header of every document has to carry")
+    fonts = {}
+    for entry in data[start + len("{" + RTF_BS + "fonttbl"):end + 1].split("}")[:-1]:
+        m = re.fullmatch(r"\{\\f([0-9]+)([^{};]*);", entry)
+        if not m:
+            fail(f"a font table entry the generator never writes: {entry[:60]!r}")
+        num, rest = m.group(1), m.group(2)
+        cs = re.search(r"\\fcharset([0-9]+)", rest)
+        fonts[int(num)] = RTF_CHARSETS.get(int(cs.group(1)) if cs else 0)
+        if fonts[int(num)] is None:
+            fail(f"font {num} declares a character set this check does not know: {rest!r}")
+    return fonts
+
+
+def rtf_read(data, settings):
+    """Walk the document once: the groups balance and close at the last byte,
+    every word is one the settings ask for, every \\u is followed by the
+    fallback text_encoding says, and no line end joins two words. Returns the
+    body paragraphs as text and the deepest group."""
+    allowed = set(RTF_WORDS)
+    if settings.get("characters") == "international":
+        allowed |= RTF_WORDS_INTERNATIONAL
+    if settings.get("elements") == "every":
+        allowed |= RTF_WORDS_EVERY
+    fonts = rtf_fonts(data)
+    toks = list(rtf_tokens(data))
+    stack, state, depth, deepest = [], RtfState(), 0, 0
+    paras, cur, pending = [], [], []
+    last, eol = None, False
+    k = 0
+    while k < len(toks):
+        t = toks[k]
+        k += 1
+        if t[0] == "{":
+            stack.append(state.copy())
+            depth += 1
+            deepest = max(deepest, depth)
+            if k < len(toks) and toks[k] == ("sym", "*"):
+                state.hidden = True
+        elif t[0] == "}":
+            if depth == 0:
+                fail("a closing brace with no group open")
+            rtf_flush(pending, fonts, state, cur)
+            state = stack.pop()
+            depth -= 1
+            if depth == 0 and k != len(toks):
+                fail(f"{len(toks) - k} token(s) after the brace that closes the document")
+        elif t[0] == "eol":
+            eol = True
+            continue
+        elif t[0] == "word":
+            rtf_flush(pending, fonts, state, cur)
+            name, param = t[1], t[2]
+            if name not in allowed:
+                fail(f"\\{name}, which these settings never write")
+            if name in ("fonttbl", "info", "header", "footer", "footnote", "pntext", "pn", "fldinst", "atnid",
+                        "atnauthor", "v"):
+                state.hidden = True
+            elif name == "f":
+                if param not in fonts:
+                    fail(f"\\f{param} names a font the table does not declare")
+                state.font = param
+            elif name == "uc":
+                state.uc = param
+            elif name == "u":
+                k = rtf_fallback(toks, k, param, fonts, state, settings, cur)
+            elif name == "par" and not state.hidden:
+                paras.append("".join(cur))
+                cur.clear()
+            elif name in RTF_NAMED and not state.hidden:
+                cur.append(RTF_NAMED[name])
+        elif t[0] == "hex":
+            # Only codepage writes a letter as its bytes alone. The other three
+            # write a byte only as the fallback after a number, which the \u
+            # branch has already taken.
+            if settings.get("text_encoding", "unicode") != "codepage":
+                fail(f"a code page byte {t[1]:#04x} outside the fallback of a \\u, which {settings.get('text_encoding', 'unicode')} never writes")
+            pending.append(t[1])
+        else:
+            if eol and last is not None and last[0] == "text" and last[1] != " " and t[0] == "text":
+                fail(f"a line end between {last[1]!r} and {t[1]!r}, which joins two words in every reader")
+            rtf_flush(pending, fonts, state, cur)
+            if not state.hidden:
+                cur.append(chr(0xA0) if t == ("sym", "~") else t[1])
+        last, eol = t, False
+    if depth != 0:
+        fail(f"{depth} group(s) still open at the end of the document - five readers measured, three refuse it")
+    paras.append("".join(cur))
+    return paras, deepest
+
+
+def rtf_flush(pending, fonts, state, cur):
+    """Decode the code page bytes gathered so far in the font's code page."""
+    if not pending:
+        return
+    raw = bytes(pending)
+    pending.clear()
+    try:
+        s = raw.decode(fonts[state.font])
+    except UnicodeDecodeError:
+        fail(f"the bytes {raw.hex()} are not text in {fonts[state.font]}, the code page of font {state.font}")
+    if not state.hidden:
+        cur.append(s)
+
+
+def rtf_fallback(toks, k, unit, fonts, state, settings, cur):
+    """A \\u and the uc characters after it: what they have to be under the
+    text_encoding the file was ordered in. Returns where the next token is."""
+    unit = unit + 65536 if unit < 0 else unit
+    back = toks[k:k + state.uc]
+    if len(back) < state.uc or any(b[0] not in ("hex", "text") for b in back):
+        fail(f"\\u{unit} is followed by {back} rather than {state.uc} fallback character(s)")
+    k += state.uc
+    enc = settings.get("text_encoding", "unicode")
+    if 0xD800 <= unit < 0xDC00:
+        nxt = toks[k] if k < len(toks) else None
+        if nxt is None or nxt[0] != "word" or nxt[1] != "u" or not 0xDC00 <= (nxt[2] + 65536 if nxt[2] < 0 else nxt[2]) < 0xE000:
+            fail(f"the first half of a surrogate pair, {unit:#06x}, is not followed by the second")
+    if enc == "literal":
+        if back != [("text", "?")]:
+            fail(f"literal writes a question mark after \\u{unit}, and found {back}")
+    elif enc == "unicode" or 0xD800 <= unit < 0xE000:
+        if back != [("hex", 0x3F)]:
+            fail(f"{enc} writes \\'3f after \\u{unit}, and found {back}")
+    else:
+        rtf_page_fallback(unit, back, fonts[state.font], enc)
+    if state.hidden:
+        return k
+    # The second half of a pair joins the first into the code point the two
+    # stand for. Kept apart they compare unequal to the emoji, which is the
+    # mistake striprtf makes (section 6.1 c).
+    if 0xDC00 <= unit < 0xE000 and cur and 0xD800 <= ord(cur[-1][-1]) < 0xDC00:
+        high = ord(cur[-1][-1])
+        cur[-1] = cur[-1][:-1] + chr(0x10000 + ((high - 0xD800) << 10) + (unit - 0xDC00))
+    else:
+        cur.append(chr(unit))
+    return k
+
+
+def rtf_page_fallback(unit, back, page, enc):
+    """The fallback of both, or a \\u under codepage: the letter in the font's
+    code page, or \\'3f for a letter the code page does not hold."""
+    try:
+        want = chr(unit).encode(page)
+    except UnicodeEncodeError:
+        want = None
+    got = bytes(b[1] for b in back if b[0] == "hex")
+    if want is None:
+        if back != [("hex", 0x3F)]:
+            fail(f"{chr(unit)!r} is not in {page}, so its fallback is \\'3f, and found {back}")
+        return
+    if enc == "codepage":
+        fail(f"codepage writes {chr(unit)!r} as its {page} bytes, and found it as \\u{unit}")
+    if got != want or len(got) != len(back):
+        fail(f"the fallback of \\u{unit} is {got.hex()} and {page} writes {want.hex()}")
+
+
+def check_rtf(data, settings=None):
+    """The document is 7 bit text, its groups balance and close at the last
+    byte, and it holds what characters, text_encoding, elements, nesting and
+    the label ordered - read here by a reader of its own."""
+    settings = settings or {}
+    bad = [b for b in data if b > 0x7E or (b < 0x20 and b not in (0x0D, 0x0A))]
+    if bad:
+        fail(f"{len(bad)} byte(s) outside 7 bit text, the first {bad[0]:#04x} - the generator writes every letter outside ASCII as an escape")
+    text = data.decode("ascii")
+    head = "{" + RTF_BS + "rtf1" + RTF_BS + "ansi" + RTF_BS + "ansicpg1252" + RTF_BS + "deff0" + RTF_BS + "uc1{" + RTF_BS + "fonttbl"
+    if not text.startswith(head):
+        fail(f"the header is not the one the generator writes: {text[:60]!r}")
+    if not text.endswith("}"):
+        fail("the document does not end with the brace that closes it")
+    paras, deepest = rtf_read(text, settings)
+    # Told before it is read, the way html_settings is: a value that is not a
+    # number is a verdict, not a traceback (review of #191).
+    raw = settings.get("nesting", "0")
+    if not re.fullmatch(r"[0-9]{1,8}", raw) or int(raw) > 10000000:
+        fail(f"the rtf check was told nesting={raw!r}, which is not a whole number from 0 to 10000000")
+    nesting = int(raw)
+    trailing = len(text) - len(text.rstrip("}"))
+    if trailing != nesting + 1:
+        fail(f"the document ends with {trailing} closing brace(s), and nesting {nesting} closes {nesting + 1}")
+    if not nesting + 1 <= deepest <= nesting + 4:
+        fail(f"the deepest group is {deepest} deep, and nesting {nesting} puts the content at {nesting + 1}")
+    rtf_label(paras, settings)
+    rtf_international(paras, text, settings)
+    rtf_every(text, settings)
+    ok(f"{len(paras)} paragraph(s), {deepest} group(s) deep")
+
+
+def rtf_label(paras, settings):
+    """The label is the first paragraph of the body when the file carries it."""
+    if settings.get("label") == "true" and not (paras and paras[0].startswith("tfg - rtf - ")):
+        fail(f"the first paragraph is {paras[0][:40] if paras else ''!r}, not the label")
+    if settings.get("label") == "false" and any(p.startswith("tfg - rtf - ") for p in paras):
+        fail("the document carries a label it was asked to go without")
+
+
+def rtf_international(paras, text, settings):
+    """The five paragraphs in other scripts, each read back to the sentence,
+    when characters is international, and no escape at all when it is ascii."""
+    if settings.get("characters") != "international":
+        # A number and a right to left paragraph are words rtf_read does not
+        # allow an ascii document, so they are refused there. A code page byte
+        # is not a word, and under codepage rtf_read lets it through - so it
+        # is the one mark asked here (review of #191).
+        if RTF_BS + "'" in text:
+            fail("characters ascii, and the document carries a code page byte")
+        return
+    norm = [unicodedata.normalize("NFC", p) for p in paras]
+    for sentence in RTF_SCRIPTS:
+        if unicodedata.normalize("NFC", sentence) not in norm:
+            close = [p for p in paras if p[:6] == sentence[:6]]
+            fail(f"no paragraph reads {sentence[:30]!r}, the nearest is {close[0][:40] if close else None!r}")
+    if settings.get("text_encoding") == "codepage" and RTF_BS + "'" not in text:
+        fail("codepage, and no code page byte in the document")
+
+
+def rtf_every(text, settings):
+    """With every, each part where text hides, the properties and the page
+    header and footer in front of the label.
+
+    With basic there is nothing to ask here: every word of those parts is
+    missing from the words rtf_read allows a basic document, so a basic file
+    carrying one is refused there, and a second check of the same words could
+    never fail (review of #191)."""
+    if settings.get("elements") != "every":
+        return
+    for piece in RTF_EVERY_PIECES:
+        if piece not in text:
+            fail(f"elements every, and no {piece!r}")
+    first = text.find("tfg - rtf - ") if "tfg - rtf - " in text else len(text)
+    for piece in RTF_EVERY_PIECES[:3]:
+        if text.find(piece) > first:
+            fail(f"{piece!r} comes after the first paragraph, and RTF puts it in front of the text")
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
           "svg": check_svg, "html": check_html, "targz": check_targz,
@@ -3546,12 +3901,12 @@ CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip
           "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx,
           "txt": check_txt, "md": check_md,
           "yaml": check_yaml, "toml": check_toml, "geojson": check_geojson,
-          "eml": check_eml}
+          "eml": check_eml, "rtf": check_rtf}
 
 # Checks that take the shape of the file as well as its bytes. Everything else
 # is handed the bytes alone, so adding a setting to one check cannot change how
 # any other one is called.
-TAKES_SETTINGS = {"csv", "txt", "md", "json", "xml", "html", "geojson", "eml"}
+TAKES_SETTINGS = {"csv", "txt", "md", "json", "xml", "html", "geojson", "eml", "rtf"}
 
 if __name__ == "__main__":
     if len(sys.argv) < 3 or sys.argv[1] not in CHECKS:

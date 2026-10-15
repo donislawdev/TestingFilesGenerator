@@ -395,12 +395,38 @@ func goldenCases() map[string]engine.Target {
 		// have to agree to the byte.
 		"targz_past_the_comment_limit": {ID: "g", Format: "targz", Sizes: engine.Uniform(1, 262144), Label: true},
 	}
-	for _, more := range []map[string]engine.Target{mapGoldenCases(), mailGoldenCases(), pageGoldenCases()} {
+	for _, more := range []map[string]engine.Target{mapGoldenCases(), mailGoldenCases(), pageGoldenCases(), rtfGoldenCases()} {
 		for name, target := range more {
 			cases[name] = target
 		}
 	}
 	return cases
+}
+
+// rtfGoldenCases are the golden cases of the rtf format, a table of their own
+// for the reason mailGoldenCases gives. One for each path the bytes take: the
+// default, each of the four ways text_encoding writes the letters of the
+// paragraphs in other scripts, the catalogue of every part, groups of nesting,
+// a document with no label at an odd size, and everything at once
+// (docs/RTF-2026-10-15.md).
+func rtfGoldenCases() map[string]engine.Target {
+	intl := func(encoding string) map[string]string {
+		return map[string]string{"characters": "international", "text_encoding": encoding}
+	}
+	return map[string]engine.Target{
+		"rtf_8kib":          {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 8192), Label: true},
+		"rtf_8kib_unicode":  {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 8192), Label: true, Properties: intl("unicode")},
+		"rtf_8kib_both":     {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 8192), Label: true, Properties: intl("both")},
+		"rtf_8kib_codepage": {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 8192), Label: true, Properties: intl("codepage")},
+		"rtf_8kib_literal":  {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 8192), Label: true, Properties: intl("literal")},
+		"rtf_16kib_every": {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 16384), Label: true,
+			Properties: map[string]string{"elements": "every"}},
+		"rtf_8kib_nested": {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 8192), Label: true,
+			Properties: map[string]string{"nesting": "100"}},
+		"rtf_odd_clean": {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 8193)},
+		"rtf_32kib_everything": {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 32768), Label: true,
+			Properties: map[string]string{"characters": "international", "text_encoding": "both", "elements": "every", "nesting": "50"}},
+	}
 }
 
 // mapGoldenCases are the golden cases of the geojson format, a table of their
