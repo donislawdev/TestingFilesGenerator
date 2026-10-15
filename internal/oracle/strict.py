@@ -19,6 +19,7 @@ import re
 import struct
 import sys
 import zlib
+from html.parser import HTMLParser
 
 
 def fail(msg):
@@ -2980,9 +2981,10 @@ EML_READ_MORE = "https://example.com/newsletter"
 EML_PLAIN_OPEN = ["Example Newsletter", ""]
 EML_PLAIN_CLOSE = ["", f"Read more ({EML_READ_MORE})", "",
                    "You receive this because you subscribed to Example Newsletter."]
-# What a mail program would fetch on opening the HTML: a style sheet by
-# address, an import or a font from one. A picture is checked by its src.
-EML_FETCHING = re.compile(r"url\(|@import|<link\b", re.IGNORECASE)
+# What a style would fetch on opening the HTML: a picture or a font by
+# address, or a sheet imported from one. Every attribute is read by
+# EmlFetched.
+EML_FETCHING = re.compile(r"url\(|@import", re.IGNORECASE)
 
 
 def check_eml(data, settings=None):
@@ -3085,26 +3087,90 @@ def eml_texts(found, s):
     want_texts = {"plain": ["text/plain"], "html": ["text/html"], "alternative": ["text/plain", "text/html"]}[s["body"]]
     if [t["type"] for t in texts] != want_texts:
         fail(f"the text parts are {[t['type'] for t in texts]}, and body={s['body']} makes {want_texts}")
-    if len(texts) == 2 and eml_spoken(texts[0]["text"]) != eml_words(eml_shown(texts[1]["text"])):
-        fail("the two parts of alternative do not carry the same words")
+    # The frame first: the words are compared without the two addresses where
+    # the frame puts them, so where it puts them has to be read already.
     for t in texts:
         eml_frame(t, s, found["unsubscribe"])
+    if len(texts) == 2 and eml_spoken(texts[0]["text"], s) != eml_words(eml_shown(texts[1]["text"])):
+        fail("the two parts of alternative do not carry the same words")
     shown = EML_IMG.findall(texts[-1]["text"]) if texts[-1]["type"] == "text/html" else []
     cids = [p["cid"] for p in found["pictures"]]
     if shown != [c for c in cids if c]:
         fail(f"the HTML shows {shown} and the pictures beside it are {cids}")
 
 
+def eml_head(html):
+    """Where the head of an HTML part starts and where its closing tag does,
+    found rather than matched: a pattern for the two rescanned the rest of the
+    part from every <head> left open - 0.022 s at 800 and 0.297 s at 3 200
+    (pre-merge check of #186, measured). (-1, -1) when there is none."""
+    start = html.find("<head>")
+    end = html.find("</head>", start) if start >= 0 else -1
+    return (start, end) if end >= 0 else (-1, -1)
+
+
 def eml_shown(html):
     """What a person reads in the HTML: no head, whose title and styles are
-    not shown, and no tags."""
-    return re.sub(r"<[^>]*>", " ", re.sub(r"<head>.*?</head>", " ", html, flags=re.DOTALL))
+    not shown, and no tags. A tag ends at the next < as well, so a < left
+    open costs the text up to the next one rather than the rest of the part."""
+    start, end = eml_head(html)
+    if start >= 0:
+        html = html[:start] + " " + html[end + len("</head>"):]
+    return re.sub(r"<[^<>]*>", " ", html)
 
 
-def eml_spoken(plain):
-    """The words of the plain text without the addresses a newsletter writes
-    out where the HTML puts them behind its links."""
-    return [w for w in eml_words(plain) if "://" not in w]
+def eml_spoken(plain, s):
+    """The words of the plain text without the two addresses a newsletter
+    writes out where the HTML puts them behind its links, taken from the two
+    places its frame puts them - which eml_frame has read. An address anywhere
+    else is a word the HTML has to carry as well (review of #186: every word
+    with :// went, so an address added in the middle passed)."""
+    words = eml_words(plain)
+    if s["layout"] != "newsletter":
+        return words
+    tail = eml_words("\n".join(EML_PLAIN_CLOSE)) + ["Unsubscribe", "(address)"]
+    read_more = len(words) - len(tail) + tail.index(f"({EML_READ_MORE})")
+    return words[:read_more] + words[read_more + 1:-1]
+
+
+class EmlFetched(HTMLParser):
+    """Every attribute of an HTML part a mail program would load on opening
+    it: an address in any attribute but the href of a link, a src that is not
+    a cid: picture beside it, and a link element. Read by a parser rather than
+    a pattern, so the quotes, the attribute and the element do not matter
+    (review of #186: object data, background, srcset, poster, a refresh and a
+    src in single quotes all passed a check that asked for src in double)."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.found = []
+
+    def handle_starttag(self, tag, attrs):
+        for name, value in attrs:
+            value = (value or "").strip()
+            remote = "://" in value or value.startswith("//")
+            if (name == "src" and not value.startswith("cid:")) or (remote and (tag, name) != ("a", "href")):
+                self.found.append(f"<{tag} {name}={value[:40]!r}>")
+        if tag == "link":
+            self.found.append("<link>")
+
+    handle_startendtag = handle_starttag
+
+
+def eml_fetched(html):
+    """What an HTML part would fetch on opening, by attribute and by style."""
+    parser = EmlFetched()
+    parser.feed(html)
+    parser.close()
+    return parser.found + EML_FETCHING.findall(html)
+
+
+def eml_sheet(html):
+    """Whether the head holds a style sheet with one rule that declares
+    something, read inside the head eml_head finds."""
+    start, end = eml_head(html)
+    sheet = re.search(r"<style>([^<]*)</style>", html[start:end]) if start >= 0 else None
+    return bool(sheet and re.search(r"\{[^}:]*:[^}]*\}", sheet.group(1)))
 
 
 def eml_frame(text, s, unsubscribe):
@@ -3116,9 +3182,9 @@ def eml_frame(text, s, unsubscribe):
     body, lines = text["text"], text["text"].splitlines()
     html = text["type"] == "text/html"
     if html:
-        sources = re.findall(r'\bsrc="([^"]*)"', body)
-        if EML_FETCHING.search(body) or any(not src.startswith("cid:") for src in sources):
-            fail(f"the HTML holds something a mail program fetches on opening it: {sources[:4]}")
+        fetched = eml_fetched(body)
+        if fetched:
+            fail(f"the HTML holds something a mail program fetches on opening it: {fetched[:4]}")
     framed = "Example Newsletter" in body or "<table" in body
     if s["layout"] == "simple":
         if framed:
@@ -3130,7 +3196,7 @@ def eml_frame(text, s, unsubscribe):
         return
     page = [
         (lines[0] == "<!DOCTYPE html>", "doctype"),
-        (re.search(r"<head>.*<style>[^<]*\{[^}]*:[^}]*\}[^<]*</style>.*</head>", body, re.DOTALL), "style sheet in its head"),
+        (eml_sheet(body), "style sheet in its head"),
         (body.count('<table role="presentation"') == 2, "two tables of presentation"),
         (re.search(r'<table role="presentation" class="frame" width="600"', body), "frame 600 wide"),
         (body.count(' style="') >= 6, "styles on its elements"),

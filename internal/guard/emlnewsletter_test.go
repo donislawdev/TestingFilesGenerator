@@ -91,6 +91,7 @@ func TestTheEMLCheckRefusesANewsletterBrokenOnPurpose(t *testing.T) {
 		out[at-1] ^= 1
 		return out
 	}
+	const fetches = "the HTML holds something a mail program fetches"
 	cases := []struct {
 		made, told map[string]string
 		spoil      func([]byte) []byte
@@ -105,7 +106,7 @@ func TestTheEMLCheckRefusesANewsletterBrokenOnPurpose(t *testing.T) {
 			return bytes.Replace(b, []byte("<p>\r\n"), []byte("<img src=\"https://example.com/p.png\">\r\n<p>\r\n"), 1)
 		}, "the HTML holds something a mail program fetches"},
 		{newsletter, newsletter, func(b []byte) []byte {
-			return bytes.Replace(b, []byte("</head>"), []byte("<link rel=\"stylesheet\" href=\"https://example.com/s.css\">\r\n</head>"), 1)
+			return bytes.Replace(b, []byte("</head>"), []byte("<link rel=\"stylesheet\" href=\"s.css\">\r\n</head>"), 1)
 		}, "the HTML holds something a mail program fetches"},
 		{plainLetter, plainLetter, func(b []byte) []byte {
 			return bytes.Replace(b, []byte("Read more (https://example.com/newsletter)\r\n"), nil, 1)
@@ -113,6 +114,27 @@ func TestTheEMLCheckRefusesANewsletterBrokenOnPurpose(t *testing.T) {
 		{newsletter, simple, func(b []byte) []byte { return listLines.ReplaceAll(b, nil) },
 			"layout=simple and the text/plain part is in the frame of a newsletter"},
 		{simple, newsletter, func(b []byte) []byte { return b }, "the message opens with"},
+		// Review of #186: an address in the middle of the plain text went with
+		// every other word holding ://, and the HTML was asked only for src in
+		// double quotes. Each of these passed before.
+		{newsletter, newsletter, replaced("\r\n\r\nRead more (", "\r\nhttps://example.net/x\r\n\r\nRead more ("),
+			"the two parts of alternative do not carry the same words"},
+		{newsletter, newsletter, replaced("<p>\r\n", "<object data=\"https://example.net/o\"></object>\r\n<p>\r\n"), fetches},
+		{newsletter, newsletter, replaced(`<tr><td style="padding: 0 24px;">`, `<tr><td background="https://example.net/b.png" style="padding: 0 24px;">`), fetches},
+		{newsletter, newsletter, replaced("<p>\r\n", "<img src=\"cid:x\" srcset=\"https://example.net/s.png 2x\">\r\n<p>\r\n"), fetches},
+		{newsletter, newsletter, replaced("<p>\r\n", "<video poster=\"https://example.net/p.png\"></video>\r\n<p>\r\n"), fetches},
+		{newsletter, newsletter, replaced("</head>", "<meta http-equiv=\"refresh\" content=\"0; url=https://example.net/\">\r\n</head>"), fetches},
+		{newsletter, newsletter, replaced("<p>\r\n", "<img src='https://example.net/q.png'>\r\n<p>\r\n"), fetches},
+		// In the sheet rather than in an attribute, so only the reading of
+		// the styles sees them. And addresses with nothing to say they are
+		// remote, so only the rules for src and for link see them.
+		{newsletter, newsletter, replaced("<style>\r\n", "<style>\r\n@import \"https://example.net/s.css\";\r\n"), fetches},
+		{newsletter, newsletter, replaced("<style>\r\n", "<style>\r\np { background: url(b.png); }\r\n"), fetches},
+		{newsletter, newsletter, replaced("<p>\r\n", "<img src=\"p.png\">\r\n<p>\r\n"), fetches},
+		{newsletter, newsletter, replaced("<style>\r\nbody { margin: 0; background: #f2f2f2; }\r\n"+
+			".frame { width: 600px; background: #ffffff; }\r\n"+
+			".button { background: #1a73e8; color: #ffffff; text-decoration: none; }\r\n", "<style>\r\n"),
+			"layout=newsletter and the HTML lacks: style sheet in its head"},
 	}
 	dir := t.TempDir()
 	for i, c := range cases {
@@ -134,4 +156,9 @@ func TestTheEMLCheckRefusesANewsletterBrokenOnPurpose(t *testing.T) {
 				i, c.made, c.told, res.Err, c.verdict)
 		}
 	}
+}
+
+// replaced is a way to break a message: the first old in it becomes new.
+func replaced(old, new string) func([]byte) []byte {
+	return func(b []byte) []byte { return bytes.Replace(b, []byte(old), []byte(new), 1) }
 }
