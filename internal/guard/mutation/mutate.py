@@ -257,7 +257,11 @@ def judge(index: int, entry, tree, budget, deadline: float,
     if result.capped:
         return Outcome(index, "CAPPED", label, rel, test, secs, result.capped)
     if not result.compiled:
-        return Outcome(index, "BROKEN", label, rel, test, secs)
+        # The compiler's first complaint goes with the verdict. On CI the
+        # verdict is all there is - fifteen BROKEN entries of the first run
+        # had to be built again by hand to learn why (2026-10-15).
+        complaint = next((line.strip() for line in result.output.splitlines() if ".go:" in line), "")
+        return Outcome(index, "BROKEN", label, rel, test, secs, complaint)
     if result.passed:
         reason = unjudged_reason(test, tree.path)
         if reason:
@@ -280,8 +284,8 @@ def say(out: Outcome) -> None:
               f"      stopped on {out.detail} - the guard was not allowed to finish", flush=True)
     elif out.verdict == "BROKEN":
         print(f"BROKEN [{out.secs:5.2f}s] {out.label}\n"
-              f"      the mutated tree does not compile - this proves nothing, rewrite the mutation",
-              flush=True)
+              f"      the mutated tree does not compile - this proves nothing, rewrite the mutation\n"
+              f"      {out.detail}", flush=True)
     elif out.verdict == "UNJUDGED":
         print(f"UNJUDGED [{out.secs:5.2f}s] {out.label}\n"
               f"      {out.detail}, so this platform cannot say", flush=True)

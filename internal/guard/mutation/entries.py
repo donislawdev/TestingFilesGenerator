@@ -160,8 +160,8 @@ MUTATIONS = [
     (
         "the refusal stops naming the file to remove, so a stale lock is a dead end",
         "internal/engine/errors.go",
-        "core.Shown(e.Dir), core.Shown(e.Path))",
-        'core.Shown(e.Dir), "")',
+        "core.A(\"Dir\", core.Shown(e.Dir)), core.A(\"Lock\", core.Shown(e.Path)))",
+        "core.A(\"Dir\", core.Shown(e.Dir)), core.A(\"Lock\", \"\"))",
         "TestASecondRunIntoADirectoryARunIsHoldingIsRefusedBeforeItWritesAnything",
     ),
     # --- a preset renders a recipe that still means what it says (2026-09-06) ---
@@ -295,22 +295,22 @@ MUTATIONS = [
     (
         "a note about one file stops leading with that file's name",
         "internal/manifest/manifest.go",
-        '\tif g.count == 1 {',
-        '\tif g.count == 1 && false {',
+        "\tif g.Count == 1 {\n",
+        "\tif g.Count == 1 && false {\n",
         "TestANoteAboutOneFileStillNamesThatFileFirst",
     ),
     (
         "a grouped note stops saying how many files it is not naming",
         "internal/manifest/manifest.go",
-        '\tif hidden := g.count - len(g.first); hidden > 0 {',
-        '\tif hidden := g.count - len(g.first); hidden > 0 && false {',
+        "\tif hidden := g.Count - len(g.First); hidden > 0 {",
+        "\tif hidden := g.Count - len(g.First); hidden > 0 && false {",
         "TestNotesAreGroupedByWhatTheySayRatherThanOneLinePerFile",
     ),
     (
         "the unnamed remainder loses its plural",
         "internal/manifest/manifest.go",
-        'core.Count(hidden, "file", "files"))',
-        'fmt.Sprintf("%d files", hidden))',
+        "core.A(\"Hidden\", core.SaysN(\"manifest.Files\", \"%d file\", \"%d files\", core.A(\"Count\", hidden))))",
+        "core.A(\"Hidden\", core.Says(\"manifest.Files\", \"%d files\", core.A(\"Count\", hidden))))",
         "TestTheUnnamedRemainderCarriesTheRightNoun",
     ),
     # --- both leftover markers are recognised, and each is spelled once (2026-09-06) ---
@@ -688,8 +688,8 @@ MUTATIONS = [
     (
         "the address of a target becomes its id, so the box for a missing id has none",
         "internal/recipe/errors.go",
-        's.says = fmt.Sprintf("target %q", id)',
-        's.says = fmt.Sprintf("target %q", id); s.key = id',
+        "\t\ts.says = core.Says(\"recipe.Target\", \"target %q\", core.A(\"Target\", id))\n",
+        "\t\ts.says = core.Says(\"recipe.Target\", \"target %q\", core.A(\"Target\", id))\n\t\ts.key = id\n",
         "TestEveryRecipeRefusalSaysWhichSettingItIsAbout",
     ),
     (
@@ -709,8 +709,8 @@ MUTATIONS = [
     (
         "the machine readable report drops the address on the way out",
         "internal/cli/recipecmd.go",
-        "Fix: p.Fix, At: p.At})",
-        "Fix: p.Fix})",
+        "Fix: p.Fix.String(), At: p.At})",
+        "Fix: p.Fix.String()})",
         "TestTheMachineReadableReportCarriesTheAddressOfEachRefusal",
     ),
     (
@@ -723,8 +723,8 @@ MUTATIONS = [
     (
         "a property value is no longer checked against its declaration",
         "internal/format/format.go",
-        "if why := p.Allows(raw); why != \"\" {",
-        "if why := p.Allows(raw); why != \"\" && false {",
+        "if why := p.Allows(raw); !why.IsZero() {",
+        "if why := p.Allows(raw); !why.IsZero() && false {",
         "TestABadPropertyValueIsTheCallersMistakeNotOurs",
     ),
     (
@@ -744,8 +744,8 @@ MUTATIONS = [
     (
         "the declared range stops bounding the value",
         "internal/format/format.go",
-        "if p.Min != 0 || p.Max != 0 {\n\t\t\tif n < p.Min || n > p.Max {",
-        "if p.Min != 0 || p.Max != 0 {\n\t\t\tif (n < p.Min || n > p.Max) && false {",
+        "if p.Min != 0 || p.Max != 0 {\n\t\tif n < p.Min || n > p.Max {",
+        "if p.Min != 0 || p.Max != 0 {\n\t\tif (n < p.Min || n > p.Max) && false {",
         "TestTheRefusalComesFromTheDeclaration",
     ),
     (
@@ -891,8 +891,8 @@ MUTATIONS = [
     (
         "validation stops at the first problem",
         "internal/recipe/errors.go",
-        "func (p *problems) add(at, what, why, fix string) {",
-        "func (p *problems) add(at, what, why, fix string) {\n\tif len(p.list) > 0 {\n\t\treturn\n\t}",
+        "func (p *problems) add(at string, what, why, fix core.Said) {\n",
+        "func (p *problems) add(at string, what, why, fix core.Said) {\n\tif len(p.list) > 0 {\n\t\treturn\n\t}\n",
         "TestAllTheProblemsInARecipeAreReportedAtOnce",
     ),
     (
@@ -1240,8 +1240,8 @@ MUTATIONS = [
     (
         "contains is ignored, so the archive holds the default instead",
         "internal/format/archive/archive.go",
-        "if r.Contains != nil {\n\t\treturn fromContains(id, r, stated)",
-        "if false {\n\t\treturn fromContains(id, r, stated)",
+        "if r.Contains != nil {\n\t\treturn fromContains(id, r, stated, door)",
+        "if false {\n\t\treturn fromContains(id, r, stated, door)",
         "TestTheMembersOfAnArchiveAreRealFilesOfEveryFormatAsked",
     ),
     (
@@ -1257,7 +1257,7 @@ MUTATIONS = [
     (
         "a format that holds nothing accepts contains anyway",
         "internal/engine/engine.go",
-        "if len(t.Contains) > 0 && !desc.Container {",
+        "if len(t.Contains) > 0 && desc.Container == nil {",
         "if false {",
         "TestContentsThatCannotBeHonouredAreRefusedWithTheRightCode",
     ),
@@ -1275,8 +1275,8 @@ MUTATIONS = [
         # all. Collapsing the two turns a legal empty archive into a refusal.
         "an empty contains is read as no contains",
         "internal/format/archive/archive.go",
-        "if r.Contains != nil {\n\t\treturn fromContains(id, r, stated)",
-        "if len(r.Contains) > 0 {\n\t\treturn fromContains(id, r, stated)",
+        "if r.Contains != nil {\n\t\treturn fromContains(id, r, stated, door)",
+        "if len(r.Contains) > 0 {\n\t\treturn fromContains(id, r, stated, door)",
         "TestAnArchiveHoldingNothingIsLegal",
     ),
     (
@@ -2220,8 +2220,8 @@ MUTATIONS = [
         # setting it changes the drawing at all.
         "the success colour is the ordinary text colour, so saying so draws nothing",
         "internal/gui/parts/theme.go",
-        "theme.ColorNameSuccess:   hex(0x6F, 0xCF, 0x7F),",
-        "theme.ColorNameSuccess:   hex(0xE6, 0xE6, 0xE6),",
+        "theme.ColorNameSuccess:   hex(0x42, 0xC2, 0x60),",
+        "theme.ColorNameSuccess:   hex(0xE6, 0xE6, 0xE8),",
         "TestTheOutcomeColoursAreThreeDifferentColours",
     ),
     (
@@ -2247,8 +2247,8 @@ MUTATIONS = [
         # value somebody chose in the same grey as the hint in an empty box.
         "a switched off value goes back to being drawn like a hint",
         "internal/gui/parts/theme.go",
-        "theme.ColorNameDisabled:  hex(0xC2, 0xC8, 0xCD),",
-        "theme.ColorNameDisabled:  hex(0x9D, 0xA3, 0xA8),",
+        "theme.ColorNameDisabled:  hex(0xC7, 0xC7, 0xCC),",
+        "theme.ColorNameDisabled:  hex(0xA2, 0xA2, 0xA9),",
         "TestAValueSwitchedOffIsItsOwnStepBetweenAValueAndAHint",
     ),
     (
@@ -2256,7 +2256,7 @@ MUTATIONS = [
         # value: a disabled value is content somebody typed.
         "the light palette puts a switched off value further away than a hint",
         "internal/gui/parts/theme.go",
-        "theme.ColorNameDisabled:  hex(0x3D, 0x3D, 0x3D),",
+        "theme.ColorNameDisabled:  hex(0x3D, 0x3D, 0x42),",
         "theme.ColorNameDisabled:  hex(0x8A, 0x8A, 0x8A),",
         "TestASwitchedOffValueIsEasierToReadThanAHint",
     ),
@@ -2451,7 +2451,7 @@ MUTATIONS = [
         "the block of declared settings is indented under the fields above it",
         "internal/gui/parts/parts.go",
         "\treturn Column(GapField, children...)",
-        "\treturn Indented(Column(GapField, children...))",
+        "\treturn Indented(Column(GapField, children...)).(*fyne.Container)",
         "TestADeclaredSettingStandsOnTheSameEdgeAsTheFieldsAboveIt",
     ),
     (
@@ -2746,7 +2746,7 @@ MUTATIONS = [
     (
         "the manifest name is not checked, so a manifest lands elsewhere",
         "internal/engine/engine.go",
-        'if err := checkFileName(SettingOutputManifest, "the manifest", opt.ManifestName); err != nil {',
+        "if err := checkFileName(SettingOutputManifest, core.Says(\"engine.TheManifest\", \"the manifest\"), opt.ManifestName); err != nil {",
         "if err := error(nil); err != nil {",
         "TestAManifestNameThatIsAPathIsRefused",
     ),
@@ -3125,8 +3125,8 @@ MUTATIONS = [
         # printing. This is that drift, reintroduced by hand.
         "a container goes back to ignoring the default it advertises",
         "internal/format/archive/archive.go",
-        "sizeProperty(id, r.Properties, EntrySize, defaultSize)",
-        "sizeProperty(id, r.Properties, EntrySize, 4096)",
+        "sizeProperty(id, r.Properties, keys.Size, defaultSize)",
+        "sizeProperty(id, r.Properties, keys.Size, 4096)",
         "TestADeclaredDefaultIsTheOneTheFormatUses",
     ),
     (
@@ -3353,8 +3353,8 @@ MUTATIONS = [
         # other block on every other screen.
         # And again 2026-09-23, when the window joined the notice's lines into
         # paragraphs so it wraps to the window.
-        "parts.Section(text.SectionLicence(), parts.Prose(paragraphs(version.LicenceNotice))),",
-        'parts.Section(text.SectionLicence(), parts.Prose("Released under the GNU General Public License, version 3.")),',
+        "parts.Prose(paragraphs(text.Licence(version.LicenceNotice)))",
+        "parts.Prose(\"Released under the GNU General Public License, version 3.\")",
         "TestTheWindowAndTheCommandQuoteTheSameLicence",
     ),
     (
@@ -3676,8 +3676,8 @@ MUTATIONS = [
         # The spacing here is whatever gofmt last decided, and it realigns the
         # whole map when the longest key changes - which it did the day hover
         # became an overlay. Staleness names it in a second when that happens.
-        "theme.ColorNameFocus: overlay(0x4C, 0x9D, 0xF0, 0x66),",
-        "theme.ColorNameFocus: hex(0x4C, 0x9D, 0xF0),",
+        "theme.ColorNameFocus: overlay(0x00, 0xA5, 0xF0, 0x66),",
+        "theme.ColorNameFocus: hex(0x00, 0xA5, 0xF0),",
         "TestThePaletteMeetsTheContrastItWasComputedFor",
     ),
     (
@@ -3685,8 +3685,8 @@ MUTATIONS = [
         # form has one ink where the owner asked for two.
         "a field's name is inked like the value under it",
         "internal/gui/parts/theme.go",
-        "ColorNameLabel:        hex(0xCF, 0xD3, 0xD8),",
-        "ColorNameLabel:        hex(0xE6, 0xE6, 0xE6),",
+        "ColorNameLabel:        hex(0xD3, 0xD3, 0xD7),",
+        "ColorNameLabel:        hex(0xE6, 0xE6, 0xE8),",
         "TestThePaletteMeetsTheContrastItWasComputedFor",
     ),
     (
@@ -3738,8 +3738,8 @@ MUTATIONS = [
         # where it sat, 748 px below the field it named. O73.
         "a refusal stops saying which setting it is about",
         "internal/engine/engine.go",
-        '&RecipeError{Setting: SettingCount,\n\t\t\tDetail: fmt.Sprintf("target %q asks for 0 files", t.ID),',
-        '&RecipeError{\n\t\t\tDetail: fmt.Sprintf("target %q asks for 0 files", t.ID),',
+        "&RecipeError{Setting: SettingCount,\n\t\t\tDetail: core.Says(\"engine.NoFiles\",",
+        "&RecipeError{\n\t\t\tDetail: core.Says(\"engine.NoFiles\",",
         "TestARefusalAboutOneSettingAppearsUnderIt",
     ),
     (
@@ -4170,8 +4170,8 @@ MUTATIONS = [
         # invisible controls.
         "the panel takes the colour an input box already uses",
         "internal/gui/parts/theme.go",
-        "ColorNamePanel:           hex(0x2A, 0x2A, 0x2D),",
-        "ColorNamePanel:           hex(0x38, 0x38, 0x3D),",
+        "ColorNamePanel:           hex(0x2B, 0x2B, 0x2F),",
+        "ColorNamePanel:           hex(0x39, 0x39, 0x3F),",
         "TestEachSurfaceIsToldFromTheOneUnderIt",
     ),
     (
@@ -4237,8 +4237,8 @@ MUTATIONS = [
         # checked, with the suite green and covering less.
         "a registered format is on neither the text nor the binary list",
         "internal/guard/textformats_test.go",
-        'var binaryFormats = []string{"avif", "bmp", "docx", "gif", "ico", "jpg", "jxl", "pdf", "png", "pptx", "targz", "tiff", "wav", "webp", "xlsx", "zip"}',
-        'var binaryFormats = []string{"avif", "bmp", "docx", "gif", "ico", "jpg", "jxl", "pdf", "png", "pptx", "targz", "tiff", "wav", "webp", "xlsx"}',
+        "\"webm\", \"webp\", \"xlsx\", \"zip\"}",
+        "\"webm\", \"webp\", \"xlsx\"}",
         "TestEveryFormatIsClassifiedAsTextOrBinary",
     ),
     (
@@ -4513,8 +4513,8 @@ MUTATIONS = [
         # screenshot as a list where everything runs together.
         "an open list goes back to the colour of an input box",
         "internal/gui/parts/theme.go",
-        "theme.ColorNameMenuBackground: hex(0x48, 0x48, 0x4F),",
-        "theme.ColorNameMenuBackground: hex(0x38, 0x38, 0x3D),",
+        "theme.ColorNameMenuBackground: hex(0x57, 0x57, 0x5F),",
+        "theme.ColorNameMenuBackground: hex(0x39, 0x39, 0x3F),",
         "TestAnOpenListIsToldFromTheFormBehindIt",
     ),
     (
@@ -4562,8 +4562,8 @@ MUTATIONS = [
         # narrower guard worth refusing.
         "a counted noun goes back to dodging the plural",
         "internal/format/zip/zip.go",
-        'fmt.Sprintf("%s of %d B", core.Count(g.Count, kind+" file", kind+" files"), g.Bytes)',
-        'fmt.Sprintf("%d %s file(s) of %d B", g.Count, kind, g.Bytes)',
+        "core.SaysN(\"format.GroupOf\", \"%d %s file of %d B\", \"%d %s files of %d B\",",
+        "core.SaysN(\"format.GroupOf\", \"%d %s file(s) of %d B\", \"%d %s file(s) of %d B\",",
         "TestNoMessageDodgesThePluralWithBrackets",
     ),
     (
@@ -4641,8 +4641,8 @@ MUTATIONS = [
         # - the guard proves both, by asking FromProperty for each kind.
         "a declared menu is the toolkit's own again",
         "internal/gui/parts/property.go",
-        "\tsel := NewChooser(p.Choices, nil)",
-        "\tsel := &NewChooser(p.Choices, nil).Select",
+        "Control: sel,\n\t\tValue:   func() string { return sel.Selected },",
+        "Control: &sel.Select,\n\t\tValue:   func() string { return sel.Selected },",
         "TestEverySwitchAndMenuOnScreenKnowsWhoFocusedIt",
     ),
     (
@@ -4704,8 +4704,8 @@ MUTATIONS = [
         # purpose, so a letter at a closed list did nothing at all.
         "a letter typed at a shut list does nothing again",
         "internal/gui/parts/ring.go",
-        "\t\tif strings.HasPrefix(strings.ToLower(c.Options[at]), want) {\n\t\t\tc.SetSelectedIndex(at)",
-        "\t\tif strings.HasPrefix(strings.ToLower(c.Options[at]), want) {\n\t\t\t_ = at",
+        "if strings.HasPrefix(strings.ToLower(c.shown(c.Options[at])), want) {\n\t\t\tc.SetSelectedIndex(at)",
+        "if strings.HasPrefix(strings.ToLower(c.shown(c.Options[at])), want) {\n\t\t\t_ = at",
         "TestALetterTypedAtTheShutListMovesToThatValue",
     ),
     (
@@ -5005,8 +5005,8 @@ MUTATIONS = [
         # where a value goes.
         "the mark round a box to type in goes back to the toolkit's own",
         "internal/gui/parts/theme.go",
-        "\t\ttheme.ColorNameInputBorder:     hex(0x55, 0x55, 0x5C),",
-        "\t\ttheme.ColorNameInputBorder:     hex(0x39, 0x39, 0x3A),",
+        "theme.ColorNameInputBorder:     hex(0x65, 0x65, 0x6D),",
+        "theme.ColorNameInputBorder:     hex(0x39, 0x39, 0x3A),",
         "TestABoxToTypeInWearsAMarkThatCanBeSeen",
     ),
     (
@@ -5169,7 +5169,7 @@ MUTATIONS = [
     # setting they cannot see and did not remove.
     "a folded section says nothing about the notes in it",
     "internal/gui/window/recipefolds.go",
-    "return text.FoldedSummary(n.group.Text, n.purpose.Text, n.expected.Selected, n.reason.Selected)",
+    "return text.FoldedSummary(n.group.Text, n.purpose.Text, outcomeName(n.expected.Selected), reasonName(n.reason.Selected))",
     "return \"\"",
     "TestASectionPutAwayStillSaysWhatIsInIt",
 ),
@@ -5198,8 +5198,8 @@ MUTATIONS = [
     # caught until this guard asked every case rather than one recipe.
     "a refusal about a property loses the reason behind it",
     "internal/recipe/target.go",
-    "unknown.Why(), unknown.Instead())",
-    "\"\", unknown.Instead())",
+    "what, why, instead := unknown.Parts()\n\t\t\tp.add(at, whereWhat(where, what), why, instead)",
+    "what, _, instead := unknown.Parts()\n\t\t\tp.add(at, whereWhat(where, what), core.Said{}, instead)",
     "TestEveryRecipeRefusalSaysWhichSettingItIsAbout",
 ),
 (
@@ -5453,8 +5453,8 @@ MUTATIONS = [
     (
         "the manifest name goes back to calling itself a file name",
         "internal/engine/engine.go",
-        'checkFileName(SettingOutputManifest, "the manifest", opt.ManifestName)',
-        'checkFileName(SettingName, "the manifest", opt.ManifestName)',
+        "if err := checkFileName(SettingOutputManifest, core.Says(\"engine.TheManifest\", \"the manifest\"), opt.ManifestName); err != nil {",
+        "if err := checkFileName(SettingName, core.Says(\"engine.TheManifest\", \"the manifest\"), opt.ManifestName); err != nil {",
         "TestARefusalAboutTheManifestNameMarksTheManifestBox",
     ),
     (
@@ -5467,7 +5467,7 @@ MUTATIONS = [
     (
         "a refusal from below stops handing out its reason",
         "internal/format/format.go",
-        "func (e *BelowMinimumError) Why() string { return e.Reason }",
+        "func (e *BelowMinimumError) Why() string { return e.Reason.String() }",
         'func (e *BelowMinimumError) Why() string { return "" }',
         "TestARefusalFromBelowTheReaderArrivesInItsThreeParts",
     ),
@@ -5480,8 +5480,8 @@ MUTATIONS = [
     ),
     (
         "the parts a refusal hands out come apart from the sentence it prints",
-        "internal/format/format.go",
-        'func (e *NotAContainerError) Instead() string { return "Drop contains, or change the format" }',
+        "internal/format/container.go",
+        "func (e *NotAContainerError) Instead() string { return e.instead().String() }",
         'func (e *NotAContainerError) Instead() string { return "Change the format" }',
         "TestARefusalFromBelowTheReaderArrivesInItsThreeParts",
     ),
@@ -5495,15 +5495,15 @@ MUTATIONS = [
     (
         "the engine stops joining the remedy into the sentence it prints",
         "internal/engine/errors.go",
-        '\t\tmessage += ". " + e.Remedy',
-        '\t\tmessage += ""',
+        "case !e.Because.IsZero() && !e.Remedy.IsZero():",
+        "case !e.Because.IsZero() && !e.Remedy.IsZero() && false:",
         "TestARefusalFromBelowTheReaderArrivesInItsThreeParts",
     ),
     (
         "a refusal of the engine stops saying why the rule is there",
         "internal/engine/filename.go",
-        '\t\t\tBecause: "Windows refuses that character in a file name, so the file is not written there at all. It is refused on every system so that a recipe means one thing everywhere",',
-        '\t\t\tBecause: "",',
+        "Because: core.Says(\"engine.NameForbiddenWhy\", \"Windows refuses that character in a file name, so the file is not written there at all. It is refused on every system so that a recipe means one thing everywhere\"),",
+        "Because: core.Said{},",
         "TestARefusalFromBelowTheReaderArrivesInItsThreeParts",
     ),
     (
@@ -5600,8 +5600,8 @@ MUTATIONS = [
     (
         "the refusal for too many files names a number the rule does not use",
         "internal/core/limits.go",
-        "that is what lets a run that cannot succeed be refused before the first byte\", MaxFilesPerRun)",
-        "that is what lets a run that cannot succeed be refused before the first byte\", MaxFilesPerRun+1)",
+        "A(\"Most\", MaxFilesPerRun))",
+        "A(\"Most\", MaxFilesPerRun+1))",
         "TestTheRefusalForTooManyFilesNamesTheCeilingItEnforces",
     ),
     (
@@ -5624,8 +5624,8 @@ MUTATIONS = [
         # read depended on whether they had already typed something wrong. O64.
         "a size setting goes back to being described two ways",
         "internal/format/format.go",
-        'return "it takes " + sizePhrase',
-        'return "it takes a size written the way any size is, such as 2mb or a plain byte count"',
+        "\t\twhat = sizePhrase\n",
+        "\t\twhat = \"a size written the way any size is, such as 2mb or a plain byte count\"\n",
         "TestASettingIsDescribedTheSameWayEmptyOrRefused",
     ),
     (
@@ -5633,8 +5633,8 @@ MUTATIONS = [
         # leaving the directory out is exactly what the person just did. O125.
         "the empty directory refusal offers leaving it out again",
         "internal/engine/engine.go",
-        'Remedy: "Name a directory, for example ./fixtures"}',
-        'Remedy: "Name a directory, for example ./fixtures, or leave it out to use the current one"}',
+        "core.Says(\"engine.NoOutDirFix\", \"Name a directory, for example ./fixtures\")",
+        "core.Says(\"engine.NoOutDirFix\", \"Name a directory, for example ./fixtures, or leave it out to use the current one\")",
         "TestTheEmptyDirectoryRefusalDoesNotOfferAWayOutThatIsRefused",
     ),
     (
@@ -5750,8 +5750,8 @@ MUTATIONS = [
     (
         "a refusal about a size that is too large goes back to saying the file is too small",
         "internal/format/format.go",
-        '\treturn fmt.Sprintf("%s cannot be larger than %d B - %s. Requested: %d B. %s",',
-        '\treturn fmt.Sprintf("%s cannot be smaller than %d B - %s. Requested: %d B. %s",',
+        "core.Says(\"format.AboveMaximum\", \"%s cannot be larger than",
+        "core.Says(\"format.AboveMaximum\", \"%s cannot be smaller than",
         "TestARefusalAboutTooLargeSaysLargerNotSmaller",
     ),
     (
@@ -5978,15 +5978,15 @@ MUTATIONS = [
         # prints. The names a person needs live in Instead on that road.
         "a refusal about an unknown damage stops naming the ones there are",
         "internal/damage/refusals.go",
-        '\treturn "use one of: " + strings.Join(e.Known, ", ")',
-        '\treturn "remove the damage line"',
+        "return core.Says(\"damage.UnknownInstead\", \"use one of: %s\", core.A(\"Known\", strings.Join(e.Known, \", \")))",
+        "return core.Says(\"damage.UnknownInsteadRemove\", \"remove the damage line\")",
         "TestADamageNobodyRegisteredIsRefusedWithTheNamesThereAre",
     ),
     (
         "a damage setting stops being checked against its declaration",
         "internal/damage/apply.go",
-        '\tif why == "" {',
-        '\tif why == "" || true {',
+        "why := p.Allows(raw)\n\tif why.IsZero() {",
+        "why := p.Allows(raw)\n\tif why.IsZero() || true {",
         "TestADamageSettingOutsideItsDeclarationIsRefused",
     ),
     (
@@ -6181,8 +6181,8 @@ MUTATIONS = [
     (
         "the reason given for a plan refusal names a ceiling other than the one in force",
         "internal/core/limits.go",
-        "\t\tHumanBytes(MaxPlanBytes))",
-        "\t\tHumanBytes(MaxPlanBytes/2))",
+        "A(\"Ceiling\", Bytes(MaxPlanBytes)))",
+        "A(\"Ceiling\", Bytes(MaxPlanBytes/2)))",
         "TestThePlanCeilingIsTheOneCoreStates",
     ),
     (
@@ -6244,8 +6244,8 @@ MUTATIONS = [
     (
         "a crash in a generator stops being one file's failure and takes the run",
         "internal/engine/crash.go",
-        '\t\terr = &GeneratorCrashError{Format: f.Desc.ID, While: "writing", Name: f.Name, Value: v}',
-        "\t\t_ = v",
+        "err = &GeneratorCrashError{Format: f.Desc.ID, While: crashWriting, Name: f.Name, Value: v}",
+        "_ = v",
         "TestAGeneratorThatCrashesWhileWritingCostsOneFile",
     ),
     (
@@ -6508,8 +6508,8 @@ MUTATIONS = [
     (
         "a batch of any format offers to put files inside it, which leads nowhere but a refusal",
         "internal/gui/window/recipe.go",
-        "holds = d.Container",
-        "holds = d.Container || true",
+        "holds = d.Container != nil",
+        "holds = d.Container != nil || true",
         "TestOnlyAFormatThatHoldsFilesOffersToPutFilesInIt",
     ),
     (
@@ -7944,14 +7944,14 @@ MUTATIONS = [
         "the archive package goes back to writing out the list of compression words by hand",
         "internal/format/archive/compression.go",
         "Reason: axes[Compression].Allows(raw),",
-        'Reason: "it takes one of: " + CompressBest + ", " + CompressDefault + ", " + CompressFast + ", " + CompressNone,',
+        "Reason: core.Says(\"archive.CompressionWords\", \"it takes one of: best, default, fast, none\"),",
         "TestTheSentenceNamingWhichWordsASettingTakesIsWrittenInOnePlace",
     ),
     (
         "an archive refuses an owner in words of its own rather than the declaration's",
         "internal/format/archive/ownership.go",
         "Reason: axes[EntryOwner].Allows(raw),",
-        'Reason: "it is not an owner this build knows",',
+        "Reason: core.Says(\"archive.OwnerWords\", \"it is not an owner this build knows\"),",
         "TestAnArchiveRefusesAValueInTheWordsTheRegistryBuilds",
     ),
     (
@@ -8013,8 +8013,8 @@ MUTATIONS = [
     (
         "the social card changes wording and the committed picture of it stays as it was",
         "web/templates/social.html",
-        "same bytes every run",
-        "identical bytes every run",
+        "one YAML file, same bytes in every CI run",
+        "one YAML file, identical bytes in every CI run",
         "TestTheSocialPictureShowsTheCardAsItIsNow",
     ),
     (
@@ -8462,8 +8462,8 @@ MUTATIONS = [
         # length of the string instead and it is out by a factor of two.
         "the note about a missing label reports its cost in the wrong encoding",
         "internal/format/txt/txt.go",
-        "codec.Cost(int64(len(line))), r.Bytes),",
-        "int64(len(line)), r.Bytes),",
+        "core.A(\"Length\", codec.Cost(int64(len(line)))), core.A(\"Bytes\", r.Bytes)),",
+        "core.A(\"Length\", int64(len(line))), core.A(\"Bytes\", r.Bytes)),",
         "TestALabelThatWillNotFitSaysWhatItWouldCost",
     ),
     (
@@ -8644,8 +8644,8 @@ MUTATIONS = [
     (
         "the XML label note reports what the comment costs in UTF-8",
         "internal/format/xmlfile/xml.go",
-        "\t\t\t\t\tcodec.Cost(int64(len(line)))),",
-        "\t\t\t\t\tint64(len(line))),",
+        "core.A(\"Length\", codec.Cost(int64(len(line))))),",
+        "core.A(\"Length\", int64(len(line)))),",
         "TestALabelThatWillNotFitSaysWhatItWouldCost",
     ),
     (
@@ -8727,8 +8727,8 @@ MUTATIONS = [
     (
         "a fragment is given a title, which belongs to a head it has not got",
         "internal/format/htmlfile/html.go",
-        "\tplain := s.prologue()",
-        "\tplain := headOpen + headClose",
+        "\thead, extra := plain, int64(0)",
+        "\thead, extra := \"<title>\"+label+\"</title>\"+plain, int64(0)",
         "TestTheLabelIsVisibleInBothHTMLShapes",
     ),
     (
@@ -8883,8 +8883,8 @@ MUTATIONS = [
     (
         "a package below both surfaces writes a setting in command line spelling",
         "internal/damage/refusals.go",
-        "\treturn \"remove the damage line\"",
-        "\treturn \"remove --damage from this target\"",
+        "core.Says(\"damage.UnknownInsteadRemove\", \"remove the damage line\")",
+        "core.Says(\"damage.UnknownInsteadRemove\", \"remove --damage from this target\")",
         "TestNoMessageBelowTheSurfacesIsWrittenInFlagSpelling",
     ),
     # The two entries about the column of names (a name dropped from the
@@ -10326,14 +10326,14 @@ MUTATIONS = [
         "a file of extends alone handed to the plain reader collects a second "
         "refusal about asking for no files, contradicting the README",
         "internal/recipe/recipe.go",
-        "\t\t\t\"read the file with \\\"tfg generate\\\" or \\\"tfg validate\\\", which do\")\n\t\treturn rec\n",
-        "\t\t\t\"read the file with \\\"tfg generate\\\" or \\\"tfg validate\\\", which do\")\n",
+        "\"read the file with \\\"tfg generate\\\" or \\\"tfg validate\\\", which do\"))\n\t\treturn rec\n",
+        "\"read the file with \\\"tfg generate\\\" or \\\"tfg validate\\\", which do\"))\n",
         "TestEveryRefusalAboutThePresetSideOfARecipeNamesItsLine",
     ),
     (
         "the refusal about a joint limit goes back to rounding both counts, so "
         "a request just over the limit prints as the limit itself",
-        "internal/format/format.go",
+        "internal/format/jointlimit.go",
         "\tif j.per() > 1 && got/j.per() != j.Max/j.per() {\n",
         "\tif j.per() > 1 {\n",
         "TestNoJointLimitRefusalPrintsTheRequestAndTheLimitAsOneNumber",
@@ -10344,9 +10344,9 @@ MUTATIONS = [
         "that reads the SENTENCE - the one checking the declarations stayed "
         "green on it, because a declaration with a Base can still be printed "
         "without one",
-        "internal/format/format.go",
-        "\treturn core.Exactly(got) + \" \" + j.Base, core.Exactly(j.Max) + \" \" + j.Base\n",
-        "\treturn core.Exactly(got) + \" \" + j.Base, core.Exactly(j.Max)\n",
+        "internal/format/jointlimit.go",
+        "core.Says(\"format.ExactlyOf\", \"%s %s\", core.A(\"Number\", core.Exactly(j.Max)), core.A(\"Unit\", core.UnitTerm(j.Base)))",
+        "core.Says(\"format.ExactlyOf\", \"%s\", core.A(\"Number\", core.Exactly(j.Max)))",
         "TestNoJointLimitRefusalPrintsTheRequestAndTheLimitAsOneNumber",
     ),
     (
@@ -10495,7 +10495,7 @@ MUTATIONS = [
         "a group a parameter emptied goes quiet, so a set of seven groups "
         "ships as six and nothing in the run says which one is missing",
         "internal/preset/uploadvalidation.go",
-        '\tif s.bulk == 0 {\n\t\tout = append(out, "bulk is nought, so this set holds no mass upload.")\n\t}\n',
+        "\tif s.bulk == 0 {\n\t\tout = append(out, core.Says(\"preset.BulkNought\", \"bulk is nought, so this set holds no mass upload.\"))\n\t}\n",
         "\t_ = s.bulk\n",
         "TestAGroupAPresetLeavesOutIsSaidOutLoud",
     ),
@@ -10503,8 +10503,8 @@ MUTATIONS = [
         "a list of formats refused stops naming what this build does have, so "
         "somebody who typed heic has nowhere to find out what it takes",
         "internal/preset/build.go",
-        '\t\treturn fmt.Sprintf("this build has no format called that. It has: %s",\n\t\t\tstrings.Join(format.IDs(), ", "))\n',
-        '\t\treturn "this build has no format called that"\n',
+        "\"this build has no format called that. It has: %s\", core.A(\"Join\", strings.Join(format.IDs(), \", \")))",
+        "\"this build has no format called that\")",
         "TestAListOfFormatsRefusedNamesWhatThisBuildHas",
     ),
     (
@@ -10616,7 +10616,7 @@ MUTATIONS = [
         "the preview offers the manifest of the run it did not make",
         "internal/gui/window/run.go",
         "\tsaid := r.line.said(exactly(planned), opt.OutDir) + text.AndNothingWrittenYet()\n",
-        "\tr.offer.theManifest(engine.ManifestPath(opt))\n\tsaid := r.line.said(exactly(planned), opt.OutDir) + text.AndNothingWrittenYet()\n",
+        "\tr.offer.manifest.show(engine.ManifestPath(opt))\n\tsaid := r.line.said(exactly(planned), opt.OutDir) + text.AndNothingWrittenYet()\n",
         "TestAPreviewNamesNoManifestAndOffersNone",
     ),
     (
@@ -11308,7 +11308,7 @@ MUTATIONS = [
         "a refusal starts at its own field's edge again, and two of them step down",
         "internal/gui/parts/grid.go",
         "\t\tcell.areaLeft = -x\n",
-        "\t\tcell.areaLeft = 0\n",
+        "\t\tcell.areaLeft = 0 * x\n",
         "TestARefusalStandsUnderItsRowAcrossIt",
     ),
     (
@@ -11476,29 +11476,29 @@ MUTATIONS = [
     (
         "a note about one file prints its name raw",
         "internal/manifest/manifest.go",
-        "\t\treturn fmt.Sprintf(\"%s: %s\", core.Shown(g.first[0]), detail)",
-        "\t\treturn fmt.Sprintf(\"%s: %s\", g.first[0], detail)",
+        "core.A(\"File\", core.Shown(g.First[0]))",
+        "core.A(\"File\", g.First[0])",
         "TestANoteAboutAFileShowsANameNobodyCanReadAsAnEscape",
     ),
     (
         "a note about several files prints their names raw",
         "internal/manifest/manifest.go",
-        "\tnamed := strings.Join(core.ShownEach(g.first), \", \")",
-        "\tnamed := strings.Join(g.first, \", \")",
+        "named := strings.Join(core.ShownEach(g.First), \", \")",
+        "named := strings.Join(g.First, \", \")",
         "TestANoteAboutAFileShowsANameNobodyCanReadAsAnEscape",
     ),
     (
         "a refusal of two names differing in case prints them raw",
         "internal/engine/names.go",
-        "which differ only in case. Most filesystems treat those as one file, so one would be written over the other and the manifest would describe both\",\n\t\t\towner.id, id, core.Shown(owner.name), core.Shown(name))",
-        "which differ only in case. Most filesystems treat those as one file, so one would be written over the other and the manifest would describe both\",\n\t\t\towner.id, id, owner.name, name)",
+        "which differ only in case. Most filesystems treat those as one file, so one would be written over the other and the manifest would describe both\",\n\t\t\tcore.A(\"First\", owner.id), core.A(\"Second\", id), core.A(\"FirstName\", core.Shown(owner.name)), core.A(\"SecondName\", core.Shown(name)))",
+        "which differ only in case. Most filesystems treat those as one file, so one would be written over the other and the manifest would describe both\",\n\t\t\tcore.A(\"First\", owner.id), core.A(\"Second\", id), core.A(\"FirstName\", owner.name), core.A(\"SecondName\", name))",
         "TestARefusalShowsANameNobodyCanReadAsAnEscape",
     ),
     (
         "a refusal of a taken name prints the path raw",
         "internal/engine/errors.go",
-        "remove the file first\",\n\t\tcore.Shown(e.Path))",
-        "remove the file first\",\n\t\te.Path)",
+        "remove the file first\",\n\t\tcore.A(\"Path\", core.Shown(e.Path)))",
+        "remove the file first\",\n\t\tcore.A(\"Path\", e.Path))",
         "TestARefusalShowsANameNobodyCanReadAsAnEscape",
     ),
     (
@@ -11532,15 +11532,15 @@ MUTATIONS = [
     (
         "a refusal of an output directory that is a file prints it raw",
         "internal/engine/preflight.go",
-        "\"the output directory %s is a file, not a directory\", core.Shown(opt.OutDir))",
-        "\"the output directory %s is a file, not a directory\", opt.OutDir)",
+        "\"the output directory %s is a file, not a directory\", core.A(\"Dir\", core.Shown(opt.OutDir)))",
+        "\"the output directory %s is a file, not a directory\", core.A(\"Dir\", opt.OutDir))",
         "TestTheLinesAboutARunShowANameNobodyCanReadAsAnEscape",
     ),
     (
         "a refusal of a held directory prints it raw",
         "internal/engine/errors.go",
-        "\t\tcore.Shown(e.Dir), core.Shown(e.Path))",
-        "\t\te.Dir, e.Path)",
+        "core.A(\"Dir\", core.Shown(e.Dir)), core.A(\"Lock\", core.Shown(e.Path)))",
+        "core.A(\"Dir\", e.Dir), core.A(\"Lock\", e.Path))",
         "TestTheLinesAboutARunShowANameNobodyCanReadAsAnEscape",
     ),
     (
@@ -11652,8 +11652,8 @@ MUTATIONS = [
     (
         "the window's refusal at the foot of the form is raw",
         "internal/gui/window/runrefuse.go",
-        "\t\tloose = append(loose, core.ShownText(one.Error()))",
-        "\t\tloose = append(loose, one.Error())",
+        "loose = append(loose, core.ShownText(text.Refusal(one, \"\")))",
+        "loose = append(loose, text.Refusal(one, \"\"))",
         "TestTheWindowShowsADirectoryNobodyCanReadAsAnEscape",
     ),
     (
@@ -11788,15 +11788,15 @@ MUTATIONS = [
     (
         "the window names the instructions it could not write raw",
         "internal/gui/window/run.go",
-        "text.InstructionsNotSaved(core.Shown(saved.Missed.Path), core.ShownText(saved.Missed.Err.Error()))",
-        "text.InstructionsNotSaved(saved.Missed.Path, core.ShownText(saved.Missed.Err.Error()))",
+        "text.InstructionsNotSaved(core.Shown(saved.Missed.Path), core.ShownText(text.Refusal(saved.Missed.Err, \"\")))",
+        "text.InstructionsNotSaved(saved.Missed.Path, core.ShownText(text.Refusal(saved.Missed.Err, \"\")))",
         "TestTheWindowSaysInstructionsItCouldNotWriteWithTheEscape",
     ),
     (
         "the window says why the instructions were not written in the system's raw words",
         "internal/gui/window/run.go",
-        "text.InstructionsNotSaved(core.Shown(saved.Missed.Path), core.ShownText(saved.Missed.Err.Error()))",
-        "text.InstructionsNotSaved(core.Shown(saved.Missed.Path), saved.Missed.Err.Error())",
+        "text.InstructionsNotSaved(core.Shown(saved.Missed.Path), core.ShownText(text.Refusal(saved.Missed.Err, \"\")))",
+        "text.InstructionsNotSaved(core.Shown(saved.Missed.Path), text.Refusal(saved.Missed.Err, \"\"))",
         "TestTheWindowSaysInstructionsItCouldNotWriteWithTheEscape",
     ),
     # --- the WinGet and Chocolatey packages and their renderer (2026-09-25) ---
@@ -11936,8 +11936,8 @@ MUTATIONS = [
     (
         "the renderer writes into a directory that already holds something",
         ".github/scripts/build_packages.py",
-        "    if os.path.exists(out) and (not os.path.isdir(out) or os.listdir(out)):",
-        "    if os.path.exists(out) and not os.path.isdir(out):",
+        "holds = not os.path.isdir(out) or bool(os.listdir(out))",
+        "holds = not os.path.isdir(out)",
         "TestTheRendererRefusesInputsThatLookFineAndAreWrong",
     ),
     (
@@ -11983,10 +11983,10 @@ MUTATIONS = [
         "TestTheRendererRefusesAValueThatWouldBreakItsFile",
     ),
     (
-        "the README counts two formats fewer than the program ships",
+        "the README counts a hundred formats more than the program ships",
         "README.md",
-        "You pick one of its 29 formats and the size you want,",
-        "You pick one of its 27 formats and the size you want,",
+        "has an opinion about it. You pick one of its ",
+        "has an opinion about it. You pick one of its 1",
         "TestTheReadmeCountsTheFormatsItShips",
     ),
     # --- the package renderer refuses instead of crashing (2026-09-25, review of #143) ---
@@ -12807,8 +12807,8 @@ MUTATIONS = [
     (
         'the file ceiling is left one line above the biggest file, which grants headroom nobody decided to grant and lets the next arrival in unnoticed',
         'internal/guard/codeshape_test.go',
-        '\tlongestFile = 399',
-        '\tlongestFile = 400',
+        "\tlongestFile = ",
+        "\tlongestFile = 1 + ",
         'TestTheCeilingsAreTodaysMeasurementAndNotALooserNumber',
     ),
     (
@@ -12854,7 +12854,7 @@ MUTATIONS = [
         "every refused link counts as a missing privilege, so a real refusal skips off CI",
         "internal/guard/symlinkescape_test.go",
         "\treturn errors.Is(err, errPrivilegeNotHeld) || errors.Is(err, fs.ErrPermission)",
-        "\treturn true",
+        "\treturn true || errors.Is(err, errPrivilegeNotHeld) || errors.Is(err, fs.ErrPermission)",
         "TestACaseBuiltOnALinkSkipsOnlyOffCI",
     ),
     (
@@ -13022,14 +13022,14 @@ MUTATIONS = [
         "the busy state tells nobody that it changed",
         "internal/gui/window/runbusy.go",
         "if was != occupied && b.changed != nil {",
-        "if false && b.changed != nil {",
+        "if was != occupied && false && b.changed != nil {",
         "TestRestartWaitsForTheRunAndClosesTheWayAPersonDoes",
     ),
     (
         "Restart now closes the window without the close button's way",
         "internal/gui/window/open.go",
         "prefs := NewPreferences(h, func() { leave() },",
-        "prefs := NewPreferences(h, func() { h.Close() },",
+        "prefs := NewPreferences(h, func() { _ = leave; h.Close() },",
         "TestRestartWaitsForTheRunAndClosesTheWayAPersonDoes",
     ),
     (
@@ -13070,15 +13070,15 @@ MUTATIONS = [
     (
         "the Polish catalogue loses an entry",
         "internal/gui/text/locale/pl.json",
-        '  "ButtonForget": { "other": "Zapomnij" },',
-        "",
+        "  \"ButtonForget\": {",
+        "  \"ButtonForgetX\": {",
         "TestEveryLanguageSaysEverythingTheWindowSays",
     ),
     (
         "the Polish catalogue says a letter the typeface lacks",
         "internal/gui/text/locale/pl.json",
-        '"LanguageName": { "other": "Polski" }',
-        '"LanguageName": { "other": "Polski 語" }',
+        "\"other\": \"Polski\" }",
+        "\"other\": \"Polski \u8a9e\" }",
         "TestEveryLetterEveryLanguageSaysIsInTheTypeface",
     ),
     (
@@ -13126,15 +13126,15 @@ MUTATIONS = [
     (
         "the English copy of the registries answers for them in an English window",
         "internal/gui/text/catalogue.go",
-        'path.Join(dir, RegistryFolder), English+".json")',
-        'path.Join(dir, RegistryFolder), "")',
+        "err := loadFiles(bundle, fsys, path.Join(dir, folder), English+\".json\")",
+        "err := loadFiles(bundle, fsys, path.Join(dir, folder), \"\")",
         "TestTheEnglishCopyOfTheRegistriesNeverAnswersForThem",
     ),
     (
         "the words of the registries are never read into the language chosen",
         "internal/gui/text/catalogue.go",
-        'err := loadFiles(bundle, fsys, path.Join(dir, RegistryFolder), English+".json")',
-        "var err error",
+        "err := loadFiles(bundle, fsys, path.Join(dir, folder), English+\".json\")",
+        "_ = folder\n\t\tvar err error",
         "TestThePolishWindowSaysTheRegistriesInPolish",
     ),
     (
@@ -13147,8 +13147,8 @@ MUTATIONS = [
     (
         "a preset's note stops saying which value it is about, so no language can find it",
         "internal/preset/expansion.go",
-        "out = append(out, Note{About: name, Said: said})",
-        "out = append(out, Note{Said: said})",
+        "out = append(out, Note{About: name, Said: core.Says(\"preset.Defaulted\",",
+        "out = append(out, Note{Said: core.Says(\"preset.Defaulted\",",
         "TestThePolishWindowSaysTheRegistriesInPolish",
     ),
     (
@@ -13219,7 +13219,7 @@ MUTATIONS = [
     ),
     (
         "a tool run from the window finds the answer and never shows it",
-        "internal/gui/window/tools.go",
+        "internal/gui/window/toolsresult.go",
         "\t\trows.Add(t.resultRow(row))",
         "\t\t_ = row",
         "TestTheWindowRunsAToolAndSaysWhatTheCommandLineSays",
@@ -13243,7 +13243,7 @@ MUTATIONS = [
     ),
     (
         "Copy on the Tools tab puts the name of the algorithm on the clipboard instead of the checksum",
-        "internal/gui/window/tools.go",
+        "internal/gui/window/toolsresult.go",
         "\t\tt.host.Copy(value)",
         "\t\tt.host.Copy(row[0])",
         "TestTheToolsScreenTakesAChosenFileAndCopiesTheChecksum",
@@ -13261,7 +13261,7 @@ MUTATIONS = [
         "the keyboard acts on the last screen with a directory rather than on the tab on show",
         "internal/gui/window/open.go",
         "\twireKeyboard(h, keyed, &looking)",
-        "\twireKeyboard(h, keyed, &showing)",
+        "\t_ = looking\n\twireKeyboard(h, keyed, &showing)",
         "TestTheKeyboardRunsAToolFromInsideItsBox",
     ),
     (
@@ -13328,7 +13328,7 @@ MUTATIONS = [
         "a write stopped in the middle writes down the checksums it had",
         "internal/tool/checksum/write.go",
         "\tif stopped != nil {\n\t\treturn nil, stopped\n\t}\n\tsums := make([]string, len(answers))",
-        "\tsums := make([]string, len(answers))",
+        "\t_ = stopped\n\tsums := make([]string, len(answers))",
         "TestAStoppedWriteLeavesNothing",
     ),
     (
@@ -13340,9 +13340,9 @@ MUTATIONS = [
     ),
     (
         "the Tools tab draws every item of a note, however many there are",
-        "internal/gui/window/tools.go",
-        "\t\tif i == parts.NoteItemsShown {\n",
-        "\t\tif false {\n",
+        "internal/gui/window/toolsresult.go",
+        "noteLines(d, n, parts.NoteItemsShown)",
+        "noteLines(d, n, parts.NoteItemsShown*1000)",
         "TestTheToolsTabCutsALongListShort",
     ),
     (
@@ -13778,7 +13778,7 @@ MUTATIONS = [
         "the writer swallows the panic a helper kept",
         "internal/format/video/ahead.go",
         "		panic(j.panicked)",
-        "		return Coded{}, nil",
+        "\t\treturn tileCoded{}, nil",
         "TestAPanicOnAHelperComesOutOnTheGoroutineThatAskedForIt",
     ),
     (
@@ -14208,8 +14208,8 @@ MUTATIONS = [
         # file at its smallest size cannot be reached.
         "the smallest geojson feature leaves out the collection's bbox",
         "internal/format/geojson/feature.go",
-        "\tclosing := r.epilogue(nil, widestBox(r.s, r.g))",
-        "\tclosing := r.epilogue(nil, extent{})",
+        "r.closing = r.epilogue(r.closing[:0], widestBox(r.s, r.g))",
+        "r.closing = r.epilogue(r.closing[:0], extent{})",
         "TestEveryGeoJSONSettingSurvivesItsReferenceTool",
     ),
     (
@@ -14342,7 +14342,7 @@ MUTATIONS = [
         "a page takes any format as a picture",
         "internal/format/htmlfile/pictures.go",
         "\tif !ok {\n\t\treturn nil, 0, &format.PropertyValueError{",
-        "\tif false {\n\t\treturn nil, 0, &format.PropertyValueError{",
+        "\tif !ok && false {\n\t\treturn nil, 0, &format.PropertyValueError{",
         "TestAPageRefusesPicturesThatAreNotPictures",
     ),
     (
