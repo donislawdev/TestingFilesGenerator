@@ -5,6 +5,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/picture"
 )
 
 // The settings of a document and what each of them takes. The names and the
@@ -37,6 +38,20 @@ const (
 
 	// CodePage is the manifest key of the code page the header declares.
 	CodePage = "code_page"
+
+	// Links, PictureData and its two values were approved by the owner on
+	// 2026-10-15 after six readers were measured (docs/RTF-2-2026-10-15.md
+	// sections 1 and 9). The pictures themselves take the names a mail
+	// message and a page give them (package picture).
+	Links = "links"
+	// MaxLinks is the ceiling links has in a page, so the same name has the
+	// same range. No reader measured refused a million or lost one it
+	// returns, and LibreOffice took over eleven minutes over them.
+	MaxLinks = 1_000_000
+
+	PictureData = "picture_data"
+	Hex         = "hex"
+	Binary      = "binary"
 )
 
 // declaredCodePage is what \ansicpg says. With codepage the fonts carry code
@@ -52,12 +67,23 @@ type settings struct {
 	encoding string
 	every    bool
 	nesting  int
+	// links is how many link fields the list carries, none when it is 0.
+	links int
+	// pictures are the pictures the document shows, and binary says their
+	// bytes are written as they are rather than in hex.
+	pictures picture.Settings
+	binary   bool
 }
 
 // properties is the declaration of every setting, in the order both surfaces
 // show them: what the text says, how it is written, what the document holds,
-// and how deep.
+// how deep, its links, and then the pictures in it.
 func properties() []format.Property {
+	return append(ownProperties(), pictureProperties()...)
+}
+
+// ownProperties are the settings of the text of the document.
+func ownProperties() []format.Property {
 	return []format.Property{{
 		Name: Characters, Kind: format.PropertyChoice,
 		Choices: []string{ASCII, International},
@@ -93,6 +119,11 @@ func properties() []format.Property {
 		Default: "0",
 		Detail: "How many groups the content sits inside, each one inside the last. 0 puts it straight in the document, and the label stays outside so the file still says what it is. " +
 			"No reader measured lost the content at 10 000 000 levels, but LibreOffice took 18.5 GB of memory over them and pandoc 14.5 GB, against about 2 GB each at 1 000 000.",
+	}, {
+		Name: Links, Kind: format.PropertyInt,
+		Min: 0, Max: MaxLinks,
+		Default: "0",
+		Detail:  linksDetail,
 	}}
 }
 
@@ -112,17 +143,28 @@ func settingsOf(props map[string]string) (settings, error) {
 		}
 		values[p.Name] = v
 	}
+	// Allows has already said each number is a whole number in range, so a
+	// value that still does not parse is this package's mistake.
 	n, err := strconv.Atoi(values[Nesting])
 	if err != nil {
-		// Allows has already said the value is a whole number in range, so a
-		// value that still does not parse is this package's mistake.
 		return settings{}, core.Defect(err)
+	}
+	links, err := strconv.Atoi(values[Links])
+	if err != nil {
+		return settings{}, core.Defect(err)
+	}
+	pictures, err := picture.Parse(values)
+	if err != nil {
+		return settings{}, err
 	}
 	return settings{
 		international: values[Characters] == International,
 		encoding:      values[TextEncoding],
 		every:         values[Elements] == Every,
 		nesting:       n,
+		links:         links,
+		pictures:      pictures,
+		binary:        values[PictureData] == Binary,
 	}, nil
 }
 
@@ -142,12 +184,15 @@ func valueOf(props map[string]string, p format.Property) (string, error) {
 // manifest is what the manifest records about the settings, every one of them
 // whatever was asked, so a reader never has to know a default.
 func (s settings) manifest() map[string]any {
-	chars, elements := ASCII, Basic
+	chars, elements, data := ASCII, Basic, Hex
 	if s.international {
 		chars = International
 	}
 	if s.every {
 		elements = Every
+	}
+	if s.binary {
+		data = Binary
 	}
 	return map[string]any{
 		Characters:   chars,
@@ -155,11 +200,13 @@ func (s settings) manifest() map[string]any {
 		Elements:     elements,
 		Nesting:      s.nesting,
 		CodePage:     declaredCodePage,
+		Links:        s.links,
+		PictureData:  data,
 	}
 }
 
 // adds says the settings put something into the document beyond the header,
 // which is what the refusal of a size too small has to name.
 func (s settings) adds() bool {
-	return s.international || s.every || s.nesting > 0
+	return s.international || s.every || s.nesting > 0 || s.links > 0
 }

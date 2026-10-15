@@ -10,6 +10,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	pic "github.com/donislawdev/TestingFilesGenerator/internal/format/picture"
 )
 
 // A format that holds other files stops planning them when the run is stopped.
@@ -52,16 +53,39 @@ func (c *countdown) Err() error {
 
 func (c *countdown) Done() <-chan struct{} { return c.done }
 
-// containerRequests are the four formats that plan files inside them, each
-// asked for forty, which a live context plans in well under a second.
+// containerRequests are the formats that plan files inside them, each asked for
+// forty, which a live context plans in well under a second. The archives by
+// name, since what they hold is a request of its own. Every format that
+// carries pictures from the registry, by the setting it declares: until
+// 2026-10-15 the list named html and eml by hand, and rtf, the third to carry
+// pictures, would have passed it unasked (docs/RTF-2-2026-10-15.md 2.4).
 func containerRequests() map[string]format.Request {
 	forty := []format.Content{{Format: "txt", Count: 40, Bytes: 1024}}
 	pictures := map[string]string{"inline": "40", "inline_size": "1kb"}
-	return map[string]format.Request{
-		"html":  {Bytes: 1 << 20, Seed: 7741, Label: true, Properties: pictures},
-		"eml":   {Bytes: 1 << 20, Seed: 7741, Label: true, Properties: pictures},
+	out := map[string]format.Request{
 		"zip":   {Bytes: 1 << 20, Seed: 7741, Label: true, Contains: forty},
 		"targz": {Bytes: 1 << 20, Seed: 7741, Label: true, Contains: forty},
+	}
+	for _, d := range format.All() {
+		for _, p := range d.Properties {
+			if p.Name == pic.Count {
+				out[d.ID] = format.Request{Bytes: 1 << 20, Seed: 7741, Label: true, Properties: pictures}
+			}
+		}
+	}
+	return out
+}
+
+// TestEveryFormatThatCarriesPicturesIsAskedToStop holds the list above to what
+// it says: the three formats known to carry pictures are among those asked, so
+// a registry that stopped declaring the setting cannot shrink the guard to the
+// archives in silence.
+func TestEveryFormatThatCarriesPicturesIsAskedToStop(t *testing.T) {
+	asked := containerRequests()
+	for _, id := range []string{"html", "eml", "rtf"} {
+		if _, ok := asked[id]; !ok {
+			t.Errorf("%s carries pictures and is not among the containers asked to stop", id)
+		}
 	}
 }
 

@@ -605,6 +605,26 @@
       "bytes": 32768,
       "sha256": "6451c067b5a67e9a8707228d3782aa0a9abca538cfa5bd0be4ece2dbf26a9c5d",
       "measured_on": "2026-10-15"
+    },
+    "rtf_16kib_pictures": {
+      "bytes": 16384,
+      "sha256": "4bc01c58e221c868c20060390f853574b268d34de43509e38a3fd0e616e0bc6d",
+      "measured_on": "2026-10-15"
+    },
+    "rtf_16kib_binary_jpg": {
+      "bytes": 16384,
+      "sha256": "d3853c5fb7dd2a39f57f595d91782e66a19f65efc295491342136bc2d554a8cd",
+      "measured_on": "2026-10-15"
+    },
+    "rtf_16kib_links": {
+      "bytes": 16384,
+      "sha256": "d5fcbce7f249bc0877c2adceaa46d4f8f6a64d7125473c49a226bc27a6ab5b7a",
+      "measured_on": "2026-10-15"
+    },
+    "rtf_64kib_all": {
+      "bytes": 65536,
+      "sha256": "872b64b301062ec7a49840ecac682f8e5e5c99ba40328bb24a2c0a792b6ca6b1",
+      "measured_on": "2026-10-15"
     }
   },
   "remeasured": [

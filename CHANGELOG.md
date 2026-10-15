@@ -63,6 +63,27 @@ because it turns other people's test suites red.
   code page the header declares. A large document is a long one to read:
   at 100 MiB pandoc took 95 s and 9.6 GB of memory, and LibreOffice had not
   finished after 20 minutes.
+- **Documents: pictures and links in `rtf`.** `inline`, `inline_format` and
+  `inline_size` put real `png` or `jpg` files into the document, the settings
+  a page and a mail message have, each in a paragraph that starts with its
+  name, such as `inline_0001.png`, the one description all six readers
+  measured return. Any other format is refused, since RTF names only those
+  two. `picture_data` says how their bytes are written: `hex`, twice the size
+  of the picture, the way LibreOffice writes them, or `binary`, byte for
+  byte, so the document is no longer text and a program that counts braces
+  or reads it as text loses its place. LibreOffice, pandoc and Tika give back
+  each picture in hex as the very file it is, and RichEdit shows the same
+  picture and writes it out again smaller. pandoc changes the line ends
+  inside a binary picture, so no `png` comes out whole, and it can lose the
+  text after the picture or refuse the whole document. `links` adds up to 1 000 000 links, 17
+  kinds in turn, each saying which kind it is - a bookmark in the document,
+  relative, absolute, without a scheme, `mailto:`, `tel:`, `data:`, a new
+  window, a screen tip and more - and every reader makes something different
+  of them: LibreOffice turns the one without a scheme into a `file://`
+  address, pandoc 3.1 and 3.7 drop every link with its text, and RichEdit
+  returns each address in front of its text. The manifest records the
+  pictures under the keys a page and a message use, and adds `picture_data`
+  and `links`.
 - **Films: the `webm` format.** A WebM video with an AV1 picture and no
   sound, at the exact size you ask for, like every other format. Its length
   is a setting of its own, independent of the size. The picture moves: every

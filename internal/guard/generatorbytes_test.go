@@ -426,6 +426,17 @@ func rtfGoldenCases() map[string]engine.Target {
 		"rtf_odd_clean": {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 8193)},
 		"rtf_32kib_everything": {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 32768), Label: true,
 			Properties: map[string]string{"characters": "international", "text_encoding": "both", "elements": "every", "nesting": "50"}},
+		// The pictures in hex and binary, the links, and all of it at once with
+		// the settings of the first piece (docs/RTF-2-2026-10-15.md).
+		"rtf_16kib_pictures": {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 16384), Label: true,
+			Properties: map[string]string{"inline": "2", "inline_size": "2kb"}},
+		"rtf_16kib_binary_jpg": {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 16384), Label: true,
+			Properties: map[string]string{"inline": "1", "inline_format": "jpg", "inline_size": "2kb", "picture_data": "binary"}},
+		"rtf_16kib_links": {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 16384), Label: true,
+			Properties: map[string]string{"links": "40"}},
+		"rtf_64kib_all": {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: map[string]string{"links": "18", "inline": "2", "inline_size": "4kb", "picture_data": "binary",
+				"characters": "international", "elements": "every", "nesting": "50"}},
 	}
 }
 

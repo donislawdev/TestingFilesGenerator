@@ -627,7 +627,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `docx` | `paragraphs` |
 | `xlsx` | `rows`, `columns` |
 | `pptx` | `slides` |
-| `rtf` | `characters`, `text_encoding`, `elements`, `nesting` |
+| `rtf` | `characters`, `text_encoding`, `elements`, `nesting`, `links`, `inline`, `inline_format`, `inline_size`, `picture_data` |
 | `csv` | `delimiter`, `line_ending`, `header`, `quote_style`, `columns` |
 | `log` | `entry_format`, `timestamps`, `rate`, `methods`, `status_mix`, `level_mix`, `ip_version`, `line_ending` |
 | `txt`, `md`, `xml` | `encoding`, `bom` |
