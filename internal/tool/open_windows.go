@@ -1,6 +1,6 @@
 //go:build windows
 
-package checksum
+package tool
 
 import "os"
 
@@ -8,7 +8,7 @@ import "os"
 // flags it knows and O_NONBLOCK is not one of them (syscall_windows.go, Open,
 // read 2026-09-30), so asking for it would change nothing. What was opened is
 // still asked what it is before a byte is read, the same as everywhere else -
-// see openRegular.
+// see OpenRegular.
 func openForLooking(path string) (*os.File, error) {
 	return os.Open(path)
 }

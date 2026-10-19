@@ -13223,7 +13223,7 @@ MUTATIONS = [
         # through - read from the source, so a file built only off Windows
         # is held on the Windows machine too.
         "the checksum tool opens its file for writing as well, and the one claim does not notice",
-        "internal/tool/checksum/open_unix.go",
+        "internal/tool/open_unix.go",
         "os.O_RDONLY|syscall.O_NONBLOCK, 0)",
         "os.O_RDWR|syscall.O_NONBLOCK, 0)",
         "TestEveryFileThisToolWritesIsCreatedThroughOneClaim",

@@ -123,6 +123,12 @@ func (e *NotAFileError) instead() core.Said {
 
 func (e *NotAFileError) Error() string { return e.Said().String() }
 
+// Unwrap is the refusal every tool shares, so a check that asks any tool
+// whether it turned a pipe away finds this one too.
+func (e *NotAFileError) Unwrap() error {
+	return &tool.NotRegularError{Path: e.Path, Directory: e.Directory}
+}
+
 // Said is the whole refusal, for a window that says it in its own language.
 func (e *NotAFileError) Said() core.Said { return tool.Said(e.what(), e.why(), e.instead()) }
 
