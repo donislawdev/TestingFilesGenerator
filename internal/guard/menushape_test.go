@@ -7,6 +7,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/driver/software"
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/theme"
 
@@ -379,7 +380,7 @@ func (l menuLayout) String() string {
 func inEveryMenuLayout(t *testing.T, ask func(menuLayout)) {
 	t.Helper()
 	content, canvas := laidOutWindow(t)
-	sized, resizable := canvas.(test.WindowlessCanvas)
+	sized, resizable := canvas.(software.WindowlessCanvas)
 	if !resizable {
 		t.Fatalf("the window's canvas is a %T, which cannot be resized, so the narrowest window cannot be asked", canvas)
 	}
