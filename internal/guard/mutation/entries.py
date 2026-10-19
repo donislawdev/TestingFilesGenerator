@@ -6933,10 +6933,11 @@ MUTATIONS = [
         "a module's own section states a version nobody builds",
         "THIRD-PARTY-NOTICES.md",
         # The number here follows the build: 0.40 became 0.41 on 2026-08-28
-        # and 0.42 on 2026-09-22 (#112), and each time this pattern went stale
-        # with it - a SKIP that reads like a proof, which staleness.py names.
+        # and 0.42 on 2026-09-22 (#112), 0.43 on 2026-10-19, and each time this
+        # pattern went stale with it - a SKIP that reads like a proof, which
+        # staleness.py names.
+        "Version 0.43.0. Supplies Unicode normalisation",
         "Version 0.42.0. Supplies Unicode normalisation",
-        "Version 0.41.0. Supplies Unicode normalisation",
         "TestTheNoticesFileNamesTheVersionsThatAreActuallyBuilt",
     ),
     (
