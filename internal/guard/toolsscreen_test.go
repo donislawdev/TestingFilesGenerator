@@ -19,6 +19,20 @@ import (
 // The Tools tab as somebody uses it - the owner's list of 2026-10-05 after
 // looking at the window with the folder tools in it.
 
+// chooseTool picks the tool with this ID in the menu at the head of the Tools
+// tab. A test about one tool chooses it rather than counting on the tool the
+// tab opens with: that is the first by name, and it changed the day a tool
+// whose name sorts first arrived (archive-scan, 2026-10-19) - five tests about
+// checksum found the box of another tool where theirs had been.
+func chooseTool(t *testing.T, screen fyne.CanvasObject, id string) {
+	t.Helper()
+	d, err := tool.Get(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	chooserUnder(t, screen, text.FieldTool()).SetSelected(text.ToolChoice(d.ID, d.Question))
+}
+
 // chooseToolIn is a step of a scene: the tool with this ID chosen in the menu
 // at the head of the Tools tab, the way a person picks it.
 func chooseToolIn(id string) func(t *testing.T, s scene) {
@@ -92,11 +106,7 @@ func TestTheMenuOfToolsNamesEachToolAsTheCommandLineDoes(t *testing.T) {
 // names, presses Run and waits for the answer.
 func runOnToolsTab(t *testing.T, host *fakeHost, screen fyne.CanvasObject, id string, boxes map[string]string) {
 	t.Helper()
-	d, err := tool.Get(id)
-	if err != nil {
-		t.Fatal(err)
-	}
-	chooserUnder(t, screen, text.FieldTool()).SetSelected(text.ToolChoice(d.ID, d.Question))
+	chooseTool(t, screen, id)
 	for name, value := range boxes {
 		fillField(t, screen, text.SettingLabel(name), value)
 	}

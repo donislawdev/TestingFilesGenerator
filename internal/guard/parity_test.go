@@ -360,6 +360,11 @@ var reachableFromTheWindow = []string{
 	"tool:checksum-write",
 	"tool:checksum-write.algorithm",
 	"tool:checksum-write.folder",
+	// Held by TestTheToolsTabLooksIntoAnArchive, which runs it from the
+	// screen with the limit set and holds what it says to the command line.
+	"tool:archive-scan",
+	"tool:archive-scan.archive",
+	"tool:archive-scan.unpacked_limit",
 }
 
 // notYetReachable is everything the engine can do that the window cannot.

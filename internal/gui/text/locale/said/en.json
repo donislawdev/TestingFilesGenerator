@@ -49,6 +49,236 @@
     "hash": "sha256-213afa915dd9",
     "other": "Write {{.Key}}: true or {{.Again}}: false."
   },
+  "archivescan.ADirectoryIsUnpacked": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-625960667a52",
+    "other": "a directory is what an archive unpacks into, not an archive"
+  },
+  "archivescan.AnswerAboutNoVersion": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-a9d2669e6062",
+    "other": "an answer about a file being written is an answer about no version of it"
+  },
+  "archivescan.Bomb": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Unpacked}}, {{.Size}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-1b4a0ab80849",
+    "other": "{{.Unpacked}} from {{.Size}}"
+  },
+  "archivescan.Bytes": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Size}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-a7df568dcb25",
+    "other": "{{.Size}}"
+  },
+  "archivescan.Changed": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-7b323b86f3c7",
+    "other": "{{.Path}} changed while it was being read"
+  },
+  "archivescan.Checksum": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-046f31c01563",
+    "other": "its contents do not match their checksum"
+  },
+  "archivescan.Counted": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Counted}}, {{.Listed}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-7ec127709e04",
+    "other": "the record at its end gives the number of entries as {{.Counted}} and the list holds {{.Listed}}"
+  },
+  "archivescan.Device": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-679cb400e806",
+    "other": "it is a device"
+  },
+  "archivescan.Encrypted": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-f93c3b3dbeb0",
+    "other": "it is encrypted"
+  },
+  "archivescan.EndsEarly": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-d7126b8d60eb",
+    "other": "its contents end before the size the list gives them"
+  },
+  "archivescan.EntryWhy": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Name}}, {{.Why}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-13b3c18bff10",
+    "other": "{{.Name}}: {{.Why}}"
+  },
+  "archivescan.GzipHeader": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-7a245481ab58",
+    "other": "its gzip header is broken"
+  },
+  "archivescan.IsADirectory": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-99f387f3e133",
+    "other": "{{.Path}} is a directory and this looks into one archive"
+  },
+  "archivescan.IsNotAFile": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-28957d41213f",
+    "other": "{{.Path}} is not a file but a device, a pipe or a socket"
+  },
+  "archivescan.IsNotAnArchive": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-852351e5de82",
+    "other": "{{.Path}} is not a ZIP, TAR or gzip archive"
+  },
+  "archivescan.ItDoesNotBegin": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-fc6fa1f8683f",
+    "other": "it does not begin the way any of them does, and the name of a file does not decide what it is"
+  },
+  "archivescan.ItsOwnFormat": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-13b59184ca3a",
+    "other": "its list of contents is written in a format of its own"
+  },
+  "archivescan.Link": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Name}}, {{.Target}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-f259a6b86f03",
+    "other": "{{.Name}} -> {{.Target}}"
+  },
+  "archivescan.ListElsewhere": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-f2723b1851e0",
+    "other": "its list of contents is not where the record at its end says"
+  },
+  "archivescan.ListEndsEarly": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-13e077022aaf",
+    "other": "its list of contents ends in the middle of an entry"
+  },
+  "archivescan.ListHoldsOther": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-294d9d38d2bf",
+    "other": "its list of contents holds something that is not an entry"
+  },
+  "archivescan.Method": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Method}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-909cb4c9c048",
+    "other": "it is packed with method {{.Method}}, which this tool does not read"
+  },
+  "archivescan.Name": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Name}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-1a0545a47535",
+    "other": "{{.Name}}"
+  },
+  "archivescan.NameAZipOrTar": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-6b8df2e3f117",
+    "other": "name a ZIP, TAR or TAR.GZ file"
+  },
+  "archivescan.NameOneArchive": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-b3119045be6e",
+    "other": "name one archive file"
+  },
+  "archivescan.NoEnd": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-638b1e0460e7",
+    "other": "the record at its end, which says where its list of contents is, is missing"
+  },
+  "archivescan.NotReadYet": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, {{.Kind}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-bfe67470dde3",
+    "other": "{{.Path}} is a {{.Kind}} archive, which this tool does not read yet"
+  },
+  "archivescan.NotWhereListed": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-8e9d4c7346e8",
+    "other": "it does not start where the list of contents says"
+  },
+  "archivescan.OverLimit": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Unpacked}}, {{.Limit}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-31b786bac0bd",
+    "other": "{{.Unpacked}} against a limit of {{.Limit}}"
+  },
+  "archivescan.PackAsZip": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-97b44719e0c2",
+    "other": "pack the same files as ZIP or TAR, and look into that"
+  },
+  "archivescan.Pipe": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-357c8d55b7cd",
+    "other": "it is a pipe"
+  },
+  "archivescan.ReadingMayNeverEnd": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-9055c322986c",
+    "other": "reading one may never end, so it is not started"
+  },
+  "archivescan.Rights": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-0f9eff296b16",
+    "other": "it runs with the rights of its owner"
+  },
+  "archivescan.RunsIntoList": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-a7a637c4c573",
+    "other": "its contents run into the list of contents"
+  },
+  "archivescan.Same": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Name}}, {{.First}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-8c7055ead538",
+    "other": "{{.Name}} = {{.First}}"
+  },
+  "archivescan.Size": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Size}}, {{.Exactly}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-8deb8dd02c4a",
+    "other": "{{.Size}} ({{.Exactly}})"
+  },
+  "archivescan.Socket": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-a0d8c46d99ca",
+    "other": "it is a socket"
+  },
+  "archivescan.Split": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-66a4b1365362",
+    "other": "it says it is one part of an archive split across several files"
+  },
+  "archivescan.StoppedBomb": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Ratio}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-a9e09bc34953",
+    "other": "it unpacks to more than {{.Ratio}} times what was read of it, and no more is read"
+  },
+  "archivescan.StoppedEntries": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-f587645b5f7b",
+    "other": "it lists more than {{.Most}} entries, and no more are read"
+  },
+  "archivescan.StoppedNames": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-21ea12750101",
+    "other": "its names take more room than this tool sets aside to compare them, and no more are read"
+  },
+  "archivescan.StreamBroken": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-afe268a16a8f",
+    "other": "it ends early, or its contents do not unpack"
+  },
+  "archivescan.TarHeader": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-0350e128590c",
+    "other": "a header is broken, or it ends in the middle of one"
+  },
+  "archivescan.TwoNames": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Listed}}, {{.Local}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-8816d7bc260e",
+    "other": "{{.Listed}} in the list, {{.Local}} at the entry"
+  },
+  "archivescan.Type": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Type}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-ea85c62d6ca3",
+    "other": "it is an entry of type {{.Type}}, which most programs do not unpack"
+  },
+  "archivescan.WaitAndRunAgain": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-161d36039e9c",
+    "other": "wait until whatever is writing it has finished, and run this again"
+  },
   "avif.MinimumReason": {
     "description": "Said by internal/format/avif - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Coded}}, {{.Box}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-97b2a4a72e3a",

@@ -131,6 +131,7 @@ func TestTheKeyboardRunsAToolFromInsideItsBox(t *testing.T) {
 	entryUnder(t, first, text.FieldTargetID()).SetText("keys")
 
 	screen := selectTab(t, content, text.TabTools())
+	chooseTool(t, screen, checksum.ID)
 	box := entryUnder(t, screen, text.SettingLabel(checksum.InputFile))
 	box.SetText(path)
 	pressInABox(t, box, fyne.KeyReturn, fyne.KeyModifierControl)

@@ -98,9 +98,10 @@ var layer = map[string]int{
 	"internal/engine": 3,
 	"internal/audit":  3,
 
-	"internal/tool":          4,
-	"internal/tool/checksum": 4,
-	"internal/tool/all":      4,
+	"internal/tool":             4,
+	"internal/tool/checksum":    4,
+	"internal/tool/archivescan": 4,
+	"internal/tool/all":         4,
 
 	"internal/cli":           5,
 	"internal/gui":           5,
@@ -203,8 +204,9 @@ var sameLayerAllowed = map[string][]string{
 
 	// A tool registers itself with the registry beside it, and the package that
 	// pulls every tool in reaches each of them - the arrangement of the formats.
-	"internal/tool/checksum": {"internal/tool"},
-	"internal/tool/all":      {"internal/tool/checksum"},
+	"internal/tool/checksum":    {"internal/tool"},
+	"internal/tool/archivescan": {"internal/tool"},
+	"internal/tool/all":         {"internal/tool/checksum", "internal/tool/archivescan"},
 
 	// A recipe checks the damages it names against the registry that holds
 	// them, the same way it checks a format against the format registry. It
