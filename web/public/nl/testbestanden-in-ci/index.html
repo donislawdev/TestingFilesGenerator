@@ -223,7 +223,7 @@ targets:
   test:
     runs-on: ubuntu-latest
     env:
-      TFG_VERSION: "0.4.0"
+      TFG_VERSION: "0.5.0"
     steps:
       - uses: actions/checkout@v4
 
@@ -257,7 +257,7 @@ targets:
   <pre><code>fixtures:
   image: ubuntu:24.04
   variables:
-    TFG_VERSION: "0.4.0"
+    TFG_VERSION: "0.5.0"
   script:
     - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
     - base=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$TFG_VERSION
@@ -342,7 +342,7 @@ exit $LASTEXITCODE</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.4.0</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">Testbestanden voor QA, in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren.</p>
     </div>
     <div class="footer-col">

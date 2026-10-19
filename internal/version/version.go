@@ -8,8 +8,8 @@ package version
 // explain a hash mismatch after an upgrade.
 //
 // Set to 0.1.0 by the owner on 2026-08-02, raised to 0.2.0 on 2026-08-28, to
-// 0.3.0-rc1 on 2026-09-03, to 0.3.0 on 2026-09-09 and to 0.4.0 on 2026-09-25,
-// every one of them by the owner. It stopped being an internal number the day 0.1.0 was published: this
+// 0.3.0-rc1 on 2026-09-03, to 0.3.0 on 2026-09-09, to 0.4.0 on 2026-09-25 and
+// to 0.5.0 on 2026-10-20, every one of them by the owner. It stopped being an internal number the day 0.1.0 was published: this
 // is what somebody compares their build against when a hash they stored months
 // ago does not match.
 //
@@ -26,6 +26,14 @@ package version
 // recipe_hash of a run from a preset, because a preset now gives every target
 // a purpose, and the changelog says so under Changed.
 //
+// 0.5.0 moves bytes in one format, and only where the changelog says so under
+// Breaking: an HTML page with no label - the smallest one and every page
+// written with --clean - carries the title Page where 0.4.0 wrote an empty
+// one. The release check generated every format 0.4.0 had at its default
+// settings with the published 0.4.0 and with this build, and found none of
+// the 26 changed. The settings of html and eml that moved bytes on the way to
+// this release were never in one, so they are listed under Added.
+//
 // The absence of a suffix is a decision rather than tidying up. The release
 // workflow marks a release as a prerelease when the TAG NAME carries a hyphen,
 // which is what kept 0.3.0-rc1 off the front page and out of "latest" while it
@@ -37,7 +45,7 @@ package version
 // anything. The entries that shipped as 0.3.0-rc1 were folded into the 0.3.0
 // section on 2026-09-09 for the same reason the version has one place: someone
 // upgrading from 0.2.0 needs one list of what changed, not two.
-const Version = "0.4.0"
+const Version = "0.5.0"
 
 // LicenceNotice is what "tfg license" prints and what the window's about
 // screen shows.
