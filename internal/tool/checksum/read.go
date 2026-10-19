@@ -3,9 +3,12 @@ package checksum
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"hash"
 	"io"
 	"os"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/tool"
 )
 
 // Reading files, for all three tools of this package. One way in, so a file
@@ -64,36 +67,15 @@ func digest(ctx context.Context, path string, chosen map[string]bool, scratch []
 	return out, before, nil
 }
 
-// openRegular opens a path for reading, and hands it back only when what was
-// opened is a file.
-//
-// Followed through a link, the way a person naming a file means it - but what
-// is at the end has to be a file. A directory cannot be read as one, and a
-// pipe or a device can be read forever.
-//
-// Asked of the open file rather than of the name, since 2026-09-30. The name
-// was asked first and opened second until then, and between the two looks it
-// could come to stand for a pipe, which open then waited on for good - a
-// review of #157 found it. Now there is one look, at what was opened, and the
-// open itself does not wait (openForLooking). The price is that a device named
-// on purpose is opened and closed again, never read.
+// openRegular is tool.OpenRegular with its refusal in the words of these
+// tools - a checksum of a directory, not just a directory.
 func openRegular(path string) (*os.File, os.FileInfo, error) {
-	f, err := openForLooking(path)
-	if err != nil {
-		return nil, nil, err
+	f, info, err := tool.OpenRegular(path)
+	var not *tool.NotRegularError
+	if errors.As(err, &not) {
+		return nil, nil, &NotAFileError{Path: path, Directory: not.Directory}
 	}
-	info, err := f.Stat()
-	if err == nil && !info.Mode().IsRegular() {
-		err = &NotAFileError{Path: path, Directory: info.IsDir()}
-	}
-	if err == nil {
-		err = waitAgain(f)
-	}
-	if err != nil {
-		_ = f.Close()
-		return nil, nil, err
-	}
-	return f, info, nil
+	return f, info, err
 }
 
 // changed says whether the file moved under the read. A checksum of a file

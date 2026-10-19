@@ -1436,8 +1436,8 @@ jobs:
     # searching.
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    # Four targets at five minutes each, plus the build and the baseline pass.
-    timeout-minutes: 45
+    # Seven targets at five minutes each, plus the build and the baseline pass.
+    timeout-minutes: 55
     env:
       CGO_ENABLED: "0"
     steps:
@@ -1461,7 +1461,7 @@ jobs:
         # next search starts from nothing.
         run: |
           set -euo pipefail
-          for target in FuzzParseSize FuzzParseRecipe FuzzNameTemplate FuzzCanonicalRecipe FuzzPresetExpansion FuzzChecksumFile; do
+          for target in FuzzParseSize FuzzParseRecipe FuzzNameTemplate FuzzCanonicalRecipe FuzzPresetExpansion FuzzChecksumFile FuzzArchiveScan; do
             echo "=== $target ==="
             go test -tags "$(cat .github/build-tags)" ./internal/guard/ -run "^$" -fuzz "^${target}$" -fuzztime 5m
           done

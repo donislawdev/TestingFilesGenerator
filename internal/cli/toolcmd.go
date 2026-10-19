@@ -297,11 +297,11 @@ func parseAround(fs *flag.FlagSet, args []string) ([]string, error) {
 
 // renderToolResult prints what a tool found.
 //
-// A mismatch is a failure with its own code, and a failed run writes nothing
-// to standard output - the same as verify - so the whole answer goes to the
-// error channel, JSON included.
+// A mismatch, or a conclusion the tool declares failing, is a failure with its
+// own code, and a failed run writes nothing to standard output - the same as
+// verify - so the whole answer goes to the error channel, JSON included.
 func renderToolResult(d tool.Descriptor, r tool.Result, asJSON bool, out, errOut io.Writer) int {
-	failed := r.Verdict.Outcome == tool.Mismatch
+	failed := d.Failed(r)
 	w := out
 	if failed {
 		w = errOut
@@ -317,6 +317,9 @@ func renderToolResult(d tool.Descriptor, r tool.Result, asJSON bool, out, errOut
 		printNotes(d, r.Notes, w)
 		if said := r.Verdict.Said(); said != "" {
 			fmt.Fprintf(w, "\n%s\n", said)
+		}
+		if c, ok := d.Conclusion(r.Concluded); ok {
+			fmt.Fprintf(w, "\n%s\n", c.Says)
 		}
 	}
 	if failed {

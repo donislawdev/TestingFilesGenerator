@@ -42,6 +42,15 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Is this archive safe to unpack?** `tfg tool archive-scan <archive>`, and
+  the same on the Tools tab, reads a ZIP, TAR, TAR.GZ or gzip file and
+  everything in it without writing anything, and says what unpacking it
+  would do: entries written outside the folder, links, devices, names that
+  land on one file on Windows or macOS, names a system cannot write,
+  archives built to explode, contents that are not what the archive says.
+  `--unpacked_limit` reports an archive that unpacks to more than you allow.
+  Safe ends with code 0 and anything found with 7, the whole report on the
+  error channel. 7z and RAR are recognised and not read yet.
 - **Documents: the `rtf` format.** A Rich Text Format document at the exact
   size you ask for, read by LibreOffice, pandoc, the RichEdit control of
   Windows, striprtf and Apache Tika. It holds headings, paragraphs with bold

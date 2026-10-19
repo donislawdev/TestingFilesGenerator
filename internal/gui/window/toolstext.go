@@ -86,7 +86,20 @@ func resultText(d tool.Descriptor, r tool.Result) string {
 	if r.Verdict.Outcome != tool.Unasked {
 		lines = append(lines, verdictSaid(r.Verdict))
 	}
+	if said, ok := conclusionSaid(d, r); ok {
+		lines = append(lines, said)
+	}
 	return strings.Join(lines, "\n")
+}
+
+// conclusionSaid is the conclusion a run came to, in the window's language,
+// or nothing when it came to none.
+func conclusionSaid(d tool.Descriptor, r tool.Result) (string, bool) {
+	c, ok := d.Conclusion(r.Concluded)
+	if !ok {
+		return "", false
+	}
+	return text.ToolConclusion(d.ID, c.ID, c.Says), true
 }
 
 // ranIn is the folder a run of a tool worked in, for Open folder: the folder

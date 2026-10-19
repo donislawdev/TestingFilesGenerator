@@ -1939,6 +1939,11 @@
     "hash": "sha256-be929d76067d",
     "other": "The size limit your upload form declares. This set takes one step either side of it - for a file at every distance, run the size-boundaries preset."
   },
+  "Detail.tool/archive-scan.unpacked_limit": {
+    "description": "The sentence under the unpacked_limit setting of the archive-scan tool, after what it takes.",
+    "hash": "sha256-db62592b44cd",
+    "other": "The most the archive may unpack to, all its files together - for a server or a disk that takes no more. Left empty, only an archive built to explode is reported: 1 GB or more, and more than 100 times its own size."
+  },
   "Detail.tool/checksum-write.algorithm": {
     "description": "The sentence under the algorithm setting of the checksum-write tool, after what it takes.",
     "hash": "sha256-bc3d55ed0c3c",
@@ -2134,6 +2139,11 @@
     "hash": "sha256-1652b4354ef8",
     "other": "Pictures in the document"
   },
+  "Input.archive-scan.archive": {
+    "description": "The sentence under the archive box of the archive-scan tool.",
+    "hash": "sha256-4ad898a798a7",
+    "other": "The archive to look into: ZIP (DOCX, XLSX and JAR are ZIP inside), TAR, TAR.GZ or gzip. It is only read."
+  },
   "Input.checksum-check.checksum_file": {
     "description": "The sentence under the checksum_file box of the checksum-check tool.",
     "hash": "sha256-90d7baf0d228",
@@ -2218,6 +2228,11 @@
     "description": "The name beside the box of a setting a recipe writes as antimeridian.",
     "hash": "sha256-cd0da1397b61",
     "other": "Antimeridian"
+  },
+  "Label.archive": {
+    "description": "The name beside the box of what the archive-scan tool works on.",
+    "hash": "sha256-66f4804ee23d",
+    "other": "Archive"
   },
   "Label.attachment_format": {
     "description": "The name beside the box of a setting a recipe writes as attachment_format.",
@@ -2684,6 +2699,11 @@
     "hash": "sha256-9d9b671e4837",
     "other": "Unlocated"
   },
+  "Label.unpacked_limit": {
+    "description": "The name beside the box of a setting a recipe writes as unpacked_limit.",
+    "hash": "sha256-ea378e1bd7aa",
+    "other": "Unpacked limit"
+  },
   "Label.vertices": {
     "description": "The name beside the box of a setting a recipe writes as vertices.",
     "hash": "sha256-f5af129ea336",
@@ -2848,6 +2868,116 @@
     "description": "What the upload-validation preset is called, beside its id in the list of presets.",
     "hash": "sha256-ba4463cda83e",
     "other": "Upload validation"
+  },
+  "Tool.archive-scan.Conclusion.safe": {
+    "description": "The answer a run of the archive-scan tool comes to, shown under the lines of its result.",
+    "hash": "sha256-e08326f1d03f",
+    "other": "Safe to unpack: none of the traps this tool looks for is in it."
+  },
+  "Tool.archive-scan.Conclusion.unsafe": {
+    "description": "The answer a run of the archive-scan tool comes to, shown under the lines of its result.",
+    "hash": "sha256-39cb8195e90a",
+    "other": "Not safe to unpack: the lines above say why."
+  },
+  "Tool.archive-scan.Detail": {
+    "description": "One sentence under the question of the archive-scan tool, saying what it does.",
+    "hash": "sha256-526e67a2b432",
+    "other": "Reads a ZIP, TAR, TAR.GZ or gzip file and everything in it without unpacking anything, and says whether unpacking it could write outside its folder, overwrite a file or fill the disk."
+  },
+  "Tool.archive-scan.Note.bomb": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-ad7c0631bd1c",
+    "other": "Unpacks to far more than its own size, the way an archive built to explode does:"
+  },
+  "Tool.archive-scan.Note.collides": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-d5cea6f318c4",
+    "other": "Entries that land on the same file as another on Windows or macOS:"
+  },
+  "Tool.archive-scan.Note.damaged": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-6faaa2b49d18",
+    "other": "Damaged, so programs that unpack it may disagree on what it holds:"
+  },
+  "Tool.archive-scan.Note.entries": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-89a7fe8936b2",
+    "other": "Entries:"
+  },
+  "Tool.archive-scan.Note.kind": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-bf476a924b4e",
+    "other": "Archive:"
+  },
+  "Tool.archive-scan.Note.leaves_folder": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-5d69160ea44c",
+    "other": "Entries that would be written outside the folder:"
+  },
+  "Tool.archive-scan.Note.links": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-ec9bee24c930",
+    "other": "Links, which a later entry can be written through:"
+  },
+  "Tool.archive-scan.Note.longer_than_said": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-f68f6d40c1ff",
+    "other": "Entries holding more than the archive says they do:"
+  },
+  "Tool.archive-scan.Note.nested": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-d256c3caa62f",
+    "other": "Archives inside it, which were not opened:"
+  },
+  "Tool.archive-scan.Note.over_limit": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-6179368adab1",
+    "other": "Unpacks to more than the limit given:"
+  },
+  "Tool.archive-scan.Note.overlapping": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-cd5cedc1af84",
+    "other": "Entries that share their bytes with another, which only an archive built to explode does:"
+  },
+  "Tool.archive-scan.Note.size": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-c987f668d963",
+    "other": "Size:"
+  },
+  "Tool.archive-scan.Note.special": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-077308fc7873",
+    "other": "Entries that are not plain files or folders:"
+  },
+  "Tool.archive-scan.Note.stopped": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-90de24758d21",
+    "other": "Reading stopped before the end:"
+  },
+  "Tool.archive-scan.Note.two_names": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-672e79c37984",
+    "other": "Entries named one way in the list of contents and another at the entry itself:"
+  },
+  "Tool.archive-scan.Note.unchecked": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-94238136c3ba",
+    "other": "Entries whose contents could not be checked:"
+  },
+  "Tool.archive-scan.Note.unpacked": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-75d57d9929a3",
+    "other": "Unpacked:"
+  },
+  "Tool.archive-scan.Note.unwritable": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-40ba7750552a",
+    "other": "Names that Windows, macOS or Linux cannot write as they are:"
+  },
+  "Tool.archive-scan.Question": {
+    "description": "The question the archive-scan tool answers - its name in the list of tools and the title over it.",
+    "hash": "sha256-d91795de08fb",
+    "other": "Is this archive safe to unpack?"
   },
   "Tool.checksum-check.Detail": {
     "description": "One sentence under the question of the checksum-check tool, saying what it does.",

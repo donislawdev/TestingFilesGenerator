@@ -203,3 +203,15 @@ func describeForbidden(r rune) core.Said {
 	}
 	return core.Says("engine.Character", "the character %q", core.A("Character", string(r)))
 }
+
+// Unwritable says whether the generator would refuse to write a file under
+// this name - for a tool asking about names somebody else made, each part of a
+// path inside an archive. The same rules rather than a copy of them, so a name
+// this program writes and a name it warns about are judged by one list.
+//
+// A part, not a path: a separator is refused here, so a caller splits first,
+// and "." and ".." are refused as names of directories, which a caller asking
+// about where an entry lands answers before it gets here.
+func Unwritable(name string) bool {
+	return checkFileName("", core.Said{}, name) != nil
+}

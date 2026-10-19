@@ -223,6 +223,7 @@ func TestTheWindowRunsAToolAndSaysWhatTheCommandLineSays(t *testing.T) {
 	host := newFakeHost(t)
 	window.Open(host)
 	screen := selectTab(t, host.content, text.TabTools())
+	chooseTool(t, screen, checksum.ID)
 	fillField(t, screen, text.SettingLabel(checksum.InputFile), path)
 	pressNamed(t, screen, text.ButtonRunTool())
 	host.waitForWork()
@@ -321,6 +322,7 @@ func TestTheToolsScreenTakesAChosenFileAndCopiesTheChecksum(t *testing.T) {
 	host.pickedFile = path
 	window.Open(host)
 	screen := selectTab(t, host.content, text.TabTools())
+	chooseTool(t, screen, checksum.ID)
 
 	pressNamed(t, screen, text.ButtonChoose())
 	if host.askedFile == 0 {

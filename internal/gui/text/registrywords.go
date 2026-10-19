@@ -110,6 +110,9 @@ func (w registryWords) tool(d tool.Descriptor) {
 	for _, n := range d.Notes {
 		w.add(ToolNoteKey(d.ID, n.ID), n.Says, "A line of the result of "+whose+", ending in a colon - what follows it is a list of names or one number.")
 	}
+	for _, c := range d.Conclusions {
+		w.add(ToolConclusionKey(d.ID, c.ID), c.Says, "The answer a run of "+whose+" comes to, shown under the lines of its result.")
+	}
 	w.settings(ToolOwner(d.ID), whose, d.Settings)
 }
 

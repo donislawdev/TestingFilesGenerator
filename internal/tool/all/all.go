@@ -7,5 +7,6 @@ package all
 
 import (
 	// Each tool registers itself when its package is loaded.
+	_ "github.com/donislawdev/TestingFilesGenerator/internal/tool/archivescan"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/tool/checksum"
 )

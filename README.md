@@ -405,6 +405,7 @@ tfg tool show <id> [--json]                     what one tool works on and takes
 tfg tool checksum <file> [--algorithm sha256] [--expected <checksum>] [--json]
 tfg tool checksum-write <folder> [--algorithm sha256] [--json]
 tfg tool checksum-check <checksum_file> [--json]
+tfg tool archive-scan <archive> [--unpacked_limit <size>] [--json]
 ```
 
 Small things to do with files you already have, beside the generator. Every tool
@@ -419,6 +420,13 @@ beside them, the same bytes `sha256sum` writes, and never over one that is
 there. `checksum-check` checks every file a checksum file lists, in the folder
 the checksum file is in. Files it does not list are not looked at, the same as
 `sha256sum -c`, and a path that leaves that folder is refused rather than read.
+
+`archive-scan` looks into a ZIP, TAR, TAR.GZ or gzip file without unpacking it
+and says whether unpacking it is safe: no entry written outside the folder, no
+link, no device, no two names landing on one file, no name a system cannot
+write, nothing built to explode and nothing damaged. `--unpacked_limit 500mb`
+also reports an archive that unpacks to more than that. Safe ends with code 0,
+anything found with 7.
 
 ### `tfg damage`
 
