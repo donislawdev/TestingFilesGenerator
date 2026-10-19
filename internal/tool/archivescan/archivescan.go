@@ -65,11 +65,11 @@ func init() {
 	tool.Register(tool.Descriptor{
 		ID:       ID,
 		Question: "Is this archive safe to unpack?",
-		Detail: "Reads a ZIP or TAR archive and everything in it without unpacking anything, " +
+		Detail: "Reads a ZIP, TAR, TAR.GZ or gzip file and everything in it without unpacking anything, " +
 			"and says whether unpacking it could write outside its folder, overwrite a file or fill the disk.",
 		Inputs: []tool.Input{{
 			Name: InputArchive, Kind: tool.File,
-			Detail: "The archive to look into: ZIP (DOCX, XLSX and JAR are ZIP inside), TAR or TAR.GZ. It is only read.",
+			Detail: "The archive to look into: ZIP (DOCX, XLSX and JAR are ZIP inside), TAR, TAR.GZ or gzip. It is only read.",
 		}},
 		Settings: []format.Property{{
 			Name: SettingLimit, Kind: format.PropertySize,

@@ -120,8 +120,8 @@
 													<container size="788x33">
 														<widget pos="-6,-6" size="800x45" type="*widget.Label">
 															<widget size="800x45" type="*widget.RichText">
-																<text pos="6,6" size="784x16">Reads a ZIP or TAR archive and everything in it without unpacking anything, and says whether unpacking it could write</text>
-																<text pos="6,22" size="314x16">outside its folder, overwrite a file or fill the disk.</text>
+																<text pos="6,6" size="774x16">Reads a ZIP, TAR, TAR.GZ or gzip file and everything in it without unpacking anything, and says whether unpacking it</text>
+																<text pos="6,22" size="391x16">could write outside its folder, overwrite a file or fill the disk.</text>
 															</widget>
 														</widget>
 													</container>

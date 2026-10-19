@@ -74,7 +74,7 @@ func (st stream) gzipped(in io.Reader, head []byte) error {
 	}
 	// What follows the end of the TAR, which a TAR program never reads and
 	// gunzip writes all the same.
-	_, _, err := drain(st.ctx, in, ^uint64(0), nil, nil)
+	_, _, err := drain(st.ctx, st.buf, in, ^uint64(0), nil, nil)
 	return st.ended(err, "")
 }
 
@@ -82,7 +82,7 @@ func (st stream) gzipped(in io.Reader, head []byte) error {
 // names what it unpacks after the archive, not after the name inside.
 func (st stream) one(in io.Reader) error {
 	st.scan.entries = 1
-	_, head, err := drain(st.ctx, in, ^uint64(0), nil, st.unpacking)
+	_, head, err := drain(st.ctx, st.buf, in, ^uint64(0), nil, st.unpacking)
 	if err := st.ended(err, ""); err != nil || st.stopped {
 		return err
 	}
@@ -100,6 +100,10 @@ func (st stream) walk(r io.Reader) error {
 		if err != nil || h == nil {
 			return err
 		}
+		if h.Typeflag == tar.TypeXGlobalHeader {
+			st.global(h)
+			continue
+		}
 		if !st.entry(h.Name, h.Typeflag == tar.TypeDir) {
 			return nil
 		}
@@ -107,7 +111,7 @@ func (st stream) walk(r io.Reader) error {
 		if h.Size <= 0 {
 			continue
 		}
-		_, head, err := drain(st.ctx, tr, uint64(h.Size), nil, st.unpacking)
+		_, head, err := drain(st.ctx, st.buf, tr, uint64(h.Size), nil, st.unpacking)
 		if err := st.ended(err, h.Name); err != nil {
 			return err
 		}
@@ -154,9 +158,36 @@ func (st stream) kindOf(h *tar.Header) {
 		st.special(h.Name, core.Says("archivescan.Type", "it is an entry of type %q, which most programs do not unpack", core.A("Type", string(h.Typeflag))))
 		return
 	}
-	if h.Mode&(modeSetUser|modeSetGroup) != 0 {
+	if h.Typeflag != tar.TypeDir && h.Mode&(modeSetUser|modeSetGroup) != 0 {
 		st.special(h.Name, core.Says("archivescan.Rights", "it runs with the rights of its owner"))
 	}
+}
+
+// global looks at a PAX global header, which is not an entry: it gives values
+// to every entry after it, and git archive writes one at the front of every
+// TAR to hold the commit, as a comment. One setting anything that changes what
+// an entry is - its name, its link, its size - changes entries in a way this
+// tool does not follow, and is noted. Not under its name: archive/tar hands
+// the header back named by the path it sets.
+func (st stream) global(h *tar.Header) {
+	first := ""
+	for key := range h.PAXRecords {
+		if !globalHarmless[key] && (first == "" || key < first) {
+			first = key
+		}
+	}
+	if first != "" {
+		st.noteSaid(noteSpecial, "", core.Says("archivescan.Global", "a header sets %s for every entry after it, which this tool does not follow",
+			core.A("Key", core.Shown(first))))
+	}
+}
+
+// globalHarmless are the values a PAX global header may give the entries
+// after it and leave what they are alone: words, times and owners.
+var globalHarmless = map[string]bool{
+	"comment": true, "charset": true, "hdrcharset": true,
+	"atime": true, "mtime": true, "ctime": true,
+	"uid": true, "gid": true, "uname": true, "gname": true,
 }
 
 // unpacking is told every piece of contents read from a stream, and says
@@ -233,11 +264,15 @@ func failedToRead(err error) bool {
 }
 
 // The mode bits that make a program run with the rights of its owner or its
-// group, in the octal a Unix mode is written in.
+// group, in the octal a Unix mode is written in. On a folder they say whose
+// the files made in it are, and run nothing.
 const (
 	modeSetUser  = 0o4000
 	modeSetGroup = 0o2000
 )
+
+// modeFolder is the type a Unix mode gives a folder.
+const modeFolder = 0x4000
 
 // kindOfMode is what a Unix mode says an entry is besides a file or a folder:
 // a link, or the words for something else. Nothing for a plain file or folder.
@@ -252,7 +287,7 @@ func kindOfMode(mode uint32) (core.Said, bool) {
 	case 0xC000:
 		return core.Says("archivescan.Socket", "it is a socket"), false
 	}
-	if mode&(modeSetUser|modeSetGroup) != 0 {
+	if mode&0xF000 != modeFolder && mode&(modeSetUser|modeSetGroup) != 0 {
 		return core.Says("archivescan.Rights", "it runs with the rights of its owner"), false
 	}
 	return core.Said{}, false
@@ -274,9 +309,9 @@ const keepHead = 4096
 // drain reads r through sum, when there is one, until it ends or one byte past
 // most - an entry holding more than it was said to is found without reading
 // the rest of it - and hands back how much it read and the first bytes. After
-// every piece it asks more, when there is one, whether to go on.
-func drain(ctx context.Context, r io.Reader, most uint64, sum io.Writer, more func(int) bool) (uint64, string, error) {
-	buf := make([]byte, 64<<10)
+// every piece it asks more, when there is one, whether to go on. It reads
+// into buf, one for the whole scan: an archive can hold a million entries.
+func drain(ctx context.Context, buf []byte, r io.Reader, most uint64, sum io.Writer, more func(int) bool) (uint64, string, error) {
 	var got uint64
 	var head []byte
 	for {

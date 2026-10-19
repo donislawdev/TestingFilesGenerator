@@ -2141,8 +2141,8 @@
   },
   "Input.archive-scan.archive": {
     "description": "The sentence under the archive box of the archive-scan tool.",
-    "hash": "sha256-c362fd635273",
-    "other": "The archive to look into: ZIP (DOCX, XLSX and JAR are ZIP inside), TAR or TAR.GZ. It is only read."
+    "hash": "sha256-4ad898a798a7",
+    "other": "The archive to look into: ZIP (DOCX, XLSX and JAR are ZIP inside), TAR, TAR.GZ or gzip. It is only read."
   },
   "Input.checksum-check.checksum_file": {
     "description": "The sentence under the checksum_file box of the checksum-check tool.",
@@ -2881,8 +2881,8 @@
   },
   "Tool.archive-scan.Detail": {
     "description": "One sentence under the question of the archive-scan tool, saying what it does.",
-    "hash": "sha256-eb1cf4210b4a",
-    "other": "Reads a ZIP or TAR archive and everything in it without unpacking anything, and says whether unpacking it could write outside its folder, overwrite a file or fill the disk."
+    "hash": "sha256-526e67a2b432",
+    "other": "Reads a ZIP, TAR, TAR.GZ or gzip file and everything in it without unpacking anything, and says whether unpacking it could write outside its folder, overwrite a file or fill the disk."
   },
   "Tool.archive-scan.Note.bomb": {
     "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",

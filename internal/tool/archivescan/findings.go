@@ -72,16 +72,6 @@ func declaredNotes() []tool.Note {
 	return out
 }
 
-// harmless says whether a note leaves an archive safe to unpack.
-func harmless(id string) bool {
-	for _, d := range declared {
-		if d.ID == id {
-			return d.harmless
-		}
-	}
-	return false
-}
-
 // found is one thing a scan found: the entry it is about, as data, and the
 // words for it when the entry alone does not say it.
 type found struct {
@@ -122,12 +112,15 @@ type scan struct {
 	exploded bool
 
 	found map[string][]found
+	// buf is what every entry's contents are read into, one for the scan.
+	buf []byte
 }
 
 func newScan(ctx context.Context, path string, size, limit int64, progress tool.Progress) *scan {
 	return &scan{
 		ctx: ctx, path: path, size: size, limit: limit, progress: progress,
 		names: newBook(), nameRoom: MostNameBytes, found: map[string][]found{},
+		buf: make([]byte, 64<<10),
 	}
 }
 

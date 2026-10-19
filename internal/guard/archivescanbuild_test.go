@@ -93,6 +93,9 @@ type tarPart struct {
 	link string
 	body string
 	mode int64
+	// records are the PAX values a header carries - for a global one, the
+	// values it gives every entry after it.
+	records map[string]string
 }
 
 // tarOf is a TAR holding these entries, through gzip when asked.
@@ -101,12 +104,16 @@ func tarOf(t *testing.T, gzipped bool, parts ...tarPart) []byte {
 	var buf bytes.Buffer
 	tw := tar.NewWriter(&buf)
 	for _, p := range parts {
-		h := &tar.Header{Name: p.name, Typeflag: p.typ, Linkname: p.link, Size: int64(len(p.body)), Mode: 0o644}
+		h := &tar.Header{Name: p.name, Typeflag: p.typ, Linkname: p.link, Size: int64(len(p.body)), Mode: 0o644, PAXRecords: p.records}
 		if p.mode != 0 {
 			h.Mode = p.mode
 		}
 		if p.typ == 0 {
 			h.Typeflag = tar.TypeReg
+		}
+		if p.typ == tar.TypeXGlobalHeader {
+			// archive/tar writes a global header of its name and values alone.
+			h = &tar.Header{Name: p.name, Typeflag: p.typ, PAXRecords: p.records}
 		}
 		if err := tw.WriteHeader(h); err != nil {
 			t.Fatal(err)

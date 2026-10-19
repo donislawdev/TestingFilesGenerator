@@ -104,6 +104,11 @@
     "hash": "sha256-13b3c18bff10",
     "other": "{{.Name}}: {{.Why}}"
   },
+  "archivescan.Global": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Key}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-2464a8a64571",
+    "other": "a header sets {{.Key}} for every entry after it, which this tool does not follow"
+  },
   "archivescan.GzipHeader": {
     "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-7a245481ab58",
@@ -121,8 +126,8 @@
   },
   "archivescan.IsNotAnArchive": {
     "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-852351e5de82",
-    "other": "{{.Path}} is not a ZIP, TAR or gzip archive"
+    "hash": "sha256-4ab90d477d74",
+    "other": "{{.Path}} is not a ZIP, TAR, TAR.GZ or gzip file"
   },
   "archivescan.ItDoesNotBegin": {
     "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
@@ -166,8 +171,8 @@
   },
   "archivescan.NameAZipOrTar": {
     "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",
-    "hash": "sha256-6b8df2e3f117",
-    "other": "name a ZIP, TAR or TAR.GZ file"
+    "hash": "sha256-17713db18b11",
+    "other": "name a ZIP, TAR, TAR.GZ or gzip file"
   },
   "archivescan.NameOneArchive": {
     "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run.",

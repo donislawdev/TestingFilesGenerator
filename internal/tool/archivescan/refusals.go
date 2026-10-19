@@ -55,7 +55,7 @@ type NotAnArchiveError struct {
 func (e *NotAnArchiveError) AboutSetting() string { return InputArchive }
 
 func (e *NotAnArchiveError) what() core.Said {
-	return core.Says("archivescan.IsNotAnArchive", "%s is not a ZIP, TAR or gzip archive", core.A("Path", e.Path))
+	return core.Says("archivescan.IsNotAnArchive", "%s is not a ZIP, TAR, TAR.GZ or gzip file", core.A("Path", e.Path))
 }
 
 func (e *NotAnArchiveError) why() core.Said {
@@ -63,7 +63,7 @@ func (e *NotAnArchiveError) why() core.Said {
 }
 
 func (e *NotAnArchiveError) instead() core.Said {
-	return core.Says("archivescan.NameAZipOrTar", "name a ZIP, TAR or TAR.GZ file")
+	return core.Says("archivescan.NameAZipOrTar", "name a ZIP, TAR, TAR.GZ or gzip file")
 }
 
 func (e *NotAnArchiveError) Error() string { return e.Said().String() }

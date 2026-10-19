@@ -36,6 +36,9 @@ type zipScan struct {
 	// open is an archive whose contents are read: not one already found
 	// built to explode, which is what reading them would do.
 	open bool
+	// inflate unpacks every deflated entry, one for the archive: a new one
+	// holds tens of kilobytes, and an archive can hold a million entries.
+	inflate io.ReadCloser
 }
 
 // zip reads a ZIP archive.
@@ -224,10 +227,10 @@ func (z *zipScan) read(e zipEntry, at uint64) (string, error) {
 	}
 	var src io.Reader = &counting{r: io.NewSectionReader(z.r, int64(at), int64(e.packed)), s: z.scan}
 	if e.method == methodDeflated {
-		src = flate.NewReader(src)
+		src = z.inflated(src)
 	}
 	sum := crc32.NewIEEE()
-	got, head, err := drain(z.ctx, src, e.unpacked, sum, nil)
+	got, head, err := drain(z.ctx, z.buf, src, e.unpacked, sum, nil)
 	var corrupt flate.CorruptInputError
 	switch {
 	case z.ctx.Err() != nil:
@@ -242,6 +245,18 @@ func (z *zipScan) read(e zipEntry, at uint64) (string, error) {
 		z.broken(e, core.Says("archivescan.Checksum", "its contents do not match their checksum"))
 	}
 	return head, nil
+}
+
+// inflated is what deflated contents unpack to, through the archive's one
+// reader of deflate. Its Reset starts it over on new contents and keeps its
+// buffers, and never fails (compress/flate).
+func (z *zipScan) inflated(src io.Reader) io.Reader {
+	if z.inflate == nil {
+		z.inflate = flate.NewReader(src)
+		return z.inflate
+	}
+	_ = z.inflate.(flate.Resetter).Reset(src, nil)
+	return z.inflate
 }
 
 // each reads the list of contents one record at a time and hands each to see,

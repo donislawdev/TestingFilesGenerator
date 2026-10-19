@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"archive/tar"
 	"archive/zip"
 	"bytes"
 	"context"
@@ -67,6 +68,9 @@ type trap struct {
 	// kind is what the archive has to be read as, where that is the point:
 	// a gzip of zeros begins as an empty TAR would, and is not one.
 	kind string
+	// entries is how many entries the archive has to be counted as holding,
+	// where that is the point: a header for the entries after it is not one.
+	entries int
 }
 
 // traps is an archive for each kind of trap, and the clean ones beside them.
@@ -119,6 +123,22 @@ func traps(t *testing.T) []trap {
 				tarPart{name: "suid", body: "x", mode: 0o4755}),
 			names: map[string][]string{"links": {"lnk", "hard"}, "special": {"fifo", "dev", "suid"}}},
 		{what: "a clean TAR", file: "clean.tar", data: tarOf(t, false, tarPart{name: "x.txt", body: "abc"}), safe: true},
+		// git archive puts the commit in a header for every entry after it, and
+		// GitHub's source archives are made by it.
+		{what: "a TAR as git archive writes it", file: "git.tar", safe: true, entries: 1,
+			data: tarOf(t, false, tarPart{name: "pax_global_header", typ: tar.TypeXGlobalHeader, records: map[string]string{"comment": strings.Repeat("ab12", 10)}},
+				tarPart{name: "a.txt", body: "abc"})},
+		{what: "a header giving every entry after it a name", file: "global.tar", found: []string{"special"},
+			data: tarOf(t, false, tarPart{name: "pax_global_header", typ: tar.TypeXGlobalHeader, records: map[string]string{"comment": "x", "path": "../up.txt"}},
+				tarPart{name: "a.txt", body: "abc"})},
+		// The bits that make a program run as its owner say, on a folder, whose
+		// the files made in it are - a folder a group shares carries one.
+		{what: "a TAR of a folder a group shares", file: "group.tar", safe: true,
+			data: tarOf(t, false, tarPart{name: "shared/", typ: tar.TypeDir, mode: 0o2775}, tarPart{name: "shared/a.txt", body: "abc"})},
+		{what: "a ZIP of a folder a group shares", file: "group.zip", safe: true,
+			data: zipOf(t, zipPart{name: "shared/", mode: os.ModeDir | os.ModeSetgid | 0o775}, zipPart{name: "shared/a.txt", body: "abc"})},
+		{what: "a ZIP entry that runs as its owner", file: "suid.zip", found: []string{"special"},
+			data: zipOf(t, zipPart{name: "run", body: "x", mode: os.ModeSetuid | 0o755}), names: map[string][]string{"special": {"run"}}},
 		{what: "an empty TAR", file: "empty.tar", data: make([]byte, 1024), safe: true, kind: "tar"},
 		{what: "a gzip of one file", file: "one.gz", data: gzipOf(t, []byte("hello\n")), safe: true, kind: "gzip"},
 		{what: "a gzip of zeros built to explode", file: "bomb.gz", found: []string{"bomb", "stopped"}, data: zerosMembers(t, nil), kind: "gzip"},
@@ -159,6 +179,9 @@ func TestTheArchiveScanFindsEveryTrapItNames(t *testing.T) {
 		}
 		if c.kind != "" && report.Kind != c.kind {
 			t.Errorf("%s (%s): read as %s, and it is %s", c.what, c.file, report.Kind, c.kind)
+		}
+		if c.entries != 0 && report.Entries != c.entries {
+			t.Errorf("%s (%s): counted %d entries, and it holds %d", c.what, c.file, report.Entries, c.entries)
 		}
 		if report.Safe != c.safe || (r.Concluded == "safe") != c.safe {
 			t.Errorf("%s (%s): safe is %v in the report and the conclusion is %q, and it is %v", c.what, c.file, report.Safe, r.Concluded, c.safe)
