@@ -125,6 +125,27 @@ type Note struct {
 	Says string
 }
 
+// Conclusion is one answer a tool may come to about what it read - "safe to
+// unpack", "not safe to unpack" - declared once, the way a note is.
+//
+// Declared rather than added to Outcome, which holds the one comparison a
+// checksum makes. Each tool has answers of its own, and an answer added to a
+// switch in the registry, in the window and in the command line is three
+// edits that a guard listing the cases by hand would never miss. Declared,
+// the window says it through the registry's catalogue and the guards that
+// walk the registry hold it in every language on the day it arrives.
+type Conclusion struct {
+	// ID is the key of the conclusion, in a result and in the words of every
+	// language.
+	ID string
+	// Says is the sentence, in English. No number, for the reason a note has
+	// none: what is counted is in the notes above it.
+	Says string
+	// Fails is an answer the command line ends with VERIFY on - a check that
+	// found something - and the window shows in the colour of a mismatch.
+	Fails bool
+}
+
 // Noted is one note a run of a tool made, with what it is about.
 type Noted struct {
 	ID string
@@ -155,6 +176,9 @@ type Result struct {
 	// Notes are what the run has to say besides the table, in the order it
 	// says them. Each is one the tool declared.
 	Notes []Noted
+	// Concluded is the key of the conclusion the run came to, one the tool
+	// declared, or nothing.
+	Concluded string
 	// Data is the same answer typed, for --json. A script reading a digest
 	// asks for checksums.sha256 rather than for the second cell of a row.
 	Data any
@@ -189,6 +213,8 @@ type Descriptor struct {
 	Columns []string
 	// Notes are everything the tool may say besides the table.
 	Notes []Note
+	// Conclusions are every answer the tool may come to.
+	Conclusions []Conclusion
 	// Run does the work, on a request that has been checked and defaulted.
 	Run func(ctx context.Context, in Request, progress Progress) (Result, error)
 }
@@ -238,7 +264,48 @@ func unusable(d Descriptor) string {
 	if problem := unusableNote(d.Notes); problem != "" {
 		return problem
 	}
+	if problem := unusableConclusion(d.Conclusions); problem != "" {
+		return problem
+	}
 	return clashingName(d)
+}
+
+// unusableConclusion is what is wrong with the conclusions a tool declares, or
+// nothing.
+func unusableConclusion(conclusions []Conclusion) string {
+	seen := map[string]bool{}
+	for _, c := range conclusions {
+		switch {
+		case c.ID == "" || c.Says == "":
+			return "declares a conclusion without a key or without a sentence"
+		case seen[c.ID]:
+			return "declares the conclusion " + c.ID + " twice"
+		}
+		seen[c.ID] = true
+	}
+	return ""
+}
+
+// Conclusion is the conclusion of this tool with that key, if it declares one.
+func (d Descriptor) Conclusion(id string) (Conclusion, bool) {
+	for _, c := range d.Conclusions {
+		if c.ID == id {
+			return c, true
+		}
+	}
+	return Conclusion{}, false
+}
+
+// Failed says whether a result is the answer of a check that found something:
+// a comparison that did not match, or a conclusion the tool declared failing.
+// One question for both surfaces - the command line ends with VERIFY on it and
+// the window colours it - so they cannot disagree about which runs failed.
+func (d Descriptor) Failed(r Result) bool {
+	if r.Verdict.Outcome == Mismatch {
+		return true
+	}
+	c, ok := d.Conclusion(r.Concluded)
+	return ok && c.Fails
 }
 
 // unusableNote is what is wrong with the notes a tool declares, or nothing.
@@ -378,6 +445,11 @@ func (d Descriptor) Start(ctx context.Context, in Request, progress Progress) (R
 		if d.NoteSays(n.ID) == "" {
 			return Result{}, core.Defect(fmt.Errorf("the tool %s said a note it never declared (%s). This is a fault in the build", d.ID, n.ID))
 		}
+	}
+	// The same for a conclusion: one nobody declared has no words and no
+	// answer to which exit code it is.
+	if _, ok := d.Conclusion(result.Concluded); result.Concluded != "" && !ok {
+		return Result{}, core.Defect(fmt.Errorf("the tool %s came to a conclusion it never declared (%s). This is a fault in the build", d.ID, result.Concluded))
 	}
 	return result, nil
 }

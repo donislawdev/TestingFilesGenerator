@@ -92,6 +92,9 @@ func ToolQuestionKey(id string) string   { return "Tool." + id + ".Question" }
 func ToolDetailKey(id string) string     { return "Tool." + id + ".Detail" }
 func InputKey(id, name string) string    { return "Input." + id + "." + name }
 func ToolNoteKey(id, note string) string { return "Tool." + id + ".Note." + note }
+func ToolConclusionKey(id, conclusion string) string {
+	return "Tool." + id + ".Conclusion." + conclusion
+}
 
 // lookup is say for a sentence whose key is made of identifiers and whose
 // English comes from a registry rather than from this package. Nothing to say
@@ -200,6 +203,11 @@ func ToolInput(id, name, english string) string { return lookup(InputKey(id, nam
 
 // ToolNote is a line a tool's result may carry, before its items.
 func ToolNote(id, note, english string) string { return lookup(ToolNoteKey(id, note), english) }
+
+// ToolConclusion is the answer a run of a tool came to.
+func ToolConclusion(id, conclusion, english string) string {
+	return lookup(ToolConclusionKey(id, conclusion), english)
+}
 
 // HumanBytes is core.HumanBytes with the decimal mark of the window's language.
 //

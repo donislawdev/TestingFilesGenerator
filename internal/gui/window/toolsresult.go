@@ -74,6 +74,13 @@ func (t *Tools) resultObjects(d tool.Descriptor, r *tool.Result) []fyne.CanvasOb
 		out = append(out, parts.Verdict(parts.Disagrees, verdictSaid(r.Verdict)))
 	case tool.Unasked:
 	}
+	if said, ok := conclusionSaid(d, *r); ok {
+		tone := parts.Agrees
+		if d.Failed(*r) {
+			tone = parts.Disagrees
+		}
+		out = append(out, parts.Verdict(tone, said))
+	}
 	return append(out, t.copyAll(d, *r))
 }
 
