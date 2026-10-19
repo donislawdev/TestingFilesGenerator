@@ -15308,8 +15308,8 @@ MUTATIONS = [
     (
         "archive-scan lists a name whole, however long it is",
         "internal/tool/archivescan/report.go",
-        "\tf.name = strings.Clone(f.name[:min(len(f.name), MostShownName)])\n",
-        "\tf.name = strings.Clone(f.name)\n",
+        "\tn := min(len(name), MostShownName)\n",
+        "\tn := len(name)\n",
         "TestTheArchiveScanReportStaysTheSameSizeWhateverAnArchiveHolds",
     ),
     (
@@ -15332,5 +15332,26 @@ MUTATIONS = [
         "\tname = strings.Clone(name)\n",
         "\tname = name + \"\"\n",
         "TestTheArchiveScanHoldsNoMoreOfANameThanTheName",
+    ),
+    (
+        "archive-scan keeps the name of an archive inside as a slice of a PAX header",
+        "internal/tool/archivescan/inside.go",
+        "\tc := blank(cutName(name), h.size, s.tree)\n",
+        "\tc := blank(name, h.size, s.tree)\n",
+        "TestTheArchiveScanHoldsNoMoreOfANameThanTheName",
+    ),
+    (
+        "archive-scan cuts a name inside a character",
+        "internal/tool/archivescan/report.go",
+        "\tfor back := 1; back < utf8.UTFMax && n < len(name) && !utf8.RuneStart(name[n]); back++ {\n",
+        "\tfor back := 1; false && back < utf8.UTFMax && n < len(name) && !utf8.RuneStart(name[n]); back++ {\n",
+        "TestTheArchiveScanReportStaysTheSameSizeWhateverAnArchiveHolds",
+    ),
+    (
+        "archive-scan calls an archive inside too large when only the room left is too small",
+        "internal/tool/archivescan/inside.go",
+        "\tcase h.need > MostInside:\n",
+        "\tcase h.need > 0:\n",
+        "TestTheArchiveScanLooksIntoTheArchivesInside",
     ),
 ]

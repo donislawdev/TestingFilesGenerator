@@ -41,6 +41,7 @@
   "archivescan.NameAZipOrTar": { "hash": "sha256-17713db18b11", "other": "wskaż plik ZIP, TAR, TAR.GZ albo gzip" },
   "archivescan.NameOneArchive": { "hash": "sha256-b3119045be6e", "other": "wskaż jeden plik archiwum" },
   "archivescan.NoEnd": { "hash": "sha256-638b1e0460e7", "other": "brakuje rekordu na jego końcu, który mówi, gdzie jest spis zawartości" },
+  "archivescan.NoRoom": { "hash": "sha256-968601ad8080", "other": "to archiwum większe niż to, co zostaje z {{.Most}}, które to narzędzie trzyma, gdy archiwa wokół niego są już trzymane" },
   "archivescan.NotReadYet": { "hash": "sha256-bfe67470dde3", "other": "{{.Path}} to archiwum {{.Kind}}, którego to narzędzie jeszcze nie czyta" },
   "archivescan.NotWhereListed": { "hash": "sha256-8e9d4c7346e8", "other": "nie zaczyna się tam, gdzie podaje spis zawartości" },
   "archivescan.OverLimit": { "hash": "sha256-31b786bac0bd", "other": "{{.Unpacked}} przy limicie {{.Limit}}" },

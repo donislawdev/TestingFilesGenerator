@@ -103,8 +103,10 @@ type holding struct {
 	parts [][]byte
 	size  int64
 	held  bool
-	// over is an archive inside larger than is left to hold, not held.
-	over bool
+	// need is what an archive inside needed to be held and was not given:
+	// more than is ever held, or more than is left while the archives around
+	// it are held. Zero for one that was.
+	need int64
 }
 
 // piece is how much of an archive inside one allocation holds.
@@ -113,7 +115,7 @@ const piece = 1 << 20
 // start readies the holding for the contents of one entry.
 func (h *holding) start(t *tree, said uint64, open bool) {
 	h.drop()
-	h.t, h.open, h.decided, h.head, h.kind, h.over = t, open, false, h.head[:0], "", false
+	h.t, h.open, h.decided, h.head, h.kind, h.need = t, open, false, h.head[:0], "", 0
 	h.said = int64(min(said, math.MaxInt64))
 }
 
@@ -149,7 +151,7 @@ func (h *holding) decide() {
 		return
 	}
 	if h.said > int64(MostInside-h.t.held) {
-		h.over = true
+		h.need = h.said
 		return
 	}
 	h.held = true
@@ -187,7 +189,9 @@ func (h *holding) grow() bool {
 		want = min(want, h.said-h.size)
 	}
 	if want <= 0 || want > int64(MostInside-h.t.held) {
-		h.over = want > 0
+		if want > 0 {
+			h.need = h.size + want
+		}
 		h.drop()
 		return false
 	}
@@ -245,8 +249,11 @@ func (s *scan) within(name string, h *holding) error {
 		why = core.Says("archivescan.InsideUnread", "it is a %s archive, which this tool does not read", core.A("Kind", h.kind))
 	case !h.open:
 		why = core.Says("archivescan.TooDeep", "it is an archive more than %d archives deep, deeper than this tool looks", core.A("Depth", MostDepth))
-	case h.over:
+	case h.need > MostInside:
 		why = core.Says("archivescan.TooLarge", "it is an archive larger than the %s this tool holds to look into", core.A("Most", core.Bytes(MostInside)))
+	case h.need > 0:
+		why = core.Says("archivescan.NoRoom", "it is an archive larger than what is left of the %s this tool holds, with the archives around it held",
+			core.A("Most", core.Bytes(MostInside)))
 	case !h.held:
 		return nil
 	}
@@ -254,7 +261,7 @@ func (s *scan) within(name string, h *holding) error {
 		s.noteSaid(noteUnchecked, name, entryWhy(name, why))
 		return nil
 	}
-	c := blank(name, h.size, s.tree)
+	c := blank(cutName(name), h.size, s.tree)
 	c.depth = s.depth + 1
 	err := c.look(h)
 	c.hold.drop()
@@ -281,12 +288,13 @@ func (s *scan) took(name string, c *scan) {
 		return
 	}
 	s.nest.unsafe = true
-	if len(s.nest.kept) >= MostListed || s.tree.reports >= MostReports {
+	if len(s.nest.kept) >= MostListed || s.tree.reports >= MostReports || s.tree.listed+len(c.path) > MostListedBytes {
 		s.nest.more++
 		return
 	}
 	s.nest.kept = append(s.nest.kept, c)
 	s.tree.reports++
+	s.tree.listed += len(c.path)
 }
 
 // deeper is a finding of an archive inside, said with the name of the entry

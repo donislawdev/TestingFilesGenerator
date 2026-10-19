@@ -3,6 +3,7 @@ package archivescan
 import (
 	"slices"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/tool"
@@ -156,7 +157,7 @@ func (t *tree) keep(list []found, f found) ([]found, bool) {
 	if len(f.name) > MostShownName && f.words.IsZero() {
 		f.words = core.Says("archivescan.Name", "%s", core.A("Name", shownName(f.name)))
 	}
-	f.name = strings.Clone(f.name[:min(len(f.name), MostShownName)])
+	f.name = cutName(f.name)
 	t.listed += len(f.name) + len(f.words.String())
 	return append(list, f), true
 }
@@ -172,5 +173,18 @@ func shownName(name string) any {
 		return core.Shown(strings.Clone(name))
 	}
 	return core.Says("archivescan.Cut", "%s... (%s in all)",
-		core.A("Name", core.Shown(strings.Clone(name[:MostShownName]))), core.A("Length", core.ExactBytes(int64(len(name)))))
+		core.A("Name", core.Shown(cutName(name))), core.A("Length", core.ExactBytes(int64(len(name)))))
+}
+
+// cutName is a copy of the first MostShownName bytes of a name, or of all of
+// it when it is shorter, ending on a whole character: a cut through one
+// leaves half of it, which --json writes as a character the name does not
+// have. A name that is not UTF-8 has no characters to keep whole, so the cut
+// goes back no further than one character is long.
+func cutName(name string) string {
+	n := min(len(name), MostShownName)
+	for back := 1; back < utf8.UTFMax && n < len(name) && !utf8.RuneStart(name[n]); back++ {
+		n--
+	}
+	return strings.Clone(name[:n])
 }

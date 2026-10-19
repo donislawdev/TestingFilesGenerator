@@ -6,10 +6,12 @@ import (
 	"compress/gzip"
 	"context"
 	"fmt"
+	"io"
 	"runtime"
 	"slices"
 	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/tool"
 	"github.com/donislawdev/TestingFilesGenerator/internal/tool/archivescan"
@@ -91,6 +93,45 @@ func bigInside(t *testing.T) []byte {
 	return []byte(out.String())
 }
 
+// roomInside is a gzip of a.zip, which holds 120 MiB of zeros and b.zip, which
+// holds 100 MiB: b.zip fits in what the scanner holds, and not in what is
+// left of it while a.zip is held.
+func roomInside(t *testing.T) []byte {
+	t.Helper()
+	var out strings.Builder
+	g := gzip.NewWriter(&out)
+	a := zip.NewWriter(g)
+	zeros := func(w io.Writer, mib int) {
+		chunk := make([]byte, 1<<20)
+		for range mib {
+			if _, err := w.Write(chunk); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	filler, err := a.CreateHeader(&zip.FileHeader{Name: "filler.bin", Method: zip.Store})
+	if err != nil {
+		t.Fatal(err)
+	}
+	zeros(filler, 120)
+	inner, err := a.CreateHeader(&zip.FileHeader{Name: "b.zip", Method: zip.Store})
+	if err != nil {
+		t.Fatal(err)
+	}
+	bz := zip.NewWriter(inner)
+	w, err := bz.CreateHeader(&zip.FileHeader{Name: "zeros.bin", Method: zip.Store})
+	if err != nil {
+		t.Fatal(err)
+	}
+	zeros(w, 100)
+	for _, c := range []io.Closer{bz, a, g} {
+		if err := c.Close(); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return []byte(out.String())
+}
+
 // TestTheArchiveScanLooksIntoTheArchivesInside holds the scanner to reading
 // every archive inside the one given, and to saying a trap in one with the way
 // to it - in the notes both surfaces show, and in the report of the archive
@@ -124,11 +165,13 @@ func TestTheArchiveScanLooksIntoTheArchivesInside(t *testing.T) {
 			note: "unchecked", item: "deeper than this tool looks"},
 		{what: "an archive inside larger than the scanner holds", file: "big.zip.gz", data: bigInside(t),
 			note: "unchecked", item: "larger than the"},
+		{what: "an archive inside larger than what is left while the one around it is held", file: "room.zip.gz", data: roomInside(t),
+			note: "unchecked", item: "what is left of the"},
 		{what: "an archive inside the scanner does not read", file: "bz.zip", data: zipOf(t, zipPart{name: "x.bz2", body: emptyBzip2}),
 			note: "unchecked", item: "bzip2 archive"},
 		{what: "an archive inside held in several pieces", file: "pieces.zip", safe: true, note: "nested", item: "big.zip",
 			data: zipOf(t, zipPart{name: "big.zip", body: string(storedZip(t, "data.bin", pattern))})},
-		{what: "text that begins with the letters of bzip2", file: "text.zip", data: zipOf(t, zipPart{name: "x.txt", body: "BZh is a word"}),
+		{what: "text that begins with the letters of bzip2", file: "text.zip", data: zipOf(t, zipPart{name: "x.txt", body: "BZh9 is a word, not bzip2"}),
 			safe: true},
 		// Two archives of 640 MiB of zeros each: neither is built to explode
 		// on its own, and together they are.
@@ -172,6 +215,8 @@ func TestTheArchiveScanReportStaysTheSameSizeWhateverAnArchiveHolds(t *testing.T
 		parts = append(parts, zipPart{name: fmt.Sprintf("q?%03d", i)})
 	}
 	long := strings.Repeat("x", 2000)
+	// One byte, then characters of two: the cut at 1024 falls inside one.
+	polish := "a" + strings.Repeat(string(rune(0x105)), 600)
 	parts = append(parts, zipPart{name: long})
 	report, r := scanArchive(t, archiveFile(t, "many.zip", zipOf(t, parts...)), nil)
 	listed := report.Found["unwritable"]
@@ -190,22 +235,32 @@ func TestTheArchiveScanReportStaysTheSameSizeWhateverAnArchiveHolds(t *testing.T
 	if !holdsText(noteItems(r, "unwritable"), "(2 000 B in all)") {
 		t.Errorf("the note shows %q, and has to say the name is cut and how long it is", noteItems(r, "unwritable"))
 	}
+	whole, _ := scanArchive(t, archiveFile(t, "polish.zip", zipOf(t, zipPart{name: polish})), nil)
+	if got := whole.Found["unwritable"]; len(got) != 1 || len(got[0]) != archivescan.MostShownName-1 || !utf8.ValidString(got[0]) {
+		t.Errorf("a name cut inside a character is listed as %d bytes, valid UTF-8 %v - the cut goes back to where the character starts", len(got[0]), utf8.ValidString(got[0]))
+	}
 }
 
 // TestTheArchiveScanHoldsNoMoreOfANameThanTheName measures the heap while a
-// TAR.GZ is read whose every entry is named in a header of a megabyte.
-// archive/tar hands such a name back as a slice of the whole header, and
-// holding the slice to compare names held every header: 200 of them were
-// 200 MB, measured at 1.3 GB on 900 (docs/SKANER-W-GLAB-2026-10-19.md §1).
+// TAR.GZ is read whose every entry is named in a header of a megabyte, and is
+// an archive with a trap in it. archive/tar hands such a name back as a slice
+// of the whole header, and holding the slice - to compare names, or as the
+// name of an archive inside kept for the report - held every header: 200 of
+// them were 200 MB, measured at 1.3 GB on 900
+// (docs/SKANER-W-GLAB-2026-10-19.md §1).
 func TestTheArchiveScanHoldsNoMoreOfANameThanTheName(t *testing.T) {
 	var buf strings.Builder
 	g := gzip.NewWriter(&buf)
 	tw := tar.NewWriter(g)
 	pad := strings.Repeat("p", 1_000_000)
+	bad := zipOf(t, zipPart{name: "../evil.txt", body: "x"})
 	for i := range 200 {
-		name := fmt.Sprintf("f%03d.txt", i)
-		if err := tw.WriteHeader(&tar.Header{Name: name, Typeflag: tar.TypeReg, Mode: 0o644, Format: tar.FormatPAX,
+		name := fmt.Sprintf("f%03d.zip", i)
+		if err := tw.WriteHeader(&tar.Header{Name: name, Typeflag: tar.TypeReg, Mode: 0o644, Size: int64(len(bad)), Format: tar.FormatPAX,
 			PAXRecords: map[string]string{"comment": pad, "path": name}}); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := tw.Write(bad); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -232,10 +287,10 @@ func TestTheArchiveScanHoldsNoMoreOfANameThanTheName(t *testing.T) {
 		}
 	}
 	r, err := d.Start(context.Background(), tool.Request{Inputs: map[string]string{archivescan.InputArchive: path}}, sample)
-	if err != nil || r.Concluded != "safe" || calls < 4 {
+	if err != nil || r.Concluded != "unsafe" || calls < 4 {
 		t.Fatalf("the padded archive: %v, concluded %q, %d reports of progress", err, r.Concluded, calls)
 	}
 	if grew := int64(most) - int64(before.HeapAlloc); grew > 64<<20 {
-		t.Errorf("reading 200 names of 8 bytes held %d MB at the most - each name holds its whole header", grew>>20)
+		t.Errorf("reading 200 names of 8 bytes held %d MB at the most - a name kept holds its whole header", grew>>20)
 	}
 }

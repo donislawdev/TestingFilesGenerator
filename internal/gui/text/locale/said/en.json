@@ -209,6 +209,11 @@
     "hash": "sha256-638b1e0460e7",
     "other": "the record at its end, which says where its list of contents is, is missing"
   },
+  "archivescan.NoRoom": {
+    "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-968601ad8080",
+    "other": "it is an archive larger than what is left of the {{.Most}} this tool holds, with the archives around it held"
+  },
   "archivescan.NotReadYet": {
     "description": "Said by internal/tool/archivescan - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, {{.Kind}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-bfe67470dde3",

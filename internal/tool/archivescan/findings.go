@@ -83,7 +83,8 @@ type found struct {
 
 // Report is what --json prints. Names are the names in the archive, byte for
 // byte, so a script compares them - up to MostShownName bytes, where a longer
-// one is cut. The window and the text show them escaped.
+// one is cut where a character ends, the name of an archive inside too. The
+// window and the text show them escaped.
 type Report struct {
 	File     string `json:"file"`
 	Kind     string `json:"kind"`
