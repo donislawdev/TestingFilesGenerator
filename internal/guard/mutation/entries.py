@@ -9328,15 +9328,6 @@ MUTATIONS = [
         "TestAMenuIsOneWidthBeforeAndAfterItIsDrawn",
     ),
     (
-        # The same defect asked on the screens: the format menu is one width
-        # on the single batch screen and another on the preset screen.
-        "the format menu is two widths on two screens",
-        "internal/gui/parts/ring.go",
-        "var widest float32\n\tfor _, option := range c.Options {",
-        "widest := fyne.MeasureText(c.PlaceHolder, size, fyne.TextStyle{}).Width\n\tfor _, option := range c.Options {",
-        "TestOneSettingIsOneMenuWidthOnEveryScreen",
-    ),
-    (
         # Every row's cells slide one column to the right of the names: the
         # header stands where it stood and the first row does not.
         "a table's rows stand one column to the right of the names",
@@ -9344,15 +9335,6 @@ MUTATIONS = [
         "return Column(GapTight, append([]fyne.CanvasObject{Row(bodies...)}, areas...)...)",
         "return Column(GapTight, append([]fyne.CanvasObject{Row(append([]fyne.CanvasObject{Clear()}, bodies...)...)}, areas...)...)",
         "TestATableNamesItsColumnsOnceOverTheFirstRow",
-    ),
-    (
-        # And the two rows of one table come out two widths: the first row's
-        # menu has been drawn once, the second's has not.
-        "the first row of a table is wider than the second",
-        "internal/gui/parts/ring.go",
-        "var widest float32\n\tfor _, option := range c.Options {",
-        "widest := fyne.MeasureText(c.PlaceHolder, size, fyne.TextStyle{}).Width\n\tfor _, option := range c.Options {",
-        "TestEveryRowOfATableStandsUnderTheSameNames",
     ),
     (
         # The other direction: the catalogue vouches for a part nobody has.

@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -219,43 +220,58 @@ func typingBoxesOn(screen fyne.CanvasObject) []*parts.Entry {
 // puts in by itself - fyne v2.8.2 widget/select.go line 98 substitutes its
 // default placeholder while the renderer is made - so the only party that knows
 // what a menu will end up showing is the menu.
+//
+// Asked twice, and the second half is what the floor in parts.menuWidth is for.
+// Laid out, a menu in the form's grid is as wide as the columns it takes rather
+// than as wide as it asks, so the room it is given can cover the toolkit's
+// words while the width it ASKS for does not - and the first layout that gives
+// it exactly what it asks cuts them. Measured on 2026-10-19 with the floor taken
+// out: the damage menu asked for 112.86 px against the toolkit's 124.23 and was
+// still given 124.96, one column of the narrowest window, so the layout half
+// stayed green by 0.73 px and the mutation run scored the floor a HOLE.
 func TestAMenuIsWideEnoughForTheWordsTheToolkitPutsInIt(t *testing.T) {
 	ourTheme(t)
-	content, canvas := laidOutWindow(t)
 
 	checked := 0
 	tightest, tightestIn := float32(0), float32(0)
-	for _, tab := range allTabs() {
-		screen := selectTab(t, content, tab)
-		menus := menusWithAnArchiveOpened(t, screen, tab, canvas)
-		buried := underSomethingHidden(screen)
-		for _, menu := range menus {
-			room, shown, err := widthShown(menu, buried)
+	asked := map[*parts.Chooser]bool{}
+	inEveryMenuLayout(t, func(l menuLayout) {
+		for _, menu := range l.menus {
+			needs := menu.MinSize().Width
+			if !asked[menu] {
+				asked[menu] = true
+				if wants := parts.Menu(menu).MinSize().Width; wants < needs {
+					t.Errorf("a menu of %v on the %s screen asks for %.2f px and the toolkit says it needs"+
+						" %.2f to show what is in it, so a layout that gives it what it asks cuts the words off.\n"+
+						"What to do: parts.menuWidth is what decides this width.",
+						menu.Options, l.tab, wants, needs)
+				}
+			}
+			room, shown, err := widthShown(menu, l.buried)
 			if err != nil {
-				t.Errorf("a menu of %v on the %s screen %v", menu.Options, tab, err)
+				t.Errorf("a menu of %v on %s %v", menu.Options, l, err)
 				continue
 			}
 			if !shown {
 				continue
 			}
-			needs := menu.MinSize().Width
 			if room < needs {
-				t.Errorf("a menu of %v on the %s screen is %.2f px and the toolkit says it needs"+
+				t.Errorf("a menu of %v on %s is %.2f px and the toolkit says it needs"+
 					" %.2f to show what is in it, so the words are cut off in the box that"+
 					" exists to show them.\n"+
 					"What to do: parts.menuWidth is what decides this width.",
-					menu.Options, tab, room, needs)
+					menu.Options, l, room, needs)
 			}
 			if slack := room - needs; tightest == 0 || slack < tightest {
 				tightest, tightestIn = slack, room
 			}
 			checked++
 		}
-	}
+	})
 	if checked == 0 {
 		t.Fatal("no menu was laid out, so this guard checked nothing")
 	}
-	t.Logf("%d menus, all wide enough. The tightest has %.2f px to spare in %.2f", checked, tightest, tightestIn)
+	t.Logf("%d menus laid out, all wide enough. The tightest has %.2f px to spare in %.2f", checked, tightest, tightestIn)
 }
 
 // And no menu is narrower than the boxes it stands beside.
@@ -275,16 +291,17 @@ func TestAMenuIsWideEnoughForTheWordsTheToolkitPutsInIt(t *testing.T) {
 // and a floor taken from those would have been no floor at all. None is today
 // - measured 2026-09-16, after the switch became segments - and the rule stays
 // for the day a hidden box is laid out at nothing again.
+//
+// In the narrowest window too, which is the only width at which the floor of
+// parts.menuWidth shows - see inEveryMenuLayout.
 func TestNoMenuIsNarrowerThanTheBoxesItStandsBeside(t *testing.T) {
 	ourTheme(t)
-	content, canvas := laidOutWindow(t)
 
 	checked := 0
-	for _, tab := range allTabs() {
-		screen := selectTab(t, content, tab)
-		menus, boxes := menusWithAnArchiveOpened(t, screen, tab, canvas), typingBoxesOn(screen)
-		if len(menus) == 0 || holdsNoBoxByDesign(t, tab, boxes) {
-			continue
+	inEveryMenuLayout(t, func(l menuLayout) {
+		boxes := typingBoxesOn(l.screen)
+		if len(l.menus) == 0 || holdsNoBoxByDesign(t, l.tab, boxes) {
+			return
 		}
 		narrowest := float32(0)
 		for _, box := range boxes {
@@ -297,33 +314,120 @@ func TestNoMenuIsNarrowerThanTheBoxesItStandsBeside(t *testing.T) {
 			}
 		}
 		if narrowest == 0 {
-			t.Fatalf("the %s screen has %d menus and no box to type in that was laid out,"+
-				" so there is nothing to compare them against", tab, len(menus))
+			t.Fatalf("%s has %d menus and no box to type in that was laid out,"+
+				" so there is nothing to compare them against", l, len(l.menus))
 		}
-		buried := underSomethingHidden(screen)
-		for _, menu := range menus {
-			got, shown, err := widthShown(menu, buried)
+		for _, menu := range l.menus {
+			got, shown, err := widthShown(menu, l.buried)
 			if err != nil {
-				t.Errorf("a menu of %v on the %s screen %v", menu.Options, tab, err)
+				t.Errorf("a menu of %v on %s %v", menu.Options, l, err)
 				continue
 			}
 			if !shown {
 				continue
 			}
 			if got < narrowest {
-				t.Errorf("a menu of %v on the %s screen is %.2f px and the narrowest box beside it"+
+				t.Errorf("a menu of %v on %s is %.2f px and the narrowest box beside it"+
 					" is %.2f, so one setting is drawn shorter here than the same setting is"+
 					" elsewhere in this window.\n"+
 					"What to do: parts.menuWidth holds a menu to parts.NumericWidth at the least.",
-					menu.Options, tab, got, narrowest)
+					menu.Options, l, got, narrowest)
 			}
 			checked++
 		}
-	}
+	})
 	if checked == 0 {
 		t.Fatal("no screen has a menu, so this guard checked nothing")
 	}
-	t.Logf("%d menus, none of them narrower than the boxes beside them", checked)
+	t.Logf("%d menus laid out, none of them narrower than the boxes beside them", checked)
+}
+
+// menuLayout is one screen laid out at one width, while it stands.
+type menuLayout struct {
+	tab    string
+	width  float32
+	screen fyne.CanvasObject
+	menus  []*parts.Chooser
+	buried map[fyne.CanvasObject]bool
+}
+
+func (l menuLayout) String() string {
+	return fmt.Sprintf("the %s screen in a %.0f px window", l.tab, l.width)
+}
+
+// inEveryMenuLayout hands every screen of the window to ask with every section
+// on it open, twice: at the width the window opens at and at the narrowest the
+// window allows.
+//
+// Open, because a menu in a shut section is not shown and the guards above
+// step over what is not shown: the batch screen's menus of compression,
+// encryption, the expected outcome and its reason were measured by none of
+// them until 2026-10-19.
+//
+// Narrowest, because a field in the form's grid is as wide as the columns it
+// takes rather than as wide as it asks (parts.Grid), so at the opening width
+// every menu is a column wide whatever it asks for and the floor of
+// parts.menuWidth cannot show. The mutation run scored the floor's two entries
+// HOLE on every Sunday from the first. Measured on 2026-10-19 with the floor
+// taken out: at 1000 px every menu kept its 179 or 185 px, and in the
+// narrowest window of the single batch screen (580 px) the damage menu fell
+// from two columns, 265.91 px, to one, 124.96 - beside boxes of 253.91.
+//
+// The narrowest window is the window's, and opening a screen's sections can
+// widen it for the screens after it, which is what a person who opened them
+// gets too.
+func inEveryMenuLayout(t *testing.T, ask func(menuLayout)) {
+	t.Helper()
+	content, canvas := laidOutWindow(t)
+	sized, resizable := canvas.(test.WindowlessCanvas)
+	if !resizable {
+		t.Fatalf("the window's canvas is a %T, which cannot be resized, so the narrowest window cannot be asked", canvas)
+	}
+	opening := canvas.Size()
+	// The window's own padding, which a window keeps round its content at
+	// every width - so the narrowest window is the content's least width and
+	// this much more.
+	padding := opening.Width - content.Size().Width
+	for _, tab := range allTabs() {
+		screen := selectTab(t, content, tab)
+		menusWithAnArchiveOpened(t, screen, tab, canvas)
+		openEverySection(t, screen, tab)
+		for _, width := range []float32{opening.Width - padding, content.MinSize().Width} {
+			sized.Resize(fyne.NewSize(width+padding, opening.Height))
+			content.Refresh()
+			// In the state this is about, or it proves nothing: a resize the
+			// window ignored would measure the wide layout twice.
+			if got := content.Size().Width; got > width+1 || got < width-1 {
+				t.Fatalf("the window was resized for content %.0f px wide and its content is %.0f px, so this would not measure the layout it names",
+					width, got)
+			}
+			ask(menuLayout{tab: tab, width: width + padding, screen: screen, menus: menusOn(screen), buried: underSomethingHidden(screen)})
+		}
+		sized.Resize(opening)
+	}
+}
+
+// openEverySection opens every shut section of a screen, the sections that
+// only appear inside an opened one included, and refuses a head that stays
+// shut when it is pressed - the state is asserted, not assumed.
+func openEverySection(t *testing.T, screen fyne.CanvasObject, tab string) {
+	t.Helper()
+	for {
+		opened := 0
+		for _, row := range foldRows(screen) {
+			if row.head.Open() {
+				continue
+			}
+			row.head.Tapped(nil)
+			if !row.head.Open() {
+				t.Fatalf("pressing the head of the section %q on the %s screen left it shut", row.title, tab)
+			}
+			opened++
+		}
+		if opened == 0 {
+			return
+		}
+	}
 }
 
 // menusWithAnArchiveOpened is every menu of a screen, including the ones that
