@@ -576,7 +576,7 @@ MUTATIONS = [
     (
         "the version in the file properties drifts from the one the program reports",
         "internal/version/version.go",
-        'const Version = "0.4.0"',
+        'const Version = "0.5.0"',
         'const Version = "0.1.0"',
         "TestBothBinariesCarryTheirVersionAndAuthor",
     ),
@@ -8103,8 +8103,8 @@ MUTATIONS = [
     (
         "Unreleased is left comparing from the release before the newest one",
         "CHANGELOG.md",
+        "[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.5.0...HEAD",
         "[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.4.0...HEAD",
-        "[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.3.0...HEAD",
         "TestEveryChangelogVersionHasItsLinkDefinition",
     ),
     (
@@ -15353,5 +15353,19 @@ MUTATIONS = [
         "\tcase h.need > MostInside:\n",
         "\tcase h.need > 0:\n",
         "TestTheArchiveScanLooksIntoTheArchivesInside",
+    ),
+    (
+        "a changelog entry grows past a hundred words on a line of its own",
+        "CHANGELOG.md",
+        "  card of its own with the address written out, for a desktop that opens\n",
+        "  card of its own with the address written out, for a desktop that opens\n  word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word\n",
+        "TestEveryChangelogEntryFitsInAHundredWords",
+    ),
+    (
+        "a changelog entry grows past a hundred words in a second paragraph",
+        "CHANGELOG.md",
+        "  card of its own with the address written out, for a desktop that opens\n  nothing.\n",
+        "  card of its own with the address written out, for a desktop that opens\n  nothing.\n\n  word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word\n",
+        "TestEveryChangelogEntryFitsInAHundredWords",
     ),
 ]

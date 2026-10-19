@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -198,6 +199,118 @@ func TestEveryChangelogVersionHasItsLinkDefinition(t *testing.T) {
 			"What to do: point it at the tag for %s.",
 			newest, want, target, newest)
 	}
+}
+
+// changelogMostWords is how long one entry may be - the owner's decision of
+// 2026-10-20, docs/GIT.md §3.
+const changelogMostWords = 100
+
+// changelogWordsFrom is the first release held to that ceiling. The sections
+// before it were published longer and stay as they were published.
+var changelogWordsFrom = []int{0, 5, 0}
+
+// A changelog entry says what is new, how to use it and the one limit a reader
+// has to know, in at most a hundred words.
+//
+// Measured before the owner set the ceiling on 2026-10-20: the 0.5.0 section
+// had 40 entries averaging 141 words, the longest 499, and 23 of them over a
+// hundred. What made them long was measurement - which reader does what, with
+// versions, seconds and gigabytes - and most of it is in the description of the
+// setting, which tfg formats and the window show, so the changelog said it
+// twice. A word is what sits between spaces, the list marker left out.
+//
+// Unreleased is held too, so an entry is cut when it is written rather than on
+// the day of a release.
+func TestEveryChangelogEntryFitsInAHundredWords(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join(repoRoot(t), "CHANGELOG.md"))
+	if err != nil {
+		t.Fatalf("reading the changelog: %v", err)
+	}
+
+	first, held := 0, 0
+	for _, e := range changelogEntries(string(raw)) {
+		if e.section == "0.5.0" {
+			first++
+		}
+		if !changelogHeld(e.section) {
+			continue
+		}
+		held++
+		if words := len(strings.Fields(e.text)) - 1; words > changelogMostWords {
+			t.Errorf("CHANGELOG.md line %d, under %s: an entry of %d words, and the ceiling is %d.\n"+
+				"Reason: docs/GIT.md §3, the owner's decision of 2026-10-20. An entry says what is new,\n"+
+				"how to use it and the one limit a reader has to know. How each reader behaves, with\n"+
+				"versions and timings, belongs in the description of the setting.\n"+
+				"What to do: cut it to the news, the setting or command, and that limit.",
+				e.line, e.section, words, changelogMostWords)
+		}
+	}
+
+	// The guard has to reach the entries it holds. 0.5.0 is the first section
+	// under the ceiling and stays in the file for good, so a reading that finds
+	// none of its entries, or does not hold them, is reading the wrong thing.
+	if first == 0 {
+		t.Fatal("no entry found under 0.5.0, so this guard is not reading the changelog's entries")
+	}
+	if held < first {
+		t.Fatalf("%d entries under 0.5.0 and only %d held to the ceiling, so 0.5.0 is not being held", first, held)
+	}
+}
+
+// changelogEntry is one item of a changelog list, its lines joined.
+type changelogEntry struct {
+	section string
+	line    int
+	text    string
+}
+
+// changelogEntries reads every item of every list in the changelog, with the
+// section it sits under. An indented line goes on the item before it, after a
+// blank line as well, so a second paragraph counts with the first.
+func changelogEntries(text string) []changelogEntry {
+	var out []changelogEntry
+	section, open, inFence := "", false, false
+	for i, line := range strings.Split(text, "\n") {
+		if strings.HasPrefix(line, "```") {
+			inFence = !inFence
+			continue
+		}
+		switch {
+		case inFence || strings.TrimSpace(line) == "":
+		case strings.HasPrefix(line, "## "):
+			section, _ = bracketed(line[len("## "):])
+			open = false
+		case strings.HasPrefix(line, "- "):
+			out = append(out, changelogEntry{section: section, line: i + 1, text: line})
+			open = true
+		case open && strings.HasPrefix(line, " "):
+			out[len(out)-1].text += " " + line
+		default:
+			open = false
+		}
+	}
+	return out
+}
+
+// changelogHeld says whether a section is held to the ceiling: Unreleased, and
+// every version from changelogWordsFrom on. A heading that does not read as a
+// version is held as well, because skipping what it cannot read is how a guard
+// goes quiet.
+func changelogHeld(section string) bool {
+	core, _, _ := strings.Cut(section, "-")
+	parts := strings.Split(core, ".")
+	if section == "Unreleased" || len(parts) != 3 {
+		return true
+	}
+	version := make([]int, 3)
+	for i, p := range parts {
+		n, err := strconv.Atoi(p)
+		if err != nil {
+			return true
+		}
+		version[i] = n
+	}
+	return slices.Compare(version, changelogWordsFrom) >= 0
 }
 
 // bracketed reads the name out of a line that opens with a square bracket, and

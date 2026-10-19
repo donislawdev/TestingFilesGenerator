@@ -14,289 +14,129 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-20
+
 ### Breaking
 
-- **An HTML page with no label has a title that says Page.** The smallest
-  page and every page written with `--clean` carried an empty title, which
-  the HTML standard does not allow and the Nu HTML Checker reports as an
-  error. They now carry `<title>Page</title>`, a word that says nothing
-  about this tool, since `--clean` is there to keep it out of the file.
-  Pages with a label are unchanged. The smallest HTML page grows from 118 B
-  to 122 B, so 118 B to 121 B are now refused, and `tfg preset eject
-  empty-and-minimal` prints 122 where it printed 118 - a manifest from a run
-  of that preset records a different `recipe_hash`.
-- **The catalogue of every element renames its forms section and its hidden
-  field.** With `elements=every` the forms section is `id="tfg-forms"` and
-  the hidden field is `name="tfg-hidden"`, the way the list of links has
-  always been `tfg-links`. DOMPurify removes an id or a name that shadows a
-  property of the document, so after sanitising, the two links to the forms
-  section led nowhere and the hidden field left a submitted form without its
-  name. The smallest catalogue grows from 6924 B to 6944 B.
-- **A newsletter's page says its language.** With `layout=newsletter` the
-  HTML part opens with `<html lang="en">`, as the pages of the `html` format
-  do, and the line in Polish and Japanese marks each half with its own
-  language, `<span lang="pl">` and `<span lang="ja">`, so a screen reader
-  does not read them as English. The smallest newsletter grows by 10 B in
-  7bit, and by 57 B to 78 B with 8bit, quoted-printable and base64, which
-  carry that line. A message laid out `simple` is unchanged.
+- **An HTML page with no label has a title that says Page.** The smallest page
+  and every page written with `--clean` carried an empty title, which the HTML
+  standard does not allow. They now carry `<title>Page</title>`, a word that
+  says nothing about this tool. Pages with a label are unchanged. The smallest
+  HTML page grows from 118 B to 122 B, so 118 B to 121 B are now refused, and
+  a manifest from a run of the `empty-and-minimal` preset records a different
+  `recipe_hash`.
 
 ### Added
 
 - **Is this archive safe to unpack?** `tfg tool archive-scan <archive>`, and
-  the same on the Tools tab, reads a ZIP, TAR, TAR.GZ or gzip file and
-  everything in it without writing anything, and says what unpacking it
-  would do: entries written outside the folder, links, devices, names that
-  land on one file on Windows or macOS, names a system cannot write,
-  archives built to explode, contents that are not what the archive says.
-  `--unpacked_limit` reports an archive that unpacks to more than you allow.
-  Archives inside it are read too, in memory and up to 16 deep, and a trap
-  in any of them makes the whole unsafe, said with the way to it
-  (`lib 0.zip > lib 3.zip > ../x`). Safe ends with code 0 and anything found
-  with 7, the whole report on the error channel. A report lists 100 findings
-  of each kind and counts the rest. 7z and RAR are recognised and not read
-  yet, and one inside another archive is reported as not checked.
+  the same on the Tools tab, reads a ZIP, TAR, TAR.GZ or gzip file without
+  writing anything and says what unpacking it would do: entries written
+  outside the folder, links, devices, names that collide on Windows or
+  macOS, names a system cannot write, archives built to explode. Archives
+  inside it are read too, up to 16 deep. Safe ends with code 0 and anything
+  found with 7. `--unpacked_limit` sets how much it may unpack to. 7z and
+  RAR are recognised but not read yet.
 - **Documents: the `rtf` format.** A Rich Text Format document at the exact
-  size you ask for, read by LibreOffice, pandoc, the RichEdit control of
-  Windows, striprtf and Apache Tika. It holds headings, paragraphs with bold
-  and italic words, lists, tables and indented quotes, with the label as its
-  first paragraph and every line broken after a space - RTF ignores a line
-  end, so one between two letters would join two words in every reader.
-  `characters=international` adds paragraphs in Polish, Russian, Japanese and
-  Arabic, and one with emoji and the characters RTF escapes or names.
-  `text_encoding` writes their letters four ways, and readers do not agree on
-  two of them: pandoc shows `codepage` text in the wrong letters and drops
-  the character after every letter written `literal`. `elements=every` adds
-  every place a document keeps text a reader may show or leave out -
-  document properties, a page header and footer, a footnote, a comment,
-  hidden text, a link, a bookmark and groups a reader has to skip or does not
-  know - and each part says where it is. LibreOffice and striprtf returned the
-  same parts, and every other reader a set of its own, with two versions of
-  pandoc apart as well. `nesting` puts the content up to 10 000 000 groups deep. The
-  smallest document is 65 B, and the manifest records every setting and the
-  code page the header declares. A large document is a long one to read:
-  at 100 MiB pandoc took 95 s and 9.6 GB of memory, and LibreOffice had not
-  finished after 20 minutes.
+  size you ask for, read by LibreOffice, pandoc, Windows RichEdit, striprtf
+  and Apache Tika. It holds headings, paragraphs, lists, tables and quotes.
+  `characters=international` adds text in Polish, Russian, Japanese and
+  Arabic, `text_encoding` writes those letters four ways, `elements=every`
+  adds every place a document keeps text a reader may show or leave out, and
+  `nesting` goes up to 10 000 000 groups deep. Each setting says where the
+  readers differ. The smallest document is 65 B. At 100 MiB pandoc took 95 s
+  to read it.
 - **Documents: pictures and links in `rtf`.** `inline`, `inline_format` and
-  `inline_size` put real `png` or `jpg` files into the document, the settings
-  a page and a mail message have, each in a paragraph that starts with its
-  name, such as `inline_0001.png`, the one description all six readers
-  measured return. Any other format is refused, since RTF names only those
-  two. `picture_data` says how their bytes are written: `hex`, twice the size
-  of the picture, the way LibreOffice writes them, or `binary`, byte for
-  byte, so the document is no longer text and a program that counts braces
-  or reads it as text loses its place. LibreOffice, pandoc and Tika give back
-  each picture in hex as the very file it is, and RichEdit shows the same
-  picture and writes it out again smaller. pandoc changes the line ends
-  inside a binary picture, so no `png` comes out whole, and it can lose the
-  text after the picture or refuse the whole document. `links` adds up to 1 000 000 links, 17
-  kinds in turn, each saying which kind it is - a bookmark in the document,
-  relative, absolute, without a scheme, `mailto:`, `tel:`, `data:`, a new
-  window, a screen tip and more - and every reader makes something different
-  of them: LibreOffice turns the one without a scheme into a `file://`
-  address, pandoc 3.1 and 3.7 drop every link with its text, and RichEdit
-  returns each address in front of its text. The manifest records the
-  pictures under the keys a page and a message use, and adds `picture_data`
-  and `links`.
-- **Films: the `webm` format.** A WebM video with an AV1 picture and no
-  sound, at the exact size you ask for, like every other format. Its length
-  is a setting of its own, independent of the size. The picture moves: every
-  `change_interval`, one second unless you say otherwise, the clock in it
-  moves on and a square takes a step across it, so a player that plays it
-  shows a running clock and one that freezes shows a stopped one. The clock
-  reads the time the picture starts, the way a player's position does -
-  `00:00:07`, with milliseconds when the changes do not fall on whole
-  seconds. Each change is a whole new picture in bytes, but only the part of
-  it that moved is coded again: from 256x144 up the picture is cut into AV1
-  tiles, and a tile nothing changes is coded once a film. What is left to
-  code is coded on several cores at once - a thirty-minute 1920x1080 film of
-  2 GB takes about 3 s on sixteen threads - and the progress bar counts that
-  coding as well as the bytes, so the time it says is left holds. The frames
-  between changes cost a few bytes each, so an hour at thirty
-  frames a second with a change every second fits in about a megabyte
-  (1 072 231 B at the smallest), and a `change_interval` as long as the film
-  or longer keeps one picture throughout (977 374 B for that hour). Set
-  `duration`, `change_interval`, `frame_rate` (whole rates from 1 to 60),
-  `keyframe_interval` - how far apart the frames a player can start from
-  are - `width`, `height` and `quality`. The picture is the gradient with the
-  self describing label the image formats draw, with the clock under the
-  label and the square below. On a picture too small for the clock the film
-  says so in the manifest. Either side can be up to 16384 pixels and the
-  picture up to 8192x4352 pixels in all, the largest any AV1 level
-  describes, so 7680x4320 and 8192x4320 films can be made - a larger
-  picture is refused before anything is written. A picture taller than 8704
-  pixels belongs to no AV1 level, which a player may hold against it. An 8K
-  film takes a few seconds and about 250 MB of memory, sixteen of them made
-  at once about 1.1 GB. The manifest says what a
-  test can check: `duration_ms`, `frame_count`, `frame_rate`,
-  `keyframe_count`, `change_count`, `change_interval_ms`, `width`, `height`,
-  `compression: av1` and `audio: false`. A length that does not end on a
-  frame is refused with the two nearest that do - at 30 frames a second
-  lengths go in steps of `100ms`. Below the smallest film the settings allow,
-  the refusal says how small it can be and which settings make it smaller.
-  AV1 plays in current browsers, and an older player or a pipeline that
-  expects H.264 may refuse it - which is a test worth having. The window
-  lists it under Video.
-- **Films: the `mp4` format.** The same films in an MP4 file: the same
-  settings, the same moving picture and the same manifest keys as `webm`, at
-  the exact size you ask for, and a WebM and an MP4 made from the same
-  settings carry the same AV1 frames. The index of the film comes first in
-  the file, so a browser starts playing before the whole file is in. To write
-  that index the film is coded twice, the second time from what the first
-  kept, which costs seconds - an hour of 1920x1080 changing every second is
-  coded in under one. The padding is free boxes at the end, so every size
-  from the smallest film up can be made, 5 GB and more included. A frame
-  between changes costs about 8 bytes, so an hour at thirty frames a second
-  with a change every second is 938 423 B at the smallest, and 867 623 B
-  with one picture throughout. The smallest film at the default settings is
-  3312 B. A pipeline that expects H.264 in an MP4 may refuse AV1, which is a
-  test worth having.
+  `inline_size` put real `png` or `jpg` files into the document, the same
+  settings a page and a mail message have. `picture_data` writes their bytes
+  as `hex`, the way LibreOffice does, or as `binary`, which makes the document
+  no longer text - pandoc loses such pictures and can refuse the document.
+  `links` adds up to 1 000 000 links of 17 kinds, and every reader makes
+  something different of them. The manifest records the pictures,
+  `picture_data` and `links`.
+- **Films: the `webm` format.** A WebM video with an AV1 picture and no sound,
+  at the exact size you ask for, with its length set on its own: `duration`,
+  `change_interval`, `frame_rate`, `keyframe_interval`, `width`, `height` and
+  `quality`. A clock in the picture moves on every `change_interval`, so a
+  player that freezes shows a stopped clock. An hour at 30 frames a second
+  fits in about 1 MB, and the picture goes up to 8192x4352. The manifest
+  records the length, the frame counts and the picture size. A player that
+  expects H.264 may refuse AV1, which is a test worth having.
+- **Films: the `mp4` format.** The same films in an MP4 file, with the same
+  settings, picture and manifest keys as `webm` - a WebM and an MP4 made from
+  the same settings carry the same AV1 frames. The index comes first in the
+  file, so a browser starts playing before the whole file is in. Every size
+  from the smallest film up can be made, 5 GB and more included. The smallest
+  film at the default settings is 3312 B. A pipeline that expects H.264 in an
+  MP4 may refuse AV1.
 - **Maps: the `geojson` format.** A GeoJSON FeatureCollection (RFC 7946) at
-  the exact size you ask for, read by GDAL, the reader under QGIS and
-  ogr2ogr. Every feature carries a geometry and a set of properties with every
-  JSON value type, and the ids run 1..N. By default the seven geometry types
-  take turns, so a file of seven features or more holds every one of them -
-  `geometry` picks one instead. Set `formatting` (the same three layouts as
-  `json`), `precision` (0 to 15 decimal places, 6 by default, about ten
-  centimetres), `altitude` for a third number in every position and `vertices`
-  for the points in every line and outline, up to a million in one outline.
-  Two settings make a file that is valid and still hard: `winding=reversed`
-  runs outlines clockwise, which RFC 7946 tells readers to accept, and
-  `antimeridian` makes every line and outline cross the 180th meridian
-  without being cut in two - read as flat coordinates, such an outline crosses
-  itself. Every shape is valid by construction and checked with shapely. The
-  smallest file at the default settings is 875 B. A feature larger than 1 MiB
-  ends the file with spaces after it rather than a longer note, because GDAL
-  refuses a text value of ten million characters. At precision 3 or less a
-  line has fewer points than that, one for each step of longitude the globe
-  has, and asking for more is refused with the number that fits.
-- **Mail: the `eml` format.** A mail message (RFC 5322 with MIME) at the
-  exact size you ask for, with real files of any other format attached in
-  base64 - `attachments`, `attachment_format` and `attachment_size`, or
-  `contains` for files that are not all alike. The size is the message's,
-  about a third more than the files it carries, and the manifest records
-  both, with the number of MIME entities and the subject and Message-ID a
-  test can find the message by. `body` gives a text part (the default), an
-  HTML part, or both with the same words. `text_encoding` keeps the text to
-  7bit, or adds a line in Polish and Japanese in quoted-printable or 8bit.
-  `headers` puts letters outside ASCII into the subject, the names of the
-  people and the names of attached files, encoded the way RFC 2047 and RFC
-  2231 say or raw as RFC 6532 allows. `filename_style` writes those names
-  four ways, and readers do not agree on two of them: Go's standard library
-  reads no name from `content-type` and the encoded text itself from
-  `rfc2047`. `line_endings` gives `crlf` or `lf`. Read by Python's email
-  package, mailparser and Go's standard library, and checked line by line
-  against RFC 5322, which none of the three does. The smallest message at
-  the default settings is 289 B. mailparser refuses a message of more than
-  1000 MIME entities, which 999 attached files and the text reach.
+  the exact size you ask for, read by GDAL and QGIS. Every feature has a
+  geometry and properties of every JSON type, and the seven geometry types
+  take turns unless `geometry` picks one. Set `formatting`, `precision`,
+  `altitude` and `vertices`, up to a million points in one outline.
+  `winding=reversed` and `antimeridian` make files that are valid and still
+  hard for a reader. The smallest file at the default settings is 875 B.
+- **Mail: the `eml` format.** A mail message (RFC 5322 with MIME) at the exact
+  size you ask for, with real files of any other format attached -
+  `attachments`, `attachment_format` and `attachment_size`, or `contains` for
+  a mix. `body` gives a text part, an HTML part or both. `text_encoding`,
+  `headers` and `filename_style` write letters outside ASCII in the ways the
+  standards allow, and readers do not agree on all of them. `line_endings`
+  gives `crlf` or `lf`. The manifest records the subject and Message-ID a test
+  can find the message by. The smallest message is 289 B.
 - **Mail: pictures in the text, messages inside messages, many recipients,
   base64 text and two more character sets.** `inline`, `inline_format` and
-  `inline_size` give the text pictures of any picture format. Beside an HTML
-  each one has a Content-ID and the HTML shows it through `cid:`, and beside
-  a plain text they follow it as pictures to show inline. Readers count them
-  differently: mailparser lists every picture among the attachments, Python's
-  email package lists them when the HTML is alone, and MimeKit never does.
-  `attachment_format=eml` attaches a message as it is, the way mail is
-  forwarded, and `message_depth` puts up to 2000 messages inside each other -
-  Python 3.14's email package runs out of recursion at around 490, and MimeKit
-  stops taking them apart past 513 without a word. `recipients` puts up to
-  100 000 addresses in To, each on a line of its own, past the 1 MiB of header
-  mailparser refuses. `charset` writes the text in `iso-8859-2` or
-  `windows-1250`, which write three Polish letters as different bytes, and
-  MimeKit with no code page provider reads both as Latin-1.
-  `text_encoding=base64` writes the whole text in base64.
-  `filename_style=none` writes no name at all.
+  `inline_size` add pictures the HTML shows through `cid:`.
+  `attachment_format=eml` attaches a message the way mail is forwarded, and
+  `message_depth` puts up to 2000 messages inside each other - Python's email
+  package gives up at around 490. `recipients` puts up to 100 000 addresses in
+  To. `charset` writes the text in `iso-8859-2` or `windows-1250`,
+  `text_encoding=base64` writes it in base64, and `filename_style=none` writes
+  no file name.
 - **GeoJSON: holes, features with no place, both types of id, and bbox.**
-  `holes` gives every polygon up to 100 000 holes of four points, each running
-  the other way round to its outline as RFC 7946 asks. Holes need 6 or more
-  `vertices`, fewer of them fit at precision 3 or less, and asking for more is
-  refused with the number that fits. `unlocated` takes the place of every
-  fifth feature (`some`) or of every one (`all`), written as a geometry of
-  null. `ids` makes every id a number as before, a string such as `f2`, the
-  two in turn (`mixed`), or leaves it out (`none`) - GDAL keeps only the
-  numbers of a mixed file and warns that several features share an id.
-  `bbox` gives the collection and every feature with a place the box their
-  coordinates lie in. The collection's box comes after its features, because
-  its extent is known only after the last one, and a box across the
-  antimeridian has its west edge greater than its east edge. GDAL opens a file
-  whose bbox is wrong without a word, so a reader that relies on bbox needs a
-  test of its own. Files made with the earlier settings keep their bytes.
-- **HTML: deep pages, text in other scripts, every element, and a byte order
-  mark.** `nesting` puts the content of a page inside up to 100 000 div
-  elements, each inside the last, with the label outside them. Readers part
-  ways early: lxml drops everything but the label from a page about 250
-  deep, Chromium keeps 511 levels and moves the deeper ones out, and jsdom,
-  parse5 and DOMPurify can run out of stack writing out a page from about
-  2 000 deep. `characters=international` adds paragraphs in Polish, Russian,
-  Japanese and Arabic, the Arabic right to left, with emoji, a letter written
-  as two code points and entities. `elements=every` adds a block that uses
-  every element of the HTML standard but script at least once, with all 22
-  kinds of input and small pictures and a sound written into the page, so
-  opening it fetches nothing - the Nu HTML Checker finds nothing wrong with
-  it, and pandoc's reader leaves out the header, the aside and the footer.
-  `bom` puts a byte order mark in front. A page with one is still HTML to
-  Chromium and to `file`, and plain text to the content sniffing the WHATWG
-  describes, which Go's `net/http` follows - so a filter that recognises
-  HTML by its first bytes can let it through. Files made with the earlier
+  `holes` gives every polygon up to 100 000 holes. `unlocated` writes every
+  fifth feature (`some`) or every one (`all`) with a null geometry. `ids`
+  makes ids numbers, strings, both in turn (`mixed`) or leaves them out
+  (`none`) - GDAL keeps only the numbers of a mixed file. `bbox` gives the
+  collection and every feature the box their coordinates lie in, with west
+  greater than east across the antimeridian. Files made with the earlier
   settings keep their bytes.
+- **HTML: deep pages, text in other scripts, every element, and a byte order
+  mark.** `nesting` puts the content up to 100 000 elements deep - Chromium
+  keeps 511 levels, and some parsers run out of stack from about 2 000.
+  `characters=international` adds Polish, Russian, Japanese and Arabic text,
+  the Arabic right to left. `elements=every` uses every element of the HTML
+  standard but script, and the page fetches nothing. `bom` puts a byte order
+  mark in front, which can get it past a filter that recognises HTML by its
+  first bytes. Files made with the earlier settings keep their bytes.
 - **HTML: pictures inside the page.** `inline`, `inline_format` and
-  `inline_size` - the same settings, with the same meaning, as the pictures
-  of an `eml` message - write real pictures of any picture format into the
-  page as `data:` URLs, each in a paragraph of its own above the blocks, so
-  opening the page fetches nothing. Each picture is the very file its format
-  writes on its own. The Nu HTML Checker finds nothing wrong with a page of
-  any of the nine formats, Chromium shows every format but `tiff`, and
-  DOMPurify keeps them all. lxml, and BeautifulSoup on top of it, leave out
-  a picture past about 7.1 MB unless told to read huge trees - on Linux lxml
-  took over 20 seconds over such a page, and with a 15 MB picture it lost the
-  rest of the page as well. Files made without pictures keep their bytes.
+  `inline_size`, the same settings as in `eml`, write real pictures of any
+  picture format into the page as `data:` URLs, so opening it fetches nothing.
+  Chromium shows every format but `tiff`. lxml and BeautifulSoup leave out a
+  picture past about 7.1 MB unless told to read huge trees. Files made without
+  pictures keep their bytes.
 - **HTML: a page on one line, and styles.** `formatting=minified` puts the
-  whole page on one line with no newline at the end, the way a bundler
-  writes it, and the page shows the same as one written in lines. A program
-  reading line by line gets the whole page as one line - Go's
-  `bufio.Scanner` refuses a line past 64 KB unless given a larger buffer -
-  and text read by joining what the elements hold runs the last word of one
-  block into the first word of the next. The manifest says `line_ending:
-  none` for such a page. `styles=embedded` puts CSS rules in a style element,
-  in the head of a page and at the very start of a fragment, and
-  `styles=inline` puts the same rules in a style attribute on every heading,
-  paragraph, list, table and quote the page is filled with. The Nu HTML
-  Checker finds nothing wrong with either, and Chromium shows both the same.
-  DOMPurify with its defaults drops the style element without listing it as
-  removed and keeps the attributes, and lxml's `text_content` and
-  BeautifulSoup on html5lib count the rules as text of the page. No rule
-  names anything to fetch. Files made with the earlier settings keep their
-  bytes.
-- **HTML: links, and an indented page.** `links` puts a list of that many
-  links above the pictures and the blocks. They go through 18 kinds in turn -
-  a link to the list itself, relative, to the folder above, from the root, a
-  query alone, absolute with a query and a fragment, `http`, without a
-  scheme, percent encoded, an international domain, a port, `mailto:`,
-  `tel:`, `ftp:`, a download, a new window, `nofollow` and `data:` - and the
-  text of each says which it is. Every address is on a domain kept for
-  examples. The Nu HTML Checker finds nothing wrong with any of them, and
-  jsdom, lxml, BeautifulSoup and Python's `urljoin` resolve them alike.
-  DOMPurify with its defaults takes out the `data:` address and the target
-  that opens a new window, and it ran out of 8 GB of memory over a million
-  links, which lxml read in 3 seconds. The manifest records `links`.
-  `formatting=indented` puts two spaces in front of a line for every element
-  it sits in and leaves the text of `pre` as it is - Chromium places every
-  element of it where it places them on the page of lines, and the Nu HTML
-  Checker finds nothing wrong with it. With `nesting` the spaces grow with
-  every level, so `nesting` 1000 makes a page of at least 1.9 MB. Files made
-  with the earlier settings keep their bytes.
+  whole page on one line, the way a bundler writes it, so a program reading
+  line by line gets one long line - Go's `bufio.Scanner` refuses one past 64
+  KB. `styles=embedded` puts CSS rules in a style element and `styles=inline`
+  puts them in style attributes. DOMPurify with its defaults drops the style
+  element without saying so, and some parsers count the rules as text of the
+  page. Files made with the earlier settings keep their bytes.
+- **HTML: links, and an indented page.** `links` puts that many links above
+  the content, going through 18 kinds in turn - relative, absolute, without a
+  scheme, an international domain, `mailto:`, `data:` and more - each saying
+  which kind it is, all on domains kept for examples. DOMPurify with its
+  defaults takes out the `data:` address and the target that opens a new
+  window. `formatting=indented` indents every line by the elements it sits in,
+  so with `nesting` 1000 a page is at least 1.9 MB. Files made with the
+  earlier settings keep their bytes.
 - **EML: a newsletter.** `layout=newsletter` puts the text in the frame a
   mailing list sends - a title, a Read more button and a footer with an
-  unsubscribe link, in a table 600 pixels wide styled both by a style sheet
-  and by style attributes - and the plain text writes out the addresses the HTML
-  puts behind its links. The message carries `List-Id`, `List-Unsubscribe`
-  with a `mailto:` and an `https` address, and `List-Unsubscribe-Post`, and
-  the manifest gives the address as `unsubscribe_url`. Python's email package
-  and mailparser read all three lines, and the Nu HTML Checker finds no error
-  in the frame, only the table attributes it calls obsolete. There is no
-  DKIM signature, so a mail
-  program that follows RFC 8058 offers no one-click unsubscribe. Nothing in
-  the frame is fetched when the message is opened. Messages made with the
-  earlier settings keep their bytes.
+  unsubscribe link - with the `List-Id`, `List-Unsubscribe` and
+  `List-Unsubscribe-Post` headers, and the manifest gives the address as
+  `unsubscribe_url`. The page says its language, and nothing in it is fetched
+  when the message is opened. There is no DKIM signature, so a mail program
+  that follows RFC 8058 offers no one-click unsubscribe. Messages made with
+  the earlier settings keep their bytes.
 - **A length of time as a setting.** `duration`, `change_interval` and `keyframe_interval` take
   `10s`, `1m30s`, `1h`, `500ms` or `59.9s`, to the millisecond. A bare number
   is refused rather than read as seconds, and so is a length that does not
@@ -304,84 +144,51 @@ because it turns other people's test suites red.
 - **The website in twenty-two languages.** Beside English and Polish it now
   reads in Simplified and Traditional Chinese, Japanese, German, French,
   Spanish, Brazilian Portuguese, Italian, Indonesian, Russian, Turkish, Czech,
-  Vietnamese, Hindi, Korean, Arabic, Romanian, Dutch, Ukrainian and Thai.
-  Every page exists in every language, with the same facts: the numbers come
-  from the program, the same as before. A menu in the header lists the
-  languages by the names they call themselves. Arabic reads from right to
-  left, and commands and code stay left to right in it. Each page tells a
-  search engine which language it is in and where its translations are, so
-  somebody searching in their own language is sent to the page in it. The
-  pages of Latin-script languages have addresses in the language
-  (`/de/dokumentation/`), the others keep the English words under the
-  language prefix (`/ja/docs/`). The window and the command line are not
-  part of this.
+  Vietnamese, Hindi, Korean, Arabic, Romanian, Dutch, Ukrainian and Thai, with
+  the same facts on every page, because the numbers come from the program. A
+  menu in the header lists the languages, and a search engine is told where
+  each translation is. The window and the command line are not part of this.
 - **Two guides on the website.** How to make a corrupt file for testing, with
   the damages listed from the program itself, and how to generate test files in
   a CI pipeline, with a GitHub Actions workflow, a GitLab job and the
   PowerShell catch. Both are in every language of the site.
 - **A Tools tab, and `tfg tool`.** Small things to do with files you already
   have, in the window and on the command line with the same settings. The
-  first works out the checksum of a file - md5, sha1, sha256, sha512 or crc32,
-  sha256 unless you ask - and compares it with one you were given, telling the
-  algorithm from its length: `tfg tool checksum file.iso --expected
-  <checksum>`. A checksum that does not match ends with code 7, the same as
-  `tfg verify`. The file is only read. `tfg tool list` and `tfg tool show
-  <id>` say what there is, both with `--json`.
+  first works out the checksum of a file - md5, sha1, sha256, sha512 or
+  crc32 - and compares it with one you were given: `tfg tool checksum
+  file.iso --expected <checksum>`. A checksum that does not match ends with
+  code 7, the same as `tfg verify`. `tfg tool list` and `tfg tool show <id>`
+  say what there is, both with `--json`.
 - **Checksums of a whole folder.** `tfg tool checksum-write <folder>` writes
   SHA256SUMS beside the files, byte for byte what GNU `sha256sum` writes, so
   `sha256sum -c` checks it later. It never writes over a checksum file that is
-  there, and a folder with anything in it that cannot be read gets no checksum
-  file at all, with everything that could not be read named. `tfg tool
-  checksum-check <SHA256SUMS>` checks every file a checksum file lists. It
-  reads what `sha256sum` and `shasum` write, and names the lines that are not
-  checksums, such as those of a signature, rather than failing on them. Links,
-  pipes and anything else that is not a file are left out and named, never
-  opened. Both are on the Tools tab, where the checksum a file should have now
-  shows in full.
-- **The window in Polish, and a Preferences tab.** The window now speaks the
+  there. `tfg tool checksum-check <SHA256SUMS>` checks every file a checksum
+  file lists, reading what `sha256sum` and `shasum` write. Files that cannot
+  be read, links and anything else that is not a file are named and never
+  opened. Both are on the Tools tab.
+- **The window in Polish, and a Preferences tab.** The window speaks the
   language your system is set to when it has that language, and English
-  otherwise - so on a system set to Polish it opens in Polish. Preferences
-  lets you choose another language. The choice takes effect the next time
-  the window opens, and Restart now does that at once. It is off while files
-  are being made, and anything typed on the other tabs is cleared. In Polish
-  everything the window says is Polish: the settings of every format, the
-  values you pick from a list (pionowo for portrait), the names of the
-  formats, the titles of the presets, the reason a run is refused, the time
-  left, the licence on About and the words of the menus and dialogs, such as
-  Copy and Cancel. A size reads 10,0 MB. A value you typed is shown as you
-  typed it, and so are values that are names, such as a4 or utf-8. The
-  command line, recipes and manifests stay in English, so a recipe written
-  from the window still says portrait. A fault in the program itself is said
-  in Polish with its English detail under it, for whoever reports it. The
-  same tab says what the window keeps between runs (the output directory,
-  the window size and the language), shows the folder they are kept in, and
-  Forget clears them. `tfg-gui --pseudo-language` opens the window with
-  every sentence longer and accented, to see how a translation will fit
-  before one exists. It is never saved as a choice.
+  otherwise. Preferences lets you choose another, and Restart now applies it
+  at once. In Polish everything the window says is Polish, from the settings
+  of every format to the menus, and a size reads 10,0 MB. The command line,
+  recipes and manifests stay in English. Preferences also shows what the
+  window keeps between runs and where, and Forget clears it. `tfg-gui
+  --pseudo-language` shows how a translation will fit before one exists.
 - **A Windows installer, `tfg-setup_<version>_windows_amd64.msi`, beside the
   zip archives.** It installs the window and the command line for every
-  account on the machine, in `Program Files\Testing Files Generator`, puts
-  that folder on the machine's `PATH` once and the window in the Start menu,
-  and asks for administrator rights to do it, in a prompt that names
-  Testing Files Generator. Upgrading while a `tfg` command runs does not
-  stop the command. The new version is in place at once, and the old copy
-  is removed at the next restart. Upgrading with the window open, Windows
-  names the window and lets you close it before going on. Uninstalling
-  removes the folder entry from `PATH` and leaves any file in the folder
-  that the installer did not put there. A release candidate gets no
-  installer.
-- **Eleven new PDF settings.** `orientation` lays pages upright, wide, or
-  both in turn. `page_size=mixed` goes through a4, letter, legal, a3 and a5,
-  one a page. `rotate` asks the reader to turn every page by 90, 180 or 270
-  degrees while the page itself stays upright, so a reader that ignores the
-  request shows something different from one that follows it.
-  `pdf_version` writes 1.4 instead of 1.7 at the start of the file. And the
-  document properties a reader shows: `title`, `author`, `subject`,
-  `keywords`, `creator`, `producer`, and the dates `created` and `modified`,
-  written as `2024-02-29` or `2024-02-29T13:45:00+02:00`, or `none` to leave
-  the date out. Text outside ASCII, such as Polish letters, reads back
-  unchanged. The manifest says what each file carries. A file made without
-  these settings is byte for byte the file this version made before.
+  account on the machine in `Program Files\Testing Files Generator`, puts that
+  folder on the `PATH` and the window in the Start menu, and asks for
+  administrator rights. Upgrading does not stop a running `tfg` command.
+  Uninstalling removes the folder from `PATH` and leaves any file the
+  installer did not put there.
+- **Eleven new PDF settings.** `orientation` lays pages upright, wide or both
+  in turn, `page_size=mixed` goes through five paper sizes, and `rotate` asks
+  the reader to turn every page while the page itself stays upright, so a
+  reader that ignores it shows something else. `pdf_version` writes 1.4
+  instead of 1.7. And the document properties a reader shows: `title`,
+  `author`, `subject`, `keywords`, `creator`, `producer`, `created` and
+  `modified`. A file made without these settings has the bytes it had in
+  0.4.0.
 - **The window groups the settings of a format** when there are enough of
   them to need it. PDF shows its document properties under a heading of
   their own, and `tfg formats pdf` prints the same heading in the same place.
@@ -450,33 +257,22 @@ because it turns other people's test suites red.
 - **The FAQ on the website said a deliberately broken file was not possible
   yet.** `tfg damage` has been in the tool since 0.3.0, and the answer still
   called it a planned feature. It now says how to make one, in every language.
-- **The window no longer offers to write into a folder it cannot or should
-  not write into.** Started from Finder on macOS it offered `/tfg-out`,
-  which is read-only, so the first run ended in a refusal from the system.
-  Started by a double click, or from a shortcut, in the folder the program
-  lives in, it offered a `tfg-out` folder there - under Program Files that
-  is refused, and in a package manager's folder the files can go with the
-  next upgrade. Started in the root of a disk or in the program's own
-  folder, however it was started, the window now offers `tfg-out` in your
-  home folder. Started in any other folder, from a terminal for example, it
-  still offers `tfg-out` in that folder, and the command line is unchanged.
-  A window that remembered one of these folders from an earlier run offers
-  the home folder too.
+- **The window no longer offers to write into a folder it cannot or should not
+  write into.** Started from Finder on macOS it offered the read-only
+  `/tfg-out`, and started from a shortcut in its own folder it offered a
+  folder under Program Files or in a package manager's folder. Started in the
+  root of a disk or in its own folder, the window now offers `tfg-out` in your
+  home folder. Started anywhere else, from a terminal for example, nothing
+  changes, and neither does the command line.
 
 - **A file put under a name while this tool is writing that name is no longer
-  written over.** Each generated file, the manifest, the instructions beside
-  it and a recipe written by `tfg preset eject -o` are written under a
-  temporary name first, and until now the last step replaced whatever had
-  appeared under the final name in the meantime - another program's file, or
-  a person's. Now that step refuses a name somebody holds: the other file
-  stays as it is, a generated file that could not take its name is reported
-  as a failed file (exit code 8), and a manifest or recipe that could not is
-  reported as a write failure (exit code 5). While a run goes, its manifest
-  is reserved as `manifest.json.tfg-writing` rather than as an empty
-  `manifest.json`, so a run that is killed leaves that name behind, and the
-  next run into the directory says a run is going or was killed and names
-  the file to remove, instead of calling an empty file the record of an
-  earlier run.
+  written over.** Each generated file, the manifest and a recipe written by
+  `tfg preset eject -o` go under a temporary name first, and the last step now
+  refuses a name somebody else took in the meantime. Their file stays, and the
+  run ends with code 8 for a generated file or 5 for a manifest or recipe.
+  While a run goes, its manifest is reserved as `manifest.json.tfg-writing`,
+  so the next run into a folder where a run was killed names the file to
+  remove.
 
 - **Ctrl+Enter, Ctrl+P and Escape act on the tab you are looking at.** With
   About on show, Ctrl+Enter used to run Generate on the last work tab you had
@@ -2896,7 +2692,8 @@ because it turns other people's test suites red.
 
 Initial release.
 
-[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.1.0...v0.2.0
