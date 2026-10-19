@@ -22,6 +22,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
+	"github.com/donislawdev/TestingFilesGenerator/internal/tool/archivescan"
 	"github.com/donislawdev/TestingFilesGenerator/internal/tool/checksum"
 )
 
@@ -346,6 +347,14 @@ func screenScenes() []screenScene {
 		{name: "tools-check-result", tab: text.TabTools(), set: func(t *testing.T, s scene) {
 			chooseToolIn(checksum.CheckID)(t, s)
 			fillField(t, s.tab, text.SettingLabel(checksum.InputChecksumFile), "testdata/checksum-sample.SHA256SUMS")
+			pressNamed(t, s.tab, text.ButtonRunTool())
+		}},
+		// The archive scanner's answer, since 2026-10-19: what it found and a
+		// conclusion in the colour of a mismatch - the first answer a tool
+		// declares rather than compares.
+		{name: "tools-archive-result", tab: text.TabTools(), set: func(t *testing.T, s scene) {
+			chooseToolIn(archivescan.ID)(t, s)
+			fillField(t, s.tab, text.SettingLabel(archivescan.InputArchive), "testdata/archive-sample.zip")
 			pressNamed(t, s.tab, text.ButtonRunTool())
 		}},
 		{name: "generate", tab: text.TabOneTarget()},

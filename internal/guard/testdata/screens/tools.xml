@@ -105,7 +105,7 @@
 																	<rectangle fillColor="inputBackground" radius="6" size="587x26"/>
 																	<rectangle size="0x0"/>
 																	<widget pos="4,3" size="557x20" type="*widget.RichText">
-																		<text pos="2,2" size="301x16">checksum - Is this file the one it claims to be?</text>
+																		<text pos="2,2" size="301x16">archive-scan - Is this archive safe to unpack?</text>
 																	</widget>
 																	<widget pos="561,3" size="20x20" type="*widget.Icon">
 																		<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="primary"/>
@@ -120,8 +120,8 @@
 													<container size="788x33">
 														<widget pos="-6,-6" size="800x45" type="*widget.Label">
 															<widget size="800x45" type="*widget.RichText">
-																<text pos="6,6" size="780x16">Works out the checksum of a file, and compares it with one you were given - from a download page, a release note or</text>
-																<text pos="6,22" size="80x16">a colleague.</text>
+																<text pos="6,6" size="784x16">Reads a ZIP or TAR archive and everything in it without unpacking anything, and says whether unpacking it could write</text>
+																<text pos="6,22" size="314x16">outside its folder, overwrite a file or fill the disk.</text>
 															</widget>
 														</widget>
 													</container>
@@ -130,10 +130,10 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,290" size="820x299">
-									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x299" strokeColor="button" strokeWidth="1"/>
-									<container size="820x299">
-										<container pos="16,16" size="788x267">
+								<container pos="0,290" size="820x244">
+									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x244" strokeColor="button" strokeWidth="1"/>
+									<container size="820x244">
+										<container pos="16,16" size="788x212">
 											<container size="788x36">
 												<container pos="-8,0" size="796x36">
 													<container size="792x36">
@@ -156,14 +156,14 @@
 													</container>
 												</container>
 											</container>
-											<container pos="0,52" size="788x214">
-												<container size="788x214">
+											<container pos="0,52" size="788x160">
+												<container size="788x160">
 													<container size="788x60">
 														<container size="788x60">
 															<container size="788x60">
 																<container size="788x24">
-																	<text color="rgba(211,211,215,255)" pos="0,3" size="23x16">File</text>
-																	<widget pos="31,0" size="24x24" type="*parts.DetailButton">
+																	<text color="rgba(211,211,215,255)" pos="0,3" size="50x16">Archive</text>
+																	<widget pos="58,0" size="24x24" type="*parts.DetailButton">
 																		<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 																		<rectangle radius="6" size="24x24"/>
 																		<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>
@@ -196,11 +196,11 @@
 															</container>
 														</container>
 													</container>
-													<container pos="0,76" size="185x60">
-														<container size="185x60">
+													<container pos="0,76" size="185x83">
+														<container size="185x83">
 															<container size="185x24">
-																<text color="rgba(211,211,215,255)" pos="0,3" size="63x16">Algorithm</text>
-																<widget pos="71,0" size="24x24" type="*parts.DetailButton">
+																<text color="rgba(211,211,215,255)" pos="0,3" size="98x16">Unpacked limit</text>
+																<widget pos="106,0" size="24x24" type="*parts.DetailButton">
 																	<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 																	<rectangle radius="6" size="24x24"/>
 																	<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>
@@ -214,7 +214,7 @@
 																		<widget pos="0,1" size="185x26" type="*widget.Scroll">
 																			<widget size="185x26" type="*widget.entryContent">
 																				<widget size="185x26" type="*widget.RichText">
-																					<text color="placeholder" pos="6,5" size="103x16">default: sha256</text>
+																					<text color="placeholder" pos="6,5" size="45x16">not set</text>
 																				</widget>
 																				<widget size="185x26" type="*widget.RichText">
 																					<text pos="6,5" size="0x16"></text>
@@ -225,37 +225,13 @@
 																	<rectangle radius="6" size="185x28"/>
 																</container>
 															</container>
-														</container>
-													</container>
-													<container pos="0,153" size="788x60">
-														<container size="788x60">
-															<container size="788x60">
-																<container size="788x24">
-																	<text color="rgba(211,211,215,255)" pos="0,3" size="62x16">Expected</text>
-																	<widget pos="70,0" size="24x24" type="*parts.DetailButton">
-																		<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
-																		<rectangle radius="6" size="24x24"/>
-																		<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>
+															<widget pos="0,68" size="185x14" type="*parts.ByteCount">
+																<container size="185x14">
+																	<widget pos="-6,-6" size="197x26" type="*widget.RichText">
+																		<text color="placeholder" pos="6,6" size="0x14" textSize="12"></text>
 																	</widget>
 																</container>
-																<container pos="0,32" size="788x28">
-																	<widget size="788x28" type="*parts.Entry">
-																		<rectangle fillColor="inputBackground" pos="1,1" radius="6" size="786x26"/>
-																		<rectangle radius="6" size="786x27" strokeColor="inputBorder" strokeWidth="1"/>
-																		<widget pos="0,1" size="788x26" type="*widget.Scroll">
-																			<widget size="788x26" type="*widget.entryContent">
-																				<widget size="788x26" type="*widget.RichText">
-																					<text color="placeholder" pos="6,5" size="45x16">not set</text>
-																				</widget>
-																				<widget size="788x26" type="*widget.RichText">
-																					<text pos="6,5" size="0x16"></text>
-																				</widget>
-																			</widget>
-																		</widget>
-																	</widget>
-																	<rectangle radius="6" size="788x28"/>
-																</container>
-															</container>
+															</widget>
 														</container>
 													</container>
 												</container>
@@ -263,7 +239,7 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,613" size="820x101">
+								<container pos="0,559" size="820x101">
 									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x101" strokeColor="button" strokeWidth="1"/>
 									<container size="820x101">
 										<container pos="16,16" size="788x69">
