@@ -119,21 +119,28 @@ type book struct {
 	at    map[place]int32
 	file  []bool
 	named []string
+	// room is the places the books of one run may still hold, all of them
+	// together.
+	room *int
 }
 
 // root is the folder an archive is unpacked into.
 const root = -1
 
-func newBook() *book {
-	return &book{at: map[place]int32{}}
+func newBook(room *int) *book {
+	return &book{at: map[place]int32{}, room: room}
 }
 
-// full says the book holds as many places as it is allowed to.
-func (b *book) full() bool { return len(b.named) >= MostPlaces }
+// full says the books of the run hold as many places as they are allowed to.
+func (b *book) full() bool { return *b.room <= 0 }
 
 // add records an entry, and says which entry seen before it lands on the same
 // place - or put a file where this one needs a folder - if one did.
 func (b *book) add(name string, folder bool) (string, bool) {
+	// A copy, held: archive/tar hands back a name set in a PAX header as a
+	// slice of the whole header, and holding the slice holds up to a
+	// megabyte for every entry (docs/SKANER-W-GLAB-2026-10-19.md §1).
+	name = strings.Clone(name)
 	in := int32(root)
 	ps := parts(name)
 	for i, p := range ps {
@@ -161,6 +168,7 @@ func (b *book) add(name string, folder bool) (string, bool) {
 // put records a place first reached by the entry with this name.
 func (b *book) put(here place, name string, file bool) int32 {
 	id := int32(len(b.named))
+	*b.room--
 	b.at[here] = id
 	b.file = append(b.file, file)
 	b.named = append(b.named, name)

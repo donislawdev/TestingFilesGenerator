@@ -74,7 +74,7 @@ func (st stream) gzipped(in io.Reader, head []byte) error {
 	}
 	// What follows the end of the TAR, which a TAR program never reads and
 	// gunzip writes all the same.
-	_, _, err := drain(st.ctx, st.buf, in, ^uint64(0), nil, nil)
+	_, _, err := drain(st.tree.ctx, st.tree.buf, in, ^uint64(0), nil, nil)
 	return st.ended(err, "")
 }
 
@@ -82,20 +82,20 @@ func (st stream) gzipped(in io.Reader, head []byte) error {
 // names what it unpacks after the archive, not after the name inside.
 func (st stream) one(in io.Reader) error {
 	st.scan.entries = 1
-	_, head, err := drain(st.ctx, st.buf, in, ^uint64(0), nil, st.unpacking)
+	st.tree.entries++
+	st.hold.unsaid(st.tree, st.depth < MostDepth)
+	_, _, err := drain(st.tree.ctx, st.tree.buf, in, ^uint64(0), &st.hold, st.unpacking)
 	if err := st.ended(err, ""); err != nil || st.stopped {
+		st.hold.drop()
 		return err
 	}
-	if archiveIn([]byte(head)) != "" {
-		st.note(noteNested, "")
-	}
-	return nil
+	return st.within("", &st.hold)
 }
 
 // walk reads the entries of a TAR one after another.
 func (st stream) walk(r io.Reader) error {
 	tr := tar.NewReader(r)
-	for !st.stopped {
+	for st.going() {
 		h, err := st.next(tr)
 		if err != nil || h == nil {
 			return err
@@ -111,21 +111,29 @@ func (st stream) walk(r io.Reader) error {
 		if h.Size <= 0 {
 			continue
 		}
-		_, head, err := drain(st.ctx, st.buf, tr, uint64(h.Size), nil, st.unpacking)
-		if err := st.ended(err, h.Name); err != nil {
+		if err := st.contents(tr, h); err != nil {
 			return err
-		}
-		if archiveIn([]byte(head)) != "" {
-			st.note(noteNested, h.Name)
 		}
 	}
 	return nil
 }
 
+// contents reads what an entry holds, and the archive it holds when it holds
+// one.
+func (st stream) contents(tr *tar.Reader, h *tar.Header) error {
+	st.hold.start(st.tree, uint64(h.Size), st.depth < MostDepth)
+	_, _, err := drain(st.tree.ctx, st.tree.buf, tr, uint64(h.Size), &st.hold, st.unpacking)
+	if err := st.ended(err, h.Name); err != nil || st.stopped {
+		st.hold.drop()
+		return err
+	}
+	return st.within(h.Name, &st.hold)
+}
+
 // next is the header of the next entry, or nothing at the end of the archive
 // or where a broken one ends the reading.
 func (st stream) next(tr *tar.Reader) (*tar.Header, error) {
-	if err := st.ctx.Err(); err != nil {
+	if err := st.tree.ctx.Err(); err != nil {
 		return nil, err
 	}
 	h, err := tr.Next()
@@ -195,7 +203,7 @@ var globalHarmless = map[string]bool{
 // Contents and not only a gzip layer, because a sparse entry in a bare TAR
 // unpacks to its holes too.
 func (st stream) unpacking(n int) bool {
-	st.unpacked = addCapped(st.unpacked, uint64(n))
+	st.grow(uint64(n))
 	return !st.explodes(st.unpacked)
 }
 
@@ -206,8 +214,8 @@ func (st stream) ended(err error, name string) error {
 	switch {
 	case err == nil, st.exploded:
 		return nil
-	case st.ctx.Err() != nil:
-		return st.ctx.Err()
+	case st.tree.ctx.Err() != nil:
+		return st.tree.ctx.Err()
 	case failedToRead(err):
 		return err
 	}
@@ -224,17 +232,19 @@ func (st stream) ended(err error, name string) error {
 // archive to get there is an archive built to explode - a gigabyte, and more
 // than a hundred times what was read - and notes it the first time. Reading
 // stops there: going on is what such an archive is built to make a program do.
+// So it does when the archive given, with every archive read inside it, is
+// found to be one.
 func (s *scan) explodes(unpacked uint64) bool {
 	if s.exploded {
 		return true
 	}
-	if unpacked < BombBytes || unpacked <= uint64(s.read)*BombRatio {
-		return false
+	if unpacked >= BombBytes && unpacked > uint64(s.read)*BombRatio {
+		s.exploded = true
+		s.noteSaid(noteBomb, "", core.Says("archivescan.Bomb", "%s from %s", core.A("Unpacked", bytesOf(unpacked)), core.A("Size", core.Bytes(s.read))))
+		s.stop(core.Says("archivescan.StoppedBomb", "it unpacks to more than %d times what was read of it, and no more is read", core.A("Ratio", BombRatio)))
 	}
-	s.exploded = true
-	s.noteSaid(noteBomb, "", core.Says("archivescan.Bomb", "%s from %s", core.A("Unpacked", bytesOf(unpacked)), core.A("Size", core.Bytes(s.read))))
-	s.stop(core.Says("archivescan.StoppedBomb", "it unpacks to more than %d times what was read of it, and no more is read", core.A("Ratio", BombRatio)))
-	return true
+	s.tree.check(s)
+	return s.exploded
 }
 
 // errExploded unwinds a reader once the archive has been found built to

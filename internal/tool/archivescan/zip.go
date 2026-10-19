@@ -88,7 +88,7 @@ func (z *zipScan) list() ([]span, error) {
 		if !z.entry(e.name, isFolder(e)) {
 			return false
 		}
-		z.unpacked = addCapped(z.unpacked, e.unpacked)
+		z.grow(e.unpacked)
 		at := z.header(e)
 		z.data = append(z.data, at)
 		if at != 0 {
@@ -167,7 +167,7 @@ func (z *zipScan) contents() error {
 	index := 0
 	var failed error
 	err := z.each(false, func(e zipEntry) bool {
-		if index >= len(z.data) {
+		if index >= len(z.data) || !z.going() {
 			return false
 		}
 		failed = z.inside(e, index)
@@ -196,7 +196,7 @@ func (z *zipScan) inside(e zipEntry, index int) error {
 		target := ""
 		var err error
 		if readable {
-			target, err = z.read(e, at)
+			target, _, err = z.read(e, at, false)
 		}
 		z.noteSaid(noteLinks, e.name, linked(e.name, target))
 		return err
@@ -204,47 +204,52 @@ func (z *zipScan) inside(e zipEntry, index int) error {
 	if !readable {
 		return nil
 	}
-	head, err := z.read(e, at)
-	if err == nil && archiveIn([]byte(head)) != "" {
-		z.note(noteNested, e.name)
+	_, whole, err := z.read(e, at, true)
+	if err != nil || !whole {
+		z.hold.drop()
+		return err
 	}
-	return err
+	return z.within(e.name, &z.hold)
 }
 
 // read reads what an entry holds, through its checksum and no further than
-// one byte past what the list says it holds, and hands back its first bytes.
-// What is wrong with the contents is noted, and only a stop or a disk that
-// fails to read is an error.
-func (z *zipScan) read(e zipEntry, at uint64) (string, error) {
+// one byte past what the list says it holds, and hands back its first bytes
+// and whether it read them whole and as the list says - and holds them, when
+// asked to look and they are an archive. What is wrong with the contents is
+// noted, and only a stop or a disk that fails to read is an error.
+func (z *zipScan) read(e zipEntry, at uint64, look bool) (string, bool, error) {
 	switch {
 	case e.flags&1 != 0 || e.method == methodAES:
 		z.noteSaid(noteUnchecked, e.name, entryWhy(e.name, core.Says("archivescan.Encrypted", "it is encrypted")))
-		return "", nil
+		return "", false, nil
 	case e.method != methodStored && e.method != methodDeflated:
 		z.noteSaid(noteUnchecked, e.name, entryWhy(e.name, core.Says("archivescan.Method",
 			"it is packed with method %d, which this tool does not read", core.A("Method", int(e.method)))))
-		return "", nil
+		return "", false, nil
 	}
 	var src io.Reader = &counting{r: io.NewSectionReader(z.r, int64(at), int64(e.packed)), s: z.scan}
 	if e.method == methodDeflated {
 		src = z.inflated(src)
 	}
 	sum := crc32.NewIEEE()
-	got, head, err := drain(z.ctx, z.buf, src, e.unpacked, sum, nil)
+	z.hold.start(z.tree, e.unpacked, look && z.depth < MostDepth)
+	got, head, err := drain(z.tree.ctx, z.tree.buf, src, e.unpacked, io.MultiWriter(sum, &z.hold), nil)
 	var corrupt flate.CorruptInputError
 	switch {
-	case z.ctx.Err() != nil:
-		return "", z.ctx.Err()
+	case z.tree.ctx.Err() != nil:
+		return "", false, z.tree.ctx.Err()
 	case got > e.unpacked:
 		z.note(noteLonger, e.name)
 	case errors.As(err, &corrupt), errors.Is(err, io.ErrUnexpectedEOF), got < e.unpacked:
 		z.broken(e, core.Says("archivescan.EndsEarly", "its contents end before the size the list gives them"))
 	case err != nil:
-		return "", err
+		return "", false, err
 	case sum.Sum32() != e.crc:
 		z.broken(e, core.Says("archivescan.Checksum", "its contents do not match their checksum"))
+	default:
+		return head, true, nil
 	}
-	return head, nil
+	return head, false, nil
 }
 
 // inflated is what deflated contents unpack to, through the archive's one
@@ -266,7 +271,7 @@ func (z *zipScan) inflated(src io.Reader) io.Reader {
 func (z *zipScan) each(first bool, see func(zipEntry) bool) error {
 	in := bufio.NewReaderSize(io.NewSectionReader(z.r, int64(z.end.listAt), int64(z.end.listSize)), 64<<10)
 	for {
-		if err := z.ctx.Err(); err != nil {
+		if err := z.tree.ctx.Err(); err != nil {
 			return err
 		}
 		e, size, problem, err := readListed(in)
