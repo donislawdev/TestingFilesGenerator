@@ -6527,15 +6527,15 @@ MUTATIONS = [
         "CI stops verifying the linter configuration, so a key the schema "
         "refuses is ignored in silence",
         ".github/workflows/ci.yml",
-        "golangci-lint@v2.14.0 config verify",
-        "golangci-lint@v2.14.0 version",
+        "golangci-lint@v2.15.0 config verify",
+        "golangci-lint@v2.15.0 version",
         "TestTheWorkflowRunsTheLinterAndVerifiesItsConfiguration",
     ),
     (
         "CI reads the linter configuration and never runs it against the tree",
         ".github/workflows/ci.yml",
-        'golangci-lint@v2.14.0 run --build-tags "$(cat .github/build-tags)" ./...',
-        "golangci-lint@v2.14.0 help",
+        'golangci-lint@v2.15.0 run --build-tags "$(cat .github/build-tags)" ./...',
+        "golangci-lint@v2.15.0 help",
         "TestTheWorkflowRunsTheLinterAndVerifiesItsConfiguration",
     ),
     (

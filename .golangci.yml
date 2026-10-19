@@ -114,8 +114,10 @@ linters:
       default-signifies-exhaustive: true
       # fyne.KeyName has 70 members, so a switch on a keystroke would have to
       # list every key on the keyboard to satisfy this. Somebody else's enum,
-      # and not one we can be complete about.
-      ignore-enum-types: "KeyName$"
+      # and not one we can be complete about. A list since v2.15.0, which
+      # refuses the old ignore-enum-types in config verify.
+      ignore-types:
+        - "KeyName$"
 
     gosec:
       # Every entry is a measurement, not a preference. The count beside each
