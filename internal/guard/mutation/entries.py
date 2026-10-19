@@ -6527,15 +6527,15 @@ MUTATIONS = [
         "CI stops verifying the linter configuration, so a key the schema "
         "refuses is ignored in silence",
         ".github/workflows/ci.yml",
-        "golangci-lint@v2.14.0 config verify",
-        "golangci-lint@v2.14.0 version",
+        "golangci-lint@v2.15.0 config verify",
+        "golangci-lint@v2.15.0 version",
         "TestTheWorkflowRunsTheLinterAndVerifiesItsConfiguration",
     ),
     (
         "CI reads the linter configuration and never runs it against the tree",
         ".github/workflows/ci.yml",
-        'golangci-lint@v2.14.0 run --build-tags "$(cat .github/build-tags)" ./...',
-        "golangci-lint@v2.14.0 help",
+        'golangci-lint@v2.15.0 run --build-tags "$(cat .github/build-tags)" ./...',
+        "golangci-lint@v2.15.0 help",
         "TestTheWorkflowRunsTheLinterAndVerifiesItsConfiguration",
     ),
     (
@@ -6933,10 +6933,11 @@ MUTATIONS = [
         "a module's own section states a version nobody builds",
         "THIRD-PARTY-NOTICES.md",
         # The number here follows the build: 0.40 became 0.41 on 2026-08-28
-        # and 0.42 on 2026-09-22 (#112), and each time this pattern went stale
-        # with it - a SKIP that reads like a proof, which staleness.py names.
+        # and 0.42 on 2026-09-22 (#112), 0.43 on 2026-10-19, and each time this
+        # pattern went stale with it - a SKIP that reads like a proof, which
+        # staleness.py names.
+        "Version 0.43.0. Supplies Unicode normalisation",
         "Version 0.42.0. Supplies Unicode normalisation",
-        "Version 0.41.0. Supplies Unicode normalisation",
         "TestTheNoticesFileNamesTheVersionsThatAreActuallyBuilt",
     ),
     (
@@ -9328,15 +9329,6 @@ MUTATIONS = [
         "TestAMenuIsOneWidthBeforeAndAfterItIsDrawn",
     ),
     (
-        # The same defect asked on the screens: the format menu is one width
-        # on the single batch screen and another on the preset screen.
-        "the format menu is two widths on two screens",
-        "internal/gui/parts/ring.go",
-        "var widest float32\n\tfor _, option := range c.Options {",
-        "widest := fyne.MeasureText(c.PlaceHolder, size, fyne.TextStyle{}).Width\n\tfor _, option := range c.Options {",
-        "TestOneSettingIsOneMenuWidthOnEveryScreen",
-    ),
-    (
         # Every row's cells slide one column to the right of the names: the
         # header stands where it stood and the first row does not.
         "a table's rows stand one column to the right of the names",
@@ -9344,15 +9336,6 @@ MUTATIONS = [
         "return Column(GapTight, append([]fyne.CanvasObject{Row(bodies...)}, areas...)...)",
         "return Column(GapTight, append([]fyne.CanvasObject{Row(append([]fyne.CanvasObject{Clear()}, bodies...)...)}, areas...)...)",
         "TestATableNamesItsColumnsOnceOverTheFirstRow",
-    ),
-    (
-        # And the two rows of one table come out two widths: the first row's
-        # menu has been drawn once, the second's has not.
-        "the first row of a table is wider than the second",
-        "internal/gui/parts/ring.go",
-        "var widest float32\n\tfor _, option := range c.Options {",
-        "widest := fyne.MeasureText(c.PlaceHolder, size, fyne.TextStyle{}).Width\n\tfor _, option := range c.Options {",
-        "TestEveryRowOfATableStandsUnderTheSameNames",
     ),
     (
         # The other direction: the catalogue vouches for a part nobody has.

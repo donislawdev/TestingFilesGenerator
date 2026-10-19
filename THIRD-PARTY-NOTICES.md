@@ -78,7 +78,7 @@ Source: <https://github.com/goccy/go-yaml>
 
 ## golang.org/x/text
 
-Version 0.42.0. Supplies Unicode normalisation, used to decide whether two file
+Version 0.43.0. Supplies Unicode normalisation, used to decide whether two file
 names are one name spelled two ways.
 
 ```

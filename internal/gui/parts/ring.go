@@ -328,9 +328,11 @@ func menuWidth(c *Chooser) float32 {
 	//
 	// Whether the placeholder fits is not this function's to answer, and is
 	// answered: TestAMenuIsWideEnoughForTheWordsTheToolkitPutsInIt asks every
-	// laid out menu whether its width covers the toolkit's own MinSize, which
-	// is the one measurement that knows the placeholder. The floor at the end
-	// of this function is what covers it today, with room to spare.
+	// menu whether the width it asks for here, and the width it is laid out
+	// at, cover the toolkit's own MinSize, which is the one measurement that
+	// knows the placeholder. The floor at the end of this function is what
+	// covers it today: without it the menu of compression levels asks for 90
+	// px where the toolkit needs 131 (measured 2026-10-19).
 	//
 	// Since 2026-10-06 every menu is made with the window's own placeholder
 	// (NewChooser), so the toolkit no longer puts one in and the two widths

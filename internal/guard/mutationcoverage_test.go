@@ -68,6 +68,18 @@ var notProvenByMutation = map[string]bool{
 	// would NOT catch a wrapper put in front of one and stealing the presses.
 	"TestThreeClicksInABoxSelectWhatIsInIt":       true,
 	"TestAFreshRunIntoAnEmptyDirectoryStillWorks": true,
+	// One menu, two widths, measured at two moments: the cause they were
+	// written for was the toolkit putting its placeholder into a menu at its
+	// first draw, and that is closed at the source since 2026-10-06 -
+	// parts.NewChooser gives every menu the window's placeholder, held by
+	// TestAMenuIsOneWidthBeforeAndAfterItIsDrawn. Their mutation, measuring the
+	// placeholder in parts.menuWidth, scored HOLE on every Sunday run, and
+	// rightly: measured on 2026-10-19 it widens every format menu from 154.73
+	// to 180.23 px on every screen and in every row at once. With the
+	// placeholder taken out of NewChooser as well, both stayed green that day,
+	// so no pair of breaks here reaches them either.
+	"TestOneSettingIsOneMenuWidthOnEveryScreen":   true,
+	"TestEveryRowOfATableStandsUnderTheSameNames": true,
 	// The property is a package NAME, and no substitution in the tree can
 	// move a package without breaking the build. Every mutation that reaches
 	// the constant it reads also reddens the size guards, which the runner
