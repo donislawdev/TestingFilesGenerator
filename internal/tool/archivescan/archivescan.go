@@ -16,7 +16,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"os"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -33,7 +32,10 @@ const (
 	SettingLimit = "unpacked_limit"
 )
 
-// The limits, fixed. The one a person sets is SettingLimit.
+// The limits, fixed. The one a person sets is SettingLimit. Each is the limit
+// of the archive given and every archive inside it together, not of each one,
+// so an archive of a thousand archives holds no more than one archive may
+// (docs/SKANER-W-GLAB-2026-10-19.md §2.1).
 const (
 	// MostEntries is where reading stops. A million names held to find two
 	// that land on one file is a few hundred megabytes, and an archive with
@@ -45,6 +47,21 @@ const (
 	// 64 GB held in memory to answer a question about a file.
 	MostPlaces    = 2 * MostEntries
 	MostNameBytes = 256 << 20
+	// MostDepth is how many archives deep the tool looks. An archive can
+	// hold itself, and that ends here rather than never.
+	MostDepth = 16
+	// MostInside is the most the archives inside hold in memory at once to
+	// be read: a ZIP is read from its end, so it has to be held whole.
+	MostInside = 256 << 20
+	// MostListed, MostShownName and MostListedBytes bound the report: the
+	// items of one note, the bytes of one name in it, and the bytes of every
+	// name in it. Past them a finding is counted and not listed - a million
+	// findings, or a name of 64 KiB, are no report anybody reads.
+	MostListed      = 100
+	MostShownName   = 1024
+	MostListedBytes = 4 << 20
+	// MostReports is how many reports of archives inside --json carries.
+	MostReports = 1000
 	// BombBytes and BombRatio are an archive built to explode: at least this
 	// much when unpacked, and more than this many times its own size. Both,
 	// because either alone is innocent - a file of zeros packs a thousand to
@@ -73,7 +90,7 @@ func init() {
 		}},
 		Settings: []format.Property{{
 			Name: SettingLimit, Kind: format.PropertySize,
-			Detail: "The most the archive may unpack to, all its files together - for a server or a disk that takes no more. " +
+			Detail: "The most the archive may unpack to, all its files together with those of the archives inside it - for a server or a disk that takes no more. " +
 				"Left empty, only an archive built to explode is reported: 1 GB or more, and more than 100 times its own size.",
 		}},
 		Notes: declaredNotes(),
@@ -107,6 +124,7 @@ func run(ctx context.Context, in tool.Request, progress tool.Progress) (tool.Res
 	if err := s.look(f); err != nil {
 		return tool.Result{}, err
 	}
+	s.overLimit()
 	after, err := f.Stat()
 	if err != nil {
 		return tool.Result{}, err
@@ -117,10 +135,11 @@ func run(ctx context.Context, in tool.Request, progress tool.Progress) (tool.Res
 	return s.result(), nil
 }
 
-// look tells what the file is and reads it as that.
-func (s *scan) look(f *os.File) error {
+// look tells what an archive is and reads it as that: the file given, or an
+// archive inside it held in memory.
+func (s *scan) look(r io.ReaderAt) error {
 	head := make([]byte, headLength)
-	n, err := f.ReadAt(head, 0)
+	n, err := r.ReadAt(head, 0)
 	if err != nil && !errors.Is(err, io.EOF) {
 		return err
 	}
@@ -128,12 +147,12 @@ func (s *scan) look(f *os.File) error {
 	switch k, other := sniff(head); {
 	case k == kindZip:
 		s.kind = kindZip
-		return s.zip(f)
+		return s.zip(r)
 	case k == kindTar:
 		s.kind = kindTar
-		return s.tar(io.NewSectionReader(f, 0, s.size))
+		return s.tar(io.NewSectionReader(r, 0, s.size))
 	case k == kindGzip:
-		return s.gzip(io.NewSectionReader(f, 0, s.size))
+		return s.gzip(io.NewSectionReader(r, 0, s.size))
 	case other != "":
 		return &NotReadYetError{Path: s.path, Kind: other}
 	}

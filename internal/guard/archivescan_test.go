@@ -241,6 +241,9 @@ func TestTheArchiveScanEndsWithTheCodeOfWhatHappened(t *testing.T) {
 	leaves := archiveFile(t, "leaves.zip", zipOf(t, zipPart{name: "../a.txt"}))
 	sevenZip := archiveFile(t, "x.7z", append([]byte{'7', 'z', 0xBC, 0xAF, 0x27, 0x1C}, make([]byte, 32)...))
 	text := archiveFile(t, "notes.txt", []byte("not an archive"))
+	// Two bytes are all gzip and many other files share: the third, the one
+	// method gzip has, tells them apart.
+	gzipLike := archiveFile(t, "data.bin", append([]byte{0x1f, 0x8b, 0x00}, make([]byte, 32)...))
 	stopped, stop := context.WithCancel(context.Background())
 	stop()
 	for _, c := range []struct {
@@ -254,6 +257,7 @@ func TestTheArchiveScanEndsWithTheCodeOfWhatHappened(t *testing.T) {
 		{"more than the limit", context.Background(), []string{clean, "--unpacked_limit", "0"}, cli.ExitVerify},
 		{"a limit that is not a size", context.Background(), []string{clean, "--unpacked_limit", "10xb"}, cli.ExitUsage},
 		{"a file that is not an archive", context.Background(), []string{text}, cli.ExitUsage},
+		{"a file beginning as gzip does and not one", context.Background(), []string{gzipLike}, cli.ExitUsage},
 		{"an archive this tool does not read", context.Background(), []string{sevenZip}, cli.ExitUsage},
 		{"a directory", context.Background(), []string{filepath.Dir(clean)}, cli.ExitUsage},
 		{"no file", context.Background(), nil, cli.ExitUsage},
@@ -317,6 +321,11 @@ func FuzzArchiveScan(f *testing.F) {
 	f.Add(tarOf(t, true, tarPart{name: "a", body: "abc"}, tarPart{name: "l", typ: '2', link: "/x"}))
 	f.Add(tarOf(t, false, tarPart{name: "a", body: "abc"}))
 	f.Add(handZip("first", "first", true))
+	// Archives inside archives, so the reading of one held in memory is
+	// fuzzed too.
+	inner := zipOf(t, zipPart{name: "in.txt", body: "abc"})
+	f.Add(zipOf(t, zipPart{name: "inner.zip", body: string(inner)}, zipPart{name: "t.tar", body: string(tarOf(t, false, tarPart{name: "z.zip", body: string(inner)}))}))
+	f.Add(gzipOf(t, inner))
 	d, err := tool.Get(archivescan.ID)
 	if err != nil {
 		f.Fatal(err)

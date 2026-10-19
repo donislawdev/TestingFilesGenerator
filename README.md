@@ -424,9 +424,15 @@ the checksum file is in. Files it does not list are not looked at, the same as
 `archive-scan` looks into a ZIP, TAR, TAR.GZ or gzip file without unpacking it
 and says whether unpacking it is safe: no entry written outside the folder, no
 link, no device, no two names landing on one file, no name a system cannot
-write, nothing built to explode and nothing damaged. `--unpacked_limit 500mb`
-also reports an archive that unpacks to more than that. Safe ends with code 0,
-anything found with 7.
+write, nothing built to explode and nothing damaged. Archives inside it - a
+ZIP in a ZIP, a JAR in a WAR, a DOCX in a TAR - are read the same way, in
+memory, up to 16 deep, and a trap in one of them is a trap in the whole: a
+program that unpacks everything inside unpacks those too. An archive inside
+larger than 256 MB, or than what is left of it while the archives around it
+are held, or one this tool does not read, is reported as not checked. `--unpacked_limit 500mb` also reports an archive that unpacks to more
+than that, counting the archives inside. Safe ends with code 0, anything found
+with 7. A report lists 100 findings of each kind and counts the rest, and what
+the tool holds in memory has a ceiling whatever the archive holds.
 
 ### `tfg damage`
 

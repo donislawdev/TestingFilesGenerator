@@ -1941,8 +1941,8 @@
   },
   "Detail.tool/archive-scan.unpacked_limit": {
     "description": "The sentence under the unpacked_limit setting of the archive-scan tool, after what it takes.",
-    "hash": "sha256-db62592b44cd",
-    "other": "The most the archive may unpack to, all its files together - for a server or a disk that takes no more. Left empty, only an archive built to explode is reported: 1 GB or more, and more than 100 times its own size."
+    "hash": "sha256-2d979a19400d",
+    "other": "The most the archive may unpack to, all its files together with those of the archives inside it - for a server or a disk that takes no more. Left empty, only an archive built to explode is reported: 1 GB or more, and more than 100 times its own size."
   },
   "Detail.tool/checksum-write.algorithm": {
     "description": "The sentence under the algorithm setting of the checksum-write tool, after what it takes.",
@@ -2926,8 +2926,8 @@
   },
   "Tool.archive-scan.Note.nested": {
     "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
-    "hash": "sha256-d256c3caa62f",
-    "other": "Archives inside it, which were not opened:"
+    "hash": "sha256-bafd9d1c251d",
+    "other": "Archives inside it, read as well:"
   },
   "Tool.archive-scan.Note.over_limit": {
     "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
@@ -2968,6 +2968,11 @@
     "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
     "hash": "sha256-75d57d9929a3",
     "other": "Unpacked:"
+  },
+  "Tool.archive-scan.Note.unpacked_all": {
+    "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",
+    "hash": "sha256-5bfde17d9bd9",
+    "other": "Unpacked, with the archives inside it:"
   },
   "Tool.archive-scan.Note.unwritable": {
     "description": "A line of the result of the archive-scan tool, ending in a colon - what follows it is a list of names or one number.",

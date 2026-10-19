@@ -49,8 +49,12 @@ because it turns other people's test suites red.
   land on one file on Windows or macOS, names a system cannot write,
   archives built to explode, contents that are not what the archive says.
   `--unpacked_limit` reports an archive that unpacks to more than you allow.
-  Safe ends with code 0 and anything found with 7, the whole report on the
-  error channel. 7z and RAR are recognised and not read yet.
+  Archives inside it are read too, in memory and up to 16 deep, and a trap
+  in any of them makes the whole unsafe, said with the way to it
+  (`lib 0.zip > lib 3.zip > ../x`). Safe ends with code 0 and anything found
+  with 7, the whole report on the error channel. A report lists 100 findings
+  of each kind and counts the rest. 7z and RAR are recognised and not read
+  yet, and one inside another archive is reported as not checked.
 - **Documents: the `rtf` format.** A Rich Text Format document at the exact
   size you ask for, read by LibreOffice, pandoc, the RichEdit control of
   Windows, striprtf and Apache Tika. It holds headings, paragraphs with bold

@@ -20,9 +20,10 @@ const (
 const headLength = 512
 
 var (
-	zipLocal  = []byte("PK\x03\x04")
-	zipEmpty  = []byte("PK\x05\x06")
-	gzipMagic = []byte{0x1f, 0x8b}
+	zipLocal = []byte("PK\x03\x04")
+	zipEmpty = []byte("PK\x05\x06")
+	// gzipMagic is the two bytes of gzip and its one method, deflate.
+	gzipMagic = []byte{0x1f, 0x8b, 0x08}
 	tarMagic  = []byte("ustar")
 )
 
@@ -36,7 +37,6 @@ var others = []struct {
 	{"7z", []byte{'7', 'z', 0xBC, 0xAF, 0x27, 0x1C}},
 	{"RAR", []byte("Rar!\x1a\x07")},
 	{"xz", []byte{0xFD, '7', 'z', 'X', 'Z', 0x00}},
-	{"bzip2", []byte("BZh")},
 	{"zstd", []byte{0x28, 0xB5, 0x2F, 0xFD}},
 	{"CAB", []byte("MSCF")},
 }
@@ -57,7 +57,21 @@ func sniff(head []byte) (kind, string) {
 			return "", o.name
 		}
 	}
+	if isBzip2(head) {
+		return "", "bzip2"
+	}
 	return "", ""
+}
+
+// isBzip2 says whether a file begins as bzip2 does: "BZh", a block size from 1
+// to 9, and the magic of a block or of the end of the stream - three letters
+// alone begin too many other files.
+func isBzip2(head []byte) bool {
+	if len(head) < 10 || !bytes.HasPrefix(head, []byte("BZh")) || head[3] < '1' || head[3] > '9' {
+		return false
+	}
+	magic := head[4:10]
+	return bytes.Equal(magic, []byte{0x31, 0x41, 0x59, 0x26, 0x53, 0x59}) || bytes.Equal(magic, []byte{0x17, 0x72, 0x45, 0x38, 0x50, 0x90})
 }
 
 // isTar says whether a block is a TAR header, or the block of zeros an empty
@@ -71,7 +85,7 @@ func isTar(head []byte) bool {
 }
 
 // archiveIn names the archive a piece of contents begins as, or nothing - for
-// an entry holding another archive, which is reported and never opened.
+// an entry holding another archive.
 func archiveIn(head []byte) string {
 	if k, other := sniff(head); other != "" {
 		return other
@@ -89,4 +103,9 @@ func allZero(b []byte) bool {
 		}
 	}
 	return true
+}
+
+// readable says whether an archive named by archiveIn is one this tool reads.
+func readable(name string) bool {
+	return name == string(kindZip) || name == string(kindTar) || name == string(kindGzip)
 }
