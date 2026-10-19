@@ -59,14 +59,17 @@ type PropertyField struct {
 // An empty control sends nothing rather than sending emptiness. The registry
 // reads an empty value as "not stated", which is what leaving a field alone
 // means, so a format that works its own answer out still gets to.
-func FromProperty(p format.Property) PropertyField {
+func FromProperty(p format.Property) PropertyField { return fromProperty(p, false) }
+
+// fromProperty is FromProperty for a setting of a tool, or of anything else.
+func fromProperty(p format.Property, ofATool bool) PropertyField {
 	switch p.Kind {
 	case format.PropertyChoice:
-		return choiceField(p)
+		return choiceField(p, ofATool)
 	case format.PropertyBool:
 		return boolField(p)
 	default:
-		return textField(p)
+		return textField(p, ofATool)
 	}
 }
 
@@ -115,10 +118,10 @@ func FromProperty(p format.Property) PropertyField {
 // Boxes somebody types in are NOT this case and were left alone: a preset's
 // limit and spread are parameters, so an empty box there does reach the
 // manifest as defaulted. Measured in the same run.
-func choiceField(p format.Property) PropertyField {
+func choiceField(p format.Property, ofATool bool) PropertyField {
 	sel := NewChooser(p.Choices, nil)
 	sel.ShownAs = func(v string) string { return text.ChoiceName(p.Name, v) }
-	sel.PlaceHolder = leftAlone(p)
+	sel.PlaceHolder = leftAlone(p, ofATool)
 	if p.Default != "" {
 		sel.SetSelected(p.Default)
 	}
@@ -153,9 +156,9 @@ func boolField(p format.Property) PropertyField {
 // textField covers a number, a size and free text alike, because all three are
 // a box somebody types into and the difference between them is what the engine
 // accepts rather than what the box does.
-func textField(p format.Property) PropertyField {
+func textField(p format.Property, ofATool bool) PropertyField {
 	entry := NewEntry()
-	entry.SetPlaceHolder(leftAlone(p))
+	entry.SetPlaceHolder(leftAlone(p, ofATool))
 	return PropertyField{
 		Name:    p.Name,
 		Control: entry,
@@ -173,14 +176,18 @@ func textField(p format.Property) PropertyField {
 // worked out there - an empty password is no password - and the same would
 // have been said of the author of a PDF. What leaving it empty gives is the
 // format's to say, in the sentence beside the box.
-func leftAlone(p format.Property) string {
+//
+// Nor is anything worked out for a tool, which makes no file of any size: the
+// limit of archive-scan read "worked out from the size" on the day it arrived
+// (2026-10-19), and an empty limit is no limit.
+func leftAlone(p format.Property, ofATool bool) string {
 	switch {
 	case p.Default != "" && len(p.Choices) > 0:
 		// A value of a list is said the way the list says it.
 		return text.PlaceholderLeftEmpty(text.ChoiceName(p.Name, p.Default))
 	case p.Default != "":
 		return text.PlaceholderLeftEmpty(p.Default)
-	case p.Kind == format.PropertyText:
+	case p.Kind == format.PropertyText || ofATool:
 		return text.PlaceholderNotSet()
 	default:
 		return text.PlaceholderWorkedOut()
@@ -255,7 +262,7 @@ func DeclaredFields(owner text.Owner, declared []format.Property, into *Fields, 
 		if p.Group != "" && (i == 0 || declared[i-1].Group != p.Group) {
 			objects = append(objects, Subheading(text.SettingGroup(owner, p.Group)))
 		}
-		f := FromProperty(p)
+		f := fromProperty(p, text.IsTool(owner))
 		fields = append(fields, f)
 		// A setting the format itself calls a size gets its count of bytes.
 		// Read off the declaration rather than off the name, so a format that
@@ -274,7 +281,7 @@ func DeclaredFields(owner text.Owner, declared []format.Property, into *Fields, 
 		// somebody who finds a setting here has to be able to write it down.
 		// For a tool that is a flag rather than a recipe key - see WrittenAs.
 		field := into.Add(p.Name, text.SettingLabel(p.Name), PropertyDetail(owner, p),
-			tips.Say(text.WrittenAs(owner, p.Name)), ShapedFor(p, f.Control))
+			tips.Say(text.WrittenAs(owner, p.Name)), shapedFor(p, f.Control, text.IsTool(owner)))
 		if longText(p) {
 			field = Wide(field)
 		}
@@ -311,13 +318,19 @@ func longText(p format.Property) bool {
 // Text the declaration calls long is left to the row it is given - see
 // Property.Long and DeclaredFields.
 func ShapedFor(p format.Property, control fyne.CanvasObject) fyne.CanvasObject {
+	return shapedFor(p, control, false)
+}
+
+// shapedFor is ShapedFor for a setting of a tool, whose box shows another
+// placeholder - see leftAlone.
+func shapedFor(p format.Property, control fyne.CanvasObject, ofATool bool) fyne.CanvasObject {
 	switch {
 	case longText(p):
 		return control
 	case narrowOnAScreen(p):
-		return Sized(fyne.Max(NumericWidth, roomFor(leftAlone(p))), control)
+		return Sized(fyne.Max(NumericWidth, roomFor(leftAlone(p, ofATool))), control)
 	case p.Kind == format.PropertyText:
-		return Sized(fyne.Max(TextWidth, roomFor(leftAlone(p))), control)
+		return Sized(fyne.Max(TextWidth, roomFor(leftAlone(p, ofATool))), control)
 	}
 	return control
 }

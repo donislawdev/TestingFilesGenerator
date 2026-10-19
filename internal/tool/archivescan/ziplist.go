@@ -65,7 +65,7 @@ type zipEntry struct {
 
 // errNoEnd is a file that begins as a ZIP and has no record at its end saying
 // where its list of contents is.
-var errNoEnd = errors.New("no end record")
+var errNoEnd = core.Defect(errors.New("a ZIP without an end record was not noted as damaged"))
 
 func le16(b []byte) uint16 { return binary.LittleEndian.Uint16(b) }
 func le32(b []byte) uint32 { return binary.LittleEndian.Uint32(b) }

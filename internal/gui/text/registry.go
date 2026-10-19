@@ -55,13 +55,16 @@ func ToolOwner(id string) Owner { return Owner(toolPrefix + id) }
 
 const toolPrefix = "tool/"
 
+// IsTool says whether a declaration is a tool's.
+func IsTool(o Owner) bool { return strings.HasPrefix(string(o), toolPrefix) }
+
 // WrittenAs is what the button beside a declared setting says about writing
 // it down: the key a recipe writes it under, or for a tool - which no recipe
 // runs - the flag of tfg tool. A sentence about a recipe beside a setting
 // nobody can put in one would send somebody looking for a file that cannot
 // hold it.
 func WrittenAs(o Owner, key string) string {
-	if strings.HasPrefix(string(o), toolPrefix) {
+	if IsTool(o) {
 		return ToolFlag(key)
 	}
 	return SettingKey(key)

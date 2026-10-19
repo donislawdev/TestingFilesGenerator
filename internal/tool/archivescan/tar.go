@@ -208,7 +208,7 @@ func (s *scan) explodes(unpacked uint64) bool {
 
 // errExploded unwinds a reader once the archive has been found built to
 // explode, from inside the gzip layer the TAR reader reads through.
-var errExploded = errors.New("built to explode")
+var errExploded = core.Defect(errors.New("reading an archive built to explode did not stop where it was found"))
 
 // inflating counts what a gzip stream unpacks to.
 type inflating struct {
