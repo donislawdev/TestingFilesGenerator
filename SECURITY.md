@@ -57,8 +57,11 @@ them by somebody else is a refusal rather than a way out of the directory.
 **The Windows and macOS downloads are signed**, and the macOS ones are notarised by
 Apple, so they start without a warning about an unknown developer. **The Linux ones
 are not signed**, because desktop Linux has no equivalent to sign them with. Verify
-any download against `verify-SHA256SUMS.txt` from the same release, and the build
-provenance attestation published with it.
+any download against `verify-SHA256SUMS.txt` from the same release, and against
+its attestation: `gh attestation verify <file> --repo donislawdev/TestingFilesGenerator
+--predicate-type https://spdx.dev/Document/v2.3`. That statement is made over the
+files as published, after signing, so it fits every download. The build provenance
+fits only the unsigned Linux ones, because signing changes the bytes it describes.
 
 **The Windows window archive carries one thing this project did not write:** a
 software OpenGL renderer, two files of Mesa llvmpipe in an `opengl` folder next to

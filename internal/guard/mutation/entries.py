@@ -7942,15 +7942,15 @@ MUTATIONS = [
     (
         "a check of a published release goes back to stopping the job, so the checks behind it are never asked",
         ".github/workflows/verify-release.yml",
-        "        id: notes\n        continue-on-error: true",
-        "        id: notes",
+        "        id: latest\n        continue-on-error: true",
+        "        id: latest",
         "TestNoReleaseCheckCanHideTheOnesBehindIt",
     ),
     (
         "the release verdict reads conclusion, which continue-on-error rewrites to success, so it passes whatever happened",
         ".github/workflows/verify-release.yml",
-        "steps.notes.outcome",
-        "steps.notes.conclusion",
+        "steps.latest.outcome",
+        "steps.latest.conclusion",
         "TestNoReleaseCheckCanHideTheOnesBehindIt",
     ),
     (
@@ -7961,10 +7961,10 @@ MUTATIONS = [
         "TestNoReleaseCheckCanHideTheOnesBehindIt",
     ),
     (
-        "the check of a published release stops asking whether the page says how to verify a download",
+        "the check of a published release holds the page the owner writes by hand to the list again",
         ".github/workflows/verify-release.yml",
-        "bash .github/scripts/note_says.sh notes.md || {",
-        "true || {",
+        '          latest="$(gh api',
+        '          bash .github/scripts/note_says.sh notes.md\n          latest="$(gh api',
         "TestWhatAReleaseNoteHasToSayIsDecidedInOnePlace",
     ),
     (
@@ -15365,7 +15365,181 @@ MUTATIONS = [
         "a changelog entry grows past a hundred words in a second paragraph",
         "CHANGELOG.md",
         "  card of its own with the address written out, for a desktop that opens\n  nothing.\n",
-        "  card of its own with the address written out, for a desktop that opens\n  nothing.\n\n  word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word\n",
+        "  card of its own with the address written out, for a desktop that opens\n  nothing.\n\n  word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word\n",
         "TestEveryChangelogEntryFitsInAHundredWords",
+    ),
+    # --- the container image, ghcr.io/donislawdev/tfg (2026-10-20) ---
+    (
+        "the image puts an operating system under the program",
+        ".github/docker/Dockerfile",
+        "FROM scratch",
+        "FROM alpine:3.20",
+        "TestTheImageHoldsTheReleasedProgramAndNothingElse",
+    ),
+    (
+        "the image runs the program as root",
+        ".github/docker/Dockerfile",
+        "USER 65532:65532",
+        "USER 0:0",
+        "TestTheImageHoldsTheReleasedProgramAndNothingElse",
+    ),
+    (
+        "the image runs something while it is built",
+        ".github/docker/Dockerfile",
+        'ENTRYPOINT ["/tfg"]',
+        'RUN ["/tfg", "version"]\nENTRYPOINT ["/tfg"]',
+        "TestTheImageHoldsTheReleasedProgramAndNothingElse",
+    ),
+    (
+        "the image leaves out the notices the licences require",
+        ".github/docker/Dockerfile",
+        "COPY LICENSE THIRD-PARTY-NOTICES.md /licenses/",
+        "COPY LICENSE /licenses/",
+        "TestTheImageHoldsTheReleasedProgramAndNothingElse",
+    ),
+    (
+        "the image starts the program through a shell form, so docker stop no longer reaches it",
+        ".github/docker/Dockerfile",
+        'ENTRYPOINT ["/tfg"]',
+        "ENTRYPOINT /tfg",
+        "TestTheImageHoldsTheReleasedProgramAndNothingElse",
+    ),
+    (
+        "the image workflow unpacks the archive before its checksum is asked",
+        ".github/workflows/docker.yml",
+        "          sha256sum -c this.txt\n",
+        '          tar -xzf "$archive" -C ../context\n          sha256sum -c this.txt\n',
+        "TestTheImageIsMadeOfAReleaseThatCheckedOut",
+    ),
+    (
+        "the image workflow accepts an attestation from any workflow of the repository",
+        ".github/workflows/docker.yml",
+        '--signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release.yml"',
+        '--signer-workflow "$GITHUB_REPOSITORY/.github/workflows/docker.yml"',
+        "TestTheImageIsMadeOfAReleaseThatCheckedOut",
+    ),
+    (
+        "the image is pushed from the job a pull request runs",
+        ".github/workflows/docker.yml",
+        '        run: docker save --output "image-$ARCH.tar" "tfg:$ARCH"',
+        '        run: docker save --output "image-$ARCH.tar" "tfg:$ARCH" && docker push "tfg:$ARCH"',
+        "TestOnlyAnImageThatWasTriedIsPushed",
+    ),
+    (
+        "the image is pushed without waiting for the images to be tried",
+        ".github/workflows/docker.yml",
+        "    needs: [which, image]",
+        "    needs: [which]",
+        "TestOnlyAnImageThatWasTriedIsPushed",
+    ),
+    (
+        "the job that pushes the image runs for a pull request too",
+        ".github/workflows/docker.yml",
+        "    if: needs.which.outputs.publish == 'true'\n    runs-on: ubuntu-latest",
+        "    if: always()\n    runs-on: ubuntu-latest",
+        "TestOnlyAnImageThatWasTriedIsPushed",
+    ),
+    (
+        "the image is kept without comparing what it writes with what the program writes",
+        ".github/workflows/docker.yml",
+        "          diff program.sums image.sums\n",
+        "          true\n",
+        "TestOnlyAnImageThatWasTriedIsPushed",
+    ),
+    (
+        "every job of the image workflow can write packages",
+        ".github/workflows/docker.yml",
+        "permissions:\n  contents: read\n\nconcurrency:",
+        "permissions:\n  contents: read\n  packages: write\n\nconcurrency:",
+        "TestOnlyAnImageThatWasTriedIsPushed",
+    ),
+    (
+        "the image workflow logs out of the registry before the attestation is pushed there",
+        ".github/workflows/docker.yml",
+        "      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2\n"
+        "        with:\n"
+        "          subject-name: ${{ env.IMAGE }}\n"
+        "          subject-digest: ${{ steps.push.outputs.digest }}\n"
+        "          push-to-registry: true\n"
+        "\n"
+        "      - name: log out of the registry\n"
+        "        if: always()\n"
+        "        run: docker logout ghcr.io\n",
+        "      - name: log out of the registry\n"
+        "        if: always()\n"
+        "        run: docker logout ghcr.io\n"
+        "\n"
+        "      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2\n"
+        "        with:\n"
+        "          subject-name: ${{ env.IMAGE }}\n"
+        "          subject-digest: ${{ steps.push.outputs.digest }}\n"
+        "          push-to-registry: true\n",
+        "TestOnlyAnImageThatWasTriedIsPushed",
+    ),
+    (
+        "the image workflow skips the logout when a step before it failed",
+        ".github/workflows/docker.yml",
+        "        if: always()\n        run: docker logout ghcr.io",
+        "        run: docker logout ghcr.io",
+        "TestOnlyAnImageThatWasTriedIsPushed",
+    ),
+    (
+        "the check of a published release reads the list of sentences directly",
+        ".github/workflows/verify-release.yml",
+        '          latest="$(gh api',
+        '          grep -F -f .github/release-note-must-say.txt notes.md\n          latest="$(gh api',
+        "TestWhatAReleaseNoteHasToSayIsDecidedInOnePlace",
+    ),
+    (
+        "the README install step stops checking the attestation",
+        "README.md",
+        '    gh attestation verify "$archive" --repo donislawdev/TestingFilesGenerator \\\n'
+        "      --predicate-type https://spdx.dev/Document/v2.3\n",
+        "",
+        "TestTheReadmeInstallStepChecksTheArchiveBeforeOpeningIt",
+    ),
+    (
+        "the README install step names a predicate type the signed archives do not carry",
+        "README.md",
+        "      --predicate-type https://spdx.dev/Document/v2.3\n    mkdir tfg",
+        "      --predicate-type https://slsa.dev/provenance/v1\n    mkdir tfg",
+        "TestTheReadmeInstallStepChecksTheArchiveBeforeOpeningIt",
+    ),
+    (
+        "the README install step unpacks the archive before its attestation is checked",
+        "README.md",
+        '    gh attestation verify "$archive"',
+        '    tar -xzf "$archive" -C tfg\n    gh attestation verify "$archive"',
+        "TestTheReadmeInstallStepChecksTheArchiveBeforeOpeningIt",
+    ),
+    (
+        "the README install step gives gh no token",
+        "README.md",
+        "  env:\n    GH_TOKEN: ${{ github.token }}\n  run: |\n    version=",
+        "  run: |\n    version=",
+        "TestTheReadmeInstallStepChecksTheArchiveBeforeOpeningIt",
+    ),
+    # Each writes a 9 in front of the version rather than naming one, so these
+    # three need no change when the version is raised.
+    (
+        "the README pulls an image of another version than this build",
+        "README.md",
+        '-v "${PWD}:/work" ghcr.io/donislawdev/tfg:',
+        '-v "${PWD}:/work" ghcr.io/donislawdev/tfg:9',
+        "TestEveryVersionTheReadmeWritesOutIsThisOne",
+    ),
+    (
+        "the README install step for GitHub Actions downloads another version than this build",
+        "README.md",
+        "    version=",
+        "    version=9",
+        "TestEveryVersionTheReadmeWritesOutIsThisOne",
+    ),
+    (
+        "the README example manifest names another version than this build",
+        "README.md",
+        '"version": "',
+        '"version": "9',
+        "TestEveryVersionTheReadmeWritesOutIsThisOne",
     ),
 ]

@@ -14,6 +14,16 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Added
+
+- **A Docker image.** `ghcr.io/donislawdev/tfg` holds the Linux command line
+  of a release and nothing else, for x64 and Arm, and runs with no network. It
+  is made from the published archive once its checksum and attestation check
+  out, and it writes the same files as that archive's program. Files go to the
+  directory mounted at `/work`, and on Linux the run needs
+  `--user "$(id -u):$(id -g)"` to write there. README also shows a step that
+  installs `tfg` on Windows and macOS runners in GitHub Actions.
+
 ## [0.5.0] - 2026-10-20
 
 ### Breaking

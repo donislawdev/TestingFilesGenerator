@@ -1,0 +1,296 @@
+name: Container image
+
+# The command line as a container image, ghcr.io/donislawdev/tfg, made from a
+# PUBLISHED release rather than built again.
+#
+# The release is the thing people trust, so the image carries its bytes: the
+# Linux archive is downloaded, held to the release's checksum and to the
+# attestation release.yml made when it built it, and only then unpacked into
+# the image. Every image is then run the way a person runs it and has to write
+# the same files as the program it came out of, on its own architecture - the
+# arm64 one on an arm64 runner, so nothing is emulated. Only the images that
+# passed are pushed, tagged and attested, in that order, so a failure anywhere
+# leaves no tag pointing at something nobody tried.
+#
+# It starts when the owner publishes a release. It can be run by hand for a
+# release published before this file existed: a release event reads the
+# workflow from the tagged commit, and v0.5.0's has none. A pull request that
+# touches the image builds and tries it against the latest release and pushes
+# nothing.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Published tag to make the image of, for example v0.5.0"
+        required: true
+  pull_request:
+    paths:
+      - ".github/docker/**"
+      - ".github/workflows/docker.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: image-${{ github.event.release.tag_name || inputs.tag || github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/donislawdev/tfg
+
+jobs:
+  which:
+    name: which release, and whether it is the latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.which.outputs.tag }}
+      version: ${{ steps.which.outputs.version }}
+      latest: ${{ steps.which.outputs.latest }}
+      publish: ${{ steps.which.outputs.publish }}
+    steps:
+      - name: which release
+        id: which
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        # Asked of the API rather than taken from the event, because a run by
+        # hand has no event payload and a draft must never become an image.
+        run: |
+          set -euo pipefail
+          latest="$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)"
+          case "$EVENT" in
+            release) tag="$RELEASE_TAG"; publish=true ;;
+            workflow_dispatch) tag="$INPUT_TAG"; publish=true ;;
+            *) tag="$latest"; publish=false ;;
+          esac
+          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "::error::\"$tag\" is not a release tag, for example v0.5.0"
+            exit 1
+          fi
+          draft="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)"
+          if [ "$draft" != "false" ]; then
+            echo "::error::$tag is not published yet, and an image is only ever made of what people can download"
+            exit 1
+          fi
+          is_latest=false
+          if [ "$tag" = "$latest" ]; then
+            is_latest=true
+          fi
+          {
+            echo "tag=$tag"
+            echo "version=${tag#v}"
+            echo "latest=$is_latest"
+            echo "publish=$publish"
+          } >> "$GITHUB_OUTPUT"
+          echo "$tag, latest: $is_latest, push: $publish"
+
+  image:
+    name: the ${{ matrix.arch }} image, tried before anything is pushed
+    needs: which
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    env:
+      ARCH: ${{ matrix.arch }}
+      TAG: ${{ needs.which.outputs.tag }}
+      VERSION: ${{ needs.which.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: the published archive, checked before it is opened
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # The checksum says the download is the file the release lists. The
+        # attestation says release.yml built it, and --signer-workflow holds it
+        # to that workflow rather than to anything in this repository.
+        run: |
+          set -euo pipefail
+          archive="tfg_${VERSION}_linux_${ARCH}.tar.gz"
+          mkdir -p download context
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir download \
+            --pattern "$archive" --pattern verify-SHA256SUMS.txt
+          cd download
+          awk -v name="$archive" '$2 == name' verify-SHA256SUMS.txt > this.txt
+          if [ "$(wc -l < this.txt)" != "1" ]; then
+            echo "::error::verify-SHA256SUMS.txt of $TAG does not name $archive exactly once"
+            exit 1
+          fi
+          sha256sum -c this.txt
+          gh attestation verify "$archive" --repo "$GITHUB_REPOSITORY" \
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release.yml"
+          tar -xzf "$archive" -C ../context
+          for file in tfg LICENSE THIRD-PARTY-NOTICES.md; do
+            test -f "../context/$file" || { echo "::error::$archive holds no $file"; exit 1; }
+          done
+
+      - name: build
+        # The source label is what ghcr.io links the package to this repository
+        # by, and the licence is the one every release archive carries.
+        run: |
+          set -euo pipefail
+          docker build --platform "linux/$ARCH" \
+            --file .github/docker/Dockerfile \
+            --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
+            --label "org.opencontainers.image.licenses=GPL-3.0-only" \
+            --label "org.opencontainers.image.version=$VERSION" \
+            --tag "tfg:$ARCH" context
+
+      - name: run the way a person runs it
+        # Every format, through the image and through the program it came out
+        # of, and the files have to be the same. Then the two endings that
+        # belong to the image rather than to the program: nothing mounted is a
+        # refusal, and docker stop is the program's own clean stop - it runs
+        # as process 1 here, where a signal it does not handle is ignored.
+        run: |
+          set -euo pipefail
+          test "$(docker image inspect --format '{{.Config.User}}' "tfg:$ARCH")" = "65532:65532"
+          said="$(docker run --rm --network none "tfg:$ARCH" version)"
+          if [ "$said" != "$VERSION" ]; then
+            echo "::error::the image says $said, the release is $VERSION"
+            exit 1
+          fi
+
+          mkdir -p tried/image tried/program
+          formats="$(context/tfg formats --json | jq -r '.[].id')"
+          count=0
+          for format in $formats; do
+            docker run --rm --network none --read-only --user "$(id -u):$(id -g)" \
+              --volume "$PWD/tried/image:/work" "tfg:$ARCH" \
+              generate --format "$format" --size 64kb --seed 7 --id "t-$format" --out "/work/$format" > /dev/null
+            context/tfg generate --format "$format" --size 64kb --seed 7 --id "t-$format" \
+              --out "tried/program/$format" > /dev/null
+            count=$((count + 1))
+          done
+          (cd tried/image && find . -type f ! -name manifest.json | sort | xargs sha256sum) > image.sums
+          (cd tried/program && find . -type f ! -name manifest.json | sort | xargs sha256sum) > program.sums
+          diff program.sums image.sums
+          if [ "$count" = "0" ] || [ "$(wc -l < image.sums)" != "$count" ]; then
+            echo "::error::$count formats asked for and $(wc -l < image.sums) files compared"
+            exit 1
+          fi
+          echo "$count formats, every file the same through the image"
+
+          set +e
+          docker run --rm --network none "tfg:$ARCH" generate --format txt --size 1kb > /dev/null 2>&1
+          code=$?
+          set -e
+          if [ "$code" != "5" ]; then
+            echo "::error::with nothing mounted the image ended with $code, and it has to refuse with 5"
+            exit 1
+          fi
+
+          # Stopped once the first file is there, rather than after a fixed
+          # wait, and slowed to a twentieth of a processor so the run cannot
+          # finish first. A fixed wait measured nothing: a run big enough to
+          # outlast it on a fast disk asked for more space than a runner has,
+          # and a run still planning when stopped leaves no file to look at.
+          mkdir -p tried/stop
+          docker run --detach --name stopped --cpus 0.05 --network none --user "$(id -u):$(id -g)" \
+            --volume "$PWD/tried/stop:/work" "tfg:$ARCH" \
+            generate --format txt --size 64kb --count 2000 --out /work > /dev/null
+          waited=0
+          until compgen -G "tried/stop/*.txt" > /dev/null; do
+            if [ "$waited" -ge 600 ]; then
+              echo "::error::the stopped run wrote no file in 60 s"
+              exit 1
+            fi
+            sleep 0.1
+            waited=$((waited + 1))
+          done
+          docker stop --time 30 stopped > /dev/null
+          code="$(docker inspect --format '{{.State.ExitCode}}' stopped)"
+          docker logs stopped 2>&1 | tail -2
+          docker rm stopped > /dev/null
+          if [ "$code" != "143" ] || [ ! -f tried/stop/manifest.json ]; then
+            echo "::error::docker stop ended the image with $code, and it has to stop cleanly with 143 and a manifest"
+            exit 1
+          fi
+          docker run --rm --network none --read-only --user "$(id -u):$(id -g)" \
+            --volume "$PWD/tried/stop:/work" "tfg:$ARCH" verify /work/manifest.json
+
+      - name: keep the image that was tried
+        if: needs.which.outputs.publish == 'true'
+        run: docker save --output "image-$ARCH.tar" "tfg:$ARCH"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        if: needs.which.outputs.publish == 'true'
+        with:
+          name: image-${{ matrix.arch }}
+          path: image-${{ matrix.arch }}.tar
+          retention-days: 1
+
+  publish:
+    name: push and tag the images that were tried, and attest them
+    needs: [which, image]
+    if: needs.which.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # Pushing to ghcr.io, and the attestation: id-token signs it,
+      # attestations stores it.
+      packages: write
+      id-token: write
+      attestations: write
+    env:
+      VERSION: ${{ needs.which.outputs.version }}
+      LATEST: ${{ needs.which.outputs.latest }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          pattern: image-*
+          merge-multiple: true
+
+      - name: push, then tag
+        id: push
+        env:
+          TOKEN: ${{ github.token }}
+        # One image per architecture under its own tag, and then the tag people
+        # pull, which points at both. An older release run by hand never takes
+        # latest away from the newest one.
+        run: |
+          set -euo pipefail
+          echo "$TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          for arch in amd64 arm64; do
+            docker load --input "image-$arch.tar"
+            docker tag "tfg:$arch" "$IMAGE:$VERSION-$arch"
+            docker push "$IMAGE:$VERSION-$arch"
+          done
+          tags=(--tag "$IMAGE:$VERSION")
+          if [ "$LATEST" = "true" ]; then
+            tags+=(--tag "$IMAGE:latest")
+          fi
+          docker buildx imagetools create "${tags[@]}" "$IMAGE:$VERSION-amd64" "$IMAGE:$VERSION-arm64"
+          digest="$(docker buildx imagetools inspect "$IMAGE:$VERSION" --format '{{json .Manifest}}' | jq -r .digest)"
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          echo "$IMAGE:$VERSION is $digest"
+
+      # Checked by a person with
+      #     gh attestation verify oci://ghcr.io/donislawdev/tfg:<version> --owner donislawdev
+      #
+      # Still logged in here, and that is required: with push-to-registry the
+      # action takes its registry credentials from ~/.docker/config.json
+      # (@sigstore/oci, getRegistryCredentials) and stops with "No credentials
+      # found" without them - after the tags above are already public.
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+
+      - name: log out of the registry
+        if: always()
+        run: docker logout ghcr.io

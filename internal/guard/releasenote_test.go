@@ -8,7 +8,7 @@ import (
 )
 
 // What this defends. What a release note has to say is decided in one place,
-// and both halves that care about it read that place.
+// and the workflow that generates the note reads that place.
 //
 // Why it needed a guard. Two workflows had an opinion about the same sentences.
 // release.yml wrote them into the note it generates, and verify-release.yml
@@ -21,9 +21,15 @@ import (
 //
 // Why the wiring rather than the wording. A person edits the published note by
 // hand, by the owner's decision of 2026-09-02, so what the note SAYS is theirs.
-// What is not theirs is whether anything still looks: deleting the call from
-// verify-release.yml removes the check with nothing going red, which is the
+// What is not theirs is whether the generated draft still says it: deleting the
+// call from release.yml removes the check with nothing going red, which is the
 // silent kind this project writes guards for.
+//
+// The published page is no longer held to the list. verify-release.yml did that
+// until 2026-10-20 and went red on 0.2.0, 0.4.0 and 0.5.0 over a page the owner
+// had rewritten while every file checked out, so the owner had the check
+// removed. That is asserted below too, because a check put back by habit would
+// be red on the next release for the same reason.
 //
 // What this does NOT check, and it is checked another way. That note_says.sh
 // behaves. Running it from here would mean running bash from a Go test on a
@@ -75,16 +81,24 @@ func TestWhatAReleaseNoteHasToSayIsDecidedInOnePlace(t *testing.T) {
 			"- one of them runs on a tag: %v", releaseNoteScript, err)
 	}
 
-	// Both halves. The one that WRITES the note and the one that reads the
-	// PUBLISHED page. Either alone leaves the other free to drift.
-	for _, wf := range []string{"release.yml", "verify-release.yml"} {
-		text := workflowText(t, wf)
-		if !strings.Contains(text, releaseNoteScript) {
-			t.Errorf("%s never calls %s, so nothing holds it to %s.\n"+
-				"release.yml has to check the note it generates and verify-release.yml has "+
-				"to check the note that got published. A missing call here is a check that "+
-				"stopped happening with nothing going red.",
-				wf, releaseNoteScript, releaseNoteList)
+	// The half that WRITES the note.
+	if !strings.Contains(withoutYamlComments(workflowText(t, "release.yml")), releaseNoteScript) {
+		t.Errorf("release.yml never calls %s, so nothing holds the note it generates to %s.\n"+
+			"A missing call here is a check that stopped happening with nothing going red.",
+			releaseNoteScript, releaseNoteList)
+	}
+
+	// And not the PUBLISHED page, by the owner's decision of 2026-10-20 - the
+	// owner rewrites that page, so the list cannot describe it.
+	// Either way of doing it: through the script, or by reading the list
+	// directly.
+	verify := withoutYamlComments(workflowText(t, "verify-release.yml"))
+	for _, name := range []string{releaseNoteScript, releaseNoteList} {
+		if strings.Contains(verify, name) {
+			t.Errorf("verify-release.yml uses %s again, so it holds the page the owner writes by hand "+
+				"to %s.\nThat check was removed on 2026-10-20 after it went red on three releases "+
+				"whose files all checked out. Ask the owner before putting it back.",
+				name, releaseNoteList)
 		}
 	}
 }
