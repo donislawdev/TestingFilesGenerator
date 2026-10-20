@@ -275,14 +275,22 @@ jobs:
           fi
           docker buildx imagetools create "${tags[@]}" "$IMAGE:$VERSION-amd64" "$IMAGE:$VERSION-arm64"
           digest="$(docker buildx imagetools inspect "$IMAGE:$VERSION" --format '{{json .Manifest}}' | jq -r .digest)"
-          docker logout ghcr.io
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
           echo "$IMAGE:$VERSION is $digest"
 
       # Checked by a person with
       #     gh attestation verify oci://ghcr.io/donislawdev/tfg:<version> --owner donislawdev
+      #
+      # Still logged in here, and that is required: with push-to-registry the
+      # action takes its registry credentials from ~/.docker/config.json
+      # (@sigstore/oci, getRegistryCredentials) and stops with "No credentials
+      # found" without them - after the tags above are already public.
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2
         with:
           subject-name: ${{ env.IMAGE }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
+
+      - name: log out of the registry
+        if: always()
+        run: docker logout ghcr.io

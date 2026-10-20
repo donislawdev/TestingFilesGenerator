@@ -802,14 +802,18 @@ Name the version rather than `latest`, so the same recipe gives the same bytes
 next month too.
 
 Windows and macOS runners cannot run that image. There, download the archive
-for the runner, check it against the release's checksums and put it on the
-path. Every later step, in any shell, then has `tfg`. On macOS this needs an
-Apple silicon runner, such as `macos-latest`, because that is the only Mac
-build there is.
+for the runner, check it and put it on the path. Every later step, in any
+shell, then has `tfg`. The checksum says the archive arrived whole, and the
+attestation says this project's release workflow made it. That attestation is
+made over the files as published, after signing, which is why the command
+names the SPDX predicate. On macOS this needs an Apple silicon runner, such as
+`macos-latest`, because that is the only Mac build there is.
 
 ```yaml
 - name: install tfg
   shell: bash
+  env:
+    GH_TOKEN: ${{ github.token }}
   run: |
     version=0.5.0
     arch=amd64
@@ -824,6 +828,8 @@ build there is.
     curl -fsSLO "$url/$archive"
     curl -fsSLO "$url/verify-SHA256SUMS.txt"
     grep " $archive\$" verify-SHA256SUMS.txt | shasum -a 256 -c
+    gh attestation verify "$archive" --repo donislawdev/TestingFilesGenerator \
+      --predicate-type https://spdx.dev/Document/v2.3
     mkdir tfg
     if [ "${archive##*.}" = zip ]; then unzip -q "$archive" -d tfg; else tar -xzf "$archive" -C tfg; fi
     echo "$RUNNER_TEMP/tfg" >> "$GITHUB_PATH"

@@ -90,11 +90,16 @@ func TestWhatAReleaseNoteHasToSayIsDecidedInOnePlace(t *testing.T) {
 
 	// And not the PUBLISHED page, by the owner's decision of 2026-10-20 - the
 	// owner rewrites that page, so the list cannot describe it.
-	if strings.Contains(withoutYamlComments(workflowText(t, "verify-release.yml")), releaseNoteScript) {
-		t.Errorf("verify-release.yml calls %s again, so it holds the page the owner writes by hand "+
-			"to %s.\nThat check was removed on 2026-10-20 after it went red on three releases "+
-			"whose files all checked out. Ask the owner before putting it back.",
-			releaseNoteScript, releaseNoteList)
+	// Either way of doing it: through the script, or by reading the list
+	// directly.
+	verify := withoutYamlComments(workflowText(t, "verify-release.yml"))
+	for _, name := range []string{releaseNoteScript, releaseNoteList} {
+		if strings.Contains(verify, name) {
+			t.Errorf("verify-release.yml uses %s again, so it holds the page the owner writes by hand "+
+				"to %s.\nThat check was removed on 2026-10-20 after it went red on three releases "+
+				"whose files all checked out. Ask the owner before putting it back.",
+				name, releaseNoteList)
+		}
 	}
 }
 

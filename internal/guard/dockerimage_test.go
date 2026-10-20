@@ -231,6 +231,33 @@ func TestOnlyAnImageThatWasTriedIsPushed(t *testing.T) {
 			"it wait for every image to be tried", strings.TrimSpace(string(needs)))
 	}
 
+	// The attestation is pushed with the login the push made, so the logout
+	// comes after it. Logged out first, the attestation step stops with "No
+	// credentials found" once the tags are already public - CodeRabbit on #201,
+	// confirmed in @sigstore/oci, which reads ~/.docker/config.json.
+	attest, logout := -1, -1
+	for i, step := range publish.Steps {
+		if strings.Contains(step.Uses, "attest") {
+			attest = i
+		}
+		if strings.Contains(step.Run, "docker logout") {
+			if logout >= 0 {
+				t.Errorf("the publish job logs out of the registry in more than one step")
+			}
+			logout = i
+		}
+	}
+	if attest < 0 {
+		t.Errorf("the publish job no longer attests the image it pushes")
+	}
+	if logout < 0 || logout < attest {
+		t.Errorf("the publish job logs out (step %d) before it attests (step %d), and the "+
+			"attestation needs the login to reach the registry", logout, attest)
+	} else if !strings.Contains(publish.Steps[logout].If, "always()") {
+		t.Errorf("the logout runs on %q, and it has to run on always(), so it is not skipped "+
+			"when a step before it fails", publish.Steps[logout].If)
+	}
+
 	// And the trying compares bytes, before the image is kept.
 	tried, kept := -1, -1
 	for i, step := range parsed.Jobs["image"].Steps {

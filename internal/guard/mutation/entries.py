@@ -15453,6 +15453,72 @@ MUTATIONS = [
         "permissions:\n  contents: read\n  packages: write\n\nconcurrency:",
         "TestOnlyAnImageThatWasTriedIsPushed",
     ),
+    (
+        "the image workflow logs out of the registry before the attestation is pushed there",
+        ".github/workflows/docker.yml",
+        "      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2\n"
+        "        with:\n"
+        "          subject-name: ${{ env.IMAGE }}\n"
+        "          subject-digest: ${{ steps.push.outputs.digest }}\n"
+        "          push-to-registry: true\n"
+        "\n"
+        "      - name: log out of the registry\n"
+        "        if: always()\n"
+        "        run: docker logout ghcr.io\n",
+        "      - name: log out of the registry\n"
+        "        if: always()\n"
+        "        run: docker logout ghcr.io\n"
+        "\n"
+        "      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8  # v4.2.2\n"
+        "        with:\n"
+        "          subject-name: ${{ env.IMAGE }}\n"
+        "          subject-digest: ${{ steps.push.outputs.digest }}\n"
+        "          push-to-registry: true\n",
+        "TestOnlyAnImageThatWasTriedIsPushed",
+    ),
+    (
+        "the image workflow skips the logout when a step before it failed",
+        ".github/workflows/docker.yml",
+        "        if: always()\n        run: docker logout ghcr.io",
+        "        run: docker logout ghcr.io",
+        "TestOnlyAnImageThatWasTriedIsPushed",
+    ),
+    (
+        "the check of a published release reads the list of sentences directly",
+        ".github/workflows/verify-release.yml",
+        '          latest="$(gh api',
+        '          grep -F -f .github/release-note-must-say.txt notes.md\n          latest="$(gh api',
+        "TestWhatAReleaseNoteHasToSayIsDecidedInOnePlace",
+    ),
+    (
+        "the README install step stops checking the attestation",
+        "README.md",
+        '    gh attestation verify "$archive" --repo donislawdev/TestingFilesGenerator \\\n'
+        "      --predicate-type https://spdx.dev/Document/v2.3\n",
+        "",
+        "TestTheReadmeInstallStepChecksTheArchiveBeforeOpeningIt",
+    ),
+    (
+        "the README install step names a predicate type the signed archives do not carry",
+        "README.md",
+        "      --predicate-type https://spdx.dev/Document/v2.3\n    mkdir tfg",
+        "      --predicate-type https://slsa.dev/provenance/v1\n    mkdir tfg",
+        "TestTheReadmeInstallStepChecksTheArchiveBeforeOpeningIt",
+    ),
+    (
+        "the README install step unpacks the archive before its attestation is checked",
+        "README.md",
+        '    gh attestation verify "$archive"',
+        '    tar -xzf "$archive" -C tfg\n    gh attestation verify "$archive"',
+        "TestTheReadmeInstallStepChecksTheArchiveBeforeOpeningIt",
+    ),
+    (
+        "the README install step gives gh no token",
+        "README.md",
+        "  env:\n    GH_TOKEN: ${{ github.token }}\n  run: |\n    version=",
+        "  run: |\n    version=",
+        "TestTheReadmeInstallStepChecksTheArchiveBeforeOpeningIt",
+    ),
     # Each writes a 9 in front of the version rather than naming one, so these
     # three need no change when the version is raised.
     (

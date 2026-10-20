@@ -43,15 +43,18 @@ var packagingSums = []string{
 }
 
 // The checksum of the installer in the fixture, as WinGet writes it.
-const packagingInstallerSha = "F3339F5D41437515A0A049A3289EC58A94BF1856550E1FC7AEB9E9BBCFEC698C"
+var packagingInstallerSha = strings.ToUpper(sumIn(packagingSums, "tfg-setup_"+packagingVersion+"_windows_amd64.msi"))
 
 // Where each package lands, in the layout the renderer writes. WinGet's
 // follows winget-pkgs, so the three files can be copied across as they are.
+var (
+	windowWinget = "winget/manifests/d/DonislawDev/TestingFilesGenerator/" + packagingVersion + "/DonislawDev.TestingFilesGenerator"
+	cliWinget    = "winget/manifests/d/DonislawDev/TestingFilesGenerator/CLI/" + packagingVersion + "/DonislawDev.TestingFilesGenerator.CLI"
+)
+
 const (
-	windowWinget = "winget/manifests/d/DonislawDev/TestingFilesGenerator/0.5.0/DonislawDev.TestingFilesGenerator"
-	cliWinget    = "winget/manifests/d/DonislawDev/TestingFilesGenerator/CLI/0.5.0/DonislawDev.TestingFilesGenerator.CLI"
-	windowChoco  = "chocolatey/testing-files-generator/"
-	cliChoco     = "chocolatey/testing-files-generator-cli/"
+	windowChoco = "chocolatey/testing-files-generator/"
+	cliChoco    = "chocolatey/testing-files-generator-cli/"
 )
 
 // rendering is one run of the renderer: where it was told to write, what it
@@ -89,12 +92,21 @@ var packagingVersion = strings.TrimPrefix(packagingTag, "v")
 // release is a change to the list alone.
 func fixtureSum(t *testing.T, file string) string {
 	t.Helper()
-	for _, line := range packagingSums {
+	sum := sumIn(packagingSums, file)
+	if sum == "" {
+		t.Fatalf("the fixture holds no checksum for %s, so this guard has nothing to compare", file)
+	}
+	return sum
+}
+
+// sumIn is the checksum a list in the shape of verify-SHA256SUMS.txt holds for
+// one file, or nothing.
+func sumIn(lines []string, file string) string {
+	for _, line := range lines {
 		if sum, name, ok := strings.Cut(line, "  "); ok && name == file {
 			return sum
 		}
 	}
-	t.Fatalf("the fixture holds no checksum for %s, so this guard has nothing to compare", file)
 	return ""
 }
 
@@ -410,7 +422,7 @@ func TestTheWindowInstallsWithAStartMenuShortcutWhereWinGetCan(t *testing.T) {
 			t.Errorf("the first installer of %s has %s %v, and the installer is %v", manifest, field, msi[field], want)
 		}
 	}
-	if url, _ := msi["InstallerUrl"].(string); !strings.HasSuffix(url, "/v0.5.0/tfg-setup_0.5.0_windows_amd64.msi") {
+	if url, _ := msi["InstallerUrl"].(string); !strings.HasSuffix(url, "/"+packagingTag+"/tfg-setup_"+packagingVersion+"_windows_amd64.msi") {
 		t.Errorf("the first installer of %s downloads %q, not the release's installer", manifest, url)
 	}
 	if got := firstOf(msi, "AppsAndFeaturesEntries", "UpgradeCode"); got != "{"+installerUpgradeCode+"}" {
