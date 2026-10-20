@@ -96,6 +96,19 @@ window. The Windows and macOS downloads are signed, so they start without a
 warning about an unknown developer. The Linux ones are not, because desktop
 Linux has no equivalent to sign them with.
 
+**With Docker.** The command line also comes as an image for Linux, on x64 and
+Arm. It holds the program from the release archive and nothing else, and it
+runs with no network:
+
+```
+docker run --rm --network none -v "${PWD}:/work" ghcr.io/donislawdev/tfg:0.5.0 generate --format pdf --size 1mb
+```
+
+The files land in the current directory. On Linux add
+`--user "$(id -u):$(id -g)"`, so the image may write there and the files
+belong to you. With no directory mounted the run stops with exit code 5
+instead of writing files that disappear with the container.
+
 **With Go installed:**
 
 ```
@@ -775,6 +788,46 @@ to standard output, and a failed run prints nothing there:
 An invalid recipe writes **no files at all** and reports every problem at once,
 each naming the setting it is about. A run stopped with Ctrl+C still leaves a
 manifest, and never leaves a half written file behind.
+
+### In GitHub Actions
+
+On a Linux runner the Docker image needs no install step:
+
+```yaml
+- name: build the fixtures
+  run: docker run --rm --network none --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/donislawdev/tfg:0.5.0 generate fixtures.yaml --out fixtures
+```
+
+Name the version rather than `latest`, so the same recipe gives the same bytes
+next month too.
+
+Windows and macOS runners cannot run that image. There, download the archive
+for the runner, check it against the release's checksums and put it on the
+path. Every later step, in any shell, then has `tfg`. On macOS this needs an
+Apple silicon runner, such as `macos-latest`, because that is the only Mac
+build there is.
+
+```yaml
+- name: install tfg
+  shell: bash
+  run: |
+    version=0.5.0
+    arch=amd64
+    if [ "$RUNNER_ARCH" = ARM64 ]; then arch=arm64; fi
+    case "$RUNNER_OS" in
+      Windows) archive="tfg_${version}_windows_${arch}.zip" ;;
+      macOS) archive="tfg_${version}_macos_arm64.tar.gz" ;;
+      *) archive="tfg_${version}_linux_${arch}.tar.gz" ;;
+    esac
+    cd "$RUNNER_TEMP"
+    url="https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$version"
+    curl -fsSLO "$url/$archive"
+    curl -fsSLO "$url/verify-SHA256SUMS.txt"
+    grep " $archive\$" verify-SHA256SUMS.txt | shasum -a 256 -c
+    mkdir tfg
+    if [ "${archive##*.}" = zip ]; then unzip -q "$archive" -d tfg; else tar -xzf "$archive" -C tfg; fi
+    echo "$RUNNER_TEMP/tfg" >> "$GITHUB_PATH"
+```
 
 ### A PowerShell script needs one more line
 

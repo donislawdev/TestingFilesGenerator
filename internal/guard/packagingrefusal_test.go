@@ -20,10 +20,10 @@ import (
 // leaves no half of a package to be submitted by mistake.
 
 func TestTheRendererRefusesInputsThatLookFineAndAreWrong(t *testing.T) {
-	withoutArm := []byte(strings.Join(append(packagingSums[:2:2], packagingSums[3:]...), "\n") + "\n")
-	otherInstaller := []byte(strings.ReplaceAll(string(fixtureSums()), "tfg-setup_0.4.0", "tfg-setup_0.3.0"))
-	otherRelease := []byte(strings.ReplaceAll(string(fixtureSums()), "0.4.0", "0.3.0"))
-	unreleased := []byte(strings.ReplaceAll(string(fixtureSums()), "0.4.0", "9.9.9"))
+	withoutArm := sumsWithout(t, "_windows_arm64.zip")
+	otherInstaller := []byte(strings.ReplaceAll(string(fixtureSums()), "tfg-setup_"+packagingVersion, "tfg-setup_0.3.0"))
+	otherRelease := []byte(strings.ReplaceAll(string(fixtureSums()), packagingVersion, "0.3.0"))
+	unreleased := []byte(strings.ReplaceAll(string(fixtureSums()), packagingVersion, "9.9.9"))
 
 	// In a directory of its own, because the guard lists the destination's
 	// parent before and after - and the parent of t.TempDir() is the system's
@@ -53,10 +53,10 @@ func TestTheRendererRefusesInputsThatLookFineAndAreWrong(t *testing.T) {
 		says      string
 	}{
 		{"the checksum file of another release", packagingTag, otherRelease, "", "tfg-gui_0.3.0_windows_amd64.zip"},
-		{"a release candidate", "v0.4.0-rc1", fixtureSums(), "", "release candidate"},
-		{"a version without its v", "0.4.0", fixtureSums(), "", "not a release tag"},
-		{"a checksum file missing one archive", packagingTag, withoutArm, "", "tfg_0.4.0_windows_arm64.zip"},
-		{"a checksum file without the installer", packagingTag, withoutInstaller(), "", "tfg-setup_0.4.0_windows_amd64.msi, the Windows installer"},
+		{"a release candidate", packagingTag + "-rc1", fixtureSums(), "", "release candidate"},
+		{"a version without its v", packagingVersion, fixtureSums(), "", "not a release tag"},
+		{"a checksum file missing one archive", packagingTag, withoutArm, "", "tfg_" + packagingVersion + "_windows_arm64.zip"},
+		{"a checksum file without the installer", packagingTag, withoutInstaller(t), "", "tfg-setup_" + packagingVersion + "_windows_amd64.msi, the Windows installer"},
 		{"the installer of another release", packagingTag, otherInstaller, "", "It lists tfg-setup_0.3.0_windows_amd64.msi"},
 		{"a version the changelog never released", "v9.9.9", unreleased, "", "CHANGELOG.md"},
 		{"a destination inside the repository", packagingTag, fixtureSums(), inside, "inside the repository"},
@@ -98,23 +98,18 @@ func TestTheRendererRefusesInputsThatLookFineAndAreWrong(t *testing.T) {
 }
 
 // withoutInstaller is the fixture as a release published before the Windows
-// installer existed has it - v0.4.0's own checksum file.
-func withoutInstaller() []byte {
-	var lines []string
-	for _, line := range packagingSums {
-		if !strings.HasSuffix(line, ".msi") {
-			lines = append(lines, line)
-		}
-	}
-	return []byte(strings.Join(lines, "\n") + "\n")
+// installer existed has it, v0.4.0 and every one before it.
+func withoutInstaller(t *testing.T) []byte {
+	t.Helper()
+	return sumsWithout(t, ".msi")
 }
 
 // A release without the installer is refused for WinGet, whose window package
 // installs it first, and still renders for Chocolatey, which needs none - the
-// packages job in ci.yml renders the latest release, and v0.4.0 has none. Each
+// packages job in ci.yml renders the latest release, which until v0.5.0 had none. Each
 // feed rendered alone is, byte for byte, its part of a full render.
 func TestAReleaseWithoutTheInstallerStillRendersForChocolatey(t *testing.T) {
-	r := renderPackages(t, packagingTag, withoutInstaller(), filepath.Join(t.TempDir(), "packages"))
+	r := renderPackages(t, packagingTag, withoutInstaller(t), filepath.Join(t.TempDir(), "packages"))
 	if r.code != 1 || !strings.Contains(r.said, "pass --only chocolatey") {
 		t.Errorf("without the installer, a render of both feeds exited %d and did not say what "+
 			"to do instead:\n%s", r.code, r.said)
@@ -124,7 +119,7 @@ func TestAReleaseWithoutTheInstallerStillRendersForChocolatey(t *testing.T) {
 		feed string
 		sums []byte
 	}{
-		{"chocolatey", withoutInstaller()},
+		{"chocolatey", withoutInstaller(t)},
 		{"winget", fixtureSums()},
 	} {
 		alone := renderedFrom(t, c.sums, "--only", c.feed)
@@ -238,7 +233,7 @@ func TestTheRendererRefusesAFileItCannotReadAndAPathThatLeadsIntoTheTree(t *test
 // left behind", no case reached the handler for a write that fails after the
 // working folder exists, and os.listdir on --out could still raise.
 func TestTheRendererLeavesNothingBehindWhenItFailsPartWay(t *testing.T) {
-	unreleased := []byte(strings.ReplaceAll(string(fixtureSums()), "0.4.0", "9.9.9"))
+	unreleased := []byte(strings.ReplaceAll(string(fixtureSums()), packagingVersion, "9.9.9"))
 	nested := t.TempDir()
 	long := t.TempDir()
 	for _, c := range []struct {

@@ -26,32 +26,30 @@ import (
 // measurement on a virtual machine before each submission
 // (docs/PACKAGING-2026-09-25.md section 8).
 //
-// Every guard renders a real release: v0.4.0, with the checksums of its real
-// archives, so the guards read the same shape a person packaging it reads -
-// with one line v0.4.0 never had, the Windows installer's, which the window's
-// WinGet package needs and every release from the next one on carries.
+// Every guard renders a real release: v0.5.0, the first one published with the
+// Windows installer, with the checksums of its real files as its
+// verify-SHA256SUMS.txt lists them, so the guards read the same shape a person
+// packaging it reads.
 
-const packagingTag = "v0.4.0"
+const packagingTag = "v0.5.0"
 
 var packagingSums = []string{
-	"e744f4ff793407218fac9eec139dd49c03264ab636db2057ba2963d0515625ad  tfg-gui_0.4.0_windows_amd64.zip",
-	"16fe56c7b3f2a13d22385a6b428ed6f0c9fb98c2103076b8c7c876401eeaaf79  tfg_0.4.0_windows_amd64.zip",
-	"3f74f66e181bdef20785bccd603c3e5c5ad04cdff3b38338487a02b1682eccc6  tfg_0.4.0_windows_arm64.zip",
-	// A line no package needs, because the real file has eight of them.
-	"c7a63f918db43cf2841a89359d3ef272c861a89a408018f6453dea7f7aaebb96  tfg_0.4.0_linux_amd64.tar.gz",
-	// Made up: v0.4.0 was published before the installer existed. Replace the
-	// fixture with the first release that has one.
-	"0d1c2b3a4f5e6d7c8b9a0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a  tfg-setup_0.4.0_windows_amd64.msi",
+	"a0e30323ff0bb4f492051bac2d6448d530ebd9b6faa62a272936d03920eea6cc  tfg-gui_0.5.0_windows_amd64.zip",
+	"f3339f5d41437515a0a049a3289ec58a94bf1856550e1fc7aeb9e9bbcfec698c  tfg-setup_0.5.0_windows_amd64.msi",
+	// A line no package needs, because the real file has eleven of them.
+	"86505f2507e346b1a53c342b318f23c094ee0892b26f3c7024a70a01d19fc340  tfg_0.5.0_linux_amd64.tar.gz",
+	"66d78f42d123b5e839c0d8f3073b4dcd0820a9f0dfe9eab66df21440cbe0a036  tfg_0.5.0_windows_amd64.zip",
+	"e7a75ca2d79e4981bdfb75be66006c98b478853ef75f218f2ef21e9037f7b5d1  tfg_0.5.0_windows_arm64.zip",
 }
 
 // The checksum of the installer in the fixture, as WinGet writes it.
-const packagingInstallerSha = "0D1C2B3A4F5E6D7C8B9A0F1E2D3C4B5A69788796A5B4C3D2E1F00F1E2D3C4B5A"
+const packagingInstallerSha = "F3339F5D41437515A0A049A3289EC58A94BF1856550E1FC7AEB9E9BBCFEC698C"
 
 // Where each package lands, in the layout the renderer writes. WinGet's
 // follows winget-pkgs, so the three files can be copied across as they are.
 const (
-	windowWinget = "winget/manifests/d/DonislawDev/TestingFilesGenerator/0.4.0/DonislawDev.TestingFilesGenerator"
-	cliWinget    = "winget/manifests/d/DonislawDev/TestingFilesGenerator/CLI/0.4.0/DonislawDev.TestingFilesGenerator.CLI"
+	windowWinget = "winget/manifests/d/DonislawDev/TestingFilesGenerator/0.5.0/DonislawDev.TestingFilesGenerator"
+	cliWinget    = "winget/manifests/d/DonislawDev/TestingFilesGenerator/CLI/0.5.0/DonislawDev.TestingFilesGenerator.CLI"
 	windowChoco  = "chocolatey/testing-files-generator/"
 	cliChoco     = "chocolatey/testing-files-generator-cli/"
 )
@@ -81,6 +79,39 @@ func sumsFile(t *testing.T, body []byte) string {
 
 func fixtureSums() []byte {
 	return []byte(strings.Join(packagingSums, "\n") + "\n")
+}
+
+// packagingVersion is the version the fixture is a release of.
+var packagingVersion = strings.TrimPrefix(packagingTag, "v")
+
+// fixtureSum is the checksum the fixture holds for one file, found by its name
+// rather than by its place in the list, so moving the fixture to a later
+// release is a change to the list alone.
+func fixtureSum(t *testing.T, file string) string {
+	t.Helper()
+	for _, line := range packagingSums {
+		if sum, name, ok := strings.Cut(line, "  "); ok && name == file {
+			return sum
+		}
+	}
+	t.Fatalf("the fixture holds no checksum for %s, so this guard has nothing to compare", file)
+	return ""
+}
+
+// sumsWithout is the fixture with the lines for files ending in suffix left
+// out, found by name for the same reason.
+func sumsWithout(t *testing.T, suffix string) []byte {
+	t.Helper()
+	var lines []string
+	for _, line := range packagingSums {
+		if !strings.HasSuffix(line, suffix) {
+			lines = append(lines, line)
+		}
+	}
+	if len(lines) == len(packagingSums) {
+		t.Fatalf("no line of the fixture ends in %s, so leaving it out changes nothing", suffix)
+	}
+	return []byte(strings.Join(lines, "\n") + "\n")
 }
 
 // renderPackages runs the renderer the way a person does. extra is what a
@@ -335,11 +366,11 @@ func TestEachWingetPackageOffersTheArchitecturesTheReleaseBuilds(t *testing.T) {
 	for manifest, want := range map[string][]string{
 		windowWinget + ".installer.yaml": {
 			"x64 wix " + packagingInstallerSha,
-			"x64 zip E744F4FF793407218FAC9EEC139DD49C03264AB636DB2057BA2963D0515625AD",
+			"x64 zip " + strings.ToUpper(fixtureSum(t, "tfg-gui_"+packagingVersion+"_windows_amd64.zip")),
 		},
 		cliWinget + ".installer.yaml": {
-			"x64 zip 16FE56C7B3F2A13D22385A6B428ED6F0C9FB98C2103076B8C7C876401EEAAF79",
-			"arm64 zip 3F74F66E181BDEF20785BCCD603C3E5C5AD04CDFF3B38338487A02B1682ECCC6",
+			"x64 zip " + strings.ToUpper(fixtureSum(t, "tfg_"+packagingVersion+"_windows_amd64.zip")),
+			"arm64 zip " + strings.ToUpper(fixtureSum(t, "tfg_"+packagingVersion+"_windows_arm64.zip")),
 		},
 	} {
 		var got []string
@@ -379,7 +410,7 @@ func TestTheWindowInstallsWithAStartMenuShortcutWhereWinGetCan(t *testing.T) {
 			t.Errorf("the first installer of %s has %s %v, and the installer is %v", manifest, field, msi[field], want)
 		}
 	}
-	if url, _ := msi["InstallerUrl"].(string); !strings.HasSuffix(url, "/v0.4.0/tfg-setup_0.4.0_windows_amd64.msi") {
+	if url, _ := msi["InstallerUrl"].(string); !strings.HasSuffix(url, "/v0.5.0/tfg-setup_0.5.0_windows_amd64.msi") {
 		t.Errorf("the first installer of %s downloads %q, not the release's installer", manifest, url)
 	}
 	if got := firstOf(msi, "AppsAndFeaturesEntries", "UpgradeCode"); got != "{"+installerUpgradeCode+"}" {
@@ -411,9 +442,10 @@ func TestThePackagesDownloadWhatTheReleaseBuilds(t *testing.T) {
 		t.Fatalf("release.yml names its archives %d way(s) this guard can read, and it reads "+
 			"exactly two - the command line and the window. Read the base= lines again", len(bases))
 	}
-	built := regexp.MustCompile(`^((` + bases[0][1] + `|` + bases[1][1] + `)_0\.4\.0_windows_(amd64|arm64)\.zip` +
-		`|tfg-setup_0\.4\.0_windows_amd64\.msi)$`)
-	address := regexp.MustCompile(`https://github\.com/[^/\s']+/[^/\s']+/releases/download/v0\.4\.0/([^\s']+)`)
+	version := regexp.QuoteMeta(packagingVersion)
+	built := regexp.MustCompile(`^((` + bases[0][1] + `|` + bases[1][1] + `)_` + version + `_windows_(amd64|arm64)\.zip` +
+		`|tfg-setup_` + version + `_windows_amd64\.msi)$`)
+	address := regexp.MustCompile(`https://github\.com/[^/\s']+/[^/\s']+/releases/download/v` + version + `/([^\s']+)`)
 	seen := 0
 	for name, text := range renderedPackages(t) {
 		for _, m := range address.FindAllStringSubmatch(text, -1) {
@@ -434,8 +466,8 @@ func TestThePackagesDownloadWhatTheReleaseBuilds(t *testing.T) {
 func TestTheChocolateyPackagesCheckWhatTheyDownload(t *testing.T) {
 	files := renderedPackages(t)
 	for script, sum := range map[string]string{
-		windowChoco + "tools/chocolateyinstall.ps1": "e744f4ff793407218fac9eec139dd49c03264ab636db2057ba2963d0515625ad",
-		cliChoco + "tools/chocolateyinstall.ps1":    "16fe56c7b3f2a13d22385a6b428ed6f0c9fb98c2103076b8c7c876401eeaaf79",
+		windowChoco + "tools/chocolateyinstall.ps1": fixtureSum(t, "tfg-gui_"+packagingVersion+"_windows_amd64.zip"),
+		cliChoco + "tools/chocolateyinstall.ps1":    fixtureSum(t, "tfg_"+packagingVersion+"_windows_amd64.zip"),
 	} {
 		code := scriptLines(files[script])
 		if !anyLine(code, `^\s*-Checksum64 '`+sum+`' `) {
