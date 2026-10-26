@@ -37,6 +37,17 @@ because it turns other people's test suites red.
   than the size the manifest records. `verify` now reports a file it could not
   even look up, for want of permission or a name too long for the system, as
   `unreadable` with the reason rather than as `missing`.
+- **A run is warned when its manifest will be too large to read back,
+  whatever the format.** The warning came from a fixed cost per file that was
+  low for every format, so a run of about 20 000 small files wrote a manifest
+  `tfg verify` and `tfg cleanup` refuse, with no warning and no
+  `too_large_to_read_back` in it. The manifest's length is now counted, and
+  after the run `generate` corrects what it said before when the two differ.
+  Counting adds about seven seconds to a run or preview of a million files.
+- **The free space check counts the manifest and the instructions.** A disk
+  with room for the files and not for the manifest took the files and then
+  refused the manifest, which left files `tfg cleanup` cannot remove. The
+  refusal now says how much the run needs with its manifest.
 
 ## [0.5.0] - 2026-10-20
 

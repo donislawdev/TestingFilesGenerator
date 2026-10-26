@@ -214,7 +214,7 @@ func (e *SpaceError) Error() string { return e.Said().String() }
 // Said is the refusal, for a window that says it in its own language.
 func (e *SpaceError) Said() core.Said {
 	return core.Says("engine.NoSpace",
-		"this run needs %d B and %s has %d B free - nothing was written. Ask for fewer files or a smaller size, or write to another disk by changing the output directory",
+		"this run needs %d B with its manifest and %s has %d B free - nothing was written. Ask for fewer files or a smaller size, or write to another disk by changing the output directory",
 		core.A("Needed", e.Needed), core.A("Dir", core.Shown(e.Path)), core.A("Free", e.Available))
 }
 

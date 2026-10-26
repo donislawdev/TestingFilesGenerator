@@ -27,25 +27,20 @@ import (
 // quality rather than in what the engine can do, which is the kind D1 is
 // easiest to lose.
 //
-// Read off the document rather than worked out here, and off the SAME predicate
-// the command line uses, which is what manifest.TooLargeToReadBack exists for.
-// The two surfaces cannot come to different conclusions about one run.
-//
-// A preview reaches this too. engine.Run with DryRun adds an entry for every
-// planned file, so the document a preview produces is the document the run
-// would produce, minus the bytes on the disk. That is why one shape serves
-// both, and why the window can answer before anything is written even though it
-// cannot say a word in the middle of a run.
-func manifestReachNote(res *engine.Result) []string {
-	if res == nil || res.Manifest == nil {
-		return nil
-	}
-	size, over := res.Manifest.ReadBackReach()
-	if !over {
+// Read off the engine rather than worked out here, from the same count the
+// command line uses, so the two surfaces cannot come to different conclusions
+// about one run. A preview hands in the record worked out for the run it
+// previews (engine.Result.Record), and a finished run the record it wrote
+// (engine.Record.Size) - the fact, since 2026-10-26, rather than an estimate
+// that was low for every format and let a run of 20 500 files end with no word
+// about a manifest Verify then refused (docs/STABILITY-REVIEW-2026-10-26.md).
+// A run whose record was not written hands in nothing, and nothing is said.
+func manifestReachNote(record engine.RecordSize) []string {
+	if !record.TooLarge {
 		return nil
 	}
 	return []string{text.ManifestTooLargeToRead(
-		text.HumanBytes(size), text.HumanBytes(manifest.MaxBytes))}
+		text.HumanBytes(record.Manifest), text.HumanBytes(manifest.MaxBytes))}
 }
 
 // progressText is the line under the bar. Bytes rather than files, because one

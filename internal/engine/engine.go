@@ -9,14 +9,12 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
-	"github.com/donislawdev/TestingFilesGenerator/internal/version"
 )
 
 // Target is one group of files to produce.
@@ -147,6 +145,14 @@ type Options struct {
 	// on a handful of files, and the real number is asked about separately.
 	MaxPlanBytes int64
 
+	// Record is the forecast of this run's record, when the caller has already
+	// worked it out for these same files with PredictRecord - the command line
+	// does, to warn before the first byte. A forecast is a pass over every
+	// entry, about seven seconds for a million files measured on 2026-10-26,
+	// and asked twice it doubled a dry run of that size. Nil means the run
+	// works it out.
+	Record *RecordSize
+
 	// OnProgress is called as the run advances. Nil means silence, which is
 	// what every caller that has nobody to show it to should pass.
 	//
@@ -200,6 +206,12 @@ type Result struct {
 	// each file, so a million files with the same note cost one. A window says
 	// the notes in its own language from here, and the manifest stays English.
 	NotesSaid map[string]core.Said
+
+	// Record is how large the record of this run was worked out to be before
+	// its first byte, the manifest and the instructions (PredictRecord). For a
+	// dry run that is the answer about the run it previews. A run that is
+	// saved knows the real length afterwards, in Record of SaveRecord.
+	Record RecordSize
 
 	// reservation is the run's hold on its manifest name, taken before the
 	// first file and handed to SaveRecord, which saves through it. Nil for a
@@ -468,21 +480,19 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 // it may start at all, and the reading back of the answers in the order the
 // plan lists them.
 func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error) {
-	m := manifest.New(
-		"testing-files-generator", version.Version,
-		runID(opt.Seed), opt.Command, opt.Seed,
-		runtime.GOOS, runtime.GOARCH,
-	)
-	m.Run.RecipeHash = opt.RecipeHash
-	m.Run.Overrides = opt.Overrides
-	m.Run.Preset = opt.Preset
+	m := newManifest(opt)
 	res := &Result{Manifest: m}
 
 	// Whether this run may start at all is settled before anything is written
 	// and before a dry run returns. A dry run exists to count and show before
 	// the disk is touched, so reporting success for a run that refuses to
 	// start on the very next line answers the wrong question.
-	if err := preflight(ctx, files, opt); err != nil {
+	record, err := opt.forecast(ctx, files)
+	if err != nil {
+		return res, err
+	}
+	res.Record = record
+	if err := preflight(ctx, files, opt, record); err != nil {
 		return res, err
 	}
 
@@ -495,6 +505,10 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 			m.Add(res.entryFor(f, "", false, nil))
 		}
 		m.Run.Complete = true
+		// The preview's document has no hashes and is shorter than the one the
+		// run writes, so what it says about being read back is said about the
+		// run, from the record worked out for it.
+		m.Summary.TooLargeToReadBack = record.TooLarge
 		return res, nil
 	}
 
