@@ -423,7 +423,8 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 		core.ExactBytes(engine.TotalBytes(planned)))
 
 	echoBoundaries(targets, planned, errOut)
-	echoManifestReach(planned, errOut)
+	forecast, warned := echoManifestReach(ctx, planned, opt, errOut)
+	opt.Record = forecast
 
 	if g.dryRun {
 		fmt.Fprintln(errOut, "dry run - nothing was written.")
@@ -455,13 +456,13 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 		// Writing one would replace the record of whatever was already in the
 		// directory, and that record is the only thing cleanup can work from.
 		if !g.dryRun && res.Started {
-			saveManifest(res, opt, errOut)
+			saveManifest(res, opt, warned, errOut)
 		}
 		return classify(runErr)
 	}
 
 	if !g.dryRun {
-		if code := saveManifest(res, opt, errOut); code != ExitOK {
+		if code := saveManifest(res, opt, warned, errOut); code != ExitOK {
 			return code
 		}
 	}

@@ -24,6 +24,37 @@ because it turns other people's test suites red.
   `--user "$(id -u):$(id -g)"` to write there. README also shows a step that
   installs `tfg` on Windows and macOS runners in GitHub Actions.
 
+### Fixed
+
+- **`tfg cleanup --yes` keeps a file that changed after it was checked.**
+  Cleanup checks every file before it removes any, and a file changed in that
+  time was removed without `--force`. It now looks again just before it
+  removes each file and keeps one that was written to or replaced, saying so.
+  A write that keeps the length and lands within the same tick of a coarse
+  clock can still go unseen - FAT32 counts in two seconds.
+- **`tfg verify` and `tfg cleanup` stop part way through a large file on
+  Ctrl+C**, never wait on a pipe put where a listed file was, and read no more
+  than the size the manifest records. `verify` now reports a file it could not
+  even look up, for want of permission or a name too long for the system, as
+  `unreadable` with the reason rather than as `missing`.
+- **A run is warned when its manifest will be too large to read back,
+  whatever the format.** The warning came from a fixed cost per file that was
+  low for every format, so a run of about 20 000 small files wrote a manifest
+  `tfg verify` and `tfg cleanup` refuse, with no warning and no
+  `too_large_to_read_back` in it. The manifest's length is now counted, and
+  after the run `generate` corrects what it said before when the two differ.
+  Counting adds about seven seconds to a run or preview of a million files.
+- **The free space check counts the manifest and the instructions.** A disk
+  with room for the files and not for the manifest took the files and then
+  refused the manifest, which left files `tfg cleanup` cannot remove. The
+  refusal now says how much the run needs with its manifest.
+
+### Security
+
+- **Built with Go 1.27.3.** It fixes a vulnerability in `crypto/x509` of the
+  Go standard library, which only the desktop window links. The command line
+  tool was not affected. Building from source now needs Go 1.27.3.
+
 ## [0.5.0] - 2026-10-20
 
 ### Breaking

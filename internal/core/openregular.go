@@ -1,17 +1,21 @@
-package tool
+package core
 
 import "os"
 
-// Opening a file a tool reads. One way in for every tool, so a file named on
-// its own, the thousandth file of a folder and an archive somebody was sent
-// are opened with the same care - the review of #157 found a pipe swapped in
-// between two looks at a name, and the answer to that is here rather than in
-// each tool (docs/NARZEDZIA-SUMY-2026-09-29.md §13.4). Moved out of the
-// checksum tool on 2026-10-19, when a second tool came to read files.
+// Opening a file that is read rather than written. One way in for every
+// reader, so a file named on its own, the thousandth file of a folder, an
+// archive somebody was sent and a file a manifest lists are opened with the
+// same care - the review of #157 found a pipe swapped in between two looks at a
+// name, and the answer to that is here rather than in each reader
+// (docs/NARZEDZIA-SUMY-2026-09-29.md §13.4). Moved out of the checksum tool on
+// 2026-10-19, when a second tool came to read files, and out of internal/tool
+// into core on 2026-10-26, when verify and cleanup came to need it: they sit
+// a layer below the tools and could not reach it there
+// (docs/STABILITY-REVIEW-2026-10-26.md, R04).
 
-// NotRegularError is a path that names something other than a file. Each tool
-// says it in its own words, wrapping this, so a check that every tool refuses
-// a pipe asks for this one type.
+// NotRegularError is a path that names something other than a file. Each
+// reader says it in its own words, wrapping this, so a check that every reader
+// refuses a pipe asks for this one type.
 type NotRegularError struct {
 	Path      string
 	Directory bool

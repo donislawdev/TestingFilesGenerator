@@ -30,7 +30,7 @@ MUTATIONS = [
     (
         "the contributing guide names a Go version this module does not admit",
         "CONTRIBUTING.md",
-        "Needs Go 1.27.2 or newer",
+        "Needs Go 1.27.3 or newer",
         "Needs Go 1.21 or newer",
         "TestTheBuildFloorIsThePinnedToolchainAndTheDocumentsSaySo",
     ),
@@ -53,30 +53,30 @@ MUTATIONS = [
     (
         "the preview stops warning that the record will be too big to read back",
         "internal/gui/window/run.go",
-        "r.say(append([]string{said}, manifestReachNote(res)...)...)",
+        "r.say(append([]string{said}, manifestReachNote(res.Record)...)...)",
         "r.say(said)",
         "TestTheWindowSaysWhenItsManifestWillBeTooBigToReadBack",
     ),
     (
         "a finished run stops warning, so somebody who never pressed Preview is told nothing",
         "internal/gui/window/run.go",
-        "said := append([]string{outcome}, manifestReachNote(res)...)",
+        "said := append([]string{outcome}, manifestReachNote(saved.Size)...)",
         "said := []string{outcome}",
         "TestAFinishedRunInTheWindowSaysItsManifestIsTooBigToReadBack",
     ),
     (
         "the window warns about every run, which teaches people to skip the line",
         "internal/gui/window/runreport.go",
-        "if !over {",
-        "if false && !over {",
+        "if !record.TooLarge {",
+        "if false && !record.TooLarge {",
         "TestAnOrdinaryPreviewSaysNothingAboutTheManifestCeiling",
     ),
     (
-        "the document answers a different question than the plan, so one run is warned about on one surface only",
-        "internal/manifest/manifest.go",
-        "return TooLargeToReadBack(len(m.Files), m.notedFiles)",
-        "return TooLargeToReadBack(len(m.Files)+1000, m.notedFiles)",
-        "TestBothSurfacesJudgeTheSameRunTheSameWay",
+        "the forecast of a run's record counts a hash one character short, so it drifts from what the run writes",
+        "internal/engine/recordsize.go",
+        "strings.Repeat(\"0\", 64)",
+        "strings.Repeat(\"0\", 63)",
+        "TestTheRecordARunIsToldBeforehandIsTheRecordItWrites",
     ),
     # --- verify says whose the other files are (2026-09-07, T8) ---
     (
@@ -242,9 +242,9 @@ MUTATIONS = [
     # --- a manifest too big to read back says so where a script reads (2026-09-06) ---
     (
         "the report stops saying the manifest cannot be read back",
-        "internal/manifest/manifest.go",
-        "_, m.Summary.TooLargeToReadBack = TooLargeToReadBack(len(m.Files), m.notedFiles)",
-        "_, _ = TooLargeToReadBack(len(m.Files), m.notedFiles)",
+        "internal/engine/engine.go",
+        "m.Summary.TooLargeToReadBack = record.TooLarge",
+        "_ = record.TooLarge",
         "TestAManifestTooBigToReadBackSaysSoInTheReportAScriptReads",
     ),
     (
@@ -334,14 +334,14 @@ MUTATIONS = [
     (
         "the README goes back to naming a floor the module no longer admits",
         "README.md",
-        "**From source.** Needs Go 1.27.2 or newer, and nothing else:",
+        "**From source.** Needs Go 1.27.3 or newer, and nothing else:",
         "**From source.** Needs Go 1.26.5 or newer, and nothing else:",
         "TestTheBuildFloorIsThePinnedToolchainAndTheDocumentsSaySo",
     ),
     (
         "CI builds with a compiler older than the floor go.mod admits",
         ".github/workflows/ci.yml",
-        'GO_VERSION: "1.27.2"',
+        'GO_VERSION: "1.27.3"',
         'GO_VERSION: "1.26.8"',
         "TestTheBuildFloorIsThePinnedToolchainAndTheDocumentsSaySo",
     ),
@@ -821,8 +821,8 @@ MUTATIONS = [
     (
         "a dry run skips the checks and promises a run that would be refused",
         "internal/engine/engine.go",
-        "if err := preflight(ctx, files, opt); err != nil {",
-        "if err := preflight(ctx, files, opt); err != nil && !opt.DryRun {",
+        "if err := preflight(ctx, files, opt, record); err != nil {",
+        "if err := preflight(ctx, files, opt, record); err != nil && !opt.DryRun {",
         "TestADryRunReachesTheSameVerdictAsTheRealRun",
     ),
     (
@@ -1453,7 +1453,7 @@ MUTATIONS = [
     (
         "verify never looks at content, so an edited file passes",
         "internal/audit/audit.go",
-        "if sum != f.Hashes.SHA256 {",
+        "if got.sum != f.Hashes.SHA256 {",
         "if false {",
         "TestVerifyCatchesAMissingAnExtraAndAChangedFile",
     ),
@@ -6137,16 +6137,16 @@ MUTATIONS = [
     (
         "a run stops saying that its manifest will be too big for verify and cleanup to read",
         "internal/cli/record.go",
-        "\tif !over {",
-        "\tif true || !over {",
+        "if !record.TooLarge {",
+        "if true || !record.TooLarge {",
         "TestARunSaysWhenItsManifestWillBeTooBigToReadBack",
     ),
     (
-        "the manifest size estimate stops matching what a manifest really weighs",
-        "internal/manifest/manifest.go",
-        "\tBytesPerEntry = 786",
-        "\tBytesPerEntry = 79",
-        "TestTheManifestEstimateIsNearWhatAManifestWeighs",
+        "the counted length of a manifest leaves out the line that closes its list of files",
+        "internal/manifest/size.go",
+        "between*int64(n-1) + closing",
+        "between*int64(n-1)",
+        "TestTheManifestSizeIsTheLengthOfTheManifest",
     ),
     (
         "the size-boundaries preset stops refusing a limit with no number above it",
@@ -6179,8 +6179,8 @@ MUTATIONS = [
     (
         "every run starts warning that its manifest is too big to read back",
         "internal/cli/record.go",
-        "\tif !over {",
-        "\tif !over && false {",
+        "if !record.TooLarge {",
+        "if !record.TooLarge && false {",
         "TestAnOrdinaryRunSaysNothingAboutTheManifestCeiling",
     ),
     (
@@ -6254,10 +6254,10 @@ MUTATIONS = [
         "TestAContainerRefusesASizeItsArithmeticCannotSee",
     ),
     (
-        "preflight stops noticing that it was asked to stop",
+        "the forecast of the record and the preflight both stop noticing that they were asked to stop",
         "internal/engine/engine.go",
-        "\tif err := preflight(ctx, files, opt); err != nil {",
-        "\tif err := preflight(context.Background(), files, opt); err != nil {",
+        "record, err := opt.forecast(ctx, files)\n\tif err != nil {\n\t\treturn res, err\n\t}\n\tres.Record = record\n\tif err := preflight(ctx, files, opt, record); err != nil {",
+        "record, err := opt.forecast(context.Background(), files)\n\tif err != nil {\n\t\treturn res, err\n\t}\n\tres.Record = record\n\tif err := preflight(context.Background(), files, opt, record); err != nil {",
         "TestWorkingOutTheCostCanBeStopped",
     ),
     (
@@ -6660,8 +6660,8 @@ MUTATIONS = [
         "the engine says something on stdout on the SUCCESS path, where the "
         "guard that a failed run prints nothing cannot see it",
         "internal/engine/engine.go",
-        "func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error) {\n\tm := manifest.New(",
-        "func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error) {\n\tfmt.Println(\"running\")\n\tm := manifest.New(",
+        "func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error) {\n\tm := newManifest(opt)",
+        "func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error) {\n\tfmt.Println(\"running\")\n\tm := newManifest(opt)",
         "TestNothingBelowASurfaceReachesTheConsoleDirectly",
     ),
     (
@@ -12781,8 +12781,8 @@ MUTATIONS = [
     (
         'a manifest that could not be written leaves its empty claim behind, so the files it should have named cannot be cleaned up',
         'internal/manifest/reservation.go',
-        '\t\t_ = core.RemoveOwn(r.tmp, r.own)\n\t\treturn err\n\t}\n\treturn nil',
-        '\t\treturn err\n\t}\n\treturn nil',
+        '\t\t_ = core.RemoveOwn(r.tmp, r.own)\n\t\treturn err\n\t}\n\tm.saved = size\n\treturn nil',
+        '\t\treturn err\n\t}\n\tm.saved = size\n\treturn nil',
         'TestAManifestThatCouldNotBeWrittenLeavesNoManifest',
     ),
     (
@@ -13223,7 +13223,7 @@ MUTATIONS = [
         # through - read from the source, so a file built only off Windows
         # is held on the Windows machine too.
         "the checksum tool opens its file for writing as well, and the one claim does not notice",
-        "internal/tool/open_unix.go",
+        "internal/core/openregular_unix.go",
         "os.O_RDONLY|syscall.O_NONBLOCK, 0)",
         "os.O_RDWR|syscall.O_NONBLOCK, 0)",
         "TestEveryFileThisToolWritesIsCreatedThroughOneClaim",
@@ -15541,5 +15541,103 @@ MUTATIONS = [
         '"version": "',
         '"version": "9',
         "TestEveryVersionTheReadmeWritesOutIsThisOne",
+    ),
+    (
+        # R01 of docs/STABILITY-REVIEW-2026-10-26.md: a file judged ours and
+        # changed before the deletion reached it went, without --force.
+        "cleanup deletes a file that changed after it was judged ours, without asking the disk again",
+        "internal/audit/cleanup.go",
+        "if why, changed := changedSince(full, c.seen); changed {",
+        "if why, changed := changedSince(full, c.seen); false && changed {",
+        "TestCleanupLeavesAFileThatChangedAfterItWasChecked",
+    ),
+    (
+        "a file put in the place of the one judged ours is taken for it when its size and time match",
+        "internal/audit/cleanup.go",
+        "if !os.SameFile(seen, now) || now.Size()",
+        "if now.Size()",
+        "TestCleanupLeavesAFileReplacedAfterItWasChecked",
+    ),
+    (
+        "a file written over in place at its own length is still taken for the one judged ours",
+        "internal/audit/cleanup.go",
+        "now.Size() != seen.Size() || !now.ModTime().Equal(seen.ModTime()) {",
+        "now.Size() != seen.Size() {",
+        "TestCleanupLeavesAFileThatChangedAfterItWasChecked",
+    ),
+    (
+        "verify calls every failure to look a missing file again",
+        "internal/audit/audit.go",
+        "if absent(err) {\n\t\treturn Difference{Kind: Missing",
+        "if err != nil {\n\t\treturn Difference{Kind: Missing",
+        "TestVerifyCallsANameItCouldNotLookUpUnreadableRatherThanMissing",
+    ),
+    (
+        "a listed file is read to its end after Ctrl+C",
+        "internal/audit/read.go",
+        "if err := ctx.Err(); err != nil {\n\t\t\treturn read, err",
+        "if err := ctx.Err(); false && err != nil {\n\t\t\treturn read, err",
+        "TestHashingAListedFileStopsPartWayWhenCancelled",
+    ),
+    (
+        "a listed file is read past its size and one byte, for as long as it grows",
+        "internal/audit/read.go",
+        "piece = piece[:left]",
+        "_ = left",
+        "TestHashingAListedFileReadsNoMoreThanItIsAskedFor",
+    ),
+    (
+        # Unix only: a pipe exists nowhere else. The mutation runner of the CI
+        # is Linux, so it is judged there.
+        "verify and cleanup open a listed file with a plain open again, which waits on a pipe",
+        "internal/audit/read.go",
+        "f, seen, err := core.OpenRegular(path)",
+        "f, seen, err := func() (*os.File, os.FileInfo, error) { _ = core.OpenRegular; f, err := os.Open(path); if err != nil { return nil, nil, err }; i, err := f.Stat(); return f, i, err }()",
+        "TestVerifyAndCleanupNeverWaitOnAPipe",
+    ),
+    (
+        # R03 of docs/STABILITY-REVIEW-2026-10-26.md: a manifest past the
+        # ceiling went out without the field that says so.
+        "a saved manifest past the ceiling no longer says it cannot be read back",
+        "internal/manifest/size.go",
+        "header.Summary.TooLargeToReadBack = true",
+        "header.Summary.TooLargeToReadBack = false",
+        "TestASavedManifestSaysItIsTooBigExactlyWhenItIs",
+    ),
+    (
+        "a manifest of exactly the ceiling's length says it cannot be read back, though it is read",
+        "internal/manifest/size.go",
+        "size <= MaxBytes {",
+        "size < MaxBytes {",
+        "TestASavedManifestSaysItIsTooBigExactlyWhenItIs",
+    ),
+    (
+        "Save writes the manifest without settling the field from its real length",
+        "internal/manifest/reservation.go",
+        "size, err := m.settleReadBack()",
+        "size, err := m.SavedBytes(), error(nil)",
+        "TestASavedManifestSaysItIsTooBigExactlyWhenItIs",
+    ),
+    (
+        "the counted length of a manifest leaves out the indentation of the first line of every entry",
+        "internal/manifest/size.go",
+        "return int64(len(entryIndent) + len(b)), nil",
+        "return int64(len(b)), nil",
+        "TestTheManifestSizeIsTheLengthOfTheManifest",
+    ),
+    (
+        # R08: the free space was held against the files alone.
+        "the free space is held against the files alone again, so a disk with no room for the manifest takes the files",
+        "internal/engine/preflight.go",
+        "core.AddSizes(TotalBytes(files), record.Bytes())",
+        "core.AddSizes(TotalBytes(files), 0)",
+        "TestARunWithRoomForItsFilesButNotItsRecordIsRefused",
+    ),
+    (
+        "the forecast of a run's record leaves out the instructions written beside the manifest",
+        "internal/engine/recordsize.go",
+        "return int64(len(whole.Instructions(filepath.Base(ManifestPath(opt))))), nil",
+        "return 0, nil",
+        "TestTheRecordARunIsToldBeforehandIsTheRecordItWrites",
     ),
 ]

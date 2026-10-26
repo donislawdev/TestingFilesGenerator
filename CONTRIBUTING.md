@@ -22,7 +22,7 @@ reached yet.
 
 ## Building it
 
-Needs Go 1.27.2 or newer, and nothing else for the command line tool.
+Needs Go 1.27.3 or newer, and nothing else for the command line tool.
 
 ```
 git clone https://github.com/donislawdev/TestingFilesGenerator

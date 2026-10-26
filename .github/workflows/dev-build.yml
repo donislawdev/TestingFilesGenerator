@@ -51,7 +51,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GO_VERSION: "1.27.2"
+  GO_VERSION: "1.27.3"
   # Fourteen days rather than the default ninety. These are throwaway builds
   # handed to one person, and an unsigned binary should not sit for a quarter of
   # a year behind a link somebody can pass on as if it were official.

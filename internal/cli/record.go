@@ -80,26 +80,61 @@ func whatSurvived(runErr error, res *engine.Result) string {
 // today. What was missing was that nobody was told. It is printed before the
 // first byte and on a dry run, which is the step this project tells people to
 // take before anything large.
-func echoManifestReach(planned []engine.PlannedFile, errOut io.Writer) {
-	noted := 0
-	for _, f := range planned {
-		if len(f.Plan.Notes) > 0 {
-			noted++
-		}
+//
+// It hands back the forecast, for the run to use rather than work out a second
+// time, and whether it said anything, so that what the run really wrote can
+// correct it afterwards (echoManifestOutcome). The forecast is the manifest of
+// a run in which every file is produced - since 2026-10-26 counted entry by
+// entry rather than from a constant that was low for every format, so a run of
+// 20 500 text files is no longer told nothing and then left with a manifest
+// verify refuses (docs/STABILITY-REVIEW-2026-10-26.md, section 2.1).
+func echoManifestReach(ctx context.Context, planned []engine.PlannedFile, opt engine.Options, errOut io.Writer) (*engine.RecordSize, bool) {
+	record, err := engine.PredictRecord(ctx, planned, opt)
+	if err != nil {
+		// A forecast that could not be made is not a reason to stop the run
+		// here. The run works it out again and answers for it, and what was
+		// written is measured again after the save and said then.
+		return nil, false
 	}
-	size, over := manifest.TooLargeToReadBack(len(planned), noted)
-	if !over {
-		return
+	if !record.TooLarge {
+		return &record, false
 	}
 	fmt.Fprintf(errOut,
 		"note: this run will write a manifest of roughly %s and this build reads at most %s, "+
 			"so tfg verify and tfg cleanup will not be able to read it. Split the run to keep each manifest readable.\n",
-		core.HumanBytes(size), core.HumanBytes(manifest.MaxBytes))
+		core.HumanBytes(record.Manifest), core.HumanBytes(manifest.MaxBytes))
+	return &record, true
+}
+
+// echoManifestOutcome says what the manifest came to, when that is not what
+// the run was told before its first byte.
+//
+// The forecast is right for a run in which every file is produced. A file that
+// fails gains a note in its entry, so the manifest can grow past the ceiling
+// after the forecast said it would not - and then this is the only sentence
+// that says so. The other way round, a run warned and then within the ceiling,
+// is corrected too: an alarm left standing after the fact is a sentence the
+// person acts on, and it would be false.
+func echoManifestOutcome(written engine.RecordSize, warned bool, errOut io.Writer) {
+	switch {
+	case written.TooLarge && !warned:
+		fmt.Fprintf(errOut,
+			"note: this run wrote a manifest of %s and this build reads at most %s, "+
+				"so tfg verify and tfg cleanup will not be able to read it. Split the run to keep each manifest readable.\n",
+			core.HumanBytes(written.Manifest), core.HumanBytes(manifest.MaxBytes))
+	case !written.TooLarge && warned:
+		fmt.Fprintf(errOut,
+			"note: the manifest came to %s, within the %s this build reads, so tfg verify and tfg cleanup can read it after all.\n",
+			core.HumanBytes(written.Manifest), core.HumanBytes(manifest.MaxBytes))
+	}
 }
 
 // saveManifest saves the record of a run - the manifest, and the instructions
 // beside it when any file was given a purpose - and says where each went.
-func saveManifest(res *engine.Result, opt engine.Options, errOut io.Writer) int {
+//
+// warned is whether the run was told before its first byte that its manifest
+// would be too large to read back - see echoManifestOutcome.
+func saveManifest(res *engine.Result, opt engine.Options, warned bool, errOut io.Writer) int {
 	// Asked of the engine rather than joined here. The engine claimed this
 	// exact name before the first file was written, so working it out a second
 	// way is a chance for the saver and the claim to mean different files.
@@ -137,5 +172,6 @@ func saveManifest(res *engine.Result, opt engine.Options, errOut io.Writer) int 
 			"tfg: cannot write the instructions to %s: %s. The manifest was saved and holds the same facts.\n",
 			core.Shown(rec.Missed.Path), describeError(rec.Missed.Err))
 	}
+	echoManifestOutcome(rec.Size, warned, errOut)
 	return ExitOK
 }

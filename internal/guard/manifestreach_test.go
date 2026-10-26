@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
@@ -18,8 +20,7 @@ import (
 //
 // Two ceilings were chosen independently and never held against each other.
 // core.MaxFilesPerRun is a million files. manifest.MaxBytes is sixteen
-// megabytes, and its comment works out that this "holds a run of roughly twenty
-// thousand files".
+// megabytes.
 //
 // Measured on 2026-08-26: a run of 25 000 files wrote a manifest of 25 220 640
 // B, and from that moment "tfg verify" and "tfg cleanup" both exited 5 on it
@@ -31,19 +32,22 @@ import (
 // The owner's decision on the same day was a note rather than a refusal: the
 // run works, and refusing it would take away something this tool does today.
 // What was missing was that nobody was told.
+
+// inTheSilentBand is a run that was told nothing until 2026-10-26.
+//
+// The warning came from 786 B an entry, and a text file of one byte with no
+// label costs about 838 - so 20 500 of them came to 16 113 000 B by the
+// estimate, under the ceiling, and wrote 17 170 219 B, over it
+// (docs/STABILITY-REVIEW-2026-10-26.md, section 2.1). A run here is a run the
+// old arithmetic let through in silence, which is the run these guards are for.
+var inTheSilentBand = []string{"generate", "--format", "txt", "--size", "1b", "--clean", "--count", "20500", "--dry-run"}
+
 func TestARunSaysWhenItsManifestWillBeTooBigToReadBack(t *testing.T) {
-	// Just over the ceiling, worked out from the estimate rather than from a
-	// number written here - a guard carrying its own copy of a limit goes
-	// stale the day somebody changes the real one and says nothing while it
-	// does.
-	over := int(manifest.MaxBytes/manifest.BytesPerEntry) + 1000
-	if _, tooBig := manifest.TooLargeToReadBack(over, 0); !tooBig {
-		t.Fatalf("%d entries was not judged too large, so this proved nothing", over)
+	said := runCLI(t, append(inTheSilentBand, "--out", t.TempDir())...)
+
+	if !strings.Contains(said, "will not be able to read") {
+		t.Fatalf("a run whose manifest will be past the ceiling was told nothing:\n%s", firstLines(said, 6))
 	}
-
-	said := runCLI(t, "generate", "--format", "txt", "--size", "200b",
-		"--count", itoa(over), "--dry-run", "--out", t.TempDir())
-
 	if !strings.Contains(said, "verify") || !strings.Contains(said, "cleanup") {
 		t.Errorf("the note does not name the two commands that stop working:\n%s", said)
 	}
@@ -66,46 +70,54 @@ func TestAnOrdinaryRunSaysNothingAboutTheManifestCeiling(t *testing.T) {
 	}
 }
 
-// The estimate has to stay near what a manifest really weighs.
+// The length worked out for a manifest is the length Encode writes, to the
+// byte.
 //
-// An estimate nobody checks is a number nobody measured, and this one decides
-// whether the warning above appears at all. It is held to a wide band on
-// purpose: the exact size moves with how long the names are and what the notes
-// say, and a guard demanding the byte would go red for a reason that does not
-// matter.
-func TestTheManifestEstimateIsNearWhatAManifestWeighs(t *testing.T) {
-	dir := t.TempDir()
-	const files = 300
+// This replaces a guard that held an estimate to "a quarter either way", and
+// a quarter was wide enough to let a constant 6% low for text and half of what
+// an e-mail entry costs stay green while a run of 20 500 files went unwarned.
+// The answer is counted entry by entry now, so it is held to the byte: a
+// document of no entries, one entry, and many unlike each other - notes, a
+// failure, words outside ASCII, characters JSON escapes, properties nested
+// several deep.
+func TestTheManifestSizeIsTheLengthOfTheManifest(t *testing.T) {
+	documents := map[string]*manifest.Manifest{"no entries": newDocument()}
 
-	runCLI(t, "generate", "--format", "txt", "--size", "200b",
-		"--count", itoa(files), "--out", dir)
+	one := newDocument()
+	one.Add(manifest.File{ID: "a", Path: "a.txt", Name: "a.txt", Format: "txt", Bytes: 1})
+	documents["one entry"] = one
 
-	info, err := os.Stat(filepath.Join(dir, "manifest.json"))
-	if err != nil {
-		t.Fatalf("the run wrote no manifest: %v", err)
-	}
-	real := info.Size()
-	guess := manifest.EstimatedBytes(files, 0)
+	many := newDocument()
+	many.Run.Preset = &manifest.Preset{ID: "upload-validation", Parameters: map[string]string{"limit": "1mb"}}
+	many.Add(manifest.File{ID: "plain", Path: "plain.txt", Name: "plain.txt", Format: "txt", Bytes: 200, Materialized: true,
+		Hashes: manifest.Hashes{SHA256: strings.Repeat("ab", 32)}, TargetID: "t"})
+	many.Add(manifest.File{ID: "noted", Path: "zażółć 日本.txt", Name: "zażółć 日本.txt", Format: "txt",
+		Notes:    []manifest.Note{{Code: "label_omitted", Detail: "it said <nothing> & \"left\" \\ alone"}},
+		Expected: manifest.Expected{Outcome: "reject", Reason: "size_limit"}, Purpose: "a <b> & c", Group: "g"})
+	many.Add(manifest.File{ID: "deep", Path: "deep.zip", Name: "deep.zip", Format: "zip",
+		Properties: map[string]any{"contains": []any{map[string]any{"format": "txt", "count": 3}}, "depth": 2, "flat": true, "ratio": 0.5}})
+	many.Add(manifest.File{ID: "failed", Path: "failed.png", Name: "failed.png", Format: "png", Failed: true,
+		Error: "a generator stopped", Damage: []manifest.Damage{{Type: "zero-head", Settings: map[string]string{"bytes": "4"}}}})
+	documents["many entries"] = many
 
-	// Within a quarter either way. Wider than the measurement, narrow enough
-	// that the constant drifting by a factor would be caught.
-	low, high := real*3/4, real*5/4
-	if guess < low || guess > high {
-		t.Errorf("the estimate for %d files is %d B and the manifest is %d B, which is outside a quarter either way",
-			files, guess, real)
+	for name, m := range documents {
+		counted, err := m.EncodedBytes()
+		if err != nil {
+			t.Fatalf("%s: counting: %v", name, err)
+		}
+		var written bytes.Buffer
+		if err := m.Encode(&written); err != nil {
+			t.Fatalf("%s: encoding: %v", name, err)
+		}
+		if counted != int64(written.Len()) {
+			t.Errorf("%s: the manifest was counted at %d B and Encode wrote %d B", name, counted, written.Len())
+		}
 	}
 }
 
-// runCLI runs one command and gives back everything it said, on both channels.
-//
-// Both, because the line under test goes to the error channel - a report on
-// stdout has to stay machine readable - and a guard reading only one of them
-// would be measuring which channel it picked.
-func runCLI(t *testing.T, args ...string) string {
-	t.Helper()
-	var out, errOut bytes.Buffer
-	cli.Run(context.Background(), args, &out, &errOut)
-	return out.String() + errOut.String()
+// newDocument is an empty manifest with the header a run gives it.
+func newDocument() *manifest.Manifest {
+	return manifest.New("testing-files-generator", "0.0.0-dev", "run_x", "tfg generate", 1, "linux", "amd64")
 }
 
 // And it says so where a script can read it, not only in prose.
@@ -130,19 +142,9 @@ func runCLI(t *testing.T, args ...string) string {
 // produced" and point at a manifest nothing can read. Exit codes are a frozen
 // contract.
 func TestAManifestTooBigToReadBackSaysSoInTheReportAScriptReads(t *testing.T) {
-	over := int(manifest.MaxBytes/manifest.BytesPerEntry) + 1000
-
-	// Asked of the estimator first, so a build whose ceiling moved above this
-	// count fails here rather than passing the whole test by never being over
-	// it at all.
-	if _, tooBig := manifest.TooLargeToReadBack(over, 0); !tooBig {
-		t.Fatalf("%d entries was not judged too large, so this proved nothing", over)
-	}
-
 	// stdout only. The summary line goes to the error stream, and a reader that
 	// took both would be parsing JSON with a sentence stuck to the end of it.
-	code, said, errOut := run(t, "generate", "--format", "txt", "--size", "200b",
-		"--count", itoa(over), "--dry-run", "--json", "--out", t.TempDir())
+	code, said, errOut := run(t, append(inTheSilentBand, "--json", "--out", t.TempDir())...)
 	if code != cli.ExitOK {
 		t.Fatalf("the run ended with %d, so there is no report to read:\n%s", code, errOut)
 	}
@@ -198,6 +200,132 @@ func TestAnOrdinaryRunSaysNothingAboutTheCeilingInItsReport(t *testing.T) {
 			"Absent rather than false is what keeps every manifest already written " +
 			"byte for byte what it was.")
 	}
+}
+
+// A saved manifest carries the field exactly when this build will refuse it,
+// asked one byte either side of the ceiling.
+//
+// The field is written into the document whose length it describes, so the
+// edge is where a rule that is nearly right goes wrong: a manifest of exactly
+// manifest.MaxBytes is read and must not say otherwise, and one byte more is
+// refused and must say so. Saved for real and read back, so the answer is about
+// the bytes on the disk rather than about the arithmetic that predicted them.
+func TestASavedManifestSaysItIsTooBigExactlyWhenItIs(t *testing.T) {
+	for _, past := range []int64{0, 1} {
+		m := documentOfLength(t, manifest.MaxBytes+past)
+		path := filepath.Join(t.TempDir(), "manifest.json")
+		if err := m.Save(path); err != nil {
+			t.Fatalf("saving: %v", err)
+		}
+		info, err := os.Stat(path)
+		if err != nil {
+			t.Fatalf("looking at the saved manifest: %v", err)
+		}
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("reading the saved manifest: %v", err)
+		}
+		says := bytes.Contains(raw, []byte(`"too_large_to_read_back": true`))
+		_, loadErr := manifest.Load(path)
+		var refused *manifest.TooLargeError
+		isRefused := errors.As(loadErr, &refused)
+
+		switch {
+		case past == 0 && (info.Size() != manifest.MaxBytes || says || isRefused):
+			t.Errorf("a manifest of the ceiling's length: %d B on the disk, field present %v, refused %v (%v) - it is read and must not say it is not",
+				info.Size(), says, isRefused, loadErr)
+		case past == 1 && (info.Size() <= manifest.MaxBytes || !says || !isRefused):
+			t.Errorf("a manifest one byte longer: %d B on the disk, field present %v, refused %v - it is refused and must say so",
+				info.Size(), says, isRefused)
+		}
+		if m.SavedBytes() != info.Size() {
+			t.Errorf("Save says it wrote %d B and the disk holds %d B", m.SavedBytes(), info.Size())
+		}
+	}
+}
+
+// documentOfLength is a manifest whose document, without the field, is exactly
+// length bytes long - one entry's purpose takes up the difference.
+func documentOfLength(t *testing.T, length int64) *manifest.Manifest {
+	t.Helper()
+	m := newDocument()
+	m.Add(manifest.File{ID: "a", Path: "a.txt", Name: "a.txt", Format: "txt", Purpose: "x"})
+	now, err := m.EncodedBytes()
+	if err != nil {
+		t.Fatalf("counting: %v", err)
+	}
+	m.Files[0].Purpose += strings.Repeat("x", int(length-now))
+	// Measured as it stands, before Save has settled the field - so this is the
+	// length the rule is asked about, and nothing here has set the field yet
+	// for Save to find already set.
+	if got, _ := m.EncodedBytes(); got != length || m.Summary.TooLargeToReadBack {
+		t.Fatalf("the document is %d B (field set: %v) and was built to be %d B without it, so the edge is not where this asks",
+			got, m.Summary.TooLargeToReadBack, length)
+	}
+	return m
+}
+
+// What a run is told about its record before its first byte is what it then
+// writes, when every file is produced - the manifest to the byte, and the
+// instructions beside it.
+//
+// The forecast is what the free space is held against and what the warning
+// above is said from. A forecast that drifted from the record would put both
+// back where the old constant had them, wrong in a direction nobody sees.
+func TestTheRecordARunIsToldBeforehandIsTheRecordItWrites(t *testing.T) {
+	dir := t.TempDir()
+	opt := engine.Options{OutDir: dir, Seed: 7, Command: "test"}
+	told := txtTarget("told", 3, 100)
+	told.Purpose, told.Group = "A file with a purpose, zażółć <&>", "with a purpose"
+	planned, err := engine.Plan([]engine.Target{txtTarget("plain", 300, 200), told}, opt)
+	if err != nil {
+		t.Fatalf("planning: %v", err)
+	}
+
+	forecast, err := engine.PredictRecord(context.Background(), planned, opt)
+	if err != nil {
+		t.Fatalf("forecasting: %v", err)
+	}
+	res, err := engine.Run(context.Background(), planned, opt)
+	if err != nil {
+		t.Fatalf("running: %v", err)
+	}
+	rec, err := engine.SaveRecord(res, opt)
+	if err != nil {
+		t.Fatalf("saving the record: %v", err)
+	}
+
+	if rec.Instructions == "" || forecast.Instructions == 0 {
+		t.Fatalf("no instructions were written or forecast (%q, %d B), so half of this asked nothing", rec.Instructions, forecast.Instructions)
+	}
+	onDisk := map[string]int64{}
+	for name, path := range map[string]string{"manifest": rec.Manifest, "instructions": rec.Instructions} {
+		info, err := os.Stat(path)
+		if err != nil {
+			t.Fatalf("looking at the %s: %v", name, err)
+		}
+		onDisk[name] = info.Size()
+	}
+	if forecast.Manifest != onDisk["manifest"] || rec.Size.Manifest != onDisk["manifest"] {
+		t.Errorf("the manifest was forecast at %d B, recorded as %d B and is %d B on the disk",
+			forecast.Manifest, rec.Size.Manifest, onDisk["manifest"])
+	}
+	if forecast.Instructions != onDisk["instructions"] || rec.Size.Instructions != onDisk["instructions"] {
+		t.Errorf("the instructions were forecast at %d B, recorded as %d B and are %d B on the disk",
+			forecast.Instructions, rec.Size.Instructions, onDisk["instructions"])
+	}
+}
+
+// runCLI runs one command and gives back everything it said, on both channels.
+//
+// Both, because the line under test goes to the error channel - a report on
+// stdout has to stay machine readable - and a guard reading only one of them
+// would be measuring which channel it picked.
+func runCLI(t *testing.T, args ...string) string {
+	t.Helper()
+	var out, errOut bytes.Buffer
+	cli.Run(context.Background(), args, &out, &errOut)
+	return out.String() + errOut.String()
 }
 
 // firstLines trims a long document down for a failure message.

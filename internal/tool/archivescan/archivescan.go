@@ -110,8 +110,8 @@ func run(ctx context.Context, in tool.Request, progress tool.Progress) (tool.Res
 		limit, _ = core.ParseSize(raw)
 	}
 	path := in.Inputs[InputArchive]
-	f, before, err := tool.OpenRegular(path)
-	var not *tool.NotRegularError
+	f, before, err := core.OpenRegular(path)
+	var not *core.NotRegularError
 	if errors.As(err, &not) {
 		return tool.Result{}, &NotAFileError{Path: path, Directory: not.Directory}
 	}

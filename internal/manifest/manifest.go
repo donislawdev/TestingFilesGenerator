@@ -35,15 +35,10 @@ type Manifest struct {
 	Summary Summary `json:"summary"`
 	Files   []File  `json:"files"`
 
-	// notedFiles is how many entries carry a note, which the size estimate
-	// needs and no reader does.
-	//
-	// Unexported, so it is not written and not read back. A manifest decoded
-	// from disk carries the ANSWER in Summary.TooLargeToReadBack rather than
-	// the working needed to reach it, which is what a reader wants and is also
-	// what keeps the two from disagreeing - a decoded manifest has no Add
-	// calls to count.
-	notedFiles int
+	// saved is how long this document was when Save wrote it, and nought
+	// before that or for a document read back from the disk. Unexported, so it
+	// is not written and not read back.
+	saved int64
 }
 
 // Tool records what produced these bytes. Without it a hash mismatch after an
@@ -188,6 +183,11 @@ type Summary struct {
 	// written stays byte for byte what it was. An added field, which
 	// docs/MANIFEST.md section 10 allows without moving manifest_version -
 	// the same shape as tool.go, added for review item S1.
+	//
+	// Save sets it from the length of the document it writes, since
+	// 2026-10-26. It came from an estimate until then, and a manifest of
+	// 17 170 219 B went out without it (size.go). A preview's document carries
+	// it for the run it previews, from the same count.
 	TooLargeToReadBack bool `json:"too_large_to_read_back,omitempty"`
 }
 
@@ -365,6 +365,13 @@ func New(toolName, toolVersion, runID, command string, seed int64, os, arch stri
 // one place is what stops the two from drifting apart.
 func (m *Manifest) Add(f File) {
 	m.Files = append(m.Files, f)
+	m.count(f)
+}
+
+// count folds one file into the summary. Apart from Add so that a Projection
+// counts a file exactly as Add does without keeping it - still one place that
+// counts.
+func (m *Manifest) count(f File) {
 	m.Summary.FileCount++
 	m.Summary.ByFormat[f.Format]++
 	if f.TargetID != "" {
@@ -380,14 +387,6 @@ func (m *Manifest) Add(f File) {
 	if _, ok := m.Tool.Generators[f.Format]; !ok && f.Generator.Version != "" {
 		m.Tool.Generators[f.Format] = f.Generator.Version
 	}
-	// Kept in step here for the reason the comment above this function gives:
-	// counting anywhere else is a second place for the two to disagree. The
-	// estimate is arithmetic over the counts, so recomputing it per file costs
-	// nothing and is always right about the document as it stands.
-	if len(f.Notes) > 0 {
-		m.notedFiles++
-	}
-	_, m.Summary.TooLargeToReadBack = TooLargeToReadBack(len(m.Files), m.notedFiles)
 }
 
 // noteExamples is how many file names a grouped note shows before it stops
@@ -552,75 +551,15 @@ func (e *SchemaError) Said() core.Said {
 // an asymmetry rather than a decision.
 //
 // Sixteen megabytes rather than the recipe's one. A manifest is generated
-// rather than typed and it grows with the run: measured on 2026-08-03, an entry
-// costs about 700 B, so this holds a run of roughly twenty thousand files -
-// twice the largest preset in docs/PRESETS.md and well above the ten thousand
-// this tool is designed around.
+// rather than typed and it grows with the run: measured on 2026-10-26, an entry
+// costs from about 840 B (txt) to about 1580 B (eml), so this holds a run of
+// roughly ten to twenty thousand files - above the largest preset in
+// docs/PRESETS.md and around the ten thousand this tool is designed around. A
+// run past it is told so, from the document's real length (size.go).
 //
 // What it does not do, stated as plainly as the recipe's: it does not defend
 // against a manifest that fits and is still expensive.
 const MaxBytes = 16 << 20
-
-// What an entry really costs, and what a run of a given size will come to.
-//
-// The comment above says "an entry costs about 700 B, so this holds a run of
-// roughly twenty thousand files". Re-measured on 2026-08-26 against real runs:
-// 786 B an entry for files carrying no notes, and 1009 B where every file
-// carries one. So the ceiling is reached at about 21 300 files, or about 16 600
-// when every file has something to say about itself.
-//
-// The number matters because nothing compared it with the other ceiling.
-// core.MaxFilesPerRun is a million. Measured the same day: a run of 25 000
-// files wrote a manifest of 25 220 640 B, and from that moment neither "tfg
-// verify" nor "tfg cleanup" would read it - both exit 5 - so the files sat on
-// the disk with nothing in this toolset able to remove them. Two ceilings were
-// chosen independently and never held against each other.
-//
-// This is what lets a run say so before it starts rather than after. It is
-// deliberately an estimate and named as one: the exact size depends on how long
-// the names are and what the notes say, and a run that guessed slightly low
-// would still be better off than one that said nothing.
-const (
-	// BytesPerEntry is a file with nothing to report.
-	BytesPerEntry = 786
-	// BytesPerNotedEntry is the surcharge for a file that carries a note.
-	BytesPerNotedEntry = 223
-)
-
-// EstimatedBytes is roughly what the manifest of a run this shape will weigh.
-func EstimatedBytes(entries, withNotes int) int64 {
-	return int64(entries)*BytesPerEntry + int64(withNotes)*BytesPerNotedEntry
-}
-
-// TooLargeToReadBack says whether this build would refuse its own manifest for
-// a run of this shape.
-//
-// Asked here rather than worked out by each surface, so the command line and
-// the window cannot come to different conclusions about the same run.
-func TooLargeToReadBack(entries, withNotes int) (int64, bool) {
-	n := EstimatedBytes(entries, withNotes)
-	return n, n > MaxBytes
-}
-
-// ReadBackReach is what this document will weigh and whether this build would
-// refuse to read it.
-//
-// The same question TooLargeToReadBack answers, asked of a manifest that
-// exists rather than of a plan that has not run. It is here because the two
-// callers had nowhere else to get the count of entries carrying a note from -
-// that is kept while entries are added, so working it out again would mean
-// walking every file a second time and getting it subtly wrong when a failed
-// entry gains a note of its own.
-//
-// The window needs this and the command line does not. The command line says
-// its piece BEFORE the first byte, from the plan, where no manifest exists yet.
-// A window cannot say anything in the middle of a run - a widget touched from a
-// worker is a race, and two of those were found on CI - so it says it when the
-// run ends, off the document the run actually produced. Both go through
-// TooLargeToReadBack, which is where that answer is settled for both surfaces.
-func (m *Manifest) ReadBackReach() (int64, bool) {
-	return TooLargeToReadBack(len(m.Files), m.notedFiles)
-}
 
 // TooLargeError is returned for a manifest past MaxBytes.
 type TooLargeError struct {

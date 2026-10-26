@@ -133,12 +133,19 @@ func drain[T any](ctx context.Context, next *atomic.Int64, out []T, done []bool,
 	for {
 		i := int(next.Add(1)) - 1
 		// Cancellation is asked per item rather than per pass, so a Ctrl+C
-		// during a long hash is noticed at the next file rather than at the
-		// end of the run.
+		// between files is noticed at the next one - and verify and cleanup
+		// ask it inside a file as well, while they read it.
 		if i >= len(out) || ctx.Err() != nil {
 			return
 		}
 		out[i] = one(i, scratch)
+		// An item whose answer was cut short by the cancellation is not
+		// answered. A read stopped half way comes back as the context's error,
+		// and counting that would put "could not be read" into the prefix a
+		// cancelled pass reports, about a file nobody failed to read.
+		if ctx.Err() != nil {
+			return
+		}
 		done[i] = true
 	}
 }

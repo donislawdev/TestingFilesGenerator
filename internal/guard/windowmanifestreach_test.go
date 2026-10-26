@@ -1,9 +1,11 @@
 package guard
 
 import (
+	"context"
 	"strings"
 	"testing"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
@@ -24,22 +26,38 @@ import (
 // looks for, but something one surface SAYS and the other does not.
 //
 // The note was written down as a question about the manifest schema, on the
-// grounds that notes are per file and this one is per run. It is not. The
-// command line does not read this off the manifest either - it works it out
-// from the plan and prints it before the first byte - and manifest.TooLarge-
-// ToReadBack was put where it is exactly so the two surfaces could not come to
-// different conclusions about one run. What was missing was a caller.
+// grounds that notes are per file and this one is per run. It is not. Both
+// surfaces take the answer from the engine - the record a run is forecast to
+// write, and after it the record it wrote (engine.RecordSize) - so the two
+// cannot come to different conclusions about one run. What was missing was a
+// caller.
 
-// overTheCeiling is a file count whose manifest this build would refuse.
+// overTheCeiling is a file count whose manifest this build would refuse, for
+// files of 200 B of text - the run the screens below are filled in for.
 //
-// Worked out from the estimate rather than written here, for the reason the
-// command line guard beside it gives: a guard carrying its own copy of a limit
-// goes stale the day somebody changes the real one, and says nothing while it
-// does.
+// Worked out from the engine's own forecast rather than written here, for the
+// reason the command line guard beside it gives: a guard carrying its own copy
+// of a limit goes stale the day somebody changes the real one, and says
+// nothing while it does. A thousand files past the count the forecast puts at
+// the ceiling, and then asked again, so a forecast that moved cannot leave
+// this under it.
 func overTheCeiling(t *testing.T) int {
 	t.Helper()
-	over := int(manifest.MaxBytes/manifest.BytesPerEntry) + 1000
-	if _, tooBig := manifest.TooLargeToReadBack(over, 0); !tooBig {
+	forecast := func(n int) engine.RecordSize {
+		opt := engine.Options{OutDir: t.TempDir(), Seed: 1, Command: "test"}
+		planned, err := engine.Plan([]engine.Target{txtTarget("t", n, 200)}, opt)
+		if err != nil {
+			t.Fatalf("planning %d files: %v", n, err)
+		}
+		r, err := engine.PredictRecord(context.Background(), planned, opt)
+		if err != nil {
+			t.Fatalf("forecasting %d files: %v", n, err)
+		}
+		return r
+	}
+	each := forecast(2).Manifest - forecast(1).Manifest
+	over := int(manifest.MaxBytes/each) + 1000
+	if !forecast(over).TooLarge {
 		t.Fatalf("%d entries was not judged too large, so this guard would prove nothing", over)
 	}
 	return over
@@ -187,34 +205,5 @@ func TestAnOrdinaryPreviewSaysNothingAboutTheManifestCeiling(t *testing.T) {
 	said := previewOf(t, "100")
 	if strings.Contains(said, warningAbout(t)) {
 		t.Errorf("a hundred files drew the warning about the record being too big:\n%s", said)
-	}
-}
-
-// Both surfaces judge the same run the same way.
-//
-// The window reads the answer off the document a dry run builds, and the
-// command line works it out from the plan before anything is written. Two paths
-// to one number, and what makes two paths acceptable is that they go through
-// one predicate. Asked at the boundary, which is the only place a disagreement
-// would show.
-func TestBothSurfacesJudgeTheSameRunTheSameWay(t *testing.T) {
-	for _, entries := range []int{
-		int(manifest.MaxBytes / manifest.BytesPerEntry),
-		int(manifest.MaxBytes/manifest.BytesPerEntry) + 1,
-	} {
-		_, fromThePlan := manifest.TooLargeToReadBack(entries, 0)
-
-		m := manifest.New("testing-files-generator", "0.0.0-dev", "run_x", "tfg generate", 1, "linux", "amd64")
-		for i := 0; i < entries; i++ {
-			m.Add(manifest.File{Path: "f.txt", Materialized: true})
-		}
-		_, fromTheDocument := m.ReadBackReach()
-
-		if fromThePlan != fromTheDocument {
-			t.Errorf("at %d entries the plan says %v and the document says %v.\n"+
-				"The command line answers from the first and the window from the second, so one run "+
-				"would be warned about on one surface and not on the other",
-				entries, fromThePlan, fromTheDocument)
-		}
 	}
 }

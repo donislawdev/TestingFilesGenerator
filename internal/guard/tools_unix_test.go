@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/tool"
 )
 
@@ -21,7 +22,7 @@ import (
 // of nothing instead of the refusal.
 //
 // Since 2026-09-30 this is asked of the open file rather than of the name
-// (tool.OpenRegular), which is what closed the moment between the two looks
+// (core.OpenRegular), which is what closed the moment between the two looks
 // that a review of #157 found - so this one guard holds both halves.
 //
 // Every tool that reads a file, walked from the registry since 2026-10-19,
@@ -56,7 +57,7 @@ func refusesThePipe(t *testing.T, d tool.Descriptor, pipe string) {
 	}()
 	select {
 	case err := <-answered:
-		var notAFile *tool.NotRegularError
+		var notAFile *core.NotRegularError
 		if !errors.As(err, &notAFile) {
 			t.Errorf("a pipe was named to %s and the answer was %v, not the refusal saying it is not a file", d.ID, err)
 		}

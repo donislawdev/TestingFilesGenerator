@@ -1140,8 +1140,8 @@
   },
   "engine.NoSpace": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Needed}}, {{.Dir}}, {{.Free}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-0e6457cf7a3b",
-    "other": "this run needs {{.Needed}} B and {{.Dir}} has {{.Free}} B free - nothing was written. Ask for fewer files or a smaller size, or write to another disk by changing the output directory"
+    "hash": "sha256-064c75842c91",
+    "other": "this run needs {{.Needed}} B with its manifest and {{.Dir}} has {{.Free}} B free - nothing was written. Ask for fewer files or a smaller size, or write to another disk by changing the output directory"
   },
   "engine.NotProduced": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",

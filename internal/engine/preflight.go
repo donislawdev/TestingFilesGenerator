@@ -32,11 +32,19 @@ const DefaultManifestName = "manifest.json"
 //
 // Both checks used to sit after the dry run had already returned, so
 // --dry-run reported success for runs that would refuse to start.
-func preflight(ctx context.Context, files []PlannedFile, opt Options) error {
+func preflight(ctx context.Context, files []PlannedFile, opt Options, record RecordSize) error {
 	// Free space first. Finding out at file five thousand of ten thousand
 	// leaves a half written set and a full disk on a machine somebody works on.
-	needed := TotalBytes(files)
-	if available, err := opt.availableBytes(opt.OutDir); err == nil {
+	//
+	// The record counts as well as the files, since 2026-10-26. A disk with
+	// room for the files and not for the manifest took the files and refused
+	// the manifest, which left files nothing can remove - the manifest is the
+	// only authority over that (docs/STABILITY-REVIEW-2026-10-26.md, R08).
+	// What it cannot promise is the space somebody else takes while the run
+	// goes. Rounding every file up to a cluster is NOT added: NTFS keeps a small
+	// file inside its directory record, so it would refuse runs that fit.
+	needed, sumErr := core.AddSizes(TotalBytes(files), record.Bytes())
+	if available, err := opt.availableBytes(opt.OutDir); err == nil && sumErr == nil {
 		if available < needed {
 			return &SpaceError{Needed: needed, Available: available, Path: opt.OutDir}
 		}

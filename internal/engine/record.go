@@ -19,6 +19,10 @@ type Record struct {
 	// not failed by it - the manifest was saved and holds the same facts - and
 	// the caller says it out loud rather than letting it pass.
 	Missed *InstructionsError
+	// Size is what was written, measured on the way rather than worked out
+	// beforehand: Result.Record is the forecast, this is the fact. Its
+	// TooLarge is the field the saved manifest carries.
+	Size RecordSize
 }
 
 // InstructionsError is instructions that were due and could not be written.
@@ -60,6 +64,7 @@ func SaveRecord(res *Result, opt Options) (Record, error) {
 		} else {
 			instructions = own
 			rec.Instructions = path
+			rec.Size.Instructions = int64(len(text))
 			m.Run.Instructions = filepath.Base(path)
 		}
 	}
@@ -68,9 +73,11 @@ func SaveRecord(res *Result, opt Options) (Record, error) {
 			// The file this call wrote, and nothing that took its name since.
 			_ = core.RemoveOwn(rec.Instructions, instructions)
 			rec.Instructions, m.Run.Instructions = "", ""
+			rec.Size.Instructions = 0
 		}
 		return rec, err
 	}
+	rec.Size.Manifest, rec.Size.TooLarge = m.SavedBytes(), m.Summary.TooLargeToReadBack
 	return rec, nil
 }
 

@@ -25,3 +25,22 @@
 id = "GHSA-84m7-p3x7-pcfv"
 ignoreUntil = 2026-11-15
 reason = "semgrep pins mcp==1.29.0 in every release, and the advisory is about an MCP HTTP server, which semgrep scan never starts"
+
+# opentelemetry-api 1.37.0, in requirements-semgrep.txt for the scanner and
+# nothing else.
+#
+# semgrep 1.180.0 and 1.181.0 both ask for opentelemetry-api~=1.37.0, read
+# from their wheels on 2026-10-26, so no set pip can install holds the fixed
+# 1.45.1. certifi, found by the same scan, had no such bound and was raised.
+#
+# The advisory is about TraceState.from_header taking quadratic time on an
+# inbound tracestate header - reached through propagate.extract() in the
+# instrumentation of a server receiving requests. semgrep scan sends its
+# telemetry out and receives no request, on a runner that lives for one scan.
+#
+# The same date as the entry above, on purpose: both wait on a semgrep that
+# moves its pins, and both come back on one reminder.
+[[IgnoredVulns]]
+id = "GHSA-xcq7-p3pf-p88h"
+ignoreUntil = 2026-11-15
+reason = "semgrep pins opentelemetry-api~=1.37.0 in every release, and the advisory is about parsing an inbound tracestate header in a server, which semgrep scan never runs"
