@@ -8,7 +8,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/donislawdev/TestingFilesGenerator/internal/tool"
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Reading files, for all three tools of this package. One way in, so a file
@@ -67,11 +67,11 @@ func digest(ctx context.Context, path string, chosen map[string]bool, scratch []
 	return out, before, nil
 }
 
-// openRegular is tool.OpenRegular with its refusal in the words of these
+// openRegular is core.OpenRegular with its refusal in the words of these
 // tools - a checksum of a directory, not just a directory.
 func openRegular(path string) (*os.File, os.FileInfo, error) {
-	f, info, err := tool.OpenRegular(path)
-	var not *tool.NotRegularError
+	f, info, err := core.OpenRegular(path)
+	var not *core.NotRegularError
 	if errors.As(err, &not) {
 		return nil, nil, &NotAFileError{Path: path, Directory: not.Directory}
 	}

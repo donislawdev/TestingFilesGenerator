@@ -37,7 +37,7 @@ var notProvenByMutation = map[string]bool{
 	// - the substitution would be applied and the test would not exist to
 	// catch it. It runs on every Linux and macOS runner of the CI. The two
 	// breaks it is for - asking IsDir where IsRegular stands in
-	// tool.OpenRegular, and an open without O_NONBLOCK in tool/open_unix.go.
+	// core.OpenRegular, and an open without O_NONBLOCK in core/openregular_unix.go.
 	// The first was read, not run (2026-09-29). The second was run by hand in
 	// a Linux container on 2026-09-30, through the tool rather than through
 	// this test: without the flag a pipe was still waited on after five

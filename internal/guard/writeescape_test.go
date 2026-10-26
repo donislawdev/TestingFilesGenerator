@@ -133,7 +133,7 @@ func TestEveryFileThisToolWritesIsCreatedThroughOneClaim(t *testing.T) {
 
 // readingFlags are the flags of an open that only reads - os.Open with
 // something os.Open cannot ask for. O_NONBLOCK is why this exists: the
-// tools open without waiting on a pipe (tool.OpenRegular), which
+// tools open without waiting on a pipe (core.OpenRegular), which
 // takes os.OpenFile, and it creates nothing and writes nothing.
 var readingFlags = map[string]bool{
 	"O_RDONLY": true, "O_NONBLOCK": true, "O_CLOEXEC": true, "O_NOFOLLOW": true, "O_NOCTTY": true,
