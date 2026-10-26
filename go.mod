@@ -19,7 +19,7 @@ module github.com/donislawdev/TestingFilesGenerator
 // which version it is. Kept honest by TestTheBuildFloorIsThePinnedToolchainAndTheReadmeSaysSo,
 // which also holds the sentence in README.md against this number. See
 // docs/STACK.md.
-go 1.27.2
+go 1.27.3
 
 // How the line above got to the number it carries. There used to be a separate
 // "toolchain" directive here saying which compiler produces our binaries, and
@@ -75,6 +75,12 @@ go 1.27.2
 // guards were run under 1.27.2 the same day - all 104 golden values and every
 // pinned standard library path - and none shifted, so D11 holds and no major
 // version is owed.
+//
+// Raised to 1.27.3 on 2026-10-26 because govulncheck reported GO-2026-6809 in
+// crypto/x509, fixed in 1.27.3, and the known vulnerabilities check of every
+// pull request went red on it. Only the window binary links crypto/x509 (go
+// list -deps, the same day). The byte stability guards were run under 1.27.3
+// before the move, as they were for 1.27.2.
 
 require (
 	fyne.io/fyne/v2 v2.8.2

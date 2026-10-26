@@ -49,6 +49,12 @@ because it turns other people's test suites red.
   refused the manifest, which left files `tfg cleanup` cannot remove. The
   refusal now says how much the run needs with its manifest.
 
+### Security
+
+- **Built with Go 1.27.3.** It fixes a vulnerability in `crypto/x509` of the
+  Go standard library, which only the desktop window links. The command line
+  tool was not affected. Building from source now needs Go 1.27.3.
+
 ## [0.5.0] - 2026-10-20
 
 ### Breaking

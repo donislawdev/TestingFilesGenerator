@@ -42,7 +42,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GO_VERSION: "1.27.2"
+  GO_VERSION: "1.27.3"
   # Built as the test job builds on Linux, so a verdict here is about the
   # guards CI actually runs. Entries on files only a cgo build or only
   # Windows compiles come back UNJUDGED, said out loud in the report.
