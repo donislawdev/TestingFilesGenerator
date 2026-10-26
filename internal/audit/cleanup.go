@@ -44,6 +44,12 @@ type Candidate struct {
 	Path        string
 	Disposition Disposition
 	Detail      string
+
+	// seen is the file as it was when its content was found to be ours, from
+	// the handle it was read through. Remove asks the disk again just before
+	// it deletes and leaves the file alone when the answer differs - see
+	// changedSince.
+	seen os.FileInfo
 }
 
 // Removable says whether this candidate is one cleanup will delete.
@@ -80,36 +86,71 @@ func Inspect(ctx context.Context, dir string, m *manifest.Manifest) ([]Candidate
 	// In order, because this list is what cleanup removes from and what it
 	// printed to a person beforehand.
 	return InOrder(ctx, len(claimed), func(i int, scratch []byte) Candidate {
-		return look(claimed[i], full[i], scratch)
+		return look(ctx, claimed[i], full[i], scratch)
 	})
 }
 
 // look is what one claimed file comes to for cleanup: whether it may be
 // removed, and if not, why not in the words a person needs.
-func look(f manifest.File, full string, scratch []byte) Candidate {
-	info, err := os.Stat(full)
-	if errors.Is(err, fs.ErrNotExist) {
+func look(ctx context.Context, f manifest.File, full string, scratch []byte) Candidate {
+	got, err := readListed(ctx, full, f.Bytes, scratch)
+	if absent(err) {
 		return Candidate{Path: f.Path, Disposition: Absent}
 	}
 	if err != nil {
 		return Candidate{Path: f.Path, Disposition: Unreachable, Detail: err.Error()}
 	}
 
-	// Size before hash, so a file of obviously the wrong length does not cost
-	// a read of however many gigabytes it is.
-	if info.Size() != f.Bytes {
+	// Size before hash - readListed reads nothing of a file of the wrong
+	// length, so one of obviously the wrong length does not cost a read of
+	// however many gigabytes it is.
+	if size := got.seen.Size(); size != f.Bytes {
 		return Candidate{Path: f.Path, Disposition: Changed,
-			Detail: fmt.Sprintf("it is %d B and the manifest recorded %d B", info.Size(), f.Bytes)}
+			Detail: fmt.Sprintf("it is %d B and the manifest recorded %d B", size, f.Bytes)}
 	}
-	sum, err := hashFile(full, scratch)
-	if err != nil {
-		return Candidate{Path: f.Path, Disposition: Unreachable, Detail: err.Error()}
+	// Changed under the read is changed, whatever the hash came to. Part of
+	// what was hashed may be what this run wrote and part what somebody wrote
+	// since, and a match on that says nothing about what is there now.
+	if got.grew(f.Bytes) || got.moved() {
+		return Candidate{Path: f.Path, Disposition: Changed,
+			Detail: "it changed while it was being checked"}
 	}
-	if sum != f.Hashes.SHA256 {
+	if got.sum != f.Hashes.SHA256 {
 		return Candidate{Path: f.Path, Disposition: Changed,
 			Detail: "its content is not the content this run wrote"}
 	}
-	return Candidate{Path: f.Path, Disposition: Ready}
+	return Candidate{Path: f.Path, Disposition: Ready, seen: got.last}
+}
+
+// changedSince says whether the file at full is no longer the file seen when
+// it was checked, and why, in the words a person needs.
+//
+// Asked just before the file is deleted, and the reason is R01 of the review
+// of 2026-10-21 (docs/STABILITY-REVIEW-2026-10-26.md). Inspect reads every
+// file before Remove deletes any, so the first file was judged ours and then
+// waited for the hashing of all the others - reproduced there with 257 files
+// and a change 400 ms in: the changed file went, without --force, under exit
+// 0. Asking again closes that wait down to the moment between this look and
+// the deletion, which a file somebody is working on is very unlikely to fall
+// into and which no portable call closes completely.
+//
+// Three questions, and each catches what the others do not. The identity is a
+// file put in its place. The size is a file appended to. The time is a file
+// written in place at the same length, measured on 2026-10-26 on NTFS to move
+// at once, even while the writer still holds the file open. What it cannot
+// see is a write in place that keeps the length and lands within the same tick
+// of a coarse clock - FAT32 counts in two seconds.
+func changedSince(full string, seen os.FileInfo) (string, bool) {
+	now, err := os.Lstat(full)
+	if err != nil {
+		// Gone, or no longer answering. Either way os.Remove would have the
+		// last word, and it is given it - this only stops a deletion.
+		return "", false
+	}
+	if !os.SameFile(seen, now) || now.Size() != seen.Size() || !now.ModTime().Equal(seen.ModTime()) {
+		return "it changed after it was checked, so it may not be ours. Run cleanup again to check it afresh", true
+	}
+	return "", false
 }
 
 // Outcome is what happened to one file.
@@ -198,6 +239,14 @@ func Remove(ctx context.Context, dir string, cands []Candidate, force bool) ([]O
 					"rename it back, or clean up against a manifest written for these names", actual),
 			})
 			continue
+		}
+		// Only for a file judged ours. --force already covers a changed file,
+		// and a file found changed and forced has nothing to compare against.
+		if c.Disposition == Ready {
+			if why, changed := changedSince(full, c.seen); changed {
+				out = append(out, Outcome{Path: c.Path, Blocked: true, Reason: why})
+				continue
+			}
 		}
 		if err := os.Remove(full); err != nil {
 			if errors.Is(err, fs.ErrNotExist) {

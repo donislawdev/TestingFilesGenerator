@@ -11,11 +11,7 @@ package audit
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
-	"io"
-	"os"
 	"path"
 	"path/filepath"
 	"sort"
@@ -38,9 +34,10 @@ const (
 	WrongSize Kind = "wrong-size"
 	// WrongHash is a file of the right length and the wrong content.
 	WrongHash Kind = "wrong-hash"
-	// Unreadable is a file that is there and could not be read. It is not
-	// agreement and it is not a mismatch, and calling it either would be a
-	// guess.
+	// Unreadable is a file that is there and could not be read, or a name the
+	// system would not even look up - no permission, a name too long for it.
+	// It is not agreement and it is not a mismatch, and calling it either
+	// would be a guess. Got carries the system's own reason.
 	Unreadable Kind = "unreadable"
 	// Leftover is a file this tool started and never finished, from a run that
 	// was killed before it could tidy up.
@@ -294,7 +291,7 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 	}
 
 	found, stopped := InOrder(ctx, len(claimed), func(i int, scratch []byte) Difference {
-		return compare(claimed[i], full[i], scratch)
+		return compare(ctx, claimed[i], full[i], scratch)
 	})
 	for _, d := range found {
 		if d.Kind != "" {
@@ -456,31 +453,40 @@ func claimedPaths(b core.Boundary, files []manifest.File) ([]string, error) {
 // agreement on its own. No sentinel anybody has to remember, and no pointer
 // per file - a run of ten thousand would allocate ten thousand of them to say
 // "nothing to report" ten thousand times.
-func compare(f manifest.File, full string, scratch []byte) Difference {
-	info, statErr := os.Stat(full)
-	if statErr != nil {
+func compare(ctx context.Context, f manifest.File, full string, scratch []byte) Difference {
+	got, err := readListed(ctx, full, f.Bytes, scratch)
+	// Only an absent file is missing. Every failure to look used to be called
+	// that, so a file somebody had locked or taken the permissions off was
+	// reported as gone - a sentence about the wrong thing, and the one a
+	// person acts on (docs/STABILITY-REVIEW-2026-10-26.md, R04). cleanup has
+	// always told the two apart.
+	if absent(err) {
 		return Difference{Kind: Missing, Path: f.Path}
+	}
+	if err != nil {
+		return Difference{Kind: Unreadable, Path: f.Path, Got: err.Error()}
 	}
 
 	// Size first. It is free, it catches the common failure, and it names the
-	// cause more precisely than a hash mismatch would.
-	if info.Size() != f.Bytes {
+	// cause more precisely than a hash mismatch would. A file that grew while
+	// it was read is the same answer, reached later: at least as long as what
+	// was read of it, and longer if it went on growing.
+	size := got.last.Size()
+	if got.grew(f.Bytes) {
+		size = max(size, got.read)
+	}
+	if size != f.Bytes {
 		return Difference{
 			Kind: WrongSize, Path: f.Path,
 			Want: fmt.Sprintf("%d B", f.Bytes),
-			Got:  fmt.Sprintf("%d B", info.Size()),
+			Got:  fmt.Sprintf("%d B", size),
 		}
 	}
-
-	sum, hashErr := hashFile(full, scratch)
-	if hashErr != nil {
-		return Difference{Kind: Unreadable, Path: f.Path, Got: hashErr.Error()}
-	}
-	if sum != f.Hashes.SHA256 {
+	if got.sum != f.Hashes.SHA256 {
 		return Difference{
 			Kind: WrongHash, Path: f.Path,
 			Want: f.Hashes.SHA256,
-			Got:  sum,
+			Got:  got.sum,
 		}
 	}
 	return Difference{}
@@ -494,41 +500,3 @@ func compare(f manifest.File, full string, scratch []byte) Difference {
 // told apart, so this is the size that buys it without asking every worker for
 // a megabyte.
 const hashScratch = 256 << 10
-
-// onlyRead hides everything but Read from io.CopyBuffer.
-//
-// This is not a wrapper for its own sake and without it the buffer below does
-// nothing at all. os.File implements io.WriterTo, so io.CopyBuffer hands the
-// whole job to the file and THROWS THE BUFFER AWAY - measured on 2026-09-05,
-// passing 128 KiB, 256 KiB or 1 MiB with a plain file on the other end all take
-// the same 167-172 ms that io.Copy takes, because all four are the same 32 KiB
-// path inside. Hidden behind this, a 256 KiB buffer takes 150-161 ms.
-//
-// The report that suggested the buffer said it would "cut the syscall count 32
-// fold" and would have changed nothing as written. That is the whole reason
-// this type exists rather than a comment saying the buffer is bigger.
-type onlyRead struct{ io.Reader }
-
-// hashFile streams the file rather than reading it in. A run of this tool
-// produces files measured in gigabytes, and verify has to survive its own
-// output.
-//
-// scratch belongs to the caller and is reused across every file that caller
-// answers for. It may be nil, and then this asks for one of its own - which is
-// what a sequential caller wants and what every test that reaches here gets.
-func hashFile(path string, scratch []byte) (string, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return "", err
-	}
-	defer func() { _ = f.Close() }()
-
-	if scratch == nil {
-		scratch = make([]byte, hashScratch)
-	}
-	h := sha256.New()
-	if _, err := io.CopyBuffer(h, onlyRead{f}, scratch); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(h.Sum(nil)), nil
-}

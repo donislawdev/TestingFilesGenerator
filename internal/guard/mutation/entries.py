@@ -1453,7 +1453,7 @@ MUTATIONS = [
     (
         "verify never looks at content, so an edited file passes",
         "internal/audit/audit.go",
-        "if sum != f.Hashes.SHA256 {",
+        "if got.sum != f.Hashes.SHA256 {",
         "if false {",
         "TestVerifyCatchesAMissingAnExtraAndAChangedFile",
     ),
@@ -15541,5 +15541,58 @@ MUTATIONS = [
         '"version": "',
         '"version": "9',
         "TestEveryVersionTheReadmeWritesOutIsThisOne",
+    ),
+    (
+        # R01 of docs/STABILITY-REVIEW-2026-10-26.md: a file judged ours and
+        # changed before the deletion reached it went, without --force.
+        "cleanup deletes a file that changed after it was judged ours, without asking the disk again",
+        "internal/audit/cleanup.go",
+        "if why, changed := changedSince(full, c.seen); changed {",
+        "if why, changed := changedSince(full, c.seen); false && changed {",
+        "TestCleanupLeavesAFileThatChangedAfterItWasChecked",
+    ),
+    (
+        "a file put in the place of the one judged ours is taken for it when its size and time match",
+        "internal/audit/cleanup.go",
+        "if !os.SameFile(seen, now) || now.Size()",
+        "if now.Size()",
+        "TestCleanupLeavesAFileReplacedAfterItWasChecked",
+    ),
+    (
+        "a file written over in place at its own length is still taken for the one judged ours",
+        "internal/audit/cleanup.go",
+        "now.Size() != seen.Size() || !now.ModTime().Equal(seen.ModTime()) {",
+        "now.Size() != seen.Size() {",
+        "TestCleanupLeavesAFileThatChangedAfterItWasChecked",
+    ),
+    (
+        "verify calls every failure to look a missing file again",
+        "internal/audit/audit.go",
+        "if absent(err) {\n\t\treturn Difference{Kind: Missing",
+        "if err != nil {\n\t\treturn Difference{Kind: Missing",
+        "TestVerifyCallsANameItCouldNotLookUpUnreadableRatherThanMissing",
+    ),
+    (
+        "a listed file is read to its end after Ctrl+C",
+        "internal/audit/read.go",
+        "if err := ctx.Err(); err != nil {\n\t\t\treturn read, err",
+        "if err := ctx.Err(); false && err != nil {\n\t\t\treturn read, err",
+        "TestHashingAListedFileStopsPartWayWhenCancelled",
+    ),
+    (
+        "a listed file is read past its size and one byte, for as long as it grows",
+        "internal/audit/read.go",
+        "piece = piece[:left]",
+        "_ = left",
+        "TestHashingAListedFileReadsNoMoreThanItIsAskedFor",
+    ),
+    (
+        # Unix only: a pipe exists nowhere else. The mutation runner of the CI
+        # is Linux, so it is judged there.
+        "verify and cleanup open a listed file with a plain open again, which waits on a pipe",
+        "internal/audit/read.go",
+        "f, seen, err := core.OpenRegular(path)",
+        "f, seen, err := func() (*os.File, os.FileInfo, error) { _ = core.OpenRegular; f, err := os.Open(path); if err != nil { return nil, nil, err }; i, err := f.Stat(); return f, i, err }()",
+        "TestVerifyAndCleanupNeverWaitOnAPipe",
     ),
 ]
