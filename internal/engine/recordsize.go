@@ -60,32 +60,45 @@ func PredictRecord(ctx context.Context, files []PlannedFile, opt Options) (Recor
 	counted := header.Projection()
 	explains := false
 	for i, f := range files {
-		if i%askEvery == 0 {
-			if err := ctx.Err(); err != nil {
-				return RecordSize{}, err
-			}
+		if err := askedToStop(ctx, i); err != nil {
+			return RecordSize{}, err
 		}
 		e := scratch.entryFor(f, hashPlaceholder, true, nil)
 		explains = explains || e.Purpose != ""
 		counted.Add(e)
 	}
 	var out RecordSize
+	var err error
 	if explains {
 		header.Run.Instructions = filepath.Base(InstructionsPath(opt))
-		whole := newManifest(opt)
-		for i, f := range files {
-			if i%askEvery == 0 {
-				if err := ctx.Err(); err != nil {
-					return RecordSize{}, err
-				}
-			}
-			whole.Add(scratch.entryFor(f, hashPlaceholder, true, nil))
+		if out.Instructions, err = predictInstructions(ctx, files, opt, scratch); err != nil {
+			return RecordSize{}, err
 		}
-		out.Instructions = int64(len(whole.Instructions(filepath.Base(ManifestPath(opt)))))
 	}
-	var err error
 	out.Manifest, out.TooLarge, err = counted.Bytes()
 	return out, err
+}
+
+// predictInstructions is the length of the instructions a run of these files
+// writes. They are written from the whole document, so it is built here.
+func predictInstructions(ctx context.Context, files []PlannedFile, opt Options, scratch *Result) (int64, error) {
+	whole := newManifest(opt)
+	for i, f := range files {
+		if err := askedToStop(ctx, i); err != nil {
+			return 0, err
+		}
+		whole.Add(scratch.entryFor(f, hashPlaceholder, true, nil))
+	}
+	return int64(len(whole.Instructions(filepath.Base(ManifestPath(opt))))), nil
+}
+
+// askedToStop is Ctrl+C, asked before the first entry and then once every
+// askEvery entries.
+func askedToStop(ctx context.Context, i int) error {
+	if i%askEvery != 0 {
+		return nil
+	}
+	return ctx.Err()
 }
 
 // forecast is the record the caller handed in, or the one worked out here

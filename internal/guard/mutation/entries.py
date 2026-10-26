@@ -15636,8 +15636,8 @@ MUTATIONS = [
     (
         "the forecast of a run's record leaves out the instructions written beside the manifest",
         "internal/engine/recordsize.go",
-        "out.Instructions = int64(len(whole.Instructions(filepath.Base(ManifestPath(opt)))))",
-        "_ = whole",
+        "return int64(len(whole.Instructions(filepath.Base(ManifestPath(opt))))), nil",
+        "return 0, nil",
         "TestTheRecordARunIsToldBeforehandIsTheRecordItWrites",
     ),
 ]
