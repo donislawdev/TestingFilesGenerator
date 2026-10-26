@@ -27,7 +27,7 @@
 # every package that line installs, pinned, and it is compiled from this file
 # by pip-compile rather than written by hand. With the one line alone the
 # vulnerability scanner has to guess what pip would pick, and it guessed wrong:
-# measured 2026-10-14, a scan of "semgrep==1.180.0" reported eleven advisories
+# measured 2026-10-14, a scan of "semgrep==1.181.0" reported eleven advisories
 # against versions pip on Python 3.14 never installs.
 #
 # Compiled rather than frozen since 2026-10-15. The list was `pip freeze` of a
@@ -43,4 +43,4 @@
 # job uses and the pip-tools Dependabot runs:
 #
 #   docker run --rm -v "$PWD/.github:/w" -w /w python:3.14-slim sh -c "pip install -q pip==26.1.1 pip-tools==7.5.3 && pip-compile --strip-extras --no-emit-index-url --output-file=requirements-semgrep.txt requirements-semgrep.in"
-semgrep==1.180.0
+semgrep==1.181.0
