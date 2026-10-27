@@ -188,17 +188,25 @@ Usage:
   tfg preset show size-boundaries
   tfg preset show size-boundaries --limit 20mb --format png
   tfg preset show size-boundaries --json
+
+Flags, beside the preset's own parameters:
+  -json
+    	write the answer as JSON to standard output
+  -memory value
+    	`+memoryHelp+` (default auto)
 `)
 	}
 	var asJSON bool
+	var memory memoryValue
 	expanded, code := presetFlagSet("show", args, out, errOut, usage, func(fs *flag.FlagSet) {
 		fs.BoolVar(&asJSON, "json", false, "write the answer as JSON to standard output")
+		memoryFlag(fs, &memory)
 	})
 	if expanded == nil {
 		return code
 	}
 
-	b, err := budgetOf(ctx, expanded)
+	b, err := budgetOf(ctx, expanded, memory.Memory)
 	if err != nil {
 		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
 		return classify(err)

@@ -345,11 +345,12 @@ tfg generate --format txt --size 1mb    settings come from the flags
 | `--clean` | turn off the self describing label written inside each file |
 | `--dry-run` | count and show, write nothing at all |
 | `--json` | write the manifest to standard output |
+| `--memory <m>` | how much memory the run may use: `auto` (the default, half of what this machine gives the program), a size such as `8gb`, or `off` for no limit. Pictures wait for room rather than all being held at once, and a plan larger than this is refused before anything is written. Also on `validate` and `preset show` |
 
 ### `tfg validate`
 
 ```
-tfg validate <recipe.yaml> [--json]
+tfg validate <recipe.yaml> [--json] [--memory <m>]
 ```
 
 Checks a recipe and writes nothing. Reports **every** problem at once rather

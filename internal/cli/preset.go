@@ -66,7 +66,7 @@ type budget struct {
 	Formats []string `json:"formats"`
 }
 
-func budgetOf(ctx context.Context, e *preset.Expansion) (budget, error) {
+func budgetOf(ctx context.Context, e *preset.Expansion, memory core.Memory) (budget, error) {
 	rec, err := recipe.Parse(e.Source, e.Preset.ID)
 	if err != nil {
 		return budget{}, err
@@ -77,7 +77,7 @@ func budgetOf(ctx context.Context, e *preset.Expansion) (budget, error) {
 		targets = append(targets, engineTarget(t, t.Label))
 		seen[t.Format] = true
 	}
-	planned, err := engine.PlanContext(ctx, targets, engine.Options{OutDir: rec.Output.Dir, Seed: rec.Seed})
+	planned, err := engine.PlanContext(ctx, targets, engine.Options{OutDir: rec.Output.Dir, Seed: rec.Seed, Memory: memory})
 	if err != nil {
 		return budget{}, err
 	}
@@ -398,4 +398,13 @@ func targetsFromPreset(fs *flag.FlagSet, g *generateOpts, given map[string]bool,
 	sayNotes(expanded.Notes(), errOut)
 	opt.Preset = record(expanded)
 	return targetsFromParsedRecipe(rec, hash, g, given, opt), ExitOK
+}
+
+// saidAll is sentences as the command line prints them.
+func saidAll(said []core.Said) []string {
+	out := make([]string, 0, len(said))
+	for _, s := range said {
+		out = append(out, s.String())
+	}
+	return out
 }
