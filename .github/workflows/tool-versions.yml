@@ -1,9 +1,15 @@
-# Are the tools CI pins still the current ones?
+# Are the versions CI pins still the current ones?
 #
-# Dependabot cannot answer this. It reads go.mod for Go modules and `uses:` for
-# actions, and staticcheck, govulncheck and golangci-lint are none of those -
-# they are shell commands inside a workflow step. Measured 2026-09-02: thirty
-# pull requests from that bot, not one about any of them.
+# Dependabot cannot answer this. It reads go.mod for Go modules, `uses:` for
+# actions and requirements-semgrep.in, and staticcheck, govulncheck and
+# golangci-lint are none of those - they are shell commands inside a workflow
+# step. Measured 2026-09-02: thirty pull requests from that bot, not one about
+# any of them. Since 2026-10-27 the same job asks about GO_VERSION, the
+# software renderer the Windows archive ships (.github/mesa-dist-win, which sat
+# four releases behind with nothing to say so), the npm package the mail check
+# installs, and the two pins the owner holds on purpose (Python, WiX), which it
+# prints and does not fail on. What it asks and why: the docstring of
+# .github/scripts/tool_versions.py.
 #
 # The cost of nobody watching was paid on 2026-09-01. staticcheck was pinned to
 # a version that could not read Go 1.27 at all, and govulncheck to one that
