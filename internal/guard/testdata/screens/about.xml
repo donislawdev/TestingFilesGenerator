@@ -1132,7 +1132,7 @@
 													<widget pos="-6,-6" size="231x45" type="*widget.Label">
 														<widget size="231x45" type="*widget.RichText">
 															<text pos="6,6" size="183x16">Mesa 3D, llvmpipe software</text>
-															<text pos="6,22" size="106x16">renderer  26.2.0</text>
+															<text pos="6,22" size="107x16">renderer  26.2.4</text>
 														</widget>
 													</widget>
 												</container>
