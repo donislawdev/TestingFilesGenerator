@@ -395,7 +395,7 @@ func goldenCases() map[string]engine.Target {
 		// have to agree to the byte.
 		"targz_past_the_comment_limit": {ID: "g", Format: "targz", Sizes: engine.Uniform(1, 262144), Label: true},
 	}
-	for _, more := range []map[string]engine.Target{mapGoldenCases(), mailGoldenCases(), pageGoldenCases(), rtfGoldenCases()} {
+	for _, more := range []map[string]engine.Target{mapGoldenCases(), mailGoldenCases(), pageGoldenCases(), rtfGoldenCases(), cutLabelGoldenCases()} {
 		for name, target := range more {
 			cases[name] = target
 		}
