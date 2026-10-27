@@ -67,7 +67,7 @@ jobs:
 
       - name: scan
         id: scan
-        uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc  # v2.6.0
+        uses: google/osv-scanner-action/osv-scanner-action@b1d267aea5211fa648d9d442fa64b90dbdcbdd36  # v2.7.0
         continue-on-error: true
         with:
           scan-args: |-
@@ -93,7 +93,7 @@ jobs:
       # way the deprecated --output printed it, measured byte for byte
       # 2026-10-15 (docs/OSV-2-2026-10-15.md).
       - name: results for the Security tab
-        uses: google/osv-scanner-action/osv-reporter-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc  # v2.6.0
+        uses: google/osv-scanner-action/osv-reporter-action@b1d267aea5211fa648d9d442fa64b90dbdcbdd36  # v2.7.0
         with:
           scan-args: |-
             --new=osv-results.json
@@ -102,7 +102,7 @@ jobs:
 
       - name: upload to the Security tab
         if: ${{ !cancelled() && hashFiles('osv-results.sarif') != '' }}
-        uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d  # v4.38.3
+        uses: github/codeql-action/upload-sarif@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee  # v4.39.0
         with:
           sarif_file: osv-results.sarif
           category: osv-scanner
