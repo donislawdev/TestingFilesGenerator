@@ -8010,8 +8010,8 @@ MUTATIONS = [
     (
         "validate goes back to planning with a context nobody can finish",
         "internal/cli/recipecmd.go",
-        "engine.PlanContext(ctx, targets, planningOptions(rec))",
-        "engine.Plan(targets, planningOptions(rec))",
+        "engine.PlanContext(ctx, targets, opt)",
+        "engine.Plan(targets, opt)",
         "TestPlanningFromTheCommandLineCanBeStopped",
     ),
     (
@@ -16041,5 +16041,165 @@ MUTATIONS = [
         "pl.budget = newPlanMemory(opt.Memory, opt.memoryLimits())",
         "pl.budget = newPlanMemory(opt.Memory, core.MemoryLimits{Plan: core.MaxPlanBytes})",
         "TestThePlanCeilingIsTheMemorySetting",
+    ),
+    (
+        # A jpg declares nothing, so sixteen of its pictures go out at once
+        # whatever the memory setting says - R02 back for that one format.
+        "a jpg does not declare the picture writing it holds",
+        "internal/format/jpg/jpg.go",
+        "\tp.Holds = holdsPerPixel * int64(w) * int64(h)\n",
+        "\tp.Holds = 0 * holdsPerPixel * int64(w) * int64(h)\n",
+        "TestEveryPictureSaysWhatWritingItHolds",
+    ),
+    (
+        "a png does not declare the picture writing it holds",
+        "internal/format/png/png.go",
+        "\tp.Holds = holdsPerPixel * int64(w) * int64(h)\n",
+        "\tp.Holds = 0 * holdsPerPixel * int64(w) * int64(h)\n",
+        "TestEveryPictureSaysWhatWritingItHolds",
+    ),
+    (
+        "a gif does not declare the picture writing it holds",
+        "internal/format/gif/gif.go",
+        "\tp.Holds = holdsPerPixel * int64(w) * int64(h) / 2\n",
+        "\tp.Holds = 0 * holdsPerPixel * int64(w) * int64(h) / 2\n",
+        "TestEveryPictureSaysWhatWritingItHolds",
+    ),
+    (
+        # The film declares the part that does not grow and drops the part
+        # that does, so a 4K film is held back like a small one.
+        "a film declares the same whatever the size of its picture",
+        "internal/format/video/plan.go",
+        "\treturn 4<<20 + 2*int64(width)*int64(height)",
+        "\treturn 4<<20 + 0*int64(width)*int64(height)",
+        "TestEveryPictureSaysWhatWritingItHolds",
+    ),
+    (
+        # A jxl chosen from the ladder is coded while writing and declares
+        # nothing, so the setting cannot see it.
+        "a jxl coded while writing declares nothing",
+        "internal/format/jxl/jxl.go",
+        "\tif m.coded == nil {\n\t\t// Coded while writing",
+        "\tif false && m.coded == nil {\n\t\t// Coded while writing",
+        "TestEveryPictureItChoosesSaysWhatWritingItHolds",
+    ),
+    (
+        "an avif coded while writing declares nothing",
+        "internal/format/avif/avif.go",
+        "\tif m.coded == nil {\n\t\t// Coded while writing",
+        "\tif false && m.coded == nil {\n\t\t// Coded while writing",
+        "TestEveryPictureItChoosesSaysWhatWritingItHolds",
+    ),
+    (
+        # A zip of pictures declares nothing, though it codes each picture
+        # while it writes.
+        "a zip does not pass up what its pictures hold",
+        "internal/format/zip/zip.go",
+        "\tp.Holds = format.OneAtATime(m.children, func(c child) format.Plan { return c.plan })\n",
+        "\tp.Holds = 0 * format.OneAtATime(m.children, func(c child) format.Plan { return c.plan })\n",
+        "TestAContainerHoldsWhatItsLargestPictureHolds",
+    ),
+    (
+        # The pictures a message shows in its text are a list of their own,
+        # and leaving them out leaves a message of pictures declaring nothing.
+        "a mail message does not pass up what the pictures in its text hold",
+        "internal/format/eml/eml.go",
+        "format.OneAtATime(m.pictures, plan))",
+        "0*format.OneAtATime(m.pictures, plan))",
+        "TestAContainerHoldsWhatItsLargestPictureHolds",
+    ),
+    (
+        # A container adds its pictures up rather than taking the largest, as
+        # if it wrote them all at once - every container of pictures waits
+        # for room it will never use.
+        "a container declares the sum of its pictures rather than the largest",
+        "internal/format/container.go",
+        "\t\tmost = max(most, plan(f).Holds)",
+        "\t\tmost += plan(f).Holds",
+        "TestAContainerHoldsWhatItsLargestPictureHolds",
+    ),
+    (
+        # generate reads --memory and then hands the planner auto instead -
+        # the flag is accepted and does nothing, which is the worst kind of
+        # option this tool can have.
+        "generate reads --memory and plans under auto anyway",
+        "internal/cli/generate.go",
+        "\t\tMemory:       memory.Memory,",
+        "\t\tMemory:       memoryValue{}.Memory,",
+        "TestTheMemoryFlagReachesThePlanOnEveryCommandThatPlans",
+    ),
+    (
+        "validate reads --memory and plans under auto anyway",
+        "internal/cli/recipecmd.go",
+        "\topt.Memory = v.memory.Memory",
+        "\topt.Memory = memoryValue{}.Memory",
+        "TestTheMemoryFlagReachesThePlanOnEveryCommandThatPlans",
+    ),
+    (
+        "preset show reads --memory and counts the budget under auto anyway",
+        "internal/cli/presetcmd.go",
+        "budgetOf(ctx, expanded, memory.Memory)",
+        "budgetOf(ctx, expanded, memoryValue{}.Memory)",
+        "TestTheMemoryFlagReachesThePlanOnEveryCommandThatPlans",
+    ),
+    (
+        # The help of preset show is written by hand, so the flag can be there
+        # and its sentence missing.
+        "the help of preset show does not say what --memory does",
+        "internal/cli/presetcmd.go",
+        "    \t`+memoryHelp+` (default auto)",
+        "    \t(default auto)",
+        "TestTheMemoryFlagReachesThePlanOnEveryCommandThatPlans",
+    ),
+    (
+        # The command line prints the manifest's notes and not the run's, so a
+        # file written past the memory setting goes unsaid there - rule 6.
+        "the command line does not print what the run says about its memory",
+        "internal/cli/generate.go",
+        "sayNotes(append(saidAll(res.RunNotes), res.Manifest.Notes()...), errOut)",
+        "sayNotes(res.Manifest.Notes(), errOut)",
+        "TestAFileWrittenPastTheMemorySettingIsSaidOnTheCommandLine",
+    ),
+    (
+        # A preview from the window plans under auto whatever Preferences
+        # keeps - the setting is on the screen and does nothing.
+        "a preview in the window ignores the memory setting kept on Preferences",
+        "internal/gui/window/run.go",
+        "\topt.DryRun = true\n\topt.Memory = memoryOf(r.kept())",
+        "\topt.DryRun = true\n\t_ = memoryOf(r.kept())",
+        "TestARunPlansUnderTheMemorySettingKeptOnPreferences",
+    ),
+    (
+        "a run in the window ignores the memory setting kept on Preferences",
+        "internal/gui/window/run.go",
+        "\topt.Memory = memoryOf(r.kept())\n\tctx, cancel",
+        "\t_ = memoryOf(r.kept())\n\tctx, cancel",
+        "TestARunPlansUnderTheMemorySettingKeptOnPreferences",
+    ),
+    (
+        # Automatic is kept as the word auto rather than as no value, so
+        # Forget and the language's rule of "nothing chosen is nothing kept"
+        # part ways.
+        "Automatic is written into preferences.json rather than left out",
+        "internal/gui/window/prefmemory.go",
+        "\tif m.IsAuto() {\n\t\treturn \"\"",
+        "\tif false {\n\t\treturn \"\"",
+        "TestTheMemorySettingIsChosenOnPreferencesAndKept",
+    ),
+    (
+        # A kept value that does not read is shown as Automatic without a word
+        # about what was there.
+        "an unreadable memory setting is shown as Automatic without saying so",
+        "internal/gui/window/prefmemory.go",
+        "\t\tunreadable = kept\n",
+        "\t\t_ = kept\n",
+        "TestOpeningPreferencesKeepsAnUnreadableMemorySetting",
+    ),
+    (
+        "a box for the memory that holds no size is not marked",
+        "internal/gui/window/prefmemory.go",
+        "\t\tm.fields.Mark(core.SettingMemory, err)\n",
+        "\t\t_ = err\n",
+        "TestTheMemorySettingIsChosenOnPreferencesAndKept",
     ),
 ]

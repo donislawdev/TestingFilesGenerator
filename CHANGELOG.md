@@ -16,6 +16,14 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **How much memory a run may use is yours to set.** `--memory` on
+  `generate`, `validate` and `preset show`, and Memory on the window's
+  Preferences screen: `auto` (half of what this machine or container gives
+  the program), a size such as `8gb`, or `off`. Pictures and films wait for
+  room rather than all being held at once. A plan is refused at this
+  setting rather than at a fixed 2 GiB, and `auto` never goes below that.
+  Files come out byte for byte the same.
+
 - **A Docker image.** `ghcr.io/donislawdev/tfg` holds the Linux command line
   of a release and nothing else, for x64 and Arm, and runs with no network. It
   is made from the published archive once its checksum and attestation check
