@@ -75,12 +75,14 @@ type CompanionSource struct {
 // companions is the reviewed list.
 //
 // Everything below was read on 2026-09-17 from the files of the pinned
-// versions: docs/license.rst and licenses/ of mesa-26.2.0.tar.xz from
-// archive.mesa3d.org, buildinfo/msvc.txt of pal1000/mesa-dist-win at its
-// 26.2.0 tag, llvm/LICENSE.TXT at llvmorg-22.1.8, and LICENSE of
-// microsoft/DirectX-Headers at v1.619.5. What is inside the shipped file was
-// measured in its bytes rather than taken from the build list: it names
-// "Mesa 26.2.0" and "LLVM 22.1.8", carries the llvmpipe, d3d12, zink and
+// versions, and again on 2026-10-26 for 26.2.4: docs/license.rst and
+// licenses/ of Mesa at the mesa-26.2.4 tag, buildinfo/msvc.txt of
+// pal1000/mesa-dist-win at its 26.2.4 tag, llvm/LICENSE.TXT at
+// llvmorg-23.1.2 (byte for byte the file of llvmorg-22.1.8 that 26.2.0 was
+// built with), and LICENSE of microsoft/DirectX-Headers at v1.619.5. What is
+// inside the shipped file was measured in its bytes rather than taken from
+// the build list: it names "Mesa 26.2.4" and "LLVM 23.1.2", carries the
+// llvmpipe, d3d12, zink and
 // softpipe drivers and the D3D12 headers, and holds neither zlib's nor
 // zstd's code - the only mention of zlib is LLVM saying it was built without
 // it. Its imports are system libraries only, so it needs no runtime
@@ -96,23 +98,23 @@ var companions = []Companion{
 		Binary:   "tfg-gui",
 		Platform: "windows/amd64",
 		Files: []CompanionFile{
-			{Path: "opengl/libgallium_wgl.dll", Size: 61734400, SHA256: "1a2e49cd5fdb1a857d98117ab04240d723b57da5dffe6d07f5386f42014557c1"},
-			{Path: "opengl/opengl32.dll", Size: 139264, SHA256: "33b217ed7947b48684baa987914475898a2b4d7d64cce96b078216c67a633582"},
+			{Path: "opengl/libgallium_wgl.dll", Size: 61868032, SHA256: "53e49adf87590d5b0cab8553b1e98084812040cc1fca8c487695b17b7af3702e"},
+			{Path: "opengl/opengl32.dll", Size: 139264, SHA256: "75b295fc80df0eaa8f1264c28663f6932c8b72d36513eb092556608858b7f5e0"},
 		},
 		SPDX:      "MIT AND Apache-2.0 WITH LLVM-exception AND BSL-1.0",
 		Copyright: "Copyright (C) 1999-2007 Brian Paul, Copyright (C) 2008 VMware, Inc.",
 		Source: CompanionSource{
 			Project: "pal1000/mesa-dist-win",
-			Version: "26.2.0",
-			Archive: "mesa3d-26.2.0-release-msvc.7z",
-			SHA256:  "dcb2719ef346dab5b609fcb193a5f13cfc4b0502e3f4de1ad43d349477402f47",
-			URL:     "https://github.com/pal1000/mesa-dist-win/releases/download/26.2.0/mesa3d-26.2.0-release-msvc.7z",
+			Version: "26.2.4",
+			Archive: "mesa3d-26.2.4-release-msvc.7z",
+			SHA256:  "351fc8c8b695878ffb3eaa044b3ead08672a48b1a045e3c3e3975811df0f6695",
+			URL:     "https://github.com/pal1000/mesa-dist-win/releases/download/26.2.4/mesa3d-26.2.4-release-msvc.7z",
 			Inside:  "x64/",
 		},
 		Note: "OpenGL in software, for a machine whose graphics driver offers no OpenGL 2.1 - a virtual machine without 3D acceleration, a remote desktop, a server. " +
 			"Loaded only after the toolkit could not open a window, or when the window is started with the flag that asks for it, and never otherwise. " +
 			"Mesa is MIT (core, the llvmpipe driver and the WGL frontend - the core's line is quoted, the driver is Copyright 2007 VMware, Inc.). " +
-			"LLVM 22.1.8, compiled in for llvmpipe's code generation, is Apache-2.0 WITH LLVM-exception - its licence file states no copyright line under that licence, and the one it does carry, Copyright (c) 2003-2019 University of Illinois at Urbana-Champaign, belongs to the legacy licence the file also reproduces. " +
+			"LLVM 23.1.2, compiled in for llvmpipe's code generation, is Apache-2.0 WITH LLVM-exception - its licence file states no copyright line under that licence, and the one it does carry, Copyright (c) 2003-2019 University of Illinois at Urbana-Champaign, belongs to the legacy licence the file also reproduces. " +
 			"The C11 threads shim Mesa compiles on Windows is BSL-1.0, Copyright yohhoy 2012. " +
 			"The Direct3D 12 headers, 1.619.5, are MIT, Copyright (c) Microsoft Corporation. " +
 			"Built and published by pal1000/mesa-dist-win, whose own scripts are MIT, Copyright (c) 2017-2020 pal1000, and whose archive carries no licence file - which is why the texts are read from the sources of the pinned versions and reproduced in the notices.",

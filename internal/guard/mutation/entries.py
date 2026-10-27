@@ -9628,8 +9628,8 @@ MUTATIONS = [
         # archive would be packed with the wrong name.
         "the registry names a file the window never loads",
         "internal/legal/companions.go",
-        "{Path: \"opengl/libgallium_wgl.dll\", Size: 61734400,",
-        "{Path: \"opengl/libgallium.dll\", Size: 61734400,",
+        "{Path: \"opengl/libgallium_wgl.dll\", Size: 61868032,",
+        "{Path: \"opengl/libgallium.dll\", Size: 61868032,",
         "TestTheRegistryNamesTheFilesTheWindowLoads",
     ),
     (
@@ -9656,8 +9656,8 @@ MUTATIONS = [
         # the notices describe another.
         "the renderer pin names a release the registry does not",
         ".github/mesa-dist-win",
-        "version=26.2.0",
-        "version=26.2.1",
+        "version=26.2.4",
+        "version=26.2.5",
         "TestTheRendererPinAgreesWithTheRegistry",
     ),
     (

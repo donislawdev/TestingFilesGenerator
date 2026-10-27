@@ -836,38 +836,39 @@ offered the toolkit less than it needs.
 
 | what | files in the archive | licence | copyright |
 |---|---|---|---|
-| Mesa 3D, llvmpipe software renderer, 26.2.0 | `opengl/libgallium_wgl.dll` and `opengl/opengl32.dll` | MIT AND Apache-2.0 WITH LLVM-exception AND BSL-1.0 | Copyright (C) 1999-2007 Brian Paul, Copyright (C) 2008 VMware, Inc. |
+| Mesa 3D, llvmpipe software renderer, 26.2.4 | `opengl/libgallium_wgl.dll` and `opengl/opengl32.dll` | MIT AND Apache-2.0 WITH LLVM-exception AND BSL-1.0 | Copyright (C) 1999-2007 Brian Paul, Copyright (C) 2008 VMware, Inc. |
 
-The two files are taken from `x64/` of `mesa3d-26.2.0-release-msvc.7z`, the
-MSVC release archive of the pal1000/mesa-dist-win project, version 26.2.0,
+The two files are taken from `x64/` of `mesa3d-26.2.4-release-msvc.7z`, the
+MSVC release archive of the pal1000/mesa-dist-win project, version 26.2.4,
 whose SHA-256 is
-`dcb2719ef346dab5b609fcb193a5f13cfc4b0502e3f4de1ad43d349477402f47`. The
+`351fc8c8b695878ffb3eaa044b3ead08672a48b1a045e3c3e3975811df0f6695`. The
 release workflow downloads that archive, checks the sum before it unpacks
 anything, and puts exactly these two files into the Windows archive of the
 window:
 
 | file | bytes | SHA-256 |
 |---|---|---|
-| `opengl/libgallium_wgl.dll` | 61734400 | `1a2e49cd5fdb1a857d98117ab04240d723b57da5dffe6d07f5386f42014557c1` |
-| `opengl/opengl32.dll` | 139264 | `33b217ed7947b48684baa987914475898a2b4d7d64cce96b078216c67a633582` |
+| `opengl/libgallium_wgl.dll` | 61868032 | `53e49adf87590d5b0cab8553b1e98084812040cc1fca8c487695b17b7af3702e` |
+| `opengl/opengl32.dll` | 139264 | `75b295fc80df0eaa8f1264c28663f6932c8b72d36513eb092556608858b7f5e0` |
 
-The archive carries no licence file of its own - checked on 2026-09-17, it
-holds one readme pointing at a web page - so what is compiled into the two
+The archive carries no licence file of its own - checked on 2026-09-17 and
+again for 26.2.4 on 2026-10-26, it holds one readme pointing at a web page
+and two deployment scripts - so what is compiled into the two
 files was read from the sources of the pinned versions, and the bytes of the
 renderer were asked which of the build's components they hold:
 
-- **Mesa 26.2.0** is MIT: the core, the llvmpipe driver and the WGL frontend.
+- **Mesa 26.2.4** is MIT: the core, the llvmpipe driver and the WGL frontend.
   The core's line is quoted in the table, the driver is Copyright 2007
-  VMware, Inc. Read from `docs/license.rst` and `licenses/` of
-  `mesa-26.2.0.tar.xz`. Two things in that tree carry a GPL identifier and
+  VMware, Inc. Read from `docs/license.rst` and `licenses/` of Mesa at the
+  `mesa-26.2.4` tag. Two things in that tree carry a GPL identifier and
   neither is in these files: Linux kernel headers under `include/drm-uapi`,
   and headers of the freedreno and svga drivers, none of which a Windows
   build compiles.
-- **LLVM 22.1.8**, compiled in for llvmpipe's code generation, is Apache-2.0
+- **LLVM 23.1.2**, compiled in for llvmpipe's code generation, is Apache-2.0
   WITH LLVM-exception. Its licence file states no copyright line under that
   licence, and the one it does carry - Copyright (c) 2003-2019 University of
   Illinois at Urbana-Champaign - belongs to the legacy licence the same file
-  reproduces. Read from `llvm/LICENSE.TXT` at `llvmorg-22.1.8`.
+  reproduces. Read from `llvm/LICENSE.TXT` at `llvmorg-23.1.2`.
 - The **C11 threads shim** Mesa compiles on Windows, `src/c11/impl/threads_win32.c`,
   is BSL-1.0, Copyright yohhoy 2012.
 - The **Direct3D 12 headers**, 1.619.5, used by the d3d12 driver that the same
@@ -883,7 +884,7 @@ reproduced from the files named beside them.
 
 ### LLVM-exception
 
-From `llvm/LICENSE.TXT` at `llvmorg-22.1.8`, the exceptions that follow the
+From `llvm/LICENSE.TXT` at `llvmorg-23.1.2`, the exceptions that follow the
 Apache License, Version 2.0 there.
 
 ```
@@ -906,7 +907,7 @@ Software.
 
 ### BSL-1.0
 
-From `licenses/BSL-1.0` of `mesa-26.2.0.tar.xz`.
+From `licenses/BSL-1.0` of Mesa at the `mesa-26.2.4` tag.
 
 ```
 Boost Software License - Version 1.0 - August 17th, 2003

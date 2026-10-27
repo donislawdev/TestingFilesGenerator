@@ -189,7 +189,7 @@ var allowedURLs = map[string]string{
 	"internal/format/rtf/links.go|ftp://example.com/file.txt":                      "a link written into a document, on a domain kept for examples",
 	"internal/format/rtf/links.go|https://example.org/new":                         "a link written into a document, on a domain kept for examples",
 	"internal/format/rtf/links.go|https://example.net/tip":                         "a link written into a document, on a domain kept for examples",
-	"internal/legal/companions.go|https://github.com/pal1000/mesa-dist-win/releases/download/26.2.0/mesa3d-26.2.0-release-msvc.7z": "where the software " +
+	"internal/legal/companions.go|https://github.com/pal1000/mesa-dist-win/releases/download/26.2.4/mesa3d-26.2.4-release-msvc.7z": "where the software " +
 		"renderer's bytes were downloaded FROM, by the release workflow and never by the program: written into the bill of " +
 		"materials as the package's download location, and compared with the workflow's pin by a guard",
 }
