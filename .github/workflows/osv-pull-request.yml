@@ -82,7 +82,7 @@ jobs:
       # function is reachable is what the govulncheck job answers.
       - name: scan the branch this merges into
         id: old
-        uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc  # v2.6.0
+        uses: google/osv-scanner-action/osv-scanner-action@b1d267aea5211fa648d9d442fa64b90dbdcbdd36  # v2.7.0
         continue-on-error: true
         with:
           scan-args: |-
@@ -99,7 +99,7 @@ jobs:
 
       - name: scan the merge of this pull request
         id: new
-        uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc  # v2.6.0
+        uses: google/osv-scanner-action/osv-scanner-action@b1d267aea5211fa648d9d442fa64b90dbdcbdd36  # v2.7.0
         continue-on-error: true
         with:
           scan-args: |-
@@ -138,7 +138,7 @@ jobs:
       # table come out byte for byte as they did under the deprecated
       # --output and --gh-annotations (docs/OSV-2-2026-10-15.md).
       - name: what this pull request adds
-        uses: google/osv-scanner-action/osv-reporter-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc  # v2.6.0
+        uses: google/osv-scanner-action/osv-reporter-action@b1d267aea5211fa648d9d442fa64b90dbdcbdd36  # v2.7.0
         with:
           scan-args: |-
             --old=osv-old.json

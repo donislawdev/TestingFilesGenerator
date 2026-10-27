@@ -24,6 +24,15 @@ because it turns other people's test suites red.
   `--user "$(id -u):$(id -g)"` to write there. README also shows a step that
   installs `tfg` on Windows and macOS runners in GitHub Actions.
 
+### Changed
+
+- **The Windows archive of the window carries Mesa 26.2.4.** The software
+  OpenGL renderer in the `opengl` folder, which the window loads only after
+  the graphics toolkit could not open a window, or when it is started with
+  `--software-gl`, moves from 26.2.0 to 26.2.4, built with LLVM 23.1.2. Its
+  licences are the same. `THIRD-PARTY-NOTICES.md` names the new files and
+  their sums.
+
 ### Fixed
 
 - **`tfg cleanup --yes` keeps a file that changed after it was checked.**
