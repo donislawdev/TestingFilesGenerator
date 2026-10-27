@@ -52,6 +52,7 @@ func Plan(formatID string, r format.Request, need func(Stream) int64, refuse fun
 		Properties:  Facts(c, s),
 		Memo:        Film{Choice: c, Settings: s},
 		Work:        st.Work(),
+		Holds:       Holds(c.Width, c.Height),
 	}
 	if r.Label && !Labelled(c.Width, c.Label) {
 		p.Notes = append(p.Notes, format.Note{
@@ -70,6 +71,22 @@ func Plan(formatID string, r format.Request, need func(Stream) int64, refuse fun
 		})
 	}
 	return p, nil
+}
+
+// Holds is what writing a film of a picture this size holds at once, for the
+// memory setting (format.Plan.Holds).
+//
+// Measured on 2026-10-27 with tools/probes/peakmem: eight films of one second
+// written by eight writers against the same eight by one, two rounds, the
+// difference shared out over the seven extra writers. 5.0 and 8.0 MiB a writer
+// at 1920x1080, 14.1 and 14.9 at 3840x2160 - so a part that does not grow with
+// the picture and a part that does, and the pool of helpers in ahead.go is the
+// process's rather than any writer's, so it is in neither. Four mebibytes and
+// two bytes a pixel comes to 8.1 and 20.6 MiB at those two sizes, over every
+// reading. Measured at one second: a longer film is written a picture at a
+// time, and NOT measured to hold no more.
+func Holds(width, height int) int64 {
+	return 4<<20 + 2*int64(width)*int64(height)
 }
 
 // Hint is what a refusal below a film's minimum offers. A smaller picture only

@@ -174,6 +174,7 @@ func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan
 	}
 
 	p.Memo = m
+	p.Holds = format.OneAtATime(m.children, func(c child) format.Plan { return c.plan })
 	return p, nil
 }
 

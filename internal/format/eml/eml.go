@@ -271,6 +271,10 @@ func describe(m *message, groups []format.Content, target int64) format.Plan {
 		p.Properties[UnsubscribeURL] = m.id.unsubscribe
 	}
 	describePictures(p.Properties, m)
+	// The attached files and the pictures the text shows are two lists, and
+	// the message writes every one of them after the one before.
+	plan := func(c child) format.Plan { return c.plan }
+	p.Holds = max(format.OneAtATime(m.children, plan), format.OneAtATime(m.pictures, plan))
 	return p
 }
 

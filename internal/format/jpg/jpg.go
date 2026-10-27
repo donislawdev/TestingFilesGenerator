@@ -256,8 +256,22 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	labelled, p.Notes = imagelabel.Claim(labelled, w, h, len(label), p.Notes)
 	p.Properties[format.PropertyLabelEmbedded] = labelled
 	p.Memo = m
+	p.Holds = holdsPerPixel * int64(w) * int64(h)
 	return p, nil
 }
+
+// holdsPerPixel is what writing one of these holds at once for each pixel of
+// the picture, for the memory setting (format.Plan.Holds) - the picture the
+// encoder reads, and its buffers.
+//
+// Measured on 2026-10-27 with tools/probes/peakmem: eight files written by
+// eight writers against the same eight by one, two rounds, the difference
+// shared out over the seven extra writers. 3.65 B a pixel at 2000x1250, 2.9 at
+// 4000x2500, and 4.0 at 8000x5000 from the sixteen writers of 2026-10-26
+// (docs/STABILITY-REVIEW-2026-10-26.md section 3.2). Five covers all three with
+// room, because a number under the truth lets the writers past the setting and
+// one over it only makes them wait.
+const holdsPerPixel = 5
 
 func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)

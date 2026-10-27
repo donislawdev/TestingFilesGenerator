@@ -232,8 +232,22 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	labelled, p.Notes = imagelabel.Claim(labelled, w, h, len(label), p.Notes)
 	p.Properties[format.PropertyLabelEmbedded] = labelled
 	p.Memo = m
+	p.Holds = holdsPerPixel * int64(w) * int64(h) / 2
 	return p, nil
 }
+
+// holdsPerPixel is twice what writing one of these holds at once for each
+// pixel of the picture, for the memory setting (format.Plan.Holds) - one byte
+// of palette index a pixel for the first frame, and buffers. Twice, so a
+// number with a half in it stays a whole one.
+//
+// Measured on 2026-10-27 with tools/probes/peakmem: eight files written by
+// eight writers against the same eight by one, two rounds, the difference
+// shared out over the seven extra writers. 0.4 and 0.75 B a pixel at
+// 2000x1250, 0.75 and 0.85 at 4000x2500 - the frames after the first redraw
+// only the square that moves, so they add little. One and a half covers both
+// with room.
+const holdsPerPixel = 3
 
 // settlePadding decides what the comment has to carry, or refuses a size no
 // arrangement of comments can produce.
