@@ -798,8 +798,8 @@ func (r *runner) holdBeforeFinishing() {
 // Settled waits for work in flight to finish, without stopping it.
 //
 // A seam for the guards, and named as one rather than dressed up - the same
-// kind of thing as Options.AvailableBytes and Options.MaxPlanBytes in the
-// engine, which exist so a test can describe a small disk or a small ceiling
+// kind of thing as Options.AvailableBytes and Options.MachineMemory in the
+// engine, which exist so a test can describe a small disk or a small machine
 // without owning one.
 //
 // It is here because of what changed on 2026-08-26. Until then a preview could

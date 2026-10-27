@@ -266,6 +266,12 @@ func concurrentName(node *ast.SelectorExpr) string {
 		return "uses " + id.Name + "." + node.Sel.Name
 	case id.Name == "time" && node.Sel.Name == "AfterFunc":
 		return "hands a callback to a timer's goroutine (time.AfterFunc)"
+	case id.Name == "context" && node.Sel.Name == "AfterFunc":
+		// The same shape as the timer's, found on 2026-10-27 when the memory
+		// queue in internal/engine/parallel.go took one: the callback runs on
+		// a goroutine of its own when the context ends, and the scan had no
+		// name for it.
+		return "hands a callback to the goroutine a context's end starts (context.AfterFunc)"
 	}
 	return ""
 }
@@ -279,6 +285,7 @@ func TestTheConcurrencyScanSeesEachKindItLooksFor(t *testing.T) {
 		{"a channel", `var c chan int; _ = c`},
 		{"a lock", `var m sync.Mutex; m.Lock()`},
 		{"a timer's callback", `time.AfterFunc(0, f)`},
+		{"a context's callback", `context.AfterFunc(ctx, f)`},
 	} {
 		src := "package x\nfunc f() {}\nfunc g() {\n" + c.body + "\n}\n"
 		fset := token.NewFileSet()

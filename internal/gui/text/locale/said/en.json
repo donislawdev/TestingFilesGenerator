@@ -620,15 +620,45 @@
     "hash": "sha256-6dc38cd1cb85",
     "other": "{{.Error}}"
   },
+  "core.MemoryEmpty": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-4a0a99260fc6",
+    "other": "empty {{.Setting}}: write auto, off or a size such as 8gb"
+  },
+  "core.MemoryNegative": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-87bca52970de",
+    "other": "{{.Setting}} {{.Value}} is negative: write auto, off or a size such as 8gb"
+  },
+  "core.MemoryUnknown": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-c0a095315898",
+    "other": "{{.Setting}} {{.Value}} is not a setting this tool knows: write auto for half of this machine's memory, off for no limit, or a size such as 8gb"
+  },
+  "core.MemoryZero": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-1eb04d24e00d",
+    "other": "{{.Setting}} {{.Value}} leaves no room at all: write off for no limit, or a size such as 8gb"
+  },
   "core.PlanTooLargeFix": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run.",
-    "hash": "sha256-cb36e3de1bfb",
-    "other": "Ask for fewer files, or make each one cheaper to plan - fewer pages, fewer entries - or split the work into several runs"
+    "hash": "sha256-1cd8766a17ef",
+    "other": "Ask for fewer files, or make each one cheaper to plan - fewer pages, fewer entries - or split the work into several runs. Or give the run more memory through the memory setting"
   },
-  "core.PlanTooLargeWhy": {
+  "core.PlanTooLargeWhyAuto": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Ceiling}}, {{.Floor}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-2db0dbe7ea11",
+    "other": "the whole plan is held in memory before anything is written, and this run gives it {{.Ceiling}}, half of what this machine gives the program and never under {{.Floor}} - how much a file costs to plan depends on the format, so a ceiling on the number of files alone cannot see this"
+  },
+  "core.PlanTooLargeWhySet": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Ceiling}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-52bd0c2594f6",
-    "other": "the whole plan is held in memory before anything is written, and this build works to a ceiling of {{.Ceiling}} for it - how much a file costs to plan depends on the format, so a ceiling on the number of files alone cannot see this"
+    "hash": "sha256-4ebcd0bb8055",
+    "other": "the whole plan is held in memory before anything is written, and the memory setting of this run gives it {{.Ceiling}} - how much a file costs to plan depends on the format, so a ceiling on the number of files alone cannot see this"
+  },
+  "core.PlanTooLargeWhyUnknown": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Ceiling}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-76ffcdf2311b",
+    "other": "the whole plan is held in memory before anything is written, and this run gives it {{.Ceiling}} because the memory of this machine could not be read - how much a file costs to plan depends on the format, so a ceiling on the number of files alone cannot see this"
   },
   "core.RangeBackwards": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.From}}, {{.To}}, {{.Low}}, {{.High}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -947,6 +977,16 @@
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, {{.Cause}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-7a1261279b19",
     "other": "cannot write the instructions to {{.Path}}: {{.Cause}}"
+  },
+  "engine.MemoryOverrun": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Name}}, {{.Holds}}, {{.Room}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-168a887a89fa",
+    "other": "{{.Name}} holds about {{.Holds}} while it is written, more than the {{.Room}} the memory setting left the files being written, so it was written on its own and the run went past the setting until it finished"
+  },
+  "engine.MemoryUnknown": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Cause}}, {{.Limit}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-25e95b18a15e",
+    "other": "the memory of this machine could not be read ({{.Cause}}), so this run worked to {{.Limit}}, the most any run took before the memory setting existed. Set the memory setting yourself to choose the limit"
   },
   "engine.NameAbsolute": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Where}}, {{.Name}}, written the way the program writes them - keep each spelled exactly that way.",

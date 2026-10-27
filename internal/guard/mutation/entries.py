@@ -6170,8 +6170,8 @@ MUTATIONS = [
     (
         "the reason given for a plan refusal names a ceiling other than the one in force",
         "internal/core/limits.go",
-        "A(\"Ceiling\", Bytes(MaxPlanBytes)))",
-        "A(\"Ceiling\", Bytes(MaxPlanBytes/2)))",
+        "A(\"Ceiling\", Bytes(l.Plan)), A(\"Floor\", Bytes(MaxPlanBytes)))",
+        "A(\"Ceiling\", Bytes(l.Plan)), A(\"Floor\", Bytes(MaxPlanBytes/2)))",
         "TestThePlanCeilingIsTheOneCoreStates",
     ),
     (
@@ -6218,9 +6218,9 @@ MUTATIONS = [
     ),
     (
         "the ceiling a caller does not name stops being the real one, so ordinary short runs are refused",
-        "internal/engine/planmemory.go",
-        "\t\tceiling = core.MaxPlanBytes",
-        "\t\tceiling = 1",
+        "internal/engine/engine.go",
+        "\treturn o.Memory.On(machine)",
+        "\treturn core.MemoryOf(1).On(machine)",
         "TestAShortOrdinaryRunIsNotRefusedByThePlanCeiling",
     ),
     (
@@ -15977,5 +15977,69 @@ MUTATIONS = [
         "fitted := uint64(info.Totalram) * unit",
         "fitted := uint64(info.Freeram) * unit",
         "TestTheMemoryOfTheMachineIsWhatTheSystemSays",
+    ),
+    (
+        # Each file takes twice its room, so two that fit side by side are
+        # written one after the other - the queue holds the writers back
+        # further than the setting asks.
+        "the memory queue takes twice the room a file holds",
+        "internal/engine/parallel.go",
+        "q.room -= holds",
+        "q.room -= 2 * holds",
+        "TestTheFilesWrittenAtOnceHoldNoMoreThanTheMemorySettingLeaves",
+    ),
+    (
+        # The room is never asked, so every writer holds its picture at once -
+        # the 2.6 GB of section 3.2 back again.
+        "the memory queue lets a file in without room for it",
+        "internal/engine/parallel.go",
+        "for ctx.Err() == nil && (q.turn != q.rank[i] || (holds > q.room && q.holding > 0)) {",
+        "for ctx.Err() == nil && (q.turn != q.rank[i] || (false && q.holding > 0)) {",
+        "TestTheFilesWrittenAtOnceHoldNoMoreThanTheMemorySettingLeaves",
+    ),
+    (
+        # A file that holds nothing takes a place in the queue, so a text file
+        # waits behind a picture written on its own.
+        "a file that holds no memory waits its turn in the memory queue",
+        "internal/engine/parallel.go",
+        "if f.Plan.Holds > 0 {\n\t\t\tq.rank[i] = places",
+        "if f.Plan.Holds >= 0 {\n\t\t\tq.rank[i] = places",
+        "TestTheFilesWrittenAtOnceHoldNoMoreThanTheMemorySettingLeaves",
+    ),
+    (
+        # A writer woken after a stop takes its room and starts the file of a
+        # run that was already stopped.
+        "a writer woken in the memory queue after a stop starts its file",
+        "internal/engine/parallel.go",
+        "\tif ctx.Err() != nil {\n\t\treturn false\n\t}",
+        "\tif false {\n\t\treturn false\n\t}",
+        "TestTheFilesWrittenAtOnceHoldNoMoreThanTheMemorySettingLeaves",
+    ),
+    (
+        # A file written past the setting is written and nothing says so -
+        # untouchable rule 6.
+        "a file written past the memory setting goes unsaid",
+        "internal/engine/parallel.go",
+        "if holds > q.room && q.over == nil {",
+        "if false && q.over == nil {",
+        "TestTheFilesWrittenAtOnceHoldNoMoreThanTheMemorySettingLeaves",
+    ),
+    (
+        # Off still weighs the plan, against a ceiling of nothing - every plan
+        # refused under the setting that asked for no limit.
+        "off weighs the plan against a ceiling nobody asked for",
+        "internal/engine/planmemory.go",
+        "\tif limits.Plan <= 0 {\n\t\treturn nil\n\t}",
+        "\tif false {\n\t\treturn nil\n\t}",
+        "TestOffWeighsNothing",
+    ),
+    (
+        # Planning works to the old two gigabytes whatever the setting says -
+        # the ceiling that could not be moved, which is R02.
+        "planning ignores the memory setting and works to the old ceiling",
+        "internal/engine/engine.go",
+        "pl.budget = newPlanMemory(opt.Memory, opt.memoryLimits())",
+        "pl.budget = newPlanMemory(opt.Memory, core.MemoryLimits{Plan: core.MaxPlanBytes})",
+        "TestThePlanCeilingIsTheMemorySetting",
     ),
 ]
