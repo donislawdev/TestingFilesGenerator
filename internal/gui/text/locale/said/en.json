@@ -561,9 +561,19 @@
     "other": "wait until whatever is writing it has finished, and run this again"
   },
   "core.BoundaryTooLarge": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Why}}, {{.Fix}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-a0fd66f30b3f",
+    "other": "{{.Why}}. {{.Fix}}"
+  },
+  "core.BoundaryTooLargeFix": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run.",
-    "hash": "sha256-7c6185922a32",
-    "other": "a boundary set needs one size above the limit, and there is no number above this one. Use a limit at least one byte below the largest, or check that the number is the one you meant"
+    "hash": "sha256-65951a83d71b",
+    "other": "Use a limit at least one byte below the largest, or check that the number is the one you meant"
+  },
+  "core.BoundaryTooLargeWhy": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-207bd1c9df54",
+    "other": "a boundary set needs one size above the limit, and there is no number above this one"
   },
   "core.BoundaryTooSmall": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Why}}, {{.Fix}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -2378,6 +2388,11 @@
     "hash": "sha256-767f6cd55319",
     "other": "far-over is off, so nothing in this set is well past the limit. The largest file is one byte over it."
   },
+  "preset.FarOverPastTheLargest": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Step}}, {{.Times}}, {{.Limit}}, {{.Largest}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-d1327ffb9921",
+    "other": "{{.Step}} would be {{.Times}} times the limit of {{.Limit}} B, more than the largest size there is, {{.Largest}} B"
+  },
   "preset.Files": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-83589d643302",
@@ -2453,6 +2468,11 @@
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Param}}, {{.Bad}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-5cf12375b81f",
     "other": "{{.Param}}: it holds {{.Bad}}, and a limit is written with digits, letters and a dot - such as 10mb, 512 or 1.5gb. Its text becomes part of every file name"
+  },
+  "preset.LowerTheLimitOrTurnOff": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-014a6777373c",
+    "other": "Lower the limit to {{.Most}} B or less, or turn {{.Setting}} off."
   },
   "preset.NoDistancesWereGivenSoThere": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run.",

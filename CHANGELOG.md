@@ -42,6 +42,13 @@ because it turns other people's test suites red.
   two whole numbers around it, wherever a size is written - flags, recipes,
   presets and the window. A size that lands on a whole byte gives the same
   file as before.
+- **`upload-validation` and `size-boundaries` refuse a limit too large for
+  their set.** The file far over the limit is the limit times `--far-over`,
+  and nothing asked whether that fitted, so a limit of 1844674407370955264B at
+  10x made a file of 1024 B the manifest still expected to be refused. A limit
+  with no room above it got advice to raise it in `upload-validation` and
+  ended with code 1 in `size-boundaries`. Both presets now refuse such a limit
+  with code 4 and say how large it can be.
 - **`tfg cleanup --yes` keeps a file that changed after it was checked.**
   Cleanup checks every file before it removes any, and a file changed in that
   time was removed without `--force`. It now looks again just before it

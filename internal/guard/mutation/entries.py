@@ -3728,8 +3728,8 @@ MUTATIONS = [
         # undone when the generate screen's refusals were moved. O73.
         "a preset refusal stops saying which parameter it is about",
         "internal/preset/limitset.go",
-        'Setting: s.setting,',
-        'Setting: "",',
+        "\t\t\tSetting: s.setting,\n\t\t\tDetail:  what,",
+        "\t\t\tSetting: \"\",\n\t\t\tDetail:  what,",
         "TestARefusalAboutAPresetSettingAppearsUnderIt",
     ),
     (
@@ -6150,9 +6150,9 @@ MUTATIONS = [
     ),
     (
         "the size-boundaries preset stops refusing a limit with no number above it",
-        "internal/preset/sizeboundaries.go",
-        "\t\tif limit+o.bytes < limit {",
-        "\t\tif false && limit+o.bytes < limit {",
+        "internal/preset/limitset.go",
+        "if s.limit > math.MaxInt64-o.bytes {",
+        "if false && s.limit > math.MaxInt64-o.bytes {",
         "TestThePresetAnswersALimitTooLargeTheSameWayTheFlagDoes",
     ),
     (
@@ -15691,5 +15691,43 @@ MUTATIONS = [
         "if s != \"\" && (s[0] == '+' || s[0] == '-') {\n\t\ts = s[1:]\n\t}",
         "s = strings.TrimPrefix(strings.TrimPrefix(s, \"+\"), \"-\")",
         "TestNonsenseSizesAreRefusedWithAUsefulMessage",
+    ),
+    # R13 (docs/STABILITY-REVIEW-2026-10-26.md): a set laid out around a limit
+    # is refused, not wrapped, when the limit has no room above it or the file
+    # far over it is past the largest size.
+    (
+        "a set around a limit with no room above it wraps its step over the limit",
+        "internal/preset/limitset.go",
+        "if s.limit > math.MaxInt64-o.bytes {",
+        "if s.limit > math.MaxInt64-o.bytes && false {",
+        "TestEveryPresetAnswersTheLargestSizeAboutTheTop",
+    ),
+    (
+        "a preset's refusal of a limit with no room above it stops being the one --boundary gives",
+        "internal/preset/limitset.go",
+        "Cause: core.ErrBoundaryTooLarge,",
+        "Cause: nil,",
+        "TestEveryPresetAnswersTheLargestSizeAboutTheTop",
+    ),
+    (
+        "a preset's refusal hides the refusal it is",
+        "internal/preset/preset.go",
+        "func (e *ImpossibleError) Unwrap() error { return e.Cause }",
+        "func (e *ImpossibleError) Unwrap() error { return nil }",
+        "TestThePresetAnswersALimitTooLargeTheSameWayTheFlagDoes",
+    ),
+    (
+        "the file far over the limit wraps round instead of being refused",
+        "internal/preset/uploadset.go",
+        "if s.farOver == 0 || s.limit <= math.MaxInt64/s.farOver {",
+        "if true {",
+        "TestTheFileFarOverTheLimitIsThatManyTimesTheLimitOrNothing",
+    ),
+    (
+        "the largest limit the file far over it fits is refused as well",
+        "internal/preset/uploadset.go",
+        "if s.farOver == 0 || s.limit <= math.MaxInt64/s.farOver {",
+        "if s.farOver == 0 || s.limit < math.MaxInt64/s.farOver {",
+        "TestTheFileFarOverTheLimitIsThatManyTimesTheLimitOrNothing",
     ),
 ]

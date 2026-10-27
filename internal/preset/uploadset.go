@@ -3,6 +3,7 @@ package preset
 import (
 	"errors"
 	"fmt"
+	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -255,6 +256,30 @@ func farOverTimes(raw string) (int64, error) {
 	return times, nil
 }
 
+// farOverFits refuses a file far over the limit that would be past the largest
+// size there is.
+//
+// That file is the limit times the multiplier, and until 2026-10-27 nothing
+// asked whether the product fitted: a limit of 1844674407370955264B at 10x
+// wrapped round to a file of 1024 B, under the limit, still named far_over_10x
+// and still expected to be refused for size_limit (R13 of
+// docs/STABILITY-REVIEW-2026-10-26.md).
+//
+// Asked after the limit itself is, so that a limit with no room above it at
+// all hears that, rather than advice to turn this file off which would not
+// help.
+func (s uploadSet) farOverFits() error {
+	if s.farOver == 0 || s.limit <= math.MaxInt64/s.farOver {
+		return nil
+	}
+	return &ImpossibleError{
+		Preset: uploadID, Setting: farOverParam,
+		Detail: core.Says("preset.FarOverPastTheLargest", "%s would be %d times the limit of %d B, more than the largest size there is, %d B",
+			core.A("Step", "far_over_"+strconv.FormatInt(s.farOver, 10)+"x"), core.A("Times", s.farOver), core.A("Limit", s.limit), core.A("Largest", int64(math.MaxInt64))),
+		Hint: core.Says("preset.LowerTheLimitOrTurnOff", "Lower the limit to %d B or less, or turn {setting} off.", core.A("Most", math.MaxInt64/s.farOver)),
+	}
+}
+
 func expandUploadValidation(args Args) ([]byte, error) {
 	s, err := settleUpload(args)
 	if err != nil {
@@ -271,6 +296,9 @@ func expandUploadValidation(args Args) ([]byte, error) {
 	}
 	steps := around.steps()
 	if err := around.reachable(steps); err != nil {
+		return nil, err
+	}
+	if err := s.farOverFits(); err != nil {
 		return nil, err
 	}
 

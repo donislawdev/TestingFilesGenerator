@@ -285,15 +285,20 @@ func ParseBoundary(s string) (int64, error) {
 	return ParseSize(s)
 }
 
+// The two parts of ErrBoundaryTooLarge, which a preset's refusal carries
+// apart - the same way the other end's are kept.
+var (
+	BoundaryTooLargeWhy = Says("core.BoundaryTooLargeWhy", "a boundary set needs one size above the limit, and there is no number above this one")
+	BoundaryTooLargeFix = Says("core.BoundaryTooLargeFix", "Use a limit at least one byte below the largest, or check that the number is the one you meant")
+)
+
 // ErrBoundaryTooLarge is a limit with no room above it for the third file.
 //
 // Measured on 2026-08-03: --boundary 9223372036854775807 wrapped the file above
 // the limit to the smallest number there is, and the refusal that followed said
 // "TXT cannot be smaller than 0 B. Requested: -9223372036854775808 B" - an
 // answer about the bottom of the range to a question about the top of it.
-var ErrBoundaryTooLarge = Refuse(Says("core.BoundaryTooLarge",
-	"a boundary set needs one size above the limit, and there is no number above this one. "+
-		"Use a limit at least one byte below the largest, or check that the number is the one you meant"))
+var ErrBoundaryTooLarge = Refuse(Says("core.BoundaryTooLarge", "%s. %s", A("Why", BoundaryTooLargeWhy), A("Fix", BoundaryTooLargeFix)))
 
 // The other end, in the two parts a report keeps apart. Built from them rather
 // than beside them, the same way ErrTooManyFiles is, so the sentence and the
