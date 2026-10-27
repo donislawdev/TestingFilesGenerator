@@ -15746,4 +15746,20 @@ MUTATIONS = [
         "if r.Bytes >= maxMessage {",
         "TestAnEMLAboveTheLargestMessageIsRefusedAtOnce",
     ),
+    # R16 (docs/STABILITY-REVIEW-2026-10-26.md): the spreadsheet is expected
+    # whole only as wide as a spreadsheet is.
+    (
+        "a spreadsheet wider than a spreadsheet shows is still expected to be taken whole",
+        "internal/preset/tabularimport.go",
+        "if wide, _ := strconv.Atoi(columns); wide > spreadsheetColumns {",
+        "if wide, _ := strconv.Atoi(columns); wide > spreadsheetColumns && false {",
+        "TestTheSpreadsheetIsExpectedWholeOnlyAsWideAsASpreadsheet",
+    ),
+    (
+        "a spreadsheet exactly as wide as a spreadsheet shows stops being expected whole",
+        "internal/preset/tabularimport.go",
+        "if wide, _ := strconv.Atoi(columns); wide > spreadsheetColumns {",
+        "if wide, _ := strconv.Atoi(columns); wide >= spreadsheetColumns {",
+        "TestTheSpreadsheetIsExpectedWholeOnlyAsWideAsASpreadsheet",
+    ),
 ]

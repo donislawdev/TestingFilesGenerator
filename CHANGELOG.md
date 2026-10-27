@@ -54,6 +54,11 @@ because it turns other people's test suites red.
   the other encodings it was planned at 9 EiB, past what the format counts
   in. Above 1152921504606846976 B the format now refuses with code 4, a dry
   run included.
+- **`tabular-import` no longer promises that a spreadsheet wider than 16384
+  columns is read whole.** A spreadsheet shows 16384 columns and drops the
+  rest without a word, and the set still expected such a workbook to be
+  accepted, certain. Past that width `sheet.xlsx` is now `unspecified` for
+  `count_limit`, like the wide CSV beside it. Up to it, nothing changes.
 - **`tfg cleanup --yes` keeps a file that changed after it was checked.**
   Cleanup checks every file before it removes any, and a file changed in that
   time was removed without `--force`. It now looks again just before it
