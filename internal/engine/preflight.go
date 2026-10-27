@@ -164,10 +164,17 @@ func preflight(ctx context.Context, files []PlannedFile, opt Options, record Rec
 
 // listing is what the output directory holds, kept two ways: every name as it
 // is spelt, and every name folded the way a filesystem that ignores case
-// compares them, pointing back at the spelling on the disk.
+// compares them, pointing back at each spelling on the disk with that fold.
+//
+// Each, rather than the first. FoldName joins pairs a filesystem keeps apart:
+// measured on 2026-10-27 on NTFS, STRASSE.txt and Stra\u00dfe.txt are two files
+// side by side and both fold to strasse.txt, and a lookup of stra\u00dfe.txt finds
+// the second. Keeping one spelling named STRASSE.txt - the file a refusal
+// would then tell somebody to remove, and the wrong one. Found by CodeRabbit
+// on #207 (docs/REVIEW-207-2026-10-27.md).
 type listing struct {
 	exact  map[string]struct{}
-	folded map[string]string
+	folded map[string][]string
 }
 
 // namesIn is every name the output directory holds, or nil when it could not be
@@ -190,17 +197,16 @@ type listing struct {
 func namesIn(dir string) *listing {
 	entries, err := os.ReadDir(dir)
 	if errors.Is(err, fs.ErrNotExist) {
-		return &listing{exact: map[string]struct{}{}, folded: map[string]string{}}
+		return &listing{exact: map[string]struct{}{}, folded: map[string][]string{}}
 	}
 	if err != nil {
 		return nil
 	}
-	l := &listing{exact: make(map[string]struct{}, len(entries)), folded: make(map[string]string, len(entries))}
+	l := &listing{exact: make(map[string]struct{}, len(entries)), folded: make(map[string][]string, len(entries))}
 	for _, e := range entries {
 		l.exact[e.Name()] = struct{}{}
-		if key := collisionKey(e.Name()); l.folded[key] == "" {
-			l.folded[key] = e.Name()
-		}
+		key := collisionKey(e.Name())
+		l.folded[key] = append(l.folded[key], e.Name())
 	}
 	return l
 }
@@ -226,7 +232,9 @@ func namesIn(dir string) *listing {
 // spellings side by side and a run there is right to write its own. So the
 // system is asked about the path itself: Lstat finds it where the two are one
 // name, and not where they are two. Any answer other than "not there" counts
-// as taken, the same direction as above.
+// as taken, the same direction as above. The spelling named is the one that is
+// the same file as what Lstat found, and none is named when no candidate is -
+// the refusal then shows the path alone rather than a guess.
 //
 // What this cannot see, named rather than implied: a pair a filesystem joins
 // and FoldName does not. None is known - core/foldname.go records that
@@ -240,14 +248,24 @@ func (l *listing) holds(path, name string) (bool, string) {
 	if _, ok := l.exact[name]; ok {
 		return true, ""
 	}
-	onDisk, ok := l.folded[collisionKey(name)]
-	if !ok {
+	candidates := l.folded[collisionKey(name)]
+	if len(candidates) == 0 {
 		return false, ""
 	}
-	if _, err := os.Lstat(path); errors.Is(err, fs.ErrNotExist) {
+	here, err := os.Lstat(path)
+	if errors.Is(err, fs.ErrNotExist) {
 		return false, ""
 	}
-	return true, onDisk
+	if err != nil {
+		return true, ""
+	}
+	dir := filepath.Dir(path)
+	for _, onDisk := range candidates {
+		if there, err := os.Lstat(filepath.Join(dir, onDisk)); err == nil && os.SameFile(here, there) {
+			return true, onDisk
+		}
+	}
+	return true, ""
 }
 
 // tempPathFor is the name a file is written under before it is renamed into

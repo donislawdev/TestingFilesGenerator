@@ -8293,8 +8293,8 @@ MUTATIONS = [
         # The mutation has to be tried on one of those.
         "a directory that cannot be listed is read as an empty one, so a run writes over what is inside",
         "internal/engine/preflight.go",
-        "\t\treturn &listing{exact: map[string]struct{}{}, folded: map[string]string{}}\n\t}\n\tif err != nil {\n\t\treturn nil\n\t}",
-        "\t\treturn &listing{exact: map[string]struct{}{}, folded: map[string]string{}}\n\t}\n\tif err != nil {\n\t\treturn &listing{exact: map[string]struct{}{}, folded: map[string]string{}}\n\t}",
+        "\t\treturn &listing{exact: map[string]struct{}{}, folded: map[string][]string{}}\n\t}\n\tif err != nil {\n\t\treturn nil\n\t}",
+        "\t\treturn &listing{exact: map[string]struct{}{}, folded: map[string][]string{}}\n\t}\n\tif err != nil {\n\t\treturn &listing{exact: map[string]struct{}{}, folded: map[string][]string{}}\n\t}",
         "TestADirectoryThatCannotBeListedIsStillAskedAboutEveryName",
     ),
     (
@@ -15894,8 +15894,8 @@ MUTATIONS = [
         # entries this run cannot prove.
         "a name that only folds onto one in the directory is taken without asking the system",
         "internal/engine/preflight.go",
-        "if _, err := os.Lstat(path); errors.Is(err, fs.ErrNotExist) {",
-        "if _, err := os.Lstat(path); false && errors.Is(err, fs.ErrNotExist) {",
+        "here, err := os.Lstat(path)\n\tif errors.Is(err, fs.ErrNotExist) {",
+        "here, err := os.Lstat(path)\n\tif false && errors.Is(err, fs.ErrNotExist) {",
         "TestAFileWhoseNameDiffersOnlyInCaseIsNotWrittenOver",
     ),
     (
@@ -15907,5 +15907,15 @@ MUTATIONS = [
         "name = imp.Name.Name",
         "name = \"context\"",
         "TestTheContextFinderSeesEveryShapeOfTheCall",
+    ),
+    (
+        # The checksum pass sees the stop and swallows it: the header gets a
+        # checksum of nothing and the write goes on to its next question. The
+        # stop placed half way through the questions catches it by count.
+        "the checksum pass of the padding swallows the stop it was handed",
+        "internal/format/opc/opc.go",
+        "hash never refuses a write, so this is the stop.\n\t\treturn 0, err",
+        "hash never refuses a write, so this is the stop.\n\t\treturn 0, nil",
+        "TestAnOfficePackageStopsWhileItChecksumsItsPadding",
     ),
 ]

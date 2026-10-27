@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"testing"
 
@@ -72,7 +71,7 @@ func TestAFileWhoseNameDiffersOnlyInCaseIsNotWrittenOver(t *testing.T) {
 					if !strings.Contains(errOut.String(), theirs) {
 						t.Errorf("dry run %v: the refusal does not name %s, the file that is in the directory\nstderr: %s", dry, theirs, errOut.String())
 					}
-					if got := namesInDir(t, dir); strings.Join(got, " ") != theirs {
+					if got := namesIn(t, dir); strings.Join(got, " ") != theirs {
 						t.Errorf("dry run %v: the directory holds %q after the refusal, expected %s alone - something was written before it", dry, got, theirs)
 					}
 				} else if code != cli.ExitOK {
@@ -87,17 +86,46 @@ func TestAFileWhoseNameDiffersOnlyInCaseIsNotWrittenOver(t *testing.T) {
 	}
 }
 
-// namesInDir is everything the directory holds, the manifest included.
-func namesInDir(t *testing.T, dir string) []string {
-	t.Helper()
-	entries, err := os.ReadDir(dir)
-	if err != nil {
+// The refusal names the file that is really in the way, not another one that
+// folds to the same letters.
+//
+// core.FoldName joins pairs a filesystem keeps apart. On NTFS STRASSE.txt and
+// Stra\u00dfe.txt are two files side by side, both fold to strasse.txt, and a run
+// writing stra\u00dfe.txt would write over the second - measured on 2026-10-27.
+// Until CodeRabbit asked on #207, preflight kept the first spelling of a fold
+// and named STRASSE.txt, which is the file it would have told somebody to
+// remove. A system that joins the two (APFS does) cannot hold this directory at
+// all, and the guard says so rather than passing.
+func TestARefusalNamesTheFileThatIsReallyInTheWay(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "STRASSE.txt"), []byte("upper case ss\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	var out []string
-	for _, e := range entries {
-		out = append(out, e.Name())
+	sharp := "Stra\u00dfe.txt"
+	f, err := os.OpenFile(filepath.Join(dir, sharp), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
+	if err != nil {
+		t.Skipf("this filesystem will not hold %s beside STRASSE.txt (%v), so the pair this guard is about cannot exist here", sharp, err)
 	}
-	sort.Strings(out)
-	return out
+	if err := f.Close(); err != nil {
+		t.Fatal(err)
+	}
+	planned := strings.ToLower(sharp)
+	_, err = os.Lstat(filepath.Join(dir, planned))
+	folds := err == nil
+	t.Logf("this directory treats %s and %s as one name: %v", sharp, planned, folds)
+
+	var out, errOut bytes.Buffer
+	code := cli.Run(context.Background(), []string{"generate", "--format", "txt", "--size", "10B", "--name", planned, "--out", dir, "--dry-run"}, &out, &errOut)
+	if !folds {
+		if code != cli.ExitOK {
+			t.Errorf("ended with %d where %s and %s are two names\nstderr: %s", code, sharp, planned, errOut.String())
+		}
+		return
+	}
+	if code != cli.ExitIO {
+		t.Fatalf("ended with %d, expected %d - %s is in the way\nstderr: %s", code, cli.ExitIO, sharp, errOut.String())
+	}
+	if !strings.Contains(errOut.String(), "as "+sharp) || strings.Contains(errOut.String(), "STRASSE") {
+		t.Errorf("the refusal has to name %s, the file %s would write over, and not STRASSE.txt\nstderr: %s", sharp, planned, errOut.String())
+	}
 }
