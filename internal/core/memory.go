@@ -126,6 +126,21 @@ func ParseMemory(s string) (Memory, error) {
 	return Memory{bytes: n}, nil
 }
 
+// ParseMemorySize is ParseMemory for a box that holds a size and nothing else
+// - the window's Custom, where auto and off are chosen on the switch above it
+// and a word typed into the box would be a second way to the same choice.
+//
+// Anything with no digit in it is refused in those words, the two words of the
+// switch among them - ParseMemory would answer "lots" by offering auto and off,
+// which is advice for a different box.
+func ParseMemorySize(s string) (Memory, error) {
+	if !strings.ContainsAny(s, "0123456789") {
+		return Memory{}, RefuseAbout(SettingMemory, Says("core.MemoryNotASize",
+			"{setting} %q is not a size: write one such as 8gb", A("Value", s)))
+	}
+	return ParseMemory(s)
+}
+
 // aboutMemory is a refusal of ParseSize, put in the memory slot. The size
 // parser says what is wrong with the number better than a second sentence
 // could, and it names its own setting, which here is the wrong one: the

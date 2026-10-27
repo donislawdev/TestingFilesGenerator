@@ -43,8 +43,7 @@ func englishInTheCode(t *testing.T) (map[string]string, map[string]string) {
 	// The singular of every plural message, kept apart because only some
 	// messages have one.
 	singular := map[string]string{}
-	for _, name := range []string{"screens.go", "text.go"} {
-		path := filepath.Join("../gui/text", name)
+	for _, path := range textPackageFiles(t) {
 		file, err := parser.ParseFile(token.NewFileSet(), path, nil, 0)
 		if err != nil {
 			t.Fatalf("%s: %v", path, err)
@@ -264,4 +263,29 @@ func TestEveryTranslationObeysThePunctuationRule(t *testing.T) {
 			}
 		}
 	}
+}
+
+// textPackageFiles is every file of internal/gui/text but its tests.
+//
+// Read off the directory rather than named. Both guards that read the package
+// named its files by hand until 2026-10-27, and the words of the Preferences
+// screen moved into a file of their own that day: the catalogue guard would
+// have reported them as orphans, and the guard that every sentence goes
+// through the catalogue would not have read them at all (CLAUDE.md, trap 15).
+func textPackageFiles(t *testing.T) []string {
+	t.Helper()
+	all, err := filepath.Glob(filepath.Join("../gui/text", "*.go"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var out []string
+	for _, path := range all {
+		if !strings.HasSuffix(path, "_test.go") {
+			out = append(out, path)
+		}
+	}
+	if len(out) < 3 {
+		t.Fatalf("internal/gui/text holds %d files, so this read the wrong directory", len(out))
+	}
+	return out
 }

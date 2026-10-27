@@ -77,6 +77,10 @@ type settler func() ([]engine.Target, engine.Options, error)
 // run was cut short.
 type runner struct {
 	settle settler
+	// kept is where the memory setting chosen on the Preferences screen is
+	// read from, at the start of every preview and run - so a setting changed
+	// there applies from the next run and never to one already going.
+	kept func() Remembered
 
 	previewBtn  *parts.Button
 	generateBtn *parts.Button
@@ -338,8 +342,8 @@ func lineFrom(r *runner, targets []engine.Target, opt engine.Options, err error)
 	showOn(r.status, r.line.said(summarise(targets), opt.OutDir))
 }
 
-func newRunner(wait later) *runner {
-	r := &runner{fields: parts.NewFields(), line: &runLine{}, sections: newSections()}
+func newRunner(wait later, kept func() Remembered) *runner {
+	r := &runner{fields: parts.NewFields(), line: &runLine{}, sections: newSections(), kept: kept}
 	// Wired once, here, so that a field added later is covered without anybody
 	// remembering to wire it. See Fields.WhenTypedIn and recheck.
 	r.fields.WhenTypedIn(r.recheck)
@@ -436,6 +440,7 @@ func (r *runner) onPreview() {
 		return
 	}
 	opt.DryRun = true
+	opt.Memory = memoryOf(r.kept())
 
 	// Occupied, and stoppable. Both of those changed on 2026-08-26.
 	//
@@ -595,6 +600,7 @@ func (r *runner) onGenerate() {
 }
 
 func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
+	opt.Memory = memoryOf(r.kept())
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
 	r.settled = done

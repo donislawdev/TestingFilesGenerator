@@ -61,6 +61,12 @@ type fakeHost struct {
 	// Restart now asked for a new window.
 	system   string
 	restarts int
+	// machine is what MachineMemory answers when a guard set it, and
+	// machineFails makes it answer that it could not ask. Nothing set is the
+	// fixed figure below, so a stored picture of the Preferences screen is the
+	// same on every runner.
+	machine      int64
+	machineFails bool
 	// waitForWork waits for a preview or a run to finish, without stopping it.
 	//
 	// Separate from intercept, which is the CLOSE intercept and now cancels.
@@ -427,6 +433,7 @@ type keptInMemory struct {
 	size     fyne.Size
 	dirWrite int
 	language string
+	memory   string
 	forgets  int
 }
 
@@ -439,11 +446,13 @@ func (k *keptInMemory) Size() fyne.Size             { return k.size }
 func (k *keptInMemory) RememberSize(s fyne.Size)    { k.size = s }
 func (k *keptInMemory) Language() string            { return k.language }
 func (k *keptInMemory) RememberLanguage(tag string) { k.language = tag }
+func (k *keptInMemory) Memory() string              { return k.memory }
+func (k *keptInMemory) RememberMemory(m string)     { k.memory = m }
 
 // Forget removes the values, as the real store does. What it promises for
 // the rest of the run is window.Forgetting's, which Remembered wraps this in.
 func (k *keptInMemory) Forget() {
-	k.dir, k.size, k.language = "", fyne.Size{}, ""
+	k.dir, k.size, k.language, k.memory = "", fyne.Size{}, "", ""
 	k.forgets++
 }
 

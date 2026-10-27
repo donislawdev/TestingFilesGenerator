@@ -630,6 +630,11 @@
     "hash": "sha256-87bca52970de",
     "other": "{{.Setting}} {{.Value}} is negative: write auto, off or a size such as 8gb"
   },
+  "core.MemoryNotASize": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-3afd7272e5a2",
+    "other": "{{.Setting}} {{.Value}} is not a size: write one such as 8gb"
+  },
   "core.MemoryUnknown": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-c0a095315898",

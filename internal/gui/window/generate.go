@@ -156,6 +156,13 @@ type Host interface {
 	// names what "Same as the system" comes to on this machine with it.
 	SystemLanguage() string
 
+	// MachineMemory is how much memory this machine gives the program, which
+	// the memory setting's auto halves - core.MachineMemory in the real
+	// window. Asked through here so the Preferences screen can say what auto
+	// comes to on this machine, and a guard can draw that screen with a number
+	// of its own rather than with the memory of whichever runner it is on.
+	MachineMemory() (int64, error)
+
 	// RestartWhenClosed asks for this program to start again once this window
 	// has closed - the second half of Restart now, after the screens have
 	// closed the window the way a person closing it does. Starting the new
@@ -230,7 +237,7 @@ type Generate struct {
 
 // NewGenerate builds the screen. links are the buttons to the other screens.
 func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
-	g := &Generate{runner: newRunner(host.Later), host: host, tips: parts.NewTips(), settingsFolded: true}
+	g := &Generate{runner: newRunner(host.Later, host.Remembered), host: host, tips: parts.NewTips(), settingsFolded: true}
 	g.runner.settle = watchedSettle(host, g.runner, g.settle)
 	g.runner.offer.through(host)
 	// This screen is one target and draws its boxes under the bare key, so a

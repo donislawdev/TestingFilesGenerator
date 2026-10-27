@@ -125,6 +125,7 @@
   "core.Error": { "hash": "sha256-6dc38cd1cb85", "other": "{{.Error}}" },
   "core.MemoryEmpty": { "hash": "sha256-4a0a99260fc6", "other": "pole {{.Setting}} jest puste: wpisz auto, off albo rozmiar, na przykład 8gb" },
   "core.MemoryNegative": { "hash": "sha256-87bca52970de", "other": "{{.Setting}} {{.Value}} jest ujemna: wpisz auto, off albo rozmiar, na przykład 8gb" },
+  "core.MemoryNotASize": { "hash": "sha256-3afd7272e5a2", "other": "{{.Setting}} {{.Value}} to nie jest rozmiar: wpisz go, na przykład 8gb" },
   "core.MemoryUnknown": { "hash": "sha256-c0a095315898", "other": "{{.Setting}} {{.Value}} to nie jest ustawienie, które ten program zna: wpisz auto, żeby wziąć połowę pamięci tej maszyny, off, żeby nie mieć limitu, albo rozmiar, na przykład 8gb" },
   "core.MemoryZero": { "hash": "sha256-1eb04d24e00d", "other": "{{.Setting}} {{.Value}} nie zostawia żadnego miejsca: wpisz off, żeby nie mieć limitu, albo rozmiar, na przykład 8gb" },
   "core.PlanTooLargeFix": { "hash": "sha256-1cd8766a17ef", "other": "Poproś o mniej plików albo o tańsze w planowaniu - mniej stron, mniej wpisów - albo podziel pracę na kilka przebiegów. Możesz też dać przebiegowi więcej pamięci w ustawieniu pamięci" },

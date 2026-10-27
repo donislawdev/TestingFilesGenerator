@@ -364,6 +364,16 @@
     "hash": "sha256-882e40f5910b",
     "other": "Manifest file name"
   },
+  "FieldMemorySize": {
+    "description": "The name above a box somebody fills in.",
+    "hash": "sha256-4d5e4f1409c1",
+    "other": "Memory size"
+  },
+  "FieldMemoryWay": {
+    "description": "The name above a box somebody fills in.",
+    "hash": "sha256-ac0c32657fb9",
+    "other": "Memory for a run"
+  },
   "FieldNameTemplate": {
     "description": "The name above a box somebody fills in.",
     "hash": "sha256-6d00d6e32977",
@@ -465,6 +475,11 @@
     "description": "The line under a field name, saying what the field does.",
     "hash": "sha256-986221f924c6",
     "other": "The record of what this run produced."
+  },
+  "HintMemorySize": {
+    "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-e11ecda0afb5",
+    "other": "8gb"
   },
   "HintNameTemplate": {
     "description": "The line under a field name, saying what the field does.",
@@ -616,6 +631,51 @@
     "hash": "sha256-0b5d14c5fc58",
     "other": "this run's record is about {{.Size}} and this build reads at most {{.Limit}}, so Verify and Clean up will not be able to read it. Split the run to keep each record readable."
   },
+  "MemoryAutoIs": {
+    "description": "Shown in the window. Carries one value, {{.Size}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-3a039b136e1c",
+    "other": "Runs may take {{.Size}}, half of the memory this computer gives the program."
+  },
+  "MemoryAutoUnknown": {
+    "description": "Shown in the window. Carries one value, {{.Size}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-c1b8c2b64c84",
+    "other": "The memory of this computer could not be read, so runs take {{.Size}}, the most every run took before this setting."
+  },
+  "MemoryCustomEmpty": {
+    "description": "Shown in the window.",
+    "hash": "sha256-f021f2e8d953",
+    "other": "Write a size such as 8gb. Until there is one, runs use Automatic."
+  },
+  "MemoryCustomIs": {
+    "description": "Shown in the window.",
+    "hash": "sha256-269b4fa95f8d",
+    "other": "Runs may take the size above."
+  },
+  "MemoryOffIs": {
+    "description": "Shown in the window.",
+    "hash": "sha256-2b45ce57da2e",
+    "other": "Runs take what they need. Pictures are not held back and the plan has no limit, so a very large run can be ended by the system without a word."
+  },
+  "MemoryUnreadable": {
+    "description": "Shown in the window. Carries one value, {{.Value}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-42d966183e49",
+    "other": "The memory setting kept before, {{.Value}}, could not be read. Runs use Automatic until you choose again."
+  },
+  "MemoryWayAuto": {
+    "description": "Shown in the window.",
+    "hash": "sha256-d461a493a375",
+    "other": "Automatic"
+  },
+  "MemoryWayCustom": {
+    "description": "Shown in the window.",
+    "hash": "sha256-494ca78f7374",
+    "other": "Custom"
+  },
+  "MemoryWayOff": {
+    "description": "Shown in the window.",
+    "hash": "sha256-f7fcff0d8fea",
+    "other": "No limit"
+  },
   "NotAWholeNumber": {
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Field}}, {{.Value}}.",
     "hash": "sha256-2537ac57d3c7",
@@ -668,8 +728,8 @@
   },
   "PreferencesForgetWhat": {
     "description": "Shown on the Preferences screen.",
-    "hash": "sha256-f7c12f863d64",
-    "other": "Forget clears the three things above. This window then keeps nothing when it closes, and the next one opens the way the first one did."
+    "hash": "sha256-8145d3c07952",
+    "other": "Forget clears the four things above. This window then keeps nothing when it closes, and the next one opens the way the first one did."
   },
   "PreferencesForgotten": {
     "description": "Shown on the Preferences screen.",
@@ -678,8 +738,8 @@
   },
   "PreferencesKept": {
     "description": "Shown on the Preferences screen.",
-    "hash": "sha256-896c43e06cdb",
-    "other": "Between runs this window keeps three things: the output directory, the size of the window, and the language chosen above. The folder picker also keeps the last folder it showed. Nothing leaves this computer."
+    "hash": "sha256-d5cfc5e4bd88",
+    "other": "Between runs this window keeps four things: the output directory, the size of the window, and the language and the memory chosen above. The folder picker also keeps the last folder it showed. Nothing leaves this computer."
   },
   "PreferencesKeptIn": {
     "description": "Shown on the Preferences screen.",
@@ -690,6 +750,11 @@
     "description": "Shown on the Preferences screen.",
     "hash": "sha256-bc4174717ca7",
     "other": "Only the window changes language. The files it makes, recipes, manifests and the command line do not."
+  },
+  "PreferencesMemoryScope": {
+    "description": "Shown on the Preferences screen.",
+    "hash": "sha256-4535de397c9c",
+    "other": "How much memory one run may take, the plan and the files being written together. Pictures wait for room rather than all being held at once, and a plan larger than this is refused before anything is written. It applies from the next run, and nothing in the files changes."
   },
   "PreferencesMissing": {
     "description": "Shown on the Preferences screen. Carries one value, {{.Tag}}, which has to stay spelled exactly that way.",
@@ -821,6 +886,11 @@
     "hash": "sha256-524730d883af",
     "other": "Notes for the manifest"
   },
+  "SectionMemory": {
+    "description": "The heading over a group of fields.",
+    "hash": "sha256-c3963aedaac6",
+    "other": "Memory"
+  },
   "SectionOutput": {
     "description": "The heading over a group of fields.",
     "hash": "sha256-b2439bcb8dee",
@@ -918,8 +988,8 @@
   },
   "SubtitlePreferences": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
-    "hash": "sha256-0e310c7f4078",
-    "other": "How this window speaks, and what it keeps between runs. Nothing here changes the files it makes."
+    "hash": "sha256-836103012003",
+    "other": "How this window speaks, how much memory its runs may take, and what it keeps between runs. Nothing here changes the files it makes."
   },
   "SubtitlePreset": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",

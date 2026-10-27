@@ -12,8 +12,9 @@ import "fyne.io/fyne/v2"
 //
 // And since 2026-09-29 one thing it is told: the language chosen on the
 // Preferences screen. That is not last week's state coming back uninvited, it
-// is a choice somebody made in order to keep it, and it is the one value here
-// that nothing writes but a person.
+// is a choice somebody made in order to keep it, and nothing writes it but a
+// person. Since 2026-10-27 the memory setting beside it is the second such
+// value.
 //
 // It is an interface on the Host rather than a call to the toolkit's global
 // preferences, for the reason every other seam here exists: the screens build
@@ -51,6 +52,15 @@ type Remembered interface {
 	// empty one.
 	Language() string
 	RememberLanguage(tag string)
+
+	// Memory is the memory setting somebody chose on the Preferences screen,
+	// as core.Memory writes it - "8gb", "off" - or empty when nobody has,
+	// which means auto (docs/STABILITY-REVIEW-2026-10-26.md section 10.8).
+	// Like the language it is a choice somebody made in order to keep it, so
+	// it is written after Forget too, and RememberMemory with an empty text
+	// removes the value rather than writing an empty one.
+	Memory() string
+	RememberMemory(setting string)
 
 	// Forget removes everything above, on the press of the Forget button and
 	// at no other time - untouchable rule 7. For the rest of this run the
