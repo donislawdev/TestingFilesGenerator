@@ -15918,4 +15918,64 @@ MUTATIONS = [
         "hash never refuses a write, so this is the stop.\n\t\treturn 0, nil",
         "TestAnOfficePackageStopsWhileItChecksumsItsPadding",
     ),
+    (
+        # A nought typed by mistake is read as a size of nothing, which is auto
+        # - every limit gone without a word. The table asks "0" to be refused.
+        "the memory setting takes a nought as a setting",
+        "internal/core/memory.go",
+        "if n == 0 {",
+        "if n == -1 {",
+        "TestTheMemorySettingReadsWhatItSays",
+    ),
+    (
+        # The size parser's refusal comes through in its own slot, so "8 gigs"
+        # is refused about the size - a window marks the wrong box and the
+        # command line names a flag nobody typed.
+        "a refusal of the size parser keeps naming the size under --memory",
+        "internal/core/memory.go",
+        "return &Refusal{said: r.said, setting: SettingMemory}",
+        "return err",
+        "TestTheMemorySettingReadsWhatItSays",
+    ),
+    (
+        # The kept text takes the largest unit the size reaches rather than the
+        # largest that holds it whole, so 1025 B is kept as 1kb and comes back
+        # as 1024.
+        "the memory setting is kept as a rounded size",
+        "internal/core/memory.go",
+        "if m.bytes%u.size == 0 {",
+        "if m.bytes >= u.size {",
+        "TestTheMemorySettingReadsBackAsItself",
+    ),
+    (
+        # Auto on a small machine gives the plan half the machine, under the
+        # ceiling every run had before the setting - a run planned yesterday
+        # is refused today.
+        "auto lets the plan ceiling drop below the old two gigabytes",
+        "internal/core/memory.go",
+        "return MemoryLimits{Run: half, Plan: max(half, MaxPlanBytes)}",
+        "return MemoryLimits{Run: half, Plan: half}",
+        "TestTheMemorySettingIsWorkedOutAgainstTheMachine",
+    ),
+    (
+        # The walk up the groups keeps the larger limit, so a container held by
+        # its slice is told the slice's own looser number.
+        "the larger of two limits on the way up a control group wins",
+        "internal/core/cgroup.go",
+        "if ok && (!found || n < least) {",
+        "if ok && (!found || n > least) {",
+        "TestTheLimitOfAContainerIsFoundInItsControlGroup",
+    ),
+    (
+        # The memory free now rather than the memory fitted - a number that
+        # moves by the minute. Proven on the Linux runner, where mutation runs,
+        # against MemTotal in /proc/meminfo. A runner whose control group held
+        # it below the memory fitted would not see this, and the guard logs
+        # which branch it took.
+        "the machine is read as the memory free rather than the memory fitted",
+        "internal/core/machinememory_linux.go",
+        "fitted := uint64(info.Totalram) * unit",
+        "fitted := uint64(info.Freeram) * unit",
+        "TestTheMemoryOfTheMachineIsWhatTheSystemSays",
+    ),
 ]
