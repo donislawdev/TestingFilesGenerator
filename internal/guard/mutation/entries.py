@@ -1673,8 +1673,8 @@ MUTATIONS = [
         # the collision check only ever looked at the name a file ends up with.
         "the name a file is written through is not checked for a collision",
         "internal/engine/preflight.go",
-        "if path := tempPathFor(opt.OutDir, f.Name); isTaken(taken, path, tempNameFor(f.Name)) {",
-        "if path := tempPathFor(opt.OutDir, f.Name); isTaken(taken, path, tempNameFor(f.Name)) && false {",
+        "if hit, onDisk := taken.holds(temp, tempNameFor(f.Name)); hit {",
+        "if hit, onDisk := taken.holds(temp, tempNameFor(f.Name)); hit && false {",
         "TestAFileUnderTheTemporaryNameIsNotWrittenOver",
     ),
     (
@@ -8283,8 +8283,8 @@ MUTATIONS = [
         # the old behaviour really did replace it.
         "a name held by a link pointing nowhere stops being a name that is taken",
         "internal/engine/preflight.go",
-        "\tif taken == nil {\n\t\treturn exists(path)\n\t}\n\t_, ok := taken[name]\n\treturn ok",
-        "\treturn exists(path)",
+        "\tif l == nil {\n\t\treturn exists(path), \"\"\n\t}",
+        "\tif true {\n\t\treturn exists(path), \"\"\n\t}",
         "TestANameTakenByALinkPointingNowhereIsStillTaken",
     ),
     (
@@ -8293,8 +8293,8 @@ MUTATIONS = [
         # The mutation has to be tried on one of those.
         "a directory that cannot be listed is read as an empty one, so a run writes over what is inside",
         "internal/engine/preflight.go",
-        "\tentries, err := os.ReadDir(dir)\n\tif errors.Is(err, fs.ErrNotExist) {\n\t\treturn map[string]struct{}{}\n\t}\n\tif err != nil {\n\t\treturn nil\n\t}",
-        "\tentries, err := os.ReadDir(dir)\n\tif errors.Is(err, fs.ErrNotExist) {\n\t\treturn map[string]struct{}{}\n\t}\n\tif err != nil {\n\t\treturn map[string]struct{}{}\n\t}",
+        "\t\treturn &listing{exact: map[string]struct{}{}, folded: map[string]string{}}\n\t}\n\tif err != nil {\n\t\treturn nil\n\t}",
+        "\t\treturn &listing{exact: map[string]struct{}{}, folded: map[string]string{}}\n\t}\n\tif err != nil {\n\t\treturn &listing{exact: map[string]struct{}{}, folded: map[string]string{}}\n\t}",
         "TestADirectoryThatCannotBeListedIsStillAskedAboutEveryName",
     ),
     (
@@ -15879,5 +15879,33 @@ MUTATIONS = [
         "if err := ctx.Err(); err != nil {",
         "if err := context.Background().Err(); err != nil {",
         "TestAContextIsMadeFromNothingOnlyWhereItIsMeantToStart",
+    ),
+    (
+        # R07: a name that only folds onto one in the directory is taken without
+        # asking the system. On a system that keeps case apart - the Linux this
+        # runs on in CI - that refuses a run which is right to write files_0001.txt
+        # beside FILES_0001.TXT.
+        #
+        # The other half of the check - the folded match itself, and the refusal
+        # naming the spelling on the disk - is reached only where the system
+        # folds, so a mutation of it is caught on Windows and macOS and would be
+        # a HOLE here. Both were proved by hand on Windows on 2026-10-27 (the
+        # guard red, the file restored by md5sum -c) rather than written down as
+        # entries this run cannot prove.
+        "a name that only folds onto one in the directory is taken without asking the system",
+        "internal/engine/preflight.go",
+        "if _, err := os.Lstat(path); errors.Is(err, fs.ErrNotExist) {",
+        "if _, err := os.Lstat(path); false && errors.Is(err, fs.ErrNotExist) {",
+        "TestAFileWhoseNameDiffersOnlyInCaseIsNotWrittenOver",
+    ),
+    (
+        # The finder stops following the name a file imports context under, so
+        # `ctxpkg.Background()` walks past it - and a file that renames the
+        # import is a file the class guard no longer reads.
+        "the context finder looks for the package under its own name only",
+        "internal/guard/contextroots_test.go",
+        "name = imp.Name.Name",
+        "name = \"context\"",
+        "TestTheContextFinderSeesEveryShapeOfTheCall",
     ),
 ]

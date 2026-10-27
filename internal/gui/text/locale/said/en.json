@@ -891,6 +891,11 @@
     "hash": "sha256-cc110e79b974",
     "other": "{{.Path}} already exists and this run will not write over it. It is the only record of what an earlier run wrote, so replacing it would leave those files with nothing to remove them by. Generate into an empty directory, or move the old manifest aside"
   },
+  "engine.CollisionOtherCase": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, {{.OnDisk}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-b0a9d4ed13aa",
+    "other": "{{.Path}} already exists as {{.OnDisk}}, and this system does not tell the two names apart, so this run would write over it. Generate into an empty directory, or remove the file first"
+  },
   "engine.ControlCharacter": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Code}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-519de8af1277",
