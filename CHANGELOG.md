@@ -59,6 +59,12 @@ because it turns other people's test suites red.
   rest without a word, and the set still expected such a workbook to be
   accepted, certain. Past that width `sheet.xlsx` is now `unspecified` for
   `count_limit`, like the wide CSV beside it. Up to it, nothing changes.
+- **A picture too low for its label no longer says it carries one.** The
+  label is drawn as large as the width allows, so a low picture cuts it off,
+  and a BMP 512 px wide and 1 px tall said `label_embedded: true` with no
+  text in it at all. Every image format and both film formats now say
+  `false` with a `label_omitted` note when the text is not whole in the
+  picture. The pixels are the same as before.
 - **`tfg cleanup --yes` keeps a file that changed after it was checked.**
   Cleanup checks every file before it removes any, and a file changed in that
   time was removed without `--force`. It now looks again just before it

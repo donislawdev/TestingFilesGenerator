@@ -427,6 +427,7 @@
   "html.MinimumWithSettings": { "hash": "sha256-8e1412a53466", "other": "plik zawiera całe bloki i to, co dokładają do nich {{.Nesting}}, {{.Characters}}, {{.Elements}}, {{.Links}}, {{.BOM}}, {{.Formatting}} i {{.Styles}}, a razem potrzebują tyle" },
   "html.ThePictureCannotBe": { "hash": "sha256-2c602605a691", "other": "html: obrazek {{.Format}} nie może powstać: {{.Err}}" },
   "html.UseOneOfThePictureFormats": { "hash": "sha256-a6669f6abe6b", "other": "Użyj jednego z: {{.Formats}}." },
+  "imagelabel.ThePictureIsPxTallAnd": { "hash": "sha256-238ba2886f79", "other": "Obrazek ma {{.Height}} px wysokości, a etykieta potrzebuje {{.Needs}} px, więc jej tekst jest ucięty i ten plik nie niesie czytelnej etykiety. Wciąż wskazują go jego nazwa i manifest." },
   "json.HasToBeStyle": { "hash": "sha256-c1343585d922", "other": "musi to być {{.Indented}}, {{.Minified}} albo {{.RecordPerLine}}" },
   "jxl.MinimumReason": { "hash": "sha256-8031f7cf3cc6", "other": "najmniejszy obrazek, jaki rysuje ten format, koduje się w najgorszym razie do {{.Coded}} B, kontener wokół niego kosztuje {{.Container}} B, a plik zawsze niesie wolny blok, który kosztuje {{.Box}} B nawet pusty" },
   "jxl.MinimumReasonOwn": { "hash": "sha256-08ce5283cdaa", "other": "obrazek {{.Width}}x{{.Height}} w jakości {{.Quality}} koduje się do {{.Coded}} B, kontener wokół niego kosztuje {{.Container}} B, a plik zawsze niesie wolny blok, który kosztuje {{.Box}} B nawet pusty" },

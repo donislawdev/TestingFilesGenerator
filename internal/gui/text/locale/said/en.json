@@ -2145,6 +2145,11 @@
     "hash": "sha256-a6669f6abe6b",
     "other": "Use one of: {{.Formats}}."
   },
+  "imagelabel.ThePictureIsPxTallAnd": {
+    "description": "Said by internal/format/imagelabel - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Height}}, {{.Needs}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-238ba2886f79",
+    "other": "The picture is {{.Height}} px tall and the label needs {{.Needs}} px, so its text is cut off and this file carries no readable label. Its name and the manifest still identify it."
+  },
   "json.HasToBeStyle": {
     "description": "Said by internal/format/jsonfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Indented}}, {{.Minified}}, {{.RecordPerLine}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-c1343585d922",

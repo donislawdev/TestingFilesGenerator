@@ -15762,4 +15762,48 @@ MUTATIONS = [
         "if wide, _ := strconv.Atoi(columns); wide >= spreadsheetColumns {",
         "TestTheSpreadsheetIsExpectedWholeOnlyAsWideAsASpreadsheet",
     ),
+    # R14 (docs/STABILITY-REVIEW-2026-10-26.md): a picture says it carries its
+    # label only when the text of the label is whole in it.
+    (
+        "a label cut off at the foot of a low picture is said to be carried",
+        "internal/format/imagelabel/imagelabel.go",
+        "if !drawn || Readable(width, height, chars) {",
+        "if true {",
+        "TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole",
+    ),
+    (
+        "a label is called readable from its width alone",
+        "internal/format/imagelabel/imagelabel.go",
+        "return Fits(width, chars) && height >= textHeight(width, chars)",
+        "return Fits(width, chars)",
+        "TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole",
+    ),
+    (
+        "a label whole in its picture is called cut off",
+        "internal/format/imagelabel/imagelabel.go",
+        "return Fits(width, chars) && height >= textHeight(width, chars)",
+        "return Fits(width, chars) && height > 1<<20",
+        "TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole",
+    ),
+    (
+        "a film says it carries a label cut off at the foot of its picture",
+        "internal/format/video/choose.go",
+        "return Labelled(c.Width, c.Label) && imagelabel.Readable(c.Width, c.Height, len(c.Label))",
+        "return Labelled(c.Width, c.Label)",
+        "TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole",
+    ),
+    (
+        "a BMP says it carries a label cut off at the foot of its picture",
+        "internal/format/bmp/bmp.go",
+        "labelled, p.Notes = imagelabel.Claim(labelled, w, h, len(label), p.Notes)",
+        "labelled, p.Notes = imagelabel.Claim(labelled, w, 1<<20, len(label), p.Notes)",
+        "TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole",
+    ),
+    (
+        "an AVIF says it carries a label cut off at the foot of its picture",
+        "internal/format/avif/avif.go",
+        "carries, p.Notes = imagelabel.Claim(carries, m.width, m.height, len(label), p.Notes)",
+        "carries, p.Notes = imagelabel.Claim(carries, m.width, 1<<20, len(label), p.Notes)",
+        "TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole",
+    ),
 ]

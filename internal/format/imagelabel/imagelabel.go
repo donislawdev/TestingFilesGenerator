@@ -1,13 +1,16 @@
 // Package imagelabel draws the self describing label into pixels.
 //
-// Seven image formats burn the same label, so they share one rasteriser
-// rather than carrying seven copies of it.
+// The image formats and the films burn the same label, so they share one
+// rasteriser rather than carrying a copy each.
 package imagelabel
 
 import (
 	"image"
 	"image/color"
 	"image/draw"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
 
 // Padding around the text inside its band, in scaled pixels.
@@ -88,8 +91,49 @@ func drawGlyph(img draw.Image, g string, x, y, scale int, ink color.Color) {
 // Fits says whether a label would be drawn at all at this width. The caller
 // needs to know before planning, so that a picture too small to carry one is
 // reported rather than quietly unlabelled.
+//
+// It decides whether Draw is called, and only that. Whether the label can be
+// READ is Readable, because a label is drawn by its width and can still be cut
+// off at the foot of a low picture.
 func Fits(width, chars int) bool {
 	return scaleFor(width, chars) > 0
+}
+
+// Readable says whether a label drawn across width is whole in a picture of
+// this height - every row of every glyph inside it. The padding below the text
+// may be cut, the text itself may not.
+//
+// What the manifest says of a picture is this, not Fits. Until 2026-10-27 it
+// was Fits, and a picture 512 px wide and 1 px tall said it carried its label
+// with not one pixel of text in it (docs/STABILITY-REVIEW-2026-10-26.md, R14).
+// Draw is unchanged, so the pixels of such a picture are what they were - the
+// owner's decision, because they are bytes somebody's suite has a hash of
+// (D11) - and only what is said about them moved.
+func Readable(width, height, chars int) bool {
+	return Fits(width, chars) && height >= textHeight(width, chars)
+}
+
+// Claim is what a plan says about a label: drawn is whether it is drawn at
+// all, which the caller decides with Fits and reports in its own words when it
+// is not. A label drawn and cut off at the foot of the picture is not carried
+// either, and the note saying so goes after the notes given.
+//
+// One place for the eleven formats that draw the label, so the sentence and
+// the answer cannot come apart between them.
+func Claim(drawn bool, width, height, chars int, notes []format.Note) (bool, []format.Note) {
+	if !drawn || Readable(width, height, chars) {
+		return drawn, notes
+	}
+	return false, append(notes, format.Note{
+		Code: "label_omitted",
+		Detail: core.Says("imagelabel.ThePictureIsPxTallAnd", "The picture is %d px tall and the label needs %d px, so its text is cut off and this file carries no readable label. Its name and the manifest still identify it.",
+			core.A("Height", height), core.A("Needs", textHeight(width, chars))),
+	})
+}
+
+// textHeight is how many rows from the top the text of a label reaches.
+func textHeight(width, chars int) int {
+	return pad + glyphHeight*scaleFor(width, chars)
 }
 
 // Cells is where Draw puts the characters of a text: character k covers the
