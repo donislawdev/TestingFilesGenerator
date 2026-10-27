@@ -1397,7 +1397,7 @@ jobs:
           # licence gate then blocks two packages of it (review of #173,
           # docs/REVIEW-173-2026-10-07.md). Whether CI-only tools belong under
           # that gate is the owner's decision, not a fix.
-          npm install --prefix "$RUNNER_TEMP/mailparser" mailparser@3.9.36
+          npm install --prefix "$RUNNER_TEMP/mailparser" mailparser@3.10.0
           echo "TFG_MAILPARSER=$RUNNER_TEMP/mailparser/node_modules/mailparser" >> "$GITHUB_ENV"
           node -e "console.log('mailparser', require(process.argv[1] + '/package.json').version)" "$RUNNER_TEMP/mailparser/node_modules/mailparser"
 
