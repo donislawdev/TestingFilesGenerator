@@ -15640,4 +15640,56 @@ MUTATIONS = [
         "return 0, nil",
         "TestTheRecordARunIsToldBeforehandIsTheRecordItWrites",
     ),
+    # R17 (docs/STABILITY-REVIEW-2026-10-26.md): a size with a decimal point is
+    # read to the byte, not through a float, and a hostile one is answered
+    # without reading all of it.
+    (
+        "a fraction longer than sixty digits is taken as whole when its first sixty are",
+        "internal/core/size.go",
+        "return n, !long && rest.Sign() == 0",
+        "return n, rest.Sign() == 0",
+        "TestASizeWithADecimalPointIsReadToTheByte",
+    ),
+    (
+        "a fraction just under the largest size asks for a byte past it",
+        "internal/core/size.go",
+        "if !n.IsInt64() || (!exact && n.Int64() == math.MaxInt64) {",
+        "if !n.IsInt64() {",
+        "TestASizeWithADecimalPointIsReadToTheByte",
+    ),
+    (
+        "four million digits before the point are read one by one",
+        "internal/core/size.go",
+        "if len(whole) > 19 {",
+        "if len(whole) > 19 && false {",
+        "TestASizeWithADecimalPointIsReadToTheByte",
+    ),
+    (
+        "a fraction of four million digits is read to its end",
+        "internal/core/size.go",
+        "long := len(fraction) > fractionDigits",
+        "long := false",
+        "TestASizeWithADecimalPointIsReadToTheByte",
+    ),
+    (
+        "a decimal size forgets its unit",
+        "internal/core/size.go",
+        "n.Mul(n, big.NewInt(unit))",
+        "n.Mul(n, big.NewInt(1))",
+        "TestEveryExactDecimalOfAUnitReadsBackAsItself",
+    ),
+    (
+        "a negative size with a decimal point is taken as its size without the sign",
+        "internal/core/size.go",
+        "if negative && (whole != \"\" || fraction != \"\") {",
+        "if negative && false {",
+        "TestNonsenseSizesAreRefusedWithAUsefulMessage",
+    ),
+    (
+        "a size with two signs is read as the number after them",
+        "internal/core/size.go",
+        "if s != \"\" && (s[0] == '+' || s[0] == '-') {\n\t\ts = s[1:]\n\t}",
+        "s = strings.TrimPrefix(strings.TrimPrefix(s, \"+\"), \"-\")",
+        "TestNonsenseSizesAreRefusedWithAUsefulMessage",
+    ),
 ]

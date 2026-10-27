@@ -2,6 +2,7 @@ package core
 
 import (
 	"math"
+	"math/big"
 	"strconv"
 	"strings"
 )
@@ -65,8 +66,9 @@ func ParseSize(s string) (int64, error) {
 		return n * multiplier, nil
 	}
 
-	// Only the spellings a person writes. ParseFloat also takes exponents, hex
-	// floats and the words for infinity, and none of those describes a file.
+	// Only the spellings a person writes. ParseFloat, which read these until
+	// 2026-10-27, also took exponents, hex floats and the words for infinity,
+	// and none of those describes a file.
 	//
 	// Measured on 2026-08-03: "--size 1e5" quietly meant 100000 bytes, while
 	// the recipe refuses "1_000" and "0x10" outright, with the reasoning that
@@ -80,34 +82,82 @@ func ParseSize(s string) (int64, error) {
 		return 0, RefuseAbout(SettingSize, Says("core.SizeNotPlain",
 			"{setting} %q is not a plain number: write the digits out, as 10mb, 1.5gib or 1048576. Spellings such as 1e5, 0x10 or 1_000 are refused rather than guessed at, the same as in a recipe", A("Value", s)))
 	}
+	return parseDecimal(s, digits, multiplier)
+}
 
-	f, err := strconv.ParseFloat(digits, 64)
-	if err != nil {
-		return 0, RefuseAbout(SettingSize, Says("core.SizeNotANumber", "{setting} %q is not a number: write something like 10mb, 1.5gib or 1048576", A("Value", s)))
-	}
-	if f < 0 {
+// parseDecimal is ParseSize for a number with a decimal point, s being what
+// was written and digits its number, already known to be plain.
+func parseDecimal(s, digits string, multiplier int64) (int64, error) {
+	negative, whole, fraction := splitDecimal(digits)
+	if negative && (whole != "" || fraction != "") {
 		return 0, sizeNegative(s)
 	}
-
-	exact := f * float64(multiplier)
-	// The boundary itself has to go, not just what is above it. A float64
-	// cannot hold MaxInt64 exactly - the nearest value it has is 2^63, one past
-	// the largest int64 - so "greater than MaxInt64" compares 2^63 against 2^63
-	// and is false, and the conversion below then wraps to a negative size.
-	//
-	// Found by fuzzing on 2026-08-02, not by reading: "9223372036854775808" was
-	// accepted and came back as -9223372036854775808. ParseInt refuses it for
-	// being out of range, so it reaches the float path, which does not.
-	if exact >= float64(math.MaxInt64) {
+	// Twenty digits before the point is ten to the nineteenth at the least,
+	// already past the largest int64 before any unit multiplies it.
+	if len(whole) > 19 {
 		return 0, sizeTooLarge(s)
 	}
-	n := int64(exact)
-	if exact != math.Trunc(exact) {
-		return 0, RefuseAbout(SettingSize, Says("core.SizeNotWhole",
-			"{setting} %q is not a whole number of bytes: it works out to %.4f bytes. Ask for %d or %d instead",
-			A("Value", s), A("Exact", exact), A("Below", n), A("Above", n+1)))
+	n, exact := decimalBytes(whole, fraction, multiplier)
+	if !n.IsInt64() || (!exact && n.Int64() == math.MaxInt64) {
+		return 0, sizeTooLarge(s)
 	}
-	return n, nil
+	if !exact {
+		return 0, RefuseAbout(SettingSize, Says("core.SizeNotWhole",
+			"{setting} %q is not a whole number of bytes: it falls between %d and %d. Ask for one of the two instead",
+			A("Value", s), A("Below", n.Int64()), A("Above", n.Int64()+1)))
+	}
+	return n.Int64(), nil
+}
+
+// splitDecimal takes a plain decimal apart into its sign, the digits before the
+// point without the zeros that lead them and the digits after it without the
+// zeros that end them - so a part that is nought is empty.
+func splitDecimal(digits string) (negative bool, whole, fraction string) {
+	negative = strings.HasPrefix(digits, "-")
+	digits = strings.TrimPrefix(strings.TrimPrefix(digits, "+"), "-")
+	whole, fraction, _ = strings.Cut(digits, ".")
+	return negative, strings.TrimLeft(whole, "0"), strings.TrimRight(fraction, "0")
+}
+
+// fractionDigits is how many digits after the point decimalBytes reads.
+//
+// A fraction lands on a whole byte only when the unit cancels its
+// denominator, and the largest unit is 2^40, which cancels 2^40 of the 10^k
+// and none of the 5^k - so the fraction has to be a multiple of 5^k with k at
+// most 40 once its trailing zeros are gone. A longer one is never whole, and
+// only the byte below it is still asked for. That byte is decided by the
+// first sixty digits: what they leave over is a multiple of the unit short of
+// the next byte, and every digit after them adds less than the unit times
+// 10^-60. Reading no further keeps the cost the same for a fraction of sixty
+// digits and for one of a million, which is what an argument or a recipe
+// written to be hostile can send (untouchable rule 23).
+const fractionDigits = 60
+
+// decimalBytes is whole.fraction times the unit, to the byte below when it is
+// not a whole number of bytes, and whether it is.
+//
+// Until 2026-10-27 this went through float64, which carries 53 bits, and a
+// fraction too fine for it was rounded before anyone asked whether it was
+// whole: 255.99999999999999B became 256 B, 1.0000000000000001kb 1024 B and
+// 9007199254740993.0B a byte smaller than asked, each without a word (D6).
+// Exact arithmetic on the digits is the only way the question is answered
+// about the number somebody wrote rather than about its nearest float.
+func decimalBytes(whole, fraction string, unit int64) (*big.Int, bool) {
+	long := len(fraction) > fractionDigits
+	if long {
+		fraction = fraction[:fractionDigits]
+	}
+	scale := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(len(fraction))), nil)
+	// Both parts are digits only - plainDecimal let nothing else through - and
+	// both are empty when the number is nought.
+	n := new(big.Int)
+	if both := whole + fraction; both != "" {
+		n.SetString(both, 10)
+	}
+	n.Mul(n, big.NewInt(unit))
+	rest := new(big.Int)
+	n.QuoRem(n, scale, rest)
+	return n, !long && rest.Sign() == 0
 }
 
 // sizeNegative and sizeTooLarge are two refusals ParseSize gives from two
@@ -125,8 +175,14 @@ func sizeTooLarge(s string) error {
 //
 // Leading zeros are allowed and mean nothing, which matches how the recipe
 // reads a number: 010 is ten because that is what it looks like.
+//
+// One sign, not one of each. "+-5.5" passed here until 2026-10-27 and was
+// refused only because the float parser behind it refused it - and the digits
+// are read by splitDecimal now, which would have taken it for 5.5.
 func plainDecimal(s string) bool {
-	s = strings.TrimPrefix(strings.TrimPrefix(s, "+"), "-")
+	if s != "" && (s[0] == '+' || s[0] == '-') {
+		s = s[1:]
+	}
 	if s == "" {
 		return false
 	}

@@ -660,20 +660,15 @@
     "hash": "sha256-19e757667a89",
     "other": "{{.Setting}} {{.Value}} has no number: write something like 10mb or 1048576"
   },
-  "core.SizeNotANumber": {
-    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-3a5e57f1b8ed",
-    "other": "{{.Setting}} {{.Value}} is not a number: write something like 10mb, 1.5gib or 1048576"
-  },
   "core.SizeNotPlain": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-0b892bed8bee",
     "other": "{{.Setting}} {{.Value}} is not a plain number: write the digits out, as 10mb, 1.5gib or 1048576. Spellings such as 1e5, 0x10 or 1_000 are refused rather than guessed at, the same as in a recipe"
   },
   "core.SizeNotWhole": {
-    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, {{.Exact}}, {{.Below}}, {{.Above}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-e52c1a8c1d1f",
-    "other": "{{.Setting}} {{.Value}} is not a whole number of bytes: it works out to {{.Exact}} bytes. Ask for {{.Below}} or {{.Above}} instead"
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, {{.Below}}, {{.Above}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-b91e69ae02ee",
+    "other": "{{.Setting}} {{.Value}} is not a whole number of bytes: it falls between {{.Below}} and {{.Above}}. Ask for one of the two instead"
   },
   "core.SizeTooLarge": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",

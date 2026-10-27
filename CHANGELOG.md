@@ -35,6 +35,13 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A size with a decimal point is read to the byte.** A fraction finer than
+  the arithmetic behind it was rounded without a word, so
+  `--size 255.99999999999999B` made a file of 256 B and `9007199254740993.0B`
+  planned one a byte smaller than asked. Such a size is now refused with the
+  two whole numbers around it, wherever a size is written - flags, recipes,
+  presets and the window. A size that lands on a whole byte gives the same
+  file as before.
 - **`tfg cleanup --yes` keeps a file that changed after it was checked.**
   Cleanup checks every file before it removes any, and a file changed in that
   time was removed without `--force`. It now looks again just before it

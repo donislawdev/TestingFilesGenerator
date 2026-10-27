@@ -103,7 +103,6 @@ var notProvenByMutation = map[string]bool{
 	"TestLayeringHoldsForEveryPackage":                                true,
 	"TestNoNetworkImports":                                            true,
 	"TestNoProcessExecutionInLowerLayers":                             true,
-	"TestNonsenseSizesAreRefusedWithAUsefulMessage":                   true,
 	"TestNothingIsEverWrittenOverInSilence":                           true,
 	"TestOracleStaysOutOfProductionCode":                              true,
 	"TestPlanningTenThousandFilesStaysCheap":                          true,
