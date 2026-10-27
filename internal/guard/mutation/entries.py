@@ -8678,8 +8678,8 @@ MUTATIONS = [
     (
         "snapping starts from somewhere that depends on how many files were asked for",
         "internal/engine/drawsizes.go",
-        "\t\tgot, err := firstWritable(desc, req, want, t.Range.Max)",
-        "\t\tgot, err := firstWritable(desc, req, want+int64(len(t.Sizes)), t.Range.Max)",
+        "\t\tgot, err := firstWritable(ctx, desc, req, want, t.Range.Max)",
+        "\t\tgot, err := firstWritable(ctx, desc, req, want+int64(len(t.Sizes)), t.Range.Max)",
         "TestSnappingStillLeavesTheEarlierFilesAlone",
     ),
     # --- HTML is a whole page or only the blocks that sit inside one
@@ -15832,5 +15832,24 @@ MUTATIONS = [
         "return Fits(width, chars) && height >= textHeight(width, chars)",
         "return Fits(width, chars) && height > textHeight(width, chars)",
         "TestALabelIsReadableFromTheFirstHeightThatHoldsItsText",
+    ),
+    (
+        # R05: a probe of the range draw plans the file with a context of its
+        # own again, so a stop waits for the whole draw. The range under the
+        # pdf floor is refused by the format in both halves of the guard.
+        "a range draws its sizes without looking at the stop",
+        "internal/engine/drawsizes.go",
+        "_, err := planWithoutCrashing(ctx, desc, r)",
+        "_, err := planWithoutCrashing(context.Background(), desc, r)",
+        "TestARangeStopsWhileItsSizesAreDrawn",
+    ),
+    (
+        # The same, one layer up: the engine stops handing its context to the
+        # draw, which is the shape the draw had from 2026-09-08 until R05.
+        "the engine draws the sizes of a range with a context of its own",
+        "internal/engine/engine.go",
+        "if err := drawSizes(ctx, t, desc, core.TargetSeed(opt.Seed, t.ID)); err != nil {",
+        "if err := drawSizes(context.Background(), t, desc, core.TargetSeed(opt.Seed, t.ID)); err != nil {",
+        "TestARangeStopsWhileItsSizesAreDrawn",
     ),
 ]

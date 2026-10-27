@@ -41,11 +41,11 @@ import (
 // SmallestAccepted is called from guards and from the window, where that wrapper
 // is not in hand. Merging them would mean handing a planner in, which buys less
 // than it costs.
-func firstWritable(desc format.Descriptor, r format.Request, from, limit int64) (int64, error) {
+func firstWritable(ctx context.Context, desc format.Descriptor, r format.Request, from, limit int64) (int64, error) {
 	var first error
 	for at := from; at <= limit; {
 		r.Bytes = at
-		_, err := planWithoutCrashing(context.Background(), desc, r)
+		_, err := planWithoutCrashing(ctx, desc, r)
 		if err == nil {
 			return at, nil
 		}
@@ -100,7 +100,15 @@ func firstWritable(desc format.Descriptor, r format.Request, from, limit int64) 
 // Bytes do not move for any run that worked before. A run that succeeds today
 // has every drawn size writable, or it would have failed, and snapping a
 // writable size returns it unchanged.
-func drawSizes(t *Target, desc format.Descriptor, targetSeed uint64) error {
+//
+// It takes the run's context because drawing IS planning: every probe plans
+// the file, and a jpg plans by encoding its picture. Until 2026-10-27 each
+// probe got a context of its own, so a stop waited for the draw to finish -
+// 13.7 to 15.8 s after Ctrl+Break for three thousand jpg files, where a fixed
+// size stopped in 0.01 s (docs/STABILITY-REVIEW-2026-10-26.md, R05).
+// format.PlanWith asks the context before anything else, and a stop is not a
+// refusal about the size, so firstWritable hands it straight back.
+func drawSizes(ctx context.Context, t *Target, desc format.Descriptor, targetSeed uint64) error {
 	first := format.Request{
 		Contains:   t.Contains,
 		Seed:       core.FileSeed(targetSeed, 0),
@@ -120,7 +128,7 @@ func drawSizes(t *Target, desc format.Descriptor, targetSeed uint64) error {
 	// UTF-16, the band above a PNG's encoded picture - is a different thing:
 	// nobody can be expected to enumerate those, and snapping inside the range
 	// is the answer.
-	floor, err := firstWritable(desc, first, 0, t.Range.Max)
+	floor, err := firstWritable(ctx, desc, first, 0, t.Range.Max)
 	if err != nil {
 		// The floor is above the whole range, so nothing in it is writable.
 		return err
@@ -129,7 +137,7 @@ func drawSizes(t *Target, desc format.Descriptor, targetSeed uint64) error {
 		// Asked again at the low end so the format words its own refusal, with
 		// the number the person actually wrote.
 		first.Bytes = t.Range.Min
-		if _, err := planWithoutCrashing(context.Background(), desc, first); err != nil {
+		if _, err := planWithoutCrashing(ctx, desc, first); err != nil {
 			return err
 		}
 	}
@@ -154,13 +162,14 @@ func drawSizes(t *Target, desc format.Descriptor, targetSeed uint64) error {
 			Properties: t.Properties,
 		}
 
-		got, err := firstWritable(desc, req, want, t.Range.Max)
+		got, err := firstWritable(ctx, desc, req, want, t.Range.Max)
 		if err != nil && want > t.Range.Min {
 			// Nothing writable from the draw upwards. The bottom of the range
 			// can still hold something - a draw landing on the last odd number
 			// of a range has nowhere above it and plenty below - so the range is
-			// only empty once THAT fails too.
-			got, err = firstWritable(desc, req, t.Range.Min, t.Range.Max)
+			// only empty once THAT fails too. After a stop this second try
+			// hands the stop back at its first probe.
+			got, err = firstWritable(ctx, desc, req, t.Range.Min, t.Range.Max)
 		}
 		if err != nil {
 			return err
