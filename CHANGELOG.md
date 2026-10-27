@@ -35,6 +35,21 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **Ctrl+C stops a run that draws its sizes from a range.** With
+  `--size-range`, every file was tried at its drawn size before anything else,
+  and that part did not look at Ctrl+C - three thousand JPG files went on for
+  about fifteen seconds after it. It now stops at once, `--dry-run` and
+  `validate` included.
+- **Ctrl+C stops a large DOCX, PPTX or XLSX at once.** The padding of a large
+  Office file is generated twice, once to sum it and once to write it, and the
+  first pass did not look at Ctrl+C - about half a second for a 2 GB file. It
+  now stops in the middle of it.
+- **A file whose name differs from a planned one only in case is never
+  written over.** On Windows and macOS `FILES_0001.TXT` and `files_0001.txt`
+  are one file, and `--dry-run` said nothing was in the way while the run
+  wrote the other files before it stopped with code 8. Such a run is now
+  refused with code 5 before anything is written, naming the file that is
+  there. Where names keep case apart, both are written as before.
 - **A size with a decimal point is read to the byte.** A fraction finer than
   the arithmetic behind it was rounded without a word, so
   `--size 255.99999999999999B` made a file of 256 B and `9007199254740993.0B`
