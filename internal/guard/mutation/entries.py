@@ -15852,4 +15852,32 @@ MUTATIONS = [
         "if err := drawSizes(context.Background(), t, desc, core.TargetSeed(opt.Seed, t.ID)); err != nil {",
         "TestARangeStopsWhileItsSizesAreDrawn",
     ),
+    (
+        # R09: the write stops handing its context to the checksum pass, so a
+        # stop during it waits for four gigabytes of padding to be hashed.
+        "an Office package checksums its padding without looking at the stop",
+        "internal/format/opc/opc.go",
+        "sum, err := fillerChecksum(ctx, p.Seed, p.Filler)",
+        "sum, err := fillerChecksum(context.Background(), p.Seed, p.Filler)",
+        "TestAnOfficePackageStopsWhileItChecksumsItsPadding",
+    ),
+    (
+        # The same, one layer down: the pass takes the context and does not
+        # use it - the shape the pass had until R09.
+        "the checksum pass of the padding runs under a context of its own",
+        "internal/format/opc/opc.go",
+        "if err := writeFiller(ctx, sum, seed, n); err != nil {",
+        "if err := writeFiller(context.Background(), sum, seed, n); err != nil {",
+        "TestAnOfficePackageStopsWhileItChecksumsItsPadding",
+    ),
+    (
+        # The class guard on its own: a context from nothing in the engine, in
+        # a place no behaviour guard of R05 or R09 looks at. Only the walk over
+        # the source sees it, which is why that walk exists.
+        "the engine makes a context from nothing in a place nobody listed",
+        "internal/engine/plantarget.go",
+        "if err := ctx.Err(); err != nil {",
+        "if err := context.Background().Err(); err != nil {",
+        "TestAContextIsMadeFromNothingOnlyWhereItIsMeantToStart",
+    ),
 ]
