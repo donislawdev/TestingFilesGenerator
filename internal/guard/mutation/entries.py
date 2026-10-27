@@ -6151,8 +6151,8 @@ MUTATIONS = [
     (
         "the size-boundaries preset stops refusing a limit with no number above it",
         "internal/preset/limitset.go",
-        "if s.limit > math.MaxInt64-o.bytes {",
-        "if false && s.limit > math.MaxInt64-o.bytes {",
+        "if s.limit > math.MaxInt64-far.bytes {",
+        "if false && s.limit > math.MaxInt64-far.bytes {",
         "TestThePresetAnswersALimitTooLargeTheSameWayTheFlagDoes",
     ),
     (
@@ -15698,8 +15698,8 @@ MUTATIONS = [
     (
         "a set around a limit with no room above it wraps its step over the limit",
         "internal/preset/limitset.go",
-        "if s.limit > math.MaxInt64-o.bytes {",
-        "if s.limit > math.MaxInt64-o.bytes && false {",
+        "if s.limit > math.MaxInt64-far.bytes {",
+        "if s.limit > math.MaxInt64-far.bytes && false {",
         "TestEveryPresetAnswersTheLargestSizeAboutTheTop",
     ),
     (
@@ -15735,15 +15735,15 @@ MUTATIONS = [
     (
         "a message above the largest the format counts in is planned, and in base64 never comes back",
         "internal/format/eml/eml.go",
-        "if r.Bytes > maxMessage {",
-        "if r.Bytes > maxMessage && false {",
+        "if !r.SizeFromContents && r.Bytes > maxMessage {",
+        "if !r.SizeFromContents && r.Bytes > maxMessage && false {",
         "TestAnEMLAboveTheLargestMessageIsRefusedAtOnce",
     ),
     (
         "the largest message itself is refused",
         "internal/format/eml/eml.go",
-        "if r.Bytes > maxMessage {",
-        "if r.Bytes >= maxMessage {",
+        "if !r.SizeFromContents && r.Bytes > maxMessage {",
+        "if !r.SizeFromContents && r.Bytes >= maxMessage {",
         "TestAnEMLAboveTheLargestMessageIsRefusedAtOnce",
     ),
     # R16 (docs/STABILITY-REVIEW-2026-10-26.md): the spreadsheet is expected
@@ -15805,5 +15805,27 @@ MUTATIONS = [
         "carries, p.Notes = imagelabel.Claim(carries, m.width, m.height, len(label), p.Notes)",
         "carries, p.Notes = imagelabel.Claim(carries, m.width, 1<<20, len(label), p.Notes)",
         "TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole",
+    ),
+    # The review of 2026-10-27 on the R13 and R14 guards.
+    (
+        "the farthest step of a set is not the one asked whether it fits above the limit",
+        "internal/preset/limitset.go",
+        "if o.bytes > far.bytes {",
+        "if false {",
+        "TestEveryPresetAnswersTheLargestSizeAboutTheTop",
+    ),
+    (
+        "a limit too large for its spread is told the wrong limit to use instead",
+        "internal/preset/limitset.go",
+        "core.A(\"Most\", math.MaxInt64-far.bytes)",
+        "core.A(\"Most\", math.MaxInt64-1)",
+        "TestEveryPresetAnswersTheLargestSizeAboutTheTop",
+    ),
+    (
+        "a label whose text exactly fills the picture is called cut off",
+        "internal/format/imagelabel/imagelabel.go",
+        "return Fits(width, chars) && height >= textHeight(width, chars)",
+        "return Fits(width, chars) && height > textHeight(width, chars)",
+        "TestALabelIsReadableFromTheFirstHeightThatHoldsItsText",
     ),
 ]

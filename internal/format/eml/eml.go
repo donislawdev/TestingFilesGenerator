@@ -72,6 +72,9 @@ func (g generator) Plan(r format.Request) (format.Plan, error) {
 // PlanContext is Plan, stoppable between one file the message carries and the
 // next.
 func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan, error) {
+	if !r.SizeFromContents && r.Bytes > maxMessage {
+		return format.Plan{}, aboveLargest(r.Bytes)
+	}
 	s, err := parse(r.Properties)
 	if err != nil {
 		return format.Plan{}, err
@@ -102,27 +105,32 @@ func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan
 	return p, nil
 }
 
+// aboveLargest refuses a message asked for above the largest this format
+// counts in - before the files it carries are planned, so the answer is about
+// the size asked and comes at once whatever is attached.
+//
+// Until 2026-10-27 only the attachments were held to the ceiling, and a text
+// in base64 of 9223372036854775807B or one byte less never came back: near the
+// top of int64 the length of the encoded words wraps round, the search in
+// shareBase64 is handed a size that does not grow with them, and what it
+// leaves goes to empty lines, billions of them, one at a time
+// (docs/STABILITY-REVIEW-2026-10-26.md, R15). The search itself is left as it
+// is, because below this ceiling nothing in it can wrap. A message sized from
+// what it carries is not asked: its attachments have the ceiling already.
+func aboveLargest(asked int64) error {
+	return &format.AboveMaximumError{
+		Format:    "EML",
+		Requested: asked,
+		Maximum:   maxMessage,
+		Reason:    core.Says("eml.AMessageThisLargeCannotBe", "a message this large cannot be counted to the byte in this build"),
+		Hint:      core.Says("eml.AskForBOrLess", "Ask for %d B or less.", core.A("Most", maxMessage)),
+	}
+}
+
 // fit makes room for the label in a message of the size asked for, or says
 // why the size is too small. A label that does not fit is left out with a
 // note, as txt leaves it out - the minimum is the message without it.
 func fit(m *message, r format.Request) ([]format.Note, error) {
-	// The largest message first, before anything is counted at the size asked
-	// for. Until 2026-10-27 only the attachments were held to it, and a text in
-	// base64 of 9223372036854775807B or one byte less never came back: near the
-	// top of int64 the length of the encoded words wraps round, the search in
-	// shareBase64 is handed a size that does not grow with them, and what it
-	// leaves goes to empty lines, billions of them, one at a time
-	// (docs/STABILITY-REVIEW-2026-10-26.md, R15). The search itself is left as
-	// it is, because below this ceiling nothing in it can wrap.
-	if r.Bytes > maxMessage {
-		return nil, &format.AboveMaximumError{
-			Format:    "EML",
-			Requested: r.Bytes,
-			Maximum:   maxMessage,
-			Reason:    core.Says("eml.AMessageThisLargeCannotBe", "a message this large cannot be counted to the byte in this build"),
-			Hint:      core.Says("eml.AskForBOrLess", "Ask for %d B or less.", core.A("Most", maxMessage)),
-		}
-	}
 	bare := m.size()
 	if r.Bytes < bare {
 		// The reason a tester needs is the base64, when there is anything

@@ -227,8 +227,16 @@ func TestAnEMLAboveTheLargestMessageIsRefusedAtOnce(t *testing.T) {
 		t.Fatal(err)
 	}
 	const largest = int64(1) << 60
-	for _, encoding := range []string{"base64", "quoted-printable", "7bit"} {
-		props := map[string]string{"text_encoding": encoding}
+	// The last carries files, three of 2^59 B that add up past the ceiling
+	// on their own: the refusal is still about the size asked, so it is the
+	// size asked that comes first (found by review on 2026-10-27).
+	for _, props := range []map[string]string{
+		{"text_encoding": "base64"},
+		{"text_encoding": "quoted-printable"},
+		{"text_encoding": "7bit"},
+		{"text_encoding": "base64", "attachments": "3", "attachment_format": "txt", "attachment_size": "576460752303423488b"},
+	} {
+		encoding := props["text_encoding"] + " with " + props["attachments"] + " attachment(s)"
 		for _, size := range []int64{largest + 1, math.MaxInt64 - 1, math.MaxInt64} {
 			done := make(chan error, 1)
 			go func() {
@@ -238,14 +246,17 @@ func TestAnEMLAboveTheLargestMessageIsRefusedAtOnce(t *testing.T) {
 			select {
 			case err := <-done:
 				var above *format.AboveMaximumError
-				if !errors.As(err, &above) || above.Maximum != largest || above.Hint.IsZero() {
-					t.Errorf("%s at %d B gave %v, expected a refusal naming %d B as the largest", encoding, size, err, largest)
+				if !errors.As(err, &above) || above.Maximum != largest || above.Requested != size || above.Hint.IsZero() {
+					t.Errorf("%s at %d B gave %v, expected a refusal of that size naming %d B as the largest", encoding, size, err, largest)
 				}
 			case <-time.After(5 * time.Second):
 				t.Errorf("%s at %d B had no answer after five seconds", encoding, size)
 			}
 		}
 		// The largest itself is a message the format plans.
+		if props["attachments"] != "" {
+			continue
+		}
 		if _, err := d.Generator.Plan(format.Request{Bytes: largest, Seed: 1, Label: true, Properties: props}); err != nil {
 			t.Errorf("%s at the largest message, %d B, was refused: %v", encoding, largest, err)
 		}

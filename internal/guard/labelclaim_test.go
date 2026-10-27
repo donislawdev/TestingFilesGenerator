@@ -1,10 +1,13 @@
 package guard
 
 import (
+	"image"
 	"strconv"
 	"testing"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagelabel"
 )
 
 // A picture says it carries its label only when the text of the label is whole
@@ -47,7 +50,10 @@ func TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole(t *testing.T) {
 			if err != nil {
 				t.Fatalf("%s at %dx%d: %v", id, wide, tall, err)
 			}
-			embedded, _ := p.Properties[format.PropertyLabelEmbedded].(bool)
+			embedded, ok := p.Properties[format.PropertyLabelEmbedded].(bool)
+			if !ok {
+				t.Fatalf("%s at %dx%d has no label_embedded, or not a yes or no: %v", id, wide, tall, p.Properties[format.PropertyLabelEmbedded])
+			}
 			return embedded, p.Notes
 		}
 
@@ -61,6 +67,38 @@ func TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole(t *testing.T) {
 	}
 	if asked < 11 {
 		t.Fatalf("only %d format(s) declare a width and a height - the registry was not read", asked)
+	}
+}
+
+// A label is readable from the first height that holds every row its text is
+// drawn in, and not one row before - asked of the pixels Draw puts down rather
+// than of the arithmetic beside it, at each of the four scales a label is
+// drawn at. The guard above asks the lowest height and one with room, and an
+// answer one row out at the boundary passed it (found by review, 2026-10-27).
+func TestALabelIsReadableFromTheFirstHeightThatHoldsItsText(t *testing.T) {
+	label := core.Label("bmp", 2048, 1)
+	across := len(label)*4 + 4 // a glyph and its gap is four columns at scale 1, with the padding either side
+	for scale := 1; scale <= 4; scale++ {
+		width := across * scale
+		img := image.NewRGBA(image.Rect(0, 0, width, 64))
+		imagelabel.Draw(img, label)
+		band := img.RGBAAt(0, 0)
+		last := -1
+		for y := 0; y < 64; y++ {
+			for x := 0; x < width; x++ {
+				if c := img.RGBAAt(x, y); c != band && c.A != 0 {
+					last = y
+				}
+			}
+		}
+		if last < 0 {
+			t.Fatalf("no text was drawn at %d px across - the guard did not reach a drawn label", width)
+		}
+		holds := last + 1
+		if imagelabel.Readable(width, holds-1, len(label)) || !imagelabel.Readable(width, holds, len(label)) {
+			t.Errorf("at %d px across the text is drawn in the top %d rows, and Readable says %v at %d rows and %v at %d",
+				width, holds, imagelabel.Readable(width, holds-1, len(label)), holds-1, imagelabel.Readable(width, holds, len(label)), holds)
+		}
 	}
 }
 

@@ -3,6 +3,7 @@ package guard
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -67,6 +68,23 @@ func TestEveryPresetAnswersTheLargestSizeAboutTheTop(t *testing.T) {
 		if !errors.Is(err, core.ErrBoundaryTooLarge) {
 			t.Errorf("%s gave %v for a limit with no room above it, expected the refusal --boundary gives", id, err)
 		}
+	}
+
+	// A spread wider than a byte leaves numbers above the limit and no room
+	// for its farthest step. The refusal names the largest limit that would
+	// fit, ten bytes under the top here, and that limit builds - so the number
+	// the hint gives is one that works (found by review on 2026-10-27: the
+	// sentence said there was no number above a limit two bytes below it).
+	spread := preset.Args{"limit": "9223372036854775805b", "spread": "10b", "format": "txt"}
+	_, err := preset.Expand("size-boundaries", spread)
+	var impossible *preset.ImpossibleError
+	if !errors.As(err, &impossible) || !errors.Is(err, core.ErrBoundaryTooLarge) ||
+		!strings.Contains(impossible.Hint.String(), "9223372036854775797 B or less") {
+		t.Errorf("a limit two bytes under the top with a spread of 10b gave %v, expected the largest limit that fits", err)
+	}
+	spread["limit"] = "9223372036854775797b"
+	if _, err := preset.Expand("size-boundaries", spread); err != nil {
+		t.Errorf("the limit the refusal names was refused as well: %v", err)
 	}
 }
 

@@ -95,15 +95,24 @@ func (s limitSet) reachable(set []step) error {
 	// with advice pointing the wrong way. The check then went into that preset
 	// alone, and upload-validation, which lays out the same set, still gave
 	// that answer on 2026-10-27 (docs/STABILITY-REVIEW-2026-10-26.md, R13).
-	// Here it is asked of every set, and it is the same refusal --boundary
-	// gives.
+	// Here it is asked of every set, as the refusal --boundary gives to
+	// errors.Is, in words of its own: a spread wider than a byte leaves numbers
+	// above the limit and still no room for the farthest step, and "there is no
+	// number above this one" would be false. The farthest step decides, so the
+	// limit the hint names fits the whole set.
+	var far offset
 	for _, o := range s.spread {
-		if s.limit > math.MaxInt64-o.bytes {
-			return &ImpossibleError{
-				Preset: s.preset, Setting: s.setting,
-				Detail: core.BoundaryTooLargeWhy, Hint: core.BoundaryTooLargeFix,
-				Cause: core.ErrBoundaryTooLarge,
-			}
+		if o.bytes > far.bytes {
+			far = o
+		}
+	}
+	if s.limit > math.MaxInt64-far.bytes {
+		return &ImpossibleError{
+			Preset: s.preset, Setting: s.setting,
+			Detail: core.Says("preset.StepPastTheLargest", "%s would be %d B over the limit of %d B, more than the largest size there is, %d B",
+				core.A("Step", "over_"+far.text), core.A("Over", far.bytes), core.A("Limit", s.limit), core.A("Largest", int64(math.MaxInt64))),
+			Hint:  core.Says("preset.UseASettingOfAtMost", "Use a {setting} of %d B or less.", core.A("Most", math.MaxInt64-far.bytes)),
+			Cause: core.ErrBoundaryTooLarge,
 		}
 	}
 	floor := format.SmallestRemembered(s.desc, format.Request{Seed: 1, Label: true})
