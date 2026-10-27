@@ -20,8 +20,8 @@
 #
 # Licence read from the pinned version rather than recalled, on 2026-08-27:
 # LGPL-2.1-or-later, stated by the wheel metadata as a License-Expression and
-# carried in full beside it. Read again for 1.180.0 on 2026-10-14, the same.
-# It analyses the tree and is never linked into either binary.
+# carried in full beside it. Read again for 1.180.0 on 2026-10-14 and for
+# 1.181.0 on 2026-10-26, the same. It analyses the tree and is never linked into either binary.
 #
 # This is the one line a person writes. requirements-semgrep.txt next to it is
 # every package that line installs, pinned, and it is compiled from this file
@@ -43,4 +43,12 @@
 # job uses and the pip-tools Dependabot runs:
 #
 #   docker run --rm -v "$PWD/.github:/w" -w /w python:3.14-slim sh -c "pip install -q pip==26.1.1 pip-tools==7.5.3 && pip-compile --strip-extras --no-emit-index-url --output-file=requirements-semgrep.txt requirements-semgrep.in"
-semgrep==1.180.0
+#
+# To raise every package rather than only what a new line needs, add --upgrade,
+# and hold back what is younger than a week the way the cooldown in
+# .github/dependabot.yml does, with --pip-args '--uploaded-prior-to=<a week ago,
+# for example 2026-10-19T00:00:00Z>'. A security fix is the exception, as it is
+# for Dependabot: certifi 2026.10.23 (new roots, #204) is younger than that and
+# was put back by hand on 2026-10-26. Then run the plain command above once
+# more. If it changes nothing, pip accepts the set as it stands.
+semgrep==1.181.0

@@ -168,11 +168,11 @@ ruamel-yaml-clib==0.2.15
     # via semgrep
 semantic-version==2.10.0
     # via semgrep
-semgrep==1.180.0
+semgrep==1.181.0
     # via -r requirements-semgrep.in
 sse-starlette==3.5.0
     # via mcp
-starlette==1.8.0
+starlette==1.9.0
     # via
     #   mcp
     #   sse-starlette
