@@ -3068,10 +3068,15 @@ MUTATIONS = [
         # turning one of them into txt left md pinned by the other two and
         # the guard green - a mutation of one of two layers moves nothing.
         # pdf has one case, measured by counting Format: fields in the file.
+        #
+        # The same happened to png on 2026-10-27: a second png case pinning a
+        # picture whose label is cut off left png pinned after the mutation, and
+        # CI reported this entry as a HOLE. svg has one case, counted the same
+        # way across goldenCases and the maps it merges in.
         "a format quietly stops having its bytes pinned anywhere",
         "internal/guard/generatorbytes_test.go",
-        "\"png_64kib\": {ID: \"g\", Format: \"png\",",
-        "\"png_64kib\": {ID: \"g\", Format: \"txt\",",
+        "\"svg_8kib\":  {ID: \"g\", Format: \"svg\",",
+        "\"svg_8kib\":  {ID: \"g\", Format: \"txt\",",
         "TestEveryFormatHasAGoldenValue",
     ),
     (
