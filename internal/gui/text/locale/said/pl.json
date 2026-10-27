@@ -177,6 +177,7 @@
   "engine.Collision": { "hash": "sha256-9b5b48b73ad2", "other": "{{.Path}} już istnieje i ten przebieg go nie nadpisze. Generuj do pustego katalogu albo najpierw usuń ten plik" },
   "engine.CollisionInstructions": { "hash": "sha256-f380a98d3a7f", "other": "{{.Path}} już istnieje i ten przebieg go nie nadpisze. Mówi, do czego służą pliki wcześniejszego przebiegu. Generuj do pustego katalogu albo nazwij manifest tego przebiegu inaczej" },
   "engine.CollisionManifest": { "hash": "sha256-cc110e79b974", "other": "{{.Path}} już istnieje i ten przebieg go nie nadpisze. To jedyny zapis tego, co napisał wcześniejszy przebieg, więc zastąpienie go zostawiłoby tamte pliki bez niczego, czym można je usunąć. Generuj do pustego katalogu albo odsuń stary manifest na bok" },
+  "engine.CollisionOtherCase": { "hash": "sha256-b0a9d4ed13aa", "other": "{{.Path}} już istnieje jako {{.OnDisk}}, a ten system nie rozróżnia tych dwóch nazw, więc ten przebieg nadpisałby ten plik. Generuj do pustego katalogu albo najpierw usuń ten plik" },
   "engine.ControlCharacter": { "hash": "sha256-519de8af1277", "other": "znak sterujący U+{{.Code}}" },
   "engine.CrashPlanning": { "hash": "sha256-90f7d5da615f", "other": "planowania pliku" },
   "engine.CrashWhile": { "hash": "sha256-071bf3d7823e", "other": "{{.While}}" },

@@ -259,6 +259,12 @@ type CollisionError struct {
 	// Instructions is set when what is in the way is the instructions of an
 	// earlier run, which describe that run's files.
 	Instructions bool
+	// OnDisk is the name in the directory when it is spelt differently from
+	// the one this run would write - FILES_0001.TXT in the way of
+	// files_0001.txt on a system that ignores case. Empty when the two are the
+	// same spelling. Without it the refusal named a file nobody could find in
+	// the listing.
+	OnDisk string
 }
 
 func (e *CollisionError) Error() string { return e.Said().String() }
@@ -274,6 +280,11 @@ func (e *CollisionError) Said() core.Said {
 		return core.Says("engine.CollisionManifest",
 			"%s already exists and this run will not write over it. It is the only record of what an earlier run wrote, so replacing it would leave those files with nothing to remove them by. Generate into an empty directory, or move the old manifest aside",
 			core.A("Path", core.Shown(e.Path)))
+	}
+	if e.OnDisk != "" {
+		return core.Says("engine.CollisionOtherCase",
+			"%s already exists as %s, and this system does not tell the two names apart, so this run would write over it. Generate into an empty directory, or remove the file first",
+			core.A("Path", core.Shown(e.Path)), core.A("OnDisk", core.Shown(e.OnDisk)))
 	}
 	return core.Says("engine.Collision",
 		"%s already exists and this run will not write over it. Generate into an empty directory, or remove the file first",

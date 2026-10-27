@@ -150,14 +150,31 @@ func preflight(ctx context.Context, files []PlannedFile, opt Options, record Rec
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		if path := filepath.Join(opt.OutDir, f.Name); isTaken(taken, path, f.Name) {
-			return &CollisionError{Path: path}
+		path := filepath.Join(opt.OutDir, f.Name)
+		if hit, onDisk := taken.holds(path, f.Name); hit {
+			return &CollisionError{Path: path, OnDisk: onDisk}
 		}
-		if path := tempPathFor(opt.OutDir, f.Name); isTaken(taken, path, tempNameFor(f.Name)) {
-			return &CollisionError{Path: path}
+		temp := tempPathFor(opt.OutDir, f.Name)
+		if hit, onDisk := taken.holds(temp, tempNameFor(f.Name)); hit {
+			return &CollisionError{Path: temp, OnDisk: onDisk}
 		}
 	}
 	return nil
+}
+
+// listing is what the output directory holds, kept two ways: every name as it
+// is spelt, and every name folded the way a filesystem that ignores case
+// compares them, pointing back at each spelling on the disk with that fold.
+//
+// Each, rather than the first. FoldName joins pairs a filesystem keeps apart:
+// measured on 2026-10-27 on NTFS, STRASSE.txt and Stra\u00dfe.txt are two files
+// side by side and both fold to strasse.txt, and a lookup of stra\u00dfe.txt finds
+// the second. Keeping one spelling named STRASSE.txt - the file a refusal
+// would then tell somebody to remove, and the wrong one. Found by CodeRabbit
+// on #207 (docs/REVIEW-207-2026-10-27.md).
+type listing struct {
+	exact  map[string]struct{}
+	folded map[string][]string
 }
 
 // namesIn is every name the output directory holds, or nil when it could not be
@@ -172,36 +189,83 @@ func preflight(ctx context.Context, files []PlannedFile, opt Options, record Rec
 // A directory that does not exist yet is a different answer and a correct one:
 // it holds no names, nothing can collide, and that is the ordinary case for a
 // fresh run.
-func namesIn(dir string) map[string]struct{} {
+//
+// The folded half costs one core.FoldName a name, measured at 254 ns on
+// 2026-09-03 (docs/STABILITY-REVIEW-2026-09-02.md section 3.2) - about 2.5 ms
+// for a directory of ten thousand, against the 1.9 s that asking the system
+// about every planned name cost before the listing.
+func namesIn(dir string) *listing {
 	entries, err := os.ReadDir(dir)
 	if errors.Is(err, fs.ErrNotExist) {
-		return map[string]struct{}{}
+		return &listing{exact: map[string]struct{}{}, folded: map[string][]string{}}
 	}
 	if err != nil {
 		return nil
 	}
-	taken := make(map[string]struct{}, len(entries))
+	l := &listing{exact: make(map[string]struct{}, len(entries)), folded: make(map[string][]string, len(entries))}
 	for _, e := range entries {
-		taken[e.Name()] = struct{}{}
+		l.exact[e.Name()] = struct{}{}
+		key := collisionKey(e.Name())
+		l.folded[key] = append(l.folded[key], e.Name())
 	}
-	return taken
+	return l
 }
 
-// isTaken answers whether a name is already in use - from the listing when
-// there is one, and from the filesystem when there is not.
+// holds answers whether a name is already in use - from the listing when there
+// is one, and from the filesystem when there is not - and, when it is in use
+// under another spelling, which one.
 //
-// The two are not quite the same question and the listing asks the better one.
-// os.Stat follows a link, so a link pointing at nothing answered "no name
-// here" and the run went on to replace it. A directory ENTRY is what a name
-// being taken means, whatever it points at, and the rule this serves is that
-// nothing already there is written over. So the listing refuses a little more
-// than the stat did, in the direction that cannot lose somebody's work.
-func isTaken(taken map[string]struct{}, path, name string) bool {
-	if taken == nil {
-		return exists(path)
+// The listing asks the better question of the two. os.Stat follows a link, so
+// a link pointing at nothing answered "no name here" and the run went on to
+// replace it. A directory ENTRY is what a name being taken means, whatever it
+// points at, and the rule this serves is that nothing already there is written
+// over. So the listing refuses a little more than the stat did, in the
+// direction that cannot lose somebody's work.
+//
+// The listing compared spellings alone until 2026-10-27, and on a system that
+// ignores case that answered "free" for files_0001.txt beside FILES_0001.TXT:
+// --dry-run said nothing was in the way, and the run wrote the other files and
+// its manifest before the rename met the name (docs/STABILITY-REVIEW-2026-10-
+// 26.md, R07). A folded match is only a candidate, though. FoldName answers
+// whether two names could EVER be one file, on some system, and this has to
+// answer whether they are one on THIS one - a Linux directory holds both
+// spellings side by side and a run there is right to write its own. So the
+// system is asked about the path itself: Lstat finds it where the two are one
+// name, and not where they are two. Any answer other than "not there" counts
+// as taken, the same direction as above. The spelling named is the one that is
+// the same file as what Lstat found, and none is named when no candidate is -
+// the refusal then shows the path alone rather than a guess.
+//
+// What this cannot see, named rather than implied: a pair a filesystem joins
+// and FoldName does not. None is known - core/foldname.go records that
+// cases.Fold agreed with the filesystems on every pair tools/probes/casefold
+// asked about - and such a pair would still meet the protection at the
+// rename, as every case did before.
+func (l *listing) holds(path, name string) (bool, string) {
+	if l == nil {
+		return exists(path), ""
 	}
-	_, ok := taken[name]
-	return ok
+	if _, ok := l.exact[name]; ok {
+		return true, ""
+	}
+	candidates := l.folded[collisionKey(name)]
+	if len(candidates) == 0 {
+		return false, ""
+	}
+	here, err := os.Lstat(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return false, ""
+	}
+	if err != nil {
+		return true, ""
+	}
+	dir := filepath.Dir(path)
+	for _, onDisk := range candidates {
+		if there, err := os.Lstat(filepath.Join(dir, onDisk)); err == nil && os.SameFile(here, there) {
+			return true, onDisk
+		}
+	}
+	return true, ""
 }
 
 // tempPathFor is the name a file is written under before it is renamed into

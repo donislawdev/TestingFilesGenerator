@@ -136,6 +136,12 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	// Reached only where the filesystem folds case and still keeps STRASSE.txt
+	// apart from a sharp s spelling - NTFS does, the Linux the mutation job runs
+	// on keeps every case apart and APFS joins the pair, so no CI mutation of
+	// the branch can redden it.
+	"TestARefusalNamesTheFileThatIsReallyInTheWay": "broken by hand on Windows on 2026-10-27: os.SameFile(here, there) in listing.holds (preflight.go) turned into os.SameFile(there, there), so the first spelling of a fold is named. " +
+		"The guard went red saying the refusal named STRASSE.txt, and the file was put back and checked with md5sum -c.",
 	// Three guards each held by two layers, so no single substitution can redden
 	// them and each mutation of one layer scored a HOLE in the CI run of
 	// 2026-10-15. Broken that day in a worker tree, one layer at a time and then

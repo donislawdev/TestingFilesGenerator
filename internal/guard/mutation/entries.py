@@ -1673,8 +1673,8 @@ MUTATIONS = [
         # the collision check only ever looked at the name a file ends up with.
         "the name a file is written through is not checked for a collision",
         "internal/engine/preflight.go",
-        "if path := tempPathFor(opt.OutDir, f.Name); isTaken(taken, path, tempNameFor(f.Name)) {",
-        "if path := tempPathFor(opt.OutDir, f.Name); isTaken(taken, path, tempNameFor(f.Name)) && false {",
+        "if hit, onDisk := taken.holds(temp, tempNameFor(f.Name)); hit {",
+        "if hit, onDisk := taken.holds(temp, tempNameFor(f.Name)); hit && false {",
         "TestAFileUnderTheTemporaryNameIsNotWrittenOver",
     ),
     (
@@ -8283,8 +8283,8 @@ MUTATIONS = [
         # the old behaviour really did replace it.
         "a name held by a link pointing nowhere stops being a name that is taken",
         "internal/engine/preflight.go",
-        "\tif taken == nil {\n\t\treturn exists(path)\n\t}\n\t_, ok := taken[name]\n\treturn ok",
-        "\treturn exists(path)",
+        "\tif l == nil {\n\t\treturn exists(path), \"\"\n\t}",
+        "\tif true {\n\t\treturn exists(path), \"\"\n\t}",
         "TestANameTakenByALinkPointingNowhereIsStillTaken",
     ),
     (
@@ -8293,8 +8293,8 @@ MUTATIONS = [
         # The mutation has to be tried on one of those.
         "a directory that cannot be listed is read as an empty one, so a run writes over what is inside",
         "internal/engine/preflight.go",
-        "\tentries, err := os.ReadDir(dir)\n\tif errors.Is(err, fs.ErrNotExist) {\n\t\treturn map[string]struct{}{}\n\t}\n\tif err != nil {\n\t\treturn nil\n\t}",
-        "\tentries, err := os.ReadDir(dir)\n\tif errors.Is(err, fs.ErrNotExist) {\n\t\treturn map[string]struct{}{}\n\t}\n\tif err != nil {\n\t\treturn map[string]struct{}{}\n\t}",
+        "\t\treturn &listing{exact: map[string]struct{}{}, folded: map[string][]string{}}\n\t}\n\tif err != nil {\n\t\treturn nil\n\t}",
+        "\t\treturn &listing{exact: map[string]struct{}{}, folded: map[string][]string{}}\n\t}\n\tif err != nil {\n\t\treturn &listing{exact: map[string]struct{}{}, folded: map[string][]string{}}\n\t}",
         "TestADirectoryThatCannotBeListedIsStillAskedAboutEveryName",
     ),
     (
@@ -8678,8 +8678,8 @@ MUTATIONS = [
     (
         "snapping starts from somewhere that depends on how many files were asked for",
         "internal/engine/drawsizes.go",
-        "\t\tgot, err := firstWritable(desc, req, want, t.Range.Max)",
-        "\t\tgot, err := firstWritable(desc, req, want+int64(len(t.Sizes)), t.Range.Max)",
+        "\t\tgot, err := firstWritable(ctx, desc, req, want, t.Range.Max)",
+        "\t\tgot, err := firstWritable(ctx, desc, req, want+int64(len(t.Sizes)), t.Range.Max)",
         "TestSnappingStillLeavesTheEarlierFilesAlone",
     ),
     # --- HTML is a whole page or only the blocks that sit inside one
@@ -15832,5 +15832,90 @@ MUTATIONS = [
         "return Fits(width, chars) && height >= textHeight(width, chars)",
         "return Fits(width, chars) && height > textHeight(width, chars)",
         "TestALabelIsReadableFromTheFirstHeightThatHoldsItsText",
+    ),
+    (
+        # R05: a probe of the range draw plans the file with a context of its
+        # own again, so a stop waits for the whole draw. The range under the
+        # pdf floor is refused by the format in both halves of the guard.
+        "a range draws its sizes without looking at the stop",
+        "internal/engine/drawsizes.go",
+        "_, err := planWithoutCrashing(ctx, desc, r)",
+        "_, err := planWithoutCrashing(context.Background(), desc, r)",
+        "TestARangeStopsWhileItsSizesAreDrawn",
+    ),
+    (
+        # The same, one layer up: the engine stops handing its context to the
+        # draw, which is the shape the draw had from 2026-09-08 until R05.
+        "the engine draws the sizes of a range with a context of its own",
+        "internal/engine/engine.go",
+        "if err := drawSizes(ctx, t, desc, core.TargetSeed(opt.Seed, t.ID)); err != nil {",
+        "if err := drawSizes(context.Background(), t, desc, core.TargetSeed(opt.Seed, t.ID)); err != nil {",
+        "TestARangeStopsWhileItsSizesAreDrawn",
+    ),
+    (
+        # R09: the write stops handing its context to the checksum pass, so a
+        # stop during it waits for four gigabytes of padding to be hashed.
+        "an Office package checksums its padding without looking at the stop",
+        "internal/format/opc/opc.go",
+        "sum, err := fillerChecksum(ctx, p.Seed, p.Filler)",
+        "sum, err := fillerChecksum(context.Background(), p.Seed, p.Filler)",
+        "TestAnOfficePackageStopsWhileItChecksumsItsPadding",
+    ),
+    (
+        # The same, one layer down: the pass takes the context and does not
+        # use it - the shape the pass had until R09.
+        "the checksum pass of the padding runs under a context of its own",
+        "internal/format/opc/opc.go",
+        "if err := writeFiller(ctx, sum, seed, n); err != nil {",
+        "if err := writeFiller(context.Background(), sum, seed, n); err != nil {",
+        "TestAnOfficePackageStopsWhileItChecksumsItsPadding",
+    ),
+    (
+        # The class guard on its own: a context from nothing in the engine, in
+        # a place no behaviour guard of R05 or R09 looks at. Only the walk over
+        # the source sees it, which is why that walk exists.
+        "the engine makes a context from nothing in a place nobody listed",
+        "internal/engine/plantarget.go",
+        "if err := ctx.Err(); err != nil {",
+        "if err := context.Background().Err(); err != nil {",
+        "TestAContextIsMadeFromNothingOnlyWhereItIsMeantToStart",
+    ),
+    (
+        # R07: a name that only folds onto one in the directory is taken without
+        # asking the system. On a system that keeps case apart - the Linux this
+        # runs on in CI - that refuses a run which is right to write files_0001.txt
+        # beside FILES_0001.TXT.
+        #
+        # The other half of the check - the folded match itself, and the refusal
+        # naming the spelling on the disk - is reached only where the system
+        # folds, so a mutation of it is caught on Windows and macOS and would be
+        # a HOLE here. Both were proved by hand on Windows on 2026-10-27 (the
+        # guard red, the file restored by md5sum -c) rather than written down as
+        # entries this run cannot prove.
+        "a name that only folds onto one in the directory is taken without asking the system",
+        "internal/engine/preflight.go",
+        "here, err := os.Lstat(path)\n\tif errors.Is(err, fs.ErrNotExist) {",
+        "here, err := os.Lstat(path)\n\tif false && errors.Is(err, fs.ErrNotExist) {",
+        "TestAFileWhoseNameDiffersOnlyInCaseIsNotWrittenOver",
+    ),
+    (
+        # The finder stops following the name a file imports context under, so
+        # `ctxpkg.Background()` walks past it - and a file that renames the
+        # import is a file the class guard no longer reads.
+        "the context finder looks for the package under its own name only",
+        "internal/guard/contextroots_test.go",
+        "name = imp.Name.Name",
+        "name = \"context\"",
+        "TestTheContextFinderSeesEveryShapeOfTheCall",
+    ),
+    (
+        # The checksum pass sees the stop and swallows it: the header gets a
+        # checksum of nothing and the write goes on to its next question. The
+        # stop placed half way through the questions catches it by count.
+        "the checksum pass of the padding swallows the stop it was handed",
+        "internal/format/opc/opc.go",
+        "hash never refuses a write, so this is the stop.\n\t\treturn 0, err",
+        "hash never refuses a write, so this is the stop.\n\t\treturn 0, nil",
+        "TestAnOfficePackageStopsWhileItChecksumsItsPadding",
     ),
 ]

@@ -251,7 +251,7 @@ func (f PlannedFile) Damaged() bool {
 // askable at all", and the loop it was taken out of answers "what files does it
 // come to". seen carries across targets because a duplicate id is a fact about
 // the run rather than about one entry.
-func settleTarget(t *Target, opt Options, seen map[string]bool) (format.Descriptor, error) {
+func settleTarget(ctx context.Context, t *Target, opt Options, seen map[string]bool) (format.Descriptor, error) {
 	if t.ID == "" {
 		return format.Descriptor{}, &RecipeError{Setting: SettingID,
 			Detail:  core.Says("engine.NoID", "a target has no id"),
@@ -297,7 +297,7 @@ func settleTarget(t *Target, opt Options, seen map[string]bool) (format.Descript
 	// for every registered format. It was removed rather than kept as defence
 	// nobody can verify.
 	if t.Range.Used {
-		if err := drawSizes(t, desc, core.TargetSeed(opt.Seed, t.ID)); err != nil {
+		if err := drawSizes(ctx, t, desc, core.TargetSeed(opt.Seed, t.ID)); err != nil {
 			return format.Descriptor{}, err
 		}
 	}
@@ -427,7 +427,7 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 		// Everything refused from here down is refused about one target, so it
 		// carries which one. See atTarget for what that is worth and what it
 		// deliberately leaves alone.
-		desc, err := settleTarget(t, opt, seen)
+		desc, err := settleTarget(ctx, t, opt, seen)
 		if err != nil {
 			return nil, atTarget(i+1, t, err)
 		}
