@@ -27,8 +27,8 @@ because it turns other people's test suites red.
 ### Changed
 
 - **The Windows archive of the window carries Mesa 26.2.4.** The software
-  OpenGL renderer in the `opengl` folder, which the window loads only when the
-  graphics driver offers no OpenGL 2.1 or when it is started with
+  OpenGL renderer in the `opengl` folder, which the window loads only after
+  the graphics toolkit could not open a window, or when it is started with
   `--software-gl`, moves from 26.2.0 to 26.2.4, built with LLVM 23.1.2. Its
   licences are the same. `THIRD-PARTY-NOTICES.md` names the new files and
   their sums.

@@ -32,6 +32,15 @@ fail the run. The Go toolchain is the exception: its point releases are security
 releases more often than not, and the cooldown does not hold back security fixes
 for Dependabot either.
 
+For a Go module the age is its COMMIT time, the only date the module proxy
+gives (`Time` in `.info`), and a commit is never later than its release - so a
+tag pushed today onto an older commit counts as older than it is, and can be
+due before a week has passed. golangci-lint 2.15.0: commit 10:51, release 11:33
+the same day. When the proxy first saw a version is known to index.golang.org,
+but only as one feed of every module there is: on 2026-10-27 two thousand lines
+covered nineteen minutes, so a week is half a million lines. Not asked, and
+said here instead (review of #205).
+
 That matters more than tidiness here. A gate that cries wolf gets ignored, and
 an ignored gate is what this whole file was written to replace. For the same
 reason a decision the owner has taken is printed as a note and not as a
@@ -72,6 +81,15 @@ HELD = {
 # pin current.
 RETRY_WAITS = (0, 5, 20)
 
+# The most this reads of one answer. The largest real one, go.dev/dl with every
+# Go release ever made, was 2.3 MB on 2026-10-27, and the npm document of
+# mailparser 0.4 MB. An answer past this is refused rather than parsed.
+MAX_ANSWER = 32 * 1024 * 1024
+
+
+class AnswerTooLarge(Exception):
+    """A registry answered with more than MAX_ANSWER bytes. Not asked again."""
+
 
 def ask(url, raw=False):
     """The registry's answer, asked again after a pause when it does not come."""
@@ -85,8 +103,14 @@ def ask(url, raw=False):
         try:
             request = urllib.request.Request(url, headers=headers)
             with urllib.request.urlopen(request, timeout=30) as r:  # noqa: S310 - fixed https hosts
-                body = r.read().decode("utf-8")
-            return body if raw else json.loads(body)
+                body = r.read(MAX_ANSWER + 1)
+            if len(body) > MAX_ANSWER:
+                raise AnswerTooLarge(f"{url} answered with more than {MAX_ANSWER} bytes, which is not "
+                                     "the shape of a version list - refused rather than read")
+            text = body.decode("utf-8")
+            return text if raw else json.loads(text)
+        except AnswerTooLarge:
+            raise
         except Exception as exc:  # noqa: BLE001 - every failure is retried, then loud
             failure = exc
     raise RuntimeError(f"{url} did not answer after {len(RETRY_WAITS)} tries: {failure}")
@@ -144,14 +168,18 @@ def due(pinned, released, now):
 
 def go_tools(texts, now):
     """`go run module/cmd/x@version` - asked of the module proxy."""
+    # Every pin of a module, not the last one read: golangci-lint is run in two
+    # steps of ci.yml, and a stale first step behind a current second one is
+    # still a stale tool (review of #205).
     found = {}
     for text in texts.values():
         for m in re.finditer(r"go run ([\w./-]+?)/cmd/[\w-]+@(v[\w.+-]+)", text):
-            found[m.group(1)] = m.group(2)
+            found.setdefault(m.group(1), []).append(m.group(2))
     if not found:
         raise RuntimeError("no `go run module@version` was found in the workflows, so this checked nothing")
     rows = []
-    for module, pinned in sorted(found.items()):
+    for module, versions in sorted(found.items()):
+        pinned = single(versions, f"the version of {module}")
         # Module paths are case encoded for the proxy: an upper case letter
         # becomes "!" and the lower case letter. None of ours have one today,
         # and doing it anyway costs a line and stops a silent 404 the day one does.
@@ -198,9 +226,17 @@ def renderer(now):
 
 def npm_packages(texts, now):
     """`npm install package@version` - asked of the npm registry."""
+    # An npm install that names no version is a failure, not a line skipped:
+    # without this a pin taken off the command would take the package off this
+    # check with it, and the run would stay green (review of #205).
     found = {}
-    for text in texts.values():
-        for m in re.finditer(r"npm install [^\n]*?\s([@\w./-]+)@(\d[\w.+-]*)\s*$", text, re.M):
+    for name, text in texts.items():
+        for line in text.splitlines():
+            if "npm install" not in line or line.lstrip().startswith("#"):
+                continue
+            m = re.search(r"\s([@\w./-]+)@(\d[\w.+-]*)\s*$", line)
+            if not m:
+                raise RuntimeError(f"{name} runs an npm install that pins no version: {line.strip()}")
             found[m.group(1)] = m.group(2)
     rows = []
     for package, pinned in sorted(found.items()):
@@ -246,6 +282,8 @@ def main():
             rows.extend(check())
         except Exception as exc:  # noqa: BLE001 - any failure here has to be loud
             print(f"FAIL: {exc}")
+            print("Run the workflow again. If it fails the same way, the registry or the pin")
+            print("named above has changed shape, and this script has to follow it.")
             return 1
 
     for name, pinned, state, _ in rows:
