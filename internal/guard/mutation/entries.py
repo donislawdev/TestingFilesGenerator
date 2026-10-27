@@ -15789,7 +15789,7 @@ MUTATIONS = [
         "a film says it carries a label cut off at the foot of its picture",
         "internal/format/video/choose.go",
         "return Labelled(c.Width, c.Label) && imagelabel.Readable(c.Width, c.Height, len(c.Label))",
-        "return Labelled(c.Width, c.Label)",
+        "return Labelled(c.Width, c.Label) && imagelabel.Readable(c.Width, 1<<20, len(c.Label))",
         "TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole",
     ),
     (

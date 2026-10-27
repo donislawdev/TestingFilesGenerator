@@ -218,7 +218,7 @@ func exactDecimal(w int64, shift uint) string {
 }
 
 func TestNonsenseSizesAreRefusedWithAUsefulMessage(t *testing.T) {
-	for _, in := range []string{"", "banana", "mb", "10qb", "-5mb", "-1.5kb", "+-5.5", "-+1.5kb", "--1.5"} {
+	for _, in := range []string{"", "banana", "mb", "10qb", "-5mb", "-1.5kb", "+-5.5", "+-1.5kb", "-+1.5kb", "--1.5"} {
 		if got, err := core.ParseSize(in); err == nil {
 			t.Errorf("%q was accepted as %d B", in, got)
 		}
