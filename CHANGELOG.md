@@ -49,6 +49,11 @@ because it turns other people's test suites red.
   with no room above it got advice to raise it in `upload-validation` and
   ended with code 1 in `size-boundaries`. Both presets now refuse such a limit
   with code 4 and say how large it can be.
+- **An EML message above 1 EiB is refused at once.** With its text in base64,
+  a message near the largest size there is never finished planning, and in
+  the other encodings it was planned at 9 EiB, past what the format counts
+  in. Above 1152921504606846976 B the format now refuses with code 4, a dry
+  run included.
 - **`tfg cleanup --yes` keeps a file that changed after it was checked.**
   Cleanup checks every file before it removes any, and a file changed in that
   time was removed without `--force`. It now looks again just before it

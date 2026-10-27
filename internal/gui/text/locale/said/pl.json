@@ -168,6 +168,7 @@
   "eml.ANewsletterHoldsItsHeaderLinesAndFrame": { "hash": "sha256-2336a62a9061", "other": "newsletter zawiera swoje linie nagłówka i ramę wokół tekstu" },
   "eml.APictureInTheTextIs": { "hash": "sha256-ac868d5a013c", "other": "obrazek w treści musi być plikiem, który program pocztowy potrafi pokazać jako obrazek" },
   "eml.AskForAttachmentsOrFewer": { "hash": "sha256-2145e05752c5", "other": "Poproś o najwyżej {{.Max}} załączników." },
+  "eml.AskForBOrLess": { "hash": "sha256-1eb2d904628b", "other": "Poproś o {{.Most}} B albo mniej." },
   "eml.AskForSmallerAttachments": { "hash": "sha256-871e78c75c85", "other": "Poproś o mniej albo mniejsze załączniki." },
   "eml.TheAttachedFileCannotBe": { "hash": "sha256-cb66d6df0c0f", "other": "eml: załączony plik {{.Format}} nie może powstać: {{.Err}}" },
   "eml.UseOneOfThePictureFormats": { "hash": "sha256-a6669f6abe6b", "other": "Użyj jednego z: {{.Formats}}." },

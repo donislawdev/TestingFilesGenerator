@@ -846,6 +846,11 @@
     "hash": "sha256-2145e05752c5",
     "other": "Ask for {{.Max}} attachments or fewer."
   },
+  "eml.AskForBOrLess": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-1eb2d904628b",
+    "other": "Ask for {{.Most}} B or less."
+  },
   "eml.AskForSmallerAttachments": {
     "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-871e78c75c85",

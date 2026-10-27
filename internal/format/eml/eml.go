@@ -106,6 +106,23 @@ func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan
 // why the size is too small. A label that does not fit is left out with a
 // note, as txt leaves it out - the minimum is the message without it.
 func fit(m *message, r format.Request) ([]format.Note, error) {
+	// The largest message first, before anything is counted at the size asked
+	// for. Until 2026-10-27 only the attachments were held to it, and a text in
+	// base64 of 9223372036854775807B or one byte less never came back: near the
+	// top of int64 the length of the encoded words wraps round, the search in
+	// shareBase64 is handed a size that does not grow with them, and what it
+	// leaves goes to empty lines, billions of them, one at a time
+	// (docs/STABILITY-REVIEW-2026-10-26.md, R15). The search itself is left as
+	// it is, because below this ceiling nothing in it can wrap.
+	if r.Bytes > maxMessage {
+		return nil, &format.AboveMaximumError{
+			Format:    "EML",
+			Requested: r.Bytes,
+			Maximum:   maxMessage,
+			Reason:    core.Says("eml.AMessageThisLargeCannotBe", "a message this large cannot be counted to the byte in this build"),
+			Hint:      core.Says("eml.AskForBOrLess", "Ask for %d B or less.", core.A("Most", maxMessage)),
+		}
+	}
 	bare := m.size()
 	if r.Bytes < bare {
 		// The reason a tester needs is the base64, when there is anything

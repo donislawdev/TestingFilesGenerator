@@ -15730,4 +15730,20 @@ MUTATIONS = [
         "if s.farOver == 0 || s.limit < math.MaxInt64/s.farOver {",
         "TestTheFileFarOverTheLimitIsThatManyTimesTheLimitOrNothing",
     ),
+    # R15 (docs/STABILITY-REVIEW-2026-10-26.md): a message above the largest
+    # the format counts in is refused before anything is counted at its size.
+    (
+        "a message above the largest the format counts in is planned, and in base64 never comes back",
+        "internal/format/eml/eml.go",
+        "if r.Bytes > maxMessage {",
+        "if r.Bytes > maxMessage && false {",
+        "TestAnEMLAboveTheLargestMessageIsRefusedAtOnce",
+    ),
+    (
+        "the largest message itself is refused",
+        "internal/format/eml/eml.go",
+        "if r.Bytes > maxMessage {",
+        "if r.Bytes >= maxMessage {",
+        "TestAnEMLAboveTheLargestMessageIsRefusedAtOnce",
+    ),
 ]
