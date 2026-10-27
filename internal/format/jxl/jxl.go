@@ -61,6 +61,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagedim"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagelabel"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/isobmff"
 )
 
@@ -250,6 +251,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Detail: core.Says("format.ThePictureIsPxWideAnd", "The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("Width", m.width)),
 		})
 	}
+	carries, p.Notes = imagelabel.Claim(carries, m.width, m.height, len(label), p.Notes)
 	p.Properties[format.PropertyLabelEmbedded] = carries
 	p.Memo = m
 	return p, nil

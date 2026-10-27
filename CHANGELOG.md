@@ -35,6 +35,36 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A size with a decimal point is read to the byte.** A fraction finer than
+  the arithmetic behind it was rounded without a word, so
+  `--size 255.99999999999999B` made a file of 256 B and `9007199254740993.0B`
+  planned one a byte smaller than asked. Such a size is now refused with the
+  two whole numbers around it, wherever a size is written - flags, recipes,
+  presets and the window. A size that lands on a whole byte gives the same
+  file as before.
+- **`upload-validation` and `size-boundaries` refuse a limit too large for
+  their set.** The file far over the limit is the limit times `--far-over`,
+  and nothing asked whether that fitted, so a limit of 1844674407370955264B at
+  10x made a file of 1024 B the manifest still expected to be refused. A limit
+  with no room above it got advice to raise it in `upload-validation` and
+  ended with code 1 in `size-boundaries`. Both presets now refuse such a limit
+  with code 4 and say how large it can be.
+- **An EML message above 1 EiB is refused at once.** With its text in base64,
+  a message near the largest size there is never finished planning, and in
+  the other encodings it was planned at 9 EiB, past what the format counts
+  in. Above 1152921504606846976 B the format now refuses with code 4, a dry
+  run included.
+- **`tabular-import` no longer promises that a spreadsheet wider than 16384
+  columns is read whole.** A spreadsheet shows 16384 columns and drops the
+  rest without a word, and the set still expected such a workbook to be
+  accepted, certain. Past that width `sheet.xlsx` is now `unspecified` for
+  `count_limit`, like the wide CSV beside it. Up to it, nothing changes.
+- **A picture too low for its label no longer says it carries one.** The
+  label is drawn as large as the width allows, so a low picture cuts it off,
+  and a BMP 512 px wide and 1 px tall said `label_embedded: true` with no
+  text in it at all. Every image format and both film formats now say
+  `false` with a `label_omitted` note when the text is not whole in the
+  picture. The pixels are the same as before.
 - **`tfg cleanup --yes` keeps a file that changed after it was checked.**
   Cleanup checks every file before it removes any, and a file changed in that
   time was removed without `--force`. It now looks again just before it

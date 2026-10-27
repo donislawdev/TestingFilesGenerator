@@ -625,6 +625,61 @@
       "bytes": 65536,
       "sha256": "872b64b301062ec7a49840ecac682f8e5e5c99ba40328bb24a2c0a792b6ca6b1",
       "measured_on": "2026-10-15"
+    },
+    "avif_label_cut": {
+      "bytes": 16384,
+      "sha256": "e29cfa93d85aa78adb86b9aa903de4a4f8d6a7704237d50dc12027baf935cbbb",
+      "measured_on": "2026-10-27"
+    },
+    "bmp_label_cut": {
+      "bytes": 16384,
+      "sha256": "337c75928b1d9d0afc9ef6d9b5e6c9e4c6f672310f721f4101650d3fd5ce1986",
+      "measured_on": "2026-10-27"
+    },
+    "gif_label_cut": {
+      "bytes": 16384,
+      "sha256": "2182f97d89f17befc2978e0c48f02b3b7f69e6ffa1e37c98c7ba7bd02fbfebbb",
+      "measured_on": "2026-10-27"
+    },
+    "ico_label_cut": {
+      "bytes": 16384,
+      "sha256": "ee7c50502fadbbac2ce84161775196c69395ee077da2754b832994b772484fab",
+      "measured_on": "2026-10-27"
+    },
+    "jpg_label_cut": {
+      "bytes": 16384,
+      "sha256": "c5c26da34982e5b8a84b62b7367121f796519fac2b3d4aee97df65d77f18a3c1",
+      "measured_on": "2026-10-27"
+    },
+    "jxl_label_cut": {
+      "bytes": 16384,
+      "sha256": "47e864c31b44ecc262d3b2f9cc9cca6f404daba0bb0dbc0f252cb8d470aa3311",
+      "measured_on": "2026-10-27"
+    },
+    "mp4_label_cut": {
+      "bytes": 65536,
+      "sha256": "cacdde2fa7c816644ba26b9421d403a234995c5374530c7e8e8babde7d2770b7",
+      "measured_on": "2026-10-27"
+    },
+    "png_label_cut": {
+      "bytes": 16384,
+      "sha256": "9efacf3eebe006977a09aa6c0a4c9dcc163fd2dd976c67a9329a1f992521a667",
+      "measured_on": "2026-10-27"
+    },
+    "tiff_label_cut": {
+      "bytes": 16384,
+      "sha256": "f1087d636104449e15e8f3acace2e8f4bdeb64f78f6906d5b2bc9be340380e69",
+      "measured_on": "2026-10-27"
+    },
+    "webm_label_cut": {
+      "bytes": 65536,
+      "sha256": "b21ac8d701f5b37bac3cb4f9aa75bc970bed1fe3ae970c69372b854f87fb6c8d",
+      "measured_on": "2026-10-27"
+    },
+    "webp_label_cut": {
+      "bytes": 16384,
+      "sha256": "aafebff3937203366d88a1af0a14d555176e683ded8cffa67ac05bddafc13733",
+      "measured_on": "2026-10-27"
     }
   },
   "remeasured": [

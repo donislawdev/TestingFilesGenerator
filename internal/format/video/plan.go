@@ -3,6 +3,7 @@ package video
 import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagelabel"
 )
 
 // Film is what planning settles for a film and writing makes it from: the
@@ -52,12 +53,15 @@ func Plan(formatID string, r format.Request, need func(Stream) int64, refuse fun
 		Memo:        Film{Choice: c, Settings: s},
 		Work:        st.Work(),
 	}
-	if r.Label && !c.Labelled() {
+	if r.Label && !Labelled(c.Width, c.Label) {
 		p.Notes = append(p.Notes, format.Note{
 			Code:   "label_omitted",
 			Detail: core.Says("format.ThePictureIsPxWideAnd", "The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("Width", c.Width)),
 		})
 	}
+	// The answer is c.Labelled, which Facts has already put in the plan. This
+	// is the note a label drawn and cut off at the foot of the picture owes.
+	_, p.Notes = imagelabel.Claim(r.Label && Labelled(c.Width, c.Label), c.Width, c.Height, len(c.Label), p.Notes)
 	if !c.ClockShown(s.Timeline) {
 		p.Notes = append(p.Notes, format.Note{
 			Code: "clock_omitted",

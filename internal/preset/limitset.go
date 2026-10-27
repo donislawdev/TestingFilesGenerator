@@ -2,6 +2,7 @@ package preset
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -84,6 +85,36 @@ func (s limitSet) steps() []step {
 // files still looks like a set, and the three that are missing are the ones the
 // run was about - the ones nearest the limit.
 func (s limitSet) reachable(set []step) error {
+	// The top of the range before the bottom of it, because the wrap happens
+	// on the way up and the refusal that followed was about the way down.
+	//
+	// Measured on 2026-08-26: "--preset size-boundaries --limit
+	// 9223372036854775807b" said "over_1b would be -9223372036854775808 B, and
+	// a file cannot be smaller than nothing. Raise the limit above 1051991 B" -
+	// an answer about the bottom of the range to a question about the top,
+	// with advice pointing the wrong way. The check then went into that preset
+	// alone, and upload-validation, which lays out the same set, still gave
+	// that answer on 2026-10-27 (docs/STABILITY-REVIEW-2026-10-26.md, R13).
+	// Here it is asked of every set, as the refusal --boundary gives to
+	// errors.Is, in words of its own: a spread wider than a byte leaves numbers
+	// above the limit and still no room for the farthest step, and "there is no
+	// number above this one" would be false. The farthest step decides, so the
+	// limit the hint names fits the whole set.
+	var far offset
+	for _, o := range s.spread {
+		if o.bytes > far.bytes {
+			far = o
+		}
+	}
+	if s.limit > math.MaxInt64-far.bytes {
+		return &ImpossibleError{
+			Preset: s.preset, Setting: s.setting,
+			Detail: core.Says("preset.StepPastTheLargest", "%s would be %d B over the limit of %d B, more than the largest size there is, %d B",
+				core.A("Step", "over_"+far.text), core.A("Over", far.bytes), core.A("Limit", s.limit), core.A("Largest", int64(math.MaxInt64))),
+			Hint:  core.Says("preset.UseASettingOfAtMost", "Use a {setting} of %d B or less.", core.A("Most", math.MaxInt64-far.bytes)),
+			Cause: core.ErrBoundaryTooLarge,
+		}
+	}
 	floor := format.SmallestRemembered(s.desc, format.Request{Seed: 1, Label: true})
 	for _, one := range set {
 		if one.size >= floor {

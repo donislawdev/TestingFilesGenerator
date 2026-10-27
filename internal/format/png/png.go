@@ -244,7 +244,9 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			Detail: core.Says("format.ThePictureIsPxWideAnd", "The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("Width", w)),
 		})
 	}
-	p.Properties[format.PropertyLabelEmbedded] = r.Label && imagelabel.Fits(w, len(label))
+	labelled := r.Label && imagelabel.Fits(w, len(label))
+	labelled, p.Notes = imagelabel.Claim(labelled, w, h, len(label), p.Notes)
+	p.Properties[format.PropertyLabelEmbedded] = labelled
 	p.Memo = m
 	return p, nil
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagedim"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagelabel"
 )
 
 // Rung is a picture size planning can choose without coding the picture, with
@@ -72,8 +73,14 @@ type Choice struct {
 	Named bool
 }
 
-// Labelled is whether this picture carries its label.
-func (c Choice) Labelled() bool { return Labelled(c.Width, c.Label) }
+// Labelled is whether this picture carries its label where it can be read:
+// drawn across its width, and whole in its height. The manifest says this,
+// and the drawing asks the package's Labelled, which is the width alone - a
+// low film draws its label and cuts it off (R14 of
+// docs/STABILITY-REVIEW-2026-10-26.md, where the pixels stayed as they were).
+func (c Choice) Labelled() bool {
+	return Labelled(c.Width, c.Label) && imagelabel.Readable(c.Width, c.Height, len(c.Label))
+}
 
 // ClockShown is whether this film's pictures show the clock.
 func (c Choice) ClockShown(t Timeline) bool { return ClockShown(c.Width, c.Height, c.Label, t) }

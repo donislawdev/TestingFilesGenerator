@@ -60,9 +60,9 @@ func WholePicture(width, height int, seed uint64, label string, t Timeline, c in
 	return f.whole(f.lookOf(c))
 }
 
-// Labelled says whether a picture this wide carries a readable label - asked
-// while planning, to report a film without one, and while drawing, so the
-// manifest cannot claim a label the picture lacks.
+// Labelled says whether a picture this wide draws its label - asked while
+// planning and while drawing, so the two cannot disagree about where the clock
+// goes. Whether the label drawn can be read is Choice.Labelled.
 func Labelled(width int, label string) bool {
 	return label != "" && imagelabel.Fits(width, len(label))
 }

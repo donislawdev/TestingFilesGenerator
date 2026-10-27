@@ -37,9 +37,10 @@ func picture(m memo) *image.RGBA {
 	return img
 }
 
-// labelled says whether this picture carries a readable label, and is asked
-// both while planning, to report a file that will not have one, and while
-// drawing. One answer, so the manifest cannot claim a label the picture lacks.
+// labelled says whether this picture draws its label, and is asked both while
+// planning and while drawing, so the two cannot disagree about it. Whether the
+// label drawn can be read is imagelabel.Claim, asked while planning: a low
+// picture draws it and cuts it off, and the manifest says it carries none.
 func labelled(width int, label string) bool {
 	return label != "" && imagelabel.Fits(width, len(label))
 }

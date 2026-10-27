@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"math"
 	"os"
 	"path/filepath"
 	"sort"
@@ -11,6 +12,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/eml"
@@ -206,6 +208,58 @@ func TestEMLRefusesASizeBelowItsAttachmentsInBase64(t *testing.T) {
 	}
 	if below.Minimum <= 3*64<<10*4/3 || !strings.Contains(below.Reason.String(), "base64") {
 		t.Errorf("the refusal gives the minimum %d B and the reason %q", below.Minimum, below.Reason)
+	}
+}
+
+// A message has a largest size, the one the format counts in, and above it is
+// refused at once with the four parts (D6) - in every encoding of the text.
+//
+// Until 2026-10-27 only the attachments were held to it. A text in base64 of
+// 9223372036854775807B or one byte less never came back: the length of the
+// encoded words wraps round near the top of int64, the search for how many
+// words fit was handed a size that does not grow with them, and what was left
+// went to empty lines, billions of them, one at a time
+// (docs/STABILITY-REVIEW-2026-10-26.md, R15). The other encodings planned a
+// message of 9 EiB that the format says it does not plan.
+func TestAnEMLAboveTheLargestMessageIsRefusedAtOnce(t *testing.T) {
+	d, err := format.Get("eml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	const largest = int64(1) << 60
+	// The last carries files, three of 2^59 B that add up past the ceiling
+	// on their own: the refusal is still about the size asked, so it is the
+	// size asked that comes first (found by review on 2026-10-27).
+	for _, props := range []map[string]string{
+		{"text_encoding": "base64"},
+		{"text_encoding": "quoted-printable"},
+		{"text_encoding": "7bit"},
+		{"text_encoding": "base64", "attachments": "3", "attachment_format": "txt", "attachment_size": "576460752303423488b"},
+	} {
+		encoding := props["text_encoding"] + " with " + props["attachments"] + " attachment(s)"
+		for _, size := range []int64{largest + 1, math.MaxInt64 - 1, math.MaxInt64} {
+			done := make(chan error, 1)
+			go func() {
+				_, err := d.Generator.Plan(format.Request{Bytes: size, Seed: 1, Label: true, Properties: props})
+				done <- err
+			}()
+			select {
+			case err := <-done:
+				var above *format.AboveMaximumError
+				if !errors.As(err, &above) || above.Maximum != largest || above.Requested != size || above.Hint.IsZero() {
+					t.Errorf("%s at %d B gave %v, expected a refusal of that size naming %d B as the largest", encoding, size, err, largest)
+				}
+			case <-time.After(5 * time.Second):
+				t.Errorf("%s at %d B had no answer after five seconds", encoding, size)
+			}
+		}
+		// The largest itself is a message the format plans.
+		if props["attachments"] != "" {
+			continue
+		}
+		if _, err := d.Generator.Plan(format.Request{Bytes: largest, Seed: 1, Label: true, Properties: props}); err != nil {
+			t.Errorf("%s at the largest message, %d B, was refused: %v", encoding, largest, err)
+		}
 	}
 }
 

@@ -660,20 +660,15 @@
     "hash": "sha256-19e757667a89",
     "other": "{{.Setting}} {{.Value}} has no number: write something like 10mb or 1048576"
   },
-  "core.SizeNotANumber": {
-    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-3a5e57f1b8ed",
-    "other": "{{.Setting}} {{.Value}} is not a number: write something like 10mb, 1.5gib or 1048576"
-  },
   "core.SizeNotPlain": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-0b892bed8bee",
     "other": "{{.Setting}} {{.Value}} is not a plain number: write the digits out, as 10mb, 1.5gib or 1048576. Spellings such as 1e5, 0x10 or 1_000 are refused rather than guessed at, the same as in a recipe"
   },
   "core.SizeNotWhole": {
-    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, {{.Exact}}, {{.Below}}, {{.Above}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-e52c1a8c1d1f",
-    "other": "{{.Setting}} {{.Value}} is not a whole number of bytes: it works out to {{.Exact}} bytes. Ask for {{.Below}} or {{.Above}} instead"
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, {{.Below}}, {{.Above}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-b91e69ae02ee",
+    "other": "{{.Setting}} {{.Value}} is not a whole number of bytes: it falls between {{.Below}} and {{.Above}}. Ask for one of the two instead"
   },
   "core.SizeTooLarge": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -840,6 +835,11 @@
     "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Max}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-2145e05752c5",
     "other": "Ask for {{.Max}} attachments or fewer."
+  },
+  "eml.AskForBOrLess": {
+    "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-1eb2d904628b",
+    "other": "Ask for {{.Most}} B or less."
   },
   "eml.AskForSmallerAttachments": {
     "description": "Said by internal/format/eml - a refusal under the box it is about or at the foot of the form, or a note after a run.",
@@ -2135,6 +2135,11 @@
     "hash": "sha256-a6669f6abe6b",
     "other": "Use one of: {{.Formats}}."
   },
+  "imagelabel.ThePictureIsPxTallAnd": {
+    "description": "Said by internal/format/imagelabel - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Height}}, {{.Needs}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-238ba2886f79",
+    "other": "The picture is {{.Height}} px tall and the label needs {{.Needs}} px, so its text is cut off and this file carries no readable label. Its name and the manifest still identify it."
+  },
   "json.HasToBeStyle": {
     "description": "Said by internal/format/jsonfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Indented}}, {{.Minified}}, {{.RecordPerLine}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-c1343585d922",
@@ -2383,6 +2388,11 @@
     "hash": "sha256-767f6cd55319",
     "other": "far-over is off, so nothing in this set is well past the limit. The largest file is one byte over it."
   },
+  "preset.FarOverPastTheLargest": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Step}}, {{.Times}}, {{.Limit}}, {{.Largest}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-d1327ffb9921",
+    "other": "{{.Step}} would be {{.Times}} times the limit of {{.Limit}} B, more than the largest size there is, {{.Largest}} B"
+  },
   "preset.Files": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-83589d643302",
@@ -2458,6 +2468,11 @@
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Param}}, {{.Bad}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-5cf12375b81f",
     "other": "{{.Param}}: it holds {{.Bad}}, and a limit is written with digits, letters and a dot - such as 10mb, 512 or 1.5gb. Its text becomes part of every file name"
+  },
+  "preset.LowerTheLimitOrTurnOff": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-014a6777373c",
+    "other": "Lower the limit to {{.Most}} B or less, or turn {{.Setting}} off."
   },
   "preset.NoDistancesWereGivenSoThere": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run.",
@@ -2570,6 +2585,11 @@
     "hash": "sha256-4a4ed15f64f3",
     "other": "{{.Step}} would be {{.Size}} B, and a file cannot be smaller than nothing"
   },
+  "preset.StepPastTheLargest": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Step}}, {{.Over}}, {{.Limit}}, {{.Largest}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-4d6374e264f7",
+    "other": "{{.Step}} would be {{.Over}} B over the limit of {{.Limit}} B, more than the largest size there is, {{.Largest}} B"
+  },
   "preset.TakeOutOfTheListOr": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.ID}}, {{.AllowParam}}, {{.Written}}, {{.DenyParam}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-3a45bd78cd55",
@@ -2619,6 +2639,11 @@
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Preset}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-1ad71c52426d",
     "other": "unknown preset {{.Preset}}, and this build registers none"
+  },
+  "preset.UseASettingOfAtMost": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-3f908cf3b379",
+    "other": "Use a {{.Setting}} of {{.Most}} B or less."
   },
   "preset.WithCannotBe": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Key}}, {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",

@@ -144,3 +144,32 @@ func targetsInGroup(doc *recipe.Recipe, group string) []recipe.Target {
 	}
 	return out
 }
+
+// The spreadsheet is expected to be taken whole only as wide as a spreadsheet
+// is. LibreOffice Calc read 16384 columns back whole and 16385 as 16384, the
+// last one dropped without a word (measured 2026-09-08, format/xlsx). Past
+// that width the set said "accept", certain - a promise the reader it is
+// written for breaks - while the CSV of the same width beside it already said
+// it is the import's own policy (docs/STABILITY-REVIEW-2026-10-26.md, R16).
+func TestTheSpreadsheetIsExpectedWholeOnlyAsWideAsASpreadsheet(t *testing.T) {
+	for _, c := range []struct{ columns, expected, reason string }{
+		{"16384", "accept", ""},
+		{"16385", "unspecified", "count_limit"},
+		{"32768", "unspecified", "count_limit"},
+	} {
+		found := false
+		for _, target := range expandedTargets(t, "tabular-import", preset.Args{"rows": "1", "columns": c.columns}) {
+			if target.ID != "sheet" {
+				continue
+			}
+			found = true
+			if target.Expected != c.expected || target.ExpectedReason != c.reason {
+				t.Errorf("a spreadsheet of %s columns is expected %q for %q, not %q for %q",
+					c.columns, target.Expected, target.ExpectedReason, c.expected, c.reason)
+			}
+		}
+		if !found {
+			t.Fatalf("the set of %s columns has no target called sheet, so this guard read the wrong thing", c.columns)
+		}
+	}
+}

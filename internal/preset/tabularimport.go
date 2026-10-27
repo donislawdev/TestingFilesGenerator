@@ -27,6 +27,13 @@ const (
 	sheetRowsMax    = 200000
 	sheetColumnsMax = 32768
 
+	// spreadsheetColumns is how many columns a spreadsheet shows. LibreOffice
+	// Calc read a workbook of 16384 columns back whole and one of 16385 as
+	// 16384, the last dropped without a word (measured 2026-09-08 - see
+	// format/xlsx), and Excel stops at the same column. Past it, whether an
+	// import refuses a table, cuts it or takes it whole is its own policy.
+	spreadsheetColumns = 16384
+
 	dialectGroup = "csv-dialects"
 	wideGroup    = "csv-wide"
 	sheetGroup   = "xlsx-rows"
@@ -221,14 +228,19 @@ func wideFile(csv format.Descriptor) setFile {
 		// or take it whole is its owner's decision, so this is a position
 		// rather than a promise - MF5.
 		expected: "unspecified", reason: "count_limit",
-		purpose: fmt.Sprintf("A CSV table with %d columns, the most this build writes. A spreadsheet may show only the first 16384 and drop the rest without a word - "+
-			"whether your import refuses such a table, cuts it or takes it whole is its own policy.", columns.Max),
+		purpose: fmt.Sprintf("A CSV table with %d columns, the most this build writes. A spreadsheet may show only the first %d and drop the rest without a word - "+
+			"whether your import refuses such a table, cuts it or takes it whole is its own policy.", columns.Max, spreadsheetColumns),
 	}
 }
 
 // sheetFile is the spreadsheet at the row and column counts asked for.
+//
+// Taken whole, certain, only as wide as a spreadsheet is. Until 2026-10-27 it
+// said so at every width, and past spreadsheetColumns that is a promise the
+// reader it is written for breaks without a word - MF5 and
+// docs/STABILITY-REVIEW-2026-10-26.md, R16.
 func sheetFile(xlsx format.Descriptor, rows, columns string) setFile {
-	return setFile{
+	f := setFile{
 		id: "sheet", name: "sheet.xlsx", group: sheetGroup, desc: xlsx,
 		props:    map[string]string{rowsParam: rows, columnsParam: columns},
 		atFloor:  true,
@@ -236,6 +248,14 @@ func sheetFile(xlsx format.Descriptor, rows, columns string) setFile {
 		purpose: fmt.Sprintf("An Excel workbook of %s rows and %s columns, as many as were asked for. "+
 			"Your import should take it whole - it checks that a real spreadsheet of this size is read to its last row.", rows, columns),
 	}
+	// Settled already as a whole number inside the declared range.
+	if wide, _ := strconv.Atoi(columns); wide > spreadsheetColumns {
+		f.expected, f.reason = "unspecified", "count_limit"
+		f.purpose = fmt.Sprintf("An Excel workbook of %s rows and %s columns, wider than the %d a spreadsheet shows. "+
+			"A spreadsheet may show only the first %d and drop the rest without a word - "+
+			"whether your import refuses such a workbook, cuts it or takes it whole is its own policy.", rows, columns, spreadsheetColumns, spreadsheetColumns)
+	}
+	return f
 }
 
 // layoutFiles is the same records written the three ways a document can be

@@ -309,7 +309,14 @@ type ImpossibleError struct {
 	// both surfaces call it - the flag without its dashes and the label on the
 	// field. See AboutSetting.
 	Setting string
+
+	// Cause is the refusal this one is, where another door gives the same one
+	// - a limit with no room above it is core.ErrBoundaryTooLarge whether
+	// --boundary or a preset was asked - so errors.Is finds it either way.
+	Cause error
 }
+
+func (e *ImpossibleError) Unwrap() error { return e.Cause }
 
 // What happened, why, and what to do instead - the three parts a report keeps
 // apart, on the refusal a preset can produce. Error still assembles the one

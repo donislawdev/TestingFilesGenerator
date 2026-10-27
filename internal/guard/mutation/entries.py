@@ -3068,10 +3068,15 @@ MUTATIONS = [
         # turning one of them into txt left md pinned by the other two and
         # the guard green - a mutation of one of two layers moves nothing.
         # pdf has one case, measured by counting Format: fields in the file.
+        #
+        # The same happened to png on 2026-10-27: a second png case pinning a
+        # picture whose label is cut off left png pinned after the mutation, and
+        # CI reported this entry as a HOLE. svg has one case, counted the same
+        # way across goldenCases and the maps it merges in.
         "a format quietly stops having its bytes pinned anywhere",
         "internal/guard/generatorbytes_test.go",
-        "\"png_64kib\": {ID: \"g\", Format: \"png\",",
-        "\"png_64kib\": {ID: \"g\", Format: \"txt\",",
+        "\"svg_8kib\":  {ID: \"g\", Format: \"svg\",",
+        "\"svg_8kib\":  {ID: \"g\", Format: \"txt\",",
         "TestEveryFormatHasAGoldenValue",
     ),
     (
@@ -3728,8 +3733,8 @@ MUTATIONS = [
         # undone when the generate screen's refusals were moved. O73.
         "a preset refusal stops saying which parameter it is about",
         "internal/preset/limitset.go",
-        'Setting: s.setting,',
-        'Setting: "",',
+        "\t\t\tSetting: s.setting,\n\t\t\tDetail:  what,",
+        "\t\t\tSetting: \"\",\n\t\t\tDetail:  what,",
         "TestARefusalAboutAPresetSettingAppearsUnderIt",
     ),
     (
@@ -6150,9 +6155,9 @@ MUTATIONS = [
     ),
     (
         "the size-boundaries preset stops refusing a limit with no number above it",
-        "internal/preset/sizeboundaries.go",
-        "\t\tif limit+o.bytes < limit {",
-        "\t\tif false && limit+o.bytes < limit {",
+        "internal/preset/limitset.go",
+        "if s.limit > math.MaxInt64-far.bytes {",
+        "if false && s.limit > math.MaxInt64-far.bytes {",
         "TestThePresetAnswersALimitTooLargeTheSameWayTheFlagDoes",
     ),
     (
@@ -15639,5 +15644,193 @@ MUTATIONS = [
         "return int64(len(whole.Instructions(filepath.Base(ManifestPath(opt))))), nil",
         "return 0, nil",
         "TestTheRecordARunIsToldBeforehandIsTheRecordItWrites",
+    ),
+    # R17 (docs/STABILITY-REVIEW-2026-10-26.md): a size with a decimal point is
+    # read to the byte, not through a float, and a hostile one is answered
+    # without reading all of it.
+    (
+        "a fraction longer than sixty digits is taken as whole when its first sixty are",
+        "internal/core/size.go",
+        "return n, !long && rest.Sign() == 0",
+        "return n, rest.Sign() == 0",
+        "TestASizeWithADecimalPointIsReadToTheByte",
+    ),
+    (
+        "a fraction just under the largest size asks for a byte past it",
+        "internal/core/size.go",
+        "if !n.IsInt64() || (!exact && n.Int64() == math.MaxInt64) {",
+        "if !n.IsInt64() {",
+        "TestASizeWithADecimalPointIsReadToTheByte",
+    ),
+    (
+        "four million digits before the point are read one by one",
+        "internal/core/size.go",
+        "if len(whole) > 19 {",
+        "if len(whole) > 19 && false {",
+        "TestASizeWithADecimalPointIsReadToTheByte",
+    ),
+    (
+        "a fraction of four million digits is read to its end",
+        "internal/core/size.go",
+        "long := len(fraction) > fractionDigits",
+        "long := false",
+        "TestASizeWithADecimalPointIsReadToTheByte",
+    ),
+    (
+        "a decimal size forgets its unit",
+        "internal/core/size.go",
+        "n.Mul(n, big.NewInt(unit))",
+        "n.Mul(n, big.NewInt(1))",
+        "TestEveryExactDecimalOfAUnitReadsBackAsItself",
+    ),
+    (
+        "a negative size with a decimal point is taken as its size without the sign",
+        "internal/core/size.go",
+        "if negative && (whole != \"\" || fraction != \"\") {",
+        "if negative && false {",
+        "TestNonsenseSizesAreRefusedWithAUsefulMessage",
+    ),
+    (
+        "a size with two signs is read as the number after them",
+        "internal/core/size.go",
+        "if s != \"\" && (s[0] == '+' || s[0] == '-') {\n\t\ts = s[1:]\n\t}",
+        "s = strings.TrimPrefix(strings.TrimPrefix(s, \"+\"), \"-\")",
+        "TestNonsenseSizesAreRefusedWithAUsefulMessage",
+    ),
+    # R13 (docs/STABILITY-REVIEW-2026-10-26.md): a set laid out around a limit
+    # is refused, not wrapped, when the limit has no room above it or the file
+    # far over it is past the largest size.
+    (
+        "a set around a limit with no room above it wraps its step over the limit",
+        "internal/preset/limitset.go",
+        "if s.limit > math.MaxInt64-far.bytes {",
+        "if s.limit > math.MaxInt64-far.bytes && false {",
+        "TestEveryPresetAnswersTheLargestSizeAboutTheTop",
+    ),
+    (
+        "a preset's refusal of a limit with no room above it stops being the one --boundary gives",
+        "internal/preset/limitset.go",
+        "Cause: core.ErrBoundaryTooLarge,",
+        "Cause: nil,",
+        "TestEveryPresetAnswersTheLargestSizeAboutTheTop",
+    ),
+    (
+        "a preset's refusal hides the refusal it is",
+        "internal/preset/preset.go",
+        "func (e *ImpossibleError) Unwrap() error { return e.Cause }",
+        "func (e *ImpossibleError) Unwrap() error { return nil }",
+        "TestThePresetAnswersALimitTooLargeTheSameWayTheFlagDoes",
+    ),
+    (
+        "the file far over the limit wraps round instead of being refused",
+        "internal/preset/uploadset.go",
+        "if s.farOver == 0 || s.limit <= math.MaxInt64/s.farOver {",
+        "if true {",
+        "TestTheFileFarOverTheLimitIsThatManyTimesTheLimitOrNothing",
+    ),
+    (
+        "the largest limit the file far over it fits is refused as well",
+        "internal/preset/uploadset.go",
+        "if s.farOver == 0 || s.limit <= math.MaxInt64/s.farOver {",
+        "if s.farOver == 0 || s.limit < math.MaxInt64/s.farOver {",
+        "TestTheFileFarOverTheLimitIsThatManyTimesTheLimitOrNothing",
+    ),
+    # R15 (docs/STABILITY-REVIEW-2026-10-26.md): a message above the largest
+    # the format counts in is refused before anything is counted at its size.
+    (
+        "a message above the largest the format counts in is planned, and in base64 never comes back",
+        "internal/format/eml/eml.go",
+        "if !r.SizeFromContents && r.Bytes > maxMessage {",
+        "if !r.SizeFromContents && r.Bytes > maxMessage && false {",
+        "TestAnEMLAboveTheLargestMessageIsRefusedAtOnce",
+    ),
+    (
+        "the largest message itself is refused",
+        "internal/format/eml/eml.go",
+        "if !r.SizeFromContents && r.Bytes > maxMessage {",
+        "if !r.SizeFromContents && r.Bytes >= maxMessage {",
+        "TestAnEMLAboveTheLargestMessageIsRefusedAtOnce",
+    ),
+    # R16 (docs/STABILITY-REVIEW-2026-10-26.md): the spreadsheet is expected
+    # whole only as wide as a spreadsheet is.
+    (
+        "a spreadsheet wider than a spreadsheet shows is still expected to be taken whole",
+        "internal/preset/tabularimport.go",
+        "if wide, _ := strconv.Atoi(columns); wide > spreadsheetColumns {",
+        "if wide, _ := strconv.Atoi(columns); wide > spreadsheetColumns && false {",
+        "TestTheSpreadsheetIsExpectedWholeOnlyAsWideAsASpreadsheet",
+    ),
+    (
+        "a spreadsheet exactly as wide as a spreadsheet shows stops being expected whole",
+        "internal/preset/tabularimport.go",
+        "if wide, _ := strconv.Atoi(columns); wide > spreadsheetColumns {",
+        "if wide, _ := strconv.Atoi(columns); wide >= spreadsheetColumns {",
+        "TestTheSpreadsheetIsExpectedWholeOnlyAsWideAsASpreadsheet",
+    ),
+    # R14 (docs/STABILITY-REVIEW-2026-10-26.md): a picture says it carries its
+    # label only when the text of the label is whole in it.
+    (
+        "a label cut off at the foot of a low picture is said to be carried",
+        "internal/format/imagelabel/imagelabel.go",
+        "if !drawn || Readable(width, height, chars) {",
+        "if true {",
+        "TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole",
+    ),
+    (
+        "a label is called readable from its width alone",
+        "internal/format/imagelabel/imagelabel.go",
+        "return Fits(width, chars) && height >= textHeight(width, chars)",
+        "return Fits(width, chars)",
+        "TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole",
+    ),
+    (
+        "a label whole in its picture is called cut off",
+        "internal/format/imagelabel/imagelabel.go",
+        "return Fits(width, chars) && height >= textHeight(width, chars)",
+        "return Fits(width, chars) && height > 1<<20",
+        "TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole",
+    ),
+    (
+        "a film says it carries a label cut off at the foot of its picture",
+        "internal/format/video/choose.go",
+        "return Labelled(c.Width, c.Label) && imagelabel.Readable(c.Width, c.Height, len(c.Label))",
+        "return Labelled(c.Width, c.Label) && imagelabel.Readable(c.Width, 1<<20, len(c.Label))",
+        "TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole",
+    ),
+    (
+        "a BMP says it carries a label cut off at the foot of its picture",
+        "internal/format/bmp/bmp.go",
+        "labelled, p.Notes = imagelabel.Claim(labelled, w, h, len(label), p.Notes)",
+        "labelled, p.Notes = imagelabel.Claim(labelled, w, 1<<20, len(label), p.Notes)",
+        "TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole",
+    ),
+    (
+        "an AVIF says it carries a label cut off at the foot of its picture",
+        "internal/format/avif/avif.go",
+        "carries, p.Notes = imagelabel.Claim(carries, m.width, m.height, len(label), p.Notes)",
+        "carries, p.Notes = imagelabel.Claim(carries, m.width, 1<<20, len(label), p.Notes)",
+        "TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole",
+    ),
+    # The review of 2026-10-27 on the R13 and R14 guards.
+    (
+        "the farthest step of a set is not the one asked whether it fits above the limit",
+        "internal/preset/limitset.go",
+        "if o.bytes > far.bytes {",
+        "if false {",
+        "TestEveryPresetAnswersTheLargestSizeAboutTheTop",
+    ),
+    (
+        "a limit too large for its spread is told the wrong limit to use instead",
+        "internal/preset/limitset.go",
+        "core.A(\"Most\", math.MaxInt64-far.bytes)",
+        "core.A(\"Most\", math.MaxInt64-1)",
+        "TestEveryPresetAnswersTheLargestSizeAboutTheTop",
+    ),
+    (
+        "a label whose text exactly fills the picture is called cut off",
+        "internal/format/imagelabel/imagelabel.go",
+        "return Fits(width, chars) && height >= textHeight(width, chars)",
+        "return Fits(width, chars) && height > textHeight(width, chars)",
+        "TestALabelIsReadableFromTheFirstHeightThatHoldsItsText",
     ),
 ]
