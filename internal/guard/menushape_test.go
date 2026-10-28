@@ -47,7 +47,7 @@ func TestAMenuIsNotDrawnAsWideAsABoxToTypeIn(t *testing.T) {
 	for _, tab := range allTabs() {
 		screen := selectTab(t, content, tab)
 		menus, boxes := menusOn(screen), typingBoxesOn(screen)
-		if len(menus) == 0 || holdsNoBoxByDesign(t, tab, boxes) {
+		if len(menus) == 0 || besideNoBoxByDesign(t, tab, boxes) {
 			continue
 		}
 		widest := float32(0)
@@ -175,24 +175,34 @@ func menusOn(screen fyne.CanvasObject) []*parts.Chooser {
 	return found
 }
 
-// holdsNoBoxByDesign says whether a screen is the one whose menus stand beside
+// besideNoBoxByDesign says whether a screen is the one whose menus stand beside
 // no box to type in, so that a guard comparing a menu with the boxes beside it
-// has nothing to compare on it. Preferences holds one menu and no box.
+// has nothing to compare on it. Preferences holds one menu, the language, and
+// one box - the size of the memory setting, in a section of its own, on the
+// screen only while Custom is chosen, and held to the width of a number rather
+// than to the column. Neither guard's question is about that pair: the two are
+// never in one section, the box is not the column a menu could grow to, and
+// the language is not a setting drawn anywhere else at another width.
 //
 // Named rather than skipped whenever a screen comes back with no box: a screen
 // that lost its boxes to a renamed part would otherwise pass these guards by
-// not looking. Held both ways - the day a box stands on the named screen, the
-// name stops being true out loud.
-func holdsNoBoxByDesign(t *testing.T, tab string, boxes []*parts.Entry) bool {
+// not looking. Held both ways - the day the count of boxes on the named screen
+// changes, the name stops being true out loud.
+func besideNoBoxByDesign(t *testing.T, tab string, boxes []*parts.Entry) bool {
 	t.Helper()
 	if tab != text.TabPreferences() {
 		return false
 	}
-	if len(boxes) != 0 {
-		t.Errorf("the %s screen holds %d box(es) to type in and is still named as holding none", tab, len(boxes))
+	if len(boxes) != preferencesBoxes {
+		t.Errorf("the %s screen holds %d box(es) to type in and is named as holding %d, the size of the memory setting",
+			tab, len(boxes), preferencesBoxes)
 	}
 	return true
 }
+
+// preferencesBoxes is how many boxes to type in the Preferences screen holds:
+// the size of the memory setting.
+const preferencesBoxes = 1
 
 func typingBoxesOn(screen fyne.CanvasObject) []*parts.Entry {
 	var found []*parts.Entry
@@ -301,7 +311,7 @@ func TestNoMenuIsNarrowerThanTheBoxesItStandsBeside(t *testing.T) {
 	checked := 0
 	inEveryMenuLayout(t, func(l menuLayout) {
 		boxes := typingBoxesOn(l.screen)
-		if len(l.menus) == 0 || holdsNoBoxByDesign(t, l.tab, boxes) {
+		if len(l.menus) == 0 || besideNoBoxByDesign(t, l.tab, boxes) {
 			return
 		}
 		narrowest := float32(0)

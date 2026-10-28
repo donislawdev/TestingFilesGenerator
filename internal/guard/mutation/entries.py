@@ -53,8 +53,8 @@ MUTATIONS = [
     (
         "the preview stops warning that the record will be too big to read back",
         "internal/gui/window/run.go",
-        "r.say(append([]string{said}, manifestReachNote(res.Record)...)...)",
-        "r.say(said)",
+        "r.say(append(append([]string{said}, manifestReachNote(res.Record)...), runNotesOf(res)...)...)",
+        "r.say(append([]string{said}, runNotesOf(res)...)...)",
         "TestTheWindowSaysWhenItsManifestWillBeTooBigToReadBack",
     ),
     (
@@ -16165,15 +16165,15 @@ MUTATIONS = [
         # keeps - the setting is on the screen and does nothing.
         "a preview in the window ignores the memory setting kept on Preferences",
         "internal/gui/window/run.go",
-        "\topt.DryRun = true\n\topt.Memory = memoryOf(r.kept())",
-        "\topt.DryRun = true\n\t_ = memoryOf(r.kept())",
+        "\topt.DryRun = true\n\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine",
+        "\topt.DryRun = true\n\topt.Memory, opt.MachineMemory = core.Memory{}, r.machine",
         "TestARunPlansUnderTheMemorySettingKeptOnPreferences",
     ),
     (
         "a run in the window ignores the memory setting kept on Preferences",
         "internal/gui/window/run.go",
-        "\topt.Memory = memoryOf(r.kept())\n\tctx, cancel",
-        "\t_ = memoryOf(r.kept())\n\tctx, cancel",
+        "\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine\n\tctx, cancel",
+        "\topt.Memory, opt.MachineMemory = core.Memory{}, r.machine\n\tctx, cancel",
         "TestARunPlansUnderTheMemorySettingKeptOnPreferences",
     ),
     (
@@ -16200,6 +16200,80 @@ MUTATIONS = [
         "internal/gui/window/prefmemory.go",
         "\t\tm.fields.Mark(core.SettingMemory, err)\n",
         "\t\t_ = err\n",
+        "TestTheMemorySettingIsChosenOnPreferencesAndKept",
+    ),
+    (
+        # Review on #208. Version 1 reads its own group alone again, and an
+        # unlimited session under a limited slice is planned as the machine.
+        "version 1 reads the limit of its own group and not the slice above it",
+        "internal/core/cgroup.go",
+        "return limitAbove(read, mount, rel, \"memory.limit_in_bytes\")",
+        "return limitIn(read, path.Join(mount, rel, \"memory.limit_in_bytes\"))",
+        "TestTheLimitOfAContainerIsFoundInItsControlGroup",
+    ),
+    (
+        # Review on #208. A group with ".." in it is joined to the mount and
+        # read wherever it lands.
+        "a group with a step out of its mount is followed rather than refused",
+        "internal/core/cgroup.go",
+        "\t\tcase rel != \"\" && path.Clean(rel) != rel:",
+        "\t\tcase false:",
+        "TestTheLimitOfAContainerIsFoundInItsControlGroup",
+    ),
+    (
+        # Review on #208. Forget leaves the size in the box, and Custom chosen
+        # after it keeps the size again.
+        "Forget leaves the forgotten size in the box",
+        "internal/gui/window/prefmemory.go",
+        "\tm.size.SetText(\"\")\n\tm.fields.Clear(core.SettingMemory)\n\tparsed",
+        "\tm.fields.Clear(core.SettingMemory)\n\tparsed",
+        "TestTheMemorySettingIsChosenOnPreferencesAndKept",
+    ),
+    (
+        # Review on #208. What a run said about its memory stays in the result
+        # and never reaches the window.
+        "a run in the window does not say what it said about its memory",
+        "internal/gui/window/run.go",
+        "\tsaid = append(said, runNotesOf(res)...)\n",
+        "\tsaid = append(said, notesOf(nil)...)\n",
+        "TestTheWindowSaysWhatARunSaidAboutItsMemory",
+    ),
+    (
+        "a preview in the window does not say what it said about its memory",
+        "internal/gui/window/run.go",
+        "manifestReachNote(res.Record)...), runNotesOf(res)...)...)",
+        "manifestReachNote(res.Record)...), notesOf(nil)...)...)",
+        "TestTheWindowSaysWhatARunSaidAboutItsMemory",
+    ),
+    (
+        # The run asks the system rather than the host the Preferences screen
+        # asks, so the screen and the run can name two different machines.
+        "a run in the window asks the system for the machine rather than the host",
+        "internal/gui/window/run.go",
+        "\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine\n\tctx, cancel",
+        "\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), nil\n\tctx, cancel",
+        "TestTheWindowSaysWhatARunSaidAboutItsMemory",
+    ),
+    (
+        "a preview in the window asks the system for the machine rather than the host",
+        "internal/gui/window/run.go",
+        "\topt.DryRun = true\n\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine",
+        "\topt.DryRun = true\n\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), nil",
+        "TestTheWindowSaysWhatARunSaidAboutItsMemory",
+    ),
+    (
+        # Review on #208. The help names a floor other than the one auto keeps.
+        "--help names a floor of the plan other than the one auto keeps",
+        "internal/cli/memoryflag.go",
+        "core.HumanBytes(core.MaxPlanBytes) + \" is never refused\"",
+        "core.HumanBytes(core.MaxPlanBytes*2) + \" is never refused\"",
+        "TestTheMemoryFlagReachesThePlanOnEveryCommandThatPlans",
+    ),
+    (
+        "the Preferences screen names a floor of the plan other than the one auto keeps",
+        "internal/gui/text/preferences.go",
+        "map[string]any{\"Floor\": HumanBytes(core.MaxPlanBytes)}",
+        "map[string]any{\"Floor\": HumanBytes(core.MaxPlanBytes * 2)}",
         "TestTheMemorySettingIsChosenOnPreferencesAndKept",
     ),
 ]

@@ -91,20 +91,40 @@ func TestAPlanTooBigToHoldIsRefusedWhileItIsBuilt(t *testing.T) {
 // never read again. The full mutation run of 2026-09-16 found exactly that -
 // a 2 KB ceiling green under four thousand files. At ten thousand the second
 // reading lands on four thousand planned files that nothing can collect.
+//
+// On a machine whose half cannot hold the run, so that the floor of auto is
+// the ceiling in force. On any machine of more than four gigabytes half is
+// above the floor, and a floor dropped to nothing went unseen there - the
+// mutation run on #208 found exactly that. Asserted rather than assumed: half
+// of the same machine, set as a size, refuses the run.
 func TestAnOrdinaryRunIsNotRefusedByThePlanCeiling(t *testing.T) {
 	const files = 10000
+	const machine = 4 << 20
 	targets := []engine.Target{{
 		ID:     "files",
 		Format: "txt",
 		Sizes:  engine.Uniform(files, 4096),
 	}}
+	opt := engine.Options{
+		OutDir:        "out",
+		ManifestName:  "manifest.json",
+		MachineMemory: func() (int64, error) { return machine, nil },
+	}
 
-	planned, err := engine.Plan(targets, engine.Options{
-		OutDir:       "out",
-		ManifestName: "manifest.json",
-		// The zero value of Memory is auto, which is what a caller that sets
-		// nothing gets - two gigabytes of ceiling at the least.
-	})
+	half, err := core.ParseMemorySize(core.HumanBytes(machine / 2))
+	if err != nil {
+		t.Fatal(err)
+	}
+	withHalf := opt
+	withHalf.Memory = half
+	if _, err := engine.Plan(targets, withHalf); err == nil {
+		t.Fatalf("ten thousand text files planned under %s, half of this machine, so the floor"+
+			" is not what holds the run below and this guard asks nothing of it", half)
+	}
+
+	// The zero value of Memory is auto, which is what a caller that sets
+	// nothing gets - two gigabytes of ceiling at the least.
+	planned, err := engine.Plan(targets, opt)
 	if err != nil {
 		t.Fatalf("ten thousand text files were refused under the real ceiling: %v", err)
 	}
