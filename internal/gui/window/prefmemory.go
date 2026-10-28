@@ -66,9 +66,16 @@ func memoryWayNames() []string {
 // value that does not read is shown as Automatic, which is what a run does with
 // it, and the line under the switch says what it was - saving Automatic over it
 // would erase the person's choice without a press, untouchable rule 7.
+//
+// The box is emptied first. Forget opens the screen again on nothing kept, and
+// a size left standing in the box from before would come back the moment
+// Custom is chosen - kept again by the choice, after the person asked for it
+// to be forgotten.
 func (m *memoryPreference) open(kept string) {
 	m.opening = true
 	defer func() { m.opening = false }()
+	m.size.SetText("")
+	m.fields.Clear(core.SettingMemory)
 	parsed, err := core.ParseMemory(kept)
 	unreadable := ""
 	switch {

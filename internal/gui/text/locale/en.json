@@ -752,9 +752,9 @@
     "other": "Only the window changes language. The files it makes, recipes, manifests and the command line do not."
   },
   "PreferencesMemoryScope": {
-    "description": "Shown on the Preferences screen.",
-    "hash": "sha256-4535de397c9c",
-    "other": "How much memory one run may take, the plan and the files being written together. Pictures wait for room rather than all being held at once, and a plan larger than this is refused before anything is written. It applies from the next run, and nothing in the files changes."
+    "description": "Shown on the Preferences screen. Carries one value, {{.Floor}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-847b853f524e",
+    "other": "How much memory one run may take, the plan and the files being written together. Pictures wait for room rather than all being held at once, and a plan larger than this is refused before anything is written. Under Automatic, a plan of up to {{.Floor}} is never refused. It applies from the next run, and nothing in the files changes."
   },
   "PreferencesMissing": {
     "description": "Shown on the Preferences screen. Carries one value, {{.Tag}}, which has to stay spelled exactly that way.",

@@ -24,6 +24,20 @@ func outcomeText(res *engine.Result, runErr error) string {
 	return text.Written(written)
 }
 
+// runNotesOf is what a run says about itself rather than about its files - the
+// memory it ran in - in the window's language. Said ahead of the notes about
+// files, in the order the command line says them.
+func runNotesOf(res *engine.Result) []string {
+	if res == nil {
+		return nil
+	}
+	out := make([]string, 0, len(res.RunNotes))
+	for _, s := range res.RunNotes {
+		out = append(out, text.Sentence(s))
+	}
+	return out
+}
+
 // notesOf is what a run says about its files, in the window's language. A
 // note the run did not remember as a sentence - there is none today - is said
 // as the manifest holds it.

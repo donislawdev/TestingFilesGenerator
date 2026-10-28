@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // --memory is read the same way on every command that plans - generate,
@@ -59,10 +60,14 @@ func TestTheMemoryFlagReachesThePlanOnEveryCommandThatPlans(t *testing.T) {
 			t.Errorf("%s --memory 0: exit %d, expected %d and why nought is refused:\n%s", c.name, code, cli.ExitUsage, errOut)
 		}
 
-		// And the help says the flag is there, and what auto means.
+		// And the help says the flag is there, and what auto means - with
+		// the floor the plan keeps under it, or a machine of four gigabytes
+		// or less reads a refusal the run would never give (review on #208).
 		_, help, _ := run(t, append(c.args[:len(c.args):len(c.args)], "--help")...)
-		if !strings.Contains(help, "-memory") || !strings.Contains(help, "half of what this machine gives the program") {
-			t.Errorf("%s --help does not offer --memory and say what auto is:\n%s", c.name, help)
+		floor := "a plan of up to " + core.HumanBytes(core.MaxPlanBytes) + " is never refused"
+		if !strings.Contains(help, "-memory") || !strings.Contains(help, "half of what this machine gives the program") ||
+			!strings.Contains(help, floor) {
+			t.Errorf("%s --help does not offer --memory and say what auto is, floor included:\n%s", c.name, help)
 		}
 	}
 }

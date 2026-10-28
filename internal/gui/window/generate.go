@@ -237,7 +237,7 @@ type Generate struct {
 
 // NewGenerate builds the screen. links are the buttons to the other screens.
 func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
-	g := &Generate{runner: newRunner(host.Later, host.Remembered), host: host, tips: parts.NewTips(), settingsFolded: true}
+	g := &Generate{runner: newRunner(host.Later, host.Remembered, host.MachineMemory), host: host, tips: parts.NewTips(), settingsFolded: true}
 	g.runner.settle = watchedSettle(host, g.runner, g.settle)
 	g.runner.offer.through(host)
 	// This screen is one target and draws its boxes under the bare key, so a

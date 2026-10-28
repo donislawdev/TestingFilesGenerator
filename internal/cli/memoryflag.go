@@ -15,12 +15,15 @@ import (
 //
 // The help is a fixed sentence with no number from this machine in it. The
 // site prints the help of every command, and a number read off the machine
-// that built the site would be a number about nobody's machine.
+// that built the site would be a number about nobody's machine. The floor of
+// the plan under auto is a number of the program rather than of the machine,
+// so it is said, from the constant that sets it.
 
 // memoryHelp is what --help says about the flag.
-const memoryHelp = "how much memory this run may use: auto (half of what this machine gives the program), " +
+var memoryHelp = "how much memory this run may use: auto (half of what this machine gives the program), " +
 	"a size such as 8gb, or off for no limit. Pictures wait for room rather than all being held at once, " +
-	"and a plan larger than this is refused before anything is written"
+	"and a plan larger than this is refused before anything is written. " +
+	"Under auto, a plan of up to " + core.HumanBytes(core.MaxPlanBytes) + " is never refused"
 
 // memoryValue is the flag's value, auto until somebody writes one.
 type memoryValue struct{ core.Memory }

@@ -143,8 +143,8 @@
 											<widget pos="-6,-6" size="800x62" type="*widget.Label">
 												<widget size="800x62" type="*widget.RichText">
 													<text pos="6,6" size="774x16">How much memory one run may take, the plan and the files being written together. Pictures wait for room rather than</text>
-													<text pos="6,22" size="781x16">all being held at once, and a plan larger than this is refused before anything is written. It applies from the next run, and</text>
-													<text pos="6,39" size="186x16">nothing in the files changes.</text>
+													<text pos="6,22" size="785x16">all being held at once, and a plan larger than this is refused before anything is written. Under Automatic, a plan of up to</text>
+													<text pos="6,39" size="564x16">2.0 GB is never refused. It applies from the next run, and nothing in the files changes.</text>
 												</widget>
 											</widget>
 										</container>

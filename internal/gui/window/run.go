@@ -81,6 +81,10 @@ type runner struct {
 	// read from, at the start of every preview and run - so a setting changed
 	// there applies from the next run and never to one already going.
 	kept func() Remembered
+	// machine is the memory this machine gives the program, asked of the same
+	// host the Preferences screen asks, so the run works to the figure that
+	// screen says Automatic comes to.
+	machine func() (int64, error)
 
 	previewBtn  *parts.Button
 	generateBtn *parts.Button
@@ -342,8 +346,8 @@ func lineFrom(r *runner, targets []engine.Target, opt engine.Options, err error)
 	showOn(r.status, r.line.said(summarise(targets), opt.OutDir))
 }
 
-func newRunner(wait later, kept func() Remembered) *runner {
-	r := &runner{fields: parts.NewFields(), line: &runLine{}, sections: newSections(), kept: kept}
+func newRunner(wait later, kept func() Remembered, machine func() (int64, error)) *runner {
+	r := &runner{fields: parts.NewFields(), line: &runLine{}, sections: newSections(), kept: kept, machine: machine}
 	// Wired once, here, so that a field added later is covered without anybody
 	// remembering to wire it. See Fields.WhenTypedIn and recheck.
 	r.fields.WhenTypedIn(r.recheck)
@@ -440,7 +444,7 @@ func (r *runner) onPreview() {
 		return
 	}
 	opt.DryRun = true
-	opt.Memory = memoryOf(r.kept())
+	opt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine
 
 	// Occupied, and stoppable. Both of those changed on 2026-08-26.
 	//
@@ -536,7 +540,7 @@ func (r *runner) previewFinished(res *engine.Result, planned []engine.PlannedFil
 		r.line.measured(opt.OutDir, room.free)
 	}
 	said := r.line.said(exactly(planned), opt.OutDir) + text.AndNothingWrittenYet()
-	r.say(append([]string{said}, manifestReachNote(res.Record)...)...)
+	r.say(append(append([]string{said}, manifestReachNote(res.Record)...), runNotesOf(res)...)...)
 }
 
 // formatsOf is what kinds of file the run would produce, each named once.
@@ -600,7 +604,7 @@ func (r *runner) onGenerate() {
 }
 
 func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
-	opt.Memory = memoryOf(r.kept())
+	opt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
 	r.settled = done
@@ -731,6 +735,7 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room dis
 		// sentence both - the second carries the path again (review on #140).
 		said = append(said, text.InstructionsNotSaved(core.Shown(saved.Missed.Path), core.ShownText(text.Refusal(saved.Missed.Err, ""))))
 	}
+	said = append(said, runNotesOf(res)...)
 	r.say(append(said, notesOf(res)...)...)
 	r.toneOfOutcome(res, runErr)
 	r.offer.theFolder(res)

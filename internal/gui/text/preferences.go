@@ -1,5 +1,7 @@
 package text
 
+import "github.com/donislawdev/TestingFilesGenerator/internal/core"
+
 // The words of the Preferences screen, out of screens.go on 2026-10-27 when
 // the Memory section took that file past the ceiling on its length - the
 // screen's sentences are one part of what the file held, and it is split by
@@ -29,9 +31,12 @@ func MemoryWayAuto() string   { return say("MemoryWayAuto", "Automatic") }
 func MemoryWayCustom() string { return say("MemoryWayCustom", "Custom") }
 func MemoryWayOff() string    { return say("MemoryWayOff", "No limit") }
 
-// PreferencesMemoryScope says what the memory setting is for, under it.
+// PreferencesMemoryScope says what the memory setting is for, under it. The
+// floor of the plan under Automatic is said from the constant that sets it,
+// the way --help says it.
 func PreferencesMemoryScope() string {
-	return say("PreferencesMemoryScope", "How much memory one run may take, the plan and the files being written together. Pictures wait for room rather than all being held at once, and a plan larger than this is refused before anything is written. It applies from the next run, and nothing in the files changes.")
+	return sayf("PreferencesMemoryScope", "How much memory one run may take, the plan and the files being written together. Pictures wait for room rather than all being held at once, and a plan larger than this is refused before anything is written. Under Automatic, a plan of up to {{.Floor}} is never refused. It applies from the next run, and nothing in the files changes.",
+		map[string]any{"Floor": HumanBytes(core.MaxPlanBytes)})
 }
 
 // MemoryAutoIs is what Automatic comes to on this computer.

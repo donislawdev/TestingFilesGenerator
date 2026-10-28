@@ -7,6 +7,7 @@ import (
 
 	"fyne.io/fyne/v2"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
@@ -30,6 +31,12 @@ func TestTheMemorySettingIsChosenOnPreferencesAndKept(t *testing.T) {
 	}
 	if said := textIn(prefs); !strings.Contains(said, text.MemoryAutoIs(text.HumanBytes(8<<30))) {
 		t.Errorf("the screen does not say what Automatic comes to on a machine of sixteen gigabytes:\n%s", said)
+	}
+	// And the floor the plan keeps under it, from the constant that sets it -
+	// review on #208: without it a machine of four gigabytes or less reads a
+	// refusal the run would never give.
+	if said := textIn(prefs); !strings.Contains(said, "a plan of up to "+text.HumanBytes(core.MaxPlanBytes)+" is never refused") {
+		t.Errorf("the screen does not say the floor of the plan under Automatic:\n%s", said)
 	}
 
 	// Custom keeps the size as it is typed, and a size that is not one is
@@ -63,10 +70,21 @@ func TestTheMemorySettingIsChosenOnPreferencesAndKept(t *testing.T) {
 	}
 
 	// Forget takes it away with the rest, and the switch goes back with it.
-	way.SetSelected(text.MemoryWayOff())
+	// Kept as a size, so the box holds one that reads - and the size goes with
+	// the rest: a box left holding it would keep it again the moment Custom is
+	// chosen after Forget.
+	way.SetSelected(text.MemoryWayCustom())
+	size.SetText("512mb")
+	if got := host.Remembered().Memory(); got != "512mb" {
+		t.Fatalf("512mb was typed under Custom and %q was kept", got)
+	}
 	buttonNamed(prefs, text.ButtonForget()).OnTapped()
 	if got := host.Remembered().Memory(); got != "" || way.Selected != text.MemoryWayAuto() {
 		t.Errorf("after Forget %q is kept and the switch shows %q", got, way.Selected)
+	}
+	way.SetSelected(text.MemoryWayCustom())
+	if got := host.Remembered().Memory(); got != "" || size.Text != "" {
+		t.Errorf("Custom chosen after Forget keeps %q with %q in the box - the size Forget took away came back", got, size.Text)
 	}
 }
 
@@ -126,6 +144,33 @@ func TestARunPlansUnderTheMemorySettingKeptOnPreferences(t *testing.T) {
 	join(host)
 	if said := textIn(content); !strings.Contains(said, ceiling) {
 		t.Errorf("a run of 17 MB of plan under a kept setting of 1 MB was not refused by the setting:\n%s", said)
+	}
+}
+
+// What a run says about the memory it ran in reaches the window, from a
+// preview and from a run - review on #208. The command line has said it since
+// the setting existed, and the window said only what the run said about its
+// files, so a run that could not ask the machine worked to a limit nobody on
+// the screen was told the source of (untouchable rule 6).
+//
+// Asked on a host that cannot say how much memory the machine has, which is
+// also the proof that a run asks the same host the Preferences screen asks.
+func TestTheWindowSaysWhatARunSaidAboutItsMemory(t *testing.T) {
+	host := newFakeHost(t)
+	host.machineFails = true
+	window.Open(host)
+	t.Cleanup(func() { join(host) })
+	content := tabNamed(t, host.content, text.TabOneTarget())
+	fill(t, content, text.FieldOutputDir(), t.TempDir())
+	fill(t, content, text.FieldSize(), "1kb")
+	fill(t, content, text.FieldCount(), "2")
+	const said = "the memory of this machine could not be read"
+	for _, button := range []string{text.ButtonPreview(), text.ButtonGenerate()} {
+		press(t, content, button)
+		join(host)
+		if on := textIn(content); !strings.Contains(strings.ToLower(on), said) {
+			t.Errorf("%s on a machine that could not be asked does not say so:\n%s", button, on)
+		}
 	}
 }
 
