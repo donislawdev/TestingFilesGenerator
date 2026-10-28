@@ -98,7 +98,13 @@ func wordsIn(node ast.Node) []string {
 
 func TestEverySentenceInTheTextPackageGoesThroughTheCatalogue(t *testing.T) {
 	checked, offenders := 0, map[string][]string{}
-	for _, name := range []string{"screens.go", "text.go", "labels.go"} {
+	// Named rather than read off the directory, unlike englishInTheCode: the
+	// other files of the package hold text that is not language - formats,
+	// a byte count's mark - and reading them asks this guard about strings it
+	// was never meant for. preferences.go joined on 2026-10-27, when the words
+	// of the Preferences screen moved out of screens.go. A file of sentences
+	// added later has to join here by hand, and that is O292.
+	for _, name := range []string{"screens.go", "text.go", "labels.go", "preferences.go"} {
 		path := filepath.Join("../gui/text", name)
 		file, err := parser.ParseFile(token.NewFileSet(), path, nil, 0)
 		if err != nil {

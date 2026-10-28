@@ -1,6 +1,8 @@
 package guard
 
 import (
+	"errors"
+	"runtime"
 	"runtime/debug"
 	"strings"
 	"testing"
@@ -49,7 +51,7 @@ func TestAPlanTooBigToHoldIsRefusedWhileItIsBuilt(t *testing.T) {
 	_, err := engine.Plan(targets, engine.Options{
 		OutDir:       "out",
 		ManifestName: "manifest.json",
-		MaxPlanBytes: 4 << 20,
+		Memory:       core.MemoryOf(4 << 20),
 	})
 	if err == nil {
 		t.Fatal("planning fifty thousand files under a 4 MB plan ceiling was accepted")
@@ -89,19 +91,40 @@ func TestAPlanTooBigToHoldIsRefusedWhileItIsBuilt(t *testing.T) {
 // never read again. The full mutation run of 2026-09-16 found exactly that -
 // a 2 KB ceiling green under four thousand files. At ten thousand the second
 // reading lands on four thousand planned files that nothing can collect.
+//
+// On a machine whose half cannot hold the run, so that the floor of auto is
+// the ceiling in force. On any machine of more than four gigabytes half is
+// above the floor, and a floor dropped to nothing went unseen there - the
+// mutation run on #208 found exactly that. Asserted rather than assumed: half
+// of the same machine, set as a size, refuses the run.
 func TestAnOrdinaryRunIsNotRefusedByThePlanCeiling(t *testing.T) {
 	const files = 10000
+	const machine = 4 << 20
 	targets := []engine.Target{{
 		ID:     "files",
 		Format: "txt",
 		Sizes:  engine.Uniform(files, 4096),
 	}}
+	opt := engine.Options{
+		OutDir:        "out",
+		ManifestName:  "manifest.json",
+		MachineMemory: func() (int64, error) { return machine, nil },
+	}
 
-	planned, err := engine.Plan(targets, engine.Options{
-		OutDir:       "out",
-		ManifestName: "manifest.json",
-		// Zero means the real ceiling, which is what every caller passes.
-	})
+	half, err := core.ParseMemorySize(core.HumanBytes(machine / 2))
+	if err != nil {
+		t.Fatal(err)
+	}
+	withHalf := opt
+	withHalf.Memory = half
+	if _, err := engine.Plan(targets, withHalf); err == nil {
+		t.Fatalf("ten thousand text files planned under %s, half of this machine, so the floor"+
+			" is not what holds the run below and this guard asks nothing of it", half)
+	}
+
+	// The zero value of Memory is auto, which is what a caller that sets
+	// nothing gets - two gigabytes of ceiling at the least.
+	planned, err := engine.Plan(targets, opt)
 	if err != nil {
 		t.Fatalf("ten thousand text files were refused under the real ceiling: %v", err)
 	}
@@ -144,7 +167,7 @@ func TestARunTooShortToHaveBeenWeighedIsWeighed(t *testing.T) {
 	_, err := engine.Plan(targets, engine.Options{
 		OutDir:       "out",
 		ManifestName: "manifest.json",
-		MaxPlanBytes: 4 << 20,
+		Memory:       core.MemoryOf(4 << 20),
 	})
 	if err == nil {
 		t.Fatal("one file whose plan is six times the ceiling was accepted, so nothing weighed it")
@@ -179,7 +202,8 @@ func TestAShortOrdinaryRunIsNotRefusedByThePlanCeiling(t *testing.T) {
 	files, err := engine.Plan(targets, engine.Options{
 		OutDir:       "out",
 		ManifestName: "manifest.json",
-		// Zero means the real ceiling, which is what every caller passes.
+		// The zero value of Memory is auto, which is what a caller that sets
+		// nothing gets - two gigabytes of ceiling at the least.
 	})
 	if err != nil {
 		t.Fatalf("a single thousand page pdf was refused under the real ceiling: %v", err)
@@ -189,11 +213,14 @@ func TestAShortOrdinaryRunIsNotRefusedByThePlanCeiling(t *testing.T) {
 	}
 }
 
-// The ceiling this build works to is the one core states.
+// The floor under auto is the one core states, and every refusal names its
+// ceiling and where it came from.
 //
 // Asked separately from the mechanism above, because that one runs against an
 // injected number and would stay green if the real constant were changed to
-// something a run could never reach.
+// something a run could never reach. Since 2026-10-27 the constant is the
+// floor auto never goes under rather than the ceiling for every run
+// (docs/STABILITY-REVIEW-2026-10-26.md section 10.10).
 func TestThePlanCeilingIsTheOneCoreStates(t *testing.T) {
 	if core.MaxPlanBytes <= 0 {
 		t.Fatalf("the plan ceiling is %d, which no run can be under", core.MaxPlanBytes)
@@ -205,11 +232,93 @@ func TestThePlanCeilingIsTheOneCoreStates(t *testing.T) {
 		t.Errorf("the plan ceiling is %d B, which is under the 256 MB the largest shapes this tool ships need",
 			core.MaxPlanBytes)
 	}
-	// And the sentence has to name it, or the refusal sends somebody looking
-	// for a number that is written somewhere else.
-	if !strings.Contains(core.PlanTooLargeWhy.String(), core.HumanBytes(core.MaxPlanBytes)) {
-		t.Errorf("the refusal reason does not name the ceiling %s: %s",
-			core.HumanBytes(core.MaxPlanBytes), core.PlanTooLargeWhy)
+	// And each sentence has to name its number and its source, or the refusal
+	// sends somebody looking for a number that is written somewhere else - or
+	// for a setting they never touched.
+	floor := core.HumanBytes(core.MaxPlanBytes)
+	for _, c := range []struct {
+		name    string
+		setting core.Memory
+		limits  core.MemoryLimits
+		says    []string
+	}{
+		{"a size", core.MemoryOf(100 << 20), core.MemoryLimits{Run: 100 << 20, Plan: 100 << 20},
+			[]string{core.HumanBytes(100 << 20), "the memory setting"}},
+		{"auto", core.Memory{}, core.MemoryLimits{Run: 8 << 30, Plan: 8 << 30},
+			[]string{core.HumanBytes(8 << 30), "half of what this machine gives", floor}},
+		{"auto on a machine that cannot be asked", core.Memory{}, core.MemoryLimits{Run: core.MaxPlanBytes, Plan: core.MaxPlanBytes, Unknown: errors.ErrUnsupported},
+			[]string{floor, "could not be read"}},
+	} {
+		why := core.PlanTooLargeWhy(c.setting, c.limits).String()
+		for _, want := range c.says {
+			if !strings.Contains(why, want) {
+				t.Errorf("%s: the refusal reason does not say %q: %s", c.name, want, why)
+			}
+		}
+	}
+	if fix := core.PlanTooLargeFix.String(); !strings.Contains(fix, "memory setting") {
+		t.Errorf("the remedy does not name the memory setting, which is what moves the ceiling: %s", fix)
+	}
+}
+
+// The plan's ceiling is the memory setting's, through the engine.
+//
+// The arithmetic is checked against numbers in
+// TestTheMemorySettingIsWorkedOutAgainstTheMachine. This is the other half:
+// that planning asks the setting at all, and asks it about the machine it was
+// given. The shape is the one TestAPlanTooBigToHoldIsRefusedWhileItIsBuilt
+// uses, about 42 MB of plan, so a ceiling of four megabytes refuses it by ten
+// times and the floor of two gigabytes takes it fifty times over.
+func TestThePlanCeilingIsTheMemorySetting(t *testing.T) {
+	targets := []engine.Target{{ID: "files", Format: "txt", Sizes: engine.Uniform(50000, 4096)}}
+	tiny := func() (int64, error) { return 8 << 20, nil }
+
+	_, err := engine.Plan(targets, engine.Options{OutDir: "out", ManifestName: "manifest.json",
+		Memory: core.MemoryOf(4 << 20), MachineMemory: tiny})
+	if err == nil {
+		t.Fatal("a plan ten times the size the memory setting gives it was accepted")
+	}
+	if !strings.Contains(err.Error(), "the memory setting of this run gives it "+core.HumanBytes(4<<20)) {
+		t.Errorf("the refusal does not say the ceiling was the memory setting's: %s", err)
+	}
+
+	// Auto on a machine of eight megabytes is four - and the plan's ceiling
+	// under auto never goes below the one every run had before the setting,
+	// so the same plan is taken.
+	if _, err := engine.Plan(targets, engine.Options{OutDir: "out", ManifestName: "manifest.json",
+		MachineMemory: tiny}); err != nil {
+		t.Errorf("auto on a small machine refused a plan under the old ceiling of two gigabytes: %v", err)
+	}
+}
+
+// Off weighs nothing.
+//
+// No ceiling is the setting's whole meaning, and the only way to show the
+// absence of one cheaply is to show that nothing was measured: weighing a plan
+// starts with a collection, which is what takes its reference point. With the
+// collector switched off, only a collection somebody asked for happens - so a
+// run under auto has at least one and a run under off has none. The auto half
+// is asked as well, or a count that never moves would pass the off half for
+// any build.
+func TestOffWeighsNothing(t *testing.T) {
+	was := debug.SetGCPercent(-1)
+	t.Cleanup(func() { debug.SetGCPercent(was) })
+	targets := []engine.Target{{ID: "one", Format: "txt", Sizes: engine.Uniform(1, 64)}}
+
+	collections := func(m core.Memory) uint32 {
+		var before, after runtime.MemStats
+		runtime.ReadMemStats(&before)
+		if _, err := engine.Plan(targets, engine.Options{OutDir: "out", ManifestName: "manifest.json", Memory: m}); err != nil {
+			t.Fatal(err)
+		}
+		runtime.ReadMemStats(&after)
+		return after.NumForcedGC - before.NumForcedGC
+	}
+	if n := collections(core.Memory{}); n == 0 {
+		t.Fatal("planning under auto asked for no collection, so this cannot tell off from auto")
+	}
+	if n := collections(core.MemoryOff()); n != 0 {
+		t.Errorf("planning under off asked for %d collection(s) - the plan was weighed against a ceiling nobody asked for", n)
 	}
 }
 
@@ -257,7 +366,7 @@ func TestThePlanCeilingAsksAboutAllocationRatherThanTheLastCollection(t *testing
 	_, err := engine.Plan(targets, engine.Options{
 		OutDir:       "out",
 		ManifestName: "manifest.json",
-		MaxPlanBytes: 4 << 20,
+		Memory:       core.MemoryOf(4 << 20),
 	})
 	if err == nil {
 		t.Fatal("with the collector switched off a plan six times the ceiling was accepted, " +

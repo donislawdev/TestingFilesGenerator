@@ -16,6 +16,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/lang"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/catalogue"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/icon"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
@@ -129,11 +130,12 @@ const (
 	keyWidth     = "windowWidth"
 	keyHeight    = "windowHeight"
 	keyLanguage  = "language"
+	keyMemory    = "memory"
 )
 
 // ours is every key this program writes, which is what Forget removes and all
 // it removes. The folder picker's own keys stay: they are the toolkit's.
-var ours = []string{keyDirectory, keyWidth, keyHeight, keyLanguage}
+var ours = []string{keyDirectory, keyWidth, keyHeight, keyLanguage, keyMemory}
 
 func (s stored) Directory() string          { return s.prefs.String(keyDirectory) }
 func (s stored) RememberDirectory(d string) { s.prefs.SetString(keyDirectory, d) }
@@ -145,6 +147,15 @@ func (s stored) RememberLanguage(tag string) {
 		return
 	}
 	s.prefs.SetString(keyLanguage, tag)
+}
+
+func (s stored) Memory() string { return s.prefs.String(keyMemory) }
+func (s stored) RememberMemory(setting string) {
+	if setting == "" {
+		s.prefs.RemoveValue(keyMemory)
+		return
+	}
+	s.prefs.SetString(keyMemory, setting)
 }
 
 func (s stored) Forget() {
@@ -168,6 +179,8 @@ func (s stored) RememberSize(size fyne.Size) {
 // SettingsFolder is the toolkit's storage root for this application, which is
 // where its preferences.json lives - asked of the toolkit rather than put
 // together here, so it is the folder the file is really in.
+func (d desktop) MachineMemory() (int64, error) { return core.MachineMemory() }
+
 func (d desktop) SettingsFolder() string {
 	return filepath.FromSlash(fyne.CurrentApp().Storage().RootURI().Path())
 }

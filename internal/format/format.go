@@ -704,6 +704,18 @@ type Plan struct {
 	// as the bytes that would take as long to write - nought for every file
 	// whose cost is its bytes. See work.go.
 	Work int64
+	// Holds is how much memory writing the file takes at once beyond the
+	// stream every file is written through - a whole picture in memory, say.
+	// Nought for a format that streams, which is most of them.
+	//
+	// Counted the way the memory setting is: what the process grew by when one
+	// file of the shape was written, from the peak a probe measured, so the
+	// collector's room is inside the number. Read by the writers alone
+	// (engine/parallel.go), which hold the files written at once to what the
+	// setting leaves them - docs/STABILITY-REVIEW-2026-10-26.md section 10.8.
+	// Like Work, it is a cost only the format knows, and like Work it never
+	// reaches the manifest.
+	Holds int64
 }
 
 // PropertyLabelEmbedded is the key a generator sets to say whether the label

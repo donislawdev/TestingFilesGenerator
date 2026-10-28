@@ -105,6 +105,7 @@ func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan
 	}
 	p.Properties[format.PropertyLabelEmbedded] = m.labelLine != ""
 	p.Memo = m
+	p.Holds = format.OneAtATime(m.pictures, func(l pictureLine) format.Plan { return l.plan })
 	return p, nil
 }
 

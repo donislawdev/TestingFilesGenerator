@@ -158,7 +158,7 @@ type content struct {
 // anybody does a press of "Add a batch" to find out what the screen is. One is
 // also what the single batch screen shows, so the two read as one tool.
 func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
-	r := &Recipe{runner: newRunner(host.Later), host: host, tips: parts.NewTips()}
+	r := &Recipe{runner: newRunner(host.Later, host.Remembered, host.MachineMemory), host: host, tips: parts.NewTips()}
 	r.runner.settle = watchedSettle(host, r.runner, r.settle)
 	r.runner.offer.through(host)
 	// A refusal about a size belongs on the box the switch is showing.

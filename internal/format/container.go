@@ -111,3 +111,19 @@ func Containers() []string {
 	sort.Strings(out)
 	return out
 }
+
+// OneAtATime is what a container that writes the files inside it one after
+// another holds at once, for the memory setting: the most any one of them holds
+// (Plan.Holds). Never their sum - the second picture is written after the
+// first has gone - and never nothing, because each of the five containers that
+// hold pictures codes them while it writes (zip, targz, htmlfile, rtf and eml,
+// docs/STABILITY-REVIEW-2026-10-26.md section 12.0). A container inside a
+// container passes its own number up, so the deepest picture is the one that
+// counts.
+func OneAtATime[T any](inside []T, plan func(T) Plan) int64 {
+	var most int64
+	for _, f := range inside {
+		most = max(most, plan(f).Holds)
+	}
+	return most
+}

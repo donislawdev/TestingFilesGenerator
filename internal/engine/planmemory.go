@@ -55,10 +55,12 @@ const (
 //
 // What it can be wrong about is whose heap it is. ReadMemStats answers for the
 // whole process, so anything else allocating in it while a plan is being built
-// is counted against the plan - O162. Two gigabytes is a great deal to borrow
-// by accident, and every run this tool was designed around is orders of
-// magnitude under the ceiling, so the room for a wrong refusal is small. It is
-// not nought, and this is where it lives.
+// is counted against the plan - O162. Under auto the ceiling is two gigabytes
+// at the least, which is a great deal to borrow by accident, and every run this
+// tool was designed around is orders of magnitude under it, so the room for a
+// wrong refusal is small. It is not nought, and this is where it lives. A
+// person who sets a small size has chosen a ceiling the window's own heap is
+// counted against too.
 type planMemory struct {
 	baseline uint64
 	// allocsBaseline is the running total of bytes this process has ever
@@ -74,6 +76,10 @@ type planMemory struct {
 	seen           int
 	nextAt         int
 	ceiling        uint64
+	// setting and limits are where the ceiling came from, kept for the one
+	// sentence that has to say so.
+	setting core.Memory
+	limits  core.MemoryLimits
 }
 
 // newPlanMemory takes the reference point, and it is taken here because here
@@ -114,15 +120,20 @@ type planMemory struct {
 // guard package interleaved on 2026-09-03: 277.9 s and 283.7 s without them
 // against 292.3 s and 306.1 s with, so about six percent. The ranges do not
 // overlap, which is the only reason a conclusion is drawn from four runs.
-func newPlanMemory(ceiling int64) *planMemory {
-	if ceiling <= 0 {
-		ceiling = core.MaxPlanBytes
+//
+// Nil under --memory off, which asks for no ceiling, and then nothing is
+// weighed at all - not even the reference point, which costs a collection.
+func newPlanMemory(setting core.Memory, limits core.MemoryLimits) *planMemory {
+	if limits.Plan <= 0 {
+		return nil
 	}
 	return &planMemory{
 		baseline:       heapInUse(),
 		allocsBaseline: allocatedSoFar(),
 		nextAt:         1,
-		ceiling:        uint64(ceiling),
+		ceiling:        uint64(limits.Plan),
+		setting:        setting,
+		limits:         limits,
 	}
 }
 
@@ -139,8 +150,9 @@ func newPlanMemory(ceiling int64) *planMemory {
 // What the counter cannot do is answer the question this refuses on. It counts
 // everything ever allocated, including what has already been thrown away, so it
 // says "no" with certainty and "maybe" otherwise. The certain half is enough,
-// because it is the half every real run lands in: MaxPlanBytes is two
-// gigabytes and planning ten thousand files allocates tens of megabytes.
+// because it is the half every real run lands in: under auto the ceiling is
+// two gigabytes at the least, and planning ten thousand files allocates tens of
+// megabytes.
 //
 // /gc/heap/live:bytes was the obvious other candidate and it is the wrong one.
 // It reports the live heap as of the LAST COLLECTION, so a burst of allocation
@@ -148,6 +160,9 @@ func newPlanMemory(ceiling int64) *planMemory {
 // silence exactly when the plan is growing fastest. The counter has no such
 // gap.
 func (p *planMemory) account(targetIndex, filesSoFar int) error {
+	if p == nil {
+		return nil
+	}
 	p.seen++
 	if p.seen < p.nextAt {
 		return nil
@@ -184,7 +199,7 @@ func (p *planMemory) account(targetIndex, filesSoFar int) error {
 			core.A("Used", core.Bytes(used)),
 			core.A("Files", core.SaysN("engine.FilesSoFar", "%d file", "%d files", core.A("Count", filesSoFar))),
 			core.A("Ceiling", core.Bytes(p.ceiling))),
-		Because: core.PlanTooLargeWhy,
+		Because: core.PlanTooLargeWhy(p.setting, p.limits),
 		Remedy:  core.PlanTooLargeFix,
 	}
 }
@@ -211,6 +226,36 @@ func stepFor(ceiling, used uint64, seen int) int {
 		step = 1
 	}
 	return step
+}
+
+// roomLeft is what the memory setting leaves the writers once the plan and the
+// rest of the process are held: limit less the heap.
+//
+// The heap is read the cheap way first, and that reading is never less than
+// what is live - it counts what the collector has not swept yet too - so room
+// it says is there is there. Only when it says there may not be room for need,
+// the most the writers could hold at once, is the heap read after a collection,
+// which costs what account below says it does. A run of text files never gets
+// here at all (queueFor), and a run of pictures pays one collection at most,
+// against writing pictures.
+//
+// The whole heap rather than the plan alone, and the difference is the window:
+// what it holds is memory the process holds, and the setting is about what the
+// process may take. On the command line the two differ by a few megabytes.
+func roomLeft(limit, need int64) int64 {
+	if room := limit - int64(heapHeldAtMost()); room >= need {
+		return room
+	}
+	return limit - int64(heapInUse())
+}
+
+// heapHeldAtMost is the heap as it stands, the live objects and the ones not
+// swept yet, without a collection - an upper bound on what is live, at the
+// cost of one reading.
+func heapHeldAtMost() uint64 {
+	sample := [1]metrics.Sample{{Name: "/memory/classes/heap/objects:bytes"}}
+	metrics.Read(sample[:])
+	return sample[0].Value.Uint64()
 }
 
 // allocatedSoFar is every byte this process has ever allocated, thrown away or

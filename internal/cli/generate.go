@@ -113,6 +113,10 @@ Flags:
 func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	var g generateOpts
 	fs, usage := generateFlagSet(errOut, &g)
+	// Beside the options rather than among them: it says nothing about the
+	// files, only about the machine, and generateOpts is at the crowding band.
+	var memory memoryValue
+	memoryFlag(fs, &memory)
 	if helpRequested(args) {
 		usage(out)
 		return ExitOK
@@ -156,6 +160,7 @@ func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 		DryRun:       g.dryRun,
 		Command:      "tfg " + strings.Join(args2(args), " "),
 		ManifestName: defaultManifestName,
+		Memory:       memory.Memory,
 	}
 
 	var (
@@ -446,9 +451,9 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 		bar.clear()
 	}
 
-	for _, n := range res.Manifest.Notes() {
-		fmt.Fprintf(errOut, "note: %s\n", n)
-	}
+	// What the run says about the memory it ran in comes first: it is about
+	// the run rather than about any one file, and it is said once.
+	sayNotes(append(saidAll(res.RunNotes), res.Manifest.Notes()...), errOut)
 
 	if runErr != nil {
 		fmt.Fprintf(errOut, "tfg: %s%s\n", describeError(runErr), whatSurvived(runErr, res))

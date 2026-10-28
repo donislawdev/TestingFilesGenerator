@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"sync"
 	"sync/atomic"
 
@@ -50,10 +51,15 @@ import (
 // are live at once, so the memory a run holds while writing is N times one
 // generator's working set. Every generator streams - there is a guard for that
 // - so that set is bounded by the format rather than by the file, and the
-// largest of them hold one picture. It is still N times what it was. And the
-// answers are collected before any of them reaches the manifest, which is
-// forty bytes a file that the sequential loop did not need: forty megabytes at
-// the millionth file, beside a plan that is already far larger.
+// largest of them hold one picture. A picture is enough: sixteen of forty
+// megapixels held 2.6 GB where one held 358 MB, measured on 2026-10-26
+// (docs/STABILITY-REVIEW-2026-10-26.md section 3.2). So since 2026-10-27 a
+// file that holds memory says how much (format.Plan.Holds), and memoryQueue
+// below keeps the files written at once inside what the memory setting leaves
+// after the plan - by waiting, never by refusing. And the answers are
+// collected before any of them reaches the manifest, which is forty bytes a
+// file that the sequential loop did not need: forty megabytes at the
+// millionth file, beside a plan that is already far larger.
 
 // widthFor is how many goroutines a run of n files gets.
 //
@@ -106,18 +112,14 @@ type fileResult struct {
 // wants the opposite - a contiguous prefix - because a sentence about an
 // interrupted verify is a sentence about a prefix, and that difference is why
 // there are two pools rather than one shared one.
-func writeAll(ctx context.Context, files []PlannedFile, outDir string, gate *progressGate) []fileResult {
-	out := make([]fileResult, len(files))
-
-	// next is the only thing every goroutine touches, and it is an atomic
-	// counter. out is written at indices no other goroutine is given, because
-	// the counter hands each index out exactly once.
-	var next atomic.Int64
+func writeAll(ctx context.Context, files []PlannedFile, outDir string, gate *progressGate, queue *memoryQueue) []fileResult {
+	w := &writers{files: files, outDir: outDir, gate: gate, queue: queue, out: make([]fileResult, len(files))}
 	var wg sync.WaitGroup
 
+	defer queue.wakeOnStop(ctx)()
 	work := func() {
 		defer wg.Done()
-		drain(ctx, &next, files, outDir, gate, out)
+		w.drain(ctx)
 	}
 	for w := widthFor(len(files)); w > 0; w-- {
 		wg.Add(1)
@@ -125,7 +127,22 @@ func writeAll(ctx context.Context, files []PlannedFile, outDir string, gate *pro
 	}
 	wg.Wait()
 
-	return out
+	return w.out
+}
+
+// writers is what every writer of one run shares: the files and where they go,
+// the bar, the memory queue, and the answers.
+//
+// next is the only thing every goroutine changes, and it is an atomic counter.
+// out is written at indices no other goroutine is given, because the counter
+// hands each index out exactly once.
+type writers struct {
+	files  []PlannedFile
+	outDir string
+	gate   *progressGate
+	queue  *memoryQueue
+	out    []fileResult
+	next   atomic.Int64
 }
 
 // drain takes files off the counter until there are none left.
@@ -134,9 +151,9 @@ func writeAll(ctx context.Context, files []PlannedFile, outDir string, gate *pro
 // reason written beside the same split in internal/audit: a literal inside a
 // loop counts one level deeper than it reads, and the shape guard asks for the
 // split rather than for a larger ceiling.
-func drain(ctx context.Context, next *atomic.Int64, files []PlannedFile, outDir string, gate *progressGate, out []fileResult) {
+func (w *writers) drain(ctx context.Context) {
 	for {
-		i := int(next.Add(1)) - 1
+		i := int(w.next.Add(1)) - 1
 		// Cancellation is asked before taking a file rather than only at the
 		// top of a pass, so a Ctrl+C is noticed at the next file rather than
 		// after every remaining one has been begun.
@@ -148,18 +165,188 @@ func drain(ctx context.Context, next *atomic.Int64, files []PlannedFile, outDir 
 		// had left, which on a million file run is a million of them. What it
 		// buys is work not done, and the guard that would catch its absence
 		// would be a guard on a clock.
-		if i >= len(out) || ctx.Err() != nil {
+		if i >= len(w.out) || ctx.Err() != nil {
 			return
 		}
 		// One of these per file, on this goroutine's own stack. How far this
 		// writer has already reported is the one number that cannot live in
 		// the gate: with several files in flight there is no such thing as
 		// "the file being written".
-		p := fileProgress{gate: gate}
-		sum, err := writeOne(ctx, files[i], outDir, &p)
-		out[i] = fileResult{sha: sum, ok: err == nil, err: err}
-		p.finished(files[i].Plan, err == nil)
+		p := fileProgress{gate: w.gate}
+		// A file that holds memory waits here for its turn and its room. A
+		// stop while it waits leaves it never started - the zero answer -
+		// exactly like the files this writer never took.
+		if !w.queue.take(ctx, i) {
+			return
+		}
+		sum, err := writeOne(ctx, w.files[i], w.outDir, &p)
+		w.queue.give(i)
+		w.out[i] = fileResult{sha: sum, ok: err == nil, err: err}
+		p.finished(w.files[i].Plan, err == nil)
 	}
+}
+
+// memoryQueue holds the files written at once to the memory the setting leaves
+// them - docs/STABILITY-REVIEW-2026-10-26.md sections 10.1 and 10.8.
+//
+// Three rules, and each is there because the obvious alternative breaks.
+//
+//   - A file that holds nothing never waits. Most formats stream, and a txt
+//     queued behind a picture would be slower for no memory at all.
+//   - Files that hold something take their turn in the order of the plan, and
+//     a later one never goes first. Letting a small picture past a large one
+//     that does not fit yet is how the large one waits for ever.
+//   - A file that holds more than all the room there is goes when nothing else
+//     holds anything, on its own. Waiting for room that can never exist would
+//     be a run that never ends, and refusing it would be the setting refusing
+//     files, which the owner ruled out on 2026-10-27. The run then goes past the
+//     setting while that file is written, and says so once (Overrun).
+//
+// Nil is no queue: --memory off, or room enough that every writer could hold
+// its largest file at once. Both are a run written exactly as it was before
+// this existed, and every method takes a nil receiver.
+type memoryQueue struct {
+	mu      sync.Mutex
+	turned  *sync.Cond
+	files   []PlannedFile
+	rank    []int // place in the queue by index, -1 for a file that holds nothing
+	turn    int   // the place whose turn it is
+	room    int64 // what is left, below nought only while a file goes on its own
+	holding int   // files holding something now
+	over    *Overrun
+}
+
+// Overrun is a file that held more than the memory setting left the writers,
+// and was written on its own.
+type Overrun struct {
+	Name        string
+	Holds, Room int64
+}
+
+// queueFor is the queue for one run, or nil when the run needs none. limit is
+// what the memory setting lets the run hold (core.MemoryLimits.Run), nought for
+// off, and width how many writers there are.
+func queueFor(files []PlannedFile, limit int64, width int) *memoryQueue {
+	need := widest(files, width)
+	if limit <= 0 || need == 0 {
+		return nil
+	}
+	room := roomLeft(limit, need)
+	if room >= need {
+		return nil
+	}
+	q := &memoryQueue{files: files, room: room, rank: make([]int, len(files))}
+	q.turned = sync.NewCond(&q.mu)
+	places := 0
+	for i, f := range files {
+		q.rank[i] = -1
+		if f.Plan.Holds > 0 {
+			q.rank[i] = places
+			places++
+		}
+	}
+	return q
+}
+
+// widest is the most the writers could hold at once: the width largest files.
+// When the room is at least that, nothing would ever wait, so there is no
+// queue - and a run of text files costs the arithmetic and nothing else.
+//
+// One pass, keeping the width largest seen so far and replacing the smallest of
+// them - width is the number of writers, sixteen on this machine, so a million
+// files is sixteen million comparisons rather than a sort of a million.
+func widest(files []PlannedFile, width int) int64 {
+	largest := make([]int64, max(width, 1))
+	for _, f := range files {
+		if f.Plan.Holds > 0 {
+			least := slices.Index(largest, slices.Min(largest))
+			largest[least] = max(largest[least], f.Plan.Holds)
+		}
+	}
+	var sum int64
+	for _, n := range largest {
+		sum += n
+	}
+	return sum
+}
+
+// take waits for file i's turn and room, and takes the room. False is a stop
+// that came while it waited, and then nothing is taken.
+//
+// The stop is asked of the context itself, under the lock, rather than of a
+// flag the stop sets. A flag would be set by the callback wakeOnStop hands the
+// context, on a goroutine of its own and a moment later - so a writer woken by
+// give in that moment would see no stop and start a file of a run that was
+// already stopped.
+func (q *memoryQueue) take(ctx context.Context, i int) bool {
+	if q == nil || q.rank[i] < 0 {
+		return true
+	}
+	holds := q.files[i].Plan.Holds
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	for ctx.Err() == nil && (q.turn != q.rank[i] || (holds > q.room && q.holding > 0)) {
+		q.turned.Wait()
+	}
+	if ctx.Err() != nil {
+		return false
+	}
+	if holds > q.room && q.over == nil {
+		q.over = &Overrun{Name: q.files[i].Name, Holds: holds, Room: max(q.room, 0)}
+	}
+	q.room -= holds
+	q.holding++
+	q.turn++
+	q.turned.Broadcast()
+	return true
+}
+
+// give hands file i's room back, whether it was written or failed.
+func (q *memoryQueue) give(i int) {
+	if q == nil || q.rank[i] < 0 {
+		return
+	}
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	q.room += q.files[i].Plan.Holds
+	q.holding--
+	q.turned.Broadcast()
+}
+
+// wakeOnStop wakes every writer waiting in the queue when the run is stopped.
+// The function it returns undoes that, once the writers are done.
+//
+// give wakes them too, so most stops would be answered without this - a file
+// holding the room finishes, gives it back and the writers waiting see the
+// stop. What give cannot reach is a writer waiting for the turn of a file that
+// will never be taken: drain hands out an index and then, seeing the stop,
+// returns without writing it, so the turn that file held never moves and
+// nothing holds anything that will be given back. Without this the writers
+// behind it sleep for ever and the run never ends.
+//
+// NO GUARD PROVES THIS, and it is not for want of trying. The stop has to land
+// between one writer taking an index and asking about the stop, while a writer
+// behind it is already waiting - an order of goroutines a test cannot arrange
+// from outside the package. What stays is the reasoning above, and the cost of
+// being wrong about it is a run that hangs on Ctrl+C.
+func (q *memoryQueue) wakeOnStop(ctx context.Context) func() {
+	if q == nil {
+		return func() {}
+	}
+	stop := context.AfterFunc(ctx, func() {
+		q.mu.Lock()
+		defer q.mu.Unlock()
+		q.turned.Broadcast()
+	})
+	return func() { stop() }
+}
+
+// Overrun is the first file that was written past the setting, or nil.
+func (q *memoryQueue) Overrun() *Overrun {
+	if q == nil {
+		return nil
+	}
+	return q.over
 }
 
 // progressGate is how progress leaves a run that has several writers in it.

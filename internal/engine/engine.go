@@ -135,15 +135,26 @@ type Options struct {
 	// the guard is broken. Nil means ask the operating system.
 	AvailableBytes func(path string) (int64, error)
 
-	// MaxPlanBytes is the ceiling on what the plan may cost in memory. Zero
-	// means core.MaxPlanBytes, which is what every real caller passes.
+	// Memory is how much memory this run may take, the plan and the writing
+	// together - the --memory flag, or Memory on the window's Preferences
+	// screen. The zero value is auto, so a caller that never heard of it gets
+	// half of what the machine gives the program rather than no limit.
 	//
-	// Injected for the same reason AvailableBytes above it is: a test of this
-	// guard would otherwise have to allocate two gigabytes to reach it, which
-	// is slower than the whole suite and would sit inside the mutation
-	// runner's own memory cap. With a small ceiling the mechanism is exercised
-	// on a handful of files, and the real number is asked about separately.
-	MaxPlanBytes int64
+	// It sets two things (core.Memory.On): the ceiling the plan is refused
+	// at, and how much the files being written at once may hold between them
+	// before the next one waits (writeAll). The second never refuses anything.
+	//
+	// A small size is also how a test reaches the plan's ceiling. The ceiling
+	// used to be a field of its own, MaxPlanBytes, injected so a guard need
+	// not allocate two gigabytes to get there - and a second way in to one
+	// number is a way for the two to come apart, so it went on 2026-10-27.
+	Memory core.Memory
+
+	// MachineMemory reports how much memory this machine gives the program,
+	// which auto halves. Nil means ask the system (core.MachineMemory).
+	// Injected for the reason AvailableBytes is: a test describes a machine of
+	// two gigabytes without owning one.
+	MachineMemory func() (int64, error)
 
 	// Record is the forecast of this run's record, when the caller has already
 	// worked it out for these same files with PredictRecord - the command line
@@ -185,6 +196,17 @@ func (o Options) availableBytes(path string) (int64, error) {
 	return core.AvailableBytes(path)
 }
 
+// memoryLimits is the memory setting worked out on this machine. Asked once
+// by planning and once by the run, rather than carried between them, because
+// the two are separate calls and a caller may plan without running.
+func (o Options) memoryLimits() core.MemoryLimits {
+	machine := o.MachineMemory
+	if machine == nil {
+		machine = core.MachineMemory
+	}
+	return o.Memory.On(machine)
+}
+
 // Result is what a run produced.
 type Result struct {
 	Manifest *manifest.Manifest
@@ -206,6 +228,13 @@ type Result struct {
 	// each file, so a million files with the same note cost one. A window says
 	// the notes in its own language from here, and the manifest stays English.
 	NotesSaid map[string]core.Said
+
+	// RunNotes is what the run says about itself rather than about a file:
+	// the memory of the machine could not be read, a file was written past
+	// the memory setting. Not in the manifest, which describes files - these
+	// describe the machine the run happened on, and a manifest that changed
+	// with the machine would record something other than the files beside it.
+	RunNotes []core.Said
 
 	// Record is how large the record of this run was worked out to be before
 	// its first byte, the manifest and the instructions (PredictRecord). For a
@@ -372,7 +401,7 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 	// Watches what the plan costs while it is being built. Constructed here
 	// rather than at the first file because constructing it is what takes the
 	// reference point, and that has to happen before any of the plan exists.
-	pl.budget = newPlanMemory(opt.MaxPlanBytes)
+	pl.budget = newPlanMemory(opt.Memory, opt.memoryLimits())
 
 	// The manifest lands beside the files, so its name is a name too. A path
 	// here would leave a manifest outside the directory the run was pointed
@@ -495,6 +524,8 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	if err := preflight(ctx, files, opt, record); err != nil {
 		return res, err
 	}
+	limits := opt.memoryLimits()
+	res.noteMemory(limits)
 
 	if opt.DryRun {
 		// Nothing is written. Every entry is what would have been produced,
@@ -570,7 +601,9 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	// The files are written over several goroutines. Everything that runs
 	// beside anything else lives in parallel.go, including the measurements
 	// that put it there.
-	written := writeAll(ctx, files, opt.OutDir, newProgressGate(files, opt.OnProgress))
+	queue := queueFor(files, limits.Run, widthFor(len(files)))
+	written := writeAll(ctx, files, opt.OutDir, newProgressGate(files, opt.OnProgress), queue)
+	res.noteOverrun(queue.Overrun())
 
 	// Read back in the order the plan lists, on this goroutine alone. Two
 	// things rest on that and neither is tidiness:

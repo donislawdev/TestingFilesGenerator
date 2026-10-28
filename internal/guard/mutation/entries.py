@@ -53,8 +53,8 @@ MUTATIONS = [
     (
         "the preview stops warning that the record will be too big to read back",
         "internal/gui/window/run.go",
-        "r.say(append([]string{said}, manifestReachNote(res.Record)...)...)",
-        "r.say(said)",
+        "r.say(append(append([]string{said}, manifestReachNote(res.Record)...), runNotesOf(res)...)...)",
+        "r.say(append([]string{said}, runNotesOf(res)...)...)",
         "TestTheWindowSaysWhenItsManifestWillBeTooBigToReadBack",
     ),
     (
@@ -6170,8 +6170,8 @@ MUTATIONS = [
     (
         "the reason given for a plan refusal names a ceiling other than the one in force",
         "internal/core/limits.go",
-        "A(\"Ceiling\", Bytes(MaxPlanBytes)))",
-        "A(\"Ceiling\", Bytes(MaxPlanBytes/2)))",
+        "A(\"Ceiling\", Bytes(l.Plan)), A(\"Floor\", Bytes(MaxPlanBytes)))",
+        "A(\"Ceiling\", Bytes(l.Plan)), A(\"Floor\", Bytes(MaxPlanBytes/2)))",
         "TestThePlanCeilingIsTheOneCoreStates",
     ),
     (
@@ -6218,9 +6218,9 @@ MUTATIONS = [
     ),
     (
         "the ceiling a caller does not name stops being the real one, so ordinary short runs are refused",
-        "internal/engine/planmemory.go",
-        "\t\tceiling = core.MaxPlanBytes",
-        "\t\tceiling = 1",
+        "internal/engine/engine.go",
+        "\treturn o.Memory.On(machine)",
+        "\treturn core.MemoryOf(1).On(machine)",
         "TestAShortOrdinaryRunIsNotRefusedByThePlanCeiling",
     ),
     (
@@ -8010,8 +8010,8 @@ MUTATIONS = [
     (
         "validate goes back to planning with a context nobody can finish",
         "internal/cli/recipecmd.go",
-        "engine.PlanContext(ctx, targets, planningOptions(rec))",
-        "engine.Plan(targets, planningOptions(rec))",
+        "engine.PlanContext(ctx, targets, opt)",
+        "engine.Plan(targets, opt)",
         "TestPlanningFromTheCommandLineCanBeStopped",
     ),
     (
@@ -15917,5 +15917,363 @@ MUTATIONS = [
         "hash never refuses a write, so this is the stop.\n\t\treturn 0, err",
         "hash never refuses a write, so this is the stop.\n\t\treturn 0, nil",
         "TestAnOfficePackageStopsWhileItChecksumsItsPadding",
+    ),
+    (
+        # A nought typed by mistake is read as a size of nothing, which is auto
+        # - every limit gone without a word. The table asks "0" to be refused.
+        "the memory setting takes a nought as a setting",
+        "internal/core/memory.go",
+        "if n == 0 {",
+        "if n == -1 {",
+        "TestTheMemorySettingReadsWhatItSays",
+    ),
+    (
+        # The size parser's refusal comes through in its own slot, so "8 gigs"
+        # is refused about the size - a window marks the wrong box and the
+        # command line names a flag nobody typed.
+        "a refusal of the size parser keeps naming the size under --memory",
+        "internal/core/memory.go",
+        "return &Refusal{said: r.said, setting: SettingMemory}",
+        "return err",
+        "TestTheMemorySettingReadsWhatItSays",
+    ),
+    (
+        # The kept text takes the largest unit the size reaches rather than the
+        # largest that holds it whole, so 1025 B is kept as 1kb and comes back
+        # as 1024.
+        "the memory setting is kept as a rounded size",
+        "internal/core/memory.go",
+        "if m.bytes%u.size == 0 {",
+        "if m.bytes >= u.size {",
+        "TestTheMemorySettingReadsBackAsItself",
+    ),
+    (
+        # Auto on a small machine gives the plan half the machine, under the
+        # ceiling every run had before the setting - a run planned yesterday
+        # is refused today.
+        "auto lets the plan ceiling drop below the old two gigabytes",
+        "internal/core/memory.go",
+        "return MemoryLimits{Run: half, Plan: max(half, MaxPlanBytes)}",
+        "return MemoryLimits{Run: half, Plan: half}",
+        "TestTheMemorySettingIsWorkedOutAgainstTheMachine",
+    ),
+    (
+        # The walk up the groups keeps the larger limit, so a container held by
+        # its slice is told the slice's own looser number.
+        "the larger of two limits on the way up a control group wins",
+        "internal/core/cgroup.go",
+        "if ok && (!found || n < least) {",
+        "if ok && (!found || n > least) {",
+        "TestTheLimitOfAContainerIsFoundInItsControlGroup",
+    ),
+    (
+        # The memory free now rather than the memory fitted - a number that
+        # moves by the minute. Proven on the Linux runner, where mutation runs,
+        # against MemTotal in /proc/meminfo. A runner whose control group held
+        # it below the memory fitted would not see this, and the guard logs
+        # which branch it took.
+        "the machine is read as the memory free rather than the memory fitted",
+        "internal/core/machinememory_linux.go",
+        "fitted := uint64(info.Totalram) * unit",
+        "fitted := uint64(info.Freeram) * unit",
+        "TestTheMemoryOfTheMachineIsWhatTheSystemSays",
+    ),
+    (
+        # Each file takes twice its room, so two that fit side by side are
+        # written one after the other - the queue holds the writers back
+        # further than the setting asks.
+        "the memory queue takes twice the room a file holds",
+        "internal/engine/parallel.go",
+        "q.room -= holds",
+        "q.room -= 2 * holds",
+        "TestTheFilesWrittenAtOnceHoldNoMoreThanTheMemorySettingLeaves",
+    ),
+    (
+        # The room is never asked, so every writer holds its picture at once -
+        # the 2.6 GB of section 3.2 back again.
+        "the memory queue lets a file in without room for it",
+        "internal/engine/parallel.go",
+        "for ctx.Err() == nil && (q.turn != q.rank[i] || (holds > q.room && q.holding > 0)) {",
+        "for ctx.Err() == nil && (q.turn != q.rank[i] || (false && q.holding > 0)) {",
+        "TestTheFilesWrittenAtOnceHoldNoMoreThanTheMemorySettingLeaves",
+    ),
+    (
+        # A file that holds nothing takes a place in the queue, so a text file
+        # waits behind a picture written on its own.
+        "a file that holds no memory waits its turn in the memory queue",
+        "internal/engine/parallel.go",
+        "if f.Plan.Holds > 0 {\n\t\t\tq.rank[i] = places",
+        "if f.Plan.Holds >= 0 {\n\t\t\tq.rank[i] = places",
+        "TestTheFilesWrittenAtOnceHoldNoMoreThanTheMemorySettingLeaves",
+    ),
+    (
+        # A writer woken after a stop takes its room and starts the file of a
+        # run that was already stopped.
+        "a writer woken in the memory queue after a stop starts its file",
+        "internal/engine/parallel.go",
+        "\tif ctx.Err() != nil {\n\t\treturn false\n\t}",
+        "\tif false {\n\t\treturn false\n\t}",
+        "TestTheFilesWrittenAtOnceHoldNoMoreThanTheMemorySettingLeaves",
+    ),
+    (
+        # A file written past the setting is written and nothing says so -
+        # untouchable rule 6.
+        "a file written past the memory setting goes unsaid",
+        "internal/engine/parallel.go",
+        "if holds > q.room && q.over == nil {",
+        "if false && q.over == nil {",
+        "TestTheFilesWrittenAtOnceHoldNoMoreThanTheMemorySettingLeaves",
+    ),
+    (
+        # Off still weighs the plan, against a ceiling of nothing - every plan
+        # refused under the setting that asked for no limit.
+        "off weighs the plan against a ceiling nobody asked for",
+        "internal/engine/planmemory.go",
+        "\tif limits.Plan <= 0 {\n\t\treturn nil\n\t}",
+        "\tif false {\n\t\treturn nil\n\t}",
+        "TestOffWeighsNothing",
+    ),
+    (
+        # Planning works to the old two gigabytes whatever the setting says -
+        # the ceiling that could not be moved, which is R02.
+        "planning ignores the memory setting and works to the old ceiling",
+        "internal/engine/engine.go",
+        "pl.budget = newPlanMemory(opt.Memory, opt.memoryLimits())",
+        "pl.budget = newPlanMemory(opt.Memory, core.MemoryLimits{Plan: core.MaxPlanBytes})",
+        "TestThePlanCeilingIsTheMemorySetting",
+    ),
+    (
+        # A jpg declares nothing, so sixteen of its pictures go out at once
+        # whatever the memory setting says - R02 back for that one format.
+        "a jpg does not declare the picture writing it holds",
+        "internal/format/jpg/jpg.go",
+        "\tp.Holds = holdsPerPixel * int64(w) * int64(h)\n",
+        "\tp.Holds = 0 * holdsPerPixel * int64(w) * int64(h)\n",
+        "TestEveryPictureSaysWhatWritingItHolds",
+    ),
+    (
+        "a png does not declare the picture writing it holds",
+        "internal/format/png/png.go",
+        "\tp.Holds = holdsPerPixel * int64(w) * int64(h)\n",
+        "\tp.Holds = 0 * holdsPerPixel * int64(w) * int64(h)\n",
+        "TestEveryPictureSaysWhatWritingItHolds",
+    ),
+    (
+        "a gif does not declare the picture writing it holds",
+        "internal/format/gif/gif.go",
+        "\tp.Holds = holdsPerPixel * int64(w) * int64(h) / 2\n",
+        "\tp.Holds = 0 * holdsPerPixel * int64(w) * int64(h) / 2\n",
+        "TestEveryPictureSaysWhatWritingItHolds",
+    ),
+    (
+        # The film declares the part that does not grow and drops the part
+        # that does, so a 4K film is held back like a small one.
+        "a film declares the same whatever the size of its picture",
+        "internal/format/video/plan.go",
+        "\treturn 4<<20 + 2*int64(width)*int64(height)",
+        "\treturn 4<<20 + 0*int64(width)*int64(height)",
+        "TestEveryPictureSaysWhatWritingItHolds",
+    ),
+    (
+        # A jxl chosen from the ladder is coded while writing and declares
+        # nothing, so the setting cannot see it.
+        "a jxl coded while writing declares nothing",
+        "internal/format/jxl/jxl.go",
+        "\tif m.coded == nil {\n\t\t// Coded while writing",
+        "\tif false && m.coded == nil {\n\t\t// Coded while writing",
+        "TestEveryPictureItChoosesSaysWhatWritingItHolds",
+    ),
+    (
+        "an avif coded while writing declares nothing",
+        "internal/format/avif/avif.go",
+        "\tif m.coded == nil {\n\t\t// Coded while writing",
+        "\tif false && m.coded == nil {\n\t\t// Coded while writing",
+        "TestEveryPictureItChoosesSaysWhatWritingItHolds",
+    ),
+    (
+        # A zip of pictures declares nothing, though it codes each picture
+        # while it writes.
+        "a zip does not pass up what its pictures hold",
+        "internal/format/zip/zip.go",
+        "\tp.Holds = format.OneAtATime(m.children, func(c child) format.Plan { return c.plan })\n",
+        "\tp.Holds = 0 * format.OneAtATime(m.children, func(c child) format.Plan { return c.plan })\n",
+        "TestAContainerHoldsWhatItsLargestPictureHolds",
+    ),
+    (
+        # The pictures a message shows in its text are a list of their own,
+        # and leaving them out leaves a message of pictures declaring nothing.
+        "a mail message does not pass up what the pictures in its text hold",
+        "internal/format/eml/eml.go",
+        "format.OneAtATime(m.pictures, plan))",
+        "0*format.OneAtATime(m.pictures, plan))",
+        "TestAContainerHoldsWhatItsLargestPictureHolds",
+    ),
+    (
+        # A container adds its pictures up rather than taking the largest, as
+        # if it wrote them all at once - every container of pictures waits
+        # for room it will never use.
+        "a container declares the sum of its pictures rather than the largest",
+        "internal/format/container.go",
+        "\t\tmost = max(most, plan(f).Holds)",
+        "\t\tmost += plan(f).Holds",
+        "TestAContainerHoldsWhatItsLargestPictureHolds",
+    ),
+    (
+        # generate reads --memory and then hands the planner auto instead -
+        # the flag is accepted and does nothing, which is the worst kind of
+        # option this tool can have.
+        "generate reads --memory and plans under auto anyway",
+        "internal/cli/generate.go",
+        "\t\tMemory:       memory.Memory,",
+        "\t\tMemory:       memoryValue{}.Memory,",
+        "TestTheMemoryFlagReachesThePlanOnEveryCommandThatPlans",
+    ),
+    (
+        "validate reads --memory and plans under auto anyway",
+        "internal/cli/recipecmd.go",
+        "\topt.Memory = v.memory.Memory",
+        "\topt.Memory = memoryValue{}.Memory",
+        "TestTheMemoryFlagReachesThePlanOnEveryCommandThatPlans",
+    ),
+    (
+        "preset show reads --memory and counts the budget under auto anyway",
+        "internal/cli/presetcmd.go",
+        "budgetOf(ctx, expanded, memory.Memory)",
+        "budgetOf(ctx, expanded, memoryValue{}.Memory)",
+        "TestTheMemoryFlagReachesThePlanOnEveryCommandThatPlans",
+    ),
+    (
+        # The help of preset show is written by hand, so the flag can be there
+        # and its sentence missing.
+        "the help of preset show does not say what --memory does",
+        "internal/cli/presetcmd.go",
+        "    \t`+memoryHelp+` (default auto)",
+        "    \t(default auto)",
+        "TestTheMemoryFlagReachesThePlanOnEveryCommandThatPlans",
+    ),
+    (
+        # The command line prints the manifest's notes and not the run's, so a
+        # file written past the memory setting goes unsaid there - rule 6.
+        "the command line does not print what the run says about its memory",
+        "internal/cli/generate.go",
+        "sayNotes(append(saidAll(res.RunNotes), res.Manifest.Notes()...), errOut)",
+        "sayNotes(res.Manifest.Notes(), errOut)",
+        "TestAFileWrittenPastTheMemorySettingIsSaidOnTheCommandLine",
+    ),
+    (
+        # A preview from the window plans under auto whatever Preferences
+        # keeps - the setting is on the screen and does nothing.
+        "a preview in the window ignores the memory setting kept on Preferences",
+        "internal/gui/window/run.go",
+        "\topt.DryRun = true\n\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine",
+        "\topt.DryRun = true\n\topt.Memory, opt.MachineMemory = core.Memory{}, r.machine",
+        "TestARunPlansUnderTheMemorySettingKeptOnPreferences",
+    ),
+    (
+        "a run in the window ignores the memory setting kept on Preferences",
+        "internal/gui/window/run.go",
+        "\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine\n\tctx, cancel",
+        "\topt.Memory, opt.MachineMemory = core.Memory{}, r.machine\n\tctx, cancel",
+        "TestARunPlansUnderTheMemorySettingKeptOnPreferences",
+    ),
+    (
+        # Automatic is kept as the word auto rather than as no value, so
+        # Forget and the language's rule of "nothing chosen is nothing kept"
+        # part ways.
+        "Automatic is written into preferences.json rather than left out",
+        "internal/gui/window/prefmemory.go",
+        "\tif m.IsAuto() {\n\t\treturn \"\"",
+        "\tif false {\n\t\treturn \"\"",
+        "TestTheMemorySettingIsChosenOnPreferencesAndKept",
+    ),
+    (
+        # A kept value that does not read is shown as Automatic without a word
+        # about what was there.
+        "an unreadable memory setting is shown as Automatic without saying so",
+        "internal/gui/window/prefmemory.go",
+        "\t\tunreadable = kept\n",
+        "\t\t_ = kept\n",
+        "TestOpeningPreferencesKeepsAnUnreadableMemorySetting",
+    ),
+    (
+        "a box for the memory that holds no size is not marked",
+        "internal/gui/window/prefmemory.go",
+        "\t\tm.fields.Mark(core.SettingMemory, err)\n",
+        "\t\t_ = err\n",
+        "TestTheMemorySettingIsChosenOnPreferencesAndKept",
+    ),
+    (
+        # Review on #208. Version 1 reads its own group alone again, and an
+        # unlimited session under a limited slice is planned as the machine.
+        "version 1 reads the limit of its own group and not the slice above it",
+        "internal/core/cgroup.go",
+        "return limitAbove(read, mount, rel, \"memory.limit_in_bytes\")",
+        "return limitIn(read, path.Join(mount, rel, \"memory.limit_in_bytes\"))",
+        "TestTheLimitOfAContainerIsFoundInItsControlGroup",
+    ),
+    (
+        # Review on #208. A group with ".." in it is joined to the mount and
+        # read wherever it lands.
+        "a group with a step out of its mount is followed rather than refused",
+        "internal/core/cgroup.go",
+        "\t\tcase rel != \"\" && path.Clean(rel) != rel:",
+        "\t\tcase false:",
+        "TestTheLimitOfAContainerIsFoundInItsControlGroup",
+    ),
+    (
+        # Review on #208. Forget leaves the size in the box, and Custom chosen
+        # after it keeps the size again.
+        "Forget leaves the forgotten size in the box",
+        "internal/gui/window/prefmemory.go",
+        "\tm.size.SetText(\"\")\n\tm.fields.Clear(core.SettingMemory)\n\tparsed",
+        "\tm.fields.Clear(core.SettingMemory)\n\tparsed",
+        "TestTheMemorySettingIsChosenOnPreferencesAndKept",
+    ),
+    (
+        # Review on #208. What a run said about its memory stays in the result
+        # and never reaches the window.
+        "a run in the window does not say what it said about its memory",
+        "internal/gui/window/run.go",
+        "\tsaid = append(said, runNotesOf(res)...)\n",
+        "\tsaid = append(said, notesOf(nil)...)\n",
+        "TestTheWindowSaysWhatARunSaidAboutItsMemory",
+    ),
+    (
+        "a preview in the window does not say what it said about its memory",
+        "internal/gui/window/run.go",
+        "manifestReachNote(res.Record)...), runNotesOf(res)...)...)",
+        "manifestReachNote(res.Record)...), notesOf(nil)...)...)",
+        "TestTheWindowSaysWhatARunSaidAboutItsMemory",
+    ),
+    (
+        # The run asks the system rather than the host the Preferences screen
+        # asks, so the screen and the run can name two different machines.
+        "a run in the window asks the system for the machine rather than the host",
+        "internal/gui/window/run.go",
+        "\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine\n\tctx, cancel",
+        "\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), nil\n\tctx, cancel",
+        "TestTheWindowSaysWhatARunSaidAboutItsMemory",
+    ),
+    (
+        "a preview in the window asks the system for the machine rather than the host",
+        "internal/gui/window/run.go",
+        "\topt.DryRun = true\n\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine",
+        "\topt.DryRun = true\n\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), nil",
+        "TestTheWindowSaysWhatARunSaidAboutItsMemory",
+    ),
+    (
+        # Review on #208. The help names a floor other than the one auto keeps.
+        "--help names a floor of the plan other than the one auto keeps",
+        "internal/cli/memoryflag.go",
+        "core.HumanBytes(core.MaxPlanBytes) + \" is never refused\"",
+        "core.HumanBytes(core.MaxPlanBytes*2) + \" is never refused\"",
+        "TestTheMemoryFlagReachesThePlanOnEveryCommandThatPlans",
+    ),
+    (
+        "the Preferences screen names a floor of the plan other than the one auto keeps",
+        "internal/gui/text/preferences.go",
+        "map[string]any{\"Floor\": HumanBytes(core.MaxPlanBytes)}",
+        "map[string]any{\"Floor\": HumanBytes(core.MaxPlanBytes * 2)}",
+        "TestTheMemorySettingIsChosenOnPreferencesAndKept",
     ),
 ]

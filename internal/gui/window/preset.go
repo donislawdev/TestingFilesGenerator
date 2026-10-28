@@ -58,7 +58,7 @@ type Preset struct {
 
 // NewPreset builds the screen. links are the buttons to the other screens.
 func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
-	p := &Preset{runner: newRunner(host.Later), host: host, tips: parts.NewTips()}
+	p := &Preset{runner: newRunner(host.Later, host.Remembered, host.MachineMemory), host: host, tips: parts.NewTips()}
 	p.runner.offer.through(host)
 	p.runner.settle = watchedSettle(host, p.runner, p.settle)
 	// No readdress here, and that is the boundary of this screen rather than an

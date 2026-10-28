@@ -208,8 +208,26 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	carries, p.Notes = imagelabel.Claim(carries, m.width, m.height, len(label), p.Notes)
 	p.Properties[format.PropertyLabelEmbedded] = carries
 	p.Memo = m
+	if m.coded == nil {
+		// Coded while writing rather than while planning, so the writer holds
+		// the picture and the encoder's work - see holdsPerPixel.
+		p.Holds = holdsPerPixel * int64(m.width) * int64(m.height)
+	}
 	return p, nil
 }
+
+// holdsPerPixel is what coding one of these holds at once for each pixel, for
+// the memory setting (format.Plan.Holds). Only a picture chosen from the
+// ladder is coded while writing, and the largest rung is 640x480, so this
+// declares at most about 2 MB.
+//
+// From the peak of one picture, measured on 2026-10-26 with
+// tools/probes/peakmem (docs/STABILITY-REVIEW-2026-10-26.md section 10.0):
+// 347 MiB for one 8000x5000 picture coded while planning, 7.9 B a pixel. That peak holds a whole process's
+// collector room around one picture, so it is more than a second writer adds -
+// for jpg the second writer added a third of it - which makes it a bound from
+// above rather than a measurement of this.
+const holdsPerPixel = 8
 
 // checkFits refuses a request the format cannot answer.
 //

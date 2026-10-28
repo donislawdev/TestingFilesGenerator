@@ -55,33 +55,61 @@ var (
 			"that is what lets a run that cannot succeed be refused before the first byte", A("Most", MaxFilesPerRun))
 	TooManyFilesFix = Says("core.TooManyFilesFix", "Ask for fewer files, or split the work into several runs")
 
-	// The same refusal for the quantity that actually runs out.
-	//
-	// MaxFilesPerRun counts files and was justified by a measurement taken on
-	// txt. Re-measured on 2026-08-26 across formats, a planned file costs 850 B
-	// for txt, 6153 B for zip, 7527 B for pdf and 5244230 B for a pdf of a
-	// thousand pages - so the file ceiling lets a run ask for about 52 GB of
-	// plan while every number in it is legal. The sentence says memory rather
-	// than files because that is what the person has to change.
-	PlanTooLargeWhy = Says("core.PlanTooLargeWhy",
-		"the whole plan is held in memory before anything is written, and this build works to a ceiling of %s for it - "+
-			"how much a file costs to plan depends on the format, so a ceiling on the number of files alone cannot see this",
-		A("Ceiling", Bytes(MaxPlanBytes)))
-	PlanTooLargeFix = Says("core.PlanTooLargeFix", "Ask for fewer files, or make each one cheaper to plan - fewer pages, fewer entries - or split the work into several runs")
+	// What to do about a plan past its ceiling. The memory setting is named
+	// by what it is rather than by the flag, because the window shows this
+	// sentence too and has no flags (O79) - both surfaces call it memory, the
+	// flag on one and the section of the Preferences screen on the other.
+	PlanTooLargeFix = Says("core.PlanTooLargeFix",
+		"Ask for fewer files, or make each one cheaper to plan - fewer pages, fewer entries - or split the work into several runs. "+
+			"Or give the run more memory through the memory setting")
 )
 
-// MaxPlanBytes is the most memory this build will let a plan take.
+// PlanTooLargeWhy is the same refusal for the quantity that actually runs out,
+// in the words of where its ceiling came from.
+//
+// MaxFilesPerRun counts files and was justified by a measurement taken on
+// txt. Re-measured on 2026-08-26 across formats, a planned file costs 850 B
+// for txt, 6153 B for zip, 7527 B for pdf and 5244230 B for a pdf of a
+// thousand pages - so the file ceiling lets a run ask for about 52 GB of plan
+// while every number in it is legal. The sentence says memory rather than
+// files because that is what the person has to change.
+//
+// Since 2026-10-27 the ceiling is the memory setting's rather than the build's
+// (Memory.On), so the sentence says which of the three put it there. A number
+// with no source is a number nobody knows how to move.
+func PlanTooLargeWhy(m Memory, l MemoryLimits) Said {
+	switch {
+	case !m.IsAuto():
+		return Says("core.PlanTooLargeWhySet",
+			"the whole plan is held in memory before anything is written, and the memory setting of this run gives it %s - "+
+				"how much a file costs to plan depends on the format, so a ceiling on the number of files alone cannot see this",
+			A("Ceiling", Bytes(l.Plan)))
+	case l.Unknown != nil:
+		return Says("core.PlanTooLargeWhyUnknown",
+			"the whole plan is held in memory before anything is written, and this run gives it %s because the memory of this machine could not be read - "+
+				"how much a file costs to plan depends on the format, so a ceiling on the number of files alone cannot see this",
+			A("Ceiling", Bytes(l.Plan)))
+	}
+	return Says("core.PlanTooLargeWhyAuto",
+		"the whole plan is held in memory before anything is written, and this run gives it %s, half of what this machine gives the program and never under %s - "+
+			"how much a file costs to plan depends on the format, so a ceiling on the number of files alone cannot see this",
+		A("Ceiling", Bytes(l.Plan)), A("Floor", Bytes(MaxPlanBytes)))
+}
+
+// MaxPlanBytes is the least memory auto lets a plan take, and the whole of it
+// on a machine that cannot be asked.
+//
+// Until 2026-10-27 it was the ceiling for every run, on every machine, and
+// nothing could move it - a person with sixty four gigabytes was refused at
+// two. The memory setting took that over (Memory.On), and this stayed as the
+// floor under auto, so that no run planned before the setting existed is
+// refused after it.
 //
 // Two gigabytes, which is the figure the file ceiling beside it was always
 // meant to imply: its comment works out "a million files is therefore roughly
-// 2.4 GB" and treats that as the real constraint. This makes the real
-// constraint the one that is checked, so the two cannot disagree again.
-//
-// It is deliberately generous. Every run this tool was designed around is
-// orders of magnitude under it - the largest preset asks for 10 040 files,
-// which is about 9 MB of plan for txt and 76 MB for pdf - and the shapes it
-// refuses are the ones that would otherwise end as an out of memory kill with
-// no message at all.
+// 2.4 GB" and treats that as the real constraint. Every run this tool was
+// designed around is orders of magnitude under it - the largest preset asks
+// for 10 040 files, which is about 9 MB of plan for txt and 76 MB for pdf.
 const MaxPlanBytes = 2 << 30
 
 // PartialMarker is what a file being written is called before it is finished.

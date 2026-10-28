@@ -95,6 +95,8 @@ var notWords = map[string]string{
 	`"windowHeight"`: "the name the window files its height under, never shown",
 	`"language"`: "the name the window files the chosen language under, never shown. " +
 		"Translating it would lose the choice the day somebody changed language",
+	`"memory"`: "the name the window files the chosen memory setting under, never shown. " +
+		"Translating it would lose the choice the day somebody changed language",
 	`"--pseudo-language"`: "a flag on the launch line for whoever builds the window, English by D9 like every flag, never translated or shown",
 	// What each screen IS, as opposed to the word on its tab - see parts.Tab.
 	// They carry the output directory and the keyboard between screens, so a

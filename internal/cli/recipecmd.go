@@ -46,12 +46,19 @@ func loadRecipe(path string, errOut io.Writer) (*preset.Read, string, int) {
 	return read, hash, ExitOK
 }
 
-// validate runs the checks a run would run and writes nothing at all, so it
-// suits a pre commit hook.
-func validate(ctx context.Context, args []string, out, errOut io.Writer) int {
+// validateFlags is what validate is told besides the recipe.
+type validateFlags struct {
+	asJSON bool
+	memory memoryValue
+}
+
+// validateFlagSet is the flags of validate and its help, the way
+// generateFlagSet is for generate.
+func validateFlagSet(errOut io.Writer, v *validateFlags) (*flag.FlagSet, func(io.Writer)) {
 	fs := flag.NewFlagSet("validate", flag.ContinueOnError)
 	fs.SetOutput(errOut)
-	asJSON := fs.Bool("json", false, "write the result as JSON, with every problem separately")
+	fs.BoolVar(&v.asJSON, "json", false, "write the result as JSON, with every problem separately")
+	memoryFlag(fs, &v.memory)
 	usage := func(w io.Writer) {
 		fmt.Fprint(w, "tfg validate - check a recipe and write nothing.\n\nUsage:\n  tfg validate <recipe.yaml>\n\nFlags:\n")
 		fs.SetOutput(w)
@@ -59,6 +66,14 @@ func validate(ctx context.Context, args []string, out, errOut io.Writer) int {
 		fs.SetOutput(errOut)
 	}
 	fs.Usage = func() { usage(errOut) }
+	return fs, usage
+}
+
+// validate runs the checks a run would run and writes nothing at all, so it
+// suits a pre commit hook.
+func validate(ctx context.Context, args []string, out, errOut io.Writer) int {
+	var v validateFlags
+	fs, usage := validateFlagSet(errOut, &v)
 	if helpRequested(args) {
 		usage(out)
 		return ExitOK
@@ -77,7 +92,7 @@ func validate(ctx context.Context, args []string, out, errOut io.Writer) int {
 		return ExitUsage
 	}
 
-	read, hash, code := loadRecipeReporting(path, *asJSON, errOut)
+	read, hash, code := loadRecipeReporting(path, v.asJSON, errOut)
 	if code != ExitOK {
 		return code
 	}
@@ -92,9 +107,11 @@ func validate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	for _, t := range rec.Targets {
 		targets = append(targets, engineTarget(t, t.Label))
 	}
-	planned, err := engine.PlanContext(ctx, targets, planningOptions(rec))
+	opt := planningOptions(rec)
+	opt.Memory = v.memory.Memory
+	planned, err := engine.PlanContext(ctx, targets, opt)
 	if err != nil {
-		return planningRefusal(err, path, *asJSON, errOut)
+		return planningRefusal(err, path, v.asJSON, errOut)
 	}
 
 	// A file that builds on a preset says so here the way the manifest will
@@ -102,7 +119,7 @@ func validate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	// standard error, before the files exist as well as after.
 	sayNotes(read.Notes(), errOut)
 
-	if *asJSON {
+	if v.asJSON {
 		return writeJSON(out, errOut, validateReport{
 			Recipe: path, Valid: true, RecipeHash: hash,
 			Targets: len(rec.Targets), Files: len(planned),

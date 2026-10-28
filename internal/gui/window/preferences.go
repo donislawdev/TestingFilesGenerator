@@ -11,7 +11,8 @@ import (
 // Preferences is the screen of how the window speaks and what it keeps between
 // runs - docs/USTAWIENIA-2026-09-29.md, the owner's decisions of that day.
 //
-// Nothing on it changes the files the window makes. A setting that did would
+// Nothing on it changes the files the window makes - the memory a run may take
+// changes when files are written and never what is in them. A setting that did would
 // be an input the recipe does not carry, and the command the window offers to
 // show would then make different files from the ones on screen - so anything
 // that shapes a file belongs in the form, not here.
@@ -40,6 +41,9 @@ type Preferences struct {
 
 	forget    *parts.Button
 	forgotten *parts.QuietText
+
+	// memory is the section that says how much memory a run may take.
+	memory *memoryPreference
 
 	object fyne.CanvasObject
 }
@@ -79,7 +83,8 @@ func NewPreferences(h Host, leave func(), busy func() bool) *Preferences {
 			p.forget)),
 		p.forgotten,
 	)
-	page := parts.Screen(parts.Titled(text.TabPreferences(), text.SubtitlePreferences()), language, remembered)
+	p.memory = newMemoryPreference(h)
+	page := parts.Screen(parts.Titled(text.TabPreferences(), text.SubtitlePreferences()), language, p.memory.object, remembered)
 	p.object = container.NewVScroll(page)
 	return p
 }
@@ -127,6 +132,7 @@ func (p *Preferences) restartNow() {
 func (p *Preferences) forgetNow() {
 	p.host.Remembered().Forget()
 	p.show(p.choices.optionFor(""))
+	p.memory.open("")
 	p.forgotten.SetText(text.PreferencesForgotten())
 	p.forget.Disable()
 	p.refresh()
