@@ -25,8 +25,14 @@ func MachineMemory() (int64, error) {
 		return 0, err
 	}
 	raw := []byte(answer)
+	// hw.memsize is a uint64_t (sys/sysctl.h of the macOS 26 SDK, read
+	// 2026-10-28), so a longer answer can only come from a change in
+	// syscall.Sysctl or in the kernel's type - a fault in what this program
+	// assumes rather than something a person did. A defect
+	// rather than a sentence: a sentence in this file alone would be in the
+	// window's catalogue on macOS and missing from it everywhere else.
 	if len(raw) > 8 {
-		return 0, fmt.Errorf("hw.memsize came back as %d bytes rather than eight", len(raw))
+		return 0, Defect(fmt.Errorf("hw.memsize came back as %d bytes rather than eight", len(raw)))
 	}
 	for len(raw) < 8 {
 		raw = append(raw, 0)

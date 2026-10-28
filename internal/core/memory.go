@@ -191,7 +191,7 @@ func (m Memory) On(machine func() (int64, error)) MemoryLimits {
 	if err == nil && total <= 1 {
 		// An answer, but not one about a machine that runs anything, so it is
 		// treated as no answer rather than halved into a limit of nothing.
-		err = fmt.Errorf("the system said this machine has %d B of memory", total)
+		err = Refuse(Says("core.MachineMemoryNone", "the system said this machine has %d B of memory", A("Bytes", total)))
 	}
 	if err != nil {
 		return MemoryLimits{Run: MaxPlanBytes, Plan: MaxPlanBytes, Unknown: err}

@@ -2,7 +2,6 @@ package core
 
 import (
 	"errors"
-	"fmt"
 	"io/fs"
 	"path"
 	"strconv"
@@ -20,12 +19,17 @@ import (
 // where that group is mounted, and in a container with its own cgroup
 // namespace the two have to be put together carefully.
 //
+// Both versions are read from the group up to the top of its mount, because a
+// parent's limit holds every group under it in both - version 1 accounts up the
+// hierarchy too (docs.kernel.org cgroup-v1/memory, section 6, read 2026-10-28).
+//
 // What it does not read, and why. memory.high is a point where the kernel
-// starts to reclaim rather than a limit it ends the process at. In version 1,
-// only the group's own memory.limit_in_bytes is read and not its parents' -
-// version 1 is the old layout, every container runtime puts the limit on the
-// container's own group, and following a parent there means another file per
-// level for a case nobody has reported.
+// starts to reclaim rather than a limit it ends the process at. A parent above
+// the top of the mount - the slice a container with its own namespace sits in -
+// is not read in either version, because no path this process can see reaches
+// it. Version 1 would name it in memory.stat (hierarchical_memory_limit), and
+// version 2 has no file that does, so reading it for the old layout alone would
+// make the two answer differently for the same container.
 
 // CgroupMemoryLimit is the memory limit of this process's control group, read
 // through read from the paths Linux keeps the answer at. limited is false when
@@ -58,9 +62,9 @@ func CgroupMemoryLimit(read func(name string) ([]byte, error)) (limit int64, lim
 	}
 
 	if v1 {
-		return limitIn(read, path.Join(mount, rel, "memory.limit_in_bytes"))
+		return limitAbove(read, mount, rel, "memory.limit_in_bytes")
 	}
-	return limitAbove(read, mount, rel)
+	return limitAbove(read, mount, rel, "memory.max")
 }
 
 // memoryGroup is the path of the group holding this process's memory, from
@@ -107,6 +111,11 @@ func groupLine(line string) (hierarchy, controllers, where string, err error) {
 // namespace the group is a path under a mount whose root is the hierarchy's
 // root. A group shown as starting with "/.." is outside the namespace this
 // process can see, and no mount reaches it.
+//
+// Any other "." or ".." in the group is refused rather than followed. Linux
+// writes the path clean and gives no group either name, so one that is there
+// is a file that does not say what Linux writes - and joined to the mount it
+// would walk out of it and read a limit from wherever it lands.
 func memoryMount(text string, v1 bool, group string) (mount, rel string, err error) {
 	for _, line := range lines(text) {
 		m, err := mountLine(line)
@@ -120,9 +129,14 @@ func memoryMount(text string, v1 bool, group string) (mount, rel string, err err
 		if err != nil {
 			return "", "", err
 		}
-		if rel, reached := under(group, root); reached && rel != "/.." && !strings.HasPrefix(rel, "/../") {
-			return point, rel, nil
+		rel, reached := under(group, root)
+		switch {
+		case !reached || rel == "/.." || strings.HasPrefix(rel, "/../"):
+			continue
+		case rel != "" && path.Clean(rel) != rel:
+			return "", "", malformed("/proc/self/cgroup", group)
 		}
+		return point, rel, nil
 	}
 	return "", "", nil
 }
@@ -188,14 +202,15 @@ func under(group, root string) (string, bool) {
 	return rest, true
 }
 
-// limitAbove is the smallest memory.max from the group up to the top of the
-// mount. A parent's limit holds every group under it, so a container whose own
-// group says max can still be held by the slice it sits in.
-func limitAbove(read func(string) ([]byte, error), mount, rel string) (int64, bool, error) {
+// limitAbove is the smallest limit in file from the group up to the top of the
+// mount - memory.max in version 2, memory.limit_in_bytes in version 1. A
+// parent's limit holds every group under it, so a container whose own group
+// says max can still be held by the slice it sits in.
+func limitAbove(read func(string) ([]byte, error), mount, rel, file string) (int64, bool, error) {
 	var least int64
 	var found bool
 	for dir := path.Join(mount, rel); ; dir = path.Dir(dir) {
-		n, ok, err := limitIn(read, path.Join(dir, "memory.max"))
+		n, ok, err := limitIn(read, path.Join(dir, file))
 		if err != nil {
 			return 0, false, err
 		}
@@ -266,6 +281,9 @@ func hasWord(list, word string) bool {
 	return false
 }
 
+// malformed is the refusal for a file that does not say what it should. Said
+// as a sentence because it reaches a person: it is the cause the note after a
+// run gives for the memory it could not read.
 func malformed(name, text string) error {
-	return fmt.Errorf("%s does not say what Linux writes there: %q", name, text)
+	return Refuse(Says("core.CgroupMalformed", "%s does not say what Linux writes there: %q", A("File", name), A("Text", text)))
 }

@@ -580,6 +580,11 @@
     "hash": "sha256-54b8e801756c",
     "other": "the set needs a size one byte below the limit, and there is nothing below zero"
   },
+  "core.CgroupMalformed": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.File}}, {{.Text}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-df81172914cc",
+    "other": "{{.File}} does not say what Linux writes there: {{.Text}}"
+  },
   "core.DurationEmpty": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-3a7508d80a33",
@@ -619,6 +624,11 @@
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Error}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-6dc38cd1cb85",
     "other": "{{.Error}}"
+  },
+  "core.MachineMemoryNone": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Bytes}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-76987096904d",
+    "other": "the system said this machine has {{.Bytes}} B of memory"
   },
   "core.MemoryEmpty": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run.",

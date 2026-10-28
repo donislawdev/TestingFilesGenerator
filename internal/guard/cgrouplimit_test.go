@@ -138,6 +138,43 @@ var containerLayouts = []struct {
 		limit: 9223372036854771712, limited: true,
 	},
 	{
+		// A systemd host on the old layout: the session's own group has no
+		// limit, the user's slice above it has. Version 1 accounts up the
+		// hierarchy as version 2 does, so the slice holds the session.
+		name: "version 1, no limit on its own group and a limit on the slice above it",
+		files: map[string]string{
+			"/proc/self/cgroup":    "9:memory:/user.slice/user-1000.slice/session-2.scope\n",
+			"/proc/self/mountinfo": "40 30 0:35 / /sys/fs/cgroup/memory rw,nosuid - cgroup cgroup rw,memory\n",
+			"/sys/fs/cgroup/memory/user.slice/user-1000.slice/session-2.scope/memory.limit_in_bytes": "9223372036854771712\n",
+			"/sys/fs/cgroup/memory/user.slice/user-1000.slice/memory.limit_in_bytes":                 "4294967296\n",
+			"/sys/fs/cgroup/memory/user.slice/memory.limit_in_bytes":                                 "9223372036854771712\n",
+			"/sys/fs/cgroup/memory/memory.limit_in_bytes":                                            "9223372036854771712\n",
+		},
+		limit: 4 << 30, limited: true,
+	},
+	{
+		// Linux writes no group with "." or ".." in it past the run that says
+		// it is outside the namespace. Joined to the mount, this one walks out
+		// of it to a file that holds a limit nobody set on this process.
+		name: "a group that would walk out of its mount",
+		files: map[string]string{
+			"/proc/self/cgroup":         "0::/a/../../etc\n",
+			"/proc/self/mountinfo":      cgroupV2Mount,
+			"/sys/fs/etc/memory.max":    "1048576\n",
+			"/sys/fs/cgroup/memory.max": "max\n",
+		},
+		fails: true,
+	},
+	{
+		name: "a group with a step that goes nowhere",
+		files: map[string]string{
+			"/proc/self/cgroup":    "4:memory:/docker/./abc\n",
+			"/proc/self/mountinfo": "40 30 0:35 / /sys/fs/cgroup/memory rw - cgroup cgroup rw,memory\n",
+			"/sys/fs/cgroup/memory/docker/abc/memory.limit_in_bytes": "1048576\n",
+		},
+		fails: true,
+	},
+	{
 		name: "a mount whose root does not reach the group",
 		files: map[string]string{
 			"/proc/self/cgroup":    "0::/elsewhere/job\n",
