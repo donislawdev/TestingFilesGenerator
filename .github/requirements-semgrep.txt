@@ -30,6 +30,7 @@ certifi==2026.10.23
     #   httpcore
     #   httpx
     #   requests
+    #   semgrep
 cffi==2.1.1
     # via cryptography
 charset-normalizer==3.5.2
@@ -168,7 +169,7 @@ ruamel-yaml-clib==0.2.15
     # via semgrep
 semantic-version==2.10.0
     # via semgrep
-semgrep==1.181.0
+semgrep==1.182.1
     # via -r requirements-semgrep.in
 sse-starlette==3.5.0
     # via mcp
