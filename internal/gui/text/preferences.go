@@ -35,7 +35,7 @@ func MemoryWayOff() string    { return say("MemoryWayOff", "No limit") }
 // floor of the plan under Automatic is said from the constant that sets it,
 // the way --help says it.
 func PreferencesMemoryScope() string {
-	return sayf("PreferencesMemoryScope", "How much memory one run may take, the plan and the files being written together. Pictures wait for room rather than all being held at once, and a plan larger than this is refused before anything is written. Under Automatic, a plan of up to {{.Floor}} is never refused. It applies from the next run, and nothing in the files changes.",
+	return sayf("PreferencesMemoryScope", "How much memory one run may take, the plan and the files being written together. Pictures wait for room rather than all being held at once, and a plan larger than this is refused before anything is written. As a run comes close to it, the program frees memory more often, which makes the run slower. A run that needs more still gets it. Under Automatic, a plan of up to {{.Floor}} is never refused. It applies from the next run, and nothing in the files changes.",
 		map[string]any{"Floor": HumanBytes(core.MaxPlanBytes)})
 }
 

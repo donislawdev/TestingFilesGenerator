@@ -14,6 +14,7 @@ import (
 	"syscall"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
+	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 )
 
 func main() {
@@ -28,6 +29,11 @@ func main() {
 	// Ctrl+C, so a CI job that timed out looked like somebody had cancelled it.
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	// This process is the command's own, so --memory holds the whole run and
+	// not only its plan. Here and in the window's main, and nowhere a test
+	// reaches - engine/processmemory.go says why.
+	engine.OwnProcess()
 
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)

@@ -401,7 +401,9 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 	// Watches what the plan costs while it is being built. Constructed here
 	// rather than at the first file because constructing it is what takes the
 	// reference point, and that has to happen before any of the plan exists.
-	pl.budget = newPlanMemory(opt.Memory, opt.memoryLimits())
+	limits := opt.memoryLimits()
+	pl.budget = newPlanMemory(opt.Memory, limits)
+	handToRuntime(limits)
 
 	// The manifest lands beside the files, so its name is a name too. A path
 	// here would leave a manifest outside the directory the run was pointed
