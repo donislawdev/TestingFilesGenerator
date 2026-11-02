@@ -16308,8 +16308,8 @@ MUTATIONS = [
     (
         "the plan is grown a file at a time again instead of reserved",
         "internal/engine/plantarget.go",
-        "\t\t\tpl.out = make([]PlannedFile, 0, max(1, pl.reserve))\n",
-        "\t\t\tpl.out = make([]PlannedFile, 0, 1)\n",
+        "\tpl.out = make([]PlannedFile, 0, max(1, pl.reserve))\n",
+        "\tpl.out = make([]PlannedFile, 0, 1)\n",
         "TestAPlanIsReservedRatherThanGrown",
     ),
     (

@@ -26,7 +26,7 @@ type planning struct {
 	totalBytes int64
 	budget     *planMemory
 	// reserve is how long a list the plan takes at its first file - see
-	// planCapacity for how long, and the append below for when.
+	// planCapacity for how long, and startList for when.
 	reserve int
 }
 
@@ -122,18 +122,10 @@ func (pl *planning) files(ctx context.Context, t *Target, desc format.Descriptor
 				Because: core.SaidOf(err)}
 		}
 
-		// Reserved at the first file that passed every check above, not before
-		// the first target. A run refused at its first file - a size its
-		// format cannot make - is refused in tens of megabytes, and reserving
-		// first took a million such files to 450 MB before saying no (review
-		// of #212, measured 2026-11-02: 27-30 MB against 441-450 MB, two runs
-		// each). Ctrl+C is asked first for the same reason: a run that is
-		// being stopped is not given the largest allocation it would make.
-		if pl.out == nil {
-			if err := ctx.Err(); err != nil {
-				return err
-			}
-			pl.out = make([]PlannedFile, 0, max(1, pl.reserve))
+		// Here, after every check above, and not before the first target -
+		// see startList for why.
+		if err := pl.startList(ctx); err != nil {
+			return err
 		}
 		pl.out = append(pl.out, PlannedFile{
 			ID:     fmt.Sprintf("f_%04d", len(pl.out)+1),
@@ -156,5 +148,28 @@ func (pl *planning) files(ctx context.Context, t *Target, desc format.Descriptor
 			return err
 		}
 	}
+	return nil
+}
+
+// startList takes the list of the plan at its first file, as long as
+// planCapacity said, and does nothing at every file after that.
+//
+// Not before the first target. A run refused at its first file - a size its
+// format cannot make - is refused in tens of megabytes, and reserving first
+// took a million such files to 450 MB before saying no (review of #212,
+// measured 2026-11-02: 27-30 MB against 441-450 MB, two runs each). Ctrl+C is
+// asked first for the same reason: a run that is being stopped is not given
+// the largest allocation it would make.
+//
+// A method rather than a block inside files, because there it was the
+// fiftieth function nested three deep, and that ceiling is a ratchet.
+func (pl *planning) startList(ctx context.Context) error {
+	if pl.out != nil {
+		return nil
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	pl.out = make([]PlannedFile, 0, max(1, pl.reserve))
 	return nil
 }
