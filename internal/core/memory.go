@@ -209,7 +209,7 @@ func (m Memory) On(machine func() (int64, error)) MemoryLimits {
 // about half the processor, so a run held under it is at most about twice as
 // slow (go.dev/doc/gc-guide, the memory limit section). Well under it nothing
 // changes. Without it a run takes about two and a half times what it holds,
-// and in a container of 1 GB that was the difference between 300 000 files
+// and in a container of 1 GB that was the difference between 400 000 files
 // killed by the system and 500 000 written (docs/FILE-CEILING-2026-11-02.md
 // section 12).
 //

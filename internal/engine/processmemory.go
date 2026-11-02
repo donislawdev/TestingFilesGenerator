@@ -16,8 +16,8 @@ import (
 // throw away - was left to the collector's default, which lets the heap grow
 // to about twice what is live before it collects, and a run took about two and
 // a half times what it held. In a container of 1 GB that killed a run of
-// 300 000 text files that holds 405 MB (docs/FILE-CEILING-2026-11-02.md
-// section 12).
+// 400 000 text files under auto, and one of three runs of 300 000
+// (docs/FILE-CEILING-2026-11-02.md section 12).
 var (
 	ownedOnce sync.Once
 	owned     atomic.Bool

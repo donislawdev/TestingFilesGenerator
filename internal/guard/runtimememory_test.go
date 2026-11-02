@@ -19,7 +19,7 @@ import (
 // the setting's - never above what the process started with.
 //
 // Before 2026-11-02 the setting held only the plan, and a run took about two
-// and a half times what it held: in a container of 1 GB, 300 000 text files
+// and a half times what it held: in a container of 1 GB, 400 000 text files
 // were killed by the system, and with the setting handed over 500 000 were
 // written (docs/FILE-CEILING-2026-11-02.md section 12). Asked of the number
 // rather than of a process, so no limit is set in this test binary.
