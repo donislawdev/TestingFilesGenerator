@@ -8,8 +8,9 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
-// planCapacity is how long a list to reserve for the plan before the first
-// target is walked.
+// planCapacity is how long a list to reserve for the plan. It is worked out
+// before the first target is walked and taken at the first file that passes
+// its checks (plantarget.go says why then).
 //
 // Reserved rather than grown since 2026-11-02. Grown by append, a plan of a
 // million text files took 1.9-2.2 GB from the system for 0.94 GB of plan,

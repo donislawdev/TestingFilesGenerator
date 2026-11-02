@@ -1,10 +1,38 @@
 package guard
 
 import (
+	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 )
+
+// And the reservation waits for a file that passed its checks.
+//
+// Reserved before the first target, a million files asking for a size their
+// format cannot make were refused at the first file after taking 441-450 MB,
+// against 27-30 MB before the reservation existed (review of #212, measured on
+// 2026-11-02 with two runs each). In a container of half a gigabyte that is a
+// refusal that can kill the process instead of being said. Asked of what Plan
+// allocated, with a margin the two answers cannot cross: the reserved list is
+// 440 MB, everything else here a few. Only two guards in this package run in
+// parallel, so the neighbours do not reach that margin.
+func TestARunRefusedAtItsFirstFileReservesNothing(t *testing.T) {
+	const n = 1_000_000
+	targets := []engine.Target{{ID: "files", Format: "png", Sizes: engine.Uniform(n, 10)}}
+	var before, after runtime.MemStats
+	runtime.ReadMemStats(&before)
+	_, err := engine.Plan(targets, engine.Options{OutDir: t.TempDir(), ManifestName: "manifest.json"})
+	runtime.ReadMemStats(&after)
+	if err == nil || !strings.Contains(err.Error(), "smaller than") {
+		t.Fatalf("a PNG of 10 B was not refused for its size at the first file, so this is not the case it names: %v", err)
+	}
+	if took := after.TotalAlloc - before.TotalAlloc; took > 100<<20 {
+		t.Errorf("planning %d files refused at the first one allocated %d MB. "+
+			"The list for the whole plan was reserved before any file passed its checks", n, took>>20)
+	}
+}
 
 // A plan is a list reserved once, not one grown a file at a time.
 //

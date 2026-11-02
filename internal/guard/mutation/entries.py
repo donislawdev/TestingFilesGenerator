@@ -15876,8 +15876,8 @@ MUTATIONS = [
         # the source sees it, which is why that walk exists.
         "the engine makes a context from nothing in a place nobody listed",
         "internal/engine/plantarget.go",
-        "if err := ctx.Err(); err != nil {",
-        "if err := context.Background().Err(); err != nil {",
+        "// thousand pictures is the case this is for.\n\t\tif err := ctx.Err(); err != nil {",
+        "// thousand pictures is the case this is for.\n\t\tif err := context.Background().Err(); err != nil {",
         "TestAContextIsMadeFromNothingOnlyWhereItIsMeantToStart",
     ),
     (
@@ -16307,9 +16307,16 @@ MUTATIONS = [
     ),
     (
         "the plan is grown a file at a time again instead of reserved",
-        "internal/engine/engine.go",
-        "\tpl.out = make([]PlannedFile, 0, planCapacity(targets, pl.budget))\n",
-        "\t_ = planCapacity(targets, pl.budget)\n",
+        "internal/engine/plantarget.go",
+        "\t\t\tpl.out = make([]PlannedFile, 0, max(1, pl.reserve))\n",
+        "\t\t\tpl.out = make([]PlannedFile, 0, 1)\n",
         "TestAPlanIsReservedRatherThanGrown",
+    ),
+    (
+        "the plan list is reserved before any file passed its checks, so a run refused at its first file takes the whole list first",
+        "internal/engine/engine.go",
+        "\tpl.reserve = planCapacity(targets, pl.budget)\n",
+        "\tpl.reserve = planCapacity(targets, pl.budget)\n\tpl.out = make([]PlannedFile, 0, pl.reserve)\n",
+        "TestARunRefusedAtItsFirstFileReservesNothing",
     ),
 ]
