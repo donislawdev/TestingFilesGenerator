@@ -45,11 +45,16 @@ TEMPLATES = os.path.join(ROOT, "packaging")
 TEMPLATE_SUFFIX = ".in"
 PLACEHOLDER = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
 
-# The manifest schema WinGet's submission pipeline accepts TODAY. The number
-# documented in the winget-pkgs tree is not the same question: the sibling
-# project was refused on 1.28.0, which validated and installed locally. Read
-# from freshly merged manifests on 2026-09-25 - 7 of 7 carried this one.
-WINGET_SCHEMA = "1.12.0"
+# The manifest schema WinGet's submission pipeline accepts TODAY, and it moves.
+# On 2026-09-25 it refused 1.28.0 from the sibling project and 7 of 7 freshly
+# merged manifests carried 1.12.0. On 2026-10-30 it marked both 0.4.0
+# submissions Manifest-Version-Deprecated and asked for 1.28.0, and on
+# 2026-11-02 9 of 20 freshly merged manifests carried it. The question to ask
+# again is what merged manifests carry, not what the winget-pkgs tree
+# documents. 1.28.0 adds one optional field to 1.12.0 and changes nothing else
+# (DesiredStateConfiguration, in the installer schema of microsoft/winget-cli,
+# read 2026-11-02), so every field the templates write means what it did.
+WINGET_SCHEMA = "1.28.0"
 
 # Held by a guard to internal/gui/run_cgo.go and internal/legal/spdx.go.
 APP_NAME = "Testing Files Generator"
