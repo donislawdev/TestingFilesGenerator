@@ -16276,4 +16276,40 @@ MUTATIONS = [
         "map[string]any{\"Floor\": HumanBytes(core.MaxPlanBytes * 2)}",
         "TestTheMemorySettingIsChosenOnPreferencesAndKept",
     ),
+    # --- the manifest is written an entry at a time, the plan list reserved (2026-11-02) ---
+    (
+        "the manifest is handed to encoding/json whole again, every entry and the document held at once",
+        "internal/manifest/encode.go",
+        "\tif len(m.Files) == 0 {\n\t\treturn encodeWhole(w, m)\n",
+        "\tif len(m.Files) >= 0 {\n\t\treturn encodeWhole(w, m)\n",
+        "TestTheManifestIsNotHeldWholeToBeWritten",
+    ),
+    (
+        "a manifest that never made its list is cut as if it had one, and writes an empty list instead of null",
+        "internal/manifest/encode.go",
+        "\tif len(m.Files) == 0 {\n\t\treturn encodeWhole(w, m)\n\t}\n\thead, tail, err := m.shell()\n",
+        "\thead, tail, err := m.shell()\n",
+        "TestTheManifestIsWrittenAsEncodingJSONWritesIt",
+    ),
+    (
+        "the streamed entries are joined without the line break encoding/json puts between them",
+        "internal/manifest/encode.go",
+        '\t\tbetween := []byte(",\\n")\n',
+        '\t\tbetween := []byte(",")\n',
+        "TestTheManifestIsWrittenAsEncodingJSONWritesIt",
+    ),
+    (
+        "the streamed list of files closes without the indent of its level",
+        "internal/manifest/encode.go",
+        '\tif err := put(out, []byte("\\n  "), tail); err != nil {\n',
+        '\tif err := put(out, []byte("\\n"), tail); err != nil {\n',
+        "TestTheManifestIsWrittenAsEncodingJSONWritesIt",
+    ),
+    (
+        "the plan is grown a file at a time again instead of reserved",
+        "internal/engine/engine.go",
+        "\tpl.out = make([]PlannedFile, 0, planCapacity(targets, pl.budget))\n",
+        "\t_ = planCapacity(targets, pl.budget)\n",
+        "TestAPlanIsReservedRatherThanGrown",
+    ),
 ]

@@ -450,6 +450,10 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 			Remedy: core.Says("engine.NoOutDirFix", "Name a directory, for example ./fixtures")}
 	}
 
+	// After the budget took its reference point, so the reserved list is
+	// weighed as part of the plan - which is what it is.
+	pl.out = make([]PlannedFile, 0, planCapacity(targets, pl.budget))
+
 	for i := range targets {
 		t := &targets[i]
 

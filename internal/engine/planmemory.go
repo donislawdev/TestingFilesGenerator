@@ -1,11 +1,45 @@
 package engine
 
 import (
+	"reflect"
 	"runtime"
 	"runtime/metrics"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
+
+// planCapacity is how long a list to reserve for the plan before the first
+// target is walked.
+//
+// Reserved rather than grown since 2026-11-02. Grown by append, a plan of a
+// million text files took 1.9-2.2 GB from the system for 0.94 GB of plan,
+// because every doubling leaves the last array to the collector. Reserved, it
+// took 1.2 GB and five collections instead of fourteen - the plansize probe,
+// two runs each, interleaved (docs/FILE-CEILING-2026-11-02.md section 2).
+//
+// Never more than the run may hold. A count past the file ceiling is not
+// reserved at all: the loop refuses it at the target that crosses the ceiling,
+// and reserving it first would be the very allocation the ceiling is there to
+// prevent. Under a memory setting the reservation stops where the bare list
+// would fill the plan's ceiling, so the reservation alone is never what takes
+// a run past the memory its person allowed - a plan that needs more than that
+// is refused by account as the list grows, as it always was.
+func planCapacity(targets []Target, budget *planMemory) int {
+	n := 0
+	for i := range targets {
+		n += len(targets[i].Sizes)
+		if n > core.MaxFilesPerRun {
+			return 0
+		}
+	}
+	if budget == nil {
+		return n
+	}
+	if fit := budget.ceiling / uint64(reflect.TypeFor[PlannedFile]().Size()); uint64(n) > fit {
+		return int(fit)
+	}
+	return n
+}
 
 // The ceiling on what a plan is allowed to cost.
 //

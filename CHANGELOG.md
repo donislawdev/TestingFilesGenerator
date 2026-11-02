@@ -43,6 +43,13 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A run of many files no longer runs out of memory while it saves its
+  manifest.** The manifest was put together in memory in one piece, about
+  ten times its own size, after the last file. In a container with 1 GB a
+  run of 200 000 text files was killed at that moment and left its files
+  with no manifest, so `tfg cleanup` could not remove them. The manifest is
+  now written entry by entry, with the same bytes, and that run finishes.
+  Planning a large run also takes less memory.
 - **Ctrl+C stops a run that draws its sizes from a range.** With
   `--size-range`, every file was tried at its drawn size before anything else,
   and that part did not look at Ctrl+C - three thousand JPG files went on for
