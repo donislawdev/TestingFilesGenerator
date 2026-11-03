@@ -125,6 +125,11 @@ because it turns other people's test suites red.
 - **Built with Go 1.27.3.** It fixes a vulnerability in `crypto/x509` of the
   Go standard library, which only the desktop window links. The command line
   tool was not affected. Building from source now needs Go 1.27.3.
+- **The window is built with `golang.org/x/net` 0.62.0.** The version before
+  had two published vulnerabilities in the package that reads and writes HTML.
+  The window uses the package only to read the SVG pictures it draws, neither
+  of the two is in code it reaches, and the command line tool does not contain
+  the package at all. No generated file changes.
 
 ## [0.5.0] - 2026-10-20
 

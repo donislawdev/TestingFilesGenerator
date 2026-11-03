@@ -4305,7 +4305,7 @@ MUTATIONS = [
         # and would prove nothing about whether drift is caught.
         "the notices file goes back to naming a version that is no longer built",
         "THIRD-PARTY-NOTICES.md",
-        "| `golang.org/x/net` | v0.60.0 |",
+        "| `golang.org/x/net` | v0.62.0 |",
         "| `golang.org/x/net` | v0.35.0 |",
         "TestTheNoticesFileNamesTheVersionsThatAreActuallyBuilt",
     ),
