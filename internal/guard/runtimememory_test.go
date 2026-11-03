@@ -3,6 +3,9 @@ package guard
 import (
 	"bytes"
 	"errors"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"math"
 	"os"
 	"os/exec"
@@ -91,7 +94,7 @@ func TestAPlanOutsideTheProgramsOwnProcessLeavesTheRuntimeAlone(t *testing.T) {
 // not counted (pkg.go.dev/runtime, GODEBUG gctrace).
 //
 // What this does not hold: the window's main. The window binary needs a
-// display to run a plan, and its line is the same call.
+// display to run a plan, so the guard below reads its source instead.
 func TestTheCommandLineHoldsTheWholeRunToItsMemorySetting(t *testing.T) {
 	binary := buildCommandLine(t)
 	collections := func(memory string) int {
@@ -119,6 +122,57 @@ func TestTheCommandLineHoldsTheWholeRunToItsMemorySetting(t *testing.T) {
 	if n := collections("48mb"); n == 0 {
 		t.Errorf("a run of 20 000 files under --memory 48mb with the collector off never collected. " +
 			"The setting did not reach the runtime, so it held the plan and nothing else")
+	}
+}
+
+// The window holds each whole run to its memory setting too - asked of its
+// main, because the window binary needs a display to plan anything and the
+// guard above cannot run it.
+//
+// What is held here is the order: the call that makes the process the
+// program's own is a statement of main, and it comes before the window opens.
+// gui.Run returns only when the window closes, so a call after it would leave
+// every run of the window to the runtime's default, and nothing else would turn
+// red - the window's runs that guards plan are planned in this test binary,
+// which is never the program's own. What the call does is the command line
+// guard's to hold, because it is the same call.
+func TestTheWindowSaysItsProcessIsItsOwnBeforeItOpens(t *testing.T) {
+	path := filepath.Join(repoRoot(t), "cmd", "tfg-gui", "main.go")
+	parsed, err := parser.ParseFile(token.NewFileSet(), path, nil, 0)
+	if err != nil {
+		t.Fatalf("reading the window's main: %v", err)
+	}
+	var body []ast.Stmt
+	for _, d := range parsed.Decls {
+		if fn, ok := d.(*ast.FuncDecl); ok && fn.Recv == nil && fn.Name.Name == "main" {
+			body = fn.Body.List
+		}
+	}
+	owns, opens := -1, -1
+	for i, stmt := range body {
+		if s, ok := stmt.(*ast.ExprStmt); ok && owns < 0 {
+			if call, ok := s.X.(*ast.CallExpr); ok && calledAs(call, "engine", "OwnProcess") {
+				owns = i
+			}
+		}
+		ast.Inspect(stmt, func(n ast.Node) bool {
+			if call, ok := n.(*ast.CallExpr); ok && opens < 0 && calledAs(call, "gui", "Run") {
+				opens = i
+			}
+			return opens < 0
+		})
+	}
+	if opens < 0 {
+		t.Fatalf("the main in %s no longer calls gui.Run, so this guard cannot say what happens before the window opens. "+
+			"Point it at the call that opens the window now", path)
+	}
+	if owns < 0 {
+		t.Fatalf("the main in %s does not call engine.OwnProcess as a statement of its own, "+
+			"so the memory setting holds the plan of each run in the window and not the run", path)
+	}
+	if owns > opens {
+		t.Errorf("the main in %s calls engine.OwnProcess as statement %d, after the window opens at statement %d. "+
+			"gui.Run returns when the window closes, so no run of the window is held to its memory setting", path, owns+1, opens+1)
 	}
 }
 

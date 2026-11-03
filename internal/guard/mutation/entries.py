@@ -16354,4 +16354,11 @@ MUTATIONS = [
         "\t_ = engine.OwnProcess\n",
         "TestTheCommandLineHoldsTheWholeRunToItsMemorySetting",
     ),
+    (
+        "the window does not say its process is the program's own",
+        "cmd/tfg-gui/main.go",
+        "\tengine.OwnProcess()\n",
+        "\t_ = engine.OwnProcess\n",
+        "TestTheWindowSaysItsProcessIsItsOwnBeforeItOpens",
+    ),
 ]
