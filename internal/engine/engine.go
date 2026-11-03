@@ -196,17 +196,6 @@ func (o Options) availableBytes(path string) (int64, error) {
 	return core.AvailableBytes(path)
 }
 
-// memoryLimits is the memory setting worked out on this machine. Asked once
-// by planning and once by the run, rather than carried between them, because
-// the two are separate calls and a caller may plan without running.
-func (o Options) memoryLimits() core.MemoryLimits {
-	machine := o.MachineMemory
-	if machine == nil {
-		machine = core.MachineMemory
-	}
-	return o.Memory.On(machine)
-}
-
 // Result is what a run produced.
 type Result struct {
 	Manifest *manifest.Manifest
@@ -241,6 +230,12 @@ type Result struct {
 	// dry run that is the answer about the run it previews. A run that is
 	// saved knows the real length afterwards, in Record of SaveRecord.
 	Record RecordSize
+
+	// Hold is what this run was worked out to hold at its end, against what
+	// its memory setting gives it (PredictHold), before its first byte. A
+	// window says it after a preview and after a run, and the command line
+	// says it before the run from its own forecast.
+	Hold HoldForecast
 
 	// reservation is the run's hold on its manifest name, taken before the
 	// first file and handed to SaveRecord, which saves through it. Nil for a
@@ -533,6 +528,7 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	}
 	limits := opt.memoryLimits()
 	res.noteMemory(limits)
+	res.Hold = predictHold(len(files), limits)
 
 	if opt.DryRun {
 		// Nothing is written. Every entry is what would have been produced,

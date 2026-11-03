@@ -106,6 +106,25 @@ func echoManifestReach(ctx context.Context, planned []engine.PlannedFile, opt en
 	return &record, true
 }
 
+// echoHold says so when a run will hold more than its memory setting gives it
+// (O296, engine.PredictHold says why and what was measured).
+//
+// Before the first byte, and that is the point of it: a run the system ends
+// prints nothing afterwards, so the sentence has to be in the log already. A
+// note rather than a refusal, because the same run finishes where there is swap
+// to carry it. And on a dry run, for the reason echoManifestReach gives.
+func echoHold(planned []engine.PlannedFile, opt engine.Options, errOut io.Writer) {
+	hold := engine.PredictHold(len(planned), opt)
+	if !hold.Over {
+		return
+	}
+	fmt.Fprintf(errOut,
+		"note: this run will hold about %s in memory by its end, more than the %s the memory setting gives it, "+
+			"so it will run slower and the system may end it before the manifest is written. "+
+			"Split the run, or give it more with --memory if this machine has the room.\n",
+		core.HumanBytes(hold.Holds), core.HumanBytes(hold.Room))
+}
+
 // echoManifestOutcome says what the manifest came to, when that is not what
 // the run was told before its first byte.
 //

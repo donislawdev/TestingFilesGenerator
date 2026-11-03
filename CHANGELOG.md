@@ -25,6 +25,14 @@ because it turns other people's test suites red.
   1 GB, 500 000 text files are written where 400 000 were killed. Files come
   out byte for byte the same.
 
+- **A run that will hold more memory than its setting gives it says so before
+  it starts.** The note names both sizes and comes before the first file is
+  written on the command line, and after Preview or the run in the window, so
+  a run the system ends still leaves the reason in its log. In a container of
+  1 GB, 600 000 text files were ended after fifteen minutes with nothing said.
+  The same run finished where the container had swap, so it is warned rather
+  than refused.
+
 - **A Docker image.** `ghcr.io/donislawdev/tfg` holds the Linux command line
   of a release and nothing else, for x64 and Arm, and runs with no network. It
   is made from the published archive once its checksum and attestation check

@@ -430,6 +430,7 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 	echoBoundaries(targets, planned, errOut)
 	forecast, warned := echoManifestReach(ctx, planned, opt, errOut)
 	opt.Record = forecast
+	echoHold(planned, opt, errOut)
 
 	if g.dryRun {
 		fmt.Fprintln(errOut, "dry run - nothing was written.")
