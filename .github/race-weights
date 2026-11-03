@@ -1,0 +1,63 @@
+# What each guard weighs in the race job of ci.yml, in seconds under the race
+# detector. .github/scripts/race_parts.py lays these out over the parts, the
+# heaviest first, and sends every test not named here by the checksum of its
+# name, counted at the "unlisted" weight.
+#
+# Taken on 2026-11-03 from eight parts of two runs, each test at the longest
+# time any of them took. The race job runs on whatever processor the runner
+# is given, and the same part took 689 s on one and 1202 s on another, every
+# test of it slower by the same factor. The longest time is the slowest
+# processor's, so the parts are even where they are closest to the timeout.
+# Listed: every test that took 10 s or more. "unlisted" is the mean of the rest.
+#
+# A test that is not here and takes 60 s or more fails its part with the line
+# to add. A test that is here and no longer exists fails every part.
+unlisted 0.58
+348.3 TestAFormatRefusesASizeItCannotDescribe
+343.3 TestAFilmStoppedHalfWayLeavesNoHelperRunning
+329.9 TestEveryFormatHitsTheOrderedSizeExactly
+162.6 TestEveryScreenStillDrawsItsStoredPicture
+155.5 TestACompressedZipIsEitherWrittenAtItsSizeOrRefusedInWords
+142.2 TestEveryTileOfAFilmIsGav1dsCodingOfItsPixelsAndDecodesAsItDoesAlone
+130.0 TestTheMinimumThisToolPrintsStandsWhateverTheSeedIs
+117.9 TestFreeBoxesCarryPaddingOfAnyLength
+99.9 TestEveryBase64TextSizeIsExact
+93.8 TestAFilmPictureLargerThanAnyAV1LevelIsRefusedNotBroken
+67.9 TestADeclaredDefaultIsTheOneTheFormatUses
+64.3 TestNoTrackedFileCarriesPrivateContent
+63.8 TestNoGeneratorHoldsTheWholeFileInMemory
+57.3 TestAFilmSaysItCarriesItsLabelOnlyWhenAPictureShowsItWhole
+55.3 TestAFilmOfANamedSizeKeepsEveryPictureInsideItsReserve
+53.4 TestTheArchiveScanLooksIntoTheArchivesInside
+38.5 TestAContainerStopsBetweenTheFilesItPlans
+37.5 TestEveryPictureNamedAfterARefusalShowsOne
+36.7 TestTheArchiveScanReadsTheListArchiveZipReads
+35.9 TestTheArchiveScanFindsEveryTrapItNames
+35.5 TestJxlStillFitsWhenTheQualityIsNotTheOneTheCeilingsWereMeasuredAt
+30.8 TestOurOwnGeneratorsHaveNotDrifted
+29.9 TestTheSameSeedGivesTheSameBytes
+27.7 TestTheCeilingCountsTheWholeRunNotOneTarget
+26.8 TestEveryJxlRungStillFitsInsideItsDeclaredCeiling
+26.6 TestTheMinimumStandsWhateverTheSeedIsUnderEveryDeclaredChoice
+24.9 TestEveryEMLSettingSurvivesItsReferenceTool
+24.2 TestEveryLinkOnTheSiteLeadsSomewhere
+24.2 TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole
+20.9 TestAFilmsProgressMovesWithItsPicturesNotItsPadding
+20.7 TestAFilmHoldsTheFramesTheManifestDeclares
+20.7 TestTheWindowBinaryStartsWithoutAConsole
+19.9 TestAFilmWhoseSquareCoversItsLabelSaysSoInItsPlan
+19.9 TestTheSiteSaysWhatTheToolSays
+19.8 TestChoosingAToolLaysTheScreenOutAsIfItOpenedWithIt
+19.8 TestTheArchiveScanHoldsNoMoreOfANameThanTheName
+16.6 TestEveryLanguageDescribesEveryDamage
+16.3 TestTheSameWorkDoneAgainLeavesTheWindowAsItWas
+16.2 TestABuildWithNoWindowInItSaysSoAndKeepsStandardOutputEmpty
+16.0 TestEveryLanguageDescribesEverythingTheProgramCanProduce
+15.4 TestAvifStillFitsWhenTheQualityIsNotTheOneTheCeilingsWereMeasuredAt
+15.2 TestAFinishedRunInTheWindowSaysItsManifestIsTooBigToReadBack
+15.1 TestABuildWithoutTheBuildTagsRefusesAndSaysWhy
+14.9 TestAShortcutCannotStartASecondRunDuringTheFirst
+14.6 TestTheLicenceCommandListsWhatTheBinaryLinks
+14.4 TestEveryFormatSurvivesItsReferenceTool
+12.2 TestTheMemoryFlagReachesThePlanOnEveryCommandThatPlans
+11.2 TestTheCommandLineHoldsTheWholeRunToItsMemorySetting

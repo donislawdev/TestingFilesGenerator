@@ -16477,4 +16477,107 @@ MUTATIONS = [
         "manifestReachNote(saved.Size)...), []string(nil)...)",
         "TestTheWindowSaysWhenARunWillHoldMoreThanItsMemory",
     ),
+    (
+        # O298: split by the checksum alone, the parts were 1250, 1158, 795
+        # and 526 s on the slowest processor measured.
+        "the heavy guards of the race job are laid out by the checksum of their names like the light ones",
+        ".github/scripts/race_parts.py",
+        "part = min(range(parts), key=lambda p: (load[p], p))",
+        'part = zlib.crc32(name.encode("utf-8")) % parts',
+        "TestTheRacePartsWeighAboutTheSame",
+    ),
+    (
+        "a weight for a guard that was renamed is laid out without a word, and the renamed guard counts as light",
+        ".github/scripts/race_parts.py",
+        "gone = [name for name in weights if name not in names]",
+        "gone = []",
+        "TestTheRaceSplitRefusesWeightsItCannotTrust",
+    ),
+    (
+        "every light guard is laid into every part of the race job",
+        ".github/scripts/race_parts.py",
+        "mine = [name for name in names if part_of[name] == part]",
+        "mine = [name for name in names if part_of[name] == part or name not in weights]",
+        "TestEveryGuardRunsInExactlyOneRacePart",
+    ),
+    (
+        "a guard the weights do not name runs as long as it likes and its part stays green",
+        ".github/scripts/race_parts.py",
+        "float(found.group(2)) >= UNLISTED_CEILING",
+        "float(found.group(2)) >= UNLISTED_CEILING * 100",
+        "TestARaceTestMissingFromTheWeightsFailsItsPartWhenItRunsLong",
+    ),
+    (
+        "a long subtest of a weighted guard fails its part as if it were a guard missing from the weights",
+        ".github/scripts/race_parts.py",
+        'TOP = re.compile(r"^--- (?:PASS',
+        'TOP = re.compile(r"^ *--- (?:PASS',
+        "TestARaceTestMissingFromTheWeightsFailsItsPartWhenItRunsLong",
+    ),
+    (
+        "a weight below nought is taken and lightens its part",
+        ".github/scripts/race_parts.py",
+        "if not math.isfinite(value) or value < 0:",
+        "if not math.isfinite(value):",
+        "TestTheRaceSplitRefusesWeightsItCannotTrust",
+    ),
+    (
+        "a guard weighed twice keeps the second weight without a word",
+        ".github/scripts/race_parts.py",
+        "if name in weights:",
+        "if name in ():",
+        "TestTheRaceSplitRefusesWeightsItCannotTrust",
+    ),
+    (
+        # Only the refusal of a missing line. Starting the weight at 0.0
+        # instead made the first "unlisted" line look like a second one, so
+        # the entry was caught for another reason (#216 review).
+        "weights without an unlisted line are taken rather than refused with the line to add",
+        ".github/scripts/race_parts.py",
+        "if unlisted is None:",
+        "if unlisted is None and False:",
+        "TestTheRaceSplitRefusesWeightsItCannotTrust",
+    ),
+    (
+        "a race log line whose duration is not one go test writes ends the unlisted check with a traceback",
+        ".github/scripts/race_parts.py",
+        "([0-9]+(?:",
+        "([0-9.]+(?:",
+        "TestARaceTestMissingFromTheWeightsFailsItsPartWhenItRunsLong",
+    ),
+    (
+        "a part past the race job's parts is laid out as an empty part rather than refused",
+        ".github/scripts/race_parts.py",
+        "if parts < 1 or not 0 <= part < parts:",
+        "if parts < 1:",
+        "TestTheRaceSplitRefusesWeightsItCannotTrust",
+    ),
+    (
+        "the race job stops laying its parts out by the weights",
+        ".github/workflows/ci.yml",
+        'python3 .github/scripts/race_parts.py split names.txt .github/race-weights "$PART" "$PARTS" > mine.txt',
+        "cp names.txt mine.txt",
+        "TestTheRaceJobLaysItsPartsOutByTheWeights",
+    ),
+    (
+        "the race job stops asking whether a guard missing from the weights ran long",
+        ".github/workflows/ci.yml",
+        "          python3 .github/scripts/race_parts.py unlisted .github/race-weights part.log\n",
+        "",
+        "TestTheRaceJobLaysItsPartsOutByTheWeights",
+    ),
+    (
+        "a weight names a guard the test binary no longer lists",
+        ".github/race-weights",
+        "348.3 TestAFormatRefusesASizeItCannotDescribe\n",
+        "348.3 TestAFormatRefusesASizeItCannotDescribeAnyMore\n",
+        "TestEveryGuardRunsInExactlyOneRacePart",
+    ),
+    (
+        "a pull request that changes only the race weights or the script laying them out merges with the race job skipped",
+        ".github/workflows/ci.yml",
+        " .github/build-tags .github/race-weights .github/scripts/race_parts.py'",
+        " .github/build-tags'",
+        "TestTheRaceJobLaysItsPartsOutByTheWeights",
+    ),
 ]
