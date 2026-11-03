@@ -44,3 +44,36 @@ reason = "semgrep pins mcp==1.29.0 in every release, and the advisory is about a
 id = "GHSA-xcq7-p3pf-p88h"
 ignoreUntil = 2026-11-15
 reason = "semgrep pins opentelemetry-api~=1.37.0 in every release, and the advisory is about parsing an inbound tracestate header in a server, which semgrep scan never runs"
+
+# Three more advisories against mcp 1.29.0, published 2026-11-02, all fixed in
+# the same 1.30.0 as the first entry above.
+#
+# semgrep 1.183.0 of 2026-10-29, the newest, still asks for mcp==1.29.0, so no
+# set pip can install holds the fix. Nor can mcp be left out of the install:
+# semgrep's command line imports mcp.server.auth.settings when it starts, and
+# without the package `semgrep --version` itself fails (measured 2026-11-03 in
+# python:3.14-slim with this directory's requirements).
+#
+# Two are about the MCP client - its HTTP transports following a redirect to
+# another host with the request's headers and body, and its fetching of $ref
+# addresses a server names in an output schema. The third is about an MCP
+# server accepting a bearer token issued for a different resource server. The
+# job runs `semgrep scan` and nothing else, which starts neither a client nor
+# a server, on a runner that lives for one scan.
+#
+# The same date as the entries above: all of them wait on a semgrep that moves
+# its pin, and all of them come back on one reminder.
+[[IgnoredVulns]]
+id = "GHSA-5h93-6whr-6q8j"
+ignoreUntil = 2026-11-15
+reason = "semgrep pins mcp==1.29.0 in every release, and the advisory is about the MCP client following cross-origin redirects, which semgrep scan never starts"
+
+[[IgnoredVulns]]
+id = "GHSA-rwrf-2pqf-9j8j"
+ignoreUntil = 2026-11-15
+reason = "semgrep pins mcp==1.29.0 in every release, and the advisory is about the MCP client fetching server-chosen $ref addresses, which semgrep scan never starts"
+
+[[IgnoredVulns]]
+id = "GHSA-w4fh-qvv9-3v23"
+ignoreUntil = 2026-11-15
+reason = "semgrep pins mcp==1.29.0 in every release, and the advisory is about an MCP server checking bearer tokens, which semgrep scan never starts"

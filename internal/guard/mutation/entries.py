@@ -53,15 +53,15 @@ MUTATIONS = [
     (
         "the preview stops warning that the record will be too big to read back",
         "internal/gui/window/run.go",
-        "r.say(append(append([]string{said}, manifestReachNote(res.Record)...), runNotesOf(res)...)...)",
-        "r.say(append([]string{said}, runNotesOf(res)...)...)",
+        "r.say(append(append(append([]string{said}, manifestReachNote(res.Record)...), holdNote(res)...), runNotesOf(res)...)...)",
+        "r.say(append(append([]string{said}, holdNote(res)...), runNotesOf(res)...)...)",
         "TestTheWindowSaysWhenItsManifestWillBeTooBigToReadBack",
     ),
     (
         "a finished run stops warning, so somebody who never pressed Preview is told nothing",
         "internal/gui/window/run.go",
-        "said := append([]string{outcome}, manifestReachNote(saved.Size)...)",
-        "said := []string{outcome}",
+        "said := append(append([]string{outcome}, manifestReachNote(saved.Size)...), holdNote(res)...)",
+        "said := append([]string{outcome}, holdNote(res)...)",
         "TestAFinishedRunInTheWindowSaysItsManifestIsTooBigToReadBack",
     ),
     (
@@ -4305,7 +4305,7 @@ MUTATIONS = [
         # and would prove nothing about whether drift is caught.
         "the notices file goes back to naming a version that is no longer built",
         "THIRD-PARTY-NOTICES.md",
-        "| `golang.org/x/net` | v0.60.0 |",
+        "| `golang.org/x/net` | v0.62.0 |",
         "| `golang.org/x/net` | v0.35.0 |",
         "TestTheNoticesFileNamesTheVersionsThatAreActuallyBuilt",
     ),
@@ -6218,7 +6218,7 @@ MUTATIONS = [
     ),
     (
         "the ceiling a caller does not name stops being the real one, so ordinary short runs are refused",
-        "internal/engine/engine.go",
+        "internal/engine/holdforecast.go",
         "\treturn o.Memory.On(machine)",
         "\treturn core.MemoryOf(1).On(machine)",
         "TestAShortOrdinaryRunIsNotRefusedByThePlanCeiling",
@@ -16241,8 +16241,8 @@ MUTATIONS = [
     (
         "a preview in the window does not say what it said about its memory",
         "internal/gui/window/run.go",
-        "manifestReachNote(res.Record)...), runNotesOf(res)...)...)",
-        "manifestReachNote(res.Record)...), notesOf(nil)...)...)",
+        "holdNote(res)...), runNotesOf(res)...)...)",
+        "holdNote(res)...), notesOf(nil)...)...)",
         "TestTheWindowSaysWhatARunSaidAboutItsMemory",
     ),
     (
@@ -16404,5 +16404,77 @@ MUTATIONS = [
         "return c.readable() && !c.squareOverLabel(t)",
         "return c.readable()",
         "TestAFilmWhoseSquareCoversItsLabelSaysSoInItsPlan",
+    ),
+    (
+        # O296: the forecast counts a tenth of what a file adds. The guard
+        # measures a run of 2000 text files the way the runsize probe did and
+        # compares it with what the forecast adds for a million.
+        "the forecast of what a run holds counts a tenth of what a file adds",
+        "internal/engine/holdforecast.go",
+        "const entryHolds = 520",
+        "const entryHolds = 52",
+        "TestAFileAddsWhatTheForecastSaysToTheRunsMemory",
+    ),
+    (
+        # The answer itself turned off, asked through the command line: a run
+        # under --memory 1mb must say it before the dry run's last line.
+        "a run that will hold more than its memory setting is never told on the command line",
+        "internal/engine/holdforecast.go",
+        "return HoldForecast{Holds: holds, Room: limits.Run, Over: holds > limits.Run}",
+        "return HoldForecast{Holds: holds, Room: limits.Run, Over: holds > limits.Run && false}",
+        "TestARunThatWillHoldMoreThanItsMemorySaysSoBeforeItsFirstByte",
+    ),
+    (
+        # The same, asked through the window: a preview and a run on a machine
+        # of 2 MiB.
+        "a run that will hold more than its memory setting is never told in the window",
+        "internal/engine/holdforecast.go",
+        "return HoldForecast{Holds: holds, Room: limits.Run, Over: holds > limits.Run}",
+        "return HoldForecast{Holds: holds, Room: limits.Run, Over: holds > limits.Run && false}",
+        "TestTheWindowSaysWhenARunWillHoldMoreThanItsMemory",
+    ),
+    (
+        # The second reading, after a collection, forgets the files. Only a run
+        # near its setting gets there, and the guard asks one whose heap fits
+        # and whose million files do not.
+        "the forecast after a collection forgets what the files add",
+        "internal/engine/holdforecast.go",
+        "\tholds := int64(heapInUse()) + added\n",
+        "\tholds := int64(heapInUse()) + added*0\n",
+        "TestAFileAddsWhatTheForecastSaysToTheRunsMemory",
+    ),
+    (
+        # The cheap reading forgets the files, so a run of a million is
+        # forecast to hold what a run of none does.
+        "the cheap forecast of what a run holds forgets what the files add",
+        "internal/engine/holdforecast.go",
+        "if held := int64(heapHeldAtMost()) + added; held <= limits.Run {",
+        "if held := int64(heapHeldAtMost()) + added*0; held <= limits.Run {",
+        "TestAFileAddsWhatTheForecastSaysToTheRunsMemory",
+    ),
+    (
+        # The command line stops asking. echoHold stays declared, so the tree
+        # still builds.
+        "the command line no longer says before its first byte that a run will hold too much",
+        "internal/cli/generate.go",
+        "\techoHold(planned, opt, errOut)\n",
+        "",
+        "TestARunThatWillHoldMoreThanItsMemorySaysSoBeforeItsFirstByte",
+    ),
+    (
+        "a preview in the window no longer says that the run will hold too much",
+        "internal/gui/window/run.go",
+        "manifestReachNote(res.Record)...), holdNote(res)...), runNotesOf",
+        "manifestReachNote(res.Record)...), []string(nil)...), runNotesOf",
+        "TestTheWindowSaysWhenARunWillHoldMoreThanItsMemory",
+    ),
+    (
+        # A run pressed straight away, never previewed, is the person the
+        # sentence after the run is for.
+        "a finished run in the window no longer says that it held too much",
+        "internal/gui/window/run.go",
+        "manifestReachNote(saved.Size)...), holdNote(res)...)",
+        "manifestReachNote(saved.Size)...), []string(nil)...)",
+        "TestTheWindowSaysWhenARunWillHoldMoreThanItsMemory",
     ),
 ]

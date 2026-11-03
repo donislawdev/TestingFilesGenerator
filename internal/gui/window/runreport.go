@@ -43,6 +43,21 @@ func manifestReachNote(record engine.RecordSize) []string {
 		text.HumanBytes(record.Manifest), text.HumanBytes(manifest.MaxBytes))}
 }
 
+// holdNote is the window's half of the note the command line prints before the
+// first byte when a run will hold more than its memory setting gives it.
+//
+// Read off the engine (engine.Result.Hold), worked out by the function the
+// command line asks, so the two surfaces cannot disagree about one run. A
+// preview says it before anything is written, and a run says it afterwards,
+// when it explains why the run was slow. A run that never started hands in
+// nothing, and nothing is said.
+func holdNote(res *engine.Result) []string {
+	if res == nil || !res.Hold.Over {
+		return nil
+	}
+	return []string{text.RunHoldsMoreThanItsMemory(text.HumanBytes(res.Hold.Holds), text.HumanBytes(res.Hold.Room))}
+}
+
 // progressText is the line under the bar. Bytes rather than files, because one
 // large file is a run where the file count says nothing for minutes.
 //

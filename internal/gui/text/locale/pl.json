@@ -167,6 +167,7 @@
   "RendererNotShipped": { "hash": "sha256-bfadaecbdd36", "other": "Dla tego systemu nie jest dostarczany programowy renderer, więc ta flaga niczego tu nie zmienia." },
   "RendererStartFailed": { "hash": "sha256-3540e225c773", "other": "Ponowne uruchomienie programu z programowym rendererem nie powiodło się: {{.Error}}." },
   "RendererStartingAgain": { "hash": "sha256-86c4b674d84e", "other": "Pierwsza próba otwarcia okna nie powiodła się - zwykle to sterownik grafiki bez OpenGL 2.1. Uruchamiam ponownie z programowym rendererem dostarczonym obok programu." },
+  "RunHoldsMoreThanItsMemory": { "hash": "sha256-e40fb5c32602", "other": "ten przebieg będzie do końca trzymał w pamięci około {{.Holds}}, więcej niż {{.Room}}, które daje mu ustawienie pamięci, więc będzie wolniejszy, a system może go zakończyć, zanim powstanie jego zapis. Podziel przebieg albo daj mu więcej w sekcji Pamięć w Preferencjach, jeśli ta maszyna ma na to miejsce." },
   "SectionBase": { "hash": "sha256-cbef193cc958", "other": "Budowanie na presecie" },
   "SectionCarriedBeside": { "hash": "sha256-4cc79104fe33", "other": "Dostarczane obok programu w Windows" },
   "SectionCarriedCode": { "hash": "sha256-b0f1aba6039b", "other": "Wkompilowany kod innych autorów" },

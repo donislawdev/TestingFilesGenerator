@@ -233,6 +233,10 @@ module, was compared with the one at the version before and is byte for byte
 the same. No module entered or left the graph, so the counts above did not
 move.
 
+`golang.org/x/net` went to v0.62.0 on 2026-11-03 on its own, because two
+published advisories name v0.60.0. Its licence file is byte for byte the one
+at v0.60.0, and no module entered or left the graph.
+
 Two arrived later than the rest. `github.com/FyshOS/fancyfs` came in on the
 same day with the folder picker, because the toolkit's dialog package
 imports it to decorate folder icons. Its licence was read before it was
@@ -285,7 +289,7 @@ is the module's own MIT, carried unchanged.
 | `github.com/srwiley/rasterx` | v0.0.0-20220730225603-2ab79fcdd4ef | BSD-3-Clause | (c) 2018, Steven R Wiley |
 | `github.com/yuin/goldmark` | v1.8.2 | MIT | (c) 2019 Yusuke Inuzuka |
 | `golang.org/x/image` | v0.46.0 | BSD-3-Clause | 2009 The Go Authors. |
-| `golang.org/x/net` | v0.60.0 | BSD-3-Clause | 2009 The Go Authors. |
+| `golang.org/x/net` | v0.62.0 | BSD-3-Clause | 2009 The Go Authors. |
 | `golang.org/x/sys` | v0.49.0 | BSD-3-Clause | 2009 The Go Authors. |
 
 The five licence texts follow, one copy each. They differ only in the copyright

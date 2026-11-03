@@ -1170,6 +1170,24 @@ jobs:
           sudo apt-get install -y --no-install-recommends             libgl1-mesa-dev             libwayland-dev             libx11-dev             libxkbcommon-dev             xorg-dev
         shell: bash
 
+      - name: the machine this part runs on
+        # O298, 2026-11-03. Part 2 ran past its twenty minutes in one run of
+        # three since 2026-10-26, main included, while parts 0, 1 and 3 of the
+        # same runs took the time they always take. In a slow run every test of
+        # the part from the fourth on is about 1.75 times slower, the single
+        # threaded ones that read files among them. The log names the runner's
+        # image and region and nothing about the machine, so a slower machine
+        # and something inside the part could not be told apart. This says what
+        # the machine is, and the step after the tests says what its processor
+        # did meanwhile - the next slow run answers which of the two it was.
+        run: |
+          set -euo pipefail
+          echo "processors: $(nproc)"
+          lscpu | grep -E '^(Model name|Thread\(s\) per core|Core\(s\) per socket|Socket\(s\)|CPU max MHz|L3 cache|Hypervisor vendor|Virtualization type):' || true
+          free -m
+          echo "load average: $(cat /proc/loadavg)"
+        shell: bash
+
       - name: test this part under the race detector
         # A data race is the one defect class here that nothing else notices. It
         # does not change a size, and on the run that happens to interleave the
@@ -1206,6 +1224,9 @@ jobs:
         # a name rather than as a killed job with no output. Go's ten minutes
         # killed this job on 2026-08-25, before a timeout was stated here.
         # Twenty minutes is 1.8 times the slowest part measured.
+        #
+        # The processor's counters and the clock are read just before the
+        # tests, for the step after this one (O298).
         env:
           PART: ${{ strategy.job-index }}
           PARTS: ${{ strategy.job-total }}
@@ -1232,6 +1253,8 @@ jobs:
             echo "With this few tests, use fewer parts in strategy.matrix.part."
             exit 1
           fi
+          head -n 1 /proc/stat > stat-before.txt
+          date +%s > time-before.txt
           go test -tags "$(cat .github/build-tags)" ./internal/guard/ -count=1 -race -timeout 20m -v -run "^($(paste -sd'|' mine.txt))\$" 2>&1 | tee part.log
           missing=$(comm -23 <(sort mine.txt) <(sed -n 's/^=== RUN   \([^/]*\)$/\1/p' part.log | sort -u))
           if [ -n "$missing" ]; then
@@ -1240,6 +1263,41 @@ jobs:
             echo "Each of these is a name the -run pattern did not reach, or a test the binary skipped before it started."
             exit 1
           fi
+        shell: bash
+
+      - name: what the processor did while this part ran
+        # The other half of the step that says what the machine is (O298). The
+        # counters are the whole machine's, read just before the tests and
+        # again now. iowait is time the processors sat idle while disk I/O was
+        # pending, not time a test spent waiting for it, and the kernel calls
+        # the counter unreliable. steal depends on the platform: Microsoft
+        # documents it as not applicable to Azure, so nought there proves
+        # nothing about the host. The processes are ranked by the processor
+        # time each has used since it started, which ELAPSED dates, so one the
+        # part left running stands out from the runner's own. Runs after red
+        # tests as well, because a slow part is a red one.
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          if [ ! -s stat-before.txt ]; then
+            echo "the tests of this part never started, so there is nothing to compare"
+            exit 0
+          fi
+          read -r _ user0 nice0 system0 idle0 iowait0 irq0 softirq0 steal0 _ < stat-before.txt
+          read -r _ user1 nice1 system1 idle1 iowait1 irq1 softirq1 steal1 _ < <(head -n 1 /proc/stat)
+          busy=$(( (user1 + nice1 + system1 + irq1 + softirq1) - (user0 + nice0 + system0 + irq0 + softirq0) ))
+          idle=$(( idle1 - idle0 ))
+          iowait=$(( iowait1 - iowait0 ))
+          steal=$(( steal1 - steal0 ))
+          total=$(( busy + idle + iowait + steal ))
+          echo "over $(( $(date +%s) - $(cat time-before.txt) )) s on $(nproc) processors:"
+          if [ "$total" -gt 0 ]; then
+            echo "  busy $(( 100 * busy / total ))%, idle $(( 100 * idle / total ))%, idle with disk I/O pending (iowait) $(( 100 * iowait / total ))%, steal (platform dependent) $(( 100 * steal / total ))%"
+          fi
+          echo "load average: $(cat /proc/loadavg)"
+          echo "the processes still running now, by processor time used since each started (ELAPSED):"
+          ps -eo pid,ppid,etime,time,pcpu,comm --sort=-time > processes.txt
+          head -n 12 processes.txt
         shell: bash
 
       - name: the other packages under the race detector

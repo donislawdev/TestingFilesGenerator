@@ -841,6 +841,11 @@
     "hash": "sha256-86c4b674d84e",
     "other": "The first attempt to open a window did not succeed - usually a graphics driver without OpenGL 2.1. Starting again with the software renderer shipped beside the program."
   },
+  "RunHoldsMoreThanItsMemory": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Holds}}, {{.Room}}.",
+    "hash": "sha256-e40fb5c32602",
+    "other": "this run will hold about {{.Holds}} in memory by its end, more than the {{.Room}} the memory setting gives it, so it will run slower and the system may end it before its record is written. Split the run, or give it more Memory in Preferences if this machine has the room."
+  },
   "SectionBase": {
     "description": "The heading over a group of fields.",
     "hash": "sha256-cbef193cc958",

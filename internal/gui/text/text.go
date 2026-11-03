@@ -238,6 +238,15 @@ func ManifestTooLargeToRead(size, limit string) string {
 		map[string]any{"Size": size, "Limit": limit})
 }
 
+// RunHoldsMoreThanItsMemory is said when a run will hold more than its memory
+// setting gives it - the window's half of the note the command line prints
+// before the first byte (O296, engine.PredictHold).
+func RunHoldsMoreThanItsMemory(holds, room string) string {
+	return sayf("RunHoldsMoreThanItsMemory",
+		"this run will hold about {{.Holds}} in memory by its end, more than the {{.Room}} the memory setting gives it, so it will run slower and the system may end it before its record is written. Split the run, or give it more Memory in Preferences if this machine has the room.",
+		map[string]any{"Holds": holds, "Room": room})
+}
+
 // WorkingOutTheCost is what a preview says while it is going.
 //
 // A preview does disk work - it asks how much room there is and whether any of

@@ -540,7 +540,7 @@ func (r *runner) previewFinished(res *engine.Result, planned []engine.PlannedFil
 		r.line.measured(opt.OutDir, room.free)
 	}
 	said := r.line.said(exactly(planned), opt.OutDir) + text.AndNothingWrittenYet()
-	r.say(append(append([]string{said}, manifestReachNote(res.Record)...), runNotesOf(res)...)...)
+	r.say(append(append(append([]string{said}, manifestReachNote(res.Record)...), holdNote(res)...), runNotesOf(res)...)...)
 }
 
 // formatsOf is what kinds of file the run would produce, each named once.
@@ -726,7 +726,7 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room dis
 	// said only how many files - so the one thing this tool makes that others
 	// do not was, from a window, something you found in the folder afterwards.
 	outcome := text.SaidWithManifest(outcomeText(res, runErr), manifestNameOf(saved.Manifest))
-	said := append([]string{outcome}, manifestReachNote(saved.Size)...)
+	said := append(append([]string{outcome}, manifestReachNote(saved.Size)...), holdNote(res)...)
 	// Instructions that were due and are not there are said, not failed: the
 	// manifest was saved and holds the same facts. Silence would leave a button
 	// missing with no reason given.
