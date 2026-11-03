@@ -199,3 +199,27 @@ func (m Memory) On(machine func() (int64, error)) MemoryLimits {
 	half := total / 2
 	return MemoryLimits{Run: half, Plan: max(half, MaxPlanBytes)}
 }
+
+// ForRuntime is the memory limit a process that is the program's own hands the
+// Go runtime for a run under these limits. start is the limit the process
+// started with - what GOMEMLIMIT said, or no limit at all.
+//
+// The runtime's limit is soft. Close to it the collector runs more often, a
+// run that needs more still gets it, and the collector takes no more than
+// about half the processor, so a run held under it is at most about twice as
+// slow (go.dev/doc/gc-guide, the memory limit section). Well under it nothing
+// changes. Without it a run takes about two and a half times what it holds,
+// and in a container of 1 GB that was the difference between 400 000 files
+// killed by the system and 500 000 written (docs/FILE-CEILING-2026-11-02.md
+// section 12).
+//
+// Never above start, because a person who set GOMEMLIMIT lower chose that on
+// purpose. Off hands start back, and so does a machine that could not be
+// asked: its Run is MaxPlanBytes, a number about no machine, and on a large
+// machine whose memory could not be read it would slow a run for nothing.
+func (l MemoryLimits) ForRuntime(start int64) int64 {
+	if l.Run <= 0 || l.Unknown != nil {
+		return start
+	}
+	return min(l.Run, start)
+}

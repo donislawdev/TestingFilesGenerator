@@ -8,9 +8,14 @@ package main
 import (
 	"os"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui"
 )
 
 func main() {
+	// This process is the window's own, so the memory setting holds each
+	// whole run and not only its plan - engine/processmemory.go says why only
+	// the two main functions say so.
+	engine.OwnProcess()
 	os.Exit(gui.Run(os.Args[1:], os.Stderr))
 }
