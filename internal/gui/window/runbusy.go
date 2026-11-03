@@ -4,8 +4,10 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // The screen while a run or a preview owns it, and the face it wears for that.
@@ -48,9 +50,10 @@ type later func(after time.Duration, then func()) (callOff func())
 // off at once when it ends.
 type busy struct {
 	// occupied is the state: whether work owns the screen. It exists because
-	// the runner's stop cannot answer that - stop is set on the first press
-	// and never cleared. Only ever touched on the interface thread, which is
-	// what makes a plain bool enough.
+	// the screen's work cannot answer that - it is set on the first press and
+	// never cleared. Only ever touched on the interface thread, which is what
+	// makes a plain bool enough. It stays on while the work winds down after
+	// Cancel, so nothing new starts until the worker has said its last word.
 	occupied bool
 	// worn is whether the face is on, so it is taken off exactly when it
 	// was put on and never twice.
@@ -86,6 +89,12 @@ type busy struct {
 	// still runs - after the next work has started, if the next press comes
 	// in that gap. An outside review of the pull request named it.
 	epoch int
+
+	// hold, when a guard supplies one, is run on the worker just before the
+	// screen is told the work has ended. Nil in the shipped program - see
+	// runner.HoldBeforeFinishing for what it is for. Here rather than on the
+	// screens since 2026-11-03, when the Tools tab came to need it as well.
+	hold func()
 }
 
 // busyFace is which parts of the face a piece of work earns: whether there
@@ -173,6 +182,30 @@ func (b *busy) undress() {
 	b.cancel.Hide()
 	b.bar.Hide()
 	b.relay()
+}
+
+// halt asks the work wearing this face to stop, and turns the face to
+// stopping - Cancel and Escape on every screen that does work.
+//
+// Cancel stays where it is, switched off, and the line says what is waited
+// for. Off rather than hidden, so the row does not move under the pointer that
+// has just pressed it and a second press has nothing to land on. The face of
+// the next work switches it on again. The rest of the face stays on until the
+// worker's last word takes it off: the work still owns the screen, and a
+// second run must not start while the first is winding down.
+func (b *busy) halt(w *work, status *widget.Label) {
+	w.halt(func() {
+		b.cancel.Disable()
+		showOn(status, text.Stopping())
+	})
+}
+
+// holdBeforeFinishing runs the hold, if a guard supplied one. Called on the
+// worker, before anything on the screen is touched.
+func (b *busy) holdBeforeFinishing() {
+	if b.hold != nil {
+		b.hold()
+	}
 }
 
 // relay lays the row of buttons out again, because the toolkit does not.

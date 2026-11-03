@@ -441,6 +441,11 @@
     "one": "1 format",
     "other": "{{.Count}} formats"
   },
+  "HeadingClosing": {
+    "description": "The heading at the top of a screen.",
+    "hash": "sha256-f79ebae4aae3",
+    "other": "Closing"
+  },
   "HintBasePreset": {
     "description": "The line under a field name, saying what the field does.",
     "hash": "sha256-d75c8b442fd9",
@@ -985,6 +990,16 @@
     "description": "Shown in the window. Carries one value, {{.Files}}, which has to stay spelled exactly that way.",
     "hash": "sha256-f08278015581",
     "other": "Stopped after {{.Files}}. The manifest describes exactly those."
+  },
+  "Stopping": {
+    "description": "Shown in the window.",
+    "hash": "sha256-823789a4f4b7",
+    "other": "Stopping - the step in progress is finished first, so nothing is left half written."
+  },
+  "SubtitleClosing": {
+    "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
+    "hash": "sha256-e623c2ae70c3",
+    "other": "The window closes once the work in progress has stopped. The step in progress is finished first, so nothing is left half written."
   },
   "SubtitleGenerate": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",

@@ -46,7 +46,7 @@ type Tools struct {
 	busy   *busy
 	status *widget.Label
 	fault  *parts.ErrorArea
-	job    *toolJob
+	job    *work
 
 	view  toolsView
 	offer folderOffer
@@ -141,7 +141,7 @@ func NewTools(host Host) *Tools {
 	t.result = parts.FieldColumn()
 
 	run := parts.NewButton(parts.Primary, text.ButtonRunTool(), t.PressGenerate).InTheBar()
-	cancel := parts.NewButton(parts.Secondary, text.ButtonCancel(), t.PressCancel).InTheBar()
+	cancel := parts.NewButton(parts.Secondary, text.ButtonCancel(), t.onCancel).InTheBar()
 	cancel.Disable()
 	cancel.Hide()
 	t.offer.btn = parts.NewButton(parts.Secondary, text.ButtonOpenFolder(), func() {
@@ -198,23 +198,27 @@ func (t *Tools) Fields() *parts.Fields { return t.fields }
 // asks every screen the same four things.
 func (t *Tools) PressPreview() {}
 
-// PressCancel stops the tool that is running, if one is.
-func (t *Tools) PressCancel() { t.Stop() }
+// PressCancel presses Cancel, which is there only while a tool is running -
+// see pressIfLive. Until 2026-11-03 Escape stopped the tool itself, so it
+// reached a tool in the moment before the screen showed it busy, which no
+// other screen allowed.
+func (t *Tools) PressCancel() { pressIfLive(t.busy.cancel) }
+
+// onCancel asks the tool to stop and does not wait for it, for the reason
+// runner.onCancel gives.
+func (t *Tools) onCancel() { t.busy.halt(t.job, t.status) }
 
 // Stop ends the tool that is running and waits for it, or does nothing. Safe
 // to call at any time, which is what lets closing the window ask every screen.
-func (t *Tools) Stop() {
-	if t.job != nil {
-		t.job.stop()
-	}
-}
+// It waits, so it is called off the interface thread - see closing.go.
+func (t *Tools) Stop() { t.job.stop() }
 
 // Settled waits for the tool that is running to finish, for a guard.
-func (t *Tools) Settled() {
-	if t.job != nil {
-		<-t.job.done
-	}
-}
+func (t *Tools) Settled() { t.job.settled() }
+
+// HoldBeforeFinishing sets a hold the tool passes through on its way to
+// reporting, for a guard - see runner.HoldBeforeFinishing.
+func (t *Tools) HoldBeforeFinishing(fn func()) { t.busy.hold = fn }
 
 // onChosen draws what the chosen tool works on and what it takes.
 func (t *Tools) onChosen(choice string) {
@@ -272,22 +276,28 @@ func (t *Tools) PressGenerate() {
 }
 
 // progressed and finished are what a running tool tells the screen, on the
-// interface thread.
-func (t *Tools) progressed(done, total int64) {
-	t.busy.bar.SetValue(float64(core.Percent(done, total)))
-	showOn(t.status, text.ToolReading(text.HumanBytes(done), text.HumanBytes(total)))
+// interface thread and through the work they are about - see work.go. The
+// work is handed over rather than read off the screen, because the screen is
+// given it only once startTool returns, after the worker has started.
+func (t *Tools) progressed(job *work, done, total int64) {
+	job.news(func() {
+		t.busy.bar.SetValue(float64(core.Percent(done, total)))
+		showOn(t.status, text.ToolReading(text.HumanBytes(done), text.HumanBytes(total)))
+	})
 }
 
-func (t *Tools) finished(d tool.Descriptor, r tool.Result, err error) {
-	t.busy.set(false, busyFace{})
-	showOn(t.status, "")
-	if err != nil {
-		t.offer.withdraw(t.busy.relay)
-		t.refuse(err)
-		return
-	}
-	t.showResult(d, &r)
-	t.offer.show(t.busy.relay)
+func (t *Tools) finished(job *work, d tool.Descriptor, r tool.Result, err error) {
+	job.end(func() {
+		t.busy.set(false, busyFace{})
+		showOn(t.status, "")
+		if err != nil {
+			t.offer.withdraw(t.busy.relay)
+			t.refuse(err)
+			return
+		}
+		t.showResult(d, &r)
+		t.offer.show(t.busy.relay)
+	})
 }
 
 // refuse puts a refusal under the box it is about, or at the foot of the
@@ -306,26 +316,15 @@ func (t *Tools) refuse(err error) {
 	t.fault.Say(core.ShownText(text.Refusal(err, "")))
 }
 
-// toolJob is one run of a tool beside the window.
+// startTool runs one tool beside the window and tells the screen how it went.
 //
 // Beside it because a file of gigabytes takes seconds to read and a window
 // that waits for it is a window the desktop calls not responding - the same
-// reason a run of the engine happens beside it. The stop is set before the
+// reason a run of the engine happens beside it. The work is made before the
 // goroutine starts, so closing the window at any moment of the run finds it
 // and waits for the read to wind down (G7).
-type toolJob struct {
-	stop func()
-	done chan struct{}
-}
-
-// startTool runs one tool and tells the screen how it went.
-func startTool(d tool.Descriptor, in tool.Request, screen *Tools) *toolJob {
-	ctx, cancel := context.WithCancel(context.Background())
-	job := &toolJob{done: make(chan struct{})}
-	job.stop = func() {
-		cancel()
-		<-job.done
-	}
+func startTool(d tool.Descriptor, in tool.Request, screen *Tools) *work {
+	ctx, job := begin()
 	screen.busy.set(true, busyFace{stoppable: true, progressing: true})
 	screen.busy.bar.SetValue(0)
 	limit := &throttle{}
@@ -333,12 +332,13 @@ func startTool(d tool.Descriptor, in tool.Request, screen *Tools) *toolJob {
 		if !limit.allow(time.Now()) {
 			return
 		}
-		fyne.Do(func() { screen.progressed(done, total) })
+		fyne.Do(func() { screen.progressed(job, done, total) })
 	}
 	go func() {
-		defer cancel()
+		defer job.cancel()
 		result, err := d.Start(ctx, in, progress)
-		fyne.Do(func() { screen.finished(d, result, err) })
+		screen.busy.holdBeforeFinishing()
+		fyne.Do(func() { screen.finished(job, d, result, err) })
 		close(job.done)
 	}()
 	return job

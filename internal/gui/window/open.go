@@ -43,8 +43,8 @@ func Open(h Host) fyne.Size {
 	busyScreens := []*busy{gen.runner.busy, pre.runner.busy, rec.runner.busy, tools.busy}
 	// The way out is wired below, once everything it stops exists. The screen
 	// is built now, so it is handed a way to reach it rather than the thing.
-	var leave func()
-	prefs := NewPreferences(h, func() { leave() }, func() bool { return anyBusy(busyScreens) })
+	var out *closing
+	prefs := NewPreferences(h, func() { out.leave() }, func() bool { return anyBusy(busyScreens) })
 
 	// Tabs across the top rather than buttons at the foot, reported from use on
 	// 2026-08-11. The way between the screens used to sit in the row of actions
@@ -135,15 +135,12 @@ func Open(h Host) fyne.Size {
 		focusFirst(item.ID, byKeyboard)
 	}
 
-	// Closing the window during a run is a cancellation and not a kill, G7. The
-	// invariant that the output directory never holds a half written file rests
-	// on the signal handler in cmd/tfg, and closing a window is not a signal -
-	// so without this the run would carry on with nobody watching it, or die in
-	// the middle of a file.
+	// Closing the window during a run is a cancellation and not a kill, G7 -
+	// see closing.go.
 	// One wait for quiet for the whole window, told by every screen, and
 	// stopped with them when the window closes - see tidy.go.
-	quiet := tidyWhenLeftAlone(h, busyScreens, gen.runner, pre.runner, rec.runner)
-	leave = closeCleanly(h, []interface{ Stop() }{gen, pre, rec, tools, quiet}, working, &showing)
+	out = closeCleanly(h, &closing{screens: []interface{ Stop() }{gen, pre, rec, tools}, busy: busyScreens, working: working,
+		showing: &showing, looking: &looking, quiet: tidyWhenLeftAlone(h, busyScreens, gen.runner, pre.runner, rec.runner)})
 	// Restart now stands down while any screen is making files, and stands up
 	// again when it stops - told rather than asked, so the button is right
 	// the moment a run ends while the Preferences tab is on show. The Tools tab
@@ -151,8 +148,8 @@ func Open(h Host) fyne.Size {
 	for _, b := range busyScreens {
 		b.changed = prefs.BusyChanged
 	}
-	offerSettling(h, []interface{ Settled() }{gen, pre, rec, tools})
-	offerHolding(h, []interface{ HoldBeforeFinishing(func()) }{gen, pre, rec})
+	offerSettling(h, []interface{ Settled() }{gen, pre, rec, tools, out})
+	offerHolding(h, []interface{ HoldBeforeFinishing(func()) }{gen, pre, rec, tools})
 
 	wireKeyboard(h, keyed, &looking)
 
@@ -169,48 +166,6 @@ func Open(h Host) fyne.Size {
 	// typed in - the size a first start opens at, see HowToOpen and
 	// firstOpening for why the other two screens are not asked.
 	return firstOpening(tabbed, gen)
-}
-
-// closeCleanly stops whatever is running, writes down where the files were
-// going, and then lets the window go.
-//
-// It asks every screen to stop rather than the one on show, and that is the part
-// worth writing down: a run keeps going while somebody moves to another screen,
-// so the busy one is not necessarily the visible one. Stop does nothing on a
-// screen that is idle.
-//
-// The directory is taken from the screen somebody was last on rather than from a
-// fixed one - the three carry it between themselves, so the screen being looked
-// at is the one holding the answer. showing is a pointer for that reason: it
-// changes as somebody moves, and what matters is where they were when they shut
-// the window.
-//
-// One moment rather than "whenever it changes", so what comes back is
-// describable in a sentence: the window opens where you left it. Writing on
-// every keystroke would also put a half typed path on somebody's disk.
-//
-// Split out of Open on 2026-08-25, when that function went past three quarters
-// of the ceiling. The ceiling is a ratchet, so the answer is a split and never a
-// higher number.
-func closeCleanly(h Host, running []interface{ Stop() }, working map[string]interface {
-	OutDir() string
-	SetOutDir(string)
-}, showing *string) (leave func()) {
-	leave = func() {
-		for _, screen := range running {
-			screen.Stop()
-		}
-		if screen, ok := working[*showing]; ok {
-			h.Remembered().RememberDirectory(screen.OutDir())
-		}
-		h.Close()
-	}
-	h.SetCloseIntercept(leave)
-	// Handed back as well, because closing the window from inside it - Restart
-	// now on the Preferences screen - has to go this same way. The toolkit's
-	// Close does not pass through the intercept (driver/glfw window.go, read
-	// on 2026-09-29), so calling it alone would skip the runs and the folder.
-	return leave
 }
 
 // offerWhereItLastWrote puts the directory of the last run on every screen.

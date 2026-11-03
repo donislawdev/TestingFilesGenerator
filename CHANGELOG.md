@@ -52,6 +52,14 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **Cancel answers at once, and closing the window during a run no longer
+  freezes it.** Both used to wait for the write in progress with the window
+  standing still, which on a slow or network disk could last long enough for
+  Windows to offer to end the program in the middle of a file. Cancel now
+  switches itself off and says the run is stopping until it has. Closing the
+  window shows that it closes once the work has stopped, and then it does.
+  Nothing is left half written either way, and the manifest still describes
+  what was.
 - **A run of many files no longer runs out of memory while it saves its
   manifest.** The manifest was put together in memory in one piece, about
   ten times its own size, after the last file. In a container with 1 GB a

@@ -1,7 +1,6 @@
 package window
 
 import (
-	"context"
 	"errors"
 	"path/filepath"
 	"sort"
@@ -19,14 +18,15 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
-// The one place in the window where work happens off the interface thread, and
-// the only file of this tree in the concurrency guard's list.
+// Where a run and a preview happen off the interface thread, one of the files
+// in the concurrency guard's list.
 //
-// It is one goroutine and one channel. The goroutine exists because engine.Run
-// writes files and a window that waits for it is a window the desktop reports
-// as not responding. The channel exists because closing the window has to wait
-// for that goroutine to wind down - cancelling and exiting immediately would
-// end the process somewhere inside a file, which is the invariant G7 is about.
+// It is one goroutine per piece of work, and the work's channel (work.go). The
+// goroutine exists because engine.Run writes files and a window that waits for
+// it is a window the desktop reports as not responding. The channel exists
+// because closing the window has to wait for that goroutine to wind down -
+// cancelling and exiting immediately would end the process somewhere inside a
+// file, which is the invariant G7 is about.
 //
 // Everything the interface is told from in here crosses back through fyne.Do.
 // Measured on 2026-08-05 and worth writing down, because it decides what a test
@@ -114,45 +114,28 @@ type runner struct {
 	// they added it. Fields.Add is the only way to build a field now.
 	fields *parts.Fields
 
-	// hold, when a guard supplies one, is run on the worker just before the
-	// screen is told the work has ended. Nil in the shipped program - see
-	// HoldBeforeFinishing for what it is for and why nothing else can do it.
-	hold func()
-
-	// stop ends the run in progress and waits for the worker to finish, and is
-	// only ever touched on the interface thread.
+	// work is the last run or preview this screen started, and the way to end
+	// it or wait for it - see work.go. Only ever touched on the interface
+	// thread, and set before the worker starts.
 	//
-	// "Waits for the worker" is as far as it reaches, and the limit is worth
-	// writing down because G7 gets read out of this sentence. The worker closes
-	// the channel this waits on immediately after handing its last piece of
-	// work to fyne.Do, and fyne.Do QUEUES that work rather than running it -
-	// DoAndWait there would be the interface thread waiting on a worker that is
-	// waiting on the interface thread. So when stop returns, the worker is
-	// finished and the widget writes it asked for may still be in the toolkit's
-	// queue.
+	// "Waits for the worker" is as far as stopping reaches, and the limit is
+	// worth writing down because G7 gets read out of this sentence. The worker
+	// closes the channel stopping waits on immediately after handing its last
+	// piece of work to fyne.Do, and fyne.Do QUEUES that work rather than
+	// running it - DoAndWait there would be the interface thread waiting on a
+	// worker that is waiting on the interface thread. So when Stop returns, the
+	// worker is finished and the widget writes it asked for may still be in the
+	// toolkit's queue.
 	//
 	// What that buys is what G7 asks for: nothing of ours is still running and
 	// nothing more is going to the disk. What it does not buy is the screen
 	// having caught up - and Settled does not buy that either, because it waits
 	// on the same channel.
 	//
-	// It is deliberately left in place once a run has ended rather than
-	// cleared, and that is a threading decision rather than an oversight.
-	// Clearing it would be a write from the worker under the toolkit's test
-	// driver, where fyne.Do runs on the calling goroutine - so -race would
-	// report a race that production does not have, and the honest way out is a
-	// handle that is safe to hold on to. Calling it after the run has ended
-	// cancels a finished context and receives from a closed channel, both of
-	// which return at once.
-	//
-	// So it says nothing about whether a run is going. It used to be asked
-	// that, and the answer was wrong from the second run onwards - see running.
-	stop func()
-	// settled is closed when the work in flight has finished, and is what
-	// Settled waits on. Separate from stop because stop CANCELS first, which is
-	// right for closing the window and for Esc and wrong for anybody who wants
-	// to read the answer.
-	settled chan struct{}
+	// It says nothing about whether a run is going, because it is kept once
+	// the work has ended. It used to be asked that, and the answer was wrong
+	// from the second run onwards - see busy.occupied.
+	work *work
 
 	// scroll is the part of this screen that moves, so a refusal can bring the
 	// box it is about into view. Set by the screen, because only the screen
@@ -463,29 +446,23 @@ func (r *runner) onPreview() {
 	r.busy.set(true, busyFace{stoppable: true})
 	r.say(text.WorkingOutTheCost())
 
-	ctx, cancel := context.WithCancel(context.Background())
-	done := make(chan struct{})
-	r.settled = done
-
 	// Waited for on the way out, even though a preview writes nothing and there
 	// would be no half written file to protect. What it does do is touch
 	// widgets when it comes back, so a preview still in flight after the window
 	// has gone is a worker drawing into a screen that is being torn down.
 	//
 	// Set before the goroutine starts, for the reason startRun spells out.
-	r.stop = func() {
-		cancel()
-		<-done
-	}
+	ctx, w := begin()
+	r.work = w
 
 	go func() {
 		planned, planErr := engine.PlanContext(ctx, targets, opt)
 		if planErr != nil {
 			// Do rather than DoAndWait, for the same reason startRun gives: the
 			// interface thread must never be left waiting on a worker.
-			r.holdBeforeFinishing()
-			fyne.Do(func() { r.previewFinished(nil, nil, opt, diskRoom{}, planErr) })
-			close(done)
+			r.busy.holdBeforeFinishing()
+			fyne.Do(func() { w.end(func() { r.previewFinished(nil, nil, opt, diskRoom{}, planErr) }) })
+			close(w.done)
 			return
 		}
 		res, runErr := engine.Run(ctx, planned, opt)
@@ -494,9 +471,9 @@ func (r *runner) onPreview() {
 		// share takes, and the interface thread is the one thing that must
 		// not wait for it. It used to be asked after crossing back.
 		room := roomOn(opt.OutDir)
-		r.holdBeforeFinishing()
-		fyne.Do(func() { r.previewFinished(res, planned, opt, room, runErr) })
-		close(done)
+		r.busy.holdBeforeFinishing()
+		fyne.Do(func() { w.end(func() { r.previewFinished(res, planned, opt, room, runErr) }) })
+		close(w.done)
 	}()
 }
 
@@ -605,9 +582,13 @@ func (r *runner) onGenerate() {
 
 func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 	opt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine
-	ctx, cancel := context.WithCancel(context.Background())
-	done := make(chan struct{})
-	r.settled = done
+	// Set BEFORE the goroutine starts, and that ordering is the whole point.
+	// The other way round there is a window - short, and real - where files are
+	// being written and the screen holds no handle on them, so closing the
+	// window in it finds nothing to stop, waits for nothing, and ends the
+	// process somewhere inside a file.
+	ctx, w := begin()
+	r.work = w
 	started := time.Now()
 	limit := &throttle{}
 
@@ -626,26 +607,11 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 		}
 		elapsed := time.Since(started)
 		fyne.Do(func() {
-			r.busy.bar.SetValue(float64(p.Percent()))
-			r.status.SetText(progressText(p, elapsed))
+			w.news(func() {
+				r.busy.bar.SetValue(float64(p.Percent()))
+				r.status.SetText(progressText(p, elapsed))
+			})
 		})
-	}
-
-	// Cancelling and waiting, in that order, is the whole of G7. Closing the
-	// window is not a signal, so nothing else brings the run to a stop - and
-	// ending the process without waiting would leave it somewhere inside a file
-	// with no manifest, which is the one thing the output directory is promised
-	// never to hold.
-	//
-	// Set BEFORE the goroutine starts, and that ordering is the whole point.
-	// The other way round there is a window - short, and real - where files are
-	// being written and this is still nil, so closing the window in it finds
-	// nothing to call, waits for nothing, and ends the process somewhere inside
-	// a file. ctx, cancel and done all exist already, so there is nothing to
-	// gain by waiting.
-	r.stop = func() {
-		cancel()
-		<-done
 	}
 
 	go func() {
@@ -654,12 +620,14 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 			// A refusal from planning leaves nothing started and nothing on the
 			// disk, so it goes back as a refusal rather than as the end of a
 			// run - runFinished would talk about files that never existed.
-			r.holdBeforeFinishing()
+			r.busy.holdBeforeFinishing()
 			fyne.Do(func() {
-				r.busy.set(false, busyFace{})
-				r.refuse(planErr)
+				w.end(func() {
+					r.busy.set(false, busyFace{})
+					r.refuse(planErr)
+				})
 			})
-			close(done)
+			close(w.done)
 			return
 		}
 		// Nothing is said from here, and that is deliberate rather than an
@@ -679,19 +647,20 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 		// The room left on the disk is the room left AFTER the files, which
 		// is not the number a preview measured before them.
 		room := roomOn(opt.OutDir)
-		// Do rather than DoAndWait. The interface thread may already be inside
-		// stop, waiting on the channel closed below, and a worker waiting for
-		// that thread to run something would be both of them waiting.
-		r.holdBeforeFinishing()
-		fyne.Do(func() { r.runFinished(res, runErr, saveErr, room, saved) })
-		close(done)
+		// Do rather than DoAndWait. Whoever waits on the channel closed below
+		// must find the last word queued, and a worker waiting for the
+		// interface thread to run something would make any wait for the worker
+		// on that thread a wait on itself.
+		r.busy.holdBeforeFinishing()
+		fyne.Do(func() { w.end(func() { r.runFinished(res, runErr, saveErr, room, saved) }) })
+		close(w.done)
 	}()
 }
 
 // runFinished is the end of a run, back on the interface thread.
 //
-// Note what it does not do: clear stop. That is deliberate and the reason is at
-// the declaration of the field.
+// Note what it does not do: clear the work. That is deliberate and the reason
+// is at the declaration of the field.
 //
 // saved is where the record went, with nothing in it when no record was
 // written - which is a refused run, a preview, and a run whose manifest could
@@ -761,16 +730,18 @@ func (r *runner) keepScroll(scroll *container.Scroll) *container.Scroll {
 	return scroll
 }
 
-func (r *runner) onCancel() { r.Stop() }
+// onCancel asks the run or the preview to stop and does not wait for it - the
+// screen goes on drawing and says what it is waiting for, and the worker's
+// last word ("Stopped after ...") ends it, as it ends a run that was not
+// stopped. Waiting here was the window not drawing for as long as the disk
+// took over the write in hand (R06).
+func (r *runner) onCancel() { r.busy.halt(r.work, r.status) }
 
 // Stop ends a run in progress and waits for it, or does nothing when there is
-// none. Safe to call at any time, which is what lets one close intercept ask
-// every screen without knowing which of them is busy.
-func (r *runner) Stop() {
-	if r.stop != nil {
-		r.stop()
-	}
-}
+// none. Safe to call at any time, which is what lets closing the window ask
+// every screen without knowing which of them is busy. It waits, so it is called
+// off the interface thread - see closing.go.
+func (r *runner) Stop() { r.work.stop() }
 
 // HoldBeforeFinishing sets a hold the worker passes through on its way to
 // reporting, so that a guard can read the screen WHILE a run is going.
@@ -796,15 +767,7 @@ func (r *runner) Stop() {
 // orders that read before the worker's later writes. There is then no
 // concurrent access left to report, which is why this restores the assertions
 // instead of hiding them.
-func (r *runner) HoldBeforeFinishing(fn func()) { r.hold = fn }
-
-// holdBeforeFinishing runs the hold, if a guard supplied one. Called on the
-// worker, before anything on the screen is touched.
-func (r *runner) holdBeforeFinishing() {
-	if r.hold != nil {
-		r.hold()
-	}
-}
+func (r *runner) HoldBeforeFinishing(fn func()) { r.busy.hold = fn }
 
 // Settled waits for work in flight to finish, without stopping it.
 //
@@ -819,17 +782,13 @@ func (r *runner) holdBeforeFinishing() {
 // closing really does cancel, which is the point of the change, and a guard
 // that closed the window to read the preview would be cancelling the preview.
 //
-// It waits on the same channel stop does and carries the same limit: the worker
+// It waits on the same channel Stop does and carries the same limit: the worker
 // is finished and its last fyne.Do may still be queued. Under the test driver
 // that distinction disappears, because there fyne.Do runs on the calling
 // goroutine, so the callback has already run by the time the channel closes -
 // which is why a guard may read the screen the moment this returns, and why the
 // limit is a production one rather than a test one.
-func (r *runner) Settled() {
-	if r.settled != nil {
-		<-r.settled
-	}
-}
+func (r *runner) Settled() { r.work.settled() }
 
 // wholeNumber reads a plain count out of a box.
 //

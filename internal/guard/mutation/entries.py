@@ -3478,16 +3478,11 @@ MUTATIONS = [
         "TestGeneratingFromTheWindowWritesTheFilesAndTheManifest",
     ),
     (
-        # G7, and the half that is easy to leave out. Cancelling and closing at
-        # once ends the process while the engine is still winding down, so the
-        # manifest describing what did get written never lands - and that
-        # manifest is the only thing cleanup can work from. Measured on
-        # 2026-08-05: red three times out of three, with no manifest at all.
         "closing the window cancels the run without waiting for it",
-        "internal/gui/window/run.go",
-        "\t\tcancel()\n\t\t<-done\n\t}\n\n\tgo func() {\n\t\tplanned, planErr := engine.PlanContext(ctx, targets, opt)\n\t\tif planErr != nil {\n\t\t\t// A refusal",
-        "\t\tcancel()\n\t\t_ = done\n\t}\n\n\tgo func() {\n\t\tplanned, planErr := engine.PlanContext(ctx, targets, opt)\n\t\tif planErr != nil {\n\t\t\t// A refusal",
-        "TestClosingTheWindowDuringARunStopsItAndWaitsForIt",
+        "internal/gui/window/work.go",
+        "\tw.cancel()\n\t<-w.done\n",
+        "\tw.cancel()\n\t_ = w.done\n",
+        "TestClosingDuringARunKeepsTheWindowDrawingUntilTheRunHasStopped",
     ),
     (
         # Found by running the built window and looking at it, on 2026-08-05.
@@ -4247,26 +4242,17 @@ MUTATIONS = [
         "TestEveryFormatIsClassifiedAsTextOrBinary",
     ),
     (
-        # Found by coverage rather than by reading: onCancel came back at
-        # nought per cent while every guard around it was green. The button was
-        # on the screen and in the brief, and nothing pressed it.
         "the Cancel button stops reaching the run",
         "internal/gui/window/run.go",
-        "func (r *runner) Stop() {\n\tif r.stop != nil {",
-        "func (r *runner) Stop() {\n\tif r.stop != nil && false {",
+        "func (r *runner) onCancel() { r.busy.halt(r.work, r.status) }",
+        "func (r *runner) onCancel() {}",
         "TestCancelStopsTheRun",
     ),
     (
-        # O63. Fyne 2.8 warns at every start that changes have to go through
-        # fyne.Do and says the next major release stops tolerating it. Measured
-        # on 2026-08-05: under the test driver fyne.Do runs on the calling
-        # goroutine and a widget touched from a worker does not complain, so
-        # neither -race nor a rendering test can see this. Static reading is
-        # what is left.
         "the window is told the run finished straight from the worker",
         "internal/gui/window/run.go",
-        "\t\tfyne.Do(func() { r.runFinished(res, runErr, saveErr, room, saved) })",
-        "\t\tr.runFinished(res, runErr, saveErr, room, saved)",
+        "\t\tfyne.Do(func() { w.end(func() { r.runFinished(res, runErr, saveErr, room, saved) }) })",
+        "\t\tw.end(func() { r.runFinished(res, runErr, saveErr, room, saved) })",
         "TestTheWindowIsOnlyTouchedFromTheInterfaceThread",
     ),
     (
@@ -5287,9 +5273,9 @@ MUTATIONS = [
     ),
     (
         "closing the window forgets where the files were going",
-        "internal/gui/window/open.go",
-        "		if screen, ok := working[*showing]; ok {\n			h.Remembered().RememberDirectory(screen.OutDir())\n		}",
-        "		if screen, ok := working[*showing]; ok && false {\n			h.Remembered().RememberDirectory(screen.OutDir())\n		}",
+        "internal/gui/window/closing.go",
+        "\tif screen, ok := c.working[*c.showing]; ok {\n\t\tc.host.Remembered().RememberDirectory(screen.OutDir())\n\t}",
+        "\tif screen, ok := c.working[*c.showing]; ok && false {\n\t\tc.host.Remembered().RememberDirectory(screen.OutDir())\n\t}",
         "TestClosingTheWindowRemembersWhereTheFilesWereGoing",
     ),
     (
@@ -10766,8 +10752,8 @@ MUTATIONS = [
     (
         "the worker of a run stays behind after reporting, waiting for a cancel nobody sends",
         "internal/gui/window/run.go",
-        "\t\tclose(done)\n\t}()\n}\n\n// runFinished",
-        "\t\tclose(done)\n\t\t<-ctx.Done()\n\t}()\n}\n\n// runFinished",
+        "\t\tclose(w.done)\n\t}()\n}\n\n// runFinished",
+        "\t\tclose(w.done)\n\t\t<-ctx.Done()\n\t}()\n}\n\n// runFinished",
         "TestTheSameWorkDoneAgainLeavesTheWindowAsItWas",
     ),
     # --- the instructions beside the manifest (2026-09-25,
@@ -12986,8 +12972,8 @@ MUTATIONS = [
     (
         "Restart now closes the window without the close button's way",
         "internal/gui/window/open.go",
-        "prefs := NewPreferences(h, func() { leave() },",
-        "prefs := NewPreferences(h, func() { _ = leave; h.Close() },",
+        "prefs := NewPreferences(h, func() { out.leave() },",
+        "prefs := NewPreferences(h, func() { _ = out; h.Close() },",
         "TestRestartWaitsForTheRunAndClosesTheWayAPersonDoes",
     ),
     (
@@ -16172,8 +16158,8 @@ MUTATIONS = [
     (
         "a run in the window ignores the memory setting kept on Preferences",
         "internal/gui/window/run.go",
-        "\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine\n\tctx, cancel",
-        "\topt.Memory, opt.MachineMemory = core.Memory{}, r.machine\n\tctx, cancel",
+        "\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine\n\t// Set BEFORE",
+        "\topt.Memory, opt.MachineMemory = core.Memory{}, r.machine\n\t// Set BEFORE",
         "TestARunPlansUnderTheMemorySettingKeptOnPreferences",
     ),
     (
@@ -16246,12 +16232,10 @@ MUTATIONS = [
         "TestTheWindowSaysWhatARunSaidAboutItsMemory",
     ),
     (
-        # The run asks the system rather than the host the Preferences screen
-        # asks, so the screen and the run can name two different machines.
         "a run in the window asks the system for the machine rather than the host",
         "internal/gui/window/run.go",
-        "\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine\n\tctx, cancel",
-        "\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), nil\n\tctx, cancel",
+        "\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), r.machine\n\t// Set BEFORE",
+        "\topt.Memory, opt.MachineMemory = memoryOf(r.kept()), nil\n\t// Set BEFORE",
         "TestTheWindowSaysWhatARunSaidAboutItsMemory",
     ),
     (
@@ -16621,5 +16605,82 @@ MUTATIONS = [
         "\t\tg.damage.from = g.fields.Len()\n",
         "\t\tg.damage.from = g.fixed\n",
         "TestChoosingADamageAgainLeavesNoFieldBehind",
+    ),
+    (
+        "Cancel waits for the run again, so the window stops drawing while the disk holds a write",
+        "internal/gui/window/run.go",
+        "func (r *runner) onCancel() { r.busy.halt(r.work, r.status) }",
+        "func (r *runner) onCancel() { r.Stop() }",
+        "TestCancelAnswersAtOnceAndSaysWhatItWaitsFor",
+    ),
+    (
+        "Cancel on the Tools tab waits for the tool again",
+        "internal/gui/window/tools.go",
+        "func (t *Tools) onCancel() { t.busy.halt(t.job, t.status) }",
+        "func (t *Tools) onCancel() { t.Stop() }",
+        "TestCancelOnTheToolsTabAnswersAtOnce",
+    ),
+    (
+        "Cancel says the run is stopping and never asks it to stop",
+        "internal/gui/window/work.go",
+        "\tw.stopping = true\n\tw.cancel()\n",
+        "\tw.stopping = true\n",
+        "TestCancelStopsTheRun",
+    ),
+    (
+        "Cancel stays on after it was pressed, so a second press looks like it would do something",
+        "internal/gui/window/runbusy.go",
+        "\t\tb.cancel.Disable()\n\t\tshowOn(status, text.Stopping())\n",
+        "\t\tshowOn(status, text.Stopping())\n",
+        "TestCancelAnswersAtOnceAndSaysWhatItWaitsFor",
+    ),
+    (
+        "Cancel comes back at once and says nothing, so it looks like a press that did nothing",
+        "internal/gui/window/runbusy.go",
+        "\t\tshowOn(status, text.Stopping())\n",
+        "\t\t_ = text.Stopping()\n",
+        "TestCancelAnswersAtOnceAndSaysWhatItWaitsFor",
+    ),
+    (
+        "closing the window waits for the run without asking it to stop",
+        "internal/gui/window/work.go",
+        "\tw.cancel()\n\t<-w.done\n",
+        "\t<-w.done\n",
+        "TestClosingTheWindowDuringARunStopsItAndWaitsForIt",
+    ),
+    (
+        "closing the window during a run lets it go at once, in the middle of a file",
+        "internal/gui/window/closing.go",
+        "\tif !anyBusy(c.busy) {\n",
+        "\tif true {\n",
+        "TestClosingDuringARunKeepsTheWindowDrawingUntilTheRunHasStopped",
+    ),
+    (
+        "the window closing during a run shows nothing of what it waits for",
+        "internal/gui/window/closing.go",
+        "\tc.host.SetContent(parts.Screen(parts.Titled(text.HeadingClosing(), text.SubtitleClosing())))\n",
+        "\t_ = parts.Screen(parts.Titled(text.HeadingClosing(), text.SubtitleClosing()))\n",
+        "TestClosingDuringARunKeepsTheWindowDrawingUntilTheRunHasStopped",
+    ),
+    (
+        "a second press of the close button begins a second wait and lets the window go twice",
+        "internal/gui/window/closing.go",
+        "\tif c.begun {\n\t\treturn\n\t}\n",
+        "",
+        "TestClosingDuringARunKeepsTheWindowDrawingUntilTheRunHasStopped",
+    ),
+    (
+        "a key starts work on an idle screen while the window waits to close",
+        "internal/gui/window/closing.go",
+        "\t*c.looking = tabClosing\n",
+        "",
+        "TestNoKeyStartsWorkWhileTheWindowWaitsToClose",
+    ),
+    (
+        "closing the window asks no screen to stop, so it goes with the run still writing",
+        "internal/gui/window/closing.go",
+        "\t\t\tscreen.Stop()\n",
+        "\t\t\t_ = screen\n",
+        "TestClosingTheWindowDuringARunStopsItAndWaitsForIt",
     ),
 ]

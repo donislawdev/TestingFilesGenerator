@@ -24,7 +24,7 @@ import (
 // only looked at the middle of a run.
 func TestTheFormCannotBeEditedWhileARunIsGoing(t *testing.T) {
 	dir := t.TempDir()
-	_, content := screen(t)
+	host, content := screen(t)
 
 	fill(t, content, text.FieldOutputDir(), dir)
 	fill(t, content, text.FieldSize(), "64kb")
@@ -44,7 +44,9 @@ func TestTheFormCannotBeEditedWhileARunIsGoing(t *testing.T) {
 	if cancel == nil {
 		t.Fatalf("there is no Cancel button. The screen has: %v", buttonNames(content))
 	}
+	// Cancel does not wait for the run (R06), so the run is waited for here.
 	cancel.OnTapped()
+	join(host)
 
 	if box.Disabled() {
 		t.Error("the size box is still frozen after the run stopped, so the form never comes back.")
