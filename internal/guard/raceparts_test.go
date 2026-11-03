@@ -85,7 +85,10 @@ func raceJob(t *testing.T) (parts int, timeout float64) {
 	if len(limit) != 1 {
 		t.Fatalf("ci.yml runs the guards under the race detector with a stated timeout %d times, and this reads exactly one", len(limit))
 	}
-	minutes, _ := strconv.Atoi(limit[0][1])
+	minutes, err := strconv.Atoi(limit[0][1])
+	if err != nil {
+		t.Fatalf("ci.yml states the guard timeout as %q, which is not a number of minutes: %v", limit[0][1], err)
+	}
 	return parts, float64(minutes * 60)
 }
 
@@ -195,7 +198,10 @@ func readRaceWeights(t *testing.T, path string) (unlisted float64, weights map[s
 			t.Fatalf("%s holds a line that is not a weight: %q", path, line)
 		}
 		if fields[0] == "unlisted" {
-			unlisted, _ = strconv.ParseFloat(fields[1], 64)
+			var err error
+			if unlisted, err = strconv.ParseFloat(fields[1], 64); err != nil {
+				t.Fatalf("%s holds an unlisted weight that is not a number: %q", path, line)
+			}
 			continue
 		}
 		w, err := strconv.ParseFloat(fields[0], 64)
@@ -258,9 +264,10 @@ func TestARaceTestMissingFromTheWeightsFailsItsPartWhenItRunsLong(t *testing.T) 
 		"--- PASS: TestLight (59.90s)",
 		"    --- PASS: TestLight/long_subtest (90.00s)",
 		"--- SKIP: TestSkipped (0.00s)",
+		"--- PASS: TestOdd (1.2.3s)",
 	}
 	if _, errOut, code := runRaceParts(t, python, "unlisted", weights, writeLines(t, "part.log", quiet...)); code != 0 {
-		t.Fatalf("a part whose only long tests are weighted, or are subtests, failed:\n%s", errOut)
+		t.Fatalf("a part whose only long tests are weighted, or are subtests, or whose one odd line is not a duration go test writes, failed:\n%s", errOut)
 	}
 	long := append(quiet, "--- FAIL: TestNew (60.00s)")
 	_, errOut, code := runRaceParts(t, python, "unlisted", weights, writeLines(t, "part.log", long...))

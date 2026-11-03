@@ -16529,11 +16529,21 @@ MUTATIONS = [
         "TestTheRaceSplitRefusesWeightsItCannotTrust",
     ),
     (
-        "weights without an unlisted line count every light guard as nothing",
+        # Only the refusal of a missing line. Starting the weight at 0.0
+        # instead made the first "unlisted" line look like a second one, so
+        # the entry was caught for another reason (#216 review).
+        "weights without an unlisted line are taken rather than refused with the line to add",
         ".github/scripts/race_parts.py",
-        "unlisted = None",
-        "unlisted = 0.0",
+        "if unlisted is None:",
+        "if unlisted is None and False:",
         "TestTheRaceSplitRefusesWeightsItCannotTrust",
+    ),
+    (
+        "a race log line whose duration is not one go test writes ends the unlisted check with a traceback",
+        ".github/scripts/race_parts.py",
+        "([0-9]+(?:",
+        "([0-9.]+(?:",
+        "TestARaceTestMissingFromTheWeightsFailsItsPartWhenItRunsLong",
     ),
     (
         "a part past the race job's parts is laid out as an empty part rather than refused",

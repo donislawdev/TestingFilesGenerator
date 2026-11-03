@@ -31,7 +31,9 @@ import zlib
 # made slow.
 UNLISTED_CEILING = 60.0
 
-TOP = re.compile(r"^--- (?:PASS|FAIL|SKIP): (\S+) \(([0-9.]+)s\)$")
+# A duration as go test writes it. A looser one let "1.2.3s" through to float(),
+# which ended the script with a traceback instead of passing the line by.
+TOP = re.compile(r"^--- (?:PASS|FAIL|SKIP): (\S+) \(([0-9]+(?:\.[0-9]+)?)s\)$")
 
 
 def refuse(message):
@@ -43,8 +45,10 @@ def read_lines(path, what):
     try:
         with open(path, encoding="utf-8") as f:
             return f.read().splitlines()
-    except (OSError, UnicodeDecodeError) as err:
-        refuse("cannot read the %s %s: %s" % (what, path, err))
+    except UnicodeDecodeError:
+        refuse("the %s %s is not UTF-8 text, so it is not one this job wrote." % (what, path))
+    except OSError as err:
+        refuse("cannot read the %s %s: %s." % (what, path, err.strerror or err))
 
 
 def read_weights(path):
