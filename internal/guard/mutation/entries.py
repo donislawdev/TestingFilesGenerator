@@ -617,14 +617,14 @@ MUTATIONS = [
     ),
     (
         "removing a batch removes nothing, so the ones below it never renumber",
-        "internal/gui/window/recipe.go",
-        "r.batches = append(r.batches[:index], r.batches[index+1:]...)",
-        "r.batches = append(r.batches[:index], r.batches[index:]...)",
+        "internal/gui/window/recipelist.go",
+        "r.batches = slices.Delete(r.batches, index, index+1)",
+        "r.batches = slices.Delete(r.batches, index, index)",
         "TestAddingAndRemovingBatchesKeepsWhatWasTypedAndRenumbersTheRest",
     ),
     (
         "the last batch can be removed, leaving a form that can produce nothing",
-        "internal/gui/window/recipe.go",
+        "internal/gui/window/recipelist.go",
         "if len(r.batches) <= 1 && !r.base.carriesTheRun() {",
         "if len(r.batches) <= 1 && false {",
         "TestTheLastBatchCannotBeRemoved",
@@ -5135,7 +5135,7 @@ MUTATIONS = [
         # usually differ in one setting. A copy that arrives empty is a form
         # somebody types out again.
         "copying a batch copies nothing but the batch",
-        "internal/gui/window/recipe.go",
+        "internal/gui/window/recipelist.go",
         "	to.count.SetText(from.count.Text)",
         "	to.count.SetText(\"\")",
         "TestACopiedBatchCarriesEverythingButItsName",
@@ -5145,7 +5145,7 @@ MUTATIONS = [
         # draws it, so a copy can read it. Built later, a copy took the values
         # of the other two ways and then showed the first one.
         "a copied batch forgets which way it states its size",
-        "internal/gui/window/recipe.go",
+        "internal/gui/window/recipelist.go",
         "	if from.sizeWay != nil && to.sizeWay != nil {",
         "	if false && from.sizeWay != nil && to.sizeWay != nil {",
         "TestACopiedBatchCarriesEverythingButItsName",
@@ -10546,7 +10546,7 @@ MUTATIONS = [
     ),
     (
         "a batch added to the screen arrives carrying the first one's name",
-        "internal/gui/window/recipe.go",
+        "internal/gui/window/recipelist.go",
         "\tr.batches[len(r.batches)-1].formatPick.SetSelected(format.IDs()[0])\n",
         "\tr.batches[len(r.batches)-1].formatPick.SetSelected(format.IDs()[0])\n\tr.batches[len(r.batches)-1].id.SetText(startingBatchName)\n",
         "TestOnlyTheFirstBatchArrivesFilledIn",
@@ -16579,5 +16579,47 @@ MUTATIONS = [
         " .github/build-tags .github/race-weights .github/scripts/race_parts.py'",
         " .github/build-tags'",
         "TestTheRaceJobLaysItsPartsOutByTheWeights",
+    ),
+    (
+        "a field cut off the registry stays held by the array it was cut from",
+        "internal/gui/parts/fields.go",
+        "\tclear(s.list[n:])\n",
+        "",
+        "TestAFieldTakenOffTheRegistryIsLetGo",
+    ),
+    (
+        "a control without a setting cut off the registry stays held by the array it was cut from",
+        "internal/gui/parts/fields.go",
+        "\tclear(s.bare[len(kept):])\n",
+        "",
+        "TestAFieldTakenOffTheRegistryIsLetGo",
+    ),
+    (
+        "a batch taken off the recipe screen stays held at the end of the list",
+        "internal/gui/window/recipelist.go",
+        "r.batches = slices.Delete(r.batches, index, index+1)",
+        "r.batches = append(r.batches[:index], r.batches[index+1:]...)",
+        "TestNothingIsDeletedFromASliceByGluingItsHalves",
+    ),
+    (
+        "a content taken off a batch stays held at the end of the list",
+        "internal/gui/window/recipelist.go",
+        "b.contents = slices.Delete(b.contents, index, index+1)",
+        "b.contents = append(b.contents[:index], b.contents[index+1:]...)",
+        "TestNothingIsDeletedFromASliceByGluingItsHalves",
+    ),
+    (
+        "each choice of a damage leaves the parameters of the one before in the registry",
+        "internal/gui/window/generate.go",
+        "\tg.fields.KeepFirst(g.damage.from)\n",
+        "",
+        "TestChoosingADamageAgainLeavesNoFieldBehind",
+    ),
+    (
+        "a choice of damage cuts the chosen format's fields off the registry",
+        "internal/gui/window/generate.go",
+        "\t\tg.damage.from = g.fields.Len()\n",
+        "\t\tg.damage.from = g.fixed\n",
+        "TestChoosingADamageAgainLeavesNoFieldBehind",
     ),
 ]

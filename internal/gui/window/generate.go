@@ -460,7 +460,12 @@ func (g *Generate) onFormatChosen(id string) {
 	// away too. Deferred rather than called at the end because this function
 	// has three ways out, and the one that returns early on an unknown format
 	// would otherwise leave the screen holding a menu with no fields under it.
-	defer g.rebuildDamageFields()
+	// Whichever way it left, the format's fields are all in by then, so that is
+	// where the parameters start.
+	defer func() {
+		g.damage.from = g.fields.Len()
+		g.rebuildDamageFields()
+	}()
 
 	d, err := format.Get(id)
 	if err != nil {
@@ -512,6 +517,11 @@ type damagePanel struct {
 	// fold because the fold is built again on every rebuild and one that
 	// remembered nothing would spring open unasked.
 	folded bool
+	// from is how many fields stand before the parameters in the registry:
+	// the ones that are always here and the chosen format's. Set where the
+	// format's fields are finished, the one place a change of format always
+	// passes, so a change of damage takes away exactly what it drew last time.
+	from int
 }
 
 func (g *Generate) onDamageChosen(string) {
@@ -529,6 +539,10 @@ func (g *Generate) onDamageChosen(string) {
 // its field with no window code at all, which is what makes the registry
 // answer D1 rather than this screen answering it.
 func (g *Generate) rebuildDamageFields() {
+	// The parameters of the damage chosen before go with their boxes, for the
+	// reason the format's go in onFormatChosen. Without this each choice left
+	// one more field in the registry, under nothing on the screen.
+	g.fields.KeepFirst(g.damage.from)
 	g.damage.box.RemoveAll()
 	g.damage.props = nil
 	g.damage.fold = nil

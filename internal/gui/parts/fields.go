@@ -496,6 +496,10 @@ func (s *Fields) KeepFirst(n int) {
 	if n < 0 || n > len(s.list) {
 		return
 	}
+	// Cleared before it is cut, here and for bare below: a cut slice keeps its
+	// array, and the array would keep every field past the cut alive - box,
+	// closures and all - for as long as the screen lives.
+	clear(s.list[n:])
 	s.list = s.list[:n]
 	// Rebuilt rather than deleted from, because the same key can have been
 	// added twice and the map holds the last one. Walking forwards leaves
@@ -510,6 +514,7 @@ func (s *Fields) KeepFirst(n int) {
 			kept = append(kept, b)
 		}
 	}
+	clear(s.bare[len(kept):])
 	s.bare = kept
 }
 
