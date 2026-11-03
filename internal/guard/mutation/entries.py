@@ -13673,7 +13673,7 @@ MUTATIONS = [
         # picture from the whole painter, which draws it.
         "a film's strip painter leaves the square out",
         "internal/format/video/picture.go",
-        "		draw.Draw(s, image.Rect(l.x, f.squareY, l.x+f.side, f.squareY+f.side), f.square, image.Point{}, draw.Src)",
+        "		draw.Draw(s, f.squareAt(l.x), f.square, image.Point{}, draw.Src)",
         "		_ = f.square",
         "TestAFilmPaintsOnlyWhatChangesAndGetsTheWholePicture",
     ),
@@ -16360,5 +16360,49 @@ MUTATIONS = [
         "\tengine.OwnProcess()\n",
         "\t_ = engine.OwnProcess\n",
         "TestTheWindowSaysItsProcessIsItsOwnBeforeItOpens",
+    ),
+    # O288 (docs/OBSERVATIONS.md): a film says it carries its label only when
+    # one of its pictures shows the text whole under the square.
+    (
+        "a film says it carries a label the square covers in every picture",
+        "internal/format/video/picture.go",
+        "if !imagelabel.Hides(g.width, label, g.squareAt(g.squareX(c))) {",
+        "if true {",
+        "TestAFilmWhoseSquareCoversItsLabelSaysSoInItsPlan",
+    ),
+    (
+        "a film asks only its first picture whether the label is whole",
+        "internal/format/video/picture.go",
+        "for c := range min(changes, squareSteps) {",
+        "for c := range min(changes, 1) {",
+        "TestAFilmWhoseSquareCoversItsLabelSaysSoInItsPlan",
+    ),
+    (
+        "the square over the glyphs' own ink is said to hide the label",
+        "internal/format/imagelabel/imagelabel.go",
+        "return off < t.Width && glyph(t.runes[k])[(y-pad)/t.scale*glyphWidth+off/t.scale] == '#'",
+        "return off < t.Width && glyph(t.runes[k])[(y-pad)/t.scale*glyphWidth+off/t.scale] == '#' && false",
+        "TestAFilmSaysItCarriesItsLabelOnlyWhenAPictureShowsItWhole",
+    ),
+    (
+        "the rectangle of a label's text ends a column short of its ink",
+        "internal/format/imagelabel/imagelabel.go",
+        "return image.Rect(c.First, pad, c.First+(chars-1)*c.Step+c.Width, textHeight(width, chars))",
+        "return image.Rect(c.First, pad, c.First+(chars-1)*c.Step+c.Width-1, textHeight(width, chars))",
+        "TestAFilmSaysItCarriesItsLabelOnlyWhenAPictureShowsItWhole",
+    ),
+    (
+        "a film whose square covers its label gives no note",
+        "internal/format/video/plan.go",
+        "if c.squareOverLabel(s.Timeline) {",
+        "if false {",
+        "TestAFilmWhoseSquareCoversItsLabelSaysSoInItsPlan",
+    ),
+    (
+        "the manifest of a film is not asked about the square",
+        "internal/format/video/choose.go",
+        "return c.readable() && !c.squareOverLabel(t)",
+        "return c.readable()",
+        "TestAFilmWhoseSquareCoversItsLabelSaysSoInItsPlan",
     ),
 ]

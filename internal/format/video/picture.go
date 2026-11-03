@@ -131,6 +131,28 @@ func (g geometry) squareX(c int64) int {
 	return (g.width - g.side) * int(c%squareSteps) / (squareSteps - 1)
 }
 
+// squareAt is the square standing at column x - what a picture paints, and
+// what the label is asked about, so the two cannot come apart.
+func (g geometry) squareAt(x int) image.Rectangle {
+	return image.Rect(x, g.squareY, x+g.side, g.squareY+g.side)
+}
+
+// labelWholeIn says whether the text of the label is whole in at least one
+// picture of a film of this many changes - the square, drawn over it in its
+// ink, changing none of it there. It stands in squareSteps places, so a film
+// of that many changes or more stands in all of them, and a film of one change
+// only at the left edge, over the start of the label of a low picture (O288 of
+// docs/OBSERVATIONS.md). One whole picture is enough, by the owner's decision
+// of 2026-10-27: it is the one that identifies the file.
+func (g geometry) labelWholeIn(changes int64, label string) bool {
+	for c := range min(changes, squareSteps) {
+		if !imagelabel.Hides(g.width, label, g.squareAt(g.squareX(c))) {
+			return true
+		}
+	}
+	return false
+}
+
 // clockRight is the column after the clock's last character, nought without
 // a clock.
 func (g geometry) clockRight() int {
@@ -350,7 +372,7 @@ func (f *film) whole(l look) Planes {
 		b := work.Rect
 		imagelabel.Draw(work.SubImage(image.Rect(0, f.clockFrom, b.Dx(), b.Dy())).(*image.RGBA), l.clock)
 	}
-	draw.Draw(work, image.Rect(l.x, f.squareY, l.x+f.side, f.squareY+f.side), f.square, image.Point{}, draw.Src)
+	draw.Draw(work, f.squareAt(l.x), f.square, image.Point{}, draw.Src)
 	planes, _ := newPlanes(f.width, f.height)
 	toPlanes(work, planes)
 	return planes
@@ -419,7 +441,7 @@ func (p *painter) drawIn(l look, r image.Rectangle) Planes {
 		if f.showClock() && s.Rect.Min.Y <= f.clockFrom && f.clockFrom < s.Rect.Max.Y {
 			imagelabel.Draw(s.SubImage(image.Rect(0, f.clockFrom, f.width, s.Rect.Max.Y)).(*image.RGBA), l.clock)
 		}
-		draw.Draw(s, image.Rect(l.x, f.squareY, l.x+f.side, f.squareY+f.side), f.square, image.Point{}, draw.Src)
+		draw.Draw(s, f.squareAt(l.x), f.square, image.Point{}, draw.Src)
 		convertRect(s, out, r.Min, in)
 	}
 	return out
