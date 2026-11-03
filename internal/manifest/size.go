@@ -20,10 +20,15 @@ import "encoding/json"
 // files already peaks near three gigabytes (measured the same day), and a
 // second copy of the document to count it would be a large share of that.
 //
-// The arithmetic below is Encode's layout written out: the document with an
-// empty "files" list, and then the entries in place of the brackets. A guard
-// holds it to the length of Encode's output, byte for byte, for documents of
-// none, one and many entries (TestTheManifestSizeIsTheLengthOfTheManifest).
+// The arithmetic below is the layout Encode writes (encode.go): the document
+// with an empty "files" list, and then the entries in place of the brackets.
+// Since 2026-11-02 Encode writes it an entry at a time rather than asking
+// encoding/json for the whole document, and the two are still held apart on
+// purpose: a guard holds this count to the length of Encode's output for
+// documents of none, one and many entries
+// (TestTheManifestSizeIsTheLengthOfTheManifest), and another holds Encode's
+// bytes to encoding/json's own, so a layout both got wrong the same way is
+// still caught.
 
 // entryIndent is what Encode puts in front of every line of an entry: the
 // entry is two levels into the document.

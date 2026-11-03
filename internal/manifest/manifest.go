@@ -522,13 +522,6 @@ func (g NoteGroup) Line(note core.Said) core.Said {
 	return core.Says("manifest.NoteSeveral", "%s: %s Named: %s.", core.A("Files", files), core.A("Note", note), core.A("Named", named))
 }
 
-// Encode renders the manifest as JSON.
-func (m *Manifest) Encode(w io.Writer) error {
-	enc := json.NewEncoder(w)
-	enc.SetIndent("", "  ")
-	return enc.Encode(m)
-}
-
 // SchemaError is a manifest this build cannot read.
 type SchemaError struct {
 	Path   string

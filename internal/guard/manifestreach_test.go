@@ -70,17 +70,11 @@ func TestAnOrdinaryRunSaysNothingAboutTheManifestCeiling(t *testing.T) {
 	}
 }
 
-// The length worked out for a manifest is the length Encode writes, to the
-// byte.
-//
-// This replaces a guard that held an estimate to "a quarter either way", and
-// a quarter was wide enough to let a constant 6% low for text and half of what
-// an e-mail entry costs stay green while a run of 20 500 files went unwarned.
-// The answer is counted entry by entry now, so it is held to the byte: a
-// document of no entries, one entry, and many unlike each other - notes, a
-// failure, words outside ASCII, characters JSON escapes, properties nested
-// several deep.
-func TestTheManifestSizeIsTheLengthOfTheManifest(t *testing.T) {
+// manifestSamples are the documents both guards of the manifest's layout ask
+// about - its counted length and its streamed bytes - so neither keeps a
+// second copy of the cases: none, one, and many entries with text that
+// encoding/json escapes, nested properties, notes and damage.
+func manifestSamples() map[string]*manifest.Manifest {
 	documents := map[string]*manifest.Manifest{"no entries": newDocument()}
 
 	one := newDocument()
@@ -99,8 +93,21 @@ func TestTheManifestSizeIsTheLengthOfTheManifest(t *testing.T) {
 	many.Add(manifest.File{ID: "failed", Path: "failed.png", Name: "failed.png", Format: "png", Failed: true,
 		Error: "a generator stopped", Damage: []manifest.Damage{{Type: "zero-head", Settings: map[string]string{"bytes": "4"}}}})
 	documents["many entries"] = many
+	return documents
+}
 
-	for name, m := range documents {
+// The length worked out for a manifest is the length Encode writes, to the
+// byte.
+//
+// This replaces a guard that held an estimate to "a quarter either way", and
+// a quarter was wide enough to let a constant 6% low for text and half of what
+// an e-mail entry costs stay green while a run of 20 500 files went unwarned.
+// The answer is counted entry by entry now, so it is held to the byte: a
+// document of no entries, one entry, and many unlike each other - notes, a
+// failure, words outside ASCII, characters JSON escapes, properties nested
+// several deep.
+func TestTheManifestSizeIsTheLengthOfTheManifest(t *testing.T) {
+	for name, m := range manifestSamples() {
 		counted, err := m.EncodedBytes()
 		if err != nil {
 			t.Fatalf("%s: counting: %v", name, err)
