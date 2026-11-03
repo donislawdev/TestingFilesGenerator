@@ -1049,7 +1049,9 @@ jobs:
         # a new definition was the weekly sweep, days after it merged. And so
         # is .github/build-tags, which every command of the job reads and which
         # decides the files it compiles - the same reason as go.mod, named by
-        # an outside review of the pull request that split the job.
+        # an outside review of the pull request that split the job. And so are
+        # the weights and the script that lay its parts out (O298), since a
+        # change to either decides which guards each part runs.
         #
         # Anything unclear counts as touched. A first push, a branch with no
         # comparable parent, a pull request event with no before - all answer
@@ -1058,7 +1060,7 @@ jobs:
         # in somebody else's file.
         run: |
           set -euo pipefail
-          watched='internal/format/registry.go internal/damage/damage.go cmd/tfg/main.go internal/gui/window/run.go internal/gui/run_cgo.go internal/gui/window/tidy.go internal/audit/parallel.go internal/engine/parallel.go internal/tool/tool.go internal/gui/window/tools.go internal/format/video/ahead.go go.mod .github/workflows/ci.yml .github/build-tags'
+          watched='internal/format/registry.go internal/damage/damage.go cmd/tfg/main.go internal/gui/window/run.go internal/gui/run_cgo.go internal/gui/window/tidy.go internal/audit/parallel.go internal/engine/parallel.go internal/tool/tool.go internal/gui/window/tools.go internal/format/video/ahead.go go.mod .github/workflows/ci.yml .github/build-tags .github/race-weights .github/scripts/race_parts.py'
           # On a pull request there is no "before" - the field belongs to a push
           # - so this asked for something empty and every pull request answered
           # "touched". That quietly undid the decision of 2026-08-20, because
@@ -1130,10 +1132,10 @@ jobs:
     # The ceiling is the sum of the limits inside it, with room left over, so
     # that each of them fires first and names what was slow: about four minutes
     # to set up and compile (the compile alone took 3m03s on the first run),
-    # twenty for the guards, five for the other packages. Measured on the first
-    # run, split by a sorted list: 677, 635, 164 and 154 s of guards in the
-    # four parts, 14m55s for the longest part. The two slowest guards take 329
-    # and 222 s, and wherever they land together, that part is the slow one.
+    # twenty for the guards, five for the other packages. The guards are laid
+    # out by what each weighs (.github/race-weights), because a split by name
+    # gave parts of 1250, 1158, 795 and 526 s on the slowest processor
+    # measured, two of them at the twenty minutes (O298).
     strategy:
       fail-fast: false
       matrix:
@@ -1172,14 +1174,13 @@ jobs:
 
       - name: the machine this part runs on
         # O298, 2026-11-03. Part 2 ran past its twenty minutes in one run of
-        # three since 2026-10-26, main included, while parts 0, 1 and 3 of the
-        # same runs took the time they always take. In a slow run every test of
-        # the part from the fourth on is about 1.75 times slower, the single
-        # threaded ones that read files among them. The log names the runner's
-        # image and region and nothing about the machine, so a slower machine
-        # and something inside the part could not be told apart. This says what
-        # the machine is, and the step after the tests says what its processor
-        # did meanwhile - the next slow run answers which of the two it was.
+        # three since 2026-10-26, main included, and the log named the runner's
+        # image and region and nothing about the machine. With this step the
+        # answer was the processor: the same part took 1202 s on an AMD EPYC
+        # 7763 and 689 s on an EPYC 9V45, every test of it slower by the same
+        # factor, while part 3 took 525 and 530 s on two 7763s. The weights
+        # the parts are laid out by come from these numbers, so this stays to
+        # say which processor a slow part had when the weights stop fitting.
         run: |
           set -euo pipefail
           echo "processors: $(nproc)"
@@ -1203,13 +1204,16 @@ jobs:
         # because a file in the package builds only without it, and it keeps
         # Fuzz and Example because go test runs those as tests too.
         #
-        # A test's part is the checksum of its name (cksum) modulo the number
-        # of parts, so adding or removing a test moves no other test. It was
-        # every fourth name of a sorted list at first, and one guard added on
-        # this job's own pull request moved every name after it - the part
-        # holding the slowest guards changed from one commit to the next. The
-        # parts are even only on average, and which one is slow now changes only
-        # with what is in it.
+        # The tests .github/race-weights names are laid out by weight, the
+        # heaviest first, each into the part that is lightest so far. Every
+        # other test goes by the checksum of its name, so adding or removing a
+        # light test moves no other test. It was every fourth name of a sorted
+        # list at first, and one guard added on this job's own pull request
+        # moved every name after it. Then the checksum alone, which is even only
+        # on average, and with three guards of 330 to 350 s it was not. A test
+        # missing from the weights that takes a minute or more fails the part
+        # with the line to add, and a weight for a test that is gone fails
+        # every part, so the list cannot fall behind the tests quietly.
         #
         # Three things fail the part rather than let it pass on nothing -
         # go test with a -run pattern that matches no test exits 0. An index the
@@ -1223,7 +1227,8 @@ jobs:
         # and stays below the job's ceiling, so a slow part fails as a test with
         # a name rather than as a killed job with no output. Go's ten minutes
         # killed this job on 2026-08-25, before a timeout was stated here.
-        # Twenty minutes is 1.8 times the slowest part measured.
+        # By the weights the heaviest part is 961 s on the slowest processor
+        # measured, and twenty minutes is 1.25 times that.
         #
         # The processor's counters and the clock are read just before the
         # tests, for the step after this one (O298).
@@ -1240,12 +1245,7 @@ jobs:
           fi
           go test -tags "$(cat .github/build-tags)" ./internal/guard/ -race -list '.*' > listed.txt || { cat listed.txt; exit 1; }
           grep -E '^(Test|Fuzz|Example)' listed.txt > names.txt || { echo "the test binary listed no Test, Fuzz or Example function. What it printed:"; cat listed.txt; exit 1; }
-          while IFS= read -r name; do
-            read -r sum _ < <(printf '%s' "$name" | cksum)
-            if [ $((sum % PARTS)) -eq "$PART" ]; then
-              echo "$name"
-            fi
-          done < names.txt > mine.txt
+          python3 .github/scripts/race_parts.py split names.txt .github/race-weights "$PART" "$PARTS" > mine.txt
           planned=$(wc -l < mine.txt)
           echo "part $PART of $PARTS runs $planned of $(wc -l < names.txt) tests"
           if [ "$planned" -eq 0 ]; then
@@ -1263,6 +1263,7 @@ jobs:
             echo "Each of these is a name the -run pattern did not reach, or a test the binary skipped before it started."
             exit 1
           fi
+          python3 .github/scripts/race_parts.py unlisted .github/race-weights part.log
         shell: bash
 
       - name: what the processor did while this part ran
