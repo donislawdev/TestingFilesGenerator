@@ -2,8 +2,6 @@ package engine
 
 import (
 	"runtime/debug"
-	"sync"
-	"sync/atomic"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
@@ -18,12 +16,16 @@ import (
 // a half times what it held. In a container of 1 GB that killed a run of
 // 400 000 text files under auto, and one of three runs of 300 000
 // (docs/FILE-CEILING-2026-11-02.md section 12).
+//
+// Plain variables rather than a lock, because both are written once, by the
+// main function, before it starts anything that plans - and a goroutine
+// started after a write sees it. A lock here would be concurrency the guard of
+// the concurrent files has to be told about, defending against a caller that
+// does not exist.
 var (
-	ownedOnce sync.Once
-	owned     atomic.Bool
+	owned bool
 	// startLimit is the runtime's limit when the process said it was the
-	// program's own. Written once, before owned is set, so a reader that sees
-	// owned sees it too.
+	// program's own.
 	startLimit int64
 )
 
@@ -40,11 +42,15 @@ var (
 // Never undone. The command line ends with its one run, and the window hands
 // over the setting of each run it plans, so a changed setting is in force from
 // the next run and off gives the runtime back the limit it started with.
+//
+// Called first, before anything that plans starts. A second call changes
+// nothing, so the limit it started with is never taken from a run.
 func OwnProcess() {
-	ownedOnce.Do(func() {
-		startLimit = debug.SetMemoryLimit(-1)
-		owned.Store(true)
-	})
+	if owned {
+		return
+	}
+	startLimit = debug.SetMemoryLimit(-1)
+	owned = true
 }
 
 // handToRuntime gives the runtime the limit for a run under limits, in a
@@ -55,7 +61,7 @@ func OwnProcess() {
 // after the writing has returned - a limit set and taken back inside Run would
 // leave both outside it.
 func handToRuntime(limits core.MemoryLimits) {
-	if owned.Load() {
+	if owned {
 		debug.SetMemoryLimit(limits.ForRuntime(startLimit))
 	}
 }

@@ -16336,8 +16336,8 @@ MUTATIONS = [
     (
         "every plan hands its setting to the runtime, also in a process that is not the program's own",
         "internal/engine/processmemory.go",
-        "\tif owned.Load() {\n",
-        "\tif true {\n",
+        "\tif owned {\n\t\tdebug.SetMemoryLimit(",
+        "\tif true {\n\t\tdebug.SetMemoryLimit(",
         "TestAPlanOutsideTheProgramsOwnProcessLeavesTheRuntimeAlone",
     ),
     (
