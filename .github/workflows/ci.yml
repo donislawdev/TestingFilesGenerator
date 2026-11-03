@@ -1268,10 +1268,14 @@ jobs:
       - name: what the processor did while this part ran
         # The other half of the step that says what the machine is (O298). The
         # counters are the whole machine's, read just before the tests and
-        # again now, so time a host took away from this machine shows as taken
-        # by the host, and a process the part left running shows below with
-        # the time it has used. Runs after red tests as well, because a slow
-        # part is a red one.
+        # again now. iowait is time the processors sat idle while disk I/O was
+        # pending, not time a test spent waiting for it, and the kernel calls
+        # the counter unreliable. steal depends on the platform: Microsoft
+        # documents it as not applicable to Azure, so nought there proves
+        # nothing about the host. The processes are ranked by the processor
+        # time each has used since it started, which ELAPSED dates, so one the
+        # part left running stands out from the runner's own. Runs after red
+        # tests as well, because a slow part is a red one.
         if: ${{ !cancelled() }}
         run: |
           set -euo pipefail
@@ -1288,10 +1292,10 @@ jobs:
           total=$(( busy + idle + iowait + steal ))
           echo "over $(( $(date +%s) - $(cat time-before.txt) )) s on $(nproc) processors:"
           if [ "$total" -gt 0 ]; then
-            echo "  busy $(( 100 * busy / total ))%, idle $(( 100 * idle / total ))%, waiting on the disk $(( 100 * iowait / total ))%, taken by the host $(( 100 * steal / total ))%"
+            echo "  busy $(( 100 * busy / total ))%, idle $(( 100 * idle / total ))%, idle with disk I/O pending (iowait) $(( 100 * iowait / total ))%, steal (platform dependent) $(( 100 * steal / total ))%"
           fi
           echo "load average: $(cat /proc/loadavg)"
-          echo "the processes that have used the most processor time, still running now:"
+          echo "the processes still running now, by processor time used since each started (ELAPSED):"
           ps -eo pid,ppid,etime,time,pcpu,comm --sort=-time > processes.txt
           head -n 12 processes.txt
         shell: bash

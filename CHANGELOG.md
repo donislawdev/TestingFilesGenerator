@@ -135,9 +135,9 @@ because it turns other people's test suites red.
   tool was not affected. Building from source now needs Go 1.27.3.
 - **The window is built with `golang.org/x/net` 0.62.0.** The version before
   had two published vulnerabilities in the package that reads and writes HTML.
-  The window uses the package only to read the SVG pictures it draws, neither
-  of the two is in code it reaches, and the command line tool does not contain
-  the package at all. No generated file changes.
+  The window uses the package only to read the SVG pictures it draws. Neither
+  vulnerability is in code the window reaches, and the command line tool does
+  not contain the package at all. No generated file changes.
 
 ## [0.5.0] - 2026-10-20
 
