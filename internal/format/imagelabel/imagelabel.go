@@ -154,6 +154,55 @@ func CellsOf(width, chars int) Cells {
 	return Cells{First: pad, Step: (glyphWidth + 1) * s, Width: glyphWidth * s}
 }
 
+// TextRect is where Draw puts the text of a label of chars characters across
+// width, in a picture tall enough to hold it: from the left edge of the first
+// character to the right edge of the last, over the rows of the glyphs - the
+// band's padding is not in it. The empty rectangle when Draw would draw
+// nothing. A film asks it to know whether the square it draws over the label
+// leaves the text whole (Hides).
+func TextRect(width, chars int) image.Rectangle {
+	c := CellsOf(width, chars)
+	if c.Width == 0 {
+		return image.Rectangle{}
+	}
+	return image.Rect(c.First, pad, c.First+(chars-1)*c.Step+c.Width, textHeight(width, chars))
+}
+
+// Hides says whether r, painted in the label's ink over the text Draw puts
+// across width, changes a pixel of that text - a pixel of the background
+// inside it, between the glyphs or within them. Ink over the glyphs' own ink
+// changes nothing, and the band around the text is not the text, the rule
+// Readable keeps for the padding at the foot: a square over the last column
+// of a 7 and the band beside it leaves the label as it was (measured on the
+// pixels, 2026-11-03).
+func Hides(width int, text string, r image.Rectangle) bool {
+	t := laidText{Cells: CellsOf(width, len(text)), scale: scaleFor(width, len(text)), runes: []rune(text)}
+	in := r.Intersect(TextRect(width, len(text)))
+	// Draw spaces the text by its bytes and draws its runes, so no glyph
+	// stands past the last rune.
+	in.Max.X = min(in.Max.X, t.First+(len(t.runes)-1)*t.Step+t.Width)
+	for i := range max(in.Dx(), 0) * in.Dy() {
+		if !t.ink(in.Min.X+i%in.Dx(), in.Min.Y+i/in.Dx()) {
+			return true
+		}
+	}
+	return false
+}
+
+// laidText is a text where Draw lays it out, asked about its pixels.
+type laidText struct {
+	Cells
+	scale int
+	runes []rune
+}
+
+// ink says whether the pixel at x, y inside the text is the ink of a glyph,
+// rather than the background between the glyphs or within one.
+func (t laidText) ink(x, y int) bool {
+	k, off := (x-t.First)/t.Step, (x-t.First)%t.Step
+	return off < t.Width && glyph(t.runes[k])[(y-pad)/t.scale*glyphWidth+off/t.scale] == '#'
+}
+
 // BandHeight is how tall the band Draw paints for a label of chars characters
 // across width is, before it is cut to the picture - 0 when the label does not
 // fit. A film draws a second line under the first and asks this before it

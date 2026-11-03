@@ -63,6 +63,13 @@ func Plan(formatID string, r format.Request, need func(Stream) int64, refuse fun
 	// The answer is c.Labelled, which Facts has already put in the plan. This
 	// is the note a label drawn and cut off at the foot of the picture owes.
 	_, p.Notes = imagelabel.Claim(r.Label && Labelled(c.Width, c.Label), c.Width, c.Height, len(c.Label), p.Notes)
+	if c.squareOverLabel(s.Timeline) {
+		p.Notes = append(p.Notes, format.Note{
+			Code: "label_omitted",
+			Detail: core.Says("video.TheSquareCoversTheLabel", "The picture is %dx%d and the square that steps across it covers part of the label in every picture, so this file carries no readable label. Its name and the manifest still identify it.",
+				core.A("Width", c.Width), core.A("Height", c.Height)),
+		})
+	}
 	if !c.ClockShown(s.Timeline) {
 		p.Notes = append(p.Notes, format.Note{
 			Code: "clock_omitted",

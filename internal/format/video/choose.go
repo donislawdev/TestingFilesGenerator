@@ -73,13 +73,28 @@ type Choice struct {
 	Named bool
 }
 
-// Labelled is whether this picture carries its label where it can be read:
-// drawn across its width, and whole in its height. The manifest says this,
-// and the drawing asks the package's Labelled, which is the width alone - a
-// low film draws its label and cuts it off (R14 of
-// docs/STABILITY-REVIEW-2026-10-26.md, where the pixels stayed as they were).
-func (c Choice) Labelled() bool {
+// Labelled is whether this film carries its label where it can be read:
+// drawn across its width, whole in its height, and whole in at least one of
+// its pictures under the square. The manifest says this, and the drawing asks
+// the package's Labelled, which is the width alone - a low film draws its
+// label and cuts it off (R14 of docs/STABILITY-REVIEW-2026-10-26.md), and a
+// low wide one of few changes draws the square over it (O288). The pixels
+// stayed as they were both times.
+func (c Choice) Labelled(t Timeline) bool {
+	return c.readable() && !c.squareOverLabel(t)
+}
+
+// readable is whether the label is drawn and whole in the picture's height,
+// before the square is drawn over it.
+func (c Choice) readable() bool {
 	return Labelled(c.Width, c.Label) && imagelabel.Readable(c.Width, c.Height, len(c.Label))
+}
+
+// squareOverLabel is whether the square crosses the text of a label drawn
+// whole in every picture of the film - the one case the plan owes a note of
+// its own for.
+func (c Choice) squareOverLabel(t Timeline) bool {
+	return c.readable() && !geometryOf(c.Width, c.Height, c.Label, t).labelWholeIn(t.Changes(), c.Label)
 }
 
 // ClockShown is whether this film's pictures show the clock.
@@ -292,6 +307,6 @@ func Facts(c Choice, s Settings) map[string]any {
 		"quality":                    s.Quality,
 		"compression":                "av1",
 		"audio":                      false,
-		format.PropertyLabelEmbedded: c.Labelled(),
+		format.PropertyLabelEmbedded: c.Labelled(s.Timeline),
 	}
 }

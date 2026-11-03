@@ -12316,8 +12316,8 @@ MUTATIONS = [
     (
         "the installer job runs on Linux, where there is nothing to install",
         ".github/workflows/ci.yml",
-        "    runs-on: windows-latest\n    timeout-minutes: 20\n    steps:\n      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1\n        with:\n          persist-credentials: false\n\n      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0\n        with:\n          python-version: \"3.14\"\n\n      - name: build the installer twice",
-        "    runs-on: ubuntu-latest\n    timeout-minutes: 20\n    steps:\n      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1\n        with:\n          persist-credentials: false\n\n      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0\n        with:\n          python-version: \"3.14\"\n\n      - name: build the installer twice",
+        "    # virtual machine instead, 0.3.0 to 0.4.0 (tools/packaging-vm).\n    runs-on: windows-latest\n",
+        "    # virtual machine instead, 0.3.0 to 0.4.0 (tools/packaging-vm).\n    runs-on: ubuntu-latest\n",
         "TestTheInstallerIsInstalledOnARunner",
     ),
     (
@@ -13673,7 +13673,7 @@ MUTATIONS = [
         # picture from the whole painter, which draws it.
         "a film's strip painter leaves the square out",
         "internal/format/video/picture.go",
-        "		draw.Draw(s, image.Rect(l.x, f.squareY, l.x+f.side, f.squareY+f.side), f.square, image.Point{}, draw.Src)",
+        "		draw.Draw(s, f.squareAt(l.x), f.square, image.Point{}, draw.Src)",
         "		_ = f.square",
         "TestAFilmPaintsOnlyWhatChangesAndGetsTheWholePicture",
     ),
@@ -16360,5 +16360,49 @@ MUTATIONS = [
         "\tengine.OwnProcess()\n",
         "\t_ = engine.OwnProcess\n",
         "TestTheWindowSaysItsProcessIsItsOwnBeforeItOpens",
+    ),
+    # O288 (docs/OBSERVATIONS.md): a film says it carries its label only when
+    # one of its pictures shows the text whole under the square.
+    (
+        "a film says it carries a label the square covers in every picture",
+        "internal/format/video/picture.go",
+        "if !imagelabel.Hides(g.width, label, g.squareAt(g.squareX(c))) {",
+        "if !imagelabel.Hides(g.width, label, g.squareAt(g.squareX(c))) || true {",
+        "TestAFilmWhoseSquareCoversItsLabelSaysSoInItsPlan",
+    ),
+    (
+        "a film asks only its first picture whether the label is whole",
+        "internal/format/video/picture.go",
+        "for c := range min(changes, squareSteps) {",
+        "for c := range min(changes, 1) {",
+        "TestAFilmWhoseSquareCoversItsLabelSaysSoInItsPlan",
+    ),
+    (
+        "the square over the glyphs' own ink is said to hide the label",
+        "internal/format/imagelabel/imagelabel.go",
+        "return off < t.Width && glyph(t.runes[k])[(y-pad)/t.scale*glyphWidth+off/t.scale] == '#'",
+        "return off < t.Width && glyph(t.runes[k])[(y-pad)/t.scale*glyphWidth+off/t.scale] == '#' && false",
+        "TestAFilmSaysItCarriesItsLabelOnlyWhenAPictureShowsItWhole",
+    ),
+    (
+        "the rectangle of a label's text ends a column short of its ink",
+        "internal/format/imagelabel/imagelabel.go",
+        "return image.Rect(c.First, pad, c.First+(chars-1)*c.Step+c.Width, textHeight(width, chars))",
+        "return image.Rect(c.First, pad, c.First+(chars-1)*c.Step+c.Width-1, textHeight(width, chars))",
+        "TestAFilmSaysItCarriesItsLabelOnlyWhenAPictureShowsItWhole",
+    ),
+    (
+        "a film whose square covers its label gives no note",
+        "internal/format/video/plan.go",
+        "if c.squareOverLabel(s.Timeline) {",
+        "if false {",
+        "TestAFilmWhoseSquareCoversItsLabelSaysSoInItsPlan",
+    ),
+    (
+        "the manifest of a film is not asked about the square",
+        "internal/format/video/choose.go",
+        "return c.readable() && !c.squareOverLabel(t)",
+        "return c.readable()",
+        "TestAFilmWhoseSquareCoversItsLabelSaysSoInItsPlan",
     ),
 ]

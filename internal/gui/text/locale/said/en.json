@@ -3741,6 +3741,11 @@
     "hash": "sha256-e6b01f8c0aeb",
     "other": "at {{.FPS}} frames a second a length has to end on a frame, and lengths at that rate go in steps of {{.Step}}. Ask for {{.Above}}, the shortest film at this rate"
   },
+  "video.TheSquareCoversTheLabel": {
+    "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Width}}, {{.Height}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-c37dab3cb322",
+    "other": "The picture is {{.Width}}x{{.Height}} and the square that steps across it covers part of the label in every picture, so this file carries no readable label. Its name and the manifest still identify it."
+  },
   "video.TooManyChanges": {
     "description": "Said by internal/format/video - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Duration}}, {{.Interval}}, {{.Pictures}}, {{.Most}}, {{.Shortest}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-79ad4cf6e19b",
