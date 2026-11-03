@@ -16367,7 +16367,7 @@ MUTATIONS = [
         "a film says it carries a label the square covers in every picture",
         "internal/format/video/picture.go",
         "if !imagelabel.Hides(g.width, label, g.squareAt(g.squareX(c))) {",
-        "if true {",
+        "if !imagelabel.Hides(g.width, label, g.squareAt(g.squareX(c))) || true {",
         "TestAFilmWhoseSquareCoversItsLabelSaysSoInItsPlan",
     ),
     (
