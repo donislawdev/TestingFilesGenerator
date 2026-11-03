@@ -1,9 +1,12 @@
 package guard
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -11,6 +14,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
 	"github.com/donislawdev/TestingFilesGenerator/internal/tool/checksum"
 )
 
@@ -36,6 +40,93 @@ func (h *fakeHost) Close() {
 	h.closed++
 	if h.closed == 1 && h.letGo != nil {
 		close(h.letGo)
+	}
+}
+
+// writersHeld holds a run's writers at their first report of progress until
+// the run is asked to stop, for a guard that stops a run and has to have
+// stopped it in the middle.
+//
+// In place of watching the folder for its first entry and stopping the run
+// from there, which bet that four hundred files would still be going a moment
+// later - an outside review of the pull request named it. Held, the run cannot
+// end before it is stopped, and what lets the writers go is the stopping
+// itself. See runner.HoldWhileWriting.
+type writersHeld struct {
+	// reached is buffered for the reason holdDuringRun's is.
+	reached chan struct{}
+	// abandoned lets the writers go when a guard ended without stopping the
+	// run, so a guard that failed early fails rather than waiting out the
+	// bound.
+	abandoned chan struct{}
+	// first makes it one hold: the writers queued behind it, and every later
+	// report, pass straight through once it has let go.
+	first sync.Once
+	// outlasted says the bound ran out with nothing asking the run to stop.
+	outlasted atomic.Bool
+}
+
+// writersHeldAtMost bounds the hold, so a run that nothing stops is let go and
+// the guard says so, rather than the package hanging on its join.
+const writersHeldAtMost = 20 * time.Second
+
+// enter is what a writer calls, with the run's context.
+func (p *writersHeld) enter(ctx context.Context) {
+	p.first.Do(func() {
+		p.reached <- struct{}{}
+		select {
+		case <-ctx.Done():
+		case <-p.abandoned:
+		case <-time.After(writersHeldAtMost):
+			p.outlasted.Store(true)
+		}
+	})
+}
+
+// HoldWhileWriting is the optional interface the window asks for that hold
+// through. Nil unless a guard asked for one with writersHeldScreen, so every
+// other guard runs exactly as before.
+func (h *fakeHost) HoldWhileWriting() func(context.Context) {
+	if h.writers == nil {
+		return nil
+	}
+	return h.writers.enter
+}
+
+// writersHeldScreen is the one target screen with the writers held.
+func writersHeldScreen(t *testing.T) (*fakeHost, fyne.CanvasObject, *writersHeld) {
+	t.Helper()
+	held := &writersHeld{reached: make(chan struct{}, 1), abandoned: make(chan struct{})}
+	host := newFakeHost(t)
+	host.writers = held
+	window.Open(host)
+	if host.content == nil {
+		t.Fatal("opening the window put no screen in it")
+	}
+	t.Cleanup(func() {
+		close(held.abandoned)
+		join(host)
+	})
+	return host, tabNamed(t, host.content, text.TabOneTarget()), held
+}
+
+// inTheMiddle waits for a writer to be held: a run that has claimed its
+// manifest, is writing files and cannot end before it is stopped.
+func (p *writersHeld) inTheMiddle(t *testing.T) {
+	t.Helper()
+	select {
+	case <-p.reached:
+	case <-time.After(writersHeldAtMost):
+		t.Fatal("no file was being written within twenty seconds, so there was never a run to stop")
+	}
+}
+
+// stoppedByTheGuard says whether it was the guard's press that let the writers
+// go, rather than the bound.
+func (p *writersHeld) stoppedByTheGuard(t *testing.T) {
+	t.Helper()
+	if p.outlasted.Load() {
+		t.Errorf("nothing asked the run to stop within %v of a file being written, so the writers were let go to finish", writersHeldAtMost)
 	}
 }
 

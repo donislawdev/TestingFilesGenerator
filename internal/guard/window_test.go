@@ -111,6 +111,8 @@ type fakeHost struct {
 	// hold parks the worker just before it reports, so that a guard can read
 	// the screen while a run is going. Nil unless a guard asked for one.
 	hold *holdDuringRun
+	// writers holds a run's writers until it is stopped - see writersHeld.
+	writers *writersHeld
 
 	// held is what the window asked to run later and has not run yet, when a
 	// guard is holding the clock - see Later. Nil means the clock runs at once.

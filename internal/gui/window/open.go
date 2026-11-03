@@ -1,6 +1,7 @@
 package window
 
 import (
+	"context"
 	"os"
 
 	"fyne.io/fyne/v2"
@@ -479,6 +480,7 @@ func offerSettling(h Host, screens []interface{ Settled() }) {
 // stand still while the guard looks, which is an ordering rather than a delay -
 // see runner.HoldBeforeFinishing.
 func offerHolding(h Host, screens []interface{ HoldBeforeFinishing(func()) }) {
+	offerHoldingTheWriters(h, screens)
 	p, ok := h.(interface{ HoldDuringRun() func() })
 	if !ok {
 		return
@@ -489,6 +491,26 @@ func offerHolding(h Host, screens []interface{ HoldBeforeFinishing(func()) }) {
 	}
 	for _, screen := range screens {
 		screen.HoldBeforeFinishing(hold)
+	}
+}
+
+// offerHoldingTheWriters is the same for the hold a run's writers pass
+// through, given to the screens that write files - see
+// runner.HoldWhileWriting. Asked from offerHolding rather than from Open, so
+// Open does not grow a line for something only the guards use.
+func offerHoldingTheWriters(h Host, screens []interface{ HoldBeforeFinishing(func()) }) {
+	p, ok := h.(interface{ HoldWhileWriting() func(context.Context) })
+	if !ok {
+		return
+	}
+	hold := p.HoldWhileWriting()
+	if hold == nil {
+		return
+	}
+	for _, screen := range screens {
+		if writes, ok := screen.(interface{ HoldWhileWriting(func(context.Context)) }); ok {
+			writes.HoldWhileWriting(hold)
+		}
 	}
 }
 

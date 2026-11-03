@@ -1,6 +1,7 @@
 package window
 
 import (
+	"context"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -95,6 +96,11 @@ type busy struct {
 	// runner.HoldBeforeFinishing for what it is for. Here rather than on the
 	// screens since 2026-11-03, when the Tools tab came to need it as well.
 	hold func()
+
+	// writing, when a guard supplies one, is run on a writer each time a run
+	// reports progress, with the run's context. Nil in the shipped program -
+	// see runner.HoldWhileWriting.
+	writing func(ctx context.Context)
 }
 
 // busyFace is which parts of the face a piece of work earns: whether there
@@ -205,6 +211,14 @@ func (b *busy) halt(w *work, status *widget.Label) {
 func (b *busy) holdBeforeFinishing() {
 	if b.hold != nil {
 		b.hold()
+	}
+}
+
+// holdWhileWriting runs the hold on the writers, if a guard supplied one.
+// Called by a writer reporting progress, before anything crosses over.
+func (b *busy) holdWhileWriting(ctx context.Context) {
+	if b.writing != nil {
+		b.writing(ctx)
 	}
 }
 

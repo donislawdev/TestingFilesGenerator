@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strings"
 	"testing"
-	"time"
 
 	"fyne.io/fyne/v2"
 
@@ -460,21 +459,26 @@ func TestGeneratingFromTheWindowWritesTheFilesAndTheManifest(t *testing.T) {
 // only once the run has stopped is held by
 // TestClosingDuringARunKeepsTheWindowDrawingUntilTheRunHasStopped, which can
 // see the moment in between.
+//
+// The writers are held until the run is asked to stop, so the window is
+// closed in the middle of the run rather than at whatever point a run of
+// four hundred files has reached by then - see writersHeld.
 func TestClosingTheWindowDuringARunStopsItAndWaitsForIt(t *testing.T) {
 	dir := t.TempDir()
-	host, content := screen(t)
+	host, content, held := writersHeldScreen(t)
 
 	fill(t, content, text.FieldOutputDir(), dir)
 	fill(t, content, text.FieldSize(), "64kb")
 	fill(t, content, text.FieldCount(), "400")
 	press(t, content, "Generate")
-	waitUntilTheRunHasStarted(t, dir)
+	held.inTheMiddle(t)
 
 	if host.intercept == nil {
 		t.Fatal("the window has no close intercept, so closing it does not reach the run at all")
 	}
 	host.intercept()
 	join(host)
+	held.stoppedByTheGuard(t)
 
 	if host.closed != 1 {
 		t.Errorf("the window was closed %d time(s) and it should be closed exactly once", host.closed)
@@ -589,16 +593,18 @@ func TestWhatIsTypedOnTheScreenIsWhatGetsWritten(t *testing.T) {
 // Deterministic without polling, because the run is joined after the press.
 // Cancel itself does not wait since 2026-11-03 (R06) - that is held by
 // TestCancelAnswersAtOnceAndSaysWhatItWaitsFor - so what is on the disk is
-// read once the engine has wound down, not while it changes.
+// read once the engine has wound down, not while it changes. The writers are
+// held until the run is asked to stop, so Cancel is pressed in the middle of
+// the run - see writersHeld.
 func TestCancelStopsTheRun(t *testing.T) {
 	dir := t.TempDir()
-	host, content := screen(t)
+	host, content, held := writersHeldScreen(t)
 
 	fill(t, content, text.FieldOutputDir(), dir)
 	fill(t, content, text.FieldSize(), "64kb")
 	fill(t, content, text.FieldCount(), "400")
 	press(t, content, "Generate")
-	waitUntilTheRunHasStarted(t, dir)
+	held.inTheMiddle(t)
 
 	cancel := buttonNamed(content, "Cancel")
 	if cancel == nil {
@@ -606,6 +612,7 @@ func TestCancelStopsTheRun(t *testing.T) {
 	}
 	cancel.OnTapped()
 	join(host)
+	held.stoppedByTheGuard(t)
 
 	info, err := os.Stat(filepath.Join(dir, "manifest.json"))
 	if err != nil {
@@ -776,35 +783,4 @@ func TestARunIsStoppableFromTheMomentItStarts(t *testing.T) {
 			"Reason: between those two statements files are being written and Stop has nothing to call, so closing the window there ends the process inside a file with no manifest.\n" +
 			"What to do: assign r.work first. The work exists by then, so nothing is gained by waiting.")
 	}
-}
-
-// waitUntilTheRunHasStarted blocks until the run has put something on the disk.
-//
-// A guard about interrupting a run has to interrupt a run, and since 2026-08-26
-// pressing Generate no longer means one is going: planning moved off the
-// interface thread, so for a moment after the press the worker is still working
-// out what to write. Cancelling in that moment is answered correctly and
-// uselessly - nothing has been written, so there is nothing to record and no
-// manifest, which is the rule Result.Started states.
-//
-// The manifest claims its name before the first file, so anything at all
-// appearing here means the writing has begun.
-//
-// This one polls a budget on purpose, and it is the ONLY wait here that still
-// should. Its siblings stopped: waiting for a manifest is now a join, because
-// the worker writes the record before it closes its channel, and the budget
-// there was bounding the whole run rather than the wait for a filesystem -
-// four failures came of that, O111 and O126. Joining cannot work here, because
-// this waits for a run to START so that it can be interrupted, and a join by
-// definition returns when the work is over.
-func waitUntilTheRunHasStarted(t *testing.T, dir string) {
-	t.Helper()
-	deadline := time.Now().Add(20 * time.Second)
-	for time.Now().Before(deadline) {
-		if entries, err := os.ReadDir(dir); err == nil && len(entries) > 0 {
-			return
-		}
-		time.Sleep(time.Millisecond)
-	}
-	t.Fatal("nothing was written within twenty seconds, so there was never a run to interrupt")
 }

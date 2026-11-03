@@ -1,6 +1,7 @@
 package window
 
 import (
+	"context"
 	"errors"
 	"path/filepath"
 	"sort"
@@ -602,6 +603,7 @@ func (r *runner) startRun(targets []engine.Target, opt engine.Options) {
 	// file. Thinned out here, before anything crosses over, so the interface is
 	// asked to redraw ten times a second rather than thousands.
 	opt.OnProgress = func(p engine.Progress) {
+		r.busy.holdWhileWriting(ctx)
 		if !limit.allow(time.Now()) {
 			return
 		}
@@ -768,6 +770,23 @@ func (r *runner) Stop() { r.work.stop() }
 // concurrent access left to report, which is why this restores the assertions
 // instead of hiding them.
 func (r *runner) HoldBeforeFinishing(fn func()) { r.busy.hold = fn }
+
+// HoldWhileWriting sets a hold a run's writers pass through each time they
+// report progress, handed the run's context. A seam for the guards like
+// HoldBeforeFinishing above, and the shipped program never sets it. The
+// context rather than its Done channel, so the program pays a nil check per
+// report and this package declares no channel for a seam
+// (concurrency_test.go).
+//
+// It is what keeps a run in the middle while a guard stops it. The engine
+// reports under one lock (Options.OnProgress, never two at once), so a hold
+// on the first report holds every writer at its next one, and a hold that
+// returns when the context is done lets them go only once Cancel or closing
+// the window has asked them to stop. Before it, the guards that stop a run
+// of four hundred files watched the folder for the first entry and stopped
+// the run from there, which was a bet that the run would still be going a
+// moment later - an outside review of the pull request named it.
+func (r *runner) HoldWhileWriting(fn func(ctx context.Context)) { r.busy.writing = fn }
 
 // Settled waits for work in flight to finish, without stopping it.
 //
