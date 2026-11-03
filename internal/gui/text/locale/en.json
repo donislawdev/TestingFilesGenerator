@@ -753,8 +753,8 @@
   },
   "PreferencesMemoryScope": {
     "description": "Shown on the Preferences screen. Carries one value, {{.Floor}}, which has to stay spelled exactly that way.",
-    "hash": "sha256-f40048a93818",
-    "other": "How much memory one run may take, the plan and the files being written together. Pictures wait for room rather than all being held at once, and a plan larger than this is refused before anything is written. As a run comes close to it, the program frees memory more often, which makes the run slower. A run that needs more still gets it. Under Automatic, a plan of up to {{.Floor}} is never refused. It applies from the next run, and nothing in the files changes."
+    "hash": "sha256-4c95226d14ae",
+    "other": "How much memory one run may take, the plan and the files being written together. Pictures wait for room rather than all being held at once, and a plan larger than this is refused before anything is written. When a run gets close to this amount, the program frees memory more often, which makes the run slower. A run that needs more memory than this still gets it. Under Automatic, a plan of up to {{.Floor}} is never refused. It applies from the next run, and nothing in the files changes."
   },
   "PreferencesMissing": {
     "description": "Shown on the Preferences screen. Carries one value, {{.Tag}}, which has to stay spelled exactly that way.",

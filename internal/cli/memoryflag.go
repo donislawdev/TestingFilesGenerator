@@ -23,8 +23,8 @@ import (
 var memoryHelp = "how much memory this run may use: auto (half of what this machine gives the program), " +
 	"a size such as 8gb, or off for no limit. Pictures wait for room rather than all being held at once, " +
 	"and a plan larger than this is refused before anything is written. " +
-	"As a run comes close to it, the program frees memory more often, which makes the run slower. " +
-	"A run that needs more still gets it. " +
+	"When a run gets close to this amount, the program frees memory more often, which makes the run slower. " +
+	"A run that needs more memory than this still gets it. " +
 	"Under auto, a plan of up to " + core.HumanBytes(core.MaxPlanBytes) + " is never refused"
 
 // memoryValue is the flag's value, auto until somebody writes one.

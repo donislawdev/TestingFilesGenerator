@@ -18,12 +18,12 @@ because it turns other people's test suites red.
 
 - **How much memory a run may use is yours to set.** `--memory` on
   `generate`, `validate` and `preset show`, and Memory on the window's
-  Preferences screen: `auto` (half the memory of this machine or container),
-  a size such as `8gb`, or `off`. The whole run keeps to it, more slowly as
-  it gets close, and pictures wait for room. A plan above it is refused, and
-  under `auto` never below 2 GiB. In a container of 1 GB, 500 000 text files
-  are written where 400 000 were ended by the system. Files come out byte for
-  byte the same.
+  Preferences screen: `auto` (half of this machine or container), a size
+  such as `8gb`, or `off`. Near that amount the program frees memory more
+  often and runs slower, but a run that needs more still gets it. A plan
+  above it is refused, and under `auto` never below 2 GiB. In a container of
+  1 GB, 500 000 text files are written where 400 000 were killed. Files come
+  out byte for byte the same.
 
 - **A Docker image.** `ghcr.io/donislawdev/tfg` holds the Linux command line
   of a release and nothing else, for x64 and Arm, and runs with no network. It
