@@ -12316,8 +12316,8 @@ MUTATIONS = [
     (
         "the installer job runs on Linux, where there is nothing to install",
         ".github/workflows/ci.yml",
-        "    runs-on: windows-latest\n    timeout-minutes: 20\n    steps:\n      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1\n        with:\n          persist-credentials: false\n\n      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0\n        with:\n          python-version: \"3.14\"\n\n      - name: build the installer twice",
-        "    runs-on: ubuntu-latest\n    timeout-minutes: 20\n    steps:\n      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1\n        with:\n          persist-credentials: false\n\n      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0\n        with:\n          python-version: \"3.14\"\n\n      - name: build the installer twice",
+        "    # virtual machine instead, 0.3.0 to 0.4.0 (tools/packaging-vm).\n    runs-on: windows-latest\n",
+        "    # virtual machine instead, 0.3.0 to 0.4.0 (tools/packaging-vm).\n    runs-on: ubuntu-latest\n",
         "TestTheInstallerIsInstalledOnARunner",
     ),
     (
