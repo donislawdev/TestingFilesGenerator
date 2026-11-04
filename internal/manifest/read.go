@@ -224,11 +224,8 @@ func (rd *reading) object(m *Manifest, each func(File)) error {
 			return err
 		}
 		key, _ := tok.(string)
-		if name, known := outermostKey(key); known {
-			if first, twice := seen[name]; twice {
-				return rd.twice(first, key)
-			}
-			seen[name] = key
+		if err := rd.once(seen, key); err != nil {
+			return err
 		}
 		if strings.EqualFold(key, filesKey) {
 			err = rd.entries(m, each)
@@ -241,6 +238,22 @@ func (rd *reading) object(m *Manifest, each func(File)) error {
 	}
 	_, err := rd.token()
 	return err
+}
+
+// once remembers a key of the outermost object that is read into a field, and
+// refuses it when the field was named before under any spelling - see twice. A
+// key no field has is not remembered: it is read and let go, and a document of
+// a million different keys would otherwise be a map with no ceiling.
+func (rd *reading) once(seen map[string]string, key string) error {
+	name, known := outermostKey(key)
+	if !known {
+		return nil
+	}
+	if first, twice := seen[name]; twice {
+		return rd.twice(first, key)
+	}
+	seen[name] = key
+	return nil
 }
 
 // twice is the refusal of a document that names one key two times.
@@ -480,8 +493,14 @@ func EachClaim(ctx context.Context, path string, keep func(ClaimedFile)) (string
 //
 // The claim is a ClaimedFile and its two strings - measured at 134 B for a path of
 // 17 characters, and 48 B and the two lengths come to 129 (section 8 of the
-// analysis). The checking holds about as much again for each, and twice that is
-// allowed for the collector's room.
+// analysis). The checking holds more of each, and that was measured too: in a
+// container of 1 GB on 2026-11-04, a manifest of 600 000 files with paths of
+// 16 characters, verify held at most 206 MB alive and cleanup --yes 282 MB -
+// 343 and 470 B a file, 2.6 and 3.5 times what the claims take
+// (tools/probes/manifestread/container.py). Four times covers both. The path
+// is held about four times over as well - claimed, joined to the directory,
+// folded for spelling, and in the list of what the directory holds - so a
+// longer path is counted at about the rate it costs.
 func checkingCost(path, sum string) int64 {
 	return checkingFactor * (claimBytes + int64(len(path)) + int64(len(sum)))
 }
@@ -490,7 +509,7 @@ func checkingCost(path, sum string) int64 {
 const claimBytes = 48
 
 // checkingFactor is how many times its claims checking a manifest takes.
-const checkingFactor = 3
+const checkingFactor = 4
 
 // TooMuchToHoldError is a manifest listing more files than verify or cleanup
 // may hold under the memory setting.

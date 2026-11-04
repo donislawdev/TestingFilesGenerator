@@ -20,8 +20,7 @@ type Record struct {
 	// the caller says it out loud rather than letting it pass.
 	Missed *InstructionsError
 	// Size is what was written, measured on the way rather than worked out
-	// beforehand: Result.Record is the forecast, this is the fact. Its
-	// TooLarge is the field the saved manifest carries.
+	// beforehand (PredictRecord is the forecast, this is the fact).
 	Size RecordSize
 }
 
@@ -77,7 +76,7 @@ func SaveRecord(res *Result, opt Options) (Record, error) {
 		}
 		return rec, err
 	}
-	rec.Size.Manifest, rec.Size.TooLarge = m.SavedBytes(), m.Summary.TooLargeToReadBack
+	rec.Size.Manifest = m.SavedBytes()
 	return rec, nil
 }
 

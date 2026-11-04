@@ -156,14 +156,6 @@ type Options struct {
 	// two gigabytes without owning one.
 	MachineMemory func() (int64, error)
 
-	// Record is the forecast of this run's record, when the caller has already
-	// worked it out for these same files with PredictRecord - the command line
-	// does, to warn before the first byte. A forecast is a pass over every
-	// entry, about seven seconds for a million files measured on 2026-10-26,
-	// and asked twice it doubled a dry run of that size. Nil means the run
-	// works it out.
-	Record *RecordSize
-
 	// OnProgress is called as the run advances. Nil means silence, which is
 	// what every caller that has nobody to show it to should pass.
 	//
@@ -224,12 +216,6 @@ type Result struct {
 	// describe the machine the run happened on, and a manifest that changed
 	// with the machine would record something other than the files beside it.
 	RunNotes []core.Said
-
-	// Record is how large the record of this run was worked out to be before
-	// its first byte, the manifest and the instructions (PredictRecord). For a
-	// dry run that is the answer about the run it previews. A run that is
-	// saved knows the real length afterwards, in Record of SaveRecord.
-	Record RecordSize
 
 	// Hold is what this run was worked out to hold at its end, against what
 	// its memory setting gives it (PredictHold), before its first byte. A
@@ -518,11 +504,10 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	// and before a dry run returns. A dry run exists to count and show before
 	// the disk is touched, so reporting success for a run that refuses to
 	// start on the very next line answers the wrong question.
-	record, err := opt.forecast(ctx, files)
+	record, err := PredictRecord(ctx, files, opt)
 	if err != nil {
 		return res, err
 	}
-	res.Record = record
 	if err := preflight(ctx, files, opt, record); err != nil {
 		return res, err
 	}
@@ -539,10 +524,6 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 			m.Add(res.entryFor(f, "", false, nil))
 		}
 		m.Run.Complete = true
-		// The preview's document has no hashes and is shorter than the one the
-		// run writes, so what it says about being read back is said about the
-		// run, from the record worked out for it.
-		m.Summary.TooLargeToReadBack = record.TooLarge
 		return res, nil
 	}
 

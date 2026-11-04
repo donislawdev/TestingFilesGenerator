@@ -17,15 +17,13 @@ import (
 // space against the files alone, so a disk with room for the files and not
 // for the manifest took the files and refused the manifest - files nothing can
 // remove, because the manifest is the only authority over that (untouchable
-// rule 7). And the warning that a manifest will be too large to read back,
-// which came from a constant per entry that was low for every format.
+// rule 7). And, until 2026-11-04, the warning that a manifest would be too
+// large to read back, which went with the ceiling it was about.
 
 // RecordSize is the record a run will write beside its files.
 type RecordSize struct {
 	// Manifest is the length of the manifest.
 	Manifest int64
-	// TooLarge says this build would refuse to read that manifest back.
-	TooLarge bool
 	// Instructions is the length of the instructions, nought when no file was
 	// given a purpose and none are written.
 	Instructions int64
@@ -40,8 +38,7 @@ var hashPlaceholder = strings.Repeat("0", 64)
 
 // PredictRecord is the record a run of these files writes when every file is
 // produced. A file that fails gains a note in its entry, so a run with
-// failures writes a little more than this says - which is why the surfaces say
-// again, from what was written, when the two disagree.
+// failures writes a little more than this says.
 //
 // Entries are counted one at a time and not kept (manifest.Projection). The
 // instructions are the exception: what they say depends on every file at once,
@@ -75,7 +72,7 @@ func PredictRecord(ctx context.Context, files []PlannedFile, opt Options) (Recor
 			return RecordSize{}, err
 		}
 	}
-	out.Manifest, out.TooLarge, err = counted.Bytes()
+	out.Manifest, err = counted.Bytes()
 	return out, err
 }
 
@@ -99,15 +96,6 @@ func askedToStop(ctx context.Context, i int) error {
 		return nil
 	}
 	return ctx.Err()
-}
-
-// forecast is the record the caller handed in, or the one worked out here
-// when it handed in none.
-func (o Options) forecast(ctx context.Context, files []PlannedFile) (RecordSize, error) {
-	if o.Record != nil {
-		return *o.Record, nil
-	}
-	return PredictRecord(ctx, files, o)
 }
 
 // askEvery is how many entries go by between two questions about Ctrl+C. An

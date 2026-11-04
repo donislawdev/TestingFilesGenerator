@@ -2,8 +2,8 @@
 package cli
 
 // What a run leaves about itself once the files are written: the manifest and
-// the instructions beside it, and what is said when a run stopped or its record
-// will be too large to read back. Out of generate.go on 2026-09-25, when the
+// the instructions beside it, what is said when a run stopped, and the
+// manifest --json sends. Out of generate.go on 2026-09-25, when the
 // instructions made that file the largest in the tree.
 
 import (
@@ -14,7 +14,6 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
-	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
 // whatSurvived says what a stopped run left behind, for the sentence produce
@@ -66,53 +65,14 @@ func whatSurvived(runErr error, res *engine.Result) string {
 		core.Count(len(res.Manifest.Files), "file", "files"))
 }
 
-// echoManifestReach says so when a run will write a manifest this build cannot
-// read back.
-//
-// Measured on 2026-08-26: a run of 25 000 files wrote a manifest of 25 220 640
-// B against a read ceiling of 16 777 216 B, and from that point "tfg verify"
-// and "tfg cleanup" both exited 5 on it. The files stayed on the disk and
-// nothing in this toolset could remove them, because the manifest is the only
-// authority over what may be deleted.
-//
-// A note rather than a refusal, by the owner's decision on the same day: the
-// run itself works, and refusing it would take away something this tool does
-// today. What was missing was that nobody was told. It is printed before the
-// first byte and on a dry run, which is the step this project tells people to
-// take before anything large.
-//
-// It hands back the forecast, for the run to use rather than work out a second
-// time, and whether it said anything, so that what the run really wrote can
-// correct it afterwards (echoManifestOutcome). The forecast is the manifest of
-// a run in which every file is produced - since 2026-10-26 counted entry by
-// entry rather than from a constant that was low for every format, so a run of
-// 20 500 text files is no longer told nothing and then left with a manifest
-// verify refuses (docs/STABILITY-REVIEW-2026-10-26.md, section 2.1).
-func echoManifestReach(ctx context.Context, planned []engine.PlannedFile, opt engine.Options, errOut io.Writer) (*engine.RecordSize, bool) {
-	record, err := engine.PredictRecord(ctx, planned, opt)
-	if err != nil {
-		// A forecast that could not be made is not a reason to stop the run
-		// here. The run works it out again and answers for it, and what was
-		// written is measured again after the save and said then.
-		return nil, false
-	}
-	if !record.TooLarge {
-		return &record, false
-	}
-	fmt.Fprintf(errOut,
-		"note: this run will write a manifest of roughly %s and this build reads at most %s, "+
-			"so tfg verify and tfg cleanup will not be able to read it. Split the run to keep each manifest readable.\n",
-		core.HumanBytes(record.Manifest), core.HumanBytes(manifest.MaxBytes))
-	return &record, true
-}
-
 // echoHold says so when a run will hold more than its memory setting gives it
 // (O296, engine.PredictHold says why and what was measured).
 //
 // Before the first byte, and that is the point of it: a run the system ends
 // prints nothing afterwards, so the sentence has to be in the log already. A
 // note rather than a refusal, because the same run finishes where there is swap
-// to carry it. And on a dry run, for the reason echoManifestReach gives.
+// to carry it. And on a dry run, which is the step this project tells people
+// to take before anything large.
 func echoHold(planned []engine.PlannedFile, opt engine.Options, errOut io.Writer) {
 	hold := engine.PredictHold(len(planned), opt)
 	if !hold.Over {
@@ -125,35 +85,9 @@ func echoHold(planned []engine.PlannedFile, opt engine.Options, errOut io.Writer
 		core.HumanBytes(hold.Holds), core.HumanBytes(hold.Room))
 }
 
-// echoManifestOutcome says what the manifest came to, when that is not what
-// the run was told before its first byte.
-//
-// The forecast is right for a run in which every file is produced. A file that
-// fails gains a note in its entry, so the manifest can grow past the ceiling
-// after the forecast said it would not - and then this is the only sentence
-// that says so. The other way round, a run warned and then within the ceiling,
-// is corrected too: an alarm left standing after the fact is a sentence the
-// person acts on, and it would be false.
-func echoManifestOutcome(written engine.RecordSize, warned bool, errOut io.Writer) {
-	switch {
-	case written.TooLarge && !warned:
-		fmt.Fprintf(errOut,
-			"note: this run wrote a manifest of %s and this build reads at most %s, "+
-				"so tfg verify and tfg cleanup will not be able to read it. Split the run to keep each manifest readable.\n",
-			core.HumanBytes(written.Manifest), core.HumanBytes(manifest.MaxBytes))
-	case !written.TooLarge && warned:
-		fmt.Fprintf(errOut,
-			"note: the manifest came to %s, within the %s this build reads, so tfg verify and tfg cleanup can read it after all.\n",
-			core.HumanBytes(written.Manifest), core.HumanBytes(manifest.MaxBytes))
-	}
-}
-
 // saveManifest saves the record of a run - the manifest, and the instructions
 // beside it when any file was given a purpose - and says where each went.
-//
-// warned is whether the run was told before its first byte that its manifest
-// would be too large to read back - see echoManifestOutcome.
-func saveManifest(res *engine.Result, opt engine.Options, warned bool, errOut io.Writer) int {
+func saveManifest(res *engine.Result, opt engine.Options, errOut io.Writer) int {
 	// Asked of the engine rather than joined here. The engine claimed this
 	// exact name before the first file was written, so working it out a second
 	// way is a chance for the saver and the claim to mean different files.
@@ -191,6 +125,51 @@ func saveManifest(res *engine.Result, opt engine.Options, warned bool, errOut io
 			"tfg: cannot write the instructions to %s: %s. The manifest was saved and holds the same facts.\n",
 			core.Shown(rec.Missed.Path), describeError(rec.Missed.Err))
 	}
-	echoManifestOutcome(rec.Size, warned, errOut)
 	return ExitOK
+}
+
+// sendManifest puts the manifest on standard output for --json, a part at a
+// time as Encode writes it.
+//
+// It used to be encoded whole into memory a second time, beside every entry
+// the run still held, and handed over in one write - for a run whose manifest
+// was already on the disk (observation O300,
+// docs/MANIFEST-STREAMING-2026-11-04.md section 9). Encoded again rather than
+// copied from the disk, because Encode streams and writes the same bytes the
+// saved file holds, and a copy would be a second way for the two to differ -
+// a file somebody replaced in between would be sent as this run's.
+func sendManifest(res *engine.Result, dryRun bool, out, errOut io.Writer) int {
+	sent := &watched{w: out}
+	err := res.Manifest.Encode(sent)
+	switch {
+	case err == nil:
+		return ExitOK
+	case sent.err == nil:
+		fmt.Fprintf(errOut, "tfg: cannot render the manifest: %s\n", describeError(err))
+		return ExitRuntime
+	case dryRun:
+		fmt.Fprintf(errOut, "tfg: the manifest could not be sent to standard output: %s\n", describeError(err))
+		return ExitIO
+	}
+	// The error is read rather than dropped. A closed pipe is the ordinary
+	// way this fails - "tfg generate --json | head" - and a run that could
+	// not deliver what was asked for has not succeeded, whatever happened
+	// on the disk.
+	fmt.Fprintf(errOut, "tfg: the files were written and the manifest could not be sent to standard output: %s\n", describeError(err))
+	return ExitIO
+}
+
+// watched passes writes on and keeps the first that failed, so a failure to
+// write can be told from a failure to render.
+type watched struct {
+	w   io.Writer
+	err error
+}
+
+func (s *watched) Write(p []byte) (int, error) {
+	n, err := s.w.Write(p)
+	if err != nil && s.err == nil {
+		s.err = err
+	}
+	return n, err
 }

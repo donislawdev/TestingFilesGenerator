@@ -155,41 +155,6 @@ type Summary struct {
 	// The cheapest form of the question O97 is about - a person checking by
 	// eye, or a script asserting a shape, does not have to walk the entries.
 	ByTarget map[string]int `json:"by_target"`
-
-	// TooLargeToReadBack says this build would refuse to read this document
-	// back, so "tfg verify" and "tfg cleanup" cannot work from it.
-	//
-	// The run itself succeeds and its files are correct. What is gone is the
-	// only authority over what may be deleted - untouchable rule 7 makes the
-	// manifest that authority, so a manifest this build will not read is a set
-	// of files nothing in this toolset can remove. Measured on 2026-08-26 and
-	// again on 2026-09-06: 25 000 files write about 25.9 MB against a ceiling
-	// of 16 MB, generate exits 0, and verify and cleanup both exit 5.
-	//
-	// The owner decided on 2026-08-26 that this is a note rather than a
-	// refusal, because refusing would take away something the tool does. What
-	// was missing was that nobody was told, and the telling was prose on
-	// stderr - measured on 2026-09-06 as one line among 25 003, and ABSENT
-	// ENTIRELY from the machine readable report. A tool that plugs into CI has
-	// to be able to say this to a script.
-	//
-	// Not an exit code, and that was decided rather than skipped. Exit 8 means
-	// "run finished, but not everything was produced" (docs/CLI.md), and here
-	// everything was produced - res.Failures is nought, so the sentence would
-	// read "0 files could not be produced" and point at a manifest that cannot
-	// be read. Exit codes are a frozen contract and redefining one is a major
-	// version, not a stopgap.
-	//
-	// Absent rather than false on an ordinary run, so every manifest already
-	// written stays byte for byte what it was. An added field, which
-	// docs/MANIFEST.md section 10 allows without moving manifest_version -
-	// the same shape as tool.go, added for review item S1.
-	//
-	// Save sets it from the length of the document it writes, since
-	// 2026-10-26. It came from an estimate until then, and a manifest of
-	// 17 170 219 B went out without it (size.go). A preview's document carries
-	// it for the run it previews, from the same count.
-	TooLargeToReadBack bool `json:"too_large_to_read_back,omitempty"`
 }
 
 // File is one entry.
@@ -407,11 +372,12 @@ const noteExamples = 3
 // same sentence about the label not fitting. The advice was per file for a
 // decision that is per target.
 //
-// The line that matters was buried under them. A run whose manifest will be
-// too big for this build to read back says so first, in a "note:" line
-// typographically identical to the 25 000 that follow it - and that one is the
-// only thing standing between somebody and a directory neither verify nor
-// cleanup can ever read. See echoManifestReach in cli/generate.go.
+// The line that mattered was buried under them. A run whose manifest would
+// be too big for this build to read back said so first, in a "note:" line
+// typographically identical to the 25 000 that followed it - and that one was
+// the only thing standing between somebody and a directory neither verify nor
+// cleanup could read. That note went on 2026-11-04 with the ceiling it was
+// about (read.go), and the grouping stays for every note that is left.
 //
 // The same reasoning was already applied to the progress bar, which is
 // throttled to 10 Hz and silent when stderr is not a terminal, on the grounds
@@ -536,7 +502,14 @@ func (e *SchemaError) Said() core.Said {
 	return core.Says("manifest.Unreadable", "%s cannot be read as a manifest: %s", core.A("Path", e.Path), core.A("Detail", e.Detail))
 }
 
-// MaxBytes is the largest manifest this build will read.
+// MaxBytes is the largest manifest Load will hold whole.
+//
+// Load's alone since 2026-11-04. verify and cleanup read through ReadClaims,
+// which takes a document a piece at a time under MaxValueBytes on one value and
+// has no ceiling on the document - a run past this one wrote a manifest they
+// then refused, so its files were files this tool could never remove
+// (read.go). Load holds every entry, so for it the length of the document is
+// still the memory it takes, and what is below is still its reason.
 //
 // A manifest arrives from outside the same way a recipe does - it travels with
 // a fixture set, it turns up in a pull request, it is handed to "verify" by
@@ -548,8 +521,7 @@ func (e *SchemaError) Said() core.Said {
 // rather than typed and it grows with the run: measured on 2026-10-26, an entry
 // costs from about 840 B (txt) to about 1580 B (eml), so this holds a run of
 // roughly ten to twenty thousand files - above the largest preset in
-// docs/PRESETS.md and around the ten thousand this tool is designed around. A
-// run past it is told so, from the document's real length (size.go).
+// docs/PRESETS.md and around the ten thousand this tool is designed around.
 //
 // What it does not do, stated as plainly as the recipe's: it does not defend
 // against a manifest that fits and is still expensive.

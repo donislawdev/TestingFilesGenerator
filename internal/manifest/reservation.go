@@ -110,10 +110,9 @@ func (r *Reservation) Save(m *Manifest) error {
 		return core.Defect(fmt.Errorf("the reservation of %s was already used or given back", core.Shown(r.final)))
 	}
 	r.used = true
-	// Whether this build will read the document back is settled from the
-	// length it is about to have, before the file is opened - so the field
-	// says what is true of the bytes below it (size.go).
-	size, err := m.settleReadBack()
+	// Counted before the file is opened, from the layout Encode writes
+	// (size.go), and what SavedBytes says afterwards.
+	size, err := m.EncodedBytes()
 	if err != nil {
 		_ = core.RemoveOwn(r.tmp, r.own)
 		return err
