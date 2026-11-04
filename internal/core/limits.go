@@ -64,6 +64,22 @@ var (
 			"Or give the run more memory through the memory setting")
 )
 
+// TooManyFilesInRun is what a run past MaxFilesPerRun asks for: every file of
+// every target, across all of them.
+//
+// Both the recipe reader and the engine count the run, and a recipe refused by
+// either reads the same - so the sentence is written here, once, rather than
+// beside each of them (O302). The number is the whole run's, not the running
+// total at the target that crossed the ceiling where both of them refuse: ten
+// targets of a million were told they asked for two million (review of #219).
+// An int64 because a recipe of a megabyte holds tens of thousands of targets
+// of a million, which is past what an int of 32 bits counts.
+func TooManyFilesInRun(files int64, targets int) Said {
+	return Says("core.TooManyFilesInRun", "this run asks for %s across %s",
+		A("Files", SaysN("core.FilesInRun", "%d file", "%d files", A("Count", files))),
+		A("Targets", SaysN("core.TargetsInRun", "%d target", "%d targets", A("Count", targets))))
+}
+
 // PlanTooLargeWhy is the same refusal for the quantity that actually runs out,
 // in the words of where its ceiling came from.
 //

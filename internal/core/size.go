@@ -332,3 +332,23 @@ func BoundarySizes(limit int64) ([]int64, error) {
 	}
 	return []int64{limit - 1, limit, limit + 1}, nil
 }
+
+// Uniform is n files of the same size, in a list reserved at its length.
+//
+// Here because the recipe reader builds the same list as the engine and cannot
+// import it, and two copies of one list were what a review of #219 named.
+// Reserved rather than grown: one append at a time, the list for a million
+// files cost 40 B a file to build for 8 B a file kept - every growth leaves the
+// last array to the collector - and the batch screen builds it on every key
+// (O302, measured on 2026-11-04: 41.7 MB for a target of a million, 8.0 MB
+// reserved).
+func Uniform(n int, bytes int64) []int64 {
+	if n <= 0 {
+		return nil
+	}
+	out := make([]int64, n)
+	for i := range out {
+		out[i] = bytes
+	}
+	return out
+}

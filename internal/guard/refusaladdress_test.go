@@ -479,11 +479,12 @@ func missingPart(why, fix string) string {
 //
 // Two things, and the second is what keeps the first honest.
 //
-// A refusal the reader never sees is refused by the engine or by a format: the
-// ceiling on files is checked on the total, so a recipe whose targets each pass
-// the reader is refused underneath it. Until 2026-08-25 those arrived with a
-// sentence and no address, so a script grouping a report by field had nothing
-// to group by.
+// A refusal the reader never sees is refused by the engine or by a format - a
+// size the format cannot deliver, a name the host cannot store. Until
+// 2026-08-25 those arrived with a sentence and no address, so a script grouping
+// a report by field had nothing to group by. The ceiling on files was the first
+// case here until O302 moved the run's count into the reader, so it is no
+// longer refused from below - where it lands is asked in runceiling_test.go.
 //
 // And an address is only worth carrying if it says where. A refusal that names
 // "size" and not which of twenty targets asked points at all of them while
@@ -520,27 +521,6 @@ func TestEveryAddressTheReportCarriesSaysWhereItIs(t *testing.T) {
 			t.Fatalf("the report carries no problems at all:\n%s", errOut.String())
 		}
 		return parsed.Problems
-	}
-
-	// The big target second, because the engine tests the running total before
-	// planning a target's files - so this refuses having planned one file
-	// rather than a million.
-	const ceiling = `version: 1
-targets:
-  - id: a
-    format: txt
-    count: 1
-    size: 1kb
-  - id: b
-    format: txt
-    count: 1000000
-    size: 1kb
-`
-	if got := report(t, ceiling)[0].At; got != core.TargetAddress(2, recipe.KeyCount) {
-		t.Errorf("the ceiling was reported at %q and the target that crossed it is %q.\n"+
-			"Reason: the ceiling belongs to the run, but the box somebody can change belongs to\n"+
-			"a target - a report that cannot say which one leaves a script with the sentence and\n"+
-			"nothing else.", got, core.TargetAddress(2, recipe.KeyCount))
 	}
 
 	// One refusal per layer that can produce one below the reader: a format
@@ -635,7 +615,6 @@ func TestARefusalFromBelowTheReaderArrivesInItsThreeParts(t *testing.T) {
 		// so these parts come from one join rule rather than a sentence each,
 		// and the join has to leave the sentence reading as it always did.
 		{"a name the host cannot store", "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n    name: \"a<b.txt\"\n"},
-		{"more files than the run may plan", "version: 1\ntargets:\n  - id: a\n    format: txt\n    count: 1\n    size: 1kb\n  - id: b\n    format: txt\n    count: 1000000\n    size: 1kb\n"},
 	}
 
 	for _, c := range cases {

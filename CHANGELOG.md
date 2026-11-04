@@ -54,6 +54,11 @@ because it turns other people's test suites red.
   `--software-gl`, moves from 26.2.0 to 26.2.4, built with LLVM 23.1.2. Its
   licences are the same. `THIRD-PARTY-NOTICES.md` names the new files and
   their sums.
+- **A recipe past the ceiling of a million files ends with code 3 even when a
+  target also asks for a size its format cannot make.** That size used to be
+  refused first, with code 4, and the ceiling came out only once it was
+  fixed. The ceiling is now found while the recipe is read, and like every
+  problem found there it comes first.
 
 - **`tfg verify` and `tfg cleanup` refuse a manifest that names a key twice
   or has anything after it but white space.** This tool never writes either.
@@ -70,6 +75,13 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A recipe asking for more than a million files in all is refused before
+  it takes the memory.** Targets were held to a million each and the run only
+  once all their sizes were laid out, so `tfg validate` took 2.5 GB to refuse
+  fifty targets of a million, and the recipe screen spent 40 MB a key on each
+  such batch. The total is now counted as the recipe is read, beside its other
+  problems, and `validate --json` places it at the file's own target in a
+  recipe built on a preset. Reading takes a fifth of the memory.
 - **Cancel answers at once, and closing the window during a run no longer
   freezes it.** Both used to wait for the write in progress with the window
   standing still, which on a slow or network disk could last long enough for

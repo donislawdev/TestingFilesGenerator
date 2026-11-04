@@ -518,20 +518,20 @@ func waitForNamedManifest(t *testing.T, settle func(), dir, name string) {
 	manifestAfter(t, settle, dir, name)
 }
 
-// A refusal from the ENGINE marks the batch it is about, the same as one from
-// the recipe reader.
+// A refusal about the whole run marks the batch that took it past the ceiling.
 //
-// The sibling above covers the reader. This one covers the layer under it, and
-// they are not the same question: the reader bounds each batch on its own, so
-// two batches of six hundred thousand files each pass it and the total is
-// refused by the engine. Measured on 2026-08-25, before the address existed:
-// the refusal arrived with a sentence and nothing else, so a screen with twenty
-// batches said the run could not go and marked nothing at all.
+// The sibling above covers a refusal about one batch's own value. This one is
+// about a fact of the run, which no single box holds: two batches each within
+// the count ceiling come to more than a run may plan. Measured on 2026-08-25,
+// before the address existed: the refusal arrived with a sentence and nothing
+// else, so a screen with twenty batches said the run could not go and marked
+// nothing at all.
 //
-// The count is deliberately spread over two batches with the big one second.
-// The engine tests the running total before planning a batch's files, so this
-// reaches the refusal having planned one file rather than a million.
-func TestARefusalFromTheEngineAboutTheWholeRunMarksTheBatchThatCausedIt(t *testing.T) {
+// The engine refused this until O302, and the guard was named for it. The
+// recipe reader counts the run now and refuses first, so this asks the reader -
+// what the engine still says when it is handed targets directly is asked in
+// runceiling_test.go.
+func TestARefusalAboutTheWholeRunMarksTheBatchThatCausedIt(t *testing.T) {
 	screen := window.NewRecipe(newFakeHost(t))
 	body := screen.Object()
 	pressNamed(t, body, text.ButtonAddBatch())

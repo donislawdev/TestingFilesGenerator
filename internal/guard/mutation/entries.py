@@ -2502,7 +2502,9 @@ MUTATIONS = [
     ),
     (
         # The recipe reader took the worse of the two failures: it grew the list
-        # one entry at a time and reached a 13 GB allocation.
+        # one entry at a time and reached a 13 GB allocation. Since O302 the
+        # mutated count reaches no allocation - the run's ceiling turns the same
+        # recipe away and builds no list - so the guard asks which refusal it got.
         "the recipe reader stops asking whether the count can be planned",
         "internal/recipe/target.go",
         # Carries the line under it since 2026-08-20. The container entry gained
@@ -2510,8 +2512,8 @@ MUTATIONS = [
         # an ambiguous pattern is how a mutation quietly starts proving a
         # different guard than the one it names. The two are told apart by which
         # address they build: `where` for the target, `at` for the entry.
-        "case n > core.MaxFilesPerRun:\n\t\t\tp.add(where.of(\"count\")",
-        "case n > core.MaxFilesPerRun && false:\n\t\t\tp.add(where.of(\"count\")",
+        "case n > core.MaxFilesPerRun:\n\t\tp.add(where.of(\"count\")",
+        "case n > core.MaxFilesPerRun && false:\n\t\tp.add(where.of(\"count\")",
         "TestAnImpossibleFileCountInARecipeIsRefused",
     ),
     (
@@ -2528,11 +2530,101 @@ MUTATIONS = [
         "TestAnImpossibleFileCountInsideAContainerIsRefused",
     ),
     (
+        # Asked of the engine directly since O302. The recipe reader counts the
+        # run first, so the guard asking validate about pieces never reached
+        # this line again.
         "the ceiling is applied per target, so writing the number out in pieces gets past it",
         "internal/engine/engine.go",
         "totalFiles += len(t.Sizes)",
         "totalFiles = len(t.Sizes)",
+        "TestTheEngineCountsTheWholeRunOfTargetsHandedToItDirectly",
+    ),
+    (
+        # The same break on the reader's side (O302): the targets before this
+        # one are forgotten, so twelve of 90 000 pass one at a time.
+        "the recipe reader counts each target against the run's ceiling alone",
+        "internal/recipe/recipe.go",
+        "planned = min(planned+files, core.MaxFilesPerRun+1)",
+        "planned = min(files, core.MaxFilesPerRun+1)",
         "TestTheCeilingCountsTheWholeRunNotOneTarget",
+    ),
+    (
+        # Asked beside another problem of the recipe, so the engine never runs
+        # and cannot stand in for the reader - which it does for every guard
+        # asking validate about the ceiling alone.
+        "the recipe reader stops refusing a run past the ceiling",
+        "internal/recipe/recipe.go",
+        "if room >= 0 && files > room {",
+        "if false && room >= 0 && files > room {",
+        "TestARunPastTheCeilingIsReportedBesideTheRecipesOtherProblems",
+    ),
+    (
+        "the run's ceiling refuses a run of exactly a million",
+        "internal/recipe/recipe.go",
+        "if room >= 0 && files > room {",
+        "if room >= 0 && files >= room {",
+        "TestTheRunCeilingSitsExactlyAtAMillion",
+    ),
+    (
+        # The engine's address: the merged list, preset's targets first.
+        "the run's ceiling names the target by the merged list rather than the file",
+        "internal/recipe/recipe.go",
+        "crossedAt = at(t.ID).of(KeyCount)",
+        "crossedAt = targetSpot(i, t.ID).of(KeyCount)",
+        "TestTheTargetThatCrossesTheRunCeilingIsPlacedInTheFile",
+    ),
+    (
+        "the run's ceiling marks the size of the batch that crossed it rather than its count",
+        "internal/recipe/recipe.go",
+        "crossedAt = at(t.ID).of(KeyCount)",
+        "crossedAt = at(t.ID).of(KeySize)",
+        "TestARefusalAboutTheWholeRunMarksTheBatchThatCausedIt",
+    ),
+    (
+        # Review of #219: the running total where the run crossed is what both
+        # layers said, and ten targets of a million were told two million.
+        "the run's ceiling says the files up to the target that crossed it rather than the whole run's",
+        "internal/recipe/recipe.go",
+        "p.add(crossedAt, core.TooManyFilesInRun(asked, len(raw.Targets)),",
+        "p.add(crossedAt, core.TooManyFilesInRun(int64(planned), len(raw.Targets)),",
+        "TestTheRunCeilingSaysWhatTheWholeRunAsksFor",
+    ),
+    (
+        "the engine's ceiling says the files up to the target that crossed it rather than the whole run's",
+        "internal/engine/engine.go",
+        "Detail:  core.TooManyFilesInRun(filesIn(targets), len(targets)),",
+        "Detail:  core.TooManyFilesInRun(int64(totalFiles), len(targets)),",
+        "TestTheEngineCountsTheWholeRunOfTargetsHandedToItDirectly",
+    ),
+    (
+        "a target past the run's ceiling has its list built before it is refused",
+        "internal/recipe/target.go",
+        "\tif count > room {\n\t\tbuilt = 0\n\t}",
+        "\tif false {\n\t\tbuilt = 0\n\t}",
+        "TestATargetPastTheRunCeilingIsNotBuilt",
+    ),
+    (
+        # In core since the review of #219, which named the reader's own copy of
+        # engine.Uniform. Both now take this one.
+        "a target's list of sizes is grown one file at a time again",
+        "internal/core/size.go",
+        "\tout := make([]int64, n)\n\tfor i := range out {\n\t\tout[i] = bytes\n\t}",
+        "\tvar out []int64\n\tfor range n {\n\t\tout = append(out, bytes)\n\t}",
+        "TestATargetsListOfSizesIsReservedAtItsLength",
+    ),
+    (
+        "a boundary set counts as the one file of the default count against the run's ceiling",
+        "internal/recipe/target.go",
+        "\tif rt.Boundary != nil {\n\t\tfiles = len(t.Sizes)\n\t}",
+        "\tif false {\n\t\tfiles = len(t.Sizes)\n\t}",
+        "TestTheRunCeilingSitsExactlyAtAMillion",
+    ),
+    (
+        "a count refused on its own goes back to asking for the default",
+        "internal/recipe/target.go",
+        "\t\treturn int(n)\n\t}\n\treturn 0\n}",
+        "\t\treturn int(n)\n\t}\n\treturn DefaultCount\n}",
+        "TestTheRunCeilingSitsExactlyAtAMillion",
     ),
     (
         # The other direction. A ceiling low enough to refuse ordinary work
@@ -5351,18 +5443,21 @@ MUTATIONS = [
         "TestTheChangelogHasOneHeadingPerKindOfChange",
     ),
     (
+        # Both asked of the engine directly since O302 - the window's batch
+        # screen reaches the reader's refusal now, and the guard over it moved
+        # with it (TestARefusalAboutTheWholeRunMarksTheBatchThatCausedIt).
         "the ceiling refusal stops naming the batch that caused it",
         "internal/engine/engine.go",
         "\t\t\t\tSetting: core.TargetAddress(i+1, SettingCount),",
         '\t\t\t\tSetting: "",',
-        "TestARefusalFromTheEngineAboutTheWholeRunMarksTheBatchThatCausedIt",
+        "TestTheEngineCountsTheWholeRunOfTargetsHandedToItDirectly",
     ),
     (
         "the ceiling refusal names the batch before the one that caused it",
         "internal/engine/engine.go",
         "\t\t\t\tSetting: core.TargetAddress(i+1, SettingCount),",
         "\t\t\t\tSetting: core.TargetAddress(i, SettingCount),",
-        "TestARefusalFromTheEngineAboutTheWholeRunMarksTheBatchThatCausedIt",
+        "TestTheEngineCountsTheWholeRunOfTargetsHandedToItDirectly",
     ),
     (
         "the report stops carrying the address of a refusal from below the reader",

@@ -425,14 +425,46 @@ func (raw rawRecipe) validate(p *problems, fromPreset int) *Recipe {
 		return rec
 	}
 
+	rec.Targets = raw.readTargets(p, rec.Defaults, fromPreset)
+	return rec
+}
+
+// readTargets reads every target in order, with what only the whole list can
+// tell: an id used twice, and a run past the ceiling on files.
+func (raw rawRecipe) readTargets(p *problems, def Defaults, fromPreset int) []Target {
+	var targets []Target
+
 	// Which target first used an id, by position in the merged list. The
 	// position is what tells a clash with the preset's target apart from a
 	// clash with another target of the file - and the two get different
 	// words, because only one of them has a line the reader can change.
 	seen := map[string]int{}
+	// The files of the targets read so far. The run's ceiling is counted here,
+	// across every target, rather than left to the engine: the engine is handed
+	// each target with its list of sizes already built, so fifty targets at the
+	// count ceiling took 2.5 GB to validate before it refused them (O302). Held
+	// one past the ceiling once crossed, so the room left stays negative from
+	// there on. It cannot wrap however many targets follow because no target
+	// adds more than the ceiling: a count past it is refused as the target's
+	// own and asks for nothing.
+	planned := 0
+	// What every target asks for, which is the number the refusal says. The
+	// running total stops at the target that crossed the ceiling, and ten
+	// targets of a million were told they asked for two (review of #219).
+	var asked int64
+	// The target that takes the run past the ceiling, which is the one
+	// somebody can shrink. Only one is: every target after it is past the
+	// ceiling as well, and saying so of each would bury the one that matters.
+	crossedAt := ""
 	for i, rt := range raw.Targets {
 		at := spotOfTarget(i, fromPreset)
-		t := rt.validate(p, at, rec.Defaults)
+		room := core.MaxFilesPerRun - planned
+		t, files := rt.validate(p, at, def, room)
+		asked += int64(files)
+		if room >= 0 && files > room {
+			crossedAt = at(t.ID).of(KeyCount)
+		}
+		planned = min(planned+files, core.MaxFilesPerRun+1)
 		if t.ID != "" {
 			if first, dup := seen[t.ID]; dup {
 				usedTwice(p, at(t.ID), t.ID, first < fromPreset && i >= fromPreset)
@@ -440,9 +472,13 @@ func (raw rawRecipe) validate(p *problems, fromPreset int) *Recipe {
 				seen[t.ID] = i
 			}
 		}
-		rec.Targets = append(rec.Targets, t)
+		targets = append(targets, t)
 	}
-	return rec
+	// Said once every target is counted, in the engine's words.
+	if crossedAt != "" {
+		p.add(crossedAt, core.TooManyFilesInRun(asked, len(raw.Targets)), core.TooManyFilesWhy, core.TooManyFilesFix)
+	}
+	return targets
 }
 
 // usedTwice refuses the second target carrying an id, in one of two wordings:
