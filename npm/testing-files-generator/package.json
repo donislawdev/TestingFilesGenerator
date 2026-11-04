@@ -1,0 +1,51 @@
+{
+  "name": "testing-files-generator",
+  "version": "0.0.0-development",
+  "description": "Real files of exact sizes and formats for tests, and what the system under test should do with each one. For Playwright and any other test runner.",
+  "license": "MPL-2.0",
+  "author": "DonislawDev",
+  "homepage": "https://github.com/donislawdev/TestingFilesGenerator/tree/main/npm/testing-files-generator#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/donislawdev/TestingFilesGenerator.git",
+    "directory": "npm/testing-files-generator"
+  },
+  "bugs": "https://github.com/donislawdev/TestingFilesGenerator/issues",
+  "keywords": [
+    "playwright",
+    "test files",
+    "fixtures",
+    "file upload",
+    "upload testing",
+    "test data",
+    "boundary testing",
+    "qa"
+  ],
+  "type": "commonjs",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "tfg": "bin/tfg.js"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "lib/",
+    "bin/",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "testing-files-generator-playwright-example",
+  "private": true,
+  "description": "An upload form with four mistakes, the tests it usually gets, which pass, and tests from a generated set, which find all four.",
+  "license": "MPL-2.0",
+  "scripts": {
+    "test": "playwright test",
+    "check": "node check.mjs",
+    "types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "26.6.6",
+    "testing-files-generator": "file:../../npm/testing-files-generator",
+    "typescript": "7.0.2"
+  }
+}

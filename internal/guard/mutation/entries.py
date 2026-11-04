@@ -16844,4 +16844,55 @@ MUTATIONS = [
         "\t\tif code != ExitOK {",
         "TestGenerateSendsItsManifestAPartAtATime",
     ),
+    # --- the npm package is held to the release and the manifest it reads
+    #     (2026-11-04, docs/PLAYWRIGHT-2026-11-04.md) ---
+    (
+        "the npm package forgets a platform the release builds a binary for",
+        "npm/testing-files-generator/lib/binary.js",
+        "  'linux arm64': '@testing-files-generator/linux-arm64',\n",
+        "",
+        "TestThePackageKnowsEveryPlatformTheReleaseBuilds",
+    ),
+    (
+        "the npm package looks for a binary in a package the release does not publish",
+        "npm/testing-files-generator/lib/binary.js",
+        "'@testing-files-generator/win32-arm64'",
+        "'@testing-files-generator/windows-arm64'",
+        "TestThePackageKnowsEveryPlatformTheReleaseBuilds",
+    ),
+    (
+        "the npm package's types lose a reason the program declares",
+        "npm/testing-files-generator/index.d.ts",
+        "  | 'duplicate'\n",
+        "",
+        "TestThePackageHoldsTheManifestsClosedLists",
+    ),
+    (
+        "the npm package refuses a manifest that expects sanitize",
+        "npm/testing-files-generator/lib/testfile.js",
+        "'sanitize', 'unspecified']",
+        "'unspecified']",
+        "TestThePackageHoldsTheManifestsClosedLists",
+    ),
+    (
+        "the npm package's types promise a field the manifest does not write",
+        "npm/testing-files-generator/index.d.ts",
+        "  target_id: string;\n",
+        "  target: string;\n",
+        "TestThePackageTypesOnlyPromiseFieldsTheManifestHas",
+    ),
+    (
+        "an error the npm package throws into a test picks up a semicolon",
+        "npm/testing-files-generator/lib/binary.js",
+        "or unset it to use",
+        "; unset it to use",
+        "TestTheTextOfThePackageIsAsciiWithPlainPunctuation",
+    ),
+    (
+        "the example's page says something with a semicolon",
+        "examples/playwright/app/page.js",
+        "'Uploaded'",
+        "'Uploaded; done'",
+        "TestTheTextOfThePackageIsAsciiWithPlainPunctuation",
+    ),
 ]
