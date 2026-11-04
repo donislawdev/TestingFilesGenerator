@@ -110,6 +110,7 @@ var notWords = map[string]string{
 	`"tool-result"`: "the key the section of a tool's result is remembered under, never shown",
 	`"preferences"`: "what the preferences screen is, the key it is known by between screens, never shown",
 	`"about"`:       "what the about screen is, the key it is known by between screens, never shown",
+	`"closing"`:     "what the keyboard acts on while the window waits to close - no screen, so no key does anything - never shown",
 	`"file"`:        "the scheme of a local address, which is a protocol name rather than prose",
 	`"."`:           "the working directory, when the system will not say which one it is",
 	`"tfg-out"`: "the folder the window offers to write into. A directory name rather than " +

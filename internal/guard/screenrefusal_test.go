@@ -26,9 +26,6 @@ import (
 // Six scenes fit under the ceiling.
 func TestEveryPictureNamedAfterARefusalShowsOne(t *testing.T) {
 	scenes := screenScenes()
-	// The first render of a process lays out differently - see O148 and the
-	// same call in TestEveryScreenStillDrawsItsStoredPicture.
-	renderScene(t, scenes[0])
 	checked := 0
 	for _, sc := range scenes {
 		if !strings.Contains(sc.name, "refused") {

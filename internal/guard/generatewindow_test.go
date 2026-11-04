@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strings"
 	"testing"
-	"time"
 
 	"fyne.io/fyne/v2"
 
@@ -454,28 +453,38 @@ func TestGeneratingFromTheWindowWritesTheFilesAndTheManifest(t *testing.T) {
 // and closing straight away ends the process while the engine is still winding
 // down, so the manifest describing what did get written never lands - and that
 // manifest is the only thing cleanup can work from.
+//
+// The wait happens off the interface thread since 2026-11-03 (R06), so the
+// closing is joined here before the disk is read. That the window is let go
+// only once the run has stopped is held by
+// TestClosingDuringARunKeepsTheWindowDrawingUntilTheRunHasStopped, which can
+// see the moment in between.
+//
+// The writers are held until the run is asked to stop, so the window is
+// closed in the middle of the run rather than at whatever point a run of
+// four hundred files has reached by then - see writersHeld.
 func TestClosingTheWindowDuringARunStopsItAndWaitsForIt(t *testing.T) {
 	dir := t.TempDir()
-	host, content := screen(t)
+	host, content, held := writersHeldScreen(t)
 
 	fill(t, content, text.FieldOutputDir(), dir)
 	fill(t, content, text.FieldSize(), "64kb")
 	fill(t, content, text.FieldCount(), "400")
 	press(t, content, "Generate")
-	waitUntilTheRunHasStarted(t, dir)
+	held.inTheMiddle(t)
 
 	if host.intercept == nil {
 		t.Fatal("the window has no close intercept, so closing it does not reach the run at all")
 	}
 	host.intercept()
+	join(host)
+	held.stoppedByTheGuard(t)
 
 	if host.closed != 1 {
 		t.Errorf("the window was closed %d time(s) and it should be closed exactly once", host.closed)
 	}
 
-	// The wait is what makes this assertable at all. If closing did not wait,
-	// the engine would still be writing right now and this count would be a
-	// number that changes while it is read.
+	// Joined, so this count is not a number that changes while it is read.
 	names := namesIn(t, dir)
 	for _, name := range names {
 		if strings.Contains(name, core.PartialMarker) {
@@ -488,6 +497,11 @@ func TestClosingTheWindowDuringARunStopsItAndWaitsForIt(t *testing.T) {
 	}
 	if info.Size() == 0 {
 		t.Error("the manifest is the empty file the run claimed, so closing the window did not wait for it to be written")
+	}
+	// Stopped rather than waited out: a close that let all four hundred
+	// through would be a window that cannot be closed during a run.
+	if raw, err := os.ReadFile(filepath.Join(dir, "manifest.json")); err != nil || !strings.Contains(string(raw), `"complete": false`) {
+		t.Errorf("the manifest does not say the run was stopped, so closing the window did not reach it (%v)", err)
 	}
 	t.Logf("closing the window stopped a 400 file run with %d file(s) on disk and a manifest", len(names)-1)
 }
@@ -576,31 +590,36 @@ func TestWhatIsTypedOnTheScreenIsWhatGetsWritten(t *testing.T) {
 // brief, and every other guard here was green. A control nobody presses is a
 // control nobody has checked.
 //
-// Deterministic without polling, because stopping waits. By the time the press
-// returns the engine has wound down, so what is on the disk is not a number
-// that changes while it is read.
+// Deterministic without polling, because the run is joined after the press.
+// Cancel itself does not wait since 2026-11-03 (R06) - that is held by
+// TestCancelAnswersAtOnceAndSaysWhatItWaitsFor - so what is on the disk is
+// read once the engine has wound down, not while it changes. The writers are
+// held until the run is asked to stop, so Cancel is pressed in the middle of
+// the run - see writersHeld.
 func TestCancelStopsTheRun(t *testing.T) {
 	dir := t.TempDir()
-	_, content := screen(t)
+	host, content, held := writersHeldScreen(t)
 
 	fill(t, content, text.FieldOutputDir(), dir)
 	fill(t, content, text.FieldSize(), "64kb")
 	fill(t, content, text.FieldCount(), "400")
 	press(t, content, "Generate")
-	waitUntilTheRunHasStarted(t, dir)
+	held.inTheMiddle(t)
 
 	cancel := buttonNamed(content, "Cancel")
 	if cancel == nil {
 		t.Fatalf("there is no Cancel button. The screen has: %v", buttonNames(content))
 	}
 	cancel.OnTapped()
+	join(host)
+	held.stoppedByTheGuard(t)
 
 	info, err := os.Stat(filepath.Join(dir, "manifest.json"))
 	if err != nil {
 		t.Fatalf("no manifest after cancelling: %v", err)
 	}
 	if info.Size() == 0 {
-		t.Fatal("the manifest is the empty file the run claimed, so cancelling did not wait for the run to wind down")
+		t.Fatal("the manifest is the empty file the run claimed, so the run that was cancelled never wrote down what it did")
 	}
 
 	// Stopped rather than finished. A cancel that let all four hundred through
@@ -750,47 +769,18 @@ func TestARunIsStoppableFromTheMomentItStarts(t *testing.T) {
 		fn = fn[:end]
 	}
 
-	handle := strings.Index(fn, "r.stop = func()")
+	// The handle is the screen's work since 2026-11-03 (work.go), which took
+	// the place of r.stop.
+	handle := strings.Index(fn, "r.work = w")
 	worker := strings.Index(fn, "go func()")
 	switch {
 	case handle < 0:
-		t.Fatal("startRun no longer assigns r.stop, so nothing would stop a run at all")
+		t.Fatal("startRun no longer assigns r.work, so nothing would stop a run at all")
 	case worker < 0:
 		t.Fatal("startRun no longer starts a goroutine, so this guard is reading the wrong function")
 	case handle > worker:
-		t.Error("startRun starts the worker before it assigns r.stop.\n" +
+		t.Error("startRun starts the worker before it assigns r.work.\n" +
 			"Reason: between those two statements files are being written and Stop has nothing to call, so closing the window there ends the process inside a file with no manifest.\n" +
-			"What to do: assign r.stop first. ctx, cancel and done all exist by then, so nothing is gained by waiting.")
+			"What to do: assign r.work first. The work exists by then, so nothing is gained by waiting.")
 	}
-}
-
-// waitUntilTheRunHasStarted blocks until the run has put something on the disk.
-//
-// A guard about interrupting a run has to interrupt a run, and since 2026-08-26
-// pressing Generate no longer means one is going: planning moved off the
-// interface thread, so for a moment after the press the worker is still working
-// out what to write. Cancelling in that moment is answered correctly and
-// uselessly - nothing has been written, so there is nothing to record and no
-// manifest, which is the rule Result.Started states.
-//
-// The manifest claims its name before the first file, so anything at all
-// appearing here means the writing has begun.
-//
-// This one polls a budget on purpose, and it is the ONLY wait here that still
-// should. Its siblings stopped: waiting for a manifest is now a join, because
-// the worker writes the record before it closes its channel, and the budget
-// there was bounding the whole run rather than the wait for a filesystem -
-// four failures came of that, O111 and O126. Joining cannot work here, because
-// this waits for a run to START so that it can be interrupted, and a join by
-// definition returns when the work is over.
-func waitUntilTheRunHasStarted(t *testing.T, dir string) {
-	t.Helper()
-	deadline := time.Now().Add(20 * time.Second)
-	for time.Now().Before(deadline) {
-		if entries, err := os.ReadDir(dir); err == nil && len(entries) > 0 {
-			return
-		}
-		time.Sleep(time.Millisecond)
-	}
-	t.Fatal("nothing was written within twenty seconds, so there was never a run to interrupt")
 }

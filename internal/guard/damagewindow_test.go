@@ -8,8 +8,11 @@ import (
 	"strings"
 	"testing"
 
+	"fyne.io/fyne/v2"
+
 	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
@@ -85,6 +88,124 @@ func TestTheWindowDrawsAFieldForEveryDamageParameter(t *testing.T) {
 		}
 	}
 	t.Logf("%d damage parameter(s) drawn from the registry", checked)
+}
+
+// Choosing a damage again, or a format, leaves the registry of fields holding
+// what the screen draws and nothing else.
+//
+// The registry is what a refusal is addressed against and what a run freezes,
+// so a field the screen no longer draws is a place a refusal could still go,
+// under a box nobody can see. Every choice of a damage used to leave one
+// behind - its parameters were added and never taken away - so the count is
+// read after many choices rather than one: one stale field reads like the cost
+// of the screen, twenty read like what they are (R18 of the stability review).
+// Then the same with the format changed in between, because the parameters sit
+// after the format's fields, and a mark that did not move with the format
+// would cut the format's fields instead of the damage's.
+func TestChoosingADamageAgainLeavesNoFieldBehind(t *testing.T) {
+	host := newFakeHost(t)
+	gen := window.NewGenerate(host)
+	content := gen.Object()
+	t.Cleanup(func() { join(host) })
+	fields := gen.Fields()
+	picker, ok := controlUnder(content, text.FieldDamage()).(*parts.Chooser)
+	if !ok {
+		t.Fatal("the damage field is not a list to choose from")
+	}
+	var chosen damage.Descriptor
+	for _, d := range damage.All() {
+		if len(d.Parameters) > 0 {
+			chosen = d
+			break
+		}
+	}
+	if chosen.ID == "" {
+		t.Fatal("no damage declares a parameter, so this proved nothing")
+	}
+
+	// The formats that declare the fewest and the most settings, asked of the
+	// registry: two formats with as many fields each would pass a mark that
+	// stayed where the first one left it.
+	formats := chooserIn(t, fields, "format")
+	declared := map[string]int{}
+	var few, many string
+	for _, id := range formats.Options {
+		d, err := format.Get(id)
+		if err != nil {
+			t.Fatalf("the format menu offers %q: %v", id, err)
+		}
+		declared[id] = len(d.Properties)
+		if few == "" || declared[id] < declared[few] {
+			few = id
+		}
+		if many == "" || declared[id] > declared[many] {
+			many = id
+		}
+	}
+	if declared[few] == declared[many] {
+		t.Fatalf("every format declares %d settings, so a mark that stayed with the first would pass", declared[few])
+	}
+
+	counts := map[string]int{}
+	for _, f := range []string{few, many} {
+		// None before the format rather than after it: a change of format
+		// takes every parameter away, so this is a count no stale field can
+		// be part of, whatever the screen does with a choice of none.
+		picker.SetSelected(text.DamageNone())
+		formats.SetSelected(f)
+		without := fields.Len()
+		picker.SetSelected(chosen.ID)
+		counts[f] = fields.Len()
+		if counts[f] <= without {
+			t.Fatalf("choosing %s with %s added no field (%d before and after), so this proved nothing", chosen.ID, f, without)
+		}
+	}
+	for i := 0; i < 20; i++ {
+		picker.SetSelected(text.DamageNone())
+		picker.SetSelected(chosen.ID)
+	}
+	if got := fields.Len(); got != counts[many] {
+		t.Errorf("after twenty more choices of %s the registry holds %d fields, and %d after the first", chosen.ID, got, counts[many])
+	}
+	for i := 0; i < 20; i++ {
+		formats.SetSelected([]string{few, many}[i%2])
+		picker.SetSelected(text.DamageNone())
+		picker.SetSelected(chosen.ID)
+	}
+	if got := fields.Len(); got != counts[many] {
+		t.Errorf("after twenty changes of format the registry holds %d fields, and %d after the first", got, counts[many])
+	}
+	drawn := map[fyne.CanvasObject]bool{}
+	walk(content, func(o fyne.CanvasObject) { drawn[o] = true })
+	for i, control := range fields.Controls() {
+		if !drawn[control] {
+			t.Errorf("the registry holds a field for %q the screen does not draw", fields.All()[i].Setting)
+		}
+	}
+	// And the other way round, for what the two choices declare: a box on the
+	// screen with no field behind it is a box whose refusal has nowhere to go,
+	// which is what a mark that cut the format's fields would leave.
+	d, err := format.Get(many)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range settingNames(d.Properties, chosen.Parameters) {
+		field := fields.Lookup(name)
+		if field == nil || !drawn[field.Control] {
+			t.Errorf("%q of %s with %s is drawn without a field in the registry behind it", name, many, chosen.ID)
+		}
+	}
+}
+
+// settingNames is the name of every setting in the lists given, in order.
+func settingNames(lists ...[]format.Property) []string {
+	var out []string
+	for _, list := range lists {
+		for _, p := range list {
+			out = append(out, p.Name)
+		}
+	}
+	return out
 }
 
 // A run started from the window is damaged, and the bytes say so.

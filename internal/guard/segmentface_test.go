@@ -26,7 +26,7 @@ import (
 // single batch screen, which has no such switch (O223).
 func TestTheSizeWaySwitchFreezesWithTheRestOfTheForm(t *testing.T) {
 	dir := t.TempDir()
-	batches, _, _ := screenInAWindowWithHost(t, text.TabRecipe())
+	batches, _, host := screenInAWindowWithHost(t, text.TabRecipe())
 	entryUnder(t, batches, text.FieldTargetID()).SetText("invoices")
 	entryUnder(t, batches, text.FieldOutputDir()).SetText(dir)
 	entryUnder(t, batches, text.FieldSize()).SetText("64kb")
@@ -47,7 +47,9 @@ func TestTheSizeWaySwitchFreezesWithTheRestOfTheForm(t *testing.T) {
 	if cancel == nil {
 		t.Fatalf("there is no Cancel button. The screen has: %v", buttonNames(batches))
 	}
+	// Cancel does not wait for the run (R06), so the run is waited for here.
 	cancel.OnTapped()
+	join(host)
 	if sizeWaySwitch(t, batches).Disabled() {
 		t.Error("the switch is still frozen after the run stopped, so it never comes back")
 	}

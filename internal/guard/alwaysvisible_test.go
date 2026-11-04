@@ -83,7 +83,10 @@ func TestAddingABatchIsOutOfUseWhileARunIsGoing(t *testing.T) {
 	if cancel == nil {
 		t.Fatalf("there is no Cancel button. The screen has: %v", buttonNames(body))
 	}
+	// Cancel asks the run to stop and does not wait for it, so the run is
+	// waited for here - the form comes back with the run's last word (R06).
 	cancel.OnTapped()
+	screen.Settled()
 
 	if add.Disabled() {
 		t.Error("the add button is still out of use after the run stopped, so it never comes back.")

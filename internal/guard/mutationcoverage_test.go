@@ -203,11 +203,10 @@ var provenByProbe = map[string]string{
 		"A probe rather than a mutation entry because there is no product code underneath: it reads docs/REGRESSION.md (both halves of it since 2026-09-21), which is not in the repository, " +
 		"so a substitution in a .go file never reaches it.",
 
-	"TestARunIsStoppableFromTheMomentItStarts": "checked 2026-08-23 with tools/probes/run-stop-order.py, which reproduces the original defect faithfully: it moves the assignment of r.stop " +
-		"to after the goroutine that writes the files, builds, and runs the guard. Reported CAUGHT, and the file was restored. " +
-		"A probe rather than a mutation entry for two reasons, and the first one is the interesting one. The obvious substitution - deleting the handle - does NOT compile, because cancel is then unused, " +
-		"and a mutation that does not compile proves nothing while reporting as though it did. The faithful version is a MOVE of fifteen lines rather than a substitution of one piece of text for another, " +
-		"and the entries in entries.py have to be literals.",
+	"TestARunIsStoppableFromTheMomentItStarts": "checked 2026-08-23 and again 2026-11-04 with tools/probes/run-stop-order.py, which reproduces the original defect faithfully: it moves the assignment of the handle " +
+		"(r.stop then, r.work since the work got a type of its own) to after the goroutine that writes the files, builds, and runs the guard. Reported CAUGHT both times, and the file was restored. " +
+		"A probe rather than a mutation entry because the defect is a MOVE of a statement past the goroutine, not a substitution of one piece of text for another, " +
+		"and the entries in entries.py have to be literals. Deleting the handle would compile since 2026-11-04 and would only prove that it is assigned, not where.",
 
 	"TestTheTaskbarIconIsTheSameDrawingAsTheWindowIcon": "checked 2026-08-13 with tools/probes/exe-icon.ps1, run on both binaries. " +
 		"It reported 7 of 7 icon images inside tfg-gui.exe and 0 of 7 inside tfg.exe, which is the right answer for a command line with no window. " +

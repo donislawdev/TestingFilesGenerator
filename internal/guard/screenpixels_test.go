@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 
 	"fyne.io/fyne/v2"
@@ -614,32 +615,6 @@ func TestEveryScreenStillDrawsItsStoredPicture(t *testing.T) {
 		// stops here only on the system that has a reason.
 		t.Skip("the stored screens are not compared on macOS - the system hides scroll bars, see the comment above")
 	}
-	// One screen is built and thrown away before the loop, and that is a
-	// measurement rather than a superstition. Under Fyne 2.8.1 the first screen
-	// built in a process that has already run the rest of this package comes
-	// back with a tab bar of no height: the tab buttons keep their correct
-	// widths and lose their heights, and the text inside one reports a height
-	// of minus twelve. Measured on 2026-08-27, when the toolkit moved off
-	// 2.8.0:
-	//
-	//   - it follows the position and not the screen. Swapping the first two
-	//     entries of screenScenes moves the failure to the other one.
-	//   - it needs the rest of the package. This test on its own passes, and
-	//     goes on passing when run five times over.
-	//   - it is the instrument and not the window. The guirender probe draws
-	//     the same screen correctly, and the built binary draws all four tabs
-	//     properly - looked at, not assumed.
-	//   - another Resize does not help, and neither does waiting 200ms after
-	//     the Refresh. So it is not a layout pass that was skipped, and not a
-	//     race against a worker either.
-	//
-	// This hides nothing. Every screen is still compared against its stored
-	// tree and its stored picture, and only the first render is paid for.
-	// Whether the guard can still see a real change was not taken on trust
-	// either - both of its mutations were run again after this line went in.
-	//
-	// What causes it inside the toolkit is NOT known, and O148 says so.
-	renderScene(t, screenScenes()[0])
 	for _, sc := range screenScenes() {
 		t.Run(sc.name, func(t *testing.T) {
 			got, markup := renderScene(t, sc)
@@ -851,9 +826,50 @@ func differingLines(want, got string, cap int) (string, int) {
 	return b.String(), total
 }
 
+// firstScreen is the screen drawn and thrown away before the first one a
+// process asks for, and that is a measurement rather than a superstition.
+// Under Fyne 2.8.1 the first screen built in a process that has already run
+// the rest of this package comes back with a tab bar of no height: the tab
+// buttons keep their correct widths and lose their heights, and the text
+// inside one reports a height of minus twelve. Measured on 2026-08-27, when
+// the toolkit moved off 2.8.0:
+//
+//   - it follows the position and not the screen. Swapping the first two
+//     entries of screenScenes moves the failure to the other one.
+//   - it needs the rest of the package. This test on its own passes, and
+//     goes on passing when run five times over.
+//   - it is the instrument and not the window. The guirender probe draws
+//     the same screen correctly, and the built binary draws all four tabs
+//     properly - looked at, not assumed.
+//   - another Resize does not help, and neither does waiting 200ms after
+//     the Refresh. So it is not a layout pass that was skipped, and not a
+//     race against a worker either.
+//
+// This hides nothing. Every screen is still compared against its stored tree
+// and its stored picture, and only the first render is paid for. Whether the
+// guard can still see a real change was not taken on trust either - both of
+// its mutations were run again after the warm-up went in.
+//
+// Once a process rather than once before each loop since 2026-11-04. Three
+// guards draw screens and which of them draws first depends on how the race
+// job lays the guards out: the one without a warm-up of its own was first
+// that day and went red, only in the tab bar of the first tool it drew. Here,
+// no guard that draws a screen can be without it.
+//
+// What causes it inside the toolkit is NOT known, and O148 says so.
+var firstScreen sync.Once
+
 // renderScene builds the window, puts one screen into one state and returns
-// both what the canvas holds and how it was built.
+// both what the canvas holds and how it was built - after the throwaway
+// screen above, the first time a process asks.
 func renderScene(t *testing.T, sc screenScene) (image.Image, string) {
+	t.Helper()
+	firstScreen.Do(func() { drawScene(t, screenScenes()[0]) })
+	return drawScene(t, sc)
+}
+
+// drawScene is renderScene without the warm-up.
+func drawScene(t *testing.T, sc screenScene) (image.Image, string) {
 	t.Helper()
 
 	app := test.NewApp()

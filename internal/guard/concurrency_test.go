@@ -52,6 +52,19 @@ var mayBeConcurrent = map[string]string{
 	// invariant G7 exists to hold. Added 2026-08-05 with the first generate
 	// window, and the owner was told.
 	"internal/gui/window/run.go": "the run happens beside the window, and closing the window waits for it",
+	// The handle on one piece of work beside the window, out of run.go and
+	// tools.go on 2026-11-03 when Cancel stopped waiting (O262, the owner's
+	// decision that day). It holds the first lock in the window, and the lock
+	// is for the test driver: there fyne.Do runs the worker's progress on the
+	// worker, so a press of Cancel and a line of progress are two goroutines
+	// writing one status line. In the shipped program both are on the
+	// interface thread and the lock is never contended.
+	"internal/gui/window/work.go": "Cancel and the worker's news say things to one screen, ordered by one lock",
+	// Closing the window during work waits for it on a goroutine of its own,
+	// so the window goes on drawing while the disk finishes the write in hand
+	// - the owner's decision of 2026-11-03 (O262). Waiting on the interface
+	// thread was a window Windows offers to end, in the middle of a file.
+	"internal/gui/window/closing.go": "closing the window waits for the work beside the window, not on its thread",
 	// The window's clock. time.AfterFunc calls back on a goroutine of its
 	// own, which is how a delayed piece of work - the busy face, the wait for
 	// quiet - waits without holding the window, and the callback hands its

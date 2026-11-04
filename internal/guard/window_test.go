@@ -76,8 +76,11 @@ type fakeHost struct {
 	// cancelling the preview it wanted to read.
 	waitForWork func()
 	closed      int
-	picked      string
-	asked       int
+	// letGo is closed the first time the window is let go, when a guard made
+	// it - see Close, in stopping_test.go.
+	letGo  chan struct{}
+	picked string
+	asked  int
 	// pickedFile is what ChooseFile answers, askedFile how often it was asked,
 	// and copied the last text Copy was given - the things only the Tools tab
 	// asks of a window. Counted apart from asked, so a guard about the
@@ -108,6 +111,8 @@ type fakeHost struct {
 	// hold parks the worker just before it reports, so that a guard can read
 	// the screen while a run is going. Nil unless a guard asked for one.
 	hold *holdDuringRun
+	// writers holds a run's writers until it is stopped - see writersHeld.
+	writers *writersHeld
 
 	// held is what the window asked to run later and has not run yet, when a
 	// guard is holding the clock - see Later. Nil means the clock runs at once.
@@ -274,7 +279,6 @@ func (h *fakeHost) holdTheClock() *heldClock {
 // SetWaitForWork is the optional interface the window offers rather than
 // requires - a real window has no use for it and does not implement it.
 func (h *fakeHost) SetWaitForWork(fn func()) { h.waitForWork = fn }
-func (h *fakeHost) Close()                   { h.closed++ }
 
 // Settling and ExpandingPreset are two more optional interfaces a real window
 // does not implement: a screen reading its form, and the preset screen

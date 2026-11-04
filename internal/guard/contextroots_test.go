@@ -27,9 +27,7 @@ import (
 // code inside a function does not make the list lie (pitfall 11).
 var contextRoots = map[string]string{
 	"cmd/tfg/main.go main":                            "the process's own context, the one the signal cancels",
-	"internal/gui/window/run.go runner.onPreview":     "a preview starts here, and Cancel on the screen is what stops it",
-	"internal/gui/window/run.go runner.startRun":      "a run started in the window begins here, and Cancel is what stops it",
-	"internal/gui/window/tools.go startTool":          "a tool started in the window begins here, and its Cancel is what stops it",
+	"internal/gui/window/work.go begin":               "a preview, a run or a tool started in the window begins here, and Cancel or closing the window is what stops it",
 	"internal/oracle/oracle.go Checker.Check":         "the oracle runs somebody else's reader under a time limit of its own - a measuring instrument for the guards, never on the path of a run",
 	"internal/oracle/oracle.go PictureChanges":        "the same instrument, a reference reader under a time limit",
 	"internal/oracle/oracle.go Strict":                "the same instrument, a reference reader under a time limit",

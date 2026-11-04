@@ -463,6 +463,26 @@ func InstructionsNotSaved(path, cause string) string {
 // NothingProduced is the outcome when a run ended with no manifest at all.
 func NothingProduced() string { return say("NothingProduced", "Nothing was produced.") }
 
+// Stopping is said from the press of Cancel until the work has stopped. The
+// work stops between steps - a write, a picture, a block read - so the step in
+// hand is finished first, and on a slow or a networked disk that is what the
+// screen waits for. A file cut off part way is removed, which is the second
+// half of the sentence.
+func Stopping() string {
+	return say("Stopping", "Stopping - the step in progress is finished first, so nothing is left half written.")
+}
+
+// HeadingClosing is what the window shows in place of its screens once it has
+// been closed during work, until the work has stopped and the window goes
+// (docs/GUI.md G7).
+func HeadingClosing() string { return say("HeadingClosing", "Closing") }
+
+// SubtitleClosing says under it what the window is waiting for.
+func SubtitleClosing() string {
+	return say("SubtitleClosing",
+		"The window closes once the work in progress has stopped. The step in progress is finished first, so nothing is left half written.")
+}
+
 // StoppedAfter is the outcome of a run that was cancelled or failed part way.
 func StoppedAfter(written int) string {
 	return sayf("StoppedAfter", "Stopped after {{.Files}}. The manifest describes exactly those.",

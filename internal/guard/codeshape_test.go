@@ -65,6 +65,9 @@ const (
 	// Lowered from 399 on 2026-10-07: what makes a container moved out of
 	// format/format.go into container.go when two fields for eml took it
 	// past the ceiling. The longest file is gui/window/recipe.go now.
+	// Held at 395 on 2026-11-03: the list of batches moved out of
+	// gui/window/recipe.go into recipelist.go when one import took it past
+	// the ceiling. The longest file is oracle/oracle.go now.
 	longestFile = 395
 
 	// Depth answers a different question than length, and it is the better
