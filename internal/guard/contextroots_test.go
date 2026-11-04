@@ -32,6 +32,7 @@ var contextRoots = map[string]string{
 	"internal/oracle/oracle.go PictureChanges":        "the same instrument, a reference reader under a time limit",
 	"internal/oracle/oracle.go Strict":                "the same instrument, a reference reader under a time limit",
 	"internal/engine/engine.go Plan":                  "the version without a context, for callers that have none - it is PlanContext, so it cannot disagree with it",
+	"internal/manifest/manifest.go Load":              "reads a document of at most sixteen megabytes that is in memory already, so there is nothing long to stop - verify and cleanup read through ReadClaims, which takes the caller's",
 	"internal/format/eml/eml.go generator.Plan":       "the Generator interface's Plan for callers without a context - the engine asks PlanContext",
 	"internal/format/htmlfile/html.go generator.Plan": "the Generator interface's Plan for callers without a context - the engine asks PlanContext",
 	"internal/format/rtf/rtf.go generator.Plan":       "the Generator interface's Plan for callers without a context - the engine asks PlanContext",

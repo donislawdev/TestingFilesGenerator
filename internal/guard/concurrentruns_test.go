@@ -247,29 +247,66 @@ func TestAnOrdinaryNameWithADotOrASpaceStillWorks(t *testing.T) {
 	}
 }
 
-// A manifest is read into memory to be compared against a directory, so its
-// size is a lever somebody else holds. The recipe has had a ceiling since
-// 2026-08-02 and this had none, which was an asymmetry rather than a decision.
-func TestAManifestTooLargeToReadIsRefusedBeforeItIsRead(t *testing.T) {
+// A manifest arrives from somebody else, so its size is a lever somebody else
+// holds. The recipe has had a ceiling since 2026-08-02, and the manifest had
+// one on the whole document from 2026-08-03 until 2026-11-04, when a run past
+// it was found to write a manifest verify and cleanup would not read. Now the
+// ceiling is on the most of it held at once - one value - and this is what
+// stands between a document of any length and the memory of the machine.
+//
+// Both halves, because each is what makes the other safe: a single value just
+// past the ceiling is refused, and a document past it whose values are small is
+// read, so the ceiling cannot have quietly gone back to being the document's.
+func TestOneValueOfAManifestPastTheCeilingIsRefusedAndALongManifestIsNot(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "manifest.json")
 
-	// Just over the ceiling, written as valid JSON so that the refusal cannot
-	// be mistaken for a parse failure.
-	padding := strings.Repeat("x", manifest.MaxBytes)
+	// Written as valid JSON so that the refusal cannot be mistaken for a
+	// parse failure.
+	padding := strings.Repeat("x", manifest.MaxValueBytes)
 	doc := `{"manifest_version":"1.0","files":[],"run":{"command":"` + padding + `"}}`
 	if err := os.WriteFile(path, []byte(doc), 0o644); err != nil {
 		t.Fatalf("writing: %v", err)
 	}
-
 	code, stdout, errOut := run(t, "verify", path)
-	if code != cli.ExitIO {
-		t.Errorf("exit %d, expected %d:\n%s", code, cli.ExitIO, errOut)
-	}
-	if !strings.Contains(errOut, "the limit is") {
-		t.Errorf("the refusal does not say there is a limit:\n%s", errOut)
+	if code != cli.ExitIO || !strings.Contains(errOut, "a single value of more than") {
+		t.Errorf("a manifest with one value past the ceiling ended %d, expected %d and the refusal of a value:\n%s", code, cli.ExitIO, errOut)
 	}
 	if stdout != "" {
 		t.Errorf("a failed run wrote to stdout:\n%s", stdout)
+	}
+
+	// Longer than that in entries of a kilobyte, which is what a long run
+	// writes. None of them claimed, so the answer is about the reading alone.
+	long := longManifest(`{"path":"first.txt"}`, manifest.MaxValueBytes)
+	if err := os.WriteFile(path, []byte(long), 0o644); err != nil {
+		t.Fatalf("writing: %v", err)
+	}
+	if code, _, errOut := run(t, "verify", path); code != cli.ExitOK || !strings.Contains(errOut, "nothing to check") {
+		t.Errorf("a manifest of %d B in small entries ended %d, expected it read and %d:\n%s", len(long), code, cli.ExitOK, errOut)
+	}
+}
+
+// And one value just short of the ceiling is read, so the ceiling is the one
+// the refusal names. The guard above holds it from above, and nothing there
+// would notice the reader refusing at half of it - a manifest this tool reads
+// today turned away.
+//
+// Short by a kilobyte rather than a byte. What the reader counts against the
+// ceiling is the value and the bytes either side of it - the colon before it,
+// and the byte after it that says where it ends - so the exact edge moves by a
+// byte or two with the shape of the value, and no reader of a manifest needs
+// it to the byte.
+func TestOneValueOfAManifestJustUnderTheCeilingIsRead(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "manifest.json")
+	value := `{"command":""}`
+	padding := strings.Repeat("x", manifest.MaxValueBytes-1024-len(value))
+	doc := `{"manifest_version":"1.0","files":[],"run":{"command":"` + padding + `"}}`
+	if err := os.WriteFile(path, []byte(doc), 0o644); err != nil {
+		t.Fatalf("writing: %v", err)
+	}
+	if code, _, errOut := run(t, "verify", path); code != cli.ExitOK || !strings.Contains(errOut, "nothing to check") {
+		t.Errorf("a manifest with one value of %d B, a kilobyte under the ceiling of %d B, ended %d, expected it read and %d:\n%s",
+			len(value)+len(padding), manifest.MaxValueBytes, code, cli.ExitOK, errOut)
 	}
 }

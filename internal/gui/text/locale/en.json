@@ -631,11 +631,6 @@
     "hash": "sha256-bb722052cb9e",
     "other": "the files were written and the manifest could not be saved to {{.Path}}"
   },
-  "ManifestTooLargeToRead": {
-    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Size}}, {{.Limit}}.",
-    "hash": "sha256-0b5d14c5fc58",
-    "other": "this run's record is about {{.Size}} and this build reads at most {{.Limit}}, so Verify and Clean up will not be able to read it. Split the run to keep each record readable."
-  },
   "MemoryAutoIs": {
     "description": "Shown in the window. Carries one value, {{.Size}}, which has to stay spelled exactly that way.",
     "hash": "sha256-3a039b136e1c",

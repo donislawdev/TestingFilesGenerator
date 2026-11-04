@@ -2,8 +2,7 @@ package manifest
 
 import "encoding/json"
 
-// How long a manifest is, to the byte, and whether this build would read it
-// back.
+// How long a manifest is, to the byte.
 //
 // Counted rather than estimated since 2026-10-26. Until then a constant stood
 // here - 786 B an entry, measured on txt files on 2026-08-26 - and the warning
@@ -29,6 +28,12 @@ import "encoding/json"
 // (TestTheManifestSizeIsTheLengthOfTheManifest), and another holds Encode's
 // bytes to encoding/json's own, so a layout both got wrong the same way is
 // still caught.
+//
+// Until 2026-11-04 the count also settled whether this build would read the
+// document back, into a field of the summary. The ceiling it was held against
+// was on the whole document, and it went when the reader learned to take a
+// document a piece at a time (read.go) - the field went with it, and what is
+// left is the length: what the free space is held against.
 
 // entryIndent is what Encode puts in front of every line of an entry: the
 // entry is two levels into the document.
@@ -79,23 +84,6 @@ func (c *counted) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
-// settleReadBack sets Summary.TooLargeToReadBack from the length of the
-// document as it is about to be written, and says how long that is.
-//
-// The field is counted in its own document, so whether it is there changes
-// the length it describes. Settled the one way that cannot be wrong: present
-// exactly when the document WITHOUT it is past the ceiling. Then a document
-// that carries it is longer still and is refused, and one that does not
-// carry it is within the ceiling and is read.
-func (m *Manifest) settleReadBack() (int64, error) {
-	entries, err := m.entriesBytes()
-	if err != nil {
-		return 0, err
-	}
-	size, _, err := settle(m, entries, len(m.Files))
-	return size, err
-}
-
 // entriesBytes is how long the entries of this document are, together.
 func (m *Manifest) entriesBytes() (int64, error) {
 	var entries int64
@@ -109,27 +97,8 @@ func (m *Manifest) entriesBytes() (int64, error) {
 	return entries, nil
 }
 
-// settle is the rule above, for a header and the entries counted for it.
-func settle(header *Manifest, entries int64, n int) (int64, bool, error) {
-	header.Summary.TooLargeToReadBack = false
-	empty, err := header.emptyBytes()
-	if err != nil {
-		return 0, false, err
-	}
-	if size := documentBytes(empty, entries, n); size <= MaxBytes {
-		return size, false, nil
-	}
-	header.Summary.TooLargeToReadBack = true
-	if empty, err = header.emptyBytes(); err != nil {
-		return 0, false, err
-	}
-	return documentBytes(empty, entries, n), true, nil
-}
-
 // EncodedBytes is exactly how long Encode makes this document as it stands,
-// and changes nothing in it. Save settles Summary.TooLargeToReadBack first, so
-// asked of a document that is about to be saved, this can be short by the
-// field.
+// and changes nothing in it.
 func (m *Manifest) EncodedBytes() (int64, error) {
 	entries, err := m.entriesBytes()
 	if err != nil {
@@ -145,7 +114,7 @@ func (m *Manifest) EncodedBytes() (int64, error) {
 // Projection is the length of a document a run has not written yet, counted
 // as its entries are offered and none of them kept.
 //
-// A run says before its first byte whether its manifest will be readable, and
+// A run holds the free space against its manifest before its first byte, and
 // a preview says what the run would write. Both have the plan and no document,
 // and building the document a million entries long to measure it would hold
 // it all at once. This counts each entry the moment it is offered and keeps
@@ -178,11 +147,14 @@ func (p *Projection) Add(f File) {
 	p.shell.count(f)
 }
 
-// Bytes is how long the document would be, and whether this build would refuse
-// to read it back.
-func (p *Projection) Bytes() (int64, bool, error) {
+// Bytes is how long the document would be.
+func (p *Projection) Bytes() (int64, error) {
 	if p.err != nil {
-		return 0, false, p.err
+		return 0, p.err
 	}
-	return settle(p.shell, p.entries, p.n)
+	empty, err := p.shell.emptyBytes()
+	if err != nil {
+		return 0, err
+	}
+	return documentBytes(empty, p.entries, p.n), nil
 }

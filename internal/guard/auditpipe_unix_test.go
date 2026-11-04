@@ -45,11 +45,11 @@ func TestVerifyAndCleanupNeverWaitOnAPipe(t *testing.T) {
 	}
 
 	answersWithoutWaiting(t, "verify", func() bool {
-		diffs, err := audit.Verify(context.Background(), out, m, filepath.Base(mf))
+		diffs, err := audit.Verify(context.Background(), out, m.Claims(), filepath.Base(mf))
 		return err == nil && len(diffs) == 1 && diffs[0].Kind == audit.Unreadable
 	})
 	answersWithoutWaiting(t, "cleanup", func() bool {
-		cands, err := audit.Inspect(context.Background(), out, m)
+		cands, err := audit.Inspect(context.Background(), out, m.Claims())
 		return err == nil && len(cands) == 1 && cands[0].Disposition == audit.Unreachable
 	})
 }

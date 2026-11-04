@@ -1,7 +1,8 @@
 package manifest
 
 import (
-	"encoding/json"
+	"bytes"
+	"context"
 	"io"
 	"os"
 	"runtime"
@@ -154,41 +155,6 @@ type Summary struct {
 	// The cheapest form of the question O97 is about - a person checking by
 	// eye, or a script asserting a shape, does not have to walk the entries.
 	ByTarget map[string]int `json:"by_target"`
-
-	// TooLargeToReadBack says this build would refuse to read this document
-	// back, so "tfg verify" and "tfg cleanup" cannot work from it.
-	//
-	// The run itself succeeds and its files are correct. What is gone is the
-	// only authority over what may be deleted - untouchable rule 7 makes the
-	// manifest that authority, so a manifest this build will not read is a set
-	// of files nothing in this toolset can remove. Measured on 2026-08-26 and
-	// again on 2026-09-06: 25 000 files write about 25.9 MB against a ceiling
-	// of 16 MB, generate exits 0, and verify and cleanup both exit 5.
-	//
-	// The owner decided on 2026-08-26 that this is a note rather than a
-	// refusal, because refusing would take away something the tool does. What
-	// was missing was that nobody was told, and the telling was prose on
-	// stderr - measured on 2026-09-06 as one line among 25 003, and ABSENT
-	// ENTIRELY from the machine readable report. A tool that plugs into CI has
-	// to be able to say this to a script.
-	//
-	// Not an exit code, and that was decided rather than skipped. Exit 8 means
-	// "run finished, but not everything was produced" (docs/CLI.md), and here
-	// everything was produced - res.Failures is nought, so the sentence would
-	// read "0 files could not be produced" and point at a manifest that cannot
-	// be read. Exit codes are a frozen contract and redefining one is a major
-	// version, not a stopgap.
-	//
-	// Absent rather than false on an ordinary run, so every manifest already
-	// written stays byte for byte what it was. An added field, which
-	// docs/MANIFEST.md section 10 allows without moving manifest_version -
-	// the same shape as tool.go, added for review item S1.
-	//
-	// Save sets it from the length of the document it writes, since
-	// 2026-10-26. It came from an estimate until then, and a manifest of
-	// 17 170 219 B went out without it (size.go). A preview's document carries
-	// it for the run it previews, from the same count.
-	TooLargeToReadBack bool `json:"too_large_to_read_back,omitempty"`
 }
 
 // File is one entry.
@@ -406,11 +372,12 @@ const noteExamples = 3
 // same sentence about the label not fitting. The advice was per file for a
 // decision that is per target.
 //
-// The line that matters was buried under them. A run whose manifest will be
-// too big for this build to read back says so first, in a "note:" line
-// typographically identical to the 25 000 that follow it - and that one is the
-// only thing standing between somebody and a directory neither verify nor
-// cleanup can ever read. See echoManifestReach in cli/generate.go.
+// The line that mattered was buried under them. A run whose manifest would
+// be too big for this build to read back said so first, in a "note:" line
+// typographically identical to the 25 000 that followed it - and that one was
+// the only thing standing between somebody and a directory neither verify nor
+// cleanup could read. That note went on 2026-11-04 with the ceiling it was
+// about (read.go), and the grouping stays for every note that is left.
 //
 // The same reasoning was already applied to the progress bar, which is
 // throttled to 10 Hz and silent when stderr is not a terminal, on the grounds
@@ -535,7 +502,14 @@ func (e *SchemaError) Said() core.Said {
 	return core.Says("manifest.Unreadable", "%s cannot be read as a manifest: %s", core.A("Path", e.Path), core.A("Detail", e.Detail))
 }
 
-// MaxBytes is the largest manifest this build will read.
+// MaxBytes is the largest manifest Load will hold whole.
+//
+// Load's alone since 2026-11-04. verify and cleanup read through ReadClaims,
+// which takes a document a piece at a time under MaxValueBytes on one value and
+// has no ceiling on the document - a run past this one wrote a manifest they
+// then refused, so its files were files this tool could never remove
+// (read.go). Load holds every entry, so for it the length of the document is
+// still the memory it takes, and what is below is still its reason.
 //
 // A manifest arrives from outside the same way a recipe does - it travels with
 // a fixture set, it turns up in a pull request, it is handed to "verify" by
@@ -547,8 +521,7 @@ func (e *SchemaError) Said() core.Said {
 // rather than typed and it grows with the run: measured on 2026-10-26, an entry
 // costs from about 840 B (txt) to about 1580 B (eml), so this holds a run of
 // roughly ten to twenty thousand files - above the largest preset in
-// docs/PRESETS.md and around the ten thousand this tool is designed around. A
-// run past it is told so, from the document's real length (size.go).
+// docs/PRESETS.md and around the ten thousand this tool is designed around.
 //
 // What it does not do, stated as plainly as the recipe's: it does not defend
 // against a manifest that fits and is still expensive.
@@ -576,38 +549,72 @@ func (e *TooLargeError) Said() core.Said {
 // acting on the half of it we recognise is how "verify" ends up calling a
 // directory sound on the strength of the part it could read.
 //
-// One larger than MaxBytes is refused before a byte of it is read, because a
-// manifest is held in memory to be compared against a directory and the file
-// being read is not necessarily one of ours.
+// One larger than MaxBytes is refused before a byte of it is read, because
+// Load holds the whole document and every entry of it, and the file being read
+// is not necessarily one of ours. verify and cleanup read through ReadClaims,
+// which holds three fields of the claimed entries and has no ceiling on the
+// document - Load is for a caller that needs all of it, and a manifest past
+// sixteen megabytes is one such a caller should not be holding.
+//
+// The same reader as ReadClaims underneath (read.go), so the two refuse the
+// same documents in the same words.
 func Load(path string) (*Manifest, error) {
 	raw, err := readAtMost(path)
 	if err != nil {
 		return nil, err
 	}
 	var m Manifest
-	if err := json.Unmarshal(raw, &m); err != nil {
-		return nil, &SchemaError{Path: path, Detail: core.SaidOf(err)}
-	}
-	if m.ManifestVersion == "" {
-		return nil, &SchemaError{Path: path, Detail: core.Says("manifest.ItCarriesNoManifestVersionSo", "it carries no manifest_version, so it is not a manifest this tool wrote")}
-	}
-	got, want := major(m.ManifestVersion), major(Version)
-	if got != want {
-		return nil, &SchemaError{Path: path, Detail: core.Says("manifest.ItIsSchemaVersionAndThis", "it is schema version %s and this build reads %s. Use the version of tfg that wrote it", core.A("ManifestVersion", m.ManifestVersion), core.A("Version", Version))}
-	}
-	if err := checkPaths(path, &m); err != nil {
+	// Nothing long to stop: the document is in memory already and has a
+	// ceiling, so a context here would be one nobody could use.
+	err = decode(context.Background(), bytes.NewReader(raw), path, &m, func(f File) {
+		m.Files = append(m.Files, f)
+	})
+	if err != nil {
 		return nil, err
 	}
 	return &m, nil
 }
 
-// checkPaths refuses a manifest whose entries point outside the directory they
-// describe.
+// settled is what is asked of a manifest once all of it has been read, in the
+// order the answers come in: the version, then the first entry that leaves the
+// directory, then the instructions. A fault of the document as a document came
+// before all three and was answered while it was read.
 //
-// This is the door. Every consumer of a manifest comes through Load, so the
-// check sits here rather than beside each use - "verify" and "cleanup" then
-// cannot drift into disagreeing about it, and a consumer written later gets it
-// without knowing it exists.
+// The version first, before anything is believed. A manifest from a future
+// major describes fields this build does not know, and acting on the half of it
+// we recognise is how "verify" ends up calling a directory sound on the
+// strength of the part it could read - and an entry of it that seems to leave
+// the directory is an entry this build does not know how to read.
+func settled(path string, m *Manifest, escaped error) error {
+	if m.ManifestVersion == "" {
+		return &SchemaError{Path: path, Detail: core.Says("manifest.ItCarriesNoManifestVersionSo", "it carries no manifest_version, so it is not a manifest this tool wrote")}
+	}
+	got, want := major(m.ManifestVersion), major(Version)
+	if got != want {
+		return &SchemaError{Path: path, Detail: core.Says("manifest.ItIsSchemaVersionAndThis", "it is schema version %s and this build reads %s. Use the version of tfg that wrote it", core.A("ManifestVersion", m.ManifestVersion), core.A("Version", Version))}
+	}
+	if escaped != nil {
+		return escaped
+	}
+	// The instructions are a name beside the manifest and nothing else.
+	// cleanup --with-manifest removes the file this names, so a manifest
+	// carrying a path here would be a manifest that removes something the run
+	// never wrote.
+	if name := m.Run.Instructions; name != "" && !isInstructionsName(name) {
+		return &SchemaError{Path: path, Detail: core.Says("manifest.RunInstructionsIsAndItCan", "run.instructions is %q, and it can only be the name of a file beside the manifest ending in %s. "+
+			"This tool removes that file with the manifest, so it will not act on one that names anything else. "+
+			"Use the manifest the run actually wrote, or remove the key", core.A("Name", name), core.A("InstructionsSuffix", instructionsSuffix))}
+	}
+	return nil
+}
+
+// entryEscapes refuses entry i of a manifest when its path points outside the
+// directory the manifest describes, and is nil when it stays inside.
+//
+// This is the door. Every consumer of a manifest comes through the one reader,
+// so the check sits there rather than beside each use - "verify" and "cleanup"
+// then cannot drift into disagreeing about it, and a consumer written later
+// gets it without knowing it exists.
 //
 // Measured on 2026-08-03, before this existed: an entry with the path
 // "../VICTIM.txt" and cleanup --yes --force removed a file one directory above
@@ -621,28 +628,17 @@ func Load(path string) (*Manifest, error) {
 // written means the file was edited or produced by something else. Acting on
 // the rest of it would be trusting the half we happen to like.
 //
-// Every entry is checked, not only the ones Claimed returns. An entry that no
-// command reads today is one a command reads tomorrow.
-func checkPaths(path string, m *Manifest) error {
-	for i, f := range m.Files {
-		problem := core.ContainmentProblem(f.Path)
-		if problem == "" {
-			continue
-		}
-		return &SchemaError{Path: path, Detail: core.Says("manifest.EntryHasThePathWhichLands", "entry %d has the path %q, which lands outside the directory the manifest describes - %s. "+
-			"This tool never reads or removes anything outside that directory, so a manifest that asks it to is one it will not act on. "+
-			"Use the manifest the run actually wrote, or correct the path to one inside the directory", core.A("I", i+1), core.A("Path", f.Path), core.A("Problem", problem))}
+// Every entry is checked, not only the claimed ones. An entry that no command
+// reads today is one a command reads tomorrow. i counts every entry from one,
+// so the number is the one a person finds by counting the list.
+func entryEscapes(path string, i int, p string) error {
+	problem := core.ContainmentProblem(p)
+	if problem == "" {
+		return nil
 	}
-	// The instructions are a name beside the manifest and nothing else.
-	// cleanup --with-manifest removes the file this names, so a manifest
-	// carrying a path here would be a manifest that removes something the run
-	// never wrote.
-	if name := m.Run.Instructions; name != "" && !isInstructionsName(name) {
-		return &SchemaError{Path: path, Detail: core.Says("manifest.RunInstructionsIsAndItCan", "run.instructions is %q, and it can only be the name of a file beside the manifest ending in %s. "+
-			"This tool removes that file with the manifest, so it will not act on one that names anything else. "+
-			"Use the manifest the run actually wrote, or remove the key", core.A("Name", name), core.A("InstructionsSuffix", instructionsSuffix))}
-	}
-	return nil
+	return &SchemaError{Path: path, Detail: core.Says("manifest.EntryHasThePathWhichLands", "entry %d has the path %q, which lands outside the directory the manifest describes - %s. "+
+		"This tool never reads or removes anything outside that directory, so a manifest that asks it to is one it will not act on. "+
+		"Use the manifest the run actually wrote, or correct the path to one inside the directory", core.A("I", i), core.A("Path", p), core.A("Problem", problem))}
 }
 
 // major is the part before the first dot. A minor bump adds fields and stays

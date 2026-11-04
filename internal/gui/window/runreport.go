@@ -6,7 +6,6 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
-	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
 // What a run tells the person while it goes and when it ends.
@@ -16,32 +15,6 @@ import (
 // may be. The ceiling is a ratchet, so the answer is a split and never a higher
 // number. The split is by subject: everything here turns what the engine
 // reports into the sentence under the buttons, and nothing here drives a run.
-
-// manifestReachNote is the window's half of the warning the command line prints
-// before the first byte.
-//
-// Observation O184: the command line has said this since 2026-08-26 and the
-// window said nothing at all, so a person generating 25 000 files from a window
-// was left with a directory that neither Verify nor Clean up can read - and the
-// manifest is the only authority over what may be removed. A parity gap in
-// quality rather than in what the engine can do, which is the kind D1 is
-// easiest to lose.
-//
-// Read off the engine rather than worked out here, from the same count the
-// command line uses, so the two surfaces cannot come to different conclusions
-// about one run. A preview hands in the record worked out for the run it
-// previews (engine.Result.Record), and a finished run the record it wrote
-// (engine.Record.Size) - the fact, since 2026-10-26, rather than an estimate
-// that was low for every format and let a run of 20 500 files end with no word
-// about a manifest Verify then refused (docs/STABILITY-REVIEW-2026-10-26.md).
-// A run whose record was not written hands in nothing, and nothing is said.
-func manifestReachNote(record engine.RecordSize) []string {
-	if !record.TooLarge {
-		return nil
-	}
-	return []string{text.ManifestTooLargeToRead(
-		text.HumanBytes(record.Manifest), text.HumanBytes(manifest.MaxBytes))}
-}
 
 // holdNote is the window's half of the note the command line prints before the
 // first byte when a run will hold more than its memory setting gives it.

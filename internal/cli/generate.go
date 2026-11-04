@@ -428,8 +428,6 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 		core.ExactBytes(engine.TotalBytes(planned)))
 
 	echoBoundaries(targets, planned, errOut)
-	forecast, warned := echoManifestReach(ctx, planned, opt, errOut)
-	opt.Record = forecast
 	echoHold(planned, opt, errOut)
 
 	if g.dryRun {
@@ -462,31 +460,21 @@ func produce(ctx context.Context, targets []engine.Target, opt engine.Options, g
 		// Writing one would replace the record of whatever was already in the
 		// directory, and that record is the only thing cleanup can work from.
 		if !g.dryRun && res.Started {
-			saveManifest(res, opt, warned, errOut)
+			saveManifest(res, opt, errOut)
 		}
 		return classify(runErr)
 	}
 
 	if !g.dryRun {
-		if code := saveManifest(res, opt, warned, errOut); code != ExitOK {
+		if code := saveManifest(res, opt, errOut); code != ExitOK {
 			return code
 		}
 	}
 
 	// Data goes to standard output and only on success.
 	if g.asJSON {
-		var buf bytes.Buffer
-		if err := res.Manifest.Encode(&buf); err != nil {
-			fmt.Fprintf(errOut, "tfg: cannot render the manifest: %s\n", describeError(err))
-			return ExitRuntime
-		}
-		// The error is read rather than dropped. A closed pipe is the ordinary
-		// way this fails - "tfg generate --json | head" - and a run that could
-		// not deliver what was asked for has not succeeded, whatever happened
-		// on the disk.
-		if _, err := out.Write(buf.Bytes()); err != nil {
-			fmt.Fprintf(errOut, "tfg: the files were written and the manifest could not be sent to standard output: %s\n", describeError(err))
-			return ExitIO
+		if code := sendManifest(res, g.dryRun, out, errOut); code != ExitOK {
+			return code
 		}
 	}
 

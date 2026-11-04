@@ -2256,10 +2256,40 @@
     "one": "{{.Count}} file",
     "other": "{{.Count}} files"
   },
+  "manifest.FilesIsNotAList": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Kind}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-45d3b81b6af0",
+    "other": "files is a JSON {{.Kind}} rather than a list"
+  },
   "manifest.ItCarriesNoManifestVersionSo": {
     "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-00841a615039",
     "other": "it carries no manifest_version, so it is not a manifest this tool wrote"
+  },
+  "manifest.ItEndsPartWay": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-cd8b50653d2c",
+    "other": "it ends part way through the document, so it was cut short"
+  },
+  "manifest.ItHoldsNoDocument": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-73ba6f86a219",
+    "other": "it holds no JSON document at all"
+  },
+  "manifest.ItHoldsTheKeyTwice": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Key}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-d13535e53697",
+    "other": "it holds the key {{.Key}} twice"
+  },
+  "manifest.ItHoldsTheKeyTwiceSpelled": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Key}}, {{.Second}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-5a62ea453435",
+    "other": "it holds the key {{.Key}} twice, the second time spelled {{.Second}}"
+  },
+  "manifest.ItIsNotAnObject": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Kind}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-1bd780d90f55",
+    "other": "it is a JSON {{.Kind}} rather than an object, so it is not a manifest this tool wrote"
   },
   "manifest.ItIsSchemaVersionAndThis": {
     "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.ManifestVersion}}, {{.Version}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -2291,15 +2321,35 @@
     "hash": "sha256-1c92a916a2de",
     "other": "run.instructions is {{.Name}}, and it can only be the name of a file beside the manifest ending in {{.InstructionsSuffix}}. This tool removes that file with the manifest, so it will not act on one that names anything else. Use the manifest the run actually wrote, or remove the key"
   },
+  "manifest.SomethingFollowsIt": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-ed8ba11add7e",
+    "other": "something follows the end of the document, and a manifest is one JSON object with nothing after it but white space"
+  },
   "manifest.TooLarge": {
     "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, {{.Bytes}}, {{.Limit}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-e12fe7ac5071",
     "other": "{{.Path}} is {{.Bytes}} B and the limit is {{.Limit}} B. A manifest is read into memory to be compared against a directory, so an unbounded one is a way to exhaust it. Check that this is a manifest this tool wrote, or split the run it describes"
   },
+  "manifest.TooMuchToHold": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, {{.Files}}, {{.Need}}, {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-629eb46d9a66",
+    "other": "{{.Path}} lists {{.Files}}, and checking them takes about {{.Need}} of memory, more than the {{.Most}} the memory setting gives this command. Give it more through the memory setting, a size such as 8gb or off for no limit, or split the run it describes"
+  },
+  "manifest.TwiceBecause": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Detail}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-1ae6ad202098",
+    "other": "{{.Detail}}. This tool writes every key once, so the manifest was written or edited by something else, and which of the two it means is a guess. Use the manifest the run actually wrote"
+  },
   "manifest.Unreadable": {
     "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, {{.Detail}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-bb90fafec850",
     "other": "{{.Path}} cannot be read as a manifest: {{.Detail}}"
+  },
+  "manifest.ValueTooLarge": {
+    "description": "Said by internal/manifest - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Path}}, {{.Limit}}, {{.At}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-65f9e8304926",
+    "other": "{{.Path}} holds a single value of more than {{.Limit}} B, starting about {{.At}} B in, and this tool reads at most that much of a manifest at once. An entry of a manifest this tool wrote takes a kilobyte or two, so check that this is the manifest the run wrote"
   },
   "mp4.MinimumReasonPictures": {
     "description": "Said by internal/format/mp4 - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Duration}}, {{.FPS}}, {{.Interval}}, {{.Width}}, {{.Height}}, {{.Change}}, {{.Bytes}}, {{.Free}}, written the way the program writes them - keep each spelled exactly that way.",

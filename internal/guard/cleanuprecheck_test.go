@@ -43,7 +43,7 @@ func inspected(t *testing.T) (string, []audit.Candidate, string) {
 	if err := os.Chtimes(filepath.Join(out, victim), past, past); err != nil {
 		t.Fatalf("moving the time of %s back: %v", victim, err)
 	}
-	cands, err := audit.Inspect(context.Background(), out, m)
+	cands, err := audit.Inspect(context.Background(), out, m.Claims())
 	if err != nil {
 		t.Fatalf("inspecting: %v", err)
 	}
@@ -174,7 +174,7 @@ func TestVerifyCallsANameItCouldNotLookUpUnreadableRatherThanMissing(t *testing.
 		t.Fatalf("saving the edited manifest: %v", err)
 	}
 
-	diffs, err := audit.Verify(context.Background(), out, m, filepath.Base(mf))
+	diffs, err := audit.Verify(context.Background(), out, m.Claims(), filepath.Base(mf))
 	if err != nil {
 		t.Fatalf("verifying: %v", err)
 	}

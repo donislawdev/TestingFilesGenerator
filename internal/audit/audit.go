@@ -185,7 +185,7 @@ func (d Difference) String() string {
 // EscapeError is a manifest entry that leaves the directory once the links on
 // the way have been followed.
 //
-// Separate from the check manifest.Load already makes, and it has to be. That
+// Separate from the check the manifest reader already makes, and it has to be. That
 // one reads the text of the path and this one asks the filesystem, so a path
 // with no climb in it - "jn/VICTIM.txt" - passes the first and is caught here
 // when "jn" turns out to point somewhere else.
@@ -215,35 +215,15 @@ func (e *EscapeError) Error() string {
 // resolving it per entry impossible to write by accident: there is no directory
 // string in scope to resolve. See core.Boundary for what that is worth in
 // seconds, and observation O117 for the measurement.
-func resolved(b core.Boundary, f manifest.File) (string, error) {
-	full := filepath.Join(b.Dir(), filepath.FromSlash(f.Path))
+func resolved(b core.Boundary, p string) (string, error) {
+	full := filepath.Join(b.Dir(), filepath.FromSlash(p))
 	if b.Escapes(full) {
-		return "", &EscapeError{Dir: b.Dir(), Path: f.Path}
+		return "", &EscapeError{Dir: b.Dir(), Path: p}
 	}
 	return full, nil
 }
 
-// Claimed lists the files a manifest says are on the disk.
-//
-// Two kinds of entry are deliberately not claimed. An entry marked failed
-// describes a file that was never written - reporting it missing would be a
-// false alarm about the one thing the manifest was honest about. And an entry
-// that was not materialised was never meant to reach the disk at all.
-//
-// This is the single reading of the manifest. Both commands use it, so neither
-// can drift into claiming something the other does not.
-func Claimed(m *manifest.Manifest) []manifest.File {
-	var out []manifest.File
-	for _, f := range m.Files {
-		if f.Failed || !f.Materialized {
-			continue
-		}
-		out = append(out, f)
-	}
-	return out
-}
-
-// Verify compares a directory against a manifest.
+// Verify compares a directory against what a manifest claims.
 //
 // skip is the name of the manifest file itself. It is never reported as extra:
 // the manifest usually sits in the directory it describes, and a tool that
@@ -255,8 +235,8 @@ func Claimed(m *manifest.Manifest) []manifest.File {
 // A run that is cancelled reports what it managed to compare and says so
 // through the context error. Reporting "sound" on the strength of half a
 // directory is the one answer this must never give.
-func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) ([]Difference, error) {
-	claimed := Claimed(m)
+func Verify(ctx context.Context, dir string, c manifest.Claims, skip string) ([]Difference, error) {
+	claimed := c.Files
 	boundary := core.NewBoundary(dir)
 
 	present, err := walk(ctx, dir)
@@ -315,7 +295,7 @@ func Verify(ctx context.Context, dir string, m *manifest.Manifest, skip string) 
 		// decided. walk builds these with filepath.Rel, which returns a clean
 		// path, so a comparablePath here is a call that cannot be wrong -
 		// removing it left this guard green. See the comment on comparablePath.
-		if seen[p] || filepath.Base(p) == skip || (m.Run.Instructions != "" && filepath.Base(p) == m.Run.Instructions) {
+		if seen[p] || filepath.Base(p) == skip || (c.Instructions != "" && filepath.Base(p) == c.Instructions) {
 			continue
 		}
 		unclaimed = append(unclaimed, p)
@@ -430,14 +410,14 @@ func comparablePath(p string) string {
 // Shared by Verify and Inspect because both have to refuse the same manifest
 // for the same reason, and because both then hand the answers to workers that
 // must not be able to refuse anything themselves. See parallel.go.
-func claimedPaths(b core.Boundary, files []manifest.File) ([]string, error) {
+func claimedPaths(b core.Boundary, files []manifest.ClaimedFile) ([]string, error) {
 	full := make([]string, len(files))
 	for i, f := range files {
 		// The raw path, never the compared one. Cleaning resolves a parent step
 		// against the text of the path rather than against the disk, and the
 		// two differ exactly where a link sits in the middle - which is the
 		// case core.Boundary exists for.
-		p, err := resolved(b, f)
+		p, err := resolved(b, f.Path)
 		if err != nil {
 			return nil, err
 		}
@@ -453,7 +433,7 @@ func claimedPaths(b core.Boundary, files []manifest.File) ([]string, error) {
 // agreement on its own. No sentinel anybody has to remember, and no pointer
 // per file - a run of ten thousand would allocate ten thousand of them to say
 // "nothing to report" ten thousand times.
-func compare(ctx context.Context, f manifest.File, full string, scratch []byte) Difference {
+func compare(ctx context.Context, f manifest.ClaimedFile, full string, scratch []byte) Difference {
 	got, err := readListed(ctx, full, f.Bytes, scratch)
 	// Only an absent file is missing. Every failure to look used to be called
 	// that, so a file somebody had locked or taken the permissions off was
@@ -482,10 +462,10 @@ func compare(ctx context.Context, f manifest.File, full string, scratch []byte) 
 			Got:  fmt.Sprintf("%d B", size),
 		}
 	}
-	if got.sum != f.Hashes.SHA256 {
+	if got.sum != f.SHA256 {
 		return Difference{
 			Kind: WrongHash, Path: f.Path,
-			Want: f.Hashes.SHA256,
+			Want: f.SHA256,
 			Got:  got.sum,
 		}
 	}

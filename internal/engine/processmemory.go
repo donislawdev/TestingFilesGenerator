@@ -53,14 +53,16 @@ func OwnProcess() {
 	owned = true
 }
 
-// handToRuntime gives the runtime the limit for a run under limits, in a
-// process that is the program's own, and does nothing anywhere else.
+// HandToRuntime gives the runtime the limit for a run under limits, in a
+// process that is the program's own, and does nothing anywhere else. verify
+// and cleanup hand it theirs before they read a manifest, for the same reason a
+// plan does.
 //
 // Called when a plan starts rather than when the writing does, because the
 // plan is the first thing both surfaces do for a run and the manifest is saved
 // after the writing has returned - a limit set and taken back inside Run would
 // leave both outside it.
-func handToRuntime(limits core.MemoryLimits) {
+func HandToRuntime(limits core.MemoryLimits) {
 	if owned {
 		debug.SetMemoryLimit(limits.ForRuntime(startLimit))
 	}

@@ -48,29 +48,6 @@ MUTATIONS = [
         "and nothing else for the command line tool;",
         "TestProseInTheRepositoryUsesFlatHyphensAndNoSemicolons",
     ),
-    # --- the window says what the command line says about the manifest ceiling
-    #     (2026-09-07, O184) ---
-    (
-        "the preview stops warning that the record will be too big to read back",
-        "internal/gui/window/run.go",
-        "r.say(append(append(append([]string{said}, manifestReachNote(res.Record)...), holdNote(res)...), runNotesOf(res)...)...)",
-        "r.say(append(append([]string{said}, holdNote(res)...), runNotesOf(res)...)...)",
-        "TestTheWindowSaysWhenItsManifestWillBeTooBigToReadBack",
-    ),
-    (
-        "a finished run stops warning, so somebody who never pressed Preview is told nothing",
-        "internal/gui/window/run.go",
-        "said := append(append([]string{outcome}, manifestReachNote(saved.Size)...), holdNote(res)...)",
-        "said := append([]string{outcome}, holdNote(res)...)",
-        "TestAFinishedRunInTheWindowSaysItsManifestIsTooBigToReadBack",
-    ),
-    (
-        "the window warns about every run, which teaches people to skip the line",
-        "internal/gui/window/runreport.go",
-        "if !record.TooLarge {",
-        "if false && !record.TooLarge {",
-        "TestAnOrdinaryPreviewSaysNothingAboutTheManifestCeiling",
-    ),
     (
         "the forecast of a run's record counts a hash one character short, so it drifts from what the run writes",
         "internal/engine/recordsize.go",
@@ -117,8 +94,8 @@ MUTATIONS = [
     (
         "the attribution stops naming which run, so the reader is told somebody else's and not whose",
         "internal/audit/neighbours.go",
-        "base := filepath.Base(rel)",
-        'base := "a run"',
+        "found.take(claims, filepath.Base(rel))",
+        'found.take(claims, "a run")',
         "TestTheSentenceAboutAnotherRunNamesTheRecordThatClaimsTheFile",
     ),
     (
@@ -238,21 +215,6 @@ MUTATIONS = [
         "go install -tags noasm github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest",
         "go install github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest",
         "TestTheInstallInstructionsCarryTheBuildTags",
-    ),
-    # --- a manifest too big to read back says so where a script reads (2026-09-06) ---
-    (
-        "the report stops saying the manifest cannot be read back",
-        "internal/engine/engine.go",
-        "m.Summary.TooLargeToReadBack = record.TooLarge",
-        "_ = record.TooLarge",
-        "TestAManifestTooBigToReadBackSaysSoInTheReportAScriptReads",
-    ),
-    (
-        "every manifest carries the ceiling field, changing the bytes of all of them",
-        "internal/manifest/manifest.go",
-        'TooLargeToReadBack bool `json:"too_large_to_read_back,omitempty"`',
-        'TooLargeToReadBack bool `json:"too_large_to_read_back"`',
-        "TestAnOrdinaryRunSaysNothingAboutTheCeilingInItsReport",
     ),
     # --- a stopped run says so in our own words (2026-09-06) ---
     (
@@ -1299,12 +1261,10 @@ MUTATIONS = [
         "TestOurOwnGeneratorsHaveNotDrifted",
     ),
     (
-        # Untouchable rule 7. If this one ever goes green, the tool deletes
-        # files nobody listed, on somebody else's disk, with no undo.
         "cleanup walks the directory instead of the manifest",
-        "internal/audit/cleanup.go",
-        "claimed := Claimed(m)",
-        "claimed := m.Files",
+        "internal/manifest/read.go",
+        "func (f File) claimed() bool { return !f.Failed && f.Materialized }",
+        "func (f File) claimed() bool { return true }",
         "TestCleanupDoesNotRemoveAFileTheRunNeverPutOnTheDisk",
     ),
     (
@@ -1453,7 +1413,7 @@ MUTATIONS = [
     (
         "verify never looks at content, so an edited file passes",
         "internal/audit/audit.go",
-        "if got.sum != f.Hashes.SHA256 {",
+        "if got.sum != f.SHA256 {",
         "if false {",
         "TestVerifyCatchesAMissingAnExtraAndAChangedFile",
     ),
@@ -1465,19 +1425,19 @@ MUTATIONS = [
         "TestVerifyCatchesAMissingAnExtraAndAChangedFile",
     ),
     (
-        "verify counts a file that was never written as missing",
         # A failed entry describes a file the run reported as not produced.
         # Claiming it would turn the manifest's own honesty into a false alarm.
-        "internal/audit/audit.go",
-        "if f.Failed || !f.Materialized {",
-        "if false {",
+        "verify counts a file that was never written as missing",
+        "internal/manifest/read.go",
+        "func (f File) claimed() bool { return !f.Failed && f.Materialized }",
+        "func (f File) claimed() bool { return f.Materialized }",
         "TestVerifyDoesNotGoLookingForFilesTheRunSaidItNeverWrote",
     ),
     (
         "verify treats the manifest itself as a file nobody asked for",
         "internal/audit/audit.go",
-        "if seen[p] || filepath.Base(p) == skip || (m.Run.Instructions != \"\" && filepath.Base(p) == m.Run.Instructions) {",
-        "if seen[p] || (m.Run.Instructions != \"\" && filepath.Base(p) == m.Run.Instructions) {",
+        "if seen[p] || filepath.Base(p) == skip || (c.Instructions != \"\" && filepath.Base(p) == c.Instructions) {",
+        "if seen[p] || (c.Instructions != \"\" && filepath.Base(p) == c.Instructions) {",
         "TestVerifyDoesNotReportTheManifestAsAnExtraFile",
     ),
     (
@@ -1681,9 +1641,9 @@ MUTATIONS = [
         # "tfg generate --json | head" is the ordinary way this happens, and
         # the error was dropped on the floor.
         "a manifest that never reached standard output is reported as a success",
-        "internal/cli/generate.go",
-        "if _, err := out.Write(buf.Bytes()); err != nil {",
-        "if _, err := out.Write(buf.Bytes()); err != nil && false {",
+        "internal/cli/record.go",
+        "\tcase err == nil:\n\t\treturn ExitOK\n",
+        "\tcase err == nil || sent.err != nil:\n\t\treturn ExitOK\n",
         "TestAManifestThatCannotReachStandardOutputIsNotASuccess",
     ),
     (
@@ -2082,8 +2042,8 @@ MUTATIONS = [
     (
         "verify reports a clean directory instead of refusing an entry that leaves it",
         "internal/audit/audit.go",
-        "p, err := resolved(b, f)\n\t\tif err != nil {\n\t\t\treturn nil, err\n\t\t}",
-        "p, err := resolved(b, f)\n\t\tif err != nil {\n\t\t\treturn full, nil\n\t\t}",
+        "p, err := resolved(b, f.Path)\n\t\tif err != nil {\n\t\t\treturn nil, err\n\t\t}",
+        "p, err := resolved(b, f.Path)\n\t\tif err != nil {\n\t\t\treturn full, nil\n\t\t}",
         "TestVerifyDoesNotFollowALinkOutOfTheDirectory",
     ),
     (
@@ -2468,8 +2428,8 @@ MUTATIONS = [
         # compiles - a mutation that does not build proves nothing.
         "the boundary is worked out again for every entry",
         "internal/audit/audit.go",
-        "		p, err := resolved(b, f)",
-        "		p, err := resolved(core.NewBoundary(b.Dir()), f)",
+        "		p, err := resolved(b, f.Path)",
+        "		p, err := resolved(core.NewBoundary(b.Dir()), f.Path)",
         "TestTheBoundaryIsWorkedOutOncePerPassAndNotOncePerEntry",
     ),
     (
@@ -2504,11 +2464,11 @@ MUTATIONS = [
         "TestAnOrdinaryNameWithADotOrASpaceStillWorks",
     ),
     (
-        "a manifest of any size is read into memory",
+        "Load holds a manifest of any size whole",
         "internal/manifest/manifest.go",
         "if int64(len(raw)) <= MaxBytes {",
         "if len(raw) >= 0 {",
-        "TestAManifestTooLargeToReadIsRefusedBeforeItIsRead",
+        "TestLoadKeepsTheCeilingOnAWholeDocumentAndReadClaimsHasNone",
     ),
     (
         # Found by audit on 2026-08-03. Measuring an archive meant building it,
@@ -2613,8 +2573,8 @@ MUTATIONS = [
     (
         "the manifest is read without asking where its entries point",
         "internal/manifest/manifest.go",
-        "if err := checkPaths(path, &m); err != nil {",
-        "if err := checkPaths(path, &m); err != nil && false {",
+        "\tif escaped != nil {\n\t\treturn escaped\n\t}\n",
+        "\tif escaped != nil && false {\n\t\treturn escaped\n\t}\n",
         "TestLoadingAManifestRefusesAnEntryThatClimbsOut",
     ),
     (
@@ -2638,12 +2598,12 @@ MUTATIONS = [
         "TestAManifestPathMayStillNameASubdirectory",
     ),
     (
-        # The other direction of the door in manifest.Load, so shutting it on
-        # everything is not a way to pass.
+        # The other direction of the door, so shutting it on everything is not
+        # a way to pass.
         "the door refuses a manifest naming a file in a subdirectory",
         "internal/manifest/manifest.go",
-        "problem := core.ContainmentProblem(f.Path)",
-        'problem := core.ContainmentProblem("../" + f.Path)',
+        "problem := core.ContainmentProblem(p)",
+        "problem := core.ContainmentProblem(\"../\" + p)",
         "TestLoadingAManifestAcceptsAnEntryInASubdirectory",
     ),
     (
@@ -6126,13 +6086,6 @@ MUTATIONS = [
         "TestAPlanTooBigToHoldIsRefusedWhileItIsBuilt",
     ),
     (
-        "a run stops saying that its manifest will be too big for verify and cleanup to read",
-        "internal/cli/record.go",
-        "if !record.TooLarge {",
-        "if true || !record.TooLarge {",
-        "TestARunSaysWhenItsManifestWillBeTooBigToReadBack",
-    ),
-    (
         "the counted length of a manifest leaves out the line that closes its list of files",
         "internal/manifest/size.go",
         "between*int64(n-1) + closing",
@@ -6166,13 +6119,6 @@ MUTATIONS = [
         "\tif asked > maxEntries {",
         "\tif asked >= maxEntries {",
         "TestTheEntryCeilingStillAcceptsTheNumberBelowIt",
-    ),
-    (
-        "every run starts warning that its manifest is too big to read back",
-        "internal/cli/record.go",
-        "if !record.TooLarge {",
-        "if !record.TooLarge && false {",
-        "TestAnOrdinaryRunSaysNothingAboutTheManifestCeiling",
     ),
     (
         "free space too large to count wraps into a negative number again",
@@ -6247,8 +6193,8 @@ MUTATIONS = [
     (
         "the forecast of the record and the preflight both stop noticing that they were asked to stop",
         "internal/engine/engine.go",
-        "record, err := opt.forecast(ctx, files)\n\tif err != nil {\n\t\treturn res, err\n\t}\n\tres.Record = record\n\tif err := preflight(ctx, files, opt, record); err != nil {",
-        "record, err := opt.forecast(context.Background(), files)\n\tif err != nil {\n\t\treturn res, err\n\t}\n\tres.Record = record\n\tif err := preflight(context.Background(), files, opt, record); err != nil {",
+        "record, err := PredictRecord(ctx, files, opt)\n\tif err != nil {\n\t\treturn res, err\n\t}\n\tif err := preflight(ctx, files, opt, record); err != nil {",
+        "record, err := PredictRecord(context.Background(), files, opt)\n\tif err != nil {\n\t\treturn res, err\n\t}\n\tif err := preflight(context.Background(), files, opt, record); err != nil {",
         "TestWorkingOutTheCostCanBeStopped",
     ),
     (
@@ -10796,7 +10742,7 @@ MUTATIONS = [
     (
         "verify reports the instructions beside the manifest as a file nobody asked for",
         "internal/audit/audit.go",
-        "\t\tif seen[p] || filepath.Base(p) == skip || (m.Run.Instructions != \"\" && filepath.Base(p) == m.Run.Instructions) {\n",
+        "\t\tif seen[p] || filepath.Base(p) == skip || (c.Instructions != \"\" && filepath.Base(p) == c.Instructions) {\n",
         "\t\tif seen[p] || filepath.Base(p) == skip {\n",
         "TestTheInstructionsGoWhereTheManifestGoes",
     ),
@@ -15587,29 +15533,6 @@ MUTATIONS = [
         "TestVerifyAndCleanupNeverWaitOnAPipe",
     ),
     (
-        # R03 of docs/STABILITY-REVIEW-2026-10-26.md: a manifest past the
-        # ceiling went out without the field that says so.
-        "a saved manifest past the ceiling no longer says it cannot be read back",
-        "internal/manifest/size.go",
-        "header.Summary.TooLargeToReadBack = true",
-        "header.Summary.TooLargeToReadBack = false",
-        "TestASavedManifestSaysItIsTooBigExactlyWhenItIs",
-    ),
-    (
-        "a manifest of exactly the ceiling's length says it cannot be read back, though it is read",
-        "internal/manifest/size.go",
-        "size <= MaxBytes {",
-        "size < MaxBytes {",
-        "TestASavedManifestSaysItIsTooBigExactlyWhenItIs",
-    ),
-    (
-        "Save writes the manifest without settling the field from its real length",
-        "internal/manifest/reservation.go",
-        "size, err := m.settleReadBack()",
-        "size, err := m.SavedBytes(), error(nil)",
-        "TestASavedManifestSaysItIsTooBigExactlyWhenItIs",
-    ),
-    (
         "the counted length of a manifest leaves out the indentation of the first line of every entry",
         "internal/manifest/size.go",
         "return int64(len(entryIndent) + len(b)), nil",
@@ -16327,7 +16250,7 @@ MUTATIONS = [
     (
         "a plan no longer hands its memory setting to the runtime",
         "internal/engine/engine.go",
-        "\thandToRuntime(limits)\n",
+        "\tHandToRuntime(limits)\n",
         "\t_ = limits\n",
         "TestTheCommandLineHoldsTheWholeRunToItsMemorySetting",
     ),
@@ -16448,8 +16371,8 @@ MUTATIONS = [
     (
         "a preview in the window no longer says that the run will hold too much",
         "internal/gui/window/run.go",
-        "manifestReachNote(res.Record)...), holdNote(res)...), runNotesOf",
-        "manifestReachNote(res.Record)...), []string(nil)...), runNotesOf",
+        "r.say(append(append([]string{said}, holdNote(res)...), runNotesOf(res)...)...)",
+        "r.say(append(append([]string{said}, []string(nil)...), runNotesOf(res)...)...)",
         "TestTheWindowSaysWhenARunWillHoldMoreThanItsMemory",
     ),
     (
@@ -16457,8 +16380,8 @@ MUTATIONS = [
         # sentence after the run is for.
         "a finished run in the window no longer says that it held too much",
         "internal/gui/window/run.go",
-        "manifestReachNote(saved.Size)...), holdNote(res)...)",
-        "manifestReachNote(saved.Size)...), []string(nil)...)",
+        "said := append([]string{outcome}, holdNote(res)...)",
+        "said := append([]string{outcome}, []string(nil)...)",
         "TestTheWindowSaysWhenARunWillHoldMoreThanItsMemory",
     ),
     (
@@ -16682,5 +16605,148 @@ MUTATIONS = [
         "\t\t\tscreen.Stop()\n",
         "\t\t\t_ = screen\n",
         "TestClosingTheWindowDuringARunStopsItAndWaitsForIt",
+    ),
+    # --- the manifest read a piece at a time, docs/MANIFEST-STREAMING-2026-11-04.md (2026-11-04) ---
+    (
+        "one value of a manifest may be as long as it likes",
+        "internal/manifest/read.go",
+        "rd.in.limit = rd.dec.InputOffset() + MaxValueBytes",
+        "rd.in.limit = 1 << 62",
+        "TestOneValueOfAManifestPastTheCeilingIsRefusedAndALongManifestIsNot",
+    ),
+    (
+        "a second document after the manifest is let through",
+        "internal/manifest/read.go",
+        "\trd.next()\n\t_, err := rd.dec.Token()\n\tif errors.Is(err, io.EOF) {\n\t\treturn nil\n\t}\n",
+        "\trd.next()\n\t_, err := rd.dec.Token()\n\tif true {\n\t\treturn nil\n\t}\n",
+        "TestAManifestWithAnythingAfterItIsRefused",
+    ),
+    (
+        "white space after a manifest is taken for something more",
+        "internal/manifest/read.go",
+        "\tif errors.Is(err, io.EOF) {\n\t\treturn nil\n\t}\n\tvar syntax",
+        "\tif false {\n\t\treturn nil\n\t}\n\tvar syntax",
+        "TestWhiteSpaceAfterAManifestIsNothing",
+    ),
+    (
+        "a key named twice is read, the second time winning",
+        "internal/manifest/read.go",
+        "if first, twice := seen[name]; twice {",
+        "if first, twice := seen[name]; twice && false {",
+        "TestAManifestThatNamesAKeyTwiceIsRefused",
+    ),
+    (
+        "Ctrl+C is not asked while the entries are read",
+        "internal/manifest/read.go",
+        "\t\tif err := rd.ctx.Err(); err != nil {\n\t\t\treturn err\n\t\t}\n\t\tvar f File\n",
+        "\t\tvar f File\n",
+        "TestCtrlCWhileAManifestIsReadStopsTheReadingAndRemovesNothing",
+    ),
+    (
+        "an entry that escapes is refused before the version is known",
+        "internal/manifest/read.go",
+        "\t\tif rd.escaped == nil {\n\t\t\trd.escaped = entryEscapes(rd.path, i, f.Path)\n\t\t}\n",
+        "\t\tif err := entryEscapes(rd.path, i, f.Path); err != nil {\n\t\t\treturn err\n\t\t}\n",
+        "TestAManifestWithTwoFaultsIsRefusedForTheOneThatComesFirst",
+    ),
+    (
+        "the entries are kept only once the version has been read",
+        "internal/manifest/read.go",
+        "\t\teach(f)\n",
+        "\t\tif m.ManifestVersion != \"\" {\n\t\t\teach(f)\n\t\t}\n",
+        "TestAManifestIsReadTheSameWhateverOrderItsKeysComeIn",
+    ),
+    (
+        "FILES is read as a field rather than as the entries",
+        "internal/manifest/read.go",
+        "\t\tif strings.EqualFold(key, filesKey) {",
+        "\t\tif key == filesKey {",
+        "TestAManifestIsReadTheSameWhateverCaseItsKeysAreIn",
+    ),
+    (
+        "files that are null are refused rather than read as no list",
+        "internal/manifest/read.go",
+        "\tcase nil:\n\t\t// null, which encoding/json reads as no list at all.\n\t\treturn nil\n\tcase json.Delim('['):",
+        "\tcase json.Delim('['):",
+        "TestAManifestWithNothingInItIsAnsweredAsItAlwaysWas",
+    ),
+    (
+        "checking a manifest has no limit whatever the memory setting",
+        "internal/manifest/read.go",
+        "\tif most > 0 && need > most {\n\t\treturn Claims{}, &TooMuchToHoldError",
+        "\tif false {\n\t\treturn Claims{}, &TooMuchToHoldError",
+        "TestAManifestListingMoreThanTheMemorySettingLetsCleanupCheckIsRefused",
+    ),
+    (
+        "verify and cleanup read a manifest under no memory setting at all",
+        "internal/cli/claims.go",
+        "claims, err := manifest.ReadClaims(ctx, path, limits.Run)",
+        "claims, err := manifest.ReadClaims(ctx, path, 0)",
+        "TestAManifestListingMoreThanTheMemorySettingLetsCleanupCheckIsRefused",
+    ),
+    (
+        "Ctrl+C while the manifest is read is not said as such",
+        "internal/cli/claims.go",
+        "\tif errors.Is(err, context.Canceled) {\n\t\tfmt.Fprintf(errOut, \"tfg: %s\\n\", stopped)\n\t\treturn manifest.Claims{}, ExitInterrupted, false\n\t}\n",
+        "\tif errors.Is(err, context.Canceled) && false {\n\t\tfmt.Fprintf(errOut, \"tfg: %s\\n\", stopped)\n\t\treturn manifest.Claims{}, ExitInterrupted, false\n\t}\n",
+        "TestCtrlCWhileAManifestIsReadStopsTheReadingAndRemovesNothing",
+    ),
+    (
+        "Load keeps the last entry rather than every one",
+        "internal/manifest/manifest.go",
+        "\t\tm.Files = append(m.Files, f)\n\t})",
+        "\t\tm.Files = append(m.Files[:0], f)\n\t})",
+        "TestBothDoorsOfTheManifestRefuseTheSameDocumentsInTheSameWords",
+    ),
+    (
+        "another run's record is let go once it is past the old ceiling",
+        "internal/manifest/read.go",
+        "err = decode(ctx, bufio.NewReaderSize(f, readBuffer), path, &m, func(e File) {",
+        "err = decode(ctx, bufio.NewReaderSize(io.LimitReader(f, MaxBytes), readBuffer), path, &m, func(e File) {",
+        "TestAnotherRunsRecordIsAnotherRunsRecordHoweverLongItIs",
+    ),
+    (
+        "the manifest of a run past the old ceiling is cut short where the old reader stopped",
+        "internal/manifest/read.go",
+        "err = decode(ctx, bufio.NewReaderSize(f, readBuffer), path, &m, func(e File) {",
+        "err = decode(ctx, bufio.NewReaderSize(io.LimitReader(f, MaxBytes+1), readBuffer), path, &m, func(e File) {",
+        "TestTheManifestOfARunPastTheOldCeilingIsVerifiedAndCleanedUp",
+    ),
+    (
+        "another run's record no longer claims the files in front of us",
+        "internal/audit/neighbours.go",
+        "if key := comparablePath(c.Path); unclaimed[key] && !kept[key] {",
+        "if key := comparablePath(c.Path); false && unclaimed[key] && !kept[key] {",
+        "TestVerifyNamesTheFilesOfAnotherRunRatherThanCallingThemExtra",
+    ),
+    (
+        "generate --json holds the manifest whole again to send it",
+        "internal/cli/generate.go",
+        "\t\tif code := sendManifest(res, g.dryRun, out, errOut); code != ExitOK {",
+        "\t\tvar whole bytes.Buffer\n\t\tcode := sendManifest(res, g.dryRun, &whole, errOut)\n\t\t_, _ = out.Write(whole.Bytes())\n\t\tif code != ExitOK {",
+        "TestGenerateSendsItsManifestAPartAtATime",
+    ),
+    (
+        "the ceiling on one value of a manifest is halved, so a value this tool reads today is refused",
+        "internal/manifest/read.go",
+        "rd.in.limit = rd.dec.InputOffset() + MaxValueBytes",
+        "rd.in.limit = rd.dec.InputOffset() + MaxValueBytes/2",
+        "TestOneValueOfAManifestJustUnderTheCeilingIsRead",
+    ),
+    (
+        "another run's record listing one file over and over keeps it once for every entry",
+        "internal/audit/neighbours.go",
+        "unclaimed[key] && !kept[key] {",
+        "unclaimed[key] {",
+        "TestAnotherRunsRecordListingOneFileOverAndOverHoldsItOnce",
+    ),
+    (
+        "generate --json holds the manifest whole and sends it a small piece at a time",
+        "internal/cli/generate.go",
+        "\t\tif code := sendManifest(res, g.dryRun, out, errOut); code != ExitOK {",
+        "\t\tvar whole bytes.Buffer\n\t\tcode := sendManifest(res, g.dryRun, &whole, errOut)\n"
+        "\t\tfor p := whole.Bytes(); len(p) > 0; p = p[min(len(p), 4096):] {\n\t\t\t_, _ = out.Write(p[:min(len(p), 4096)])\n\t\t}\n"
+        "\t\tif code != ExitOK {",
+        "TestGenerateSendsItsManifestAPartAtATime",
     ),
 ]

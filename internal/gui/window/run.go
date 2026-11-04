@@ -502,9 +502,9 @@ func roomOn(dir string) diskRoom {
 // previewFinished is the end of a preview, back on the interface thread.
 //
 // The result is carried across as well as the plan, and that is what lets a
-// preview warn about a record too big to read back. A dry run works out the
-// record the run would write - see manifestReachNote - so the answer is there
-// for the asking rather than something the window works out for itself.
+// preview say what the run would hold and what it would note. A dry run works
+// those out for the run it previews, so the answer is there for the asking
+// rather than something the window works out for itself.
 func (r *runner) previewFinished(res *engine.Result, planned []engine.PlannedFile, opt engine.Options, room diskRoom, runErr error) {
 	r.busy.set(false, busyFace{})
 	if runErr != nil {
@@ -518,7 +518,7 @@ func (r *runner) previewFinished(res *engine.Result, planned []engine.PlannedFil
 		r.line.measured(opt.OutDir, room.free)
 	}
 	said := r.line.said(exactly(planned), opt.OutDir) + text.AndNothingWrittenYet()
-	r.say(append(append(append([]string{said}, manifestReachNote(res.Record)...), holdNote(res)...), runNotesOf(res)...)...)
+	r.say(append(append([]string{said}, holdNote(res)...), runNotesOf(res)...)...)
 }
 
 // formatsOf is what kinds of file the run would produce, each named once.
@@ -685,11 +685,9 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room dis
 	// answer in a terminal and an instruction to open a file with ten thousand
 	// entries in a window.
 	//
-	// The warning about a record too big to read back comes SECOND, ahead of
-	// the per file notes, and that order is the same lesson the command line
-	// learned on 2026-09-06: it is the one line standing between somebody and a
-	// directory nothing in this toolset can ever clean up, and it was being
-	// buried under notes about a label that did not fit.
+	// The note about memory comes SECOND, ahead of the per file notes - the
+	// lesson the command line learned on 2026-09-06, when the one line about
+	// the run was buried under notes about a label that did not fit.
 	//
 	// The record is named on the same line as the outcome rather than on one of
 	// its own, because it is part of the same fact: what this run produced. The
@@ -697,7 +695,7 @@ func (r *runner) runFinished(res *engine.Result, runErr, saveErr error, room dis
 	// said only how many files - so the one thing this tool makes that others
 	// do not was, from a window, something you found in the folder afterwards.
 	outcome := text.SaidWithManifest(outcomeText(res, runErr), manifestNameOf(saved.Manifest))
-	said := append(append([]string{outcome}, manifestReachNote(saved.Size)...), holdNote(res)...)
+	said := append([]string{outcome}, holdNote(res)...)
 	// Instructions that were due and are not there are said, not failed: the
 	// manifest was saved and holds the same facts. Silence would leave a button
 	// missing with no reason given.

@@ -66,9 +66,9 @@ func (c Candidate) Removable(force bool) bool {
 // It is a separate pass because the default run of cleanup deletes nothing and
 // prints this list. A person gets to read what is about to disappear before it
 // does, and CLI.md section 9 rules out asking them interactively.
-func Inspect(ctx context.Context, dir string, m *manifest.Manifest) ([]Candidate, error) {
+func Inspect(ctx context.Context, dir string, c manifest.Claims) ([]Candidate, error) {
 	boundary := core.NewBoundary(dir)
-	claimed := Claimed(m)
+	claimed := c.Files
 
 	// Nothing is inspected and nothing is offered when one of these points
 	// outside the directory. A list that points outside is not a list this tool
@@ -92,7 +92,7 @@ func Inspect(ctx context.Context, dir string, m *manifest.Manifest) ([]Candidate
 
 // look is what one claimed file comes to for cleanup: whether it may be
 // removed, and if not, why not in the words a person needs.
-func look(ctx context.Context, f manifest.File, full string, scratch []byte) Candidate {
+func look(ctx context.Context, f manifest.ClaimedFile, full string, scratch []byte) Candidate {
 	got, err := readListed(ctx, full, f.Bytes, scratch)
 	if absent(err) {
 		return Candidate{Path: f.Path, Disposition: Absent}
@@ -115,7 +115,7 @@ func look(ctx context.Context, f manifest.File, full string, scratch []byte) Can
 		return Candidate{Path: f.Path, Disposition: Changed,
 			Detail: "it changed while it was being checked"}
 	}
-	if got.sum != f.Hashes.SHA256 {
+	if got.sum != f.SHA256 {
 		return Candidate{Path: f.Path, Disposition: Changed,
 			Detail: "its content is not the content this run wrote"}
 	}
@@ -214,7 +214,7 @@ func Remove(ctx context.Context, dir string, cands []Candidate, force bool) ([]O
 		// separated by however long a person spends reading the preview, and
 		// this is the one operation in the tool that destroys data - so the
 		// question is put to the filesystem in the state it is in now.
-		full, err := resolved(boundary, manifest.File{Path: c.Path})
+		full, err := resolved(boundary, c.Path)
 		if err != nil {
 			return out, err
 		}

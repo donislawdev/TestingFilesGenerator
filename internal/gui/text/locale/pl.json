@@ -125,7 +125,6 @@
   "ListNothingMatches": { "hash": "sha256-7b2c3b9853ac", "other": "Żaden format nie pasuje - wyczyść pole, żeby zobaczyć wszystkie" },
   "ManifestNamed": { "hash": "sha256-f9540bb6e465", "other": "Manifest: {{.Name}}" },
   "ManifestNotSaved": { "hash": "sha256-bb722052cb9e", "other": "pliki zostały zapisane, a manifestu nie udało się zapisać do {{.Path}}" },
-  "ManifestTooLargeToRead": { "hash": "sha256-0b5d14c5fc58", "other": "zapis tego przebiegu ma około {{.Size}}, a ta wersja czyta najwyżej {{.Limit}}, więc polecenia verify i cleanup nie zdołają go odczytać. Podziel przebieg, żeby każdy zapis dał się odczytać." },
   "MemoryAutoIs": { "hash": "sha256-3a039b136e1c", "other": "Przebiegi mogą wziąć {{.Size}}, połowę pamięci, którą ten komputer daje programowi." },
   "MemoryAutoUnknown": { "hash": "sha256-c1b8c2b64c84", "other": "Nie udało się odczytać pamięci tego komputera, więc przebiegi biorą {{.Size}}, czyli najwięcej, ile brał każdy przebieg przed tym ustawieniem." },
   "MemoryCustomEmpty": { "hash": "sha256-f021f2e8d953", "other": "Wpisz rozmiar, na przykład 8gb. Dopóki go nie ma, przebiegi używają ustawienia Automatycznie." },
