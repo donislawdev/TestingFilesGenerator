@@ -16889,6 +16889,13 @@ MUTATIONS = [
         "TestTheTextOfThePackageIsAsciiWithPlainPunctuation",
     ),
     (
+        "the linked npm package changes its licence while the dependency gate still lets it through as MPL-2.0",
+        "npm/testing-files-generator/package.json",
+        '"license": "MPL-2.0",',
+        '"license": "MIT",',
+        "TestTheLinkedPackageIsUnderTheLicenceTheGateIsToldItIs",
+    ),
+    (
         "the example's page says something with a semicolon",
         "examples/playwright/app/page.js",
         "'Uploaded'",

@@ -89,6 +89,15 @@ EXCEPTIONS = {
     # in third_party/go-gl-gl/PATCH.md. This names one directory, and a second
     # copy of something else needs a line of its own here.
     "./third_party/go-gl-gl": "a copy of github.com/go-gl/gl, MIT, held to the published module plus one patch by a guard",
+    # This repository's own npm package, linked into its Playwright example
+    # with file: since 2026-11-04 (#220). The graph reports it twice with no
+    # licence, once by its name and once by its path, measured on that pull
+    # request - a linked directory is not on any registry either. Its licence
+    # is MPL-2.0, in its package.json and its LICENSE, written by this project,
+    # and TestTheLinkedPackageIsUnderTheLicenceTheGateIsToldItIs holds both to
+    # that. The two names are one package.
+    "testing-files-generator": "this repository's npm package, linked into examples/playwright, MPL-2.0 held by a guard",
+    "../../npm/testing-files-generator": "the same package, as the graph names it by its path",
 }
 
 # GitHub reports license: null for every action, measured on this repository on

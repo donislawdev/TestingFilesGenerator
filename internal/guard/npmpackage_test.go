@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -74,6 +75,31 @@ func TestThePackageKnowsEveryPlatformTheReleaseBuilds(t *testing.T) {
 	sort.Strings(want)
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("the package looks for a binary on %v, and the release builds one for %v", got, want)
+	}
+}
+
+// The dependency gate lets the package through by name, because the graph has
+// no licence for a directory linked with file: (#220). That is only true while
+// the package is what the gate's exception says it is.
+func TestTheLinkedPackageIsUnderTheLicenceTheGateIsToldItIs(t *testing.T) {
+	var pkg struct {
+		Name    string `json:"name"`
+		License string `json:"license"`
+	}
+	if err := json.Unmarshal([]byte(npmFile(t, npmPackage+"/package.json")), &pkg); err != nil {
+		t.Fatalf("reading the package's package.json: %v", err)
+	}
+	if pkg.Name != "testing-files-generator" || pkg.License != "MPL-2.0" {
+		t.Errorf("the package is %s under %s, and the dependency gate lets testing-files-generator through as MPL-2.0", pkg.Name, pkg.License)
+	}
+	if licence := npmFile(t, npmPackage+"/LICENSE"); !strings.HasPrefix(licence, "Mozilla Public License Version 2.0\n") {
+		t.Errorf("the package's LICENSE is not the text of the Mozilla Public License 2.0")
+	}
+	gate := npmFile(t, ".github/scripts/dependency_gate.py")
+	for _, name := range []string{`"testing-files-generator": "`, `"../../npm/testing-files-generator": "`} {
+		if !strings.Contains(gate, name) || !strings.Contains(gate, "MPL-2.0") {
+			t.Errorf("the dependency gate has no exception %s naming the licence", name)
+		}
 	}
 }
 
