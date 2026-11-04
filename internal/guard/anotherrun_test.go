@@ -73,7 +73,7 @@ func twoRunsSharing(t *testing.T) (dir string, alpha *manifest.Manifest, alphaPa
 func TestVerifyNamesTheFilesOfAnotherRunRatherThanCallingThemExtra(t *testing.T) {
 	dir, alpha, _ := twoRunsSharing(t)
 
-	diffs, err := audit.Verify(context.Background(), dir, alpha, "manifest-alpha.json")
+	diffs, err := audit.Verify(context.Background(), dir, alpha.Claims(), "manifest-alpha.json")
 	if err != nil {
 		t.Fatalf("verifying: %v", err)
 	}
@@ -128,7 +128,7 @@ func TestAStrayFileBesideAnotherRunsRecordIsStillExtra(t *testing.T) {
 		}
 	}
 
-	diffs, err := audit.Verify(context.Background(), dir, alpha, "manifest-alpha.json")
+	diffs, err := audit.Verify(context.Background(), dir, alpha.Claims(), "manifest-alpha.json")
 	if err != nil {
 		t.Fatalf("verifying: %v", err)
 	}
@@ -167,7 +167,7 @@ func TestARecordUnderAnotherExtensionIsStillExtra(t *testing.T) {
 		t.Fatalf("renaming the neighbour's record: %v", err)
 	}
 
-	diffs, err := audit.Verify(context.Background(), dir, alpha, "manifest-alpha.json")
+	diffs, err := audit.Verify(context.Background(), dir, alpha.Claims(), "manifest-alpha.json")
 	if err != nil {
 		t.Fatalf("verifying: %v", err)
 	}
@@ -181,7 +181,7 @@ func TestARecordUnderAnotherExtensionIsStillExtra(t *testing.T) {
 // The sentence tells a reader which run to ask.
 func TestTheSentenceAboutAnotherRunNamesTheRecordThatClaimsTheFile(t *testing.T) {
 	dir, alpha, _ := twoRunsSharing(t)
-	diffs, err := audit.Verify(context.Background(), dir, alpha, "manifest-alpha.json")
+	diffs, err := audit.Verify(context.Background(), dir, alpha.Claims(), "manifest-alpha.json")
 	if err != nil {
 		t.Fatalf("verifying: %v", err)
 	}

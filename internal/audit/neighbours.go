@@ -54,10 +54,21 @@ type neighbourClaims struct {
 // about it here and it keeps whatever verify would have called it. Guessing on
 // a file we could not read is how a tool starts accounting for files nobody
 // wrote.
+//
+// A record is read a piece at a time and only its claims among the candidates
+// are kept, so the record of a run of a million files costs a pass over it and
+// what it says about the files in front of us. It used to be read whole under
+// the sixteen megabytes Load allows, and a record past that was refused - so
+// the files of a run of more than about twenty thousand were called extra in
+// the directory they shared with ours.
 func findNeighbours(ctx context.Context, dir string, candidates []string) neighbourClaims {
 	found := neighbourClaims{
 		records:   map[string]bool{},
 		claimedBy: map[string]string{},
+	}
+	unclaimed := make(map[string]bool, len(candidates))
+	for _, rel := range candidates {
+		unclaimed[rel] = true
 	}
 	for _, rel := range candidates {
 		if ctx.Err() != nil {
@@ -68,16 +79,32 @@ func findNeighbours(ctx context.Context, dir string, candidates []string) neighb
 		if !couldBeNamedLikeARecord(rel) {
 			continue
 		}
-		full := filepath.Join(dir, filepath.FromSlash(rel))
-		m, err := manifest.Load(full)
-		if err != nil {
+		claims, ok := claimsAmong(ctx, filepath.Join(dir, filepath.FromSlash(rel)), unclaimed)
+		if !ok {
 			continue
 		}
 		found.records[rel] = true
-		base := filepath.Base(rel)
-		found.take(m, base)
+		found.take(claims, filepath.Base(rel))
 	}
 	return found
+}
+
+// claimsAmong is the files the record at full claims that are among the
+// unclaimed, and whether it is a record this build reads at all. What it claims
+// is kept only once the whole record has been read and found sound, because a
+// record refused at its last byte is no record, whatever its first entries
+// said.
+func claimsAmong(ctx context.Context, full string, unclaimed map[string]bool) ([]string, bool) {
+	var hits []string
+	_, err := manifest.EachClaim(ctx, full, func(c manifest.ClaimedFile) {
+		// The path is put through the same spelling both sides of the
+		// comparison use. Without it a neighbour writing "./a.txt" would claim
+		// nothing, which is the fault comparablePath was written for.
+		if key := comparablePath(c.Path); unclaimed[key] {
+			hits = append(hits, key)
+		}
+	})
+	return hits, err == nil
 }
 
 // take records what one neighbour says it wrote.
@@ -86,16 +113,11 @@ func findNeighbours(ctx context.Context, dir string, candidates []string) neighb
 // how deeply this project nests talking. It is also the better shape to read:
 // the caller decides WHICH files are records, and this decides what a record
 // accounts for.
-func (n neighbourClaims) take(m *manifest.Manifest, base string) {
-	for _, f := range Claimed(m) {
+func (n neighbourClaims) take(claims []string, base string) {
+	for _, key := range claims {
 		// First record wins, and the walk that produced the candidates is in a
 		// fixed order, so two neighbours claiming one file name the same one of
 		// themselves every time rather than whichever was read first on the day.
-		//
-		// The path is put through the same spelling both sides of the
-		// comparison use. Without it a neighbour writing "./a.txt" would claim
-		// nothing, which is the fault comparablePath was written for.
-		key := comparablePath(f.Path)
 		if _, taken := n.claimedBy[key]; !taken {
 			n.claimedBy[key] = base
 		}
@@ -128,13 +150,14 @@ func (n neighbourClaims) take(m *manifest.Manifest, base string) {
 // same day. That one read the first half kilobyte of every candidate and looked
 // for the first key of a manifest, to keep a large JSON document that is not one
 // from being read in full. Nothing could make it fail: a document that got past
-// it was refused by manifest.Load's schema check anyway, so removing it changed
+// it was refused by the manifest's schema check anyway, so removing it changed
 // no answer and no test could tell. A defence nothing can redden is not a
 // defence, and this project takes those out rather than keeping them.
 //
-// What is left is the name, and then manifest.Load, which has a ceiling of its
-// own - so the worst an unclaimed JSON document can cost is one read of at most
-// that ceiling.
+// What is left is the name, and then the manifest reader, which holds at most
+// one value of manifest.MaxValueBytes at a time - so the worst an unclaimed
+// JSON document can cost is one pass over it, and one that is not an object
+// is let go at its first byte.
 func couldBeNamedLikeARecord(rel string) bool {
 	return strings.EqualFold(filepath.Ext(rel), ".json")
 }

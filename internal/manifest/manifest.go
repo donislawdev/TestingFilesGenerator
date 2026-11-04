@@ -1,7 +1,8 @@
 package manifest
 
 import (
-	"encoding/json"
+	"bytes"
+	"context"
 	"io"
 	"os"
 	"runtime"
@@ -576,38 +577,72 @@ func (e *TooLargeError) Said() core.Said {
 // acting on the half of it we recognise is how "verify" ends up calling a
 // directory sound on the strength of the part it could read.
 //
-// One larger than MaxBytes is refused before a byte of it is read, because a
-// manifest is held in memory to be compared against a directory and the file
-// being read is not necessarily one of ours.
+// One larger than MaxBytes is refused before a byte of it is read, because
+// Load holds the whole document and every entry of it, and the file being read
+// is not necessarily one of ours. verify and cleanup read through ReadClaims,
+// which holds three fields of the claimed entries and has no ceiling on the
+// document - Load is for a caller that needs all of it, and a manifest past
+// sixteen megabytes is one such a caller should not be holding.
+//
+// The same reader as ReadClaims underneath (read.go), so the two refuse the
+// same documents in the same words.
 func Load(path string) (*Manifest, error) {
 	raw, err := readAtMost(path)
 	if err != nil {
 		return nil, err
 	}
 	var m Manifest
-	if err := json.Unmarshal(raw, &m); err != nil {
-		return nil, &SchemaError{Path: path, Detail: core.SaidOf(err)}
-	}
-	if m.ManifestVersion == "" {
-		return nil, &SchemaError{Path: path, Detail: core.Says("manifest.ItCarriesNoManifestVersionSo", "it carries no manifest_version, so it is not a manifest this tool wrote")}
-	}
-	got, want := major(m.ManifestVersion), major(Version)
-	if got != want {
-		return nil, &SchemaError{Path: path, Detail: core.Says("manifest.ItIsSchemaVersionAndThis", "it is schema version %s and this build reads %s. Use the version of tfg that wrote it", core.A("ManifestVersion", m.ManifestVersion), core.A("Version", Version))}
-	}
-	if err := checkPaths(path, &m); err != nil {
+	// Nothing long to stop: the document is in memory already and has a
+	// ceiling, so a context here would be one nobody could use.
+	err = decode(context.Background(), bytes.NewReader(raw), path, &m, func(f File) {
+		m.Files = append(m.Files, f)
+	})
+	if err != nil {
 		return nil, err
 	}
 	return &m, nil
 }
 
-// checkPaths refuses a manifest whose entries point outside the directory they
-// describe.
+// settled is what is asked of a manifest once all of it has been read, in the
+// order the answers come in: the version, then the first entry that leaves the
+// directory, then the instructions. A fault of the document as a document came
+// before all three and was answered while it was read.
 //
-// This is the door. Every consumer of a manifest comes through Load, so the
-// check sits here rather than beside each use - "verify" and "cleanup" then
-// cannot drift into disagreeing about it, and a consumer written later gets it
-// without knowing it exists.
+// The version first, before anything is believed. A manifest from a future
+// major describes fields this build does not know, and acting on the half of it
+// we recognise is how "verify" ends up calling a directory sound on the
+// strength of the part it could read - and an entry of it that seems to leave
+// the directory is an entry this build does not know how to read.
+func settled(path string, m *Manifest, escaped error) error {
+	if m.ManifestVersion == "" {
+		return &SchemaError{Path: path, Detail: core.Says("manifest.ItCarriesNoManifestVersionSo", "it carries no manifest_version, so it is not a manifest this tool wrote")}
+	}
+	got, want := major(m.ManifestVersion), major(Version)
+	if got != want {
+		return &SchemaError{Path: path, Detail: core.Says("manifest.ItIsSchemaVersionAndThis", "it is schema version %s and this build reads %s. Use the version of tfg that wrote it", core.A("ManifestVersion", m.ManifestVersion), core.A("Version", Version))}
+	}
+	if escaped != nil {
+		return escaped
+	}
+	// The instructions are a name beside the manifest and nothing else.
+	// cleanup --with-manifest removes the file this names, so a manifest
+	// carrying a path here would be a manifest that removes something the run
+	// never wrote.
+	if name := m.Run.Instructions; name != "" && !isInstructionsName(name) {
+		return &SchemaError{Path: path, Detail: core.Says("manifest.RunInstructionsIsAndItCan", "run.instructions is %q, and it can only be the name of a file beside the manifest ending in %s. "+
+			"This tool removes that file with the manifest, so it will not act on one that names anything else. "+
+			"Use the manifest the run actually wrote, or remove the key", core.A("Name", name), core.A("InstructionsSuffix", instructionsSuffix))}
+	}
+	return nil
+}
+
+// entryEscapes refuses entry i of a manifest when its path points outside the
+// directory the manifest describes, and is nil when it stays inside.
+//
+// This is the door. Every consumer of a manifest comes through the one reader,
+// so the check sits there rather than beside each use - "verify" and "cleanup"
+// then cannot drift into disagreeing about it, and a consumer written later
+// gets it without knowing it exists.
 //
 // Measured on 2026-08-03, before this existed: an entry with the path
 // "../VICTIM.txt" and cleanup --yes --force removed a file one directory above
@@ -621,28 +656,17 @@ func Load(path string) (*Manifest, error) {
 // written means the file was edited or produced by something else. Acting on
 // the rest of it would be trusting the half we happen to like.
 //
-// Every entry is checked, not only the ones Claimed returns. An entry that no
-// command reads today is one a command reads tomorrow.
-func checkPaths(path string, m *Manifest) error {
-	for i, f := range m.Files {
-		problem := core.ContainmentProblem(f.Path)
-		if problem == "" {
-			continue
-		}
-		return &SchemaError{Path: path, Detail: core.Says("manifest.EntryHasThePathWhichLands", "entry %d has the path %q, which lands outside the directory the manifest describes - %s. "+
-			"This tool never reads or removes anything outside that directory, so a manifest that asks it to is one it will not act on. "+
-			"Use the manifest the run actually wrote, or correct the path to one inside the directory", core.A("I", i+1), core.A("Path", f.Path), core.A("Problem", problem))}
+// Every entry is checked, not only the claimed ones. An entry that no command
+// reads today is one a command reads tomorrow. i counts every entry from one,
+// so the number is the one a person finds by counting the list.
+func entryEscapes(path string, i int, p string) error {
+	problem := core.ContainmentProblem(p)
+	if problem == "" {
+		return nil
 	}
-	// The instructions are a name beside the manifest and nothing else.
-	// cleanup --with-manifest removes the file this names, so a manifest
-	// carrying a path here would be a manifest that removes something the run
-	// never wrote.
-	if name := m.Run.Instructions; name != "" && !isInstructionsName(name) {
-		return &SchemaError{Path: path, Detail: core.Says("manifest.RunInstructionsIsAndItCan", "run.instructions is %q, and it can only be the name of a file beside the manifest ending in %s. "+
-			"This tool removes that file with the manifest, so it will not act on one that names anything else. "+
-			"Use the manifest the run actually wrote, or remove the key", core.A("Name", name), core.A("InstructionsSuffix", instructionsSuffix))}
-	}
-	return nil
+	return &SchemaError{Path: path, Detail: core.Says("manifest.EntryHasThePathWhichLands", "entry %d has the path %q, which lands outside the directory the manifest describes - %s. "+
+		"This tool never reads or removes anything outside that directory, so a manifest that asks it to is one it will not act on. "+
+		"Use the manifest the run actually wrote, or correct the path to one inside the directory", core.A("I", i), core.A("Path", p), core.A("Problem", problem))}
 }
 
 // major is the part before the first dot. A minor bump adds fields and stays

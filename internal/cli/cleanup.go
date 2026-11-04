@@ -23,6 +23,8 @@ func cleanup(ctx context.Context, args []string, out, errOut io.Writer) int {
 	withManifest := fs.Bool("with-manifest", false, "remove the manifest and the instructions beside it as well, once every file it lists is gone")
 	asJSON := fs.Bool("json", false, "write the report as JSON instead of prose")
 	against := fs.String("against", "", "directory to clean. Defaults to the directory holding the manifest")
+	var memory memoryValue
+	checkingMemoryFlag(fs, &memory)
 	usage := func(w io.Writer) {
 		fmt.Fprint(w, `tfg cleanup - remove the files a manifest lists.
 
@@ -58,10 +60,9 @@ Flags:
 		return ExitUsage
 	}
 
-	m, err := manifest.Load(path)
-	if err != nil {
-		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
-		return classify(err)
+	claims, code, ok := claimsOf(ctx, path, memory.Memory, "cleanup was interrupted while reading the manifest and removed nothing.", errOut)
+	if !ok {
+		return code
 	}
 
 	dir := *against
@@ -69,7 +70,7 @@ Flags:
 		dir = filepath.Dir(path)
 	}
 
-	cands, inspectErr := audit.Inspect(ctx, dir, m)
+	cands, inspectErr := audit.Inspect(ctx, dir, claims)
 	if inspectErr != nil {
 		// Not every refusal from the looking pass is a cancellation. It used to
 		// be treated as one, so a manifest pointing outside the directory was
@@ -97,7 +98,7 @@ Flags:
 	// lists until 2026-09-25, and the real run then took the manifest and the
 	// instructions beside it too.
 	if *withManifest {
-		run.record, run.notOurs = recordOf(path, m)
+		run.record, run.notOurs = recordOf(path, claims.Instructions)
 	}
 	// The default run deletes nothing. A tool that removes files on the
 	// strength of one argument is the wrong shape when the directory may hold
@@ -139,9 +140,8 @@ const notOursReason = "it is not named after this manifest, so it may belong to 
 // is the cheaper mistake: a file left to remove by hand, rather than a file
 // removed that was somebody else's. Refusing such a manifest outright would
 // have stopped verify and cleanup on every renamed one (owner's choice).
-func recordOf(path string, m *manifest.Manifest) (record []string, notOurs string) {
+func recordOf(path, name string) (record []string, notOurs string) {
 	record = []string{path}
-	name := m.Run.Instructions
 	if name == "" {
 		return record, ""
 	}

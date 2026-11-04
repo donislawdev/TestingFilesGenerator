@@ -194,7 +194,7 @@ func TestVerifyNamesTheRunLockAsOursRatherThanAsSomebodyElses(t *testing.T) {
 		t.Fatalf("standing in for a run that was killed: %v", err)
 	}
 
-	diffs, err := audit.Verify(context.Background(), dir, res.Manifest, "manifest.json")
+	diffs, err := audit.Verify(context.Background(), dir, res.Manifest.Claims(), "manifest.json")
 	if err != nil {
 		t.Fatalf("verifying: %v", err)
 	}

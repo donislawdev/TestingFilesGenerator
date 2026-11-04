@@ -14,7 +14,6 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/audit"
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
-	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
 // verify compares a directory against a manifest an earlier run wrote.
@@ -23,6 +22,8 @@ func verify(ctx context.Context, args []string, out, errOut io.Writer) int {
 	fs.SetOutput(errOut)
 	against := fs.String("against", "", "directory to check. Defaults to the directory holding the manifest")
 	asJSON := fs.Bool("json", false, "write the report to stdout as JSON")
+	var memory memoryValue
+	checkingMemoryFlag(fs, &memory)
 	usage := func(w io.Writer) {
 		fmt.Fprint(w, `tfg verify - check that a directory still matches a manifest.
 
@@ -57,10 +58,9 @@ Flags:
 		return ExitUsage
 	}
 
-	m, err := manifest.Load(path)
-	if err != nil {
-		fmt.Fprintf(errOut, "tfg: %s\n", describeError(err))
-		return classify(err)
+	claims, code, ok := claimsOf(ctx, path, memory.Memory, "verify was interrupted while reading the manifest and checked nothing.", errOut)
+	if !ok {
+		return code
 	}
 
 	// Defaulting to the directory the manifest sits in makes the common case
@@ -74,8 +74,8 @@ Flags:
 		return ExitIO
 	}
 
-	diffs, verifyErr := audit.Verify(ctx, dir, m, filepath.Base(path))
-	claimed := len(audit.Claimed(m))
+	diffs, verifyErr := audit.Verify(ctx, dir, claims, filepath.Base(path))
+	claimed := len(claims.Files)
 
 	// A cancelled run reports what it compared and never calls the rest sound.
 	//

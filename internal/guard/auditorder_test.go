@@ -67,9 +67,9 @@ func TestCleanupOffersTheFilesInTheOrderTheManifestListsThem(t *testing.T) {
 	}
 
 	// A subsequence rather than an equal list, so this asks about ORDER and
-	// nothing else. Which entries reach the offer is audit.Claimed's rule and
-	// it has its own guards - repeating it here would mean two places to change
-	// when it moves, and a red guard naming the wrong thing.
+	// nothing else. Which entries reach the offer is the manifest's rule for a
+	// claim and it has its own guards - repeating it here would mean two places
+	// to change when it moves, and a red guard naming the wrong thing.
 	at := 0
 	for _, f := range report.Files {
 		found := false
@@ -103,7 +103,7 @@ func pathsOf(files []struct {
 }
 
 // manifestPathsInOrder is every path a manifest names, in the order it names
-// them - the order audit.Claimed walks and the order the offer has to keep.
+// them - the order the claims are read in and the order the offer has to keep.
 func manifestPathsInOrder(t *testing.T, path string) []string {
 	t.Helper()
 	b, err := os.ReadFile(path)

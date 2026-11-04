@@ -398,7 +398,7 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 	// reference point, and that has to happen before any of the plan exists.
 	limits := opt.memoryLimits()
 	pl.budget = newPlanMemory(opt.Memory, limits)
-	handToRuntime(limits)
+	HandToRuntime(limits)
 
 	// The manifest lands beside the files, so its name is a name too. A path
 	// here would leave a manifest outside the directory the run was pointed

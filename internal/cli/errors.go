@@ -370,6 +370,18 @@ func classifyReading(err error) (int, bool) {
 	if errors.As(err, &manifestTooLarge) {
 		return ExitIO, true
 	}
+	// The two ways a manifest read a piece at a time is too large: one value
+	// past what is read at once, and more files than the memory setting lets
+	// a command check. Both are the document's size against a limit, the same
+	// answer as the ceiling the whole document had before.
+	var valueTooLarge *manifest.ValueTooLargeError
+	if errors.As(err, &valueTooLarge) {
+		return ExitIO, true
+	}
+	var tooMuchToHold *manifest.TooMuchToHoldError
+	if errors.As(err, &tooMuchToHold) {
+		return ExitIO, true
+	}
 	// And the same class one step later: a manifest whose entries leave the
 	// directory once the links are followed. The text of the path passed, the
 	// filesystem did not.
