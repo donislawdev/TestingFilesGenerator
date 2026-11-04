@@ -2609,16 +2609,32 @@ MUTATIONS = [
         # The engine's address: the merged list, preset's targets first.
         "the run's ceiling names the target by the merged list rather than the file",
         "internal/recipe/recipe.go",
-        "p.add(at(t.ID).of(KeyCount), core.TooManyFilesInRun(planned+files, len(raw.Targets)),",
-        "p.add(targetSpot(i, t.ID).of(KeyCount), core.TooManyFilesInRun(planned+files, len(raw.Targets)),",
+        "crossedAt = at(t.ID).of(KeyCount)",
+        "crossedAt = targetSpot(i, t.ID).of(KeyCount)",
         "TestTheTargetThatCrossesTheRunCeilingIsPlacedInTheFile",
     ),
     (
         "the run's ceiling marks the size of the batch that crossed it rather than its count",
         "internal/recipe/recipe.go",
-        "p.add(at(t.ID).of(KeyCount), core.TooManyFilesInRun(planned+files, len(raw.Targets)),",
-        "p.add(at(t.ID).of(KeySize), core.TooManyFilesInRun(planned+files, len(raw.Targets)),",
+        "crossedAt = at(t.ID).of(KeyCount)",
+        "crossedAt = at(t.ID).of(KeySize)",
         "TestARefusalAboutTheWholeRunMarksTheBatchThatCausedIt",
+    ),
+    (
+        # Review of #219: the running total where the run crossed is what both
+        # layers said, and ten targets of a million were told two million.
+        "the run's ceiling says the files up to the target that crossed it rather than the whole run's",
+        "internal/recipe/recipe.go",
+        "p.add(crossedAt, core.TooManyFilesInRun(asked, len(raw.Targets)),",
+        "p.add(crossedAt, core.TooManyFilesInRun(int64(planned), len(raw.Targets)),",
+        "TestTheRunCeilingSaysWhatTheWholeRunAsksFor",
+    ),
+    (
+        "the engine's ceiling says the files up to the target that crossed it rather than the whole run's",
+        "internal/engine/engine.go",
+        "Detail:  core.TooManyFilesInRun(filesIn(targets), len(targets)),",
+        "Detail:  core.TooManyFilesInRun(int64(totalFiles), len(targets)),",
+        "TestTheEngineCountsTheWholeRunOfTargetsHandedToItDirectly",
     ),
     (
         "a target past the run's ceiling has its list built before it is refused",
@@ -2628,10 +2644,12 @@ MUTATIONS = [
         "TestATargetPastTheRunCeilingIsNotBuilt",
     ),
     (
+        # In core since the review of #219, which named the reader's own copy of
+        # engine.Uniform. Both now take this one.
         "a target's list of sizes is grown one file at a time again",
-        "internal/recipe/target.go",
-        "\tsizes := make([]int64, count)\n\tfor i := range sizes {\n\t\tsizes[i] = each\n\t}",
-        "\tvar sizes []int64\n\tfor range count {\n\t\tsizes = append(sizes, each)\n\t}",
+        "internal/core/size.go",
+        "\tout := make([]int64, n)\n\tfor i := range out {\n\t\tout[i] = bytes\n\t}",
+        "\tvar out []int64\n\tfor range n {\n\t\tout = append(out, bytes)\n\t}",
         "TestATargetsListOfSizesIsReservedAtItsLength",
     ),
     (

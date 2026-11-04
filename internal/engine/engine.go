@@ -100,17 +100,9 @@ type SizeRange struct {
 	Min, Max int64
 }
 
-// Uniform is n files of the same size, which is what most targets ask for.
-func Uniform(n int, bytes int64) []int64 {
-	if n <= 0 {
-		return nil
-	}
-	out := make([]int64, n)
-	for i := range out {
-		out[i] = bytes
-	}
-	return out
-}
+// Uniform is n files of the same size, which is what most targets ask for. It
+// is core's, under the name the engine's callers reach for.
+func Uniform(n int, bytes int64) []int64 { return core.Uniform(n, bytes) }
 
 // Options are the settings of one run.
 type Options struct {
@@ -486,7 +478,7 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 			// reader's is.
 			return nil, &RecipeError{
 				Setting: core.TargetAddress(i+1, SettingCount),
-				Detail:  core.TooManyFilesInRun(totalFiles, len(targets)),
+				Detail:  core.TooManyFilesInRun(filesIn(targets), len(targets)),
 				Because: core.TooManyFilesWhy,
 				Remedy:  core.TooManyFilesFix}
 		}
@@ -496,6 +488,17 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 		}
 	}
 	return pl.out, nil
+}
+
+// filesIn is every file the targets ask for, which is what a refusal of the
+// run's ceiling says - rather than the running total at the target that
+// crossed it, which is where the refusal is made.
+func filesIn(targets []Target) int64 {
+	var n int64
+	for i := range targets {
+		n += int64(len(targets[i].Sizes))
+	}
+	return n
 }
 
 // Run writes a planned set of files.

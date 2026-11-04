@@ -448,17 +448,21 @@ func (raw rawRecipe) readTargets(p *problems, def Defaults, fromPreset int) []Ta
 	// adds more than the ceiling: a count past it is refused as the target's
 	// own and asks for nothing.
 	planned := 0
+	// What every target asks for, which is the number the refusal says. The
+	// running total stops at the target that crossed the ceiling, and ten
+	// targets of a million were told they asked for two (review of #219).
+	var asked int64
+	// The target that takes the run past the ceiling, which is the one
+	// somebody can shrink. Only one is: every target after it is past the
+	// ceiling as well, and saying so of each would bury the one that matters.
+	crossedAt := ""
 	for i, rt := range raw.Targets {
 		at := spotOfTarget(i, fromPreset)
 		room := core.MaxFilesPerRun - planned
 		t, files := rt.validate(p, at, def, room)
-		// Refused at the target that takes the run past the ceiling, which is
-		// the one somebody can shrink, and in the engine's words. Once, because
-		// every target after it is past the ceiling as well, and saying so of
-		// each would bury the one that matters.
+		asked += int64(files)
 		if room >= 0 && files > room {
-			p.add(at(t.ID).of(KeyCount), core.TooManyFilesInRun(planned+files, len(raw.Targets)),
-				core.TooManyFilesWhy, core.TooManyFilesFix)
+			crossedAt = at(t.ID).of(KeyCount)
 		}
 		planned = min(planned+files, core.MaxFilesPerRun+1)
 		if t.ID != "" {
@@ -469,6 +473,10 @@ func (raw rawRecipe) readTargets(p *problems, def Defaults, fromPreset int) []Ta
 			}
 		}
 		targets = append(targets, t)
+	}
+	// Said once every target is counted, in the engine's words.
+	if crossedAt != "" {
+		p.add(crossedAt, core.TooManyFilesInRun(asked, len(raw.Targets)), core.TooManyFilesWhy, core.TooManyFilesFix)
 	}
 	return targets
 }

@@ -245,7 +245,7 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 				core.Says("recipe.UseSettingSuchAs2mb512kb", "use {a} {setting} such as 2mb, 512kb or a plain byte count"))
 			break
 		}
-		t.Sizes = sizesOf(count, n)
+		t.Sizes = core.Uniform(count, n)
 
 	case rt.SizeRange != nil:
 		// Placed above contains for the same reason size is: a stated size
@@ -268,7 +268,7 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 		// The values stay zero here and the engine replaces them. What this
 		// list carries at this point is the number of files, exactly as it
 		// does for contains.
-		t.Sizes = sizesOf(count, 0)
+		t.Sizes = core.Uniform(count, 0)
 
 	case rt.Contains != nil:
 		// The fourth way of declaring a size, and not an exception to the rule.
@@ -276,7 +276,7 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 		// and a dry run still reports a number without generating anything.
 		// See ARCHITECTURE.md section 9.
 		t.SizeFromContents = true
-		t.Sizes = sizesOf(count, 0)
+		t.Sizes = core.Uniform(count, 0)
 
 	default:
 		p.add(where.of("size"), core.Says("recipe.HasNoSetting", "%s has no {setting}", core.A("At", where)),
@@ -398,24 +398,6 @@ func boundaryText(p *problems, where spot, v *scalar) string {
 		return ""
 	}
 	return s
-}
-
-// sizesOf is count files of one size, in a list reserved at its length.
-//
-// Grown one append at a time, the list for a million files cost 40 B a file to
-// build for 8 B a file kept - every growth leaves the last array to the
-// collector - and the batch screen builds it on every key (O302, measured
-// 2026-11-04: 41.7 MB for one target of a million). engine.Uniform is the same
-// list on the side of the engine, which this package cannot import.
-func sizesOf(count int, each int64) []int64 {
-	if count <= 0 {
-		return nil
-	}
-	sizes := make([]int64, count)
-	for i := range sizes {
-		sizes[i] = each
-	}
-	return sizes
 }
 
 // boundarySizes turns a limit into the three sizes a boundary set means.

@@ -134,6 +134,23 @@ func TestTheRunCeilingSitsExactlyAtAMillion(t *testing.T) {
 	}
 }
 
+// The refusal says the files the whole run asks for, at the target that
+// crossed the ceiling.
+//
+// Both are refused where the run crosses, so the running total there was the
+// number they said - ten targets of a million were told they asked for two
+// million across ten targets (review of #219, measured with the binary before
+// O302 as well). The target after the one that crosses is what tells the two
+// numbers apart.
+func TestTheRunCeilingSaysWhatTheWholeRunAsksFor(t *testing.T) {
+	src := targetsOf(1, core.MaxFilesPerRun, core.MaxFilesPerRun)
+	ceilingAt(t, src, 2)
+	_, err := recipe.Parse(src, "whole run")
+	if !strings.Contains(err.Error(), "2000001 files across 3 targets") {
+		t.Errorf("the refusal does not say the files the whole run asks for, 2000001:\n%v", err)
+	}
+}
+
 // A run past the ceiling is reported together with whatever else is wrong.
 //
 // Every problem of a recipe arrives at once (RC7). While the engine counted the
@@ -241,18 +258,24 @@ targets:
 // targets by whoever calls it, though, and planCapacity reserves nothing past
 // the ceiling on the word of this refusal. The memory setting is there so a
 // build that lost the refusal plans until the plan ceiling stops it, a few
-// megabytes in, rather than a million files.
+// megabytes in, rather than a million files. A third target follows the one
+// that crosses, so the number the refusal says is asked to be the whole run's
+// rather than the running total where it stopped.
 func TestTheEngineCountsTheWholeRunOfTargetsHandedToItDirectly(t *testing.T) {
 	targets := []engine.Target{
 		{ID: "small", Format: "txt", Sizes: engine.Uniform(1, 1024)},
 		{ID: "big", Format: "txt", Sizes: engine.Uniform(core.MaxFilesPerRun, 1024)},
+		{ID: "after", Format: "txt", Sizes: engine.Uniform(core.MaxFilesPerRun, 1024)},
 	}
 	_, err := engine.Plan(targets, engine.Options{OutDir: t.TempDir(), ManifestName: "manifest.json", Memory: core.MemoryOf(32 << 20)})
 	if err == nil {
-		t.Fatal("a run of one file more than the ceiling was planned")
+		t.Fatal("a run of a million files more than the ceiling was planned")
 	}
-	if !strings.Contains(err.Error(), "1000001 files across 2 targets") {
+	if !strings.Contains(err.Error(), "files across 3 targets") {
 		t.Fatalf("the run was refused for something other than its count of files: %v", err)
+	}
+	if !strings.Contains(err.Error(), "2000001 files across 3 targets") {
+		t.Errorf("the refusal does not say the files the whole run asks for, 2000001: %v", err)
 	}
 	var about interface{ AboutSetting() string }
 	if !errors.As(err, &about) || about.AboutSetting() != core.TargetAddress(2, engine.SettingCount) {
