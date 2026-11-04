@@ -64,14 +64,19 @@ type rawTarget struct {
 // that put one answer in tfg formats and another in the generator once already.
 const DefaultCount = 1
 
-// validate reads one target and reports everything wrong with it.
+// validate reads one target and reports everything wrong with it, and says how
+// many files it asks for - the number the run's ceiling counts.
 //
 // at is where this target is, as a function of its id - see spotOfTarget. It
 // is a function rather than a position because the prose names a target by
 // its id as soon as one is read, and the id is read here.
-func (rt rawTarget) validate(p *problems, at func(id string) spot, def Defaults) Target {
+//
+// room is how many files the run has left before its ceiling. A target asking
+// for more is read for everything else, but its list of sizes is not built:
+// the run is refused at it whatever its sizes say, and building the list first
+// is the allocation the ceiling is there to prevent.
+func (rt rawTarget) validate(p *problems, at func(id string) spot, def Defaults, room int) (Target, int) {
 	t := Target{Label: def.Label}
-	count := DefaultCount
 
 	where := at("")
 	if id, ok := oneValue(p, where.of("id"), where.String()+" {setting}", "id: invoices", rt.ID); ok && id != "" {
@@ -92,34 +97,16 @@ func (rt rawTarget) validate(p *problems, at func(id string) spot, def Defaults)
 		t.Format = format
 	}
 
-	if rt.Count != nil {
-		n, ok := rt.Count.number()
-		switch {
-		case !ok:
-			p.add(where.of("count"), core.Says("recipe.HasSettingOfWhichIsNot", "%s has {a} {setting} of %q, which is not a whole number", core.A("Where", where), core.A("Text", rt.Count.text)),
-				core.Says("recipe.SettingIsHowManyFilesThis", "{a} {setting} is how many files this target produces, so it is read exactly as written"),
-				core.Says("recipe.WriteADecimalNumberSuchAs2", "write a decimal number such as count: 10"))
-		case n <= 0:
-			p.add(where.of("count"), core.Says("recipe.AsksForFiles", "%s asks for %d files", core.A("At", where), core.A("Value", n)),
-				core.Says("recipe.ATargetThatProducesNothingIs", "a target that produces nothing is almost always a mistake rather than an intention"),
-				core.Says("recipe.AskForAtLeastOneOr", "ask for at least one, or delete the target"))
-		// Judged before the list is built. The reader used to grow it one entry
-		// at a time and reached a 13 GB allocation on a count of 2^63 - so this
-		// has to refuse the number rather than the result of using it.
-		case n > core.MaxFilesPerRun:
-			p.add(where.of("count"), core.Says("recipe.AsksForFiles", "%s asks for %d files", core.A("At", where), core.A("Value", n)),
-				core.SaidOf(core.ErrTooManyFiles),
-				core.Says("recipe.UseSettingOfOrLessOr2", "use {a} {setting} of %d or less, or split the target across several recipes", core.A("MaxFilesPerRun", core.MaxFilesPerRun)))
-		default:
-			count = int(n)
-		}
-	}
-
+	count := rt.readCount(p, where)
 	rt.refuseSections(p, where)
 	if rt.Contains != nil {
 		t.Contains = contentGroups(p, where, rt.Contains)
 	}
-	rt.resolveSize(p, where, count, &t)
+	built := count
+	if count > room {
+		built = 0
+	}
+	rt.resolveSize(p, where, built, &t)
 
 	if name, ok := oneValue(p, where.of("name"), where.String()+" {setting}", "name: invoice_{index:04}.pdf", rt.Name); ok {
 		t.Name = name
@@ -133,7 +120,50 @@ func (rt rawTarget) validate(p *problems, at func(id string) spot, def Defaults)
 	refuseImpossibleExpectation(p, where, t)
 	rt.describe(p, where, &t)
 	t.Properties = properties(p, where, t.Format, rt.Properties)
-	return t
+
+	// The count, whether or not its list was built and whether or not its size
+	// was refused, so a run past the ceiling is said beside the target's own
+	// problems (RC7). A boundary set is the sizes it has - three, built whatever
+	// room is left, because three is not an allocation. For a recipe this
+	// reader passes, it is the length of the list, which is what the engine
+	// counts.
+	files := count
+	if rt.Boundary != nil {
+		files = len(t.Sizes)
+	}
+	return t, files
+}
+
+// readCount reads how many files this target asks for.
+//
+// A count refused here asks for nothing. Left at the default, the one file it
+// stands for would take a target of a million beside it past the run's
+// ceiling, and one mistake would be refused twice.
+func (rt rawTarget) readCount(p *problems, where spot) int {
+	if rt.Count == nil {
+		return DefaultCount
+	}
+	n, ok := rt.Count.number()
+	switch {
+	case !ok:
+		p.add(where.of("count"), core.Says("recipe.HasSettingOfWhichIsNot", "%s has {a} {setting} of %q, which is not a whole number", core.A("Where", where), core.A("Text", rt.Count.text)),
+			core.Says("recipe.SettingIsHowManyFilesThis", "{a} {setting} is how many files this target produces, so it is read exactly as written"),
+			core.Says("recipe.WriteADecimalNumberSuchAs2", "write a decimal number such as count: 10"))
+	case n <= 0:
+		p.add(where.of("count"), core.Says("recipe.AsksForFiles", "%s asks for %d files", core.A("At", where), core.A("Value", n)),
+			core.Says("recipe.ATargetThatProducesNothingIs", "a target that produces nothing is almost always a mistake rather than an intention"),
+			core.Says("recipe.AskForAtLeastOneOr", "ask for at least one, or delete the target"))
+	// Judged before the list is built. The reader used to grow it one entry at
+	// a time and reached a 13 GB allocation on a count of 2^63 - so this has to
+	// refuse the number rather than the result of using it.
+	case n > core.MaxFilesPerRun:
+		p.add(where.of("count"), core.Says("recipe.AsksForFiles", "%s asks for %d files", core.A("At", where), core.A("Value", n)),
+			core.SaidOf(core.ErrTooManyFiles),
+			core.Says("recipe.UseSettingOfOrLessOr2", "use {a} {setting} of %d or less, or split the target across several recipes", core.A("MaxFilesPerRun", core.MaxFilesPerRun)))
+	default:
+		return int(n)
+	}
+	return 0
 }
 
 // describe reads what a target says ABOUT its files rather than how to make
@@ -215,9 +245,7 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 				core.Says("recipe.UseSettingSuchAs2mb512kb", "use {a} {setting} such as 2mb, 512kb or a plain byte count"))
 			break
 		}
-		for i := 0; i < count; i++ {
-			t.Sizes = append(t.Sizes, n)
-		}
+		t.Sizes = sizesOf(count, n)
 
 	case rt.SizeRange != nil:
 		// Placed above contains for the same reason size is: a stated size
@@ -240,9 +268,7 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 		// The values stay zero here and the engine replaces them. What this
 		// list carries at this point is the number of files, exactly as it
 		// does for contains.
-		for i := 0; i < count; i++ {
-			t.Sizes = append(t.Sizes, 0)
-		}
+		t.Sizes = sizesOf(count, 0)
 
 	case rt.Contains != nil:
 		// The fourth way of declaring a size, and not an exception to the rule.
@@ -250,9 +276,7 @@ func (rt rawTarget) resolveSize(p *problems, where spot, count int, t *Target) {
 		// and a dry run still reports a number without generating anything.
 		// See ARCHITECTURE.md section 9.
 		t.SizeFromContents = true
-		for i := 0; i < count; i++ {
-			t.Sizes = append(t.Sizes, 0)
-		}
+		t.Sizes = sizesOf(count, 0)
 
 	default:
 		p.add(where.of("size"), core.Says("recipe.HasNoSetting", "%s has no {setting}", core.A("At", where)),
@@ -374,6 +398,24 @@ func boundaryText(p *problems, where spot, v *scalar) string {
 		return ""
 	}
 	return s
+}
+
+// sizesOf is count files of one size, in a list reserved at its length.
+//
+// Grown one append at a time, the list for a million files cost 40 B a file to
+// build for 8 B a file kept - every growth leaves the last array to the
+// collector - and the batch screen builds it on every key (O302, measured
+// 2026-11-04: 41.7 MB for one target of a million). engine.Uniform is the same
+// list on the side of the engine, which this package cannot import.
+func sizesOf(count int, each int64) []int64 {
+	if count <= 0 {
+		return nil
+	}
+	sizes := make([]int64, count)
+	for i := range sizes {
+		sizes[i] = each
+	}
+	return sizes
 }
 
 // boundarySizes turns a limit into the three sizes a boundary set means.

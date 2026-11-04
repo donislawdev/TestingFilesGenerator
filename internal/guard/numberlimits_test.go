@@ -1,13 +1,13 @@
 package guard
 
 import (
-	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
 // Two numbers a person can write that the tool could not honour, and used to
@@ -89,6 +89,14 @@ targets:
 	}
 	if strings.Contains(errOut, "fatal error") || strings.Contains(errOut, "out of memory") {
 		t.Errorf("the allocator was reached instead of the check:\n%s", errOut)
+	}
+	// Refused as the target's own count, not only as the run's. The run's
+	// ceiling turns this recipe away as well since O302, but it is the
+	// target's ceiling that keeps every term of the run's sum within a million
+	// - without it a count like this one, after the run is already past the
+	// ceiling, wraps the sum negative and every target after it is built again.
+	if !strings.Contains(errOut, "split the target across several recipes") {
+		t.Errorf("the count was not refused as the target's own:\n%s", errOut)
 	}
 	if stdout != "" {
 		t.Errorf("a failed run wrote to stdout:\n%s", stdout)
@@ -219,8 +227,13 @@ func TestABoundaryThatCannotHoldItsOwnSetIsRefused(t *testing.T) {
 // A run spread across many targets reaches the same ceiling. Checking only the
 // count of one target would leave the whole thing reachable by writing the
 // number out in pieces.
+//
+// Asked of the recipe reader since O302, which counts the run before it builds
+// a target's list. Through validate this was asked of the reader and of the
+// engine under it at once, and a refusal from either passed - so either one
+// could lose its count and leave this green, and the engine planned 990 000
+// files to answer it (19 s, 28 s under the race detector).
 func TestTheCeilingCountsTheWholeRunNotOneTarget(t *testing.T) {
-	dir := t.TempDir()
 	var b strings.Builder
 	b.WriteString("version: 1\ntargets:\n")
 	// Twelve targets of 90 000 files come to 1 080 000, which is over the
@@ -230,16 +243,17 @@ func TestTheCeilingCountsTheWholeRunNotOneTarget(t *testing.T) {
 		b.WriteString(string(rune('a' + i)))
 		b.WriteString("\n    format: txt\n    size: 1b\n    count: 90000\n")
 	}
-	path := writeRecipe(t, dir, b.String())
 
-	code, stdout, errOut := run(t, "validate", path)
-	if code == cli.ExitOK {
-		t.Fatalf("a run of over a million files spread across targets was accepted:\n%s", stdout)
+	_, err := recipe.Parse([]byte(b.String()), "pieces")
+	if err == nil {
+		t.Fatal("a run of over a million files spread across targets was accepted")
 	}
-	if !strings.Contains(errOut, "1000000") {
-		t.Errorf("the refusal does not name the ceiling:\n%s", errOut)
+	said := err.Error()
+	for _, want := range []string{"1080000 files across 12 targets", "1000000"} {
+		if !strings.Contains(said, want) {
+			t.Errorf("the refusal does not say %q:\n%s", want, said)
+		}
 	}
-	_ = filepath.Join
 }
 
 // The refusal names the ceiling the rule really uses.

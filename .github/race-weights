@@ -36,7 +36,6 @@ unlisted 0.58
 35.5 TestJxlStillFitsWhenTheQualityIsNotTheOneTheCeilingsWereMeasuredAt
 30.8 TestOurOwnGeneratorsHaveNotDrifted
 29.9 TestTheSameSeedGivesTheSameBytes
-27.7 TestTheCeilingCountsTheWholeRunNotOneTarget
 26.8 TestEveryJxlRungStillFitsInsideItsDeclaredCeiling
 26.6 TestTheMinimumStandsWhateverTheSeedIsUnderEveryDeclaredChoice
 24.9 TestEveryEMLSettingSurvivesItsReferenceTool

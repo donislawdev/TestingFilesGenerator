@@ -64,6 +64,19 @@ var (
 			"Or give the run more memory through the memory setting")
 )
 
+// TooManyFilesInRun is what a run past MaxFilesPerRun asks for: the files it
+// came to at the target that crossed the ceiling, across all the targets it
+// has.
+//
+// Both the recipe reader and the engine count the run, and a recipe refused by
+// either reads the same - so the sentence is written here, once, rather than
+// beside each of them (O302).
+func TooManyFilesInRun(files, targets int) Said {
+	return Says("core.TooManyFilesInRun", "this run asks for %s across %s",
+		A("Files", SaysN("core.FilesInRun", "%d file", "%d files", A("Count", files))),
+		A("Targets", SaysN("core.TargetsInRun", "%d target", "%d targets", A("Count", targets))))
+}
+
 // PlanTooLargeWhy is the same refusal for the quantity that actually runs out,
 // in the words of where its ceiling came from.
 //

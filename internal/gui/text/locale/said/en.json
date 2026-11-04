@@ -625,6 +625,12 @@
     "hash": "sha256-6dc38cd1cb85",
     "other": "{{.Error}}"
   },
+  "core.FilesInRun": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-83589d643302",
+    "one": "{{.Count}} file",
+    "other": "{{.Count}} files"
+  },
   "core.MachineMemoryNone": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Bytes}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-76987096904d",
@@ -730,6 +736,12 @@
     "hash": "sha256-58d85993b3db",
     "other": "the sizes in this run add up to more than a number of bytes can hold, so the total cannot be measured and the free space check cannot be trusted. Ask for fewer files or smaller ones"
   },
+  "core.TargetsInRun": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-7f9636c1f771",
+    "one": "{{.Count}} target",
+    "other": "{{.Count}} targets"
+  },
   "core.TooManyFiles": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Why}}, {{.Fix}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-a0fd66f30b3f",
@@ -739,6 +751,11 @@
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-f03079434408",
     "other": "Ask for fewer files, or split the work into several runs"
+  },
+  "core.TooManyFilesInRun": {
+    "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Files}}, {{.Targets}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-a18427eed894",
+    "other": "this run asks for {{.Files}} across {{.Targets}}"
   },
   "core.TooManyFilesWhy": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -960,12 +977,6 @@
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.File}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-1e90995301d1",
     "other": "writing {{.File}}"
-  },
-  "engine.Files": {
-    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-83589d643302",
-    "one": "{{.Count}} file",
-    "other": "{{.Count}} files"
   },
   "engine.FilesSoFar": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -1258,12 +1269,6 @@
     "hash": "sha256-f4062d7dbd6c",
     "other": "target {{.Target}}"
   },
-  "engine.Targets": {
-    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-7f9636c1f771",
-    "one": "{{.Count}} target",
-    "other": "{{.Count}} targets"
-  },
   "engine.TheInstructions": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-074853502278",
@@ -1273,11 +1278,6 @@
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-b802ab9f53ca",
     "other": "the manifest"
-  },
-  "engine.TooManyFiles": {
-    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Files}}, {{.Targets}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-a18427eed894",
-    "other": "this run asks for {{.Files}} across {{.Targets}}"
   },
   "format.AAlreadyNeedsThatMuchBefore": {
     "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Opts}}, {{.Carrying}}, written the way the program writes them - keep each spelled exactly that way.",

@@ -474,15 +474,19 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 			// so - but a refusal a window cannot place is a refusal at the
 			// foot of a form with twenty batches above it and nothing marked.
 			//
-			// Reachable only from here, and measured on 2026-08-25: the recipe
-			// reader bounds each target on its own, so three batches of four
-			// hundred thousand pass it and the total is refused here. Before
-			// this line "validate --json" carried no "at" for it.
+			// No surface reaches this any more. The recipe reader counts the
+			// same total since O302 and refuses first, in the same words, so
+			// a recipe never arrives here past the ceiling - and the flag
+			// path and the Generate screen are one target, bounded on its
+			// own. It stays because Plan is
+			// handed targets by whoever calls it, and planCapacity reserves
+			// nothing past the ceiling on the word of this refusal. Its
+			// position counts the merged list, which for a recipe built on a
+			// preset is not the file's (measured on 2026-11-04) - the
+			// reader's is.
 			return nil, &RecipeError{
 				Setting: core.TargetAddress(i+1, SettingCount),
-				Detail: core.Says("engine.TooManyFiles", "this run asks for %s across %s",
-					core.A("Files", core.SaysN("engine.Files", "%d file", "%d files", core.A("Count", totalFiles))),
-					core.A("Targets", core.SaysN("engine.Targets", "%d target", "%d targets", core.A("Count", len(targets))))),
+				Detail:  core.TooManyFilesInRun(totalFiles, len(targets)),
 				Because: core.TooManyFilesWhy,
 				Remedy:  core.TooManyFilesFix}
 		}
