@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/audit"
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
@@ -190,5 +192,72 @@ func TestAManifestListingMoreThanTheMemorySettingLetsCleanupCheckIsRefused(t *te
 	code, _, errOut = run(t, "verify", mf, "--memory", "64kb")
 	if code != cli.ExitIO || !strings.Contains(errOut, "escaped") || strings.Contains(errOut, "memory setting") {
 		t.Errorf("a manifest too large for the setting and with an entry that escapes was not refused for the entry, exit %d:\n%s", code, errOut)
+	}
+}
+
+// Another run's record that lists one file over and over holds it once.
+//
+// What verify keeps of another run's record is what it says about the files in
+// front of it, so what it holds grows with the directory and not with the
+// record. A record naming one of those files in each of its entries was kept
+// as a list as long as the record. Nothing in the report tells the two apart -
+// the file is another run's either way - so this asks the memory. Two records
+// of the same length are read the same way, one naming the file in every entry
+// and one naming files that are not there, and what reading each allocated is
+// compared. Kept once, the two cost about the same. Kept every time, the first
+// costs at least the sixteen bytes of a string for each entry.
+//
+// Not in parallel, so no other guard allocates while it counts.
+func TestAnotherRunsRecordListingOneFileOverAndOverHoldsItOnce(t *testing.T) {
+	const entries = 50_000
+	read := func(path func(int) string) (int64, []audit.Difference) {
+		dir := t.TempDir()
+		if err := os.WriteFile(filepath.Join(dir, "a0000000.txt"), []byte("the other run wrote this\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		var b strings.Builder
+		b.WriteString(`{"manifest_version":"1.0","files":[`)
+		for i := range entries {
+			if i > 0 {
+				b.WriteByte(',')
+			}
+			fmt.Fprintf(&b, `{"path":%q,"materialized":true}`, path(i))
+		}
+		if err := os.WriteFile(filepath.Join(dir, "other.json"), []byte(b.String()+"]}"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		runtime.GC()
+		var before, after runtime.MemStats
+		runtime.ReadMemStats(&before)
+		diffs, err := audit.Verify(context.Background(), dir, manifest.Claims{}, "manifest.json")
+		runtime.ReadMemStats(&after)
+		if err != nil {
+			t.Fatalf("verifying: %v", err)
+		}
+		return int64(after.TotalAlloc - before.TotalAlloc), diffs
+	}
+	same, sameDiffs := read(func(int) string { return "a0000000.txt" })
+	apart, apartDiffs := read(func(i int) string { return fmt.Sprintf("b%07d.txt", i) })
+
+	// The state this is about: both records were read to the end and taken
+	// for records, and only the first one claims the file.
+	for _, c := range []struct {
+		name  string
+		diffs []audit.Difference
+		file  audit.Kind
+	}{{"naming the file", sameDiffs, audit.AnotherRun}, {"naming other files", apartDiffs, audit.Extra}} {
+		kinds := map[string]audit.Kind{}
+		for _, d := range c.diffs {
+			kinds[d.Path] = d.Kind
+		}
+		if kinds["other.json"] != audit.AnotherRun || kinds["a0000000.txt"] != c.file {
+			t.Fatalf("the record %s was not read as another run's record claiming what it lists: %v", c.name, c.diffs)
+		}
+	}
+
+	t.Logf("reading the record naming the file allocated %d B, and the record naming other files %d B", same, apart)
+	if grew := same - apart; grew > entries {
+		t.Errorf("a record naming one file in each of its %d entries took %d B more to read than one naming none of the files, "+
+			"%.1f B an entry - the file was kept once for every entry rather than once", entries, grew, float64(grew)/entries)
 	}
 }

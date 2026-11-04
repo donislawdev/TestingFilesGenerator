@@ -94,13 +94,19 @@ func findNeighbours(ctx context.Context, dir string, candidates []string) neighb
 // is kept only once the whole record has been read and found sound, because a
 // record refused at its last byte is no record, whatever its first entries
 // said.
+//
+// Each file once, however many times the record lists it, so what is kept is
+// never more than the files in front of us. A record of a million entries
+// naming one of them would otherwise be a list a million long.
 func claimsAmong(ctx context.Context, full string, unclaimed map[string]bool) ([]string, bool) {
 	var hits []string
+	kept := map[string]bool{}
 	_, err := manifest.EachClaim(ctx, full, func(c manifest.ClaimedFile) {
 		// The path is put through the same spelling both sides of the
 		// comparison use. Without it a neighbour writing "./a.txt" would claim
 		// nothing, which is the fault comparablePath was written for.
-		if key := comparablePath(c.Path); unclaimed[key] {
+		if key := comparablePath(c.Path); unclaimed[key] && !kept[key] {
+			kept[key] = true
 			hits = append(hits, key)
 		}
 	})

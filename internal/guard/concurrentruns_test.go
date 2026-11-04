@@ -286,3 +286,27 @@ func TestOneValueOfAManifestPastTheCeilingIsRefusedAndALongManifestIsNot(t *test
 		t.Errorf("a manifest of %d B in small entries ended %d, expected it read and %d:\n%s", len(long), code, cli.ExitOK, errOut)
 	}
 }
+
+// And one value just short of the ceiling is read, so the ceiling is the one
+// the refusal names. The guard above holds it from above, and nothing there
+// would notice the reader refusing at half of it - a manifest this tool reads
+// today turned away.
+//
+// Short by a kilobyte rather than a byte. What the reader counts against the
+// ceiling is the value and the bytes either side of it - the colon before it,
+// and the byte after it that says where it ends - so the exact edge moves by a
+// byte or two with the shape of the value, and no reader of a manifest needs
+// it to the byte.
+func TestOneValueOfAManifestJustUnderTheCeilingIsRead(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "manifest.json")
+	value := `{"command":""}`
+	padding := strings.Repeat("x", manifest.MaxValueBytes-1024-len(value))
+	doc := `{"manifest_version":"1.0","files":[],"run":{"command":"` + padding + `"}}`
+	if err := os.WriteFile(path, []byte(doc), 0o644); err != nil {
+		t.Fatalf("writing: %v", err)
+	}
+	if code, _, errOut := run(t, "verify", path); code != cli.ExitOK || !strings.Contains(errOut, "nothing to check") {
+		t.Errorf("a manifest with one value of %d B, a kilobyte under the ceiling of %d B, ended %d, expected it read and %d:\n%s",
+			len(value)+len(padding), manifest.MaxValueBytes, code, cli.ExitOK, errOut)
+	}
+}

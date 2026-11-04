@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -78,15 +80,39 @@ func (w *writeSizes) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
-// keptSizes is writeSizes that also keeps what it was handed.
+// keptSizes is writeSizes that also keeps what it was handed, and whether the
+// first piece arrived while Encode was still writing the document.
 type keptSizes struct {
 	writeSizes
-	kept bytes.Buffer
+	kept          bytes.Buffer
+	whileEncoding bool
 }
 
 func (w *keptSizes) Write(p []byte) (int, error) {
+	if w.writes == 0 {
+		w.whileEncoding = calledFrom(encodeName)
+	}
 	_, _ = w.writeSizes.Write(p)
 	return w.kept.Write(p)
+}
+
+// encodeName is the name Encode goes by on a stack, taken from the method
+// rather than written out, so renaming it renames this.
+var encodeName = runtime.FuncForPC(reflect.ValueOf((*manifest.Manifest).Encode).Pointer()).Name()
+
+// calledFrom says whether the function named is among the callers.
+func calledFrom(name string) bool {
+	pcs := make([]uintptr, 128)
+	frames := runtime.CallersFrames(pcs[:runtime.Callers(1, pcs)])
+	for {
+		f, more := frames.Next()
+		if f.Function == name {
+			return true
+		}
+		if !more {
+			return false
+		}
+	}
 }
 
 // generate --json sends the manifest a part at a time too, and after a run what
@@ -97,6 +123,12 @@ func (w *keptSizes) Write(p []byte) (int, error) {
 // disk already - observation O300. Both halves: a dry run, which saves nothing,
 // and a real run, whose manifest is on the disk - and what that one sends is
 // the saved file to the byte, so what a script reads is what verify reads.
+//
+// The size of the pieces says the document was not handed over in one, and
+// not that it was never held: encoded whole and then sent a little at a time
+// gives the same pieces. What tells the two apart is when the first piece
+// comes - from inside Encode, while the rest of the document is still to be
+// written.
 func TestGenerateSendsItsManifestAPartAtATime(t *testing.T) {
 	for _, dry := range []bool{true, false} {
 		dir := t.TempDir()
@@ -116,6 +148,10 @@ func TestGenerateSendsItsManifestAPartAtATime(t *testing.T) {
 		if sent.largest*8 > sent.total {
 			t.Errorf("dry run %v: a manifest of %d B reached standard output in %d writes, the largest %d B - held whole to be sent",
 				dry, sent.total, sent.writes, sent.largest)
+		}
+		if !sent.whileEncoding {
+			t.Errorf("dry run %v: the manifest reached standard output after Encode had written it rather than while - "+
+				"held whole to be sent, whatever the size of the pieces it went in", dry)
 		}
 		if dry {
 			if !json.Valid(sent.kept.Bytes()) {

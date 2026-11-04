@@ -16715,8 +16715,8 @@ MUTATIONS = [
     (
         "another run's record no longer claims the files in front of us",
         "internal/audit/neighbours.go",
-        "if key := comparablePath(c.Path); unclaimed[key] {",
-        "if key := comparablePath(c.Path); false && unclaimed[key] {",
+        "if key := comparablePath(c.Path); unclaimed[key] && !kept[key] {",
+        "if key := comparablePath(c.Path); false && unclaimed[key] && !kept[key] {",
         "TestVerifyNamesTheFilesOfAnotherRunRatherThanCallingThemExtra",
     ),
     (
@@ -16724,6 +16724,29 @@ MUTATIONS = [
         "internal/cli/generate.go",
         "\t\tif code := sendManifest(res, g.dryRun, out, errOut); code != ExitOK {",
         "\t\tvar whole bytes.Buffer\n\t\tcode := sendManifest(res, g.dryRun, &whole, errOut)\n\t\t_, _ = out.Write(whole.Bytes())\n\t\tif code != ExitOK {",
+        "TestGenerateSendsItsManifestAPartAtATime",
+    ),
+    (
+        "the ceiling on one value of a manifest is halved, so a value this tool reads today is refused",
+        "internal/manifest/read.go",
+        "rd.in.limit = rd.dec.InputOffset() + MaxValueBytes",
+        "rd.in.limit = rd.dec.InputOffset() + MaxValueBytes/2",
+        "TestOneValueOfAManifestJustUnderTheCeilingIsRead",
+    ),
+    (
+        "another run's record listing one file over and over keeps it once for every entry",
+        "internal/audit/neighbours.go",
+        "unclaimed[key] && !kept[key] {",
+        "unclaimed[key] {",
+        "TestAnotherRunsRecordListingOneFileOverAndOverHoldsItOnce",
+    ),
+    (
+        "generate --json holds the manifest whole and sends it a small piece at a time",
+        "internal/cli/generate.go",
+        "\t\tif code := sendManifest(res, g.dryRun, out, errOut); code != ExitOK {",
+        "\t\tvar whole bytes.Buffer\n\t\tcode := sendManifest(res, g.dryRun, &whole, errOut)\n"
+        "\t\tfor p := whole.Bytes(); len(p) > 0; p = p[min(len(p), 4096):] {\n\t\t\t_, _ = out.Write(p[:min(len(p), 4096)])\n\t\t}\n"
+        "\t\tif code != ExitOK {",
         "TestGenerateSendsItsManifestAPartAtATime",
     ),
 ]

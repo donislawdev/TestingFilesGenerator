@@ -47,8 +47,10 @@ const MaxValueBytes = 16 << 20
 const readBuffer = 64 << 10
 
 // errValueTooLarge is the reader under the decoder declining to hand over more
-// of one value. It comes back out of the decoder as it went in.
-var errValueTooLarge = errors.New("a value runs past the ceiling on one value")
+// of one value. It comes back out of the decoder as it went in, and unreadable
+// says it as ValueTooLargeError - so a person reading it would mean a fault
+// here, which is what Defect marks.
+var errValueTooLarge = core.Defect(errors.New("a value runs past the ceiling on one value"))
 
 // bounded hands the decoder the document up to a limit that is moved before
 // each value. The decoder keeps what it was handed and has not used yet, so it
@@ -288,8 +290,9 @@ func (rd *reading) field(m *Manifest, key string) error {
 	if err != nil {
 		return err
 	}
-	doc := make([]byte, 0, len(name)+len(raw)+3)
-	doc = append(append(append(append(append(doc, '{'), name...), ':'), raw...), '}')
+	// Sized by append. raw is at most MaxValueBytes, and lengths added up
+	// front are what a scanner of the code reads as a size that may overflow.
+	doc := append(append(append(append([]byte{'{'}, name...), ':'), raw...), '}')
 	return rd.unreadable(json.Unmarshal(doc, m))
 }
 

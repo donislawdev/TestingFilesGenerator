@@ -33,6 +33,11 @@ because it turns other people's test suites red.
   The same run finished where the container had swap, so it is warned rather
   than refused.
 
+- **`tfg verify` and `tfg cleanup` take `--memory`**, the setting `generate`
+  takes. A manifest listing more files than it lets them check is refused
+  before any file is looked at, with the number of files and how much memory
+  checking them takes.
+
 - **A Docker image.** `ghcr.io/donislawdev/tfg` holds the Linux command line
   of a release and nothing else, for x64 and Arm, and runs with no network. It
   is made from the published archive once its checksum and attestation check
@@ -55,6 +60,13 @@ because it turns other people's test suites red.
   A manifest with two lists of files used to be acted on by the second one,
   and now nothing in it is acted on. The refusal names the key, and ends with
   exit code 5 like any manifest that cannot be read.
+
+### Removed
+
+- **The warning that a manifest will be too large to read back**, on the
+  command line and in the window, and `summary.too_large_to_read_back` in new
+  manifests. `tfg verify` and `tfg cleanup` read a manifest of any size now.
+  The field was optional, and `manifest_version` does not change.
 
 ### Fixed
 
@@ -131,21 +143,12 @@ because it turns other people's test suites red.
   even look up, for want of permission or a name too long for the system, as
   `unreadable` with the reason rather than as `missing`.
 - **`tfg verify` and `tfg cleanup` read the manifest of a run of any size.**
-  They refused a manifest larger than 16 MB, about 20 000 files, so the files
-  of a larger run were files `tfg cleanup` could never remove. The manifest is
-  now read a part at a time: one value in it, such as one file's entry, may
-  take at most 16 MB, and the document as a whole has no limit. In a
-  container of 1 GB, `verify` and `cleanup --yes` work through the manifest of
-  600 000 files in 10 and 24 seconds, holding at most about 280 MB. Both
-  commands take `--memory`, the same setting `generate` takes, and a
-  manifest listing more files than it lets them check is refused before any
-  file is looked at, with the number of files and how much they would take.
-  Ctrl+C while the manifest is read stops at once. The records of other runs
-  in the same directory are read the same way, so the files of a large
-  neighbour are no longer reported as `extra`. With nothing left that is too
-  large to read back, the warning about it is gone from both the command line
-  and the window, and new manifests no longer carry
-  `summary.too_large_to_read_back`.
+  They refused one larger than 16 MB, about 20 000 files, so `tfg cleanup`
+  could never remove the files of a larger run. One value in it, such as one
+  file's entry, may still take at most 16 MB. In a container of 1 GB both
+  read the manifest of 600 000 files holding at most about 280 MB. Ctrl+C
+  while it is read stops at once. The files of a large run sharing the
+  directory are no longer called `extra`.
 - **`generate --json` no longer holds a second copy of the manifest in memory
   to print it.** It is written out a part at a time, the same bytes as the
   saved manifest.
