@@ -1482,6 +1482,66 @@ jobs:
         run: go test -tags "$(cat .github/build-tags)" ./internal/guard/ -count=1 -run 'ReferenceTool' -v
         shell: bash
 
+  npm:
+    name: npm package on ${{ matrix.os }}
+    # The npm package (npm/testing-files-generator) runs tfg and reads what it
+    # writes from JavaScript, so nothing in the Go suite runs it. Its own tests
+    # run here against the binary this commit builds, on the three systems a
+    # release has binaries for - Windows above all, because the rename that
+    # settles a race between test workers is refused there in ways it is not
+    # elsewhere. Node 22 is the oldest the package declares and Playwright
+    # supports, so it is the one tested.
+    #
+    # The Playwright example runs on Linux only. It is the package's acceptance
+    # test: an upload form with four mistakes, where the generated set has to
+    # find all four, the tests written with Buffer.alloc have to find none, and
+    # with the mistakes fixed nothing may fail - that last run is the control
+    # without which a red test could come from the tests. One browser on one
+    # system is enough to show that, and the package itself is tested on all
+    # three. docs/PLAYWRIGHT-2026-11-04.md.
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      CGO_ENABLED: "0"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: false
+          cache: true
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
+        with:
+          node-version: "22"
+
+      - name: build tfg where the package's tests and the example look for it
+        run: go build -tags "$(cat .github/build-tags)" -o "tfg$(go env GOEXE)" ./cmd/tfg
+        shell: bash
+
+      - name: the package's own tests
+        working-directory: npm/testing-files-generator
+        run: node --test "test/*.test.js"
+        shell: bash
+
+      - name: the Playwright example finds the four mistakes, and nothing once they are fixed
+        if: runner.os == 'Linux'
+        working-directory: examples/playwright
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          npx tsc --noEmit
+          node check.mjs
+        shell: bash
+
   fuzz:
     name: fuzzing with a time budget
     # Weekly and by hand, never on a push. Fuzzing searches without end, so a

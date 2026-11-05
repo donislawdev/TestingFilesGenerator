@@ -65,6 +65,11 @@ var englishFiles = []string{
 	// the copy. Repository text somebody reads to learn what was changed in
 	// a module they thought they knew - the same criterion again.
 	"third_party/go-gl-gl/PATCH.md",
+	// The npm package's page and its example's, added 2026-11-04 with them.
+	// The first is what npm shows a person deciding whether to install it,
+	// the second what they read before running it - the same criterion again.
+	"npm/testing-files-generator/README.md",
+	"examples/playwright/README.md",
 }
 
 // symbolsAllowed names the files that may hold a symbol such as an emoji.
