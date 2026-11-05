@@ -10,9 +10,10 @@ const { EventEmitter } = require('node:events');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { inspect } = require('node:util');
 
 const { binaryPath } = require('./binary.js');
-const { TfgError, run, runToFile } = require('./run.js');
+const { TfgError, ended, run, runToFile, said } = require('./run.js');
 const { TestFile, outcomes } = require('./testfile.js');
 
 // The manifest major this package reads. Another major is refused rather than
@@ -55,6 +56,10 @@ function fileSet(spec = {}) {
   if (typeof spec !== 'object' || spec === null) {
     throw new TypeError('fileSet takes an object, for example { preset: \'upload-validation\', options: { limit: \'2mb\' } }.');
   }
+  if (!spec.preset && !spec.recipe && Object.keys(spec.options ?? {}).length === 0) {
+    throw new Error('fileSet was not told which files to write. Name a preset, a recipe or the options of a set, ' +
+      'for example { preset: \'upload-validation\' }. npx tfg preset list lists the presets.');
+  }
   const binary = spec.binary === undefined ? binaryPath() : named(spec.binary, 'binary',
     'Point it at a tfg binary, or leave it out to use the one this package installs.');
   if (spec.recipe) {
@@ -68,7 +73,7 @@ function fileSet(spec = {}) {
   const key = digest([identity(binary), args, recipe, cacheDir]);
   let source = sources.get(key);
   if (!source) {
-    source = new Source(binary, args, cacheDir, labelOf(spec));
+    source = new Source(binary, args, cacheDir, spec);
     sources.set(key, source);
   }
   return new FileSet(source, source.files);
@@ -127,6 +132,18 @@ function labelOf(spec) {
   return name.replace(/[^A-Za-z0-9_-]+/g, '-').slice(0, 40);
 }
 
+// described is the call as the test wrote it, for a message - what makes the
+// set, without where it is kept or which binary writes it.
+function described(spec) {
+  const shown = {};
+  for (const key of ['preset', 'recipe', 'options']) {
+    if (spec[key] !== undefined) {
+      shown[key] = spec[key];
+    }
+  }
+  return `fileSet(${inspect(shown, { breakLength: Infinity, depth: Infinity })})`;
+}
+
 // identity is what tells two binaries apart without running them, so a new
 // build or another version plans again rather than reusing an old plan.
 function identity(binary) {
@@ -145,17 +162,19 @@ function scratch(cacheDir) {
 // Source is one set: its plan, where it is written, and the one write a process
 // makes of it however many files ask.
 class Source {
-  constructor(binary, args, cacheDir, label) {
+  constructor(binary, args, cacheDir, spec) {
     this.binary = binary;
     this.args = args;
     this.cacheDir = cacheDir;
+    this.preset = spec.preset;
+    this.shown = described(spec);
     fs.mkdirSync(cacheDir, { recursive: true });
     noteUnfinished(cacheDir);
     this.plan = this._planned();
     // The recipe hash leaves out the seed and --clean, measured 2026-11-04, so
     // the arguments are part of the name and two seeds never share a set.
     const run = this.plan.run;
-    this.dir = path.join(cacheDir, `${label}-${digest([args, run.recipe_hash, run.seed, this.plan.tool]).slice(0, 20)}`);
+    this.dir = path.join(cacheDir, `${labelOf(spec)}-${digest([args, run.recipe_hash, run.seed, this.plan.tool]).slice(0, 20)}`);
     this.files = this.plan.files.map((entry) => new TestFile(this, entry));
     this._written = undefined;
   }
@@ -169,6 +188,8 @@ class Source {
     try {
       runToFile(this.binary, [...this.args, `--out=${scratch(this.cacheDir)}`, '--dry-run', '--json'], out);
       plan = JSON.parse(fs.readFileSync(out, 'utf8'));
+    } catch (err) {
+      throw err instanceof TfgError ? refusedPlan(this.shown, this.preset, err) : err;
     } finally {
       fs.rmSync(out, { force: true });
     }
@@ -250,6 +271,27 @@ class Source {
       throw err;
     }
   }
+}
+
+// refusedPlan tells a plan tfg refused in the words the test was written in.
+// The command this package ran names a scratch directory and flags nobody
+// wrote, and an option tfg does not know brings the whole help of tfg
+// generate, every flag behind a dash, where one sentence names the mistake.
+// Everything tfg said stays on the error, in stderr.
+function refusedPlan(shown, preset, err) {
+  const unknown = /^flag provided but not defined: -+(\S+)/m.exec(err.stderr);
+  const known = [...err.stderr.matchAll(/^\s+-([a-z][a-z0-9-]*)\b/gm)]
+    .map((m) => m[1])
+    .filter((name) => !Object.hasOwn(reserved, name));
+  if (unknown && known.length > 0) {
+    const help = preset
+      ? `npx tfg preset show ${preset} says what the preset's own options do, and npx tfg generate --help the rest.`
+      : 'npx tfg generate --help says what each one does.';
+    return new TfgError([], err.status, err.stderr,
+      `${shown} gives the option ${unknown[1]}, and tfg generate has no flag of that name. ` +
+      `The options it takes here are ${known.join(', ')}. ${help}`);
+  }
+  return new TfgError([], err.status, err.stderr, `${shown} could not be planned - tfg ${ended(err.status)}.\n${said(err.stderr)}`);
 }
 
 // readable refuses a manifest this package cannot read for what it says.

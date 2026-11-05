@@ -13,11 +13,25 @@
 
 ## Run it
 
-From the root of the repository, build tfg first. The example finds it there.
+You need Node 22 or later and the tfg program. Inside the repository the package is linked rather than installed from npm, so tfg does not come with it here. Get it one of two ways:
 
-```bash
-go build -tags "$(cat .github/build-tags)" -o "tfg$(go env GOEXE)" ./cmd/tfg
-```
+- **Download it.** Take the archive for your system from [the latest release](https://github.com/donislawdev/TestingFilesGenerator/releases/latest), such as `tfg_<version>_windows_amd64.zip`, unpack it, and set `TFG_BINARY` to the `tfg` inside, `tfg.exe` on Windows:
+
+  ```bash
+  export TFG_BINARY=/path/to/tfg
+  ```
+
+  ```powershell
+  $env:TFG_BINARY = 'C:/path/to/tfg.exe'
+  ```
+
+- **Build it with Go**, from the root of the repository. The example finds it there:
+
+  ```bash
+  go build -tags "$(cat .github/build-tags)" -o "tfg$(go env GOEXE)" ./cmd/tfg
+  ```
+
+Then install the example and the browser it drives, and run it:
 
 ```bash
 cd examples/playwright && npm install && npx playwright install chromium
@@ -37,4 +51,12 @@ the limit is not enforced, or enforced only in the browser.
 
 Ten are skipped, because what a form does with an empty file or a name full of emoji is its own policy, and the set says so rather than pass them.
 
+`npx playwright show-report results/html` opens the report, where every test of the set carries what its file expects and what the file is for.
+
 `FIXED=1 npx playwright test` corrects all four mistakes, and nothing fails. `npm run check` runs both and says whether the example still shows what it is for. The repository's CI runs that.
+
+## What to read, in this order
+
+1. `app/server.mjs` and `app/page.js` - the form, with each mistake marked where it is made.
+2. `tests/typical.spec.ts` - the tests such a form usually gets, which all pass.
+3. `tests/upload.spec.ts` - the generated set, through the page and through the API. How the package works is in [its README](../../npm/testing-files-generator#readme).

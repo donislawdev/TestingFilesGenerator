@@ -174,6 +174,43 @@ test('what tfg refuses reaches the test with its own words and code', (t) => {
     (err) => err instanceof TfgError && err.status === 4 && /smallest PDF/.test(err.message));
 });
 
+test('a refused plan is told in the words of the call, without the flags this package adds', (t) => {
+  const cacheDir = tempDir(t);
+  assert.throws(() => plannedIn(cacheDir, { preset: 'no-such-preset' }),
+    (err) => err instanceof TfgError && err.status === 2 &&
+      err.message.startsWith("fileSet({ preset: 'no-such-preset' }) could not be planned - tfg ended with code 2.\n") &&
+      /unknown preset "no-such-preset"/.test(err.message) && !/dry-run|--json|\.tmp-/.test(err.message));
+});
+
+test('an option tfg does not know is named with the options it takes, and what tfg said stays on the error', (t) => {
+  const cacheDir = tempDir(t);
+  const spec = { ...small, options: { ...small.options, limt: '2mb' } };
+  assert.throws(() => plannedIn(cacheDir, spec), (err) => {
+    assert.ok(err instanceof TfgError, err);
+    assert.equal(err.status, 2);
+    assert.ok(err.message.includes('gives the option limt, and tfg generate has no flag of that name.'), err.message);
+    assert.ok(!err.message.includes('flag provided'), 'the help of tfg is in the message');
+    assert.ok(err.stderr.includes('flag provided but not defined: -limt'), err.stderr);
+    const taken = /The options it takes here are ([^.]+)\./.exec(err.message)?.[1].split(', ') ?? [];
+    for (const name of ['limit', 'far-over', 'bulk', 'seed']) {
+      assert.ok(taken.includes(name), `${name} is not among ${taken}`);
+    }
+    for (const name of ['out', 'json', 'dry-run', 'preset']) {
+      assert.ok(!taken.includes(name), `${name} is set by this package and is offered as an option`);
+    }
+    assert.ok(err.message.includes('npx tfg preset show upload-validation'), err.message);
+    return true;
+  });
+});
+
+test('a call that names no files to write is told so before tfg runs', (t) => {
+  const cacheDir = tempDir(t);
+  for (const spec of [{}, { options: {} }]) {
+    assert.throws(() => fileSet({ ...spec, binary: tfg(), cacheDir }), /fileSet was not told which files to write/);
+  }
+  assert.deepEqual(entries(cacheDir), [], 'something ran');
+});
+
 test('the flags this package sets itself cannot be set again', (t) => {
   const cacheDir = tempDir(t);
   for (const flag of ['out', 'json', 'dry-run', 'preset']) {

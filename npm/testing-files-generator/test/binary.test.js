@@ -33,7 +33,7 @@ test('each platform a release builds resolves to its own package', () => {
 test('an Intel Mac is told what it can do instead', () => {
   assert.throws(() => binaryPath({ env: {}, platform: 'darwin', arch: 'x64', resolve: nothing }),
     (err) => err.message.includes('no binary for darwin x64') && err.message.includes('TFG_BINARY') &&
-      err.message.includes('ghcr.io/donislawdev/tfg') && err.message.includes('darwin arm64'));
+      err.message.includes('in a Linux container') && err.message.includes('darwin arm64'));
 });
 
 test('a platform package left out by --omit=optional is named, with the way back', () => {

@@ -11,18 +11,27 @@ const fs = require('node:fs');
 // refusals are a few lines, and a run of many files can print a note for each.
 const keptError = 64 * 1024;
 
+// ended says how tfg stopped - with a code, or by a signal named as it is.
+function ended(status) {
+  return typeof status === 'string' ? `was stopped by ${status}` : `ended with code ${status}`;
+}
+
 // TfgError is tfg ending with a code other than nought, or stopped by a signal,
 // whose name is then the status. The message carries what tfg said, because
-// its refusals already name the value and the way out.
+// its refusals already name the value and the way out. A caller that can say
+// what went wrong in the words the test was written in passes its own message,
+// and the status and everything tfg said stay on the error.
 class TfgError extends Error {
-  constructor(args, status, stderr) {
-    const said = stderr.trim() || 'tfg said nothing about why.';
-    const ended = typeof status === 'string' ? `was stopped by ${status}` : `ended with code ${status}`;
-    super(`tfg ${args.join(' ')} ${ended}.\n${said}`);
+  constructor(args, status, stderr, message = `tfg ${args.join(' ')} ${ended(status)}.\n${said(stderr)}`) {
+    super(message);
     this.name = 'TfgError';
     this.status = status;
     this.stderr = stderr;
   }
+}
+
+function said(stderr) {
+  return stderr.trim() || 'tfg said nothing about why.';
 }
 
 function notStarted(binary, err) {
@@ -85,4 +94,4 @@ function run(binary, args) {
   });
 }
 
-module.exports = { TfgError, run, runToFile };
+module.exports = { TfgError, ended, run, runToFile, said };
