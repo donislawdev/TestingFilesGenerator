@@ -47,7 +47,9 @@ test('a set is written once, whole, and its files are where their paths say', as
 });
 
 // racer plans a set, waits until every racer has planned, and only then
-// writes, so that all of them find the set unwritten and write it at once.
+// writes, so that all of them find the set unwritten and write it at once. A
+// racer that fails before it reaches the barrier would hold the others there
+// for ever, so the wait has an end.
 function racer(cacheDir, barrier, racers) {
   const lib = JSON.stringify(path.join(__dirname, '..', 'lib', 'fileset.js'));
   const at = JSON.stringify(barrier);
@@ -57,19 +59,22 @@ const said = [];
 for (const e of ['wrote', 'moved', 'took']) events.on(e, () => said.push(e));
 const set = fileSet({ ...${JSON.stringify(small)}, cacheDir: ${JSON.stringify(cacheDir)} });
 fs.writeFileSync(require('node:path').join(${at}, String(process.pid)), '');
-const ready = () => fs.readdirSync(${at}).length >= ${racers} ? Promise.resolve() : new Promise((r) => setTimeout(r, 5)).then(ready);
+const until = Date.now() + 30000;
+const ready = () => fs.readdirSync(${at}).length >= ${racers} ? Promise.resolve()
+  : Date.now() > until ? Promise.reject(new Error('not every racer planned within 30 s'))
+  : new Promise((r) => setTimeout(r, 5)).then(ready);
 ready().then(() => set.write()).then((dir) => console.log(JSON.stringify({ dir, said })),
   (err) => { console.error(err.message); process.exit(3); });`;
 }
 
-test('workers writing one set at once end with one copy and nothing left over', async (t) => {
+test('workers writing one set at once end with one copy and nothing left over', { timeout: 120000 }, async (t) => {
   const cacheDir = tempDir(t);
   const barrier = tempDir(t);
   const racers = 4;
   const runs = await Promise.all(Array.from({ length: racers }, () => node(racer(cacheDir, barrier, racers))));
-  for (const r of runs) {
-    assert.equal(r.status, 0, r.stderr);
-  }
+  // Every failed racer is shown, because the first to fail may only be one
+  // that waited for another.
+  assert.deepEqual(runs.filter((r) => r.status !== 0).map((r) => r.stderr), [], 'a racer failed');
   const results = runs.map((r) => JSON.parse(r.stdout));
   const said = results.flatMap((r) => r.said);
   const count = (e) => said.filter((s) => s === e).length;
@@ -123,6 +128,29 @@ test('a file of the set cut short by hand is refused', async (t) => {
   const again = await node(writer(cacheDir));
   assert.equal(again.status, 3);
   assert.match(again.stderr, /1mb_at_limit\.jpg is 10 B and its manifest says 1048576 B/);
+});
+
+test('a file of the set written over by hand, its size the same, is refused', async (t) => {
+  const cacheDir = tempDir(t);
+  const dir = (await node(writer(cacheDir))).stdout.trim();
+  const changed = path.join(dir, '1mb_at_limit.jpg');
+  const fd = fs.openSync(changed, 'r+');
+  fs.writeSync(fd, Buffer.from('changed'), 0, 7, 0);
+  fs.closeSync(fd);
+  const again = await node(writer(cacheDir));
+  assert.equal(again.status, 3, again.stderr);
+  assert.match(again.stderr, /its files are not the ones it was written with\. Nothing here removes that directory/);
+  assert.match(again.stderr, /wrong-hash\s+1mb_at_limit\.jpg/);
+  assert.ok(fs.existsSync(changed), 'the changed set was removed');
+});
+
+test('a binary or a recipe the options name and that is not there is named, with what to do', (t) => {
+  const cacheDir = tempDir(t);
+  const missing = path.join(cacheDir, 'no-such-tfg');
+  assert.throws(() => fileSet({ ...small, binary: missing, cacheDir }),
+    (err) => err.message.includes(`The binary option names ${missing}, and there is no file there.`) && err.message.includes('leave it out'));
+  assert.throws(() => fileSet({ recipe: 'no-such-recipe.yaml', binary: tfg(), cacheDir }),
+    (err) => err.message.includes(path.resolve('no-such-recipe.yaml')) && err.message.includes('path.join(__dirname'));
 });
 
 test('a set a stopped run left behind is named once outside the workers, and never used', async (t) => {

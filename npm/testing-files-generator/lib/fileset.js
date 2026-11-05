@@ -12,12 +12,16 @@ const os = require('node:os');
 const path = require('node:path');
 
 const { binaryPath } = require('./binary.js');
-const { run, runToFile } = require('./run.js');
+const { TfgError, run, runToFile } = require('./run.js');
 const { TestFile, outcomes } = require('./testfile.js');
 
 // The manifest major this package reads. Another major is refused rather than
 // read as if it were this one - docs/MANIFEST.md, the version of the contract.
 const manifestMajor = '1';
+
+// The code tfg verify ends with when a directory does not match its manifest,
+// from the exit codes in docs/CLI.md. Any other code is verify failing to look.
+const exitVerify = 7;
 
 // Flags this package sets itself. An option of the same name would fight it.
 const reserved = {
@@ -51,7 +55,13 @@ function fileSet(spec = {}) {
   if (typeof spec !== 'object' || spec === null) {
     throw new TypeError('fileSet takes an object, for example { preset: \'upload-validation\', options: { limit: \'2mb\' } }.');
   }
-  const binary = spec.binary ?? binaryPath();
+  const binary = spec.binary === undefined ? binaryPath() : named(spec.binary, 'binary',
+    'Point it at a tfg binary, or leave it out to use the one this package installs.');
+  if (spec.recipe) {
+    named(path.resolve(spec.recipe), 'recipe',
+      `A relative path is taken from the directory the tests started in, here ${process.cwd()}, ` +
+      'so path.join(__dirname, ...) names a recipe beside the spec file.');
+  }
   const args = argsOf(spec);
   const cacheDir = path.resolve(spec.cacheDir ?? defaultCacheDir());
   const recipe = spec.recipe ? fs.readFileSync(path.resolve(spec.recipe), 'utf8') : '';
@@ -90,6 +100,15 @@ function argsOf(spec) {
     }
   }
   return args;
+}
+
+// named gives back a file an option names, or says that there is none, before
+// anything reads it and fails with only the system's word for it.
+function named(file, option, wayOut) {
+  if (!fs.existsSync(file)) {
+    throw new Error(`The ${option} option names ${file}, and there is no file there. ${wayOut}`);
+  }
+  return file;
 }
 
 function defaultCacheDir() {
@@ -169,10 +188,7 @@ class Source {
 
   async _write() {
     if (fs.existsSync(this.dir)) {
-      const problem = mismatch(this.dir, this.plan);
-      if (problem) {
-        throw stale(this.dir, problem);
-      }
+      await this._taken();
       return this.dir;
     }
     const tmp = scratch(this.cacheDir);
@@ -202,11 +218,8 @@ class Source {
         return this.dir;
       } catch (err) {
         if (fs.existsSync(this.dir)) {
-          const problem = mismatch(this.dir, this.plan);
           discard(this.binary, tmp);
-          if (problem) {
-            throw stale(this.dir, problem);
-          }
+          await this._taken();
           events.emit('took', this.dir);
           return this.dir;
         }
@@ -216,6 +229,25 @@ class Source {
         }
         await new Promise((resolve) => setTimeout(resolve, attempt * 100));
       }
+    }
+  }
+
+  // _taken checks a set this process did not write before it is used: against
+  // the plan, and then every byte against the manifest through tfg verify. A
+  // test that writes into a file it was given changes the set for every later
+  // run, and the size alone does not show it.
+  async _taken() {
+    const problem = mismatch(this.dir, this.plan);
+    if (problem) {
+      throw stale(this.dir, problem);
+    }
+    try {
+      await run(this.binary, ['verify', path.join(this.dir, 'manifest.json')]);
+    } catch (err) {
+      if (err instanceof TfgError && err.status === exitVerify) {
+        throw stale(this.dir, 'its files are not the ones it was written with', err.stderr.trim());
+      }
+      throw err;
     }
   }
 }
@@ -236,8 +268,10 @@ function readable(plan) {
 }
 
 // mismatch says how a written set differs from its plan, or nothing when it
-// does not. Sizes are compared and contents are not: a set is checked on every
-// run, and hashing all of it each time would cost more than writing it.
+// does not. It compares names and sizes, which is enough for a set tfg has just
+// written. The bytes of a set written earlier are checked by _taken, through
+// tfg verify - measured 2026-11-05, about 80 ms for the default upload set of
+// 115 MB, against about 590 ms to write it.
 //
 // Every file has to be on the disk. A run that ends with code nought writes
 // every file it plans, and one that cannot ends with the partial code, which
@@ -281,9 +315,10 @@ function mismatch(dir, plan) {
   return '';
 }
 
-function stale(dir, problem) {
+function stale(dir, problem, details = '') {
   return new Error(`${dir} is where this set belongs, and it does not hold it - ${problem}. ` +
-    'Nothing here removes that directory, because a person may have changed it on purpose. Delete it and run again.');
+    'Nothing here removes that directory, because a person may have changed it on purpose. Delete it and run again.' +
+    (details ? `\n${details}` : ''));
 }
 
 // discard removes a set this process wrote and will not use. The files go

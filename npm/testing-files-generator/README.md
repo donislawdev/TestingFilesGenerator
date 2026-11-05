@@ -58,6 +58,8 @@ fileSet({ recipe: 'fixtures/uploads.yaml' });
 fileSet({ options: { format: 'png', size: '5mb', count: 3, seed: 7, expected: 'accept' } });
 ```
 
+A relative recipe path is taken from the directory the tests were started in. `path.join(__dirname, 'uploads.yaml')` names one beside the spec file, wherever the tests are started from.
+
 Files made from flags expect nothing unless `expected` says what, so without it every one of them is skipped.
 
 | preset | the question it answers |
@@ -81,8 +83,8 @@ await page.getByLabel('Files').setInputFiles(together);
 ## When the files are written
 
 1. **While Playwright loads the spec file, nothing is written.** `fileSet` asks for the plan, the list of files and what each should meet, and Playwright declares the tests from it. Listing the tests with `--list` writes nothing either.
-2. **The first test that asks for a path writes the whole set**, once, however many workers ask at the same moment. The default `upload-validation` set, 71 files and 116 MB, was written in under a second on the machine it was measured on.
-3. **Every later run takes the same files.** The same options give the same bytes, so a set is written once and kept, in `node_modules/.cache/testing-files-generator` or the directory `TFG_CACHE_DIR` names.
+2. **The first test that asks for a path writes the whole set**, once, however many workers ask at the same moment. The default `upload-validation` set, 71 files and 115 MB, was written in under a second on the machine it was measured on.
+3. **Every later run takes the same files.** The same options give the same bytes, so a set is written once and kept, in `node_modules/.cache/testing-files-generator` or the directory `TFG_CACHE_DIR` names. Before a kept set is used, every byte of it is checked against its manifest, which took under a tenth of a second for the same set. A set a test wrote into, or a file someone changed, is refused with the names of the files that differ.
 
 A large set is better written before the tests start, so its time does not count against the first test:
 

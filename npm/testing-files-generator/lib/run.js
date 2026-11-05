@@ -11,12 +11,14 @@ const fs = require('node:fs');
 // refusals are a few lines, and a run of many files can print a note for each.
 const keptError = 64 * 1024;
 
-// TfgError is tfg ending with a code other than nought. The message carries
-// what tfg said, because its refusals already name the value and the way out.
+// TfgError is tfg ending with a code other than nought, or stopped by a signal,
+// whose name is then the status. The message carries what tfg said, because
+// its refusals already name the value and the way out.
 class TfgError extends Error {
   constructor(args, status, stderr) {
     const said = stderr.trim() || 'tfg said nothing about why.';
-    super(`tfg ${args.join(' ')} ended with code ${status}.\n${said}`);
+    const ended = typeof status === 'string' ? `was stopped by ${status}` : `ended with code ${status}`;
+    super(`tfg ${args.join(' ')} ${ended}.\n${said}`);
     this.name = 'TfgError';
     this.status = status;
     this.stderr = stderr;
@@ -29,21 +31,37 @@ function notStarted(binary, err) {
 
 // runToFile runs tfg to the end, writing its standard output to a file. A file
 // and not memory, because the manifest of a large set outgrows the buffer Node
-// gives a child process by default.
+// gives a child process by default. The error stream goes to a file of its own
+// for the same reason - a buffer that fills stops tfg part way - and only its
+// end is kept.
 function runToFile(binary, args, outFile) {
-  const fd = fs.openSync(outFile, 'w');
-  let done;
+  const errFile = `${outFile}.err`;
+  const out = fs.openSync(outFile, 'w');
+  let err;
   try {
-    done = spawnSync(binary, args, { stdio: ['ignore', fd, 'pipe'], windowsHide: true, maxBuffer: keptError * 16 });
+    err = fs.openSync(errFile, 'w+');
+    const done = spawnSync(binary, args, { stdio: ['ignore', out, err], windowsHide: true });
+    if (done.error) {
+      throw notStarted(binary, done.error);
+    }
+    if (done.status !== 0) {
+      throw new TfgError(args, done.status ?? done.signal, tail(err));
+    }
   } finally {
-    fs.closeSync(fd);
+    fs.closeSync(out);
+    if (err !== undefined) {
+      fs.closeSync(err);
+    }
+    fs.rmSync(errFile, { force: true });
   }
-  if (done.error) {
-    throw notStarted(binary, done.error);
-  }
-  if (done.status !== 0) {
-    throw new TfgError(args, done.status, done.stderr.toString('utf8').slice(-keptError));
-  }
+}
+
+// tail reads the last keptError bytes of an open file.
+function tail(fd) {
+  const size = fs.fstatSync(fd).size;
+  const kept = Buffer.alloc(Math.min(size, keptError));
+  fs.readSync(fd, kept, 0, kept.length, size - kept.length);
+  return kept.toString('utf8');
 }
 
 // run runs tfg without holding the event loop, so a test runner keeps its own

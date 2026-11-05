@@ -46,7 +46,14 @@ function binaryPath({ env = process.env, platform = process.platform, arch = pro
   const exe = platform === 'win32' ? 'tfg.exe' : 'tfg';
   try {
     return resolve(`${pkg}/${exe}`);
-  } catch {
+  } catch (err) {
+    // Only a package that is not there is a matter of --omit. Anything else,
+    // such as a package that does not export the binary, is told as it is,
+    // because installing again would not change it.
+    if (err?.code !== 'MODULE_NOT_FOUND') {
+      throw new Error(`The binary for ${platform} ${arch} in the package ${pkg} could not be found - ${err?.message}. ` +
+        'Set TFG_BINARY to the path of a tfg binary to go on.', { cause: err });
+    }
     throw new Error(`The binary for ${platform} ${arch} comes in the package ${pkg}, and it is not installed. ` +
       'npm leaves it out when it installs with --omit=optional or --no-optional. ' +
       'Install again without that option, or set TFG_BINARY to the path of a tfg binary.');

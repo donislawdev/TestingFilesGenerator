@@ -60,7 +60,7 @@ export type OptionValue = string | number | boolean | ReadonlyArray<string | num
 export interface FileSetSpec {
   /** A preset, as tfg preset list names it. */
   preset?: string;
-  /** A recipe file. */
+  /** A recipe file. A relative path is taken from the directory the tests were started in. */
   recipe?: string;
   /** Flags of tfg generate and of the preset, without the dashes: { limit: '2mb', seed: 7, clean: true }. */
   options?: Record<string, OptionValue>;

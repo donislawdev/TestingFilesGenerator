@@ -6,7 +6,7 @@
 // tests could come from the tests themselves rather than from the app.
 
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
 // Playwright's own command line, run by this Node rather than through npx and
@@ -32,12 +32,23 @@ const mistakes = {
   },
 };
 
+const reportFile = 'results/check.json';
+
+// run runs the tests once and reads their report. Red tests end the run with
+// a code other than nought, which is what this is here to see, so the code says
+// nothing. A report left by an earlier run is removed first, or a run that
+// never got as far as writing one would be read as that earlier run.
 function run(fixed) {
-  spawnSync(process.execPath, [playwright, 'test', '--reporter=json'], {
+  rmSync(reportFile, { force: true });
+  const done = spawnSync(process.execPath, [playwright, 'test', '--reporter=json'], {
     stdio: ['ignore', 'ignore', 'inherit'],
-    env: { ...process.env, FIXED: fixed ? '1' : '', PLAYWRIGHT_JSON_OUTPUT_NAME: 'results/check.json' },
+    env: { ...process.env, FIXED: fixed ? '1' : '', PLAYWRIGHT_JSON_OUTPUT_NAME: reportFile },
   });
-  const report = JSON.parse(readFileSync('results/check.json', 'utf8'));
+  if (done.error || done.signal || !existsSync(reportFile)) {
+    const why = done.error?.message ?? (done.signal ? `it was stopped by ${done.signal}` : `it ended with code ${done.status} and wrote no ${reportFile}`);
+    throw new Error(`Playwright did not run the tests - ${why}. Run npm install and npx playwright install chromium, then try again.`);
+  }
+  const report = JSON.parse(readFileSync(reportFile, 'utf8'));
   const tests = [];
   const walk = (suite, titles) => {
     for (const spec of suite.specs ?? []) {

@@ -256,6 +256,15 @@ func TestAnotherRunsRecordListingOneFileOverAndOverHoldsItOnce(t *testing.T) {
 	}
 
 	t.Logf("reading the record naming the file allocated %d B, and the record naming other files %d B", same, apart)
+	// Not compared under the race detector, which allocates on its own
+	// account. Measured 2026-11-05 on the same machine, six runs each: without
+	// it the first record cost 0.68 to 0.82 MB less than the second, out of
+	// 20.5 MB, and with it about 85 MB and anything from 1.53 MB less to 0.94
+	// MB more - one run in six over the ceiling, as on CI the night before.
+	// The jobs that run without the detector still hold the ceiling.
+	if raceEnabled {
+		return
+	}
 	if grew := same - apart; grew > entries {
 		t.Errorf("a record naming one file in each of its %d entries took %d B more to read than one naming none of the files, "+
 			"%.1f B an entry - the file was kept once for every entry rather than once", entries, grew, float64(grew)/entries)

@@ -16,7 +16,7 @@
 From the root of the repository, build tfg first. The example finds it there.
 
 ```bash
-go build -tags "$(cat .github/build-tags)" -o tfg.exe ./cmd/tfg
+go build -tags "$(cat .github/build-tags)" -o "tfg$(go env GOEXE)" ./cmd/tfg
 ```
 
 ```bash

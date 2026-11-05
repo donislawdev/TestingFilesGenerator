@@ -15,7 +15,7 @@ function tfg() {
   const binary = process.env.TFG_BINARY || built;
   if (!fs.existsSync(binary)) {
     throw new Error(`No tfg binary at ${binary}. Build one from the repository root with ` +
-      'go build -tags "$(cat .github/build-tags)" -o tfg.exe ./cmd/tfg, or set TFG_BINARY.');
+      `go build -tags "$(cat .github/build-tags)" -o ${path.basename(built)} ./cmd/tfg, or set TFG_BINARY.`);
   }
   return binary;
 }
