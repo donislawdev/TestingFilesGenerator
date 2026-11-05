@@ -56,7 +56,10 @@ function fileSet(spec = {}) {
   if (typeof spec !== 'object' || spec === null) {
     throw new TypeError('fileSet takes an object, for example { preset: \'upload-validation\', options: { limit: \'2mb\' } }.');
   }
-  if (!spec.preset && !spec.recipe && Object.keys(spec.options ?? {}).length === 0) {
+  // Told from the flags and not from the spec: an option set to false or to an
+  // empty list adds no flag, and tfg asked for nothing answers in flags.
+  const args = argsOf(spec);
+  if (args.length === 1) {
     throw new Error('fileSet was not told which files to write. Name a preset, a recipe or the options of a set, ' +
       'for example { preset: \'upload-validation\' }. npx tfg preset list lists the presets.');
   }
@@ -65,9 +68,8 @@ function fileSet(spec = {}) {
   if (spec.recipe) {
     named(path.resolve(spec.recipe), 'recipe',
       `A relative path is taken from the directory the tests started in, here ${process.cwd()}, ` +
-      'so path.join(__dirname, ...) names a recipe beside the spec file.');
+      'so path.join(__dirname, ...) names a recipe beside the spec file, or path.join(import.meta.dirname, ...) in an ES module.');
   }
-  const args = argsOf(spec);
   const cacheDir = path.resolve(spec.cacheDir ?? defaultCacheDir());
   const recipe = spec.recipe ? fs.readFileSync(path.resolve(spec.recipe), 'utf8') : '';
   const key = digest([identity(binary), args, recipe, cacheDir]);
@@ -277,7 +279,9 @@ class Source {
 // The command this package ran names a scratch directory and flags nobody
 // wrote, and an option tfg does not know brings the whole help of tfg
 // generate, every flag behind a dash, where one sentence names the mistake.
-// Everything tfg said stays on the error, in stderr.
+// Everything tfg said stays on the error, in stderr. The help lists every
+// flag of generate, and a preset or a recipe refuses some of them, so the
+// list is not offered as what this call takes.
 function refusedPlan(shown, preset, err) {
   const unknown = /^flag provided but not defined: -+(\S+)/m.exec(err.stderr);
   const known = [...err.stderr.matchAll(/^\s+-([a-z][a-z0-9-]*)\b/gm)]
@@ -289,7 +293,7 @@ function refusedPlan(shown, preset, err) {
       : 'npx tfg generate --help says what each one does.';
     return new TfgError([], err.status, err.stderr,
       `${shown} gives the option ${unknown[1]}, and tfg generate has no flag of that name. ` +
-      `The options it takes here are ${known.join(', ')}. ${help}`);
+      `Its flags are ${known.join(', ')}. Not every one goes with every set, and tfg says why when one does not. ${help}`);
   }
   return new TfgError([], err.status, err.stderr, `${shown} could not be planned - tfg ${ended(err.status)}.\n${said(err.stderr)}`);
 }

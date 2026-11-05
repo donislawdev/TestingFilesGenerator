@@ -87,7 +87,8 @@ export interface FileSetSpec {
   preset?: string;
   /**
    * A recipe file. A relative path is taken from the directory the tests were started in,
-   * so path.join(__dirname, 'uploads.yaml') names one beside the spec file.
+   * so path.join(__dirname, 'uploads.yaml') names one beside the spec file. In an ES module,
+   * import.meta.dirname takes the place of __dirname.
    */
   recipe?: string;
   /**

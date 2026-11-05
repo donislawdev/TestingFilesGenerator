@@ -20,7 +20,7 @@ test.describe('through the page', () => {
       await page.getByLabel('File').setInputFiles(await file.path());
       await page.getByRole('button', { name: 'Upload' }).click();
       const status = page.getByRole('status');
-      await expect(status).not.toBeEmpty();
+      await expect(status).toHaveText(/^(Uploaded|Refused \(\w+\))$/);
       file.check(shown(await status.textContent()));
     });
   }
@@ -33,6 +33,7 @@ test.describe('through the API', () => {
     test(file.title, file.details, async ({ request }) => {
       test.skip(file.unspecified, file.whyUnspecified);
       const response = await request.post('/upload', { multipart: { file: createReadStream(await file.path()) } });
+      expect(response.status(), 'a server error is not a refusal').toBeLessThan(500);
       const answer = await response.json();
       file.check(response.ok() ? 'accept' : { outcome: 'reject', reason: answer.reason });
     });

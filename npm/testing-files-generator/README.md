@@ -72,15 +72,15 @@ for (const file of uploads.files) {
 
     // 5. Tell the set what your app did. check throws when the file expected something else.
     const status = page.getByRole('status');
-    await expect(status).not.toBeEmpty();
+    await expect(status).toHaveText(/Uploaded|Refused/);
     file.check((await status.textContent())?.includes('Uploaded') ? 'accept' : 'reject');
   });
 }
 ```
 
-Steps 4 and 5 are the only part about your app. Change them to however your app takes a file and shows what it did with it.
+Steps 4 and 5 are the only part about your app. Change them to however your app takes a file and shows what it did with it. Keep step 5 waiting for an answer your app gives on purpose, `Uploaded` or `Refused` here, so a page that shows an error fails the test instead of passing as a refusal.
 
-**See the tests before you run them.** Listing them writes no files:
+**See the tests before you run them.** Listing them writes none of the files:
 
 ```bash
 npx playwright test --list
@@ -103,7 +103,7 @@ my report (final) v2.jpg - expected accept
 ...
 ```
 
-**Run them** with `npx playwright test`. The first test that asks for a file writes the whole set, once for all the workers. A test fails when your app does something other than what its file expects, and the failure says what that means:
+**Run them** with `npx playwright test`. The first test that asks for a file writes the whole set. A test fails when your app does something other than what its file expects, and the failure says what that means:
 
 ```
 ExpectationError: 2mb_at_limit.jpg was turned away, and it should have been taken.
@@ -162,12 +162,14 @@ for (const file of uploads.files) {
   test(file.title, file.details, async ({ request }) => {
     test.skip(file.unspecified, file.whyUnspecified);
     const response = await request.post('/upload', { multipart: { file: createReadStream(await file.path()) } });
+    expect(response.status(), 'a server error is not a refusal').toBeLessThan(500);
     const answer = await response.json();
     file.check(response.ok() ? 'accept' : { outcome: 'reject', reason: answer.reason });
   });
 }
 ```
 
+- **A server error is not a refusal.** An answer of 500 or more fails the test before `check`, so a file that breaks your server is found rather than counted as turned away.
 - **A reason is compared only for a file that should be turned away, and only when you give one.** A reason is a name from the list in [Reference](#reference), such as `size_limit`. If your system has codes of its own, turn them into those names, or pass the outcome alone.
 - **`check` never passes a file with no right answer.** On an `unspecified` file it throws, so such a file cannot pass by accident.
 - **What your system did can come from anywhere a test can read**: the text on the page, an HTTP status, the body of a response, a row in a database.
@@ -207,6 +209,8 @@ Once you have decided what your system should do with such a file, write that do
 
    const uploads = fileSet({ recipe: path.join(__dirname, 'uploads.yaml') });
    ```
+
+   In an ES module, such as a `.mjs` file or a project whose `package.json` says `"type": "module"`, write `import.meta.dirname` in place of `__dirname`.
 
 `empty.jpg` is then a test like any other, titled `empty.jpg - expected reject (size_zero)`, and it fails when your form takes an empty file.
 
@@ -275,7 +279,7 @@ test('the mass upload is taken whole', async ({ page }) => {
 
 ### Your own files
 
-A recipe describes a set of your own, file by file, and the [recipe section of the tfg README](https://github.com/donislawdev/TestingFilesGenerator#-recipes) says how to write one. A relative recipe path is taken from the directory the tests were started in, so `path.join(__dirname, 'uploads.yaml')` names one beside the spec file wherever the tests are started from.
+A recipe describes a set of your own, file by file, and the [recipe section of the tfg README](https://github.com/donislawdev/TestingFilesGenerator#-recipes) says how to write one. A relative recipe path is taken from the directory the tests were started in, so `path.join(__dirname, 'uploads.yaml')` names one beside the spec file wherever the tests are started from. In an ES module, `import.meta.dirname` takes the place of `__dirname`.
 
 ```ts
 fileSet({ recipe: path.join(__dirname, 'fixtures.yaml') });
@@ -293,12 +297,12 @@ Files made this way expect nothing unless `expected` says what, so without it ev
 
 ```
 the spec file loads    fileSet plans the set: tfg lists the files and writes none of them
-the first file.path()  tfg writes the whole set, once, however many workers ask at the same moment
+the first file.path()  tfg writes the whole set, and the first copy finished is the one kept
 every later run        the set is taken from where it was kept, once every byte of it is checked
 ```
 
-1. **While Playwright loads the spec file, nothing is written.** `fileSet` asks tfg for the plan, and Playwright declares the tests from it. That is why `--list` writes no files.
-2. **The first test that asks for a path writes the whole set**, once. The `upload-validation` set at its defaults, 71 files and 115 MB, was written in under a second on the machine it was measured on.
+1. **While Playwright loads the spec file, none of the set is written.** `fileSet` asks tfg for the plan, and Playwright declares the tests from it. That is why `--list` writes none of the files. The plan comes back through a short-lived file in the cache directory, so that directory has to be one the tests can write to, even for `--list`.
+2. **The first test that asks for a path writes the whole set.** Workers that ask at the same moment each write a copy of their own. The first one finished is kept and the others are removed, so for a moment the disk holds a copy for each of those workers. A worker that asks later takes the kept set. The `upload-validation` set at its defaults, 71 files and 115 MB, was written in under a second on the machine it was measured on.
 3. **Every later run takes the same files.** A set is kept in `node_modules/.cache/testing-files-generator`, or in the directory `TFG_CACHE_DIR` names. Before a kept set is used, every byte of it is checked against its manifest, which took under a tenth of a second for the same set. A set a test wrote into, or a file someone changed, is refused with the names of the files that differ.
 
 **Do not write into a file the set gave you.** Copy it first. A file changed in place is changed for every later run, and the next one refuses the set.
@@ -330,6 +334,7 @@ With the test runner built into Node, `node --test`:
 
 ```js
 import { test } from 'node:test';
+import assert from 'node:assert/strict';
 import { openAsBlob } from 'node:fs';
 import { fileSet } from 'testing-files-generator';
 
@@ -340,6 +345,7 @@ for (const file of uploads.files) {
     const body = new FormData();
     body.append('file', await openAsBlob(await file.path()), file.name);
     const response = await fetch('http://localhost:3000/upload', { method: 'POST', body });
+    assert.ok(response.status < 500, `the server failed with ${response.status}, which is not a refusal`);
     file.check(response.ok ? 'accept' : 'reject');
   });
 }
@@ -348,7 +354,7 @@ for (const file of uploads.files) {
 With Vitest, the same loop skips with `test.skipIf`:
 
 ```js
-import { test } from 'vitest';
+import { test, expect } from 'vitest';
 import { openAsBlob } from 'node:fs';
 import { fileSet } from 'testing-files-generator';
 
@@ -359,6 +365,7 @@ for (const file of uploads.files) {
     const body = new FormData();
     body.append('file', await openAsBlob(await file.path()), file.name);
     const response = await fetch('http://localhost:3000/upload', { method: 'POST', body });
+    expect(response.status, 'a server error is not a refusal').toBeLessThan(500);
     file.check(response.ok ? 'accept' : 'reject');
   });
 }
@@ -424,15 +431,15 @@ Every message names what it is about and what to do. The ones you are most likel
 |---|---|
 | `... was taken, and it should have been turned away` | Your system did something other than what the file expects. That is the test doing its job, and the next line says what the difference means |
 | `fileSet({ ... }) could not be planned` | tfg refused what the spec asks for. The line under it is tfg's own sentence, which names the value and the way out |
-| `fileSet({ ... }) gives the option ...` | An option tfg does not have, often a typo. The message lists the options it takes |
+| `fileSet({ ... }) gives the option ...` | An option tfg does not have, often a typo. The message lists the flags tfg generate has |
 | `fileSet was not told which files to write` | The spec has no `preset`, `recipe` or `options` |
-| `The recipe option names ..., and there is no file there` | A relative recipe path is taken from the directory the tests were started in. Use `path.join(__dirname, ...)` |
+| `The recipe option names ..., and there is no file there` | A relative recipe path is taken from the directory the tests were started in. Use `path.join(__dirname, ...)`, or `import.meta.dirname` in an ES module |
 | `... is where this set belongs, and it does not hold it` | A kept set was changed, usually by a test writing into one of its files. Delete the directory the message names and run again |
 | `... has no expected outcome, so there is nothing to check it against` | `check` was called on a file with no right answer. Skip it, or decide what your system should do and write it in a recipe |
 | `Test timeout of 30000ms exceeded` in the first test | The set was being written inside the first test. Write it in `beforeAll` with a longer timeout |
 | `The binary for ... comes in the package ..., and it is not installed` | npm installed with `--omit=optional`. Install again without it |
 | `testing-files-generator has no binary for ...` | This system has no package of tfg. See [The tfg program](#the-tfg-program) |
-| `tfg wrote a manifest of version ...` | `TFG_BINARY` points at a tfg of another major version than this package |
+| `tfg wrote a manifest of version ...` | `TFG_BINARY` points at a tfg whose manifest this package cannot read. Point it at a tfg of the same version as this package, or leave it unset |
 | `testing-files-generator: 1 unfinished set was left in ...` | A warning. A run stopped part way, and what it left can be deleted |
 
 ## The tfg program
@@ -445,7 +452,7 @@ npx tfg formats
 npx tfg generate --help
 ```
 
-To use a tfg installed another way, set `TFG_BINARY` to its path, or pass `binary` to `fileSet`. A tfg of another major version is refused, because its manifest can mean something else.
+To use a tfg installed another way, set `TFG_BINARY` to its path, or pass `binary` to `fileSet`. What decides is the manifest it writes. A tfg whose manifest is of another major version than this package reads is refused, because that manifest can mean something else, and a tfg of the same version as this package never is.
 
 On a system with no package of its own, such as an Intel Mac, run the tests in a Linux container, where npm installs the package for Linux.
 

@@ -150,7 +150,8 @@ test('a binary or a recipe the options name and that is not there is named, with
   assert.throws(() => fileSet({ ...small, binary: missing, cacheDir }),
     (err) => err.message.includes(`The binary option names ${missing}, and there is no file there.`) && err.message.includes('leave it out'));
   assert.throws(() => fileSet({ recipe: 'no-such-recipe.yaml', binary: tfg(), cacheDir }),
-    (err) => err.message.includes(path.resolve('no-such-recipe.yaml')) && err.message.includes('path.join(__dirname'));
+    (err) => err.message.includes(path.resolve('no-such-recipe.yaml')) && err.message.includes('path.join(__dirname') &&
+      err.message.includes('path.join(import.meta.dirname'));
 });
 
 test('a set a stopped run left behind is named once outside the workers, and never used', async (t) => {
@@ -182,7 +183,7 @@ test('a refused plan is told in the words of the call, without the flags this pa
       /unknown preset "no-such-preset"/.test(err.message) && !/dry-run|--json|\.tmp-/.test(err.message));
 });
 
-test('an option tfg does not know is named with the options it takes, and what tfg said stays on the error', (t) => {
+test('an option tfg does not know is named with the flags tfg has, and what tfg said stays on the error', (t) => {
   const cacheDir = tempDir(t);
   const spec = { ...small, options: { ...small.options, limt: '2mb' } };
   assert.throws(() => plannedIn(cacheDir, spec), (err) => {
@@ -191,7 +192,7 @@ test('an option tfg does not know is named with the options it takes, and what t
     assert.ok(err.message.includes('gives the option limt, and tfg generate has no flag of that name.'), err.message);
     assert.ok(!err.message.includes('flag provided'), 'the help of tfg is in the message');
     assert.ok(err.stderr.includes('flag provided but not defined: -limt'), err.stderr);
-    const taken = /The options it takes here are ([^.]+)\./.exec(err.message)?.[1].split(', ') ?? [];
+    const taken = /Its flags are ([^.]+)\. Not every one goes with every set/.exec(err.message)?.[1].split(', ') ?? [];
     for (const name of ['limit', 'far-over', 'bulk', 'seed']) {
       assert.ok(taken.includes(name), `${name} is not among ${taken}`);
     }
@@ -205,7 +206,7 @@ test('an option tfg does not know is named with the options it takes, and what t
 
 test('a call that names no files to write is told so before tfg runs', (t) => {
   const cacheDir = tempDir(t);
-  for (const spec of [{}, { options: {} }]) {
+  for (const spec of [{}, { options: {} }, { options: { clean: false } }, { options: { set: [] } }]) {
     assert.throws(() => fileSet({ ...spec, binary: tfg(), cacheDir }), /fileSet was not told which files to write/);
   }
   assert.deepEqual(entries(cacheDir), [], 'something ran');
