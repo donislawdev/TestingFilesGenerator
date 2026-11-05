@@ -150,7 +150,8 @@ test('a binary or a recipe the options name and that is not there is named, with
   assert.throws(() => fileSet({ ...small, binary: missing, cacheDir }),
     (err) => err.message.includes(`The binary option names ${missing}, and there is no file there.`) && err.message.includes('leave it out'));
   assert.throws(() => fileSet({ recipe: 'no-such-recipe.yaml', binary: tfg(), cacheDir }),
-    (err) => err.message.includes(path.resolve('no-such-recipe.yaml')) && err.message.includes('path.join(__dirname'));
+    (err) => err.message.includes(path.resolve('no-such-recipe.yaml')) && err.message.includes('path.join(__dirname') &&
+      err.message.includes('path.join(import.meta.dirname'));
 });
 
 test('a set a stopped run left behind is named once outside the workers, and never used', async (t) => {
@@ -172,6 +173,43 @@ test('what tfg refuses reaches the test with its own words and code', (t) => {
   const cacheDir = tempDir(t);
   assert.throws(() => plannedIn(cacheDir, { preset: 'upload-validation', options: { limit: '1kb' } }),
     (err) => err instanceof TfgError && err.status === 4 && /smallest PDF/.test(err.message));
+});
+
+test('a refused plan is told in the words of the call, without the flags this package adds', (t) => {
+  const cacheDir = tempDir(t);
+  assert.throws(() => plannedIn(cacheDir, { preset: 'no-such-preset' }),
+    (err) => err instanceof TfgError && err.status === 2 &&
+      err.message.startsWith("fileSet({ preset: 'no-such-preset' }) could not be planned - tfg ended with code 2.\n") &&
+      /unknown preset "no-such-preset"/.test(err.message) && !/dry-run|--json|\.tmp-/.test(err.message));
+});
+
+test('an option tfg does not know is named with the flags tfg has, and what tfg said stays on the error', (t) => {
+  const cacheDir = tempDir(t);
+  const spec = { ...small, options: { ...small.options, limt: '2mb' } };
+  assert.throws(() => plannedIn(cacheDir, spec), (err) => {
+    assert.ok(err instanceof TfgError, err);
+    assert.equal(err.status, 2);
+    assert.ok(err.message.includes('gives the option limt, and tfg generate has no flag of that name.'), err.message);
+    assert.ok(!err.message.includes('flag provided'), 'the help of tfg is in the message');
+    assert.ok(err.stderr.includes('flag provided but not defined: -limt'), err.stderr);
+    const taken = /Its flags are ([^.]+)\. Not every one goes with every set/.exec(err.message)?.[1].split(', ') ?? [];
+    for (const name of ['limit', 'far-over', 'bulk', 'seed']) {
+      assert.ok(taken.includes(name), `${name} is not among ${taken}`);
+    }
+    for (const name of ['out', 'json', 'dry-run', 'preset']) {
+      assert.ok(!taken.includes(name), `${name} is set by this package and is offered as an option`);
+    }
+    assert.ok(err.message.includes('npx tfg preset show upload-validation'), err.message);
+    return true;
+  });
+});
+
+test('a call that names no files to write is told so before tfg runs', (t) => {
+  const cacheDir = tempDir(t);
+  for (const spec of [{}, { options: {} }, { options: { clean: false } }, { options: { set: [] } }]) {
+    assert.throws(() => fileSet({ ...spec, binary: tfg(), cacheDir }), /fileSet was not told which files to write/);
+  }
+  assert.deepEqual(entries(cacheDir), [], 'something ran');
 });
 
 test('the flags this package sets itself cannot be set again', (t) => {

@@ -40,8 +40,8 @@ function binaryPath({ env = process.env, platform = process.platform, arch = pro
   if (!pkg) {
     throw new Error(`testing-files-generator has no binary for ${platform} ${arch}. ` +
       `It comes for ${known}. ` +
-      'On another system, run tfg from its container image ghcr.io/donislawdev/tfg, ' +
-      'or install it another way and set TFG_BINARY to its path.');
+      'On another system, run the tests in a Linux container, where npm installs the package for Linux, ' +
+      'or install tfg another way and set TFG_BINARY to its path.');
   }
   const exe = platform === 'win32' ? 'tfg.exe' : 'tfg';
   try {
