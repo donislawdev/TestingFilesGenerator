@@ -87,7 +87,7 @@ require (
 	github.com/gen2brain/gav1d v0.2.5
 	github.com/gen2brain/jxl v0.2.0
 	github.com/goccy/go-yaml v1.19.2
-	github.com/nicksnyder/go-i18n/v2 v2.6.1
+	github.com/nicksnyder/go-i18n/v2 v2.7.0
 	golang.org/x/sys v0.49.0
 	golang.org/x/text v0.43.0
 )
