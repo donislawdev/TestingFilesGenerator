@@ -1,0 +1,286 @@
+name: PyPI packages
+
+# The packages a release puts on PyPI: testing-files-generator, as one wheel
+# for each system with that system's tfg binary of the release inside and one
+# wheel with none, and pytest-testing-files-generator, which installs it. They
+# are made of the PUBLISHED release, as npm.yml makes the npm packages, and
+# reach PyPI only after every system has installed and used them and the owner
+# has approved the run in the pypi environment. docs/PYTEST-2026-11-09.md.
+#
+# PyPI takes them through trusted publishing, so no token is kept anywhere,
+# and the publishing action puts an attestation of each file beside it. A run
+# by hand can send them to TestPyPI instead, to see that PyPI takes them
+# before a release depends on it. A pull request that touches the packages
+# makes and tries them from the latest release and publishes nothing.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Published tag to publish the PyPI packages of, for example v0.6.0"
+        required: true
+      index:
+        description: "testpypi to try PyPI's test index, pypi to publish"
+        required: true
+        default: testpypi
+        type: choice
+        options: [testpypi, pypi]
+  pull_request:
+    paths:
+      - "python/**"
+      - "testdata/wrappers/**"
+      - ".github/requirements-pypi.txt"
+      - ".github/workflows/pypi.yml"
+      - ".github/actions/release-archives/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pypi-${{ github.event.release.tag_name || inputs.tag || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  which:
+    name: which release, and where it goes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.which.outputs.tag }}
+      version: ${{ steps.which.outputs.version }}
+      index: ${{ steps.which.outputs.index }}
+    steps:
+      - name: which release
+        id: which
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+          INPUT_INDEX: ${{ inputs.index }}
+        # Asked of the API rather than taken from the event, because a run by
+        # hand has no event payload and a draft must never reach PyPI. An older
+        # release may go to PyPI after a newer one: pip installs the highest
+        # version, whatever order they were published in.
+        run: |
+          set -euo pipefail
+          case "$EVENT" in
+            release) tag="$RELEASE_TAG"; index=pypi ;;
+            workflow_dispatch) tag="$INPUT_TAG"; index="$INPUT_INDEX" ;;
+            *) tag="$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)"; index=none ;;
+          esac
+          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::\"$tag\" is not a release tag. Run this workflow with the tag of a published release, such as v0.6.0."
+            exit 1
+          fi
+          draft="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)"
+          if [ "$draft" != "false" ]; then
+            echo "::error::$tag is not published yet, and PyPI only ever gets what people can download. Publish the release, and this workflow starts by itself."
+            exit 1
+          fi
+          {
+            echo "tag=$tag"
+            echo "version=${tag#v}"
+            echo "index=$index"
+          } >> "$GITHUB_OUTPUT"
+          echo "$tag, index: $index"
+
+  assemble:
+    name: the wheels, made of the release's own archives
+    needs: which
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TAG: ${{ needs.which.outputs.tag }}
+      VERSION: ${{ needs.which.outputs.version }}
+    steps:
+      # The code of the package from the tagged commit, the one its binaries
+      # were built from. A pull request tries its own code against the latest
+      # release.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ needs.which.outputs.index != 'none' && needs.which.outputs.tag || '' }}
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.13"
+
+      - name: which archives the wheels are made of
+        run: |
+          set -euo pipefail
+          assemble=python/testing-files-generator/release/assemble.py
+          if [ ! -f "$assemble" ]; then
+            echo "::error::the tree of $TAG has no $assemble, so it has no PyPI packages to make. PyPI gets the releases tagged after the packages came into the repository, so run this workflow for one of those."
+            exit 1
+          fi
+          python "$assemble" archives "$VERSION" > archives.txt
+
+      - name: the published archives, each checked before it is opened
+        uses: ./.github/actions/release-archives
+        with:
+          tag: ${{ needs.which.outputs.tag }}
+          archives: archives.txt
+          token: ${{ github.token }}
+
+      - name: lay out the wheels and check them
+        # Laid out here, on Linux, where the archives keep the execute bit of
+        # the binaries for Linux and macOS.
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r .github/requirements-pypi.txt
+          python python/testing-files-generator/release/assemble.py build "$VERSION" binaries dist
+          twine check --strict dist/main/* dist/plugin/*
+          python python/testing-files-generator/release/try_wheels.py --without-binary dist "$VERSION"
+          mv binaries.txt dist/binaries.txt
+          ls -l dist/main dist/plugin
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: pypi-wheels
+          path: dist/
+          retention-days: 7
+
+  try:
+    name: installed and run on ${{ matrix.name }}
+    needs: [which, assemble]
+    strategy:
+      fail-fast: false
+      # One runner per system, each the system its wheel is for, and Alpine
+      # in a container for the wheels for musl. Each installs with pip and
+      # with uv. internal/guard/pypipackage_test.go holds this list to
+      # src/testing_files_generator/_binary.py.
+      matrix:
+        include:
+          - name: win32-x64
+            system: win32-x64
+            runner: windows-latest
+            python: "3.13"
+          - name: win32-arm64
+            system: win32-arm64
+            runner: windows-11-arm
+            python: "3.13"
+          - name: linux-x64
+            system: linux-x64
+            runner: ubuntu-latest
+            python: "3.10"
+          - name: linux-arm64
+            system: linux-arm64
+            runner: ubuntu-24.04-arm
+            python: "3.13"
+          - name: darwin-arm64
+            system: darwin-arm64
+            runner: macos-latest
+            python: "3.13"
+          - name: linux-x64 on Alpine
+            system: linux-x64
+            runner: ubuntu-latest
+            alpine: python:3.13-alpine
+          - name: linux-arm64 on Alpine
+            system: linux-arm64
+            runner: ubuntu-24.04-arm
+            alpine: python:3.13-alpine
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    env:
+      VERSION: ${{ needs.which.outputs.version }}
+      SYSTEM: ${{ matrix.system }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ needs.which.outputs.index != 'none' && needs.which.outputs.tag || '' }}
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        if: matrix.alpine == ''
+        with:
+          python-version: ${{ matrix.python }}
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: pypi-wheels
+          path: dist
+
+      - name: installed with pip and with uv, and used
+        if: matrix.alpine == ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r .github/requirements-pypi.txt
+          for installer in pip uv; do
+            python python/testing-files-generator/release/try_wheels.py dist "$VERSION" dist/binaries.txt "$SYSTEM" "$installer"
+          done
+
+      - name: installed with pip and with uv on Alpine, and used
+        if: matrix.alpine != ''
+        env:
+          IMAGE: ${{ matrix.alpine }}
+        run: |
+          set -euo pipefail
+          docker run --rm -v "$PWD:/w" -w /w -e VERSION -e SYSTEM "$IMAGE" sh -c '
+            set -eu
+            python -m pip install --root-user-action=ignore --disable-pip-version-check -r .github/requirements-pypi.txt
+            for installer in pip uv; do
+              python python/testing-files-generator/release/try_wheels.py dist "$VERSION" dist/binaries.txt "$SYSTEM" "$installer"
+            done'
+
+  publish:
+    name: published on ${{ needs.which.outputs.index }}
+    needs: [which, try]
+    if: needs.which.outputs.index != 'none'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # The run waits here until the owner approves it in the environment, and
+    # PyPI takes the files only from this workflow in this environment - the
+    # trusted publisher of each project names both.
+    environment:
+      name: ${{ needs.which.outputs.index }}
+      url: ${{ needs.which.outputs.index == 'testpypi' && 'https://test.pypi.org/project/testing-files-generator/' || 'https://pypi.org/project/testing-files-generator/' }}
+    permissions:
+      contents: read
+      # The OIDC token PyPI trusts, and the attestations published beside each file.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: pypi-wheels
+          path: dist
+
+      # testing-files-generator first, so pytest-testing-files-generator never
+      # names a version PyPI does not have. A run that stopped half way skips
+      # what is there already.
+      - name: testing-files-generator on TestPyPI
+        if: needs.which.outputs.index == 'testpypi'
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086  # v1.14.3
+        with:
+          packages-dir: dist/main/
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+          print-hash: true
+
+      - name: pytest-testing-files-generator on TestPyPI
+        if: needs.which.outputs.index == 'testpypi'
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086  # v1.14.3
+        with:
+          packages-dir: dist/plugin/
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+          print-hash: true
+
+      - name: testing-files-generator on PyPI
+        if: needs.which.outputs.index == 'pypi'
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086  # v1.14.3
+        with:
+          packages-dir: dist/main/
+          skip-existing: true
+          print-hash: true
+
+      - name: pytest-testing-files-generator on PyPI
+        if: needs.which.outputs.index == 'pypi'
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086  # v1.14.3
+        with:
+          packages-dir: dist/plugin/
+          skip-existing: true
+          print-hash: true

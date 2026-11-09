@@ -245,14 +245,15 @@ def test_a_manifest_of_another_major_or_an_outcome_this_package_does_not_know_is
 
 def test_sets_are_kept_in_a_directory_of_the_users_own_never_the_shared_temporary_one():
     user = _fileset._user_cache_dir
-    assert user(env={"LOCALAPPDATA": r"D:\Local"}, system="win32", home=r"C:\Users\a") == \
+    # Homes made up for the test, in no real profile.
+    assert user(env={"LOCALAPPDATA": r"D:\Local"}, system="win32", home=r"D:\profile") == \
         r"D:\Local\testing-files-generator"
-    assert user(env={}, system="win32", home=r"C:\Users\a") == r"C:\Users\a\AppData\Local\testing-files-generator"
-    assert user(env={}, system="darwin", home="/Users/a") == "/Users/a/Library/Caches/testing-files-generator"
-    assert user(env={"XDG_CACHE_HOME": "/xdg"}, system="linux", home="/home/a") == "/xdg/testing-files-generator"
+    assert user(env={}, system="win32", home=r"D:\profile") == r"D:\profile\AppData\Local\testing-files-generator"
+    assert user(env={}, system="darwin", home="/srv/profile") == "/srv/profile/Library/Caches/testing-files-generator"
+    assert user(env={"XDG_CACHE_HOME": "/xdg"}, system="linux", home="/srv/profile") == "/xdg/testing-files-generator"
     # A relative XDG_CACHE_HOME is to be ignored, by the XDG specification.
-    assert user(env={"XDG_CACHE_HOME": "rel"}, system="linux", home="/home/a") == \
-        "/home/a/.cache/testing-files-generator"
+    assert user(env={"XDG_CACHE_HOME": "rel"}, system="linux", home="/srv/profile") == \
+        "/srv/profile/.cache/testing-files-generator"
     with pytest.raises(RuntimeError, match="found no home directory") as caught:
         user(env={}, system="linux", home="~")
     assert "TFG_CACHE_DIR" in str(caught.value) and "cache_dir" in str(caught.value)

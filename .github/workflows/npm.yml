@@ -110,12 +110,7 @@ jobs:
         with:
           node-version: "22"
 
-      - name: the published archives, each checked before it is opened
-        env:
-          GH_TOKEN: ${{ github.token }}
-        # The checksum says the download is the file the release lists. The
-        # attestation says attest-release.yml made a statement about these very
-        # bytes, and --signer-workflow holds it to that workflow.
+      - name: which archives the packages are made of
         run: |
           set -euo pipefail
           assemble=npm/testing-files-generator/release/assemble.js
@@ -123,31 +118,17 @@ jobs:
             echo "::error::the tree of $TAG has no $assemble, so it has no npm packages to make. npm gets the releases tagged after the packages came into the repository, so run this workflow for one of those."
             exit 1
           fi
-          mkdir -p download binaries
-          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir download --pattern verify-SHA256SUMS.txt
           node "$assemble" archives "$VERSION" > archives.txt
-          # Read into a list first, because gh reads standard input and a
-          # download inside the read loop eats the rest of the list.
-          mapfile -t lines < archives.txt
-          for line in "${lines[@]}"; do
-            read -r dir archive binary <<< "$line"
-            gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir download --pattern "$archive"
-            awk -v name="$archive" '$2 == name' download/verify-SHA256SUMS.txt > "download/$archive.sum"
-            if [ "$(wc -l < "download/$archive.sum")" != "1" ]; then
-              echo "::error::verify-SHA256SUMS.txt of $TAG does not name $archive exactly once, so the archive cannot be checked. Compare the release's assets with what release.yml attaches before running this again."
-              exit 1
-            fi
-            (cd download && sha256sum -c "$archive.sum")
-            gh attestation verify "download/$archive" --repo "$GITHUB_REPOSITORY" \
-              --predicate-type https://spdx.dev/Document/v2.3 \
-              --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/attest-release.yml"
-            mkdir -p "binaries/$dir"
-            case "$archive" in
-              *.zip) unzip -q "download/$archive" -d "binaries/$dir" ;;
-              *) tar -xzf "download/$archive" -C "binaries/$dir" ;;
-            esac
-            echo "$dir $binary $(sha256sum "binaries/$dir/$binary" | cut -d' ' -f1)" >> binaries.txt
-          done
+
+      # The same check pypi.yml makes, in one place: the checksum says the
+      # download is the file the release lists, and the attestation that
+      # attest-release.yml made a statement about these very bytes.
+      - name: the published archives, each checked before it is opened
+        uses: ./.github/actions/release-archives
+        with:
+          tag: ${{ needs.which.outputs.tag }}
+          archives: archives.txt
+          token: ${{ github.token }}
 
       - name: lay out and pack them
         # Packed here, on Linux, because npm packs a file without its

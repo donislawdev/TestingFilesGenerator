@@ -1,0 +1,70 @@
+name: The archives of a published release, each checked before it is opened
+description: >-
+  Downloads the archives a published release attaches, holds each to the
+  release's checksums and to the attestation attest-release.yml made of the
+  files people download, and extracts it. npm.yml and pypi.yml both make their
+  packages of what this leaves, so the check lives in one place.
+
+# Every archive is held to the release's checksums and to the attestation
+# attest-release.yml made of the files people download. That is the only one
+# that fits all of them: the Windows archives are signed and the macOS one is
+# notarised after release.yml built them, so their bytes are not the ones it
+# attested. The checksum says the download is the file the release lists. The
+# attestation says attest-release.yml made a statement about these very bytes,
+# and --signer-workflow holds it to that workflow.
+#
+# It leaves each archive extracted in binaries/<dir>, and binaries.txt with a
+# line for each: the directory, the binary inside it, and the binary's sha256.
+
+inputs:
+  tag:
+    description: The tag of a published release, such as v0.6.0.
+    required: true
+  archives:
+    description: >-
+      A file with a line for each archive: the directory to extract it into,
+      the name of the archive, and where the binary is inside it.
+    required: true
+  token:
+    description: A token that can read the release, github.token.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: download, check and extract every archive
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        TAG: ${{ inputs.tag }}
+        ARCHIVES: ${{ inputs.archives }}
+      run: |
+        set -euo pipefail
+        mkdir -p download binaries
+        gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir download --pattern verify-SHA256SUMS.txt
+        # Read into a list first, because gh reads standard input and a
+        # download inside the read loop eats the rest of the list.
+        mapfile -t lines < "$ARCHIVES"
+        if [ "${#lines[@]}" -eq 0 ]; then
+          echo "::error::$ARCHIVES names no archive, so there is nothing to check. The step before this one lists them."
+          exit 1
+        fi
+        for line in "${lines[@]}"; do
+          read -r dir archive binary <<< "$line"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir download --pattern "$archive"
+          awk -v name="$archive" '$2 == name' download/verify-SHA256SUMS.txt > "download/$archive.sum"
+          if [ "$(wc -l < "download/$archive.sum")" != "1" ]; then
+            echo "::error::verify-SHA256SUMS.txt of $TAG does not name $archive exactly once, so the archive cannot be checked. Compare the release's assets with what release.yml attaches before running this again."
+            exit 1
+          fi
+          (cd download && sha256sum -c "$archive.sum")
+          gh attestation verify "download/$archive" --repo "$GITHUB_REPOSITORY" \
+            --predicate-type https://spdx.dev/Document/v2.3 \
+            --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/attest-release.yml"
+          mkdir -p "binaries/$dir"
+          case "$archive" in
+            *.zip) unzip -q "download/$archive" -d "binaries/$dir" ;;
+            *) tar -xzf "download/$archive" -C "binaries/$dir" ;;
+          esac
+          echo "$dir $binary $(sha256sum "binaries/$dir/$binary" | cut -d' ' -f1)" >> binaries.txt
+        done

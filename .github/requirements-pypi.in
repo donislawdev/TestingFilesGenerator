@@ -1,0 +1,21 @@
+# What the PyPI packages need in CI beyond Python itself, pinned, in a file a
+# bot can edit.
+#
+# python/testing-files-generator is tested with pytest in ci.yml, and
+# .github/workflows/pypi.yml checks the wheels of a release with twine and
+# installs them with uv as well as pip, because uv keeps a binary's execute bit
+# only when the wheel says it was made on Unix and pip keeps it either way
+# (docs/PYTEST-2026-11-09.md). None of them is linked into either binary or
+# shipped in a wheel, and go.mod never sees them.
+#
+# Licences read from the pinned versions rather than recalled, on 2026-11-09,
+# from the metadata on PyPI: pytest MIT, twine Apache-2.0, uv MIT OR Apache-2.0.
+#
+# requirements-pypi.txt next to this file is compiled from it by pip-compile,
+# the same way requirements-semgrep.txt is, so Dependabot proposes a set pip
+# can install. To compile it by hand, from the root of the repository:
+#
+#   docker run --rm -v "$PWD/.github:/w" -w /w python:3.14-slim sh -c "pip install -q pip==26.1.1 pip-tools==7.5.3 && pip-compile --strip-extras --no-emit-index-url --output-file=requirements-pypi.txt requirements-pypi.in"
+pytest==9.2.0
+twine==7.0.0
+uv==0.13.7
