@@ -121,6 +121,31 @@ test('a set changed by hand is refused, and left where it is', async (t) => {
   assert.ok(fs.existsSync(path.join(dir, 'manifest.json')), 'the changed set was removed');
 });
 
+test('a kept manifest, or a file in it, that is not an object is refused like any changed set', async (t) => {
+  const cacheDir = tempDir(t);
+  const dir = (await node(writer(cacheDir))).stdout.trim();
+  const manifest = path.join(dir, 'manifest.json');
+  const written = JSON.parse(fs.readFileSync(manifest, 'utf8'));
+  const first = written.files[0].path;
+  fs.writeFileSync(manifest, JSON.stringify({ ...written, files: [null, ...written.files.slice(1)] }));
+  const entry = await node(writer(cacheDir));
+  assert.equal(entry.status, 3);
+  assert.ok(entry.stderr.includes(`does not hold it - its file 1 is not described by an object where the plan has ${first}. ` +
+    'Nothing here removes that directory'), entry.stderr);
+  fs.writeFileSync(manifest, 'null');
+  const whole = await node(writer(cacheDir));
+  assert.equal(whole.status, 3);
+  assert.ok(whole.stderr.includes('does not hold it - its manifest cannot be read (it is not an object).'), whole.stderr);
+});
+
+test('a cache directory that cannot be made says how to give another', (t) => {
+  const taken = path.join(tempDir(t), 'a-file');
+  fs.writeFileSync(taken, '');
+  assert.throws(() => fileSet({ ...small, binary: tfg(), cacheDir: taken }),
+    (err) => err.message.startsWith(`Sets are kept in ${taken}, and it could not be made a directory - `) &&
+      err.message.includes('TFG_CACHE_DIR') && err.message.includes('cacheDir'));
+});
+
 test('a file of the set cut short by hand is refused', async (t) => {
   const cacheDir = tempDir(t);
   const dir = (await node(writer(cacheDir))).stdout.trim();
@@ -241,6 +266,16 @@ test('npx tfg is tfg - the same output and the same exit code', async () => {
   assert.notEqual(direct.status, 0);
   assert.equal(viaPackage.status, direct.status);
   assert.equal(viaPackage.stderr, direct.stderr);
+});
+
+test('npx tfg with a binary the system will not start names it, with what to do and the code of a tool that could not run', async (t) => {
+  const bin = path.join(__dirname, '..', 'bin', 'tfg.js');
+  const binary = path.join(tempDir(t), 'not-tfg');
+  fs.writeFileSync(binary, 'not a program\n', { mode: 0o644 });
+  const refused = await node('', { file: bin, args: ['version'], env: { TFG_BINARY: binary } });
+  assert.equal(refused.status, 1);
+  assert.ok(refused.stderr.startsWith(`tfg: tfg could not be started from ${binary}: `), refused.stderr);
+  assert.ok(refused.stderr.includes('TFG_BINARY'), refused.stderr);
 });
 
 // The last place sets go is the system's temporary directory, which on Linux

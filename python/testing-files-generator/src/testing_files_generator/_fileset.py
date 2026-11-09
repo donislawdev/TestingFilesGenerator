@@ -112,22 +112,34 @@ def file_set(preset: str | None = None, recipe: str | os.PathLike[str] | None = 
     tfg = binary_path() if binary is None else _named(os.fspath(binary), "binary",
                                                        "Point it at a tfg binary, or leave it out to use the one "
                                                        "this package installs.")
-    text = ""
+    content = ""
     if recipe:
         where = os.path.abspath(os.fspath(recipe))
         _named(where, "recipe", f"A relative path is taken from the directory the tests started in, here "
                                 f"{os.getcwd()}, so Path(__file__).parent / 'uploads.yaml' names a recipe beside "
                                 "the test file.")
-        with open(where, encoding="utf-8") as f:
-            text = f.read()
+        content = _content_of(where)
     cache = os.path.abspath(os.fspath(cache_dir) if cache_dir is not None else default_cache_dir())
-    key = _digest([_identity(tfg), args, text, cache])
+    key = _digest([_identity(tfg), args, content, cache])
     with _sources_lock:
         source = _sources.get(key)
         if source is None:
             source = _Source(tfg, args, cache, preset, recipe, shown)
             _sources[key] = source
     return FileSet(source, source.files)
+
+
+def _content_of(recipe: str) -> str:
+    """The sha256 of a recipe's bytes, so an edited recipe is planned again.
+
+    Read in pieces and never decoded: tfg reads the recipe itself and says
+    what is wrong with one too large or not in UTF-8, in its own words.
+    """
+    digest = hashlib.sha256()
+    with open(recipe, "rb") as f:
+        for piece in iter(lambda: f.read(1 << 16), b""):
+            digest.update(piece)
+    return digest.hexdigest()
 
 
 def _text(value: Any) -> str:
@@ -209,6 +221,16 @@ def _user_cache_dir(env: Mapping[str, str] | None = None, system: str | None = N
     return paths.join(base, "testing-files-generator")
 
 
+def _make_cache(cache: str) -> None:
+    """Makes the directory sets are kept in, or says where it comes from and how to give another."""
+    try:
+        os.makedirs(cache, exist_ok=True)
+    except OSError as err:
+        raise RuntimeError(f"Sets are kept in {cache}, and it could not be made a directory - "
+                           f"{err.strerror or err}. Set TFG_CACHE_DIR, or the cache_dir argument of file_set, "
+                           "to a directory this user can write.") from err
+
+
 def _label_of(preset: str | None, recipe: Any) -> str:
     if preset:
         name = preset
@@ -260,7 +282,7 @@ class _Source:
         self.cache = cache
         self.preset = preset
         self.shown = shown
-        os.makedirs(cache, exist_ok=True)
+        _make_cache(cache)
         _note_unfinished(cache)
         self.plan = self._planned()
         self.dir = os.path.join(cache, set_name(_label_of(preset, recipe), args, self.plan))
@@ -409,6 +431,10 @@ def mismatch(directory: str, plan: Mapping[str, Any]) -> str:
         count = len(files) if isinstance(files, list) else "no"
         return f"it holds {count} files where the plan has {len(plan['files'])}"
     for i, (want, got) in enumerate(zip(plan["files"], files), start=1):
+        # The manifest of a kept set is on the disk, where a person or a test
+        # can change it, so an entry is not taken to be what tfg writes.
+        if not isinstance(got, dict):
+            return f"its file {i} is not described by an object where the plan has {want['path']}"
         if got.get("path") != want["path"] or got.get("bytes") != want["bytes"]:
             return f"its file {i} is {got.get('path')} of {got.get('bytes')} B where the plan has " \
                    f"{want['path']} of {want['bytes']} B"

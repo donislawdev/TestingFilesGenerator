@@ -172,6 +172,17 @@ function ownTempDir({ tmp = os.tmpdir(), uid = process.getuid ? process.getuid()
   return dir;
 }
 
+// makeCache makes the directory sets are kept in, or says where it comes from
+// and how to give another.
+function makeCache(cacheDir) {
+  try {
+    fs.mkdirSync(cacheDir, { recursive: true });
+  } catch (err) {
+    throw new Error(`Sets are kept in ${cacheDir}, and it could not be made a directory - ${err.message}. ` +
+      'Set TFG_CACHE_DIR, or the cacheDir option of fileSet, to a directory this user can write.', { cause: err });
+  }
+}
+
 function labelOf(spec) {
   const name = spec.preset ?? (spec.recipe ? path.basename(spec.recipe).replace(/\.[^.]*$/, '') : 'flags');
   return name.replace(/[^A-Za-z0-9_-]+/g, '-').slice(0, 40);
@@ -213,7 +224,7 @@ class Source {
     this.cacheDir = cacheDir;
     this.preset = spec.preset;
     this.shown = described(spec);
-    fs.mkdirSync(cacheDir, { recursive: true });
+    makeCache(cacheDir);
     noteUnfinished(cacheDir);
     this.plan = this._planned();
     // The recipe hash leaves out the seed and --clean, measured 2026-11-04, so
@@ -373,6 +384,9 @@ function mismatch(dir, plan) {
   } catch (err) {
     return `its manifest cannot be read (${err.message})`;
   }
+  if (!isObject(written)) {
+    return 'its manifest cannot be read (it is not an object)';
+  }
   if (written.run?.recipe_hash !== plan.run.recipe_hash || written.run?.seed !== plan.run.seed) {
     return 'it was written from another recipe or seed';
   }
@@ -385,6 +399,11 @@ function mismatch(dir, plan) {
   for (let i = 0; i < plan.files.length; i++) {
     const want = plan.files[i];
     const got = written.files[i];
+    // The manifest of a kept set is on the disk, where a person or a test can
+    // change it, so an entry is not taken to be what tfg writes.
+    if (!isObject(got)) {
+      return `its file ${i + 1} is not described by an object where the plan has ${want.path}`;
+    }
     if (got.path !== want.path || got.bytes !== want.bytes) {
       return `its file ${i + 1} is ${got.path} of ${got.bytes} B where the plan has ${want.path} of ${want.bytes} B`;
     }
@@ -402,6 +421,10 @@ function mismatch(dir, plan) {
     }
   }
   return '';
+}
+
+function isObject(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function stale(dir, problem, details = '') {

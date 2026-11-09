@@ -438,6 +438,8 @@ Every message names what it is about and what to do. The ones you are most likel
 | `The binary for ... comes in the package ..., and it is not installed` | npm installed with `--omit=optional`. Install again without it |
 | `testing-files-generator has no binary for ...` | This system has no package of tfg. See [The tfg program](#the-tfg-program) |
 | `tfg wrote a manifest of version ...` | `TFG_BINARY` points at a tfg whose manifest this package cannot read. Point it at a tfg of the same version as this package, or leave it unset |
+| `tfg could not be started from ...` | The system would not run that file, for the reason after the colon - a tfg for another system, or one without its execute bit. Install the package again, or point `TFG_BINARY` at a tfg this user can run |
+| `Sets are kept in ..., and it could not be made a directory` | The directory for sets is a file, or this user cannot write where it would go. Set `TFG_CACHE_DIR` or `cacheDir` to a directory you can write |
 | `... where testing-files-generator keeps sets when it is given no other place, ...` | The directory in the system's temporary directory belongs to someone else, or others can write to it, so they could change your files. Set `TFG_CACHE_DIR` or `cacheDir` to a directory of your own |
 | `testing-files-generator: 1 unfinished set was left in ...` | A warning. A run stopped part way, and what it left can be deleted |
 

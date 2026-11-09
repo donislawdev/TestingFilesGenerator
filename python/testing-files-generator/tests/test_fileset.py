@@ -32,6 +32,19 @@ def test_a_plan_writes_nothing_and_says_every_file_with_what_is_expected_of_it(c
     assert len(s.only(group=["bulk-upload", "size-limit"], outcome="accept")) > 0
 
 
+def test_a_target_or_a_list_of_them_picks_the_files_made_for_it(cache):
+    s = planned(cache)
+    targets = sorted({f.target for f in s.files})
+    assert len(targets) >= 3, f"the set this test asks for has the targets {targets}"
+    one, two = targets[0], targets[1]
+    made_for_one = [f for f in s.files if f.target == one]
+    assert list(s.only(target=one)) == made_for_one
+    assert list(s.except_(target=one)) == [f for f in s.files if f.target != one]
+    assert {f.target for f in s.only(target=[one, two])} == {one, two}
+    assert list(s.only(target=one, outcome=made_for_one[0].expected["outcome"])) == \
+        [f for f in made_for_one if f.expected["outcome"] == made_for_one[0].expected["outcome"]]
+
+
 def test_a_set_is_written_once_whole_and_its_files_are_where_their_paths_say(cache):
     s = planned(cache)
     directory = s.write()
@@ -122,6 +135,21 @@ def test_a_set_changed_by_hand_is_refused_and_left_where_it_is(cache):
     assert os.path.exists(os.path.join(directory, "manifest.json")), "the changed set was removed"
 
 
+def test_a_kept_manifest_whose_file_is_not_an_object_is_refused_like_any_changed_set(cache):
+    directory = writer(cache).stdout.strip()
+    manifest = os.path.join(directory, "manifest.json")
+    with open(manifest, encoding="utf-8") as f:
+        written = json.load(f)
+    first = written["files"][0]["path"]
+    written["files"][0] = None
+    with open(manifest, "w", encoding="utf-8") as f:
+        json.dump(written, f)
+    again = writer(cache)
+    assert again.returncode == 3
+    assert (f"does not hold it - its file 1 is not described by an object where the plan has {first}. "
+            "Nothing here removes that directory") in again.stderr, again.stderr
+
+
 def test_a_file_of_the_set_cut_short_by_hand_is_refused(cache):
     directory = writer(cache).stdout.strip()
     os.truncate(os.path.join(directory, "1mb_at_limit.jpg"), 10)
@@ -152,6 +180,36 @@ def test_a_binary_or_a_recipe_that_is_not_there_is_named_with_what_to_do(cache):
         file_set(recipe="no-such-recipe.yaml", binary=tfg_binary(), cache_dir=cache)
     assert os.path.abspath("no-such-recipe.yaml") in str(caught.value)
     assert "Path(__file__).parent" in str(caught.value)
+
+
+def test_a_recipe_not_in_utf8_is_refused_by_tfg_in_its_own_words(cache, tmp_path):
+    # Read here only for its hash, so what is wrong with it is said by tfg,
+    # which reads it, and not by a decoder on the way.
+    recipe = tmp_path / "latin.yaml"
+    recipe.write_bytes(b"version: 1\n# caf\xe9\n")
+    with pytest.raises(TfgError) as caught:
+        file_set(recipe=recipe, binary=tfg_binary(), cache_dir=cache)
+    assert "is not valid UTF-8" in str(caught.value) and "Save the file as UTF-8" in str(caught.value)
+
+
+def test_an_edited_recipe_is_planned_again_in_the_same_process(cache, tmp_path):
+    recipe = tmp_path / "set.yaml"
+    recipe.write_text("version: 1\ntargets:\n  - id: one\n    format: txt\n    size: 1kb\n", encoding="utf-8")
+    first = file_set(recipe=recipe, binary=tfg_binary(), cache_dir=cache)
+    recipe.write_text("version: 1\ntargets:\n  - id: one\n    format: txt\n    size: 2kb\n", encoding="utf-8")
+    second = file_set(recipe=recipe, binary=tfg_binary(), cache_dir=cache)
+    assert [f.bytes for f in first] == [1024]
+    assert [f.bytes for f in second] == [2048]
+
+
+def test_a_cache_directory_that_cannot_be_made_says_how_to_give_another(tmp_path):
+    taken = tmp_path / "a-file"
+    taken.write_text("", encoding="utf-8")
+    with pytest.raises(RuntimeError) as caught:
+        file_set(**SMALL, binary=tfg_binary(), cache_dir=taken)
+    said = str(caught.value)
+    assert said.startswith(f"Sets are kept in {taken}, and it could not be made a directory - ")
+    assert "TFG_CACHE_DIR" in said and "cache_dir" in said
 
 
 def test_a_set_a_stopped_run_left_behind_is_named_once_outside_the_workers_and_never_used(cache):

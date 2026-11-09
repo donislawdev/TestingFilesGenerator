@@ -30,6 +30,17 @@ def said(stderr: str) -> str:
     return stderr.strip() or "tfg said nothing about why."
 
 
+def not_started(binary: str, cause: OSError) -> str:
+    """A binary the system would not start, with the system's reason and the way out.
+
+    The reason stays: "Exec format error" and "Permission denied" are what
+    tell a binary for another system from one without its execute bit.
+    """
+    return (f"tfg could not be started from {binary}: {cause}. It has to be a tfg for this system that this "
+            "user can run. Reinstall the package with pip install --force-reinstall testing-files-generator, "
+            "or set TFG_BINARY to the path of such a tfg.")
+
+
 class TfgError(Exception):
     """tfg ending with a code other than nought, or stopped by a signal, whose name is then the status.
 
@@ -72,7 +83,7 @@ def _run(binary: str, args: Sequence[str], stdout) -> None:
             code = subprocess.run([binary, *args], stdin=subprocess.DEVNULL, stdout=stdout, stderr=err,
                                   creationflags=_FLAGS, check=False).returncode
         except OSError as cause:
-            raise RuntimeError(f"tfg could not be started from {binary}: {cause}") from cause
+            raise RuntimeError(not_started(binary, cause)) from cause
         if code != 0:
             raise TfgError(args, _status(code), _tail(err))
 

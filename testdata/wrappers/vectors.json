@@ -1,5 +1,5 @@
 {
-  "about": "What a file of a set says of itself, and what check makes of what a system did, for the npm package (npm/testing-files-generator/test/vectors.test.js) and the Python package (python/testing-files-generator/tests/test_vectors.py). Both read this file, so a sentence changed in one package and not the other fails the tests of the other. result is pass, mismatch (with the whole message), unspecified or bad-input - the last two say what to do in the words of each language, so only the kind is shared.",
+  "about": "What a file of a set says of itself, and what check makes of what a system did, for the npm package (npm/testing-files-generator/test/vectors.test.js) and the Python package (python/testing-files-generator/tests/test_vectors.py). Both read this file, so a sentence changed in one package and not the other fails the tests of the other. result is pass, mismatch (with the whole message), unspecified or bad-input - the last two say what to do in the words of each language, so only the kind is shared. The groups are spelled differently on purpose - with a space, with a hyphen and with a punctuation mark (size limit, size-limit, hostile-names!) - because a group becomes a Playwright tag and a pytest marker, and these are the ways a group name can be written.",
   "entries": {
     "big": {
       "path": "big.jpg",

@@ -22,3 +22,16 @@ def test_a_package_with_no_binary_says_so_with_the_code_of_a_tool_that_could_not
     gone = python(TFG, "version", env={"TFG_BINARY": str(tmp_path / "gone")})
     assert gone.returncode == 1
     assert gone.stderr.startswith("tfg: TFG_BINARY is set to")
+
+
+def test_a_binary_the_system_will_not_start_is_named_with_what_to_do(tmp_path):
+    # A file that is there and is not a program: Windows refuses it as not an
+    # application, Linux and macOS for the missing execute bit.
+    binary = tmp_path / "not-tfg"
+    binary.write_bytes(b"not a program\n")
+    binary.chmod(0o644)
+    refused = python(TFG, "version", env={"TFG_BINARY": str(binary)})
+    assert refused.returncode == 1
+    assert refused.stderr.startswith(f"tfg: tfg could not be started from {binary}: ")
+    assert "pip install --force-reinstall testing-files-generator" in refused.stderr
+    assert "TFG_BINARY" in refused.stderr

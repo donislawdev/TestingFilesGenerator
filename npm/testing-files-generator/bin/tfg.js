@@ -11,6 +11,7 @@
 
 const { spawn } = require('node:child_process');
 const { binaryPath } = require('../lib/binary.js');
+const { notStarted } = require('../lib/run.js');
 
 // RUNTIME in docs/CLI.md section 3 - the tool could not do its work, and the
 // arguments were never looked at.
@@ -38,7 +39,7 @@ for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
 }
 
 child.on('error', (err) => {
-  process.stderr.write(`tfg: tfg could not be started from ${binary}: ${err.message}\n`);
+  process.stderr.write(`tfg: ${notStarted(binary, err).message}\n`);
   process.exit(cannotRun);
 });
 

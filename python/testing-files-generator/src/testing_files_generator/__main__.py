@@ -16,6 +16,7 @@ import subprocess
 import sys
 
 from ._binary import binary_path
+from ._run import not_started
 
 # RUNTIME in docs/CLI.md section 3 - the tool could not do its work, and the
 # arguments were never looked at.
@@ -40,7 +41,7 @@ def main() -> int:
         signal.signal(signal.SIGINT, signal.SIG_IGN)
         return subprocess.call(args)
     except OSError as err:
-        print(f"tfg: tfg could not be started from {binary}: {err}", file=sys.stderr)
+        print(f"tfg: {not_started(binary, err)}", file=sys.stderr)
         return _CANNOT_RUN
 
 
