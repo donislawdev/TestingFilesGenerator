@@ -126,7 +126,50 @@ function defaultCacheDir() {
   if (fs.existsSync(modules)) {
     return path.join(modules, '.cache', 'testing-files-generator');
   }
-  return path.join(os.tmpdir(), 'testing-files-generator');
+  return ownTempDir();
+}
+
+// ownTempDir is the last place sets go: a directory of this user's own in the
+// system's temporary directory. On Linux that directory is shared by every
+// user of the machine, and a directory of a fixed name there could be made
+// first by someone else, who could then change the files the tests run on. So
+// the name carries the user's id, a new one is open to its owner alone, and
+// one already there is taken only when it is a directory of this user that
+// nobody else can write to. Windows and macOS give each user a temporary
+// directory of their own, and Windows has no id to ask for - a uid of null.
+// docs/NPM-PUBLISH-2026-11-09.md, code scanning alerts 23 and 24.
+function ownTempDir({ tmp = os.tmpdir(), uid = process.getuid ? process.getuid() : null } = {}) {
+  if (uid === null) {
+    return path.join(tmp, 'testing-files-generator');
+  }
+  const dir = path.join(tmp, `testing-files-generator-${uid}`);
+  let stat;
+  try {
+    stat = fs.lstatSync(dir);
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      throw err;
+    }
+    // Asked again after it is made, because someone else can make it first.
+    fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
+    stat = fs.lstatSync(dir);
+  }
+  let fault = '';
+  if (stat.isSymbolicLink()) {
+    fault = 'is a link to another place';
+  } else if (!stat.isDirectory()) {
+    fault = 'is not a directory';
+  } else if (stat.uid !== uid) {
+    fault = 'belongs to another user';
+  } else if ((stat.mode & 0o022) !== 0) {
+    fault = 'can be written to by other users';
+  }
+  if (fault) {
+    throw new Error(`${dir}, where testing-files-generator keeps sets when it is given no other place, ${fault}, ` +
+      'so someone else could change the files your tests run on. ' +
+      'Set TFG_CACHE_DIR or the cacheDir option to a directory of your own, or remove that one.');
+  }
+  return dir;
 }
 
 function labelOf(spec) {
@@ -457,4 +500,4 @@ function matches(file, filter = {}) {
   return has(filter.group, file.group) && has(filter.target, file.target) && has(filter.outcome, file.expected.outcome);
 }
 
-module.exports = { events, fileSet, readable };
+module.exports = { events, fileSet, ownTempDir, readable };

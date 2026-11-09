@@ -43,12 +43,17 @@ function notStarted(binary, err) {
 // gives a child process by default. The error stream goes to a file of its own
 // for the same reason - a buffer that fills stops tfg part way - and only its
 // end is kept.
+//
+// Both files are made new and readable by their owner alone, so neither a file
+// nor a link someone else left under the same name is written through. The
+// names are drawn at random by the caller, and the directory may be the
+// system's temporary one.
 function runToFile(binary, args, outFile) {
   const errFile = `${outFile}.err`;
-  const out = fs.openSync(outFile, 'w');
+  const out = fs.openSync(outFile, 'wx', 0o600);
   let err;
   try {
-    err = fs.openSync(errFile, 'w+');
+    err = fs.openSync(errFile, 'wx+', 0o600);
     const done = spawnSync(binary, args, { stdio: ['ignore', out, err], windowsHide: true });
     if (done.error) {
       throw notStarted(binary, done.error);

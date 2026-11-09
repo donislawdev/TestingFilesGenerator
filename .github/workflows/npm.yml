@@ -67,19 +67,19 @@ jobs:
             *) tag="$latest"; stage=false ;;
           esac
           if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
-            echo "::error::\"$tag\" is not a release tag, for example v0.6.0"
+            echo "::error::\"$tag\" is not a release tag. Run this workflow with the tag of a published release, such as v0.6.0."
             exit 1
           fi
           draft="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)"
           if [ "$draft" != "false" ]; then
-            echo "::error::$tag is not published yet, and npm only ever gets what people can download"
+            echo "::error::$tag is not published yet, and npm only ever gets what people can download. Publish the release, and this workflow starts by itself."
             exit 1
           fi
           # npm files a release under latest whatever its age, so staging an
           # older one would take latest away from the newest. A prerelease goes
           # under next and takes nothing away.
           if [ "$stage" = true ] && [[ "$tag" != *-* ]] && [ "$tag" != "$latest" ]; then
-            echo "::error::$tag is not the latest release ($latest), and staging it would make npm install give people an older tfg"
+            echo "::error::$tag is not the latest release ($latest), and staging it would make npm install give people an older tfg. Run this workflow for $latest instead."
             exit 1
           fi
           {
@@ -120,7 +120,7 @@ jobs:
           set -euo pipefail
           assemble=npm/testing-files-generator/release/assemble.js
           if [ ! -f "$assemble" ]; then
-            echo "::error::the tree of $TAG has no $assemble, so it has no npm packages to make"
+            echo "::error::the tree of $TAG has no $assemble, so it has no npm packages to make. npm gets the releases tagged after the packages came into the repository, so run this workflow for one of those."
             exit 1
           fi
           mkdir -p download binaries
@@ -134,7 +134,7 @@ jobs:
             gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir download --pattern "$archive"
             awk -v name="$archive" '$2 == name' download/verify-SHA256SUMS.txt > "download/$archive.sum"
             if [ "$(wc -l < "download/$archive.sum")" != "1" ]; then
-              echo "::error::verify-SHA256SUMS.txt of $TAG does not name $archive exactly once"
+              echo "::error::verify-SHA256SUMS.txt of $TAG does not name $archive exactly once, so the archive cannot be checked. Compare the release's assets with what release.yml attaches before running this again."
               exit 1
             fi
             (cd download && sha256sum -c "$archive.sum")
@@ -218,13 +218,13 @@ jobs:
           set -euo pipefail
           here="$(node -p "process.platform + '-' + process.arch")"
           if [ "$here" != "$PACKAGE" ]; then
-            echo "::error::this runner is $here, and it was to try $PACKAGE"
+            echo "::error::this runner is $here, and it was to try $PACKAGE. Give $PACKAGE a runner of its own system in the matrix of this job."
             exit 1
           fi
           main="$(awk '$1 == "testing-files-generator" { print $2 }' tarballs/order.txt)"
           platform="$(awk -v name="@testing-files-generator/$PACKAGE" '$1 == name { print $2 }' tarballs/order.txt)"
           if [ -z "$main" ] || [ -z "$platform" ]; then
-            echo "::error::the packages made for $VERSION hold no testing-files-generator or no $PACKAGE"
+            echo "::error::the packages made for $VERSION hold no testing-files-generator or no $PACKAGE. lib/binary.js and the matrix of this job have to name the same systems."
             exit 1
           fi
           mkdir try
@@ -239,7 +239,7 @@ jobs:
           set -euo pipefail
           said="$(npx --no-install tfg version)"
           if [ "$said" != "$VERSION" ]; then
-            echo "::error::npx tfg version says $said, and the release is $VERSION"
+            echo "::error::npx tfg version says $said, and the release is $VERSION, so the package carries another release's binary. Nothing is staged. Look at the archives of $VERSION before running this again."
             exit 1
           fi
           read -r _ binary sum <<< "$(awk -v dir="$PACKAGE" '$1 == dir' ../tarballs/binaries.txt)"
@@ -351,7 +351,7 @@ jobs:
           fi
           npm_version="$(npm --version)"
           if ! node -e 'const [a, b] = process.argv[1].split(".").map(Number); process.exit(a > 11 || (a === 11 && b >= 15) ? 0 : 1)' "$npm_version"; then
-            echo "::error::npm $npm_version cannot stage a package, and staging needs npm 11.15.0 or later"
+            echo "::error::npm $npm_version cannot stage a package, and staging needs npm 11.15.0 or later. Raise node-version of this job to a Node that comes with it."
             exit 1
           fi
           tag="$(cat tarballs/dist-tag.txt)"
@@ -375,7 +375,7 @@ jobs:
               continue
             fi
             if [ -z "$NPM_TOKEN" ] && ! npm view "$name" name > /dev/null 2>&1; then
-              echo "::error::$name is not on npm yet, so it cannot trust this workflow, and there is no NPM_TOKEN secret to stage it with. The first release on npm needs one - docs/NPM-PUBLISH-2026-11-09.md"
+              echo "::error::$name is not on npm yet, so it cannot trust this workflow, and there is no NPM_TOKEN secret to stage it with. Create a granular access token on npmjs.com that can stage (Read and write, stage only), set it as the NPM_TOKEN secret of this repository, and run this workflow again."
               exit 1
             fi
             npm stage publish "./tarballs/$tarball" --access public --tag "$tag" --provenance

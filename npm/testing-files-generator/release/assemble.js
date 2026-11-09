@@ -125,17 +125,25 @@ function releasedManifest(version, main) {
 function emptyDirectory(dir) {
   if (fs.existsSync(dir) && fs.readdirSync(dir).length > 0) {
     throw new Error(`${dir} is not empty. assemble writes into an empty directory, so that nothing left ` +
-      'from an earlier run is published with this one.');
+      'from an earlier run is published with this one. Give it a new directory, or empty this one.');
   }
   fs.mkdirSync(dir, { recursive: true });
 }
 
+// missing says that a file a package needs is not where it should be, whose it
+// was - the archive of a release, or this package - and where to look.
+function missing(source, whose, name) {
+  return new Error(`${source} is not there, and ${whose} has to carry ${name}. ` +
+    'Check that the directory given for it holds what the release archive unpacked to, ' +
+    'or that this package still has the file it lists.');
+}
+
 // copyFrom copies one file or directory, and says whose it was when it is not
-// there - the archive of a release, or this package.
+// there.
 function copyFrom(from, to, name, whose) {
   const source = path.join(from, name);
   if (!fs.existsSync(source)) {
-    throw new Error(`${source} is not there, and ${whose} has to carry ${name}.`);
+    throw missing(source, whose, name);
   }
   refuseLinks(source);
   fs.cpSync(source, path.join(to, name), { recursive: true });
@@ -184,7 +192,7 @@ function build(version, binaries, out) {
     const archive = `the archive for ${target.label}`;
     copyFrom(from, to, target.entry, archive);
     if (!fs.existsSync(path.join(to, target.binary))) {
-      throw new Error(`${path.join(from, target.binary)} is not there, and ${archive} has to carry ${target.binary}.`);
+      throw missing(path.join(from, target.binary), archive, target.binary);
     }
     if (target.platform !== 'win32') {
       // Set rather than trusted to the archive, because a binary npm unpacks

@@ -1,6 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('node:path');
 const { test } = require('node:test');
 
@@ -27,4 +28,18 @@ test('a child that says a great deal on its error stream runs to its own end, an
   assert.throws(() => runToFile(binary, args, out),
     (err) => err instanceof TfgError && err.status === 3 && err.stderr.endsWith('the last words') &&
       err.stderr.length <= 64 * 1024);
+});
+
+test('the output file is made new and private, and a file already under its name is never written through', (t) => {
+  const [binary, args] = child('process.stdout.write("planned")');
+  const out = path.join(tempDir(t), 'out.json');
+  runToFile(binary, args, out);
+  assert.equal(fs.readFileSync(out, 'utf8'), 'planned');
+  if (process.platform !== 'win32') {
+    assert.equal(fs.statSync(out).mode & 0o777, 0o600);
+  }
+  const planted = path.join(tempDir(t), 'planted.json');
+  fs.writeFileSync(planted, 'left by someone else');
+  assert.throws(() => runToFile(binary, args, planted), (err) => err.code === 'EEXIST');
+  assert.equal(fs.readFileSync(planted, 'utf8'), 'left by someone else');
 });

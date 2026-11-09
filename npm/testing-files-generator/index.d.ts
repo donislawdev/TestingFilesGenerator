@@ -96,7 +96,7 @@ export interface FileSetSpec {
    * { limit: '2mb', bulk: 0, seed: 7 }. npx tfg preset show lists what a preset takes.
    */
   options?: Record<string, OptionValue>;
-  /** Where sets are kept. TFG_CACHE_DIR, or node_modules/.cache/testing-files-generator, or the system's temporary directory. */
+  /** Where sets are kept. TFG_CACHE_DIR, or node_modules/.cache/testing-files-generator, or a directory of your own in the system's temporary directory. */
   cacheDir?: string;
   /** The tfg binary to run. TFG_BINARY, or the one this package installed. */
   binary?: string;
