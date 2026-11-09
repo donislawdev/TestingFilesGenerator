@@ -133,6 +133,9 @@ pip install testing-files-generator
 tfg version
 ```
 
+If `tfg` is not found, the folder pip puts programs in is not on your
+`PATH`, and `python -m testing_files_generator version` runs the same tfg.
+
 It comes for Windows and Linux on x64 and Arm, Alpine among them, and for
 macOS on Apple silicon. uv installs it as well.
 

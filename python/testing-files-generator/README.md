@@ -116,6 +116,8 @@ pytest -m size-limit
 pytest -k "pdf"
 ```
 
+pytest knows a marker by its name alone. A group named after one of pytest's own markers, such as `skip` or `xfail`, would change how its tests run, so it is refused with a message that names the group. A group named after a marker of a plugin you use, such as `timeout` of pytest-timeout, is that plugin's marker too. Give such a group another name in the recipe.
+
 ## The words this package uses
 
 | word | what it means |
@@ -355,7 +357,7 @@ Plans a set and gives it back. Nothing is written until a test asks for a file.
 | `cache_dir` | where sets are kept. By default `TFG_CACHE_DIR`, then the `.pytest_cache` of the run, then a directory of your own as [Without pytest](#without-pytest) says |
 | `binary` | the tfg to run. By default `TFG_BINARY`, then the one this package installed |
 
-`file_set` raises at once, while the tests are collected, when the binary or the recipe is not there or tfg refuses the plan. Two calls with the same arguments in one process share one plan and one write.
+`file_set` raises at once, while the tests are collected, when the binary or the recipe is not there, the recipe is not a file, the directory for sets cannot be used, or tfg refuses the plan. Two calls with the same arguments in one process share one plan and one write.
 
 ### A set
 
@@ -407,13 +409,17 @@ Every message names what it is about and what to do. The ones you are most likel
 | `file_set(...) gives the option ...` | An option tfg does not have, often a typo. The message lists the flags tfg generate has |
 | `file_set was not told which files to write` | The call has no `preset`, `recipe` or `options` |
 | `The recipe option names ..., and there is no file there` | A relative recipe path is taken from the directory the tests were started in. Use `Path(__file__).parent / ...` |
+| `The recipe option names ..., which is a directory, a pipe or a device` | The path names something other than a file. Give the path of the recipe's YAML file |
+| `The group ... becomes the pytest marker ...` | A group in the recipe is named after one of pytest's own markers, such as `skip`, which would change how its tests run. Give the group another name |
 | `... is where this set belongs, and it does not hold it` | A kept set was changed, usually by a test writing into one of its files. Delete the directory the message names and run again |
 | `... has no expected outcome, so there is nothing to check it against` | `check` was called on a file with no right answer. Skip it, or decide what your system should do and write it in a recipe |
 | `This install of testing-files-generator has no tfg binary` | pip installed the wheel without the program, and the message says why, such as a 32-bit Python. Install with a 64-bit Python made for your system |
 | `testing-files-generator has no binary for ...` | This system has no wheel with tfg. See [The tfg program](#the-tfg-program) |
 | `tfg wrote a manifest of version ...` | `TFG_BINARY` points at a tfg whose manifest this package cannot read. Point it at a tfg of the same version as this package, or leave it unset |
 | `tfg could not be started from ...` | The system would not run that file, for the reason after the colon - a tfg for another system, or one without its execute bit. Reinstall the package, or point `TFG_BINARY` at a tfg this user can run |
-| `Sets are kept in ..., and it could not be made a directory` | The directory for sets is a file, or this user cannot write where it would go. Set `TFG_CACHE_DIR` or `cache_dir` to a directory you can write |
+| `Sets are kept in ..., and ...` | The directory for sets is a file, cannot be made where it would go, or is there and this user cannot read or write it, as when a run under another user made it. Set `TFG_CACHE_DIR` or `cache_dir` to a directory you can read and write |
+| `... printed a plan that is not a manifest of tfg` | `TFG_BINARY`, or the `binary` argument, names a program that is not tfg. Point it at a tfg of the same version as this package, or leave it unset |
+| `The set was written, and it could not be moved to ...` | Another program held the new set's files open, often a virus scanner on Windows. Run again. If it repeats, set `TFG_CACHE_DIR` or `cache_dir` to a directory that program leaves alone |
 | `testing-files-generator: 1 unfinished set was left in ...` | A warning. A run stopped part way, and what it left can be deleted |
 
 ## The tfg program

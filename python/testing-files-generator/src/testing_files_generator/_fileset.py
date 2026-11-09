@@ -53,6 +53,15 @@ RESERVED = {
 # stopped run left behind.
 UNFINISHED = ".tmp-"
 
+# The markers pytest registers itself, as pytest --markers lists them with no
+# plugin and no configuration, which a test compares. A group by one of these
+# names would not mark its files but change how their tests run, measured
+# 2026-11-09 on pytest 9.2.0: skip and skipif skip them, xfail hides a failure,
+# and pytest.param refuses usefixtures. A plugin's markers are not known here,
+# and the README says so.
+PYTEST_OWN_MARKS = frozenset({"filterwarnings", "skip", "skipif", "xfail", "parametrize", "usefixtures",
+                              "tryfirst", "trylast"})
+
 # A rename the system refuses for a moment. On Windows a scanner holding a new
 # file open is enough, so these are tried again before anything is said.
 _BUSY_ERRNO = {errno.EACCES, errno.EPERM, errno.EBUSY}
@@ -118,6 +127,12 @@ def file_set(preset: str | None = None, recipe: str | os.PathLike[str] | None = 
         _named(where, "recipe", f"A relative path is taken from the directory the tests started in, here "
                                 f"{os.getcwd()}, so Path(__file__).parent / 'uploads.yaml' names a recipe beside "
                                 "the test file.")
+        # A pipe or a device would be read here without end, and what is read
+        # here is gone before tfg reads it.
+        if not os.path.isfile(where):
+            raise ValueError(f"The recipe option names {where}, which is a directory, a pipe or a device rather "
+                             "than a file. A recipe is read twice, once here to tell whether it changed and once "
+                             "by tfg, so it has to be a YAML file on the disk. Give the path of that file.")
         content = _content_of(where)
     cache = os.path.abspath(os.fspath(cache_dir) if cache_dir is not None else default_cache_dir())
     key = _digest([_identity(tfg), args, content, cache])
@@ -226,9 +241,13 @@ def _make_cache(cache: str) -> None:
     try:
         os.makedirs(cache, exist_ok=True)
     except OSError as err:
-        raise RuntimeError(f"Sets are kept in {cache}, and it could not be made a directory - "
-                           f"{err.strerror or err}. Set TFG_CACHE_DIR, or the cache_dir argument of file_set, "
-                           "to a directory this user can write.") from err
+        raise _cache_refused(cache, "it could not be made a directory", err) from err
+
+
+def _cache_refused(cache: str, what: str, err: OSError) -> RuntimeError:
+    """The directory of sets this user cannot use, with the system's reason and how to give another."""
+    return RuntimeError(f"Sets are kept in {cache}, and {what} - {err.strerror or err}. Set TFG_CACHE_DIR, or the "
+                        "cache_dir argument of file_set, to a directory this user can read and write.")
 
 
 def _label_of(preset: str | None, recipe: Any) -> str:
@@ -298,14 +317,24 @@ class _Source:
             run_to_file(self.binary, [*self.args, f"--out={_scratch(self.cache)}", "--dry-run", "--json"], out)
             with open(out, encoding="utf-8") as f:
                 plan = json.load(f)
+            readable(plan)
         except TfgError as err:
             raise _refused_plan(self.shown, self.preset, err) from err
+        except OSError as err:
+            # The plan is the first file written in the directory of sets.
+            if err.filename != out:
+                raise
+            raise _cache_refused(self.cache, "nothing could be written in it", err) from err
+        except (ValueError, RecursionError) as err:
+            raise RuntimeError(f"{self.binary} printed a plan that is not a manifest of tfg - {err}. It has to be "
+                               "tfg of the same version as this package. Reinstall the package with pip install "
+                               "--force-reinstall testing-files-generator, or set TFG_BINARY to the path of such "
+                               "a tfg.") from err
         finally:
             try:
                 os.remove(out)
             except FileNotFoundError:
                 pass
-        readable(plan)
         return plan
 
     def write(self) -> str:
@@ -350,7 +379,11 @@ class _Source:
                 busy = err.errno in _BUSY_ERRNO or getattr(err, "winerror", None) in _BUSY_WINERROR
                 if not busy or attempt == _RENAME_TRIES:
                     _discard(self.binary, tmp)
-                    raise RuntimeError(f"The set written in {tmp} could not be moved to {self.dir} - {err}") from err
+                    raise RuntimeError(f"The set was written, and it could not be moved to {self.dir} - "
+                                       f"{err.strerror or err}. Run the tests again. If this repeats, another "
+                                       "program may be holding its files open, such as a virus scanner. Set "
+                                       "TFG_CACHE_DIR, or the cache_dir argument of file_set, to a directory that "
+                                       "program leaves alone.") from err
                 time.sleep(attempt * 0.1)
         raise AssertionError("unreachable")
 
@@ -391,13 +424,21 @@ def _refused_plan(shown: str, preset: str | None, err: TfgError) -> TfgError:
 
 
 def readable(plan: Any) -> None:
-    """Refuses a manifest this package cannot read for what it says."""
+    """Refuses a manifest this package cannot read for what it says.
+
+    A manifest of another version is a RuntimeError, and one of this version
+    that has no run or no list of files described by objects a ValueError.
+    """
     version = str((plan or {}).get("manifest_version") or "") if isinstance(plan, dict) else ""
     if version.split(".")[0] != MANIFEST_MAJOR:
         raise RuntimeError(f"tfg wrote a manifest of version {version or 'none'}, and this package reads version "
                            f"{MANIFEST_MAJOR}. Install the version of testing-files-generator that comes with that "
                            "tfg, or point TFG_BINARY at a tfg of the same version as this package.")
-    for entry in plan["files"]:
+    files = plan.get("files")
+    if not isinstance(plan.get("run"), dict) or not isinstance(files, list) \
+            or not all(isinstance(entry, dict) for entry in files):
+        raise ValueError("it has no run, or no list of files each described by an object")
+    for entry in files:
         outcome = (entry.get("expected") or {}).get("outcome")
         if outcome not in OUTCOMES:
             raise RuntimeError(f"{entry.get('path')} expects {json.dumps(outcome)}, which this package does not "
@@ -419,7 +460,9 @@ def mismatch(directory: str, plan: Mapping[str, Any]) -> str:
             written = json.load(f)
         if not isinstance(written, dict):
             raise ValueError("it is not an object")
-    except (OSError, ValueError) as err:
+    except (OSError, ValueError, RecursionError) as err:
+        # RecursionError is JSON nested deeper than the parser goes, which is
+        # not a ValueError.
         return f"its manifest cannot be read ({err})"
     run_ = written.get("run") if isinstance(written.get("run"), dict) else {}
     if run_.get("recipe_hash") != plan["run"].get("recipe_hash") or run_.get("seed") != plan["run"]["seed"]:
@@ -502,8 +545,12 @@ def _note_unfinished(cache: str) -> None:
     if _noted or os.environ.get("PYTEST_XDIST_WORKER"):
         return
     _noted = True
+    try:
+        names = sorted(os.listdir(cache))
+    except OSError as err:
+        raise _cache_refused(cache, "it could not be read", err) from err
     left = []
-    for name in sorted(os.listdir(cache)):
+    for name in names:
         if not name.startswith(UNFINISHED):
             continue
         pid = name[len(UNFINISHED):].split("-")[0]
@@ -602,6 +649,12 @@ class FileSet:
         params = []
         for f in self.files:
             names = f.marks
+            own = PYTEST_OWN_MARKS.intersection(names)
+            if own:
+                raise ValueError(f"The group {f.group} of {f.relative_path} becomes the pytest marker "
+                                 f"{sorted(own)[0]}, which is one of pytest's own and changes how the test runs - "
+                                 "skip and skipif skip it, xfail hides its failure. Give the group another name "
+                                 "in the recipe.")
             _register(names)
             marks = [getattr(pytest.mark, name) for name in names]
             if f.unspecified:

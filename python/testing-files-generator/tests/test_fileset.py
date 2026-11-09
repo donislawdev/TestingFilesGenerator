@@ -1,3 +1,4 @@
+import errno
 import json
 import os
 import subprocess
@@ -86,7 +87,19 @@ def test_workers_writing_one_set_at_once_end_with_one_copy_and_nothing_left_over
     children = [subprocess.Popen([sys.executable, "-c", RACER, spec, str(barrier), str(racers)], env=env,
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8")
                 for _ in range(racers)]
-    runs = [(c.wait(timeout=120), *c.communicate()) for c in children]
+    # communicate and not wait: a racer whose traceback outgrows the pipe
+    # would wait on it for ever. A racer still running when one times out is
+    # stopped, so none holds the cache open after the test.
+    runs = []
+    try:
+        for c in children:
+            out, err = c.communicate(timeout=120)
+            runs.append((c.returncode, out, err))
+    finally:
+        for c in children:
+            if c.poll() is None:
+                c.kill()
+                c.communicate()
     # Every failed racer is shown, because the first to fail may only be one
     # that waited for another.
     assert [err for code, _, err in runs if code != 0] == [], "a racer failed"
@@ -212,6 +225,77 @@ def test_a_cache_directory_that_cannot_be_made_says_how_to_give_another(tmp_path
     assert "TFG_CACHE_DIR" in said and "cache_dir" in said
 
 
+@pytest.mark.skipif(sys.platform == "win32" or os.geteuid() == 0,
+                    reason="the modes of a directory hold on Linux and macOS, for a user that is not root")
+@pytest.mark.parametrize(("mode", "what"), [(0o333, "it could not be read"),
+                                            (0o555, "nothing could be written in it")])
+def test_a_cache_directory_this_user_cannot_use_says_how_to_give_another(tmp_path, mode, what):
+    # A directory that is there already passes the making of it, as one left
+    # by a run under another user does.
+    there = tmp_path / "sets"
+    there.mkdir()
+    there.chmod(mode)
+    try:
+        said = python(f"from testing_files_generator import file_set; "
+                      f"file_set(**{SMALL!r}, cache_dir={str(there)!r})", env={"PYTEST_XDIST_WORKER": None})
+    finally:
+        there.chmod(0o755)
+    assert said.returncode != 0
+    assert f"RuntimeError: Sets are kept in {there}, and {what} - Permission denied." in said.stderr, said.stderr
+    assert "TFG_CACHE_DIR" in said.stderr and "cache_dir" in said.stderr
+
+
+@pytest.mark.parametrize("printed", ["", "not json", "[" * 200_000, '{"manifest_version": "1.0"}',
+                                     '{"manifest_version": "1.0", "run": {}, "files": [null]}'])
+def test_a_binary_that_prints_no_manifest_for_the_plan_is_named_with_what_to_do(cache, monkeypatch, printed):
+    # TFG_BINARY can point at any program, and one that ends well and prints
+    # anything but a manifest is named rather than a parser's error.
+    def prints(binary, args, out_file):
+        with open(out_file, "w", encoding="utf-8") as f:
+            f.write(printed)
+
+    monkeypatch.setattr(_fileset, "run_to_file", prints)
+    with pytest.raises(RuntimeError) as caught:
+        file_set(**SMALL, binary=tfg_binary(), cache_dir=cache)
+    said = str(caught.value)
+    assert said.startswith(f"{tfg_binary()} printed a plan that is not a manifest of tfg - "), said
+    assert "TFG_BINARY" in said and "pip install --force-reinstall" in said
+    assert entries(cache) == [], "the plan was left in the cache"
+
+
+def test_a_set_that_cannot_be_moved_to_its_name_says_what_to_do_and_leaves_nothing(cache, monkeypatch):
+    s = planned(cache)
+
+    def refuses(src, dst):
+        raise OSError(errno.ENAMETOOLONG, "File name too long", dst)
+
+    monkeypatch.setattr(_fileset.os, "rename", refuses)
+    with pytest.raises(RuntimeError) as caught:
+        s.write()
+    said = str(caught.value)
+    assert said.startswith(f"The set was written, and it could not be moved to {s._source.dir} - "
+                           "File name too long. Run the tests again."), said
+    assert "TFG_CACHE_DIR" in said and "cache_dir" in said
+    assert entries(cache) == [], "the set that was written is left in the cache"
+
+
+def test_a_recipe_that_is_a_directory_is_refused_before_anything_reads_it(cache, tmp_path):
+    with pytest.raises(ValueError) as caught:
+        file_set(recipe=tmp_path, binary=tfg_binary(), cache_dir=cache)
+    assert f"The recipe option names {tmp_path}, which is a directory, a pipe or a device" in str(caught.value)
+    assert "Give the path of that file" in str(caught.value)
+
+
+def test_a_kept_manifest_nested_past_the_parser_is_refused_like_any_changed_set(cache):
+    # Python's parser raises RecursionError there, which is not a ValueError.
+    directory = writer(cache).stdout.strip()
+    with open(os.path.join(directory, "manifest.json"), "w", encoding="utf-8") as f:
+        f.write("[" * 200_000)
+    again = writer(cache)
+    assert again.returncode == 3
+    assert "does not hold it - its manifest cannot be read (" in again.stderr, again.stderr
+
+
 def test_a_set_a_stopped_run_left_behind_is_named_once_outside_the_workers_and_never_used(cache):
     gone = subprocess.Popen([sys.executable, "-c", ""])
     gone.wait()
@@ -293,7 +377,7 @@ def test_the_flags_this_package_sets_itself_cannot_be_set_again(cache):
 
 
 def test_a_manifest_of_another_major_or_an_outcome_this_package_does_not_know_is_refused():
-    plan = {"manifest_version": "1.0", "files": [{"path": "a", "expected": {"outcome": "accept"}}]}
+    plan = {"manifest_version": "1.0", "run": {}, "files": [{"path": "a", "expected": {"outcome": "accept"}}]}
     _fileset.readable(plan)
     with pytest.raises(RuntimeError, match="manifest of version 2.0, and this package reads version 1"):
         _fileset.readable({**plan, "manifest_version": "2.0"})

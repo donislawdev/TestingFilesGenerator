@@ -39,6 +39,8 @@ testing_files_generator = "testing_files_generator.pytest_plugin"
 
 [tool.pytest.ini_options]
 # The tests run the package from src, not installed, so the plugin is named here.
+# Where the package is installed as well, its entry point would load the plugin
+# a second time and pytest would refuse to start, so the entry point is blocked.
 pythonpath = ["src"]
 testpaths = ["tests"]
-addopts = ["-p", "testing_files_generator.pytest_plugin", "-p", "pytester"]
+addopts = ["-p", "no:testing_files_generator", "-p", "testing_files_generator.pytest_plugin", "-p", "pytester"]

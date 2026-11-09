@@ -383,7 +383,7 @@ Plans a set and gives it back. Nothing is written until a test asks for a file.
 | `cacheDir` | where sets are kept. By default `TFG_CACHE_DIR`, then `node_modules/.cache/testing-files-generator`, then a directory of your own in the system's temporary directory, which nobody else can write to |
 | `binary` | the tfg to run. By default `TFG_BINARY`, then the one this package installed |
 
-`fileSet` throws at once, while the spec file loads, when the binary or the recipe is not there or tfg refuses the plan. Two calls with the same spec in one process share one plan and one write.
+`fileSet` throws at once, while the spec file loads, when the binary or the recipe is not there, the recipe is not a file, the directory for sets cannot be used, or tfg refuses the plan. Two calls with the same spec in one process share one plan and one write.
 
 ### A set
 
@@ -432,6 +432,7 @@ Every message names what it is about and what to do. The ones you are most likel
 | `fileSet({ ... }) gives the option ...` | An option tfg does not have, often a typo. The message lists the flags tfg generate has |
 | `fileSet was not told which files to write` | The spec has no `preset`, `recipe` or `options` |
 | `The recipe option names ..., and there is no file there` | A relative recipe path is taken from the directory the tests were started in. Use `path.join(__dirname, ...)`, or `import.meta.dirname` in an ES module |
+| `The recipe option names ..., which is a directory, a pipe or a device` | The path names something other than a file. Give the path of the recipe's YAML file |
 | `... is where this set belongs, and it does not hold it` | A kept set was changed, usually by a test writing into one of its files. Delete the directory the message names and run again |
 | `... has no expected outcome, so there is nothing to check it against` | `check` was called on a file with no right answer. Skip it, or decide what your system should do and write it in a recipe |
 | `Test timeout of 30000ms exceeded` in the first test | The set was being written inside the first test. Write it in `beforeAll` with a longer timeout |
@@ -439,7 +440,9 @@ Every message names what it is about and what to do. The ones you are most likel
 | `testing-files-generator has no binary for ...` | This system has no package of tfg. See [The tfg program](#the-tfg-program) |
 | `tfg wrote a manifest of version ...` | `TFG_BINARY` points at a tfg whose manifest this package cannot read. Point it at a tfg of the same version as this package, or leave it unset |
 | `tfg could not be started from ...` | The system would not run that file, for the reason after the colon - a tfg for another system, or one without its execute bit. Install the package again, or point `TFG_BINARY` at a tfg this user can run |
-| `Sets are kept in ..., and it could not be made a directory` | The directory for sets is a file, or this user cannot write where it would go. Set `TFG_CACHE_DIR` or `cacheDir` to a directory you can write |
+| `Sets are kept in ..., and ...` | The directory for sets is a file, cannot be made where it would go, or is there and this user cannot read or write it, as when a run under another user made it. Set `TFG_CACHE_DIR` or `cacheDir` to a directory you can read and write |
+| `... printed a plan that is not a manifest of tfg` | `TFG_BINARY`, or the `binary` option, names a program that is not tfg. Point it at a tfg of the same version as this package, or leave it unset |
+| `The set was written, and it could not be moved to ...` | Another program held the new set's files open, often a virus scanner on Windows. Run again. If it repeats, set `TFG_CACHE_DIR` or `cacheDir` to a directory that program leaves alone |
 | `... where testing-files-generator keeps sets when it is given no other place, ...` | The directory in the system's temporary directory belongs to someone else, or others can write to it, so they could change your files. Set `TFG_CACHE_DIR` or `cacheDir` to a directory of your own |
 | `testing-files-generator: 1 unfinished set was left in ...` | A warning. A run stopped part way, and what it left can be deleted |
 

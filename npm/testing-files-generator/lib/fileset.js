@@ -65,13 +65,21 @@ function fileSet(spec = {}) {
   }
   const binary = spec.binary === undefined ? binaryPath() : named(spec.binary, 'binary',
     'Point it at a tfg binary, or leave it out to use the one this package installs.');
+  let recipe = '';
   if (spec.recipe) {
-    named(path.resolve(spec.recipe), 'recipe',
+    const where = named(path.resolve(spec.recipe), 'recipe',
       `A relative path is taken from the directory the tests started in, here ${process.cwd()}, ` +
       'so path.join(__dirname, ...) names a recipe beside the spec file, or path.join(import.meta.dirname, ...) in an ES module.');
+    // A pipe or a device would be read here without end, and what is read
+    // here is gone before tfg reads it.
+    if (!fs.statSync(where).isFile()) {
+      throw new Error(`The recipe option names ${where}, which is a directory, a pipe or a device rather than a file. ` +
+        'A recipe is read twice, once here to tell whether it changed and once by tfg, so it has to be a YAML file ' +
+        'on the disk. Give the path of that file.');
+    }
+    recipe = contentOf(where);
   }
   const cacheDir = path.resolve(spec.cacheDir ?? defaultCacheDir());
-  const recipe = spec.recipe ? fs.readFileSync(path.resolve(spec.recipe), 'utf8') : '';
   const key = digest([identity(binary), args, recipe, cacheDir]);
   let source = sources.get(key);
   if (!source) {
@@ -116,6 +124,23 @@ function named(file, option, wayOut) {
     throw new Error(`The ${option} option names ${file}, and there is no file there. ${wayOut}`);
   }
   return file;
+}
+
+// contentOf is the sha256 of a recipe's bytes, so an edited recipe is planned
+// again. Read in pieces and never decoded: tfg reads the recipe itself and says
+// what is wrong with one too large or not in UTF-8, in its own words.
+function contentOf(file) {
+  const hash = crypto.createHash('sha256');
+  const piece = Buffer.alloc(1 << 16);
+  const fd = fs.openSync(file, 'r');
+  try {
+    for (let n; (n = fs.readSync(fd, piece, 0, piece.length, null)) > 0;) {
+      hash.update(piece.subarray(0, n));
+    }
+  } finally {
+    fs.closeSync(fd);
+  }
+  return hash.digest('hex');
 }
 
 function defaultCacheDir() {
@@ -178,9 +203,15 @@ function makeCache(cacheDir) {
   try {
     fs.mkdirSync(cacheDir, { recursive: true });
   } catch (err) {
-    throw new Error(`Sets are kept in ${cacheDir}, and it could not be made a directory - ${err.message}. ` +
-      'Set TFG_CACHE_DIR, or the cacheDir option of fileSet, to a directory this user can write.', { cause: err });
+    throw cacheRefused(cacheDir, 'it could not be made a directory', err);
   }
+}
+
+// cacheRefused is the directory of sets this user cannot use, with the
+// system's reason and how to give another.
+function cacheRefused(cacheDir, what, err) {
+  return new Error(`Sets are kept in ${cacheDir}, and ${what} - ${err.message}. Set TFG_CACHE_DIR, or the cacheDir ` +
+    'option of fileSet, to a directory this user can read and write.', { cause: err });
 }
 
 function labelOf(spec) {
@@ -244,12 +275,24 @@ class Source {
     try {
       runToFile(this.binary, [...this.args, `--out=${scratch(this.cacheDir)}`, '--dry-run', '--json'], out);
       plan = JSON.parse(fs.readFileSync(out, 'utf8'));
+      readable(plan);
     } catch (err) {
-      throw err instanceof TfgError ? refusedPlan(this.shown, this.preset, err) : err;
+      if (err instanceof TfgError) {
+        throw refusedPlan(this.shown, this.preset, err);
+      }
+      // The plan is the first file written in the directory of sets.
+      if (err.code && err.path && path.dirname(err.path) === this.cacheDir) {
+        throw cacheRefused(this.cacheDir, 'nothing could be written in it', err);
+      }
+      if (err instanceof SyntaxError || err instanceof NotAManifest) {
+        throw new Error(`${this.binary} printed a plan that is not a manifest of tfg - ${err.message}. It has to be ` +
+          'tfg of the same version as this package. Install the package again, or set TFG_BINARY to the path of ' +
+          'such a tfg.', { cause: err });
+      }
+      throw err;
     } finally {
       fs.rmSync(out, { force: true });
     }
-    readable(plan);
     return plan;
   }
 
@@ -302,7 +345,10 @@ class Source {
         }
         if (!busy.has(err.code) || attempt === renameTries) {
           discard(this.binary, tmp);
-          throw new Error(`The set written in ${tmp} could not be moved to ${this.dir} - ${err.message}`);
+          throw new Error(`The set was written, and it could not be moved to ${this.dir} - ${err.message}. ` +
+            'Run the tests again. If this repeats, another program may be holding its files open, such as a virus ' +
+            'scanner. Set TFG_CACHE_DIR, or the cacheDir option of fileSet, to a directory that program leaves alone.',
+          { cause: err });
         }
         await new Promise((resolve) => setTimeout(resolve, attempt * 100));
       }
@@ -352,12 +398,19 @@ function refusedPlan(shown, preset, err) {
   return new TfgError([], err.status, err.stderr, `${shown} could not be planned - tfg ${ended(err.status)}.\n${said(err.stderr)}`);
 }
 
+// NotAManifest is a plan of this manifest version that has no run, or no list
+// of files described by objects.
+class NotAManifest extends Error {}
+
 // readable refuses a manifest this package cannot read for what it says.
 function readable(plan) {
   const version = String(plan?.manifest_version ?? '');
   if (version.split('.')[0] !== manifestMajor) {
     throw new Error(`tfg wrote a manifest of version ${version || 'none'}, and this package reads version ${manifestMajor}. ` +
       'Install the version of testing-files-generator that comes with that tfg, or point TFG_BINARY at a tfg of the same version as this package.');
+  }
+  if (!isObject(plan.run) || !Array.isArray(plan.files) || !plan.files.every(isObject)) {
+    throw new NotAManifest('it has no run, or no list of files each described by an object');
   }
   for (const entry of plan.files) {
     if (!outcomes.includes(entry.expected?.outcome)) {
@@ -477,7 +530,13 @@ function noteUnfinished(cacheDir) {
     return;
   }
   noted = true;
-  const left = fs.readdirSync(cacheDir).filter((name) => {
+  let names;
+  try {
+    names = fs.readdirSync(cacheDir);
+  } catch (err) {
+    throw cacheRefused(cacheDir, 'it could not be read', err);
+  }
+  const left = names.filter((name) => {
     const pid = Number(name.slice(unfinished.length).split('-')[0]);
     return name.startsWith(unfinished) && Number.isInteger(pid) && pid > 0 && !alive(pid);
   });

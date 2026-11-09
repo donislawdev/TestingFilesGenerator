@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -80,7 +81,10 @@ def main(dist: str, version: str, binaries: str, system: str, installer: str) ->
     work = Path(tempfile.mkdtemp(prefix="try-wheels-"))
     venv = work / "venv"
     if installer == "uv":
-        run("uv", "venv", "--quiet", str(venv))
+        # uv picks an interpreter of its own unless told, and this pass tries
+        # the Python the pip pass tries, the oldest the package declares on
+        # one runner.
+        run("uv", "venv", "--quiet", "--python", sys.executable, str(venv))
     else:
         run(sys.executable, "-m", "venv", str(venv))
     bin_dir = venv / ("Scripts" if os.name == "nt" else "bin")
@@ -125,7 +129,13 @@ def main(dist: str, version: str, binaries: str, system: str, installer: str) ->
     (work / "test_uploads.py").write_text(textwrap.dedent(TEST_MODULE), encoding="utf-8")
     out = run(python, "-m", "pytest", "-q", "-p", "no:cacheprovider", "--strict-markers", str(work / "test_uploads.py"),
               cwd=work, env={**os.environ, "TFG_CACHE_DIR": str(work / "sets")})
-    print(out.strip().splitlines()[-1])
+    summary = out.strip().splitlines()[-1]
+    # pytest ends with code nought when every test is skipped, so a params()
+    # that skips all of them would pass here without a file checked.
+    passed = re.search(r"(\d+) passed", summary)
+    if not passed or int(passed.group(1)) == 0:
+        fail(f"pytest passed no test of the set. It said: {summary}")
+    print(summary)
     header = run(python, "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider", "-v",
                  str(work / "test_uploads.py"), cwd=work)
     if f"testing-files-generator: tfg at {installed}" not in header:
