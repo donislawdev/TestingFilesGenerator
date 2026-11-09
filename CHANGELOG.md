@@ -25,6 +25,14 @@ because it turns other people's test suites red.
   on Apple silicon, and `npx tfg` runs it. [The example](examples/playwright)
   is an upload form with four mistakes, and the generated set finds all four.
 
+- **tfg is on PyPI, for tests in Python.** `pip install
+  testing-files-generator` gives pytest a test for each file of a generated
+  set, named by what the file should meet, and a file with no right answer is
+  skipped with the reason. A test fails with the file's own sentence on what
+  the difference means. The package installs the `tfg` of the same release
+  for Windows and Linux on x64 and Arm, Alpine among them, and for macOS on
+  Apple silicon, and pip and uv both install it.
+
 - **How much memory a run may use is yours to set.** `--memory` on
   `generate`, `validate` and `preset show`, and Memory on the window's
   Preferences screen: `auto` (half of this machine or container), a size

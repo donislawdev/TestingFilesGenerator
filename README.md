@@ -122,6 +122,20 @@ npx tfg version
 
 It comes for Windows and Linux on x64 and Arm, and for macOS on Apple silicon.
 
+**With pip, for tests in Python.** The
+[testing-files-generator](python/testing-files-generator/README.md) package
+gives pytest and unittest a generated set and what the system under test
+should do with each file, and installs the `tfg` of the same release for your
+system. pytest finds its plugin on its own:
+
+```
+pip install testing-files-generator
+tfg version
+```
+
+It comes for Windows and Linux on x64 and Arm, Alpine among them, and for
+macOS on Apple silicon. uv installs it as well.
+
 **With Go installed:**
 
 ```
