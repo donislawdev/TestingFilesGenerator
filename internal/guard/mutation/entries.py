@@ -16986,4 +16986,33 @@ MUTATIONS = [
         'Nothing uses them; they can be deleted."), stacklevel=4)',
         "TestTheTextOfThePythonPackageIsAsciiWithPlainPunctuation",
     ),
+    (
+        "an action of this repository runs another account's action by a tag",
+        ".github/actions/release-archives/action.yml",
+        "    - name: download, check and extract every archive\n",
+        "    - uses: actions/checkout@v7\n    - name: download, check and extract every archive\n",
+        "TestEveryActionIsPinnedToACommitRatherThanATag",
+    ),
+    (
+        "the pinning guard stops reading the actions this repository keeps, "
+        "and lets their references through unread",
+        "internal/guard/actionpinning_test.go",
+        'if !d.IsDir() && (d.Name() == "action.yml" || d.Name() == "action.yaml") {',
+        'if false && !d.IsDir() && (d.Name() == "action.yml" || d.Name() == "action.yaml") {',
+        "TestEveryActionIsPinnedToACommitRatherThanATag",
+    ),
+    (
+        "a path without ./ passes for an action of this repository",
+        "internal/guard/actionpinning_test.go",
+        'return strings.HasPrefix(uses, "./")',
+        'return strings.HasPrefix(uses, ".")',
+        "TestEveryActionIsPinnedToACommitRatherThanATag",
+    ),
+    (
+        "the tools the PyPI jobs install are asked for a licence like a shipped dependency",
+        ".github/scripts/dependency_gate.py",
+        'SKIPPED_MANIFESTS = frozenset({".github/requirements-semgrep.txt", ".github/requirements-pypi.txt"})',
+        'SKIPPED_MANIFESTS = frozenset({".github/requirements-semgrep.txt"})',
+        "TestTheDependencyGateRefusesALicenceThisProjectCannotDistribute",
+    ),
 ]

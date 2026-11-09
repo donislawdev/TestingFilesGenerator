@@ -30,9 +30,16 @@ import re
 import stat
 import struct
 import sys
-import tomllib
 import zipfile
 from pathlib import Path
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    # Python 3.10, the oldest the package declares, has no tomllib. tomli is
+    # the library it was taken from, and .github/requirements-pypi.in pins it
+    # for 3.10 alone. try_wheels.py runs there and imports this module.
+    import tomli as tomllib
 
 HERE = Path(__file__).resolve().parent
 PACKAGE = HERE.parent

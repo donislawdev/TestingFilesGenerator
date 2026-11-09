@@ -133,7 +133,6 @@ jobs:
           set -euo pipefail
           python -m pip install --disable-pip-version-check -r .github/requirements-pypi.txt
           python python/testing-files-generator/release/assemble.py build "$VERSION" binaries dist
-          twine check --strict dist/main/* dist/plugin/*
           python python/testing-files-generator/release/try_wheels.py --without-binary dist "$VERSION"
           mv binaries.txt dist/binaries.txt
           ls -l dist/main dist/plugin
@@ -251,13 +250,16 @@ jobs:
 
       # testing-files-generator first, so pytest-testing-files-generator never
       # names a version PyPI does not have. A run that stopped half way skips
-      # what is there already.
+      # what is there already. verify-metadata runs twine check on the files
+      # before anything is sent, and it is written out because nothing else in
+      # this workflow checks the metadata the way PyPI reads it.
       - name: testing-files-generator on TestPyPI
         if: needs.which.outputs.index == 'testpypi'
         uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086  # v1.14.3
         with:
           packages-dir: dist/main/
           repository-url: https://test.pypi.org/legacy/
+          verify-metadata: true
           skip-existing: true
           print-hash: true
 
@@ -267,6 +269,7 @@ jobs:
         with:
           packages-dir: dist/plugin/
           repository-url: https://test.pypi.org/legacy/
+          verify-metadata: true
           skip-existing: true
           print-hash: true
 
@@ -275,6 +278,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086  # v1.14.3
         with:
           packages-dir: dist/main/
+          verify-metadata: true
           skip-existing: true
           print-hash: true
 
@@ -283,5 +287,6 @@ jobs:
         uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086  # v1.14.3
         with:
           packages-dir: dist/plugin/
+          verify-metadata: true
           skip-existing: true
           print-hash: true
