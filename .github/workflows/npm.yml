@@ -31,6 +31,7 @@ on:
     paths:
       - "npm/**"
       - ".github/workflows/npm.yml"
+      - ".github/actions/release-archives/**"
 
 permissions:
   contents: read
