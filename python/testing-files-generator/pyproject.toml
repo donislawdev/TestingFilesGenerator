@@ -1,0 +1,44 @@
+# The package's metadata. The wheels are not built from this file by a build
+# backend: release/assemble.py reads it and writes one wheel for each system
+# the release builds tfg for, with that system's binary inside, plus one with
+# no binary for every other system. The version here is never raised by hand:
+# the release writes the version of its tag into the wheels.
+
+[project]
+name = "testing-files-generator"
+version = "0.0.0.dev0"
+description = "Real files of exact sizes and formats for tests, and what the system under test should do with each one. For pytest and any other test runner."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MPL-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "DonislawDev" }]
+keywords = ["pytest", "playwright", "test files", "fixtures", "file upload", "upload testing", "test data", "boundary testing", "qa"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Pytest",
+    "Intended Audience :: Developers",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Testing",
+]
+
+[project.urls]
+Homepage = "https://github.com/donislawdev/TestingFilesGenerator/tree/main/python/testing-files-generator#readme"
+Source = "https://github.com/donislawdev/TestingFilesGenerator"
+Issues = "https://github.com/donislawdev/TestingFilesGenerator/issues"
+Changelog = "https://github.com/donislawdev/TestingFilesGenerator/blob/main/CHANGELOG.md"
+
+[project.scripts]
+tfg = "testing_files_generator.__main__:main"
+
+[project.entry-points.pytest11]
+testing_files_generator = "testing_files_generator.pytest_plugin"
+
+[tool.pytest.ini_options]
+# The tests run the package from src, not installed, so the plugin is named here.
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = ["-p", "testing_files_generator.pytest_plugin", "-p", "pytester"]
