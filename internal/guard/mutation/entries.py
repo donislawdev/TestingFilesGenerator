@@ -16889,6 +16889,27 @@ MUTATIONS = [
         "TestTheTextOfThePackageIsAsciiWithPlainPunctuation",
     ),
     (
+        "a system's npm package goes to npm without being installed on that system",
+        ".github/workflows/npm.yml",
+        "          - package: linux-arm64\n            runner: ubuntu-24.04-arm\n",
+        "",
+        "TestEverySystemThePackageKnowsIsTriedBeforeAnythingIsStaged",
+    ),
+    (
+        "npm.yml tries a package the npm package installs nothing from",
+        ".github/workflows/npm.yml",
+        "          - package: win32-arm64\n",
+        "          - package: windows-arm64\n",
+        "TestEverySystemThePackageKnowsIsTriedBeforeAnythingIsStaged",
+    ),
+    (
+        "the npm packages are staged before they were tried",
+        ".github/workflows/npm.yml",
+        "    needs: [which, try]\n    if: needs.which.outputs.stage == 'true'",
+        "    needs: [which, assemble]\n    if: needs.which.outputs.stage == 'true'",
+        "TestEverySystemThePackageKnowsIsTriedBeforeAnythingIsStaged",
+    ),
+    (
         "the linked npm package changes its licence while the dependency gate still lets it through as MPL-2.0",
         "npm/testing-files-generator/package.json",
         '"license": "MPL-2.0",',

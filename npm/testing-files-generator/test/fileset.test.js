@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { test } = require('node:test');
 
-const { fileSet, readable } = require('../lib/fileset.js');
+const { fileSet, ownTempDir, readable } = require('../lib/fileset.js');
 const { TfgError } = require('../lib/run.js');
 const { node, pkg, small, tempDir, tfg } = require('./helpers.js');
 
@@ -241,4 +241,47 @@ test('npx tfg is tfg - the same output and the same exit code', async () => {
   assert.notEqual(direct.status, 0);
   assert.equal(viaPackage.status, direct.status);
   assert.equal(viaPackage.stderr, direct.stderr);
+});
+
+// The last place sets go is the system's temporary directory, which on Linux
+// every user of the machine shares. Asked of a directory made here, with the
+// user's id passed in, so another user can be played without one.
+test('in the temporary directory a user gets a directory of their own, open to them alone', (t) => {
+  const tmp = tempDir(t);
+  assert.equal(ownTempDir({ tmp, uid: null }), path.join(tmp, 'testing-files-generator'),
+    'a system with no user id keeps the plain name, because its temporary directory is the user\'s own');
+  if (!process.getuid) {
+    return;
+  }
+  const uid = process.getuid();
+  const dir = ownTempDir({ tmp, uid });
+  assert.equal(dir, path.join(tmp, `testing-files-generator-${uid}`));
+  assert.ok(fs.statSync(dir).isDirectory());
+  assert.equal(fs.statSync(dir).mode & 0o777, 0o700);
+  assert.equal(ownTempDir({ tmp, uid }), dir, 'a directory of this user is taken again');
+});
+
+test('a directory in the temporary directory that someone else could change is refused, with the way out', {
+  skip: process.getuid ? false : 'Windows has no user id, and gives each user a temporary directory of their own',
+}, (t) => {
+  const uid = process.getuid();
+  const refused = (tmp, as, why) => assert.throws(() => ownTempDir({ tmp, uid: as }),
+    (err) => err.message.includes(why) && err.message.includes('TFG_CACHE_DIR') && err.message.includes('cacheDir'));
+
+  const shared = tempDir(t);
+  fs.mkdirSync(path.join(shared, `testing-files-generator-${uid}`));
+  fs.chmodSync(path.join(shared, `testing-files-generator-${uid}`), 0o777);
+  refused(shared, uid, 'can be written to by other users');
+
+  const someoneElses = tempDir(t);
+  fs.mkdirSync(path.join(someoneElses, `testing-files-generator-${uid + 1}`), { mode: 0o700 });
+  refused(someoneElses, uid + 1, 'belongs to another user');
+
+  const linked = tempDir(t);
+  fs.symlinkSync(tempDir(t), path.join(linked, `testing-files-generator-${uid}`));
+  refused(linked, uid, 'is a link to another place');
+
+  const file = tempDir(t);
+  fs.writeFileSync(path.join(file, `testing-files-generator-${uid}`), '');
+  refused(file, uid, 'is not a directory');
 });

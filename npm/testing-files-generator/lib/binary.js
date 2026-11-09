@@ -20,6 +20,22 @@ const platforms = {
   'darwin arm64': '@testing-files-generator/darwin-arm64',
 };
 
+// binaryIn is where the binary sits inside the package of a system, as the
+// release archive for that system lays it out. On macOS that is inside the app
+// the release signed and notarised: its signature covers the app's Info.plist,
+// and macOS kills the binary taken out on its own (exit 137, measured
+// 2026-11-09 on macOS 27.2 - docs/NPM-PUBLISH-2026-11-09.md).
+function binaryIn(platform) {
+  switch (platform) {
+    case 'win32':
+      return 'tfg.exe';
+    case 'darwin':
+      return 'tfg.app/Contents/MacOS/tfg';
+    default:
+      return 'tfg';
+  }
+}
+
 // binaryPath finds the tfg binary this package runs.
 //
 // TFG_BINARY comes first and is taken as given - a tfg installed another way,
@@ -43,9 +59,8 @@ function binaryPath({ env = process.env, platform = process.platform, arch = pro
       'On another system, run the tests in a Linux container, where npm installs the package for Linux, ' +
       'or install tfg another way and set TFG_BINARY to its path.');
   }
-  const exe = platform === 'win32' ? 'tfg.exe' : 'tfg';
   try {
-    return resolve(`${pkg}/${exe}`);
+    return resolve(`${pkg}/${binaryIn(platform)}`);
   } catch (err) {
     // Only a package that is not there is a matter of --omit. Anything else,
     // such as a package that does not export the binary, is told as it is,
@@ -60,4 +75,4 @@ function binaryPath({ env = process.env, platform = process.platform, arch = pro
   }
 }
 
-module.exports = { binaryPath, platforms };
+module.exports = { binaryIn, binaryPath, platforms };

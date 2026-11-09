@@ -4,8 +4,6 @@ Real files of exact sizes and formats for your tests, and what the system under 
 
 A PDF of exactly 1 MiB and one byte is a real PDF, so a server that looks inside it can only turn it away for its size. A file made with `Buffer.alloc` is zeros, so the same server turns it away for what it holds, and a test meant to prove a size limit passes on a server that has none. [The example](https://github.com/donislawdev/TestingFilesGenerator/tree/main/examples/playwright) shows exactly that.
 
-> **Not on npm yet.** It will be published with a release of tfg. Until then, [the example](https://github.com/donislawdev/TestingFilesGenerator/tree/main/examples/playwright) runs it from the repository.
-
 ## Contents
 
 - [What it is](#what-it-is)
@@ -43,7 +41,7 @@ npm install --save-dev testing-files-generator
 ```
 
 - **Node 22 or later.** Types for TypeScript come with the package, and both `import` and `require` work.
-- **The tfg program comes in a second package** that npm picks for your system: Windows on x64 and Arm, Linux on x64 and Arm, macOS on Apple silicon. Nothing runs when the package is installed, and nothing is downloaded when the tests run.
+- **The tfg program comes in a second package** that npm picks for your system: Windows on x64 and Arm, Linux on x64 and Arm, macOS on Apple silicon. Nothing runs when the package is installed, and nothing is downloaded when the tests run. The program is the one from the tfg release of the same version: signed on Windows, and on macOS signed and notarised inside the app it was signed in.
 - **Do not install with `--omit=optional`.** npm leaves that second package out with it, and the tests then stop with a message saying so. On a system with no package of its own, such as an Intel Mac, see [The tfg program](#the-tfg-program).
 
 ## Your first test
@@ -382,7 +380,7 @@ Plans a set and gives it back. Nothing is written until a test asks for a file.
 | `preset` | a preset by name, as `npx tfg preset list` lists them |
 | `recipe` | the path of a recipe file. A relative path is taken from the directory the tests were started in |
 | `options` | the parameters of the preset and the flags of `tfg generate`, without the dashes |
-| `cacheDir` | where sets are kept. By default `TFG_CACHE_DIR`, then `node_modules/.cache/testing-files-generator`, then the system's temporary directory |
+| `cacheDir` | where sets are kept. By default `TFG_CACHE_DIR`, then `node_modules/.cache/testing-files-generator`, then a directory of your own in the system's temporary directory, which nobody else can write to |
 | `binary` | the tfg to run. By default `TFG_BINARY`, then the one this package installed |
 
 `fileSet` throws at once, while the spec file loads, when the binary or the recipe is not there or tfg refuses the plan. Two calls with the same spec in one process share one plan and one write.
@@ -440,6 +438,7 @@ Every message names what it is about and what to do. The ones you are most likel
 | `The binary for ... comes in the package ..., and it is not installed` | npm installed with `--omit=optional`. Install again without it |
 | `testing-files-generator has no binary for ...` | This system has no package of tfg. See [The tfg program](#the-tfg-program) |
 | `tfg wrote a manifest of version ...` | `TFG_BINARY` points at a tfg whose manifest this package cannot read. Point it at a tfg of the same version as this package, or leave it unset |
+| `... where testing-files-generator keeps sets when it is given no other place, ...` | The directory in the system's temporary directory belongs to someone else, or others can write to it, so they could change your files. Set `TFG_CACHE_DIR` or `cacheDir` to a directory of your own |
 | `testing-files-generator: 1 unfinished set was left in ...` | A warning. A run stopped part way, and what it left can be deleted |
 
 ## The tfg program

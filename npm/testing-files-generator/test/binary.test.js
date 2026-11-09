@@ -22,7 +22,8 @@ test('TFG_BINARY naming nothing is refused with the path it named', () => {
 test('each platform a release builds resolves to its own package', () => {
   for (const [key, pkg] of Object.entries(platforms)) {
     const [platform, arch] = key.split(' ');
-    const exe = platform === 'win32' ? 'tfg.exe' : 'tfg';
+    // Written out rather than asked of binaryIn, so a wrong place there shows.
+    const exe = { win32: 'tfg.exe', darwin: 'tfg.app/Contents/MacOS/tfg', linux: 'tfg' }[platform];
     const asked = [];
     const found = binaryPath({ env: {}, platform, arch, resolve: (id) => { asked.push(id); return `/resolved/${id}`; } });
     assert.deepEqual(asked, [`${pkg}/${exe}`]);
