@@ -1,7 +1,11 @@
 package guard
 
 import (
+	"errors"
+	"fmt"
+	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -28,8 +32,18 @@ import (
 // This walks every file in the directory rather than a list of names, so a
 // workflow added next month is covered without anybody remembering to come
 // back here.
+//
+// An action of this repository - `uses: ./.github/actions/...` - has no tag
+// and no commit, and needs neither: it is code in this tree, and it changes
+// only through a commit that is reviewed here. It is not a door, though. A
+// composite action runs steps with `uses:` of their own, so every action.yml
+// under .github/actions is read by the same rule, and a local reference is let
+// through only when this guard read the file it points at. Measured on #226,
+// 2026-11-09: the first local action turned this guard red for both workflows
+// that run it, while its own steps were read by nothing.
 func TestEveryActionIsPinnedToACommitRatherThanATag(t *testing.T) {
-	dir := filepath.Join(repoRoot(t), ".github", "workflows")
+	root := repoRoot(t)
+	dir := filepath.Join(root, ".github", "workflows")
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		t.Skipf("the workflows are not here: %v", err)
@@ -58,17 +72,41 @@ func TestEveryActionIsPinnedToACommitRatherThanATag(t *testing.T) {
 			t.Errorf("pinnedToACommit(%q) should be %v, because it is %s", c.uses, c.pinned, c.why)
 		}
 	}
+	for _, c := range []struct {
+		uses  string
+		local bool
+		why   string
+	}{
+		{"./.github/actions/release-archives", true, "an action kept in this repository"},
+		{"./.github/workflows/build.yml", true, "a workflow of this repository called by another"},
+		{".github/actions/release-archives", false, "a path without ./, which GitHub reads as OWNER/NAME"},
+		{"actions/checkout@v7", false, "an action of another account"},
+	} {
+		if inThisRepository(c.uses) != c.local {
+			t.Errorf("inThisRepository(%q) should be %v, because it is %s", c.uses, c.local, c.why)
+		}
+	}
 
+	files := yamlFilesIn(entries, dir)
+	files = append(files, actionFiles(t, filepath.Join(root, ".github", "actions"))...)
+
+	// The files read, by their path from the root with forward slashes - the
+	// way a local `uses:` names them.
+	read := map[string]bool{}
+	type reference struct{ where, uses string }
+	var local []reference
 	seen := 0
-	for _, e := range entries {
-		name := e.Name()
-		if e.IsDir() || (!strings.HasSuffix(name, ".yml") && !strings.HasSuffix(name, ".yaml")) {
-			continue
-		}
-		body, err := os.ReadFile(filepath.Join(dir, name))
+	for _, file := range files {
+		body, err := os.ReadFile(file)
 		if err != nil {
-			t.Fatalf("reading %s: %v", name, err)
+			t.Fatalf("reading %s: %v", file, err)
 		}
+		rel, err := filepath.Rel(root, file)
+		if err != nil {
+			t.Fatalf("%s is not under %s: %v", file, root, err)
+		}
+		rel = filepath.ToSlash(rel)
+		read[rel] = true
 		// Comments are removed first, because the version now lives in one and
 		// "# v7.0.1" would otherwise read as a reference.
 		for i, line := range strings.Split(withoutYamlComments(string(body)), "\n") {
@@ -81,6 +119,10 @@ func TestEveryActionIsPinnedToACommitRatherThanATag(t *testing.T) {
 				continue
 			}
 			seen++
+			if inThisRepository(uses) {
+				local = append(local, reference{fmt.Sprintf("%s:%d", rel, i+1), uses})
+				continue
+			}
 			if pinnedToACommit(uses) {
 				continue
 			}
@@ -89,8 +131,21 @@ func TestEveryActionIsPinnedToACommitRatherThanATag(t *testing.T) {
 				"its releases here. Resolve the tag to its commit and keep the version in a "+
 				"comment beside it:\n"+
 				"    uses: OWNER/NAME@<40 hex characters>  # v1.2.3",
-				name, i+1, uses)
+				rel, i+1, uses)
 		}
+	}
+
+	// A local reference is let through because what it points at is read
+	// here too. One this walk did not read would be let through unread.
+	for _, r := range local {
+		target := path.Clean(strings.TrimPrefix(r.uses, "./"))
+		if read[target] || read[path.Join(target, "action.yml")] || read[path.Join(target, "action.yaml")] {
+			continue
+		}
+		t.Errorf("%s runs %s, an action of this repository, and this guard did not read it.\n"+
+			"A local action is let through only because the steps it runs are held to the same rule. "+
+			"Keep it as .github/actions/<name>/action.yml, where this guard reads it, or teach the "+
+			"guard where it lives.", r.where, r.uses)
 	}
 
 	// A walk that matched nothing would report a clean tree, which is the way
@@ -100,6 +155,49 @@ func TestEveryActionIsPinnedToACommitRatherThanATag(t *testing.T) {
 		t.Errorf("no action reference was found in %s, so this guard checked nothing.\n"+
 			"Either the workflows moved or the way this reads them stopped working.", dir)
 	}
+}
+
+// yamlFilesIn are the .yml and .yaml files directly in a directory, of the
+// entries read from it. workflowFiles in buildfloor_test.go takes .yml alone.
+func yamlFilesIn(entries []os.DirEntry, dir string) []string {
+	var files []string
+	for _, e := range entries {
+		name := e.Name()
+		if e.IsDir() || (!strings.HasSuffix(name, ".yml") && !strings.HasSuffix(name, ".yaml")) {
+			continue
+		}
+		files = append(files, filepath.Join(dir, name))
+	}
+	return files
+}
+
+// actionFiles are the action.yml files of the actions this repository keeps
+// for its workflows, or none when it keeps none.
+func actionFiles(t *testing.T, dir string) []string {
+	t.Helper()
+	var files []string
+	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			if p == dir && errors.Is(err, fs.ErrNotExist) {
+				return filepath.SkipDir
+			}
+			return err
+		}
+		if !d.IsDir() && (d.Name() == "action.yml" || d.Name() == "action.yaml") {
+			files = append(files, p)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("reading the actions in %s: %v", dir, err)
+	}
+	return files
+}
+
+// inThisRepository reports whether a `uses:` value names an action or a
+// workflow of this repository, which GitHub knows by the leading "./".
+func inThisRepository(uses string) bool {
+	return strings.HasPrefix(uses, "./")
 }
 
 // pinnedToACommit reports whether a `uses:` value names a commit.

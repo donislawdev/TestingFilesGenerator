@@ -34,8 +34,12 @@ function said(stderr) {
   return stderr.trim() || 'tfg said nothing about why.';
 }
 
+// notStarted is a binary the system would not start, with the system's reason
+// and the way out. The reason stays: EACCES and ENOEXEC are what tell a binary
+// without its execute bit from one for another system.
 function notStarted(binary, err) {
-  return new Error(`tfg could not be started from ${binary}: ${err.message}`);
+  return new Error(`tfg could not be started from ${binary}: ${err.message}. It has to be a tfg for this system ` +
+    'that this user can run. Install the package again, or set TFG_BINARY to the path of such a tfg.', { cause: err });
 }
 
 // runToFile runs tfg to the end, writing its standard output to a file. A file
@@ -99,4 +103,4 @@ function run(binary, args) {
   });
 }
 
-module.exports = { TfgError, ended, run, runToFile, said };
+module.exports = { TfgError, ended, notStarted, run, runToFile, said };

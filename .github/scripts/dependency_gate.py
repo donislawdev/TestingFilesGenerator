@@ -126,7 +126,13 @@ SKIPPED_ECOSYSTEMS = frozenset({"actions"})
 # names in front of this gate - four of them with a licence GitHub leaves empty
 # or describes with an identifier of its own. Vulnerabilities in this file are
 # still checked, by the dependency review action and by OSV-Scanner.
-SKIPPED_MANIFESTS = frozenset({".github/requirements-semgrep.txt"})
+#
+# requirements-pypi.txt joined it on 2026-11-09 (#226): pytest, uv and what they
+# bring, which ci.yml and pypi.yml install on a runner to test the Python
+# package and try its wheels. On Python 3.10 pytest brings typing-extensions,
+# whose PSF-2.0 is not in ALLOWED. What the Python packages themselves depend
+# on is in python/*/pyproject.toml, and those are still asked.
+SKIPPED_MANIFESTS = frozenset({".github/requirements-semgrep.txt", ".github/requirements-pypi.txt"})
 
 
 def added(review):

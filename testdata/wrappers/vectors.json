@@ -1,0 +1,228 @@
+{
+  "about": "What a file of a set says of itself, and what check makes of what a system did, for the npm package (npm/testing-files-generator/test/vectors.test.js) and the Python package (python/testing-files-generator/tests/test_vectors.py). Both read this file, so a sentence changed in one package and not the other fails the tests of the other. result is pass, mismatch (with the whole message), unspecified or bad-input - the last two say what to do in the words of each language, so only the kind is shared. The groups are spelled differently on purpose - with a space, with a hyphen and with a punctuation mark (size limit, size-limit, hostile-names!) - because a group becomes a Playwright tag and a pytest marker, and these are the ways a group name can be written.",
+  "entries": {
+    "big": {
+      "path": "big.jpg",
+      "name": "big.jpg",
+      "target_id": "over",
+      "bytes": 9,
+      "format": "jpg",
+      "group": "size limit",
+      "purpose": "Taking it means the limit is not enforced.",
+      "expected": {
+        "outcome": "reject",
+        "reason": "size_limit"
+      }
+    },
+    "ok": {
+      "path": "ok.png",
+      "name": "ok.png",
+      "target_id": "allowed",
+      "bytes": 67,
+      "format": "png",
+      "expected": {
+        "outcome": "accept"
+      }
+    },
+    "empty": {
+      "path": "empty.jpg",
+      "name": "empty.jpg",
+      "target_id": "empty",
+      "bytes": 0,
+      "format": "txt",
+      "group": "degenerate",
+      "purpose": "An empty file.",
+      "expected": {
+        "outcome": "unspecified",
+        "reason": "size_zero"
+      }
+    },
+    "under": {
+      "path": "under.jpg",
+      "name": "under.jpg",
+      "target_id": "under",
+      "bytes": 8,
+      "format": "jpg",
+      "group": "size-limit",
+      "purpose": "Turning it away means the limit is off by one.",
+      "expected": {
+        "outcome": "accept",
+        "reason": "size_limit"
+      }
+    },
+    "spaced": {
+      "path": "a b.txt",
+      "name": "a b.txt",
+      "target_id": "names",
+      "bytes": 3,
+      "format": "txt",
+      "group": "hostile-names!",
+      "expected": {
+        "outcome": "sanitize"
+      }
+    }
+  },
+  "files": [
+    {
+      "entry": "big",
+      "title": "big.jpg - expected reject (size_limit)",
+      "marks": [
+        "reject",
+        "size-limit"
+      ],
+      "why_unspecified": "big.jpg has no expected outcome - what your system does with it is its own policy. Taking it means the limit is not enforced."
+    },
+    {
+      "entry": "ok",
+      "title": "ok.png - expected accept",
+      "marks": [
+        "accept"
+      ],
+      "why_unspecified": "ok.png has no expected outcome - what your system does with it is its own policy."
+    },
+    {
+      "entry": "empty",
+      "title": "empty.jpg - expected unspecified (size_zero)",
+      "marks": [
+        "unspecified",
+        "degenerate"
+      ],
+      "why_unspecified": "empty.jpg has no expected outcome - what your system does with it is its own policy. An empty file."
+    },
+    {
+      "entry": "spaced",
+      "title": "a b.txt - expected sanitize",
+      "marks": [
+        "sanitize",
+        "hostile-names-"
+      ],
+      "why_unspecified": "a b.txt has no expected outcome - what your system does with it is its own policy."
+    }
+  ],
+  "checks": [
+    {
+      "entry": "big",
+      "observed": "accept",
+      "result": "mismatch",
+      "message": "big.jpg was taken, and it should have been turned away (size_limit).\nTaking it means the limit is not enforced."
+    },
+    {
+      "entry": "big",
+      "observed": "sanitize",
+      "result": "mismatch",
+      "message": "big.jpg was taken and cleaned, and it should have been turned away (size_limit).\nTaking it means the limit is not enforced."
+    },
+    {
+      "entry": "big",
+      "observed": "reject",
+      "result": "pass"
+    },
+    {
+      "entry": "big",
+      "observed": {
+        "outcome": "reject",
+        "reason": "size_limit"
+      },
+      "result": "pass"
+    },
+    {
+      "entry": "big",
+      "observed": {
+        "outcome": "reject"
+      },
+      "result": "pass"
+    },
+    {
+      "entry": "big",
+      "observed": {
+        "outcome": "reject",
+        "reason": "mime_mismatch"
+      },
+      "result": "mismatch",
+      "message": "big.jpg was turned away for mime_mismatch, and the rule it is about is size_limit.\nTaking it means the limit is not enforced."
+    },
+    {
+      "entry": "ok",
+      "observed": "reject",
+      "result": "mismatch",
+      "message": "ok.png was turned away, and it should have been taken."
+    },
+    {
+      "entry": "ok",
+      "observed": "accept",
+      "result": "pass"
+    },
+    {
+      "entry": "under",
+      "observed": {
+        "outcome": "accept",
+        "reason": "anything"
+      },
+      "result": "pass"
+    },
+    {
+      "entry": "under",
+      "observed": "reject",
+      "result": "mismatch",
+      "message": "under.jpg was turned away, and it should have been taken (size_limit).\nTurning it away means the limit is off by one."
+    },
+    {
+      "entry": "spaced",
+      "observed": "accept",
+      "result": "mismatch",
+      "message": "a b.txt was taken, and it should have been taken and cleaned."
+    },
+    {
+      "entry": "spaced",
+      "observed": "sanitize",
+      "result": "pass"
+    },
+    {
+      "entry": "empty",
+      "observed": "accept",
+      "result": "unspecified"
+    },
+    {
+      "entry": "empty",
+      "observed": "reject",
+      "result": "unspecified"
+    },
+    {
+      "entry": "ok",
+      "observed": "toString",
+      "result": "bad-input"
+    },
+    {
+      "entry": "ok",
+      "observed": "unspecified",
+      "result": "bad-input"
+    },
+    {
+      "entry": "ok",
+      "observed": "ACCEPT",
+      "result": "bad-input"
+    },
+    {
+      "entry": "ok",
+      "observed": null,
+      "result": "bad-input"
+    },
+    {
+      "entry": "ok",
+      "observed": 3,
+      "result": "bad-input"
+    },
+    {
+      "entry": "ok",
+      "observed": {},
+      "result": "bad-input"
+    },
+    {
+      "entry": "ok",
+      "observed": {
+        "outcome": "toString"
+      },
+      "result": "bad-input"
+    }
+  ]
+}

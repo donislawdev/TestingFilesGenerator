@@ -121,6 +121,107 @@ test('a set changed by hand is refused, and left where it is', async (t) => {
   assert.ok(fs.existsSync(path.join(dir, 'manifest.json')), 'the changed set was removed');
 });
 
+test('a kept manifest, or a file in it, that is not an object is refused like any changed set', async (t) => {
+  const cacheDir = tempDir(t);
+  const dir = (await node(writer(cacheDir))).stdout.trim();
+  const manifest = path.join(dir, 'manifest.json');
+  const written = JSON.parse(fs.readFileSync(manifest, 'utf8'));
+  const first = written.files[0].path;
+  fs.writeFileSync(manifest, JSON.stringify({ ...written, files: [null, ...written.files.slice(1)] }));
+  const entry = await node(writer(cacheDir));
+  assert.equal(entry.status, 3);
+  assert.ok(entry.stderr.includes(`does not hold it - its file 1 is not described by an object where the plan has ${first}. ` +
+    'Nothing here removes that directory'), entry.stderr);
+  fs.writeFileSync(manifest, 'null');
+  const whole = await node(writer(cacheDir));
+  assert.equal(whole.status, 3);
+  assert.ok(whole.stderr.includes('does not hold it - its manifest cannot be read (it is not an object).'), whole.stderr);
+});
+
+test('a cache directory that cannot be made says how to give another', (t) => {
+  const taken = path.join(tempDir(t), 'a-file');
+  fs.writeFileSync(taken, '');
+  assert.throws(() => fileSet({ ...small, binary: tfg(), cacheDir: taken }),
+    (err) => err.message.startsWith(`Sets are kept in ${taken}, and it could not be made a directory - `) &&
+      err.message.includes('TFG_CACHE_DIR') && err.message.includes('cacheDir'));
+});
+
+const posixUser = process.getuid && process.getuid() !== 0
+  ? false : 'the modes of a directory hold on Linux and macOS, for a user that is not root';
+
+for (const [mode, what] of [[0o333, 'it could not be read'], [0o555, 'nothing could be written in it']]) {
+  test(`a cache directory this user cannot use says how to give another - ${what}`, { skip: posixUser }, async (t) => {
+    // A directory that is there already passes the making of it, as one left
+    // by a run under another user does.
+    const there = path.join(tempDir(t), 'sets');
+    fs.mkdirSync(there);
+    const plan = `require(${pkg}).fileSet({ ...${JSON.stringify(small)}, cacheDir: ${JSON.stringify(there)} })`;
+    fs.chmodSync(there, mode);
+    let said;
+    try {
+      said = await node(plan, { env: { TEST_WORKER_INDEX: undefined } });
+    } finally {
+      fs.chmodSync(there, 0o755);
+    }
+    assert.notEqual(said.status, 0);
+    assert.ok(said.stderr.includes(`Sets are kept in ${there}, and ${what} - EACCES`), said.stderr);
+    assert.ok(said.stderr.includes('TFG_CACHE_DIR') && said.stderr.includes('cacheDir'), said.stderr);
+  });
+}
+
+for (const printed of ['', 'not json', '{"manifest_version": "1.0"}', '{"manifest_version": "1.0", "run": {}, "files": [null]}']) {
+  test(`a binary that prints no manifest for the plan is named, with what to do - ${JSON.stringify(printed)}`, {
+    skip: process.platform === 'win32' ? 'a script runs as a binary on Linux and macOS' : false,
+  }, (t) => {
+    // TFG_BINARY can point at any program, and one that ends well and prints
+    // anything but a manifest is named rather than a parser's error.
+    const dir = tempDir(t);
+    const out = path.join(dir, 'printed');
+    fs.writeFileSync(out, printed);
+    const binary = path.join(dir, 'not-tfg');
+    fs.writeFileSync(binary, `#!/bin/sh\ncat '${out}'\n`, { mode: 0o755 });
+    const cacheDir = path.join(dir, 'sets');
+    assert.throws(() => fileSet({ ...small, binary, cacheDir }),
+      (err) => err.message.startsWith(`${binary} printed a plan that is not a manifest of tfg - `) &&
+        err.message.includes('TFG_BINARY') && err.message.includes('Install the package again'));
+    assert.deepEqual(entries(cacheDir), [], 'the plan was left in the cache');
+  });
+}
+
+test('a set that cannot be moved to its name says what to do, and leaves nothing', async (t) => {
+  const cacheDir = tempDir(t);
+  const set = plannedIn(cacheDir);
+  t.mock.method(fs, 'renameSync', () => {
+    throw Object.assign(new Error('ENAMETOOLONG: name too long'), { code: 'ENAMETOOLONG' });
+  });
+  await assert.rejects(set.write(), (err) => {
+    assert.match(err.message, /^The set was written, and it could not be moved to .+ - ENAMETOOLONG: name too long\. Run the tests again\./);
+    assert.ok(err.message.includes('TFG_CACHE_DIR') && err.message.includes('cacheDir'), err.message);
+    assert.equal(err.cause.code, 'ENAMETOOLONG');
+    return true;
+  });
+  assert.deepEqual(entries(cacheDir), [], 'the set that was written is left in the cache');
+});
+
+test('a recipe that is a directory is refused before anything reads it', (t) => {
+  const dir = tempDir(t);
+  assert.throws(() => fileSet({ recipe: dir, binary: tfg(), cacheDir: path.join(dir, 'sets') }),
+    (err) => err.message.startsWith(`The recipe option names ${dir}, which is a directory, a pipe or a device`) &&
+      err.message.includes('Give the path of that file'));
+});
+
+test('an edited recipe is planned again in the same process', (t) => {
+  const dir = tempDir(t);
+  const recipe = path.join(dir, 'set.yaml');
+  const cacheDir = path.join(dir, 'sets');
+  fs.writeFileSync(recipe, 'version: 1\ntargets:\n  - id: one\n    format: txt\n    size: 1kb\n');
+  const first = fileSet({ recipe, binary: tfg(), cacheDir });
+  fs.writeFileSync(recipe, 'version: 1\ntargets:\n  - id: one\n    format: txt\n    size: 2kb\n');
+  const second = fileSet({ recipe, binary: tfg(), cacheDir });
+  assert.deepEqual(first.files.map((f) => f.bytes), [1024]);
+  assert.deepEqual(second.files.map((f) => f.bytes), [2048]);
+});
+
 test('a file of the set cut short by hand is refused', async (t) => {
   const cacheDir = tempDir(t);
   const dir = (await node(writer(cacheDir))).stdout.trim();
@@ -223,7 +324,7 @@ test('the flags this package sets itself cannot be set again', (t) => {
 });
 
 test('a manifest of another major, or an outcome this package does not know, is refused', () => {
-  const plan = { manifest_version: '1.0', files: [{ path: 'a', expected: { outcome: 'accept' } }] };
+  const plan = { manifest_version: '1.0', run: {}, files: [{ path: 'a', expected: { outcome: 'accept' } }] };
   readable(plan);
   assert.throws(() => readable({ ...plan, manifest_version: '2.0' }), /manifest of version 2\.0, and this package reads version 1/);
   assert.throws(() => readable({ ...plan, files: [{ path: 'a', expected: { outcome: 'quarantine' } }] }), /"quarantine", which this package does not know/);
@@ -241,6 +342,16 @@ test('npx tfg is tfg - the same output and the same exit code', async () => {
   assert.notEqual(direct.status, 0);
   assert.equal(viaPackage.status, direct.status);
   assert.equal(viaPackage.stderr, direct.stderr);
+});
+
+test('npx tfg with a binary the system will not start names it, with what to do and the code of a tool that could not run', async (t) => {
+  const bin = path.join(__dirname, '..', 'bin', 'tfg.js');
+  const binary = path.join(tempDir(t), 'not-tfg');
+  fs.writeFileSync(binary, 'not a program\n', { mode: 0o644 });
+  const refused = await node('', { file: bin, args: ['version'], env: { TFG_BINARY: binary } });
+  assert.equal(refused.status, 1);
+  assert.ok(refused.stderr.startsWith(`tfg: tfg could not be started from ${binary}: `), refused.stderr);
+  assert.ok(refused.stderr.includes('TFG_BINARY'), refused.stderr);
 });
 
 // The last place sets go is the system's temporary directory, which on Linux

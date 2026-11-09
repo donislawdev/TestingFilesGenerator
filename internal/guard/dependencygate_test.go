@@ -147,6 +147,23 @@ func TestTheDependencyGateRefusesALicenceThisProjectCannotDistribute(t *testing.
 			0,
 		},
 		{
+			// Measured on #226, 2026-11-09: compiled on Python 3.10, pytest
+			// brings typing-extensions, PSF-2.0. The file lists what ci.yml and
+			// pypi.yml install on a runner to test the Python package.
+			"a package the PyPI jobs install, under a licence the list does not name",
+			[]dep{{"change_type": "added", "ecosystem": "pip", "manifest": ".github/requirements-pypi.txt",
+				"name": "typing-extensions", "version": "4.16.0", "license": "PSF-2.0"}},
+			0,
+		},
+		{
+			// What the Python package itself depends on is still asked: its
+			// pyproject.toml is a manifest of something people install.
+			"the same licence in the manifest of the Python package",
+			[]dep{{"change_type": "added", "ecosystem": "pip", "manifest": "python/testing-files-generator/pyproject.toml",
+				"name": "typing-extensions", "version": "4.16.0", "license": "PSF-2.0"}},
+			1,
+		},
+		{
 			// And the skip is that file, not the ecosystem: the same package
 			// listed anywhere else is asked like any other.
 			"the same package from any other manifest",

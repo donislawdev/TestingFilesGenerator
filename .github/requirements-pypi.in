@@ -1,0 +1,30 @@
+# What the PyPI packages need in CI beyond Python itself, pinned, in a file a
+# bot can edit.
+#
+# python/testing-files-generator is tested with pytest in ci.yml, and
+# .github/workflows/pypi.yml installs the wheels of a release with uv as well
+# as pip, because uv keeps a binary's execute bit only when the wheel says it
+# was made on Unix and pip keeps it either way (docs/PYTEST-2026-11-09.md).
+# tomli reads pyproject.toml for release/assemble.py on Python 3.10, which has
+# no tomllib - it is the library tomllib was taken from. None of them is
+# linked into either binary or shipped in a wheel, and go.mod never sees them.
+#
+# The metadata of the wheels is checked by pypa/gh-action-pypi-publish, which
+# runs twine check before it uploads anything. twine is not here because its
+# own tree did not install on Python 3.10 and brought a licence the dependency
+# gate cannot read (docs/REVIEW-226-2026-11-09.md).
+#
+# Licences read from the pinned versions rather than recalled, on 2026-11-09,
+# from the metadata on PyPI: pytest MIT, uv MIT OR Apache-2.0, tomli MIT (and
+# the LICENSE file of its tag 2.5.0).
+#
+# requirements-pypi.txt next to this file is compiled from it by pip-compile,
+# the same way requirements-semgrep.txt is, so Dependabot proposes a set pip
+# can install. It is compiled on Python 3.10, the oldest the package declares,
+# because a set resolved on a newer Python can pin a version 3.10 cannot
+# install. To compile it by hand, from the root of the repository:
+#
+#   docker run --rm -v "$PWD/.github:/w" -w /w python:3.10-slim sh -c "pip install -q pip==26.1.1 pip-tools==7.5.3 && pip-compile --strip-extras --no-emit-index-url --output-file=requirements-pypi.txt requirements-pypi.in"
+pytest==9.2.0
+tomli==2.5.0 ; python_version < "3.11"
+uv==0.13.7

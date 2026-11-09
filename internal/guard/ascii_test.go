@@ -70,6 +70,10 @@ var englishFiles = []string{
 	// the second what they read before running it - the same criterion again.
 	"npm/testing-files-generator/README.md",
 	"examples/playwright/README.md",
+	// The pages PyPI shows for the Python package and its pytest plugin,
+	// added 2026-11-09 with them - the same criterion as the npm package's.
+	"python/testing-files-generator/README.md",
+	"python/pytest-testing-files-generator/README.md",
 }
 
 // symbolsAllowed names the files that may hold a symbol such as an emoji.

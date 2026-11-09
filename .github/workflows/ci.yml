@@ -1542,6 +1542,59 @@ jobs:
           node check.mjs
         shell: bash
 
+  python:
+    name: Python package on ${{ matrix.os }} with Python ${{ matrix.python }}
+    # The Python package (python/testing-files-generator) runs tfg and reads
+    # what it writes, so nothing in the Go suite runs it. Its own tests run
+    # here against the binary this commit builds, on the three systems a
+    # release has binaries for - Windows above all, because the rename that
+    # settles a race between test workers is refused there in ways it is not
+    # elsewhere. Python 3.10 is the oldest the package declares, and the
+    # newest is tried beside it on Linux. The tests of the release tools are
+    # among them: the wheels are laid out from archives the tests make.
+    # docs/PYTEST-2026-11-09.md.
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: "3.10"
+          - os: ubuntu-latest
+            python: "3.14"
+          - os: windows-latest
+            python: "3.10"
+          - os: macos-latest
+            python: "3.10"
+    runs-on: ${{ matrix.os }}
+    env:
+      CGO_ENABLED: "0"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: false
+          cache: true
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: build tfg where the package's tests look for it
+        run: go build -tags "$(cat .github/build-tags)" -o "tfg$(go env GOEXE)" ./cmd/tfg
+        shell: bash
+
+      - name: the package's own tests
+        working-directory: python/testing-files-generator
+        run: |
+          python -m pip install --disable-pip-version-check -r ../../.github/requirements-pypi.txt
+          python -m pytest -p no:cacheprovider
+        shell: bash
+
   fuzz:
     name: fuzzing with a time budget
     # Weekly and by hand, never on a push. Fuzzing searches without end, so a

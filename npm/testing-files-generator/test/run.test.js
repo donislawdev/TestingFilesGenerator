@@ -30,6 +30,15 @@ test('a child that says a great deal on its error stream runs to its own end, an
       err.stderr.length <= 64 * 1024);
 });
 
+test('a binary the system will not start is named with the reason and what to do, from both ways of running it', async (t) => {
+  const binary = path.join(tempDir(t), 'not-tfg');
+  fs.writeFileSync(binary, 'not a program\n', { mode: 0o644 });
+  const named = (err) => err.message.startsWith(`tfg could not be started from ${binary}: `) &&
+    err.message.includes('Install the package again') && err.message.includes('TFG_BINARY');
+  assert.throws(() => runToFile(binary, ['version'], path.join(tempDir(t), 'out.json')), named);
+  await assert.rejects(run(binary, ['version']), named);
+});
+
 test('the output file is made new and private, and a file already under its name is never written through', (t) => {
   const [binary, args] = child('process.stdout.write("planned")');
   const out = path.join(tempDir(t), 'out.json');
