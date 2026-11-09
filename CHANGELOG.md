@@ -16,6 +16,15 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **tfg is on npm, for tests in Node.**
+  `npm install --save-dev testing-files-generator` gives Playwright, Vitest
+  and `node:test` a generated set of files, and says what the system under
+  test should do with each one. A test written for a file fails with that
+  file's own sentence on what the difference means. The package installs the
+  `tfg` of the same release for Windows and Linux on x64 and Arm and for macOS
+  on Apple silicon, and `npx tfg` runs it. [The example](examples/playwright)
+  is an upload form with four mistakes, and the generated set finds all four.
+
 - **How much memory a run may use is yours to set.** `--memory` on
   `generate`, `validate` and `preset show`, and Memory on the window's
   Preferences screen: `auto` (half of this machine or container), a size

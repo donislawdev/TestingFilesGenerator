@@ -78,6 +78,42 @@ func TestThePackageKnowsEveryPlatformTheReleaseBuilds(t *testing.T) {
 	}
 }
 
+// Every package of a system is installed and run on that system before
+// anything goes to npm (.github/workflows/npm.yml), and nothing is staged until
+// every one of them has. The systems tried are written out in the workflow,
+// one runner each, so they are held to lib/binary.js here: a system missing
+// there goes to npm untried, and a system the package does not know is a run
+// that tries nothing. docs/NPM-PUBLISH-2026-11-09.md.
+func TestEverySystemThePackageKnowsIsTriedBeforeAnythingIsStaged(t *testing.T) {
+	workflow := npmFile(t, ".github/workflows/npm.yml")
+	var tried []string
+	for _, m := range regexp.MustCompile(`(?m)^\s+- package: ([a-z0-9-]+)\s*$`).FindAllStringSubmatch(workflow, -1) {
+		tried = append(tried, m[1])
+	}
+	var known []string
+	binary := npmFile(t, npmPackage+"/lib/binary.js")
+	for _, m := range regexp.MustCompile(`'[a-z0-9]+ [a-z0-9]+': '@testing-files-generator/([a-z0-9-]+)'`).FindAllStringSubmatch(binary, -1) {
+		known = append(known, m[1])
+	}
+	if len(tried) == 0 || len(known) == 0 {
+		t.Fatalf("read %d systems tried in npm.yml and %d known to lib/binary.js - this guard no longer reads them", len(tried), len(known))
+	}
+	sort.Strings(tried)
+	sort.Strings(known)
+	if !reflect.DeepEqual(tried, known) {
+		t.Errorf("npm.yml tries the packages of %v, and the package installs a binary for %v", tried, known)
+	}
+
+	stage := regexp.MustCompile(`(?ms)^  stage:\n(.*?)(?:^  [a-z][a-z-]*:\n|\z)`).FindStringSubmatch(workflow)
+	if stage == nil {
+		t.Fatal("npm.yml has no stage job - this guard no longer reads it")
+	}
+	needs := regexp.MustCompile(`(?m)^    needs: \[([^\]]*)\]`).FindStringSubmatch(stage[1])
+	if needs == nil || !strings.Contains(", "+needs[1]+",", " try,") {
+		t.Errorf("the stage job of npm.yml does not wait for the try job, so a package can reach npm untried: needs %v", needs)
+	}
+}
+
 // The dependency gate lets the package through by name, because the graph has
 // no licence for a directory linked with file: (#220). That is only true while
 // the package is what the gate's exception says it is.
@@ -218,14 +254,15 @@ var npmTextRoots = []string{npmPackage + "/", "examples/playwright/"}
 // header value, and judging it as prose would be crying wolf - the same line
 // goFileFaults draws for Go.
 var npmLiterals = map[string]bool{
-	npmPackage + "/index.js":          true,
-	npmPackage + "/bin/tfg.js":        true,
-	npmPackage + "/lib/binary.js":     true,
-	npmPackage + "/lib/fileset.js":    true,
-	npmPackage + "/lib/run.js":        true,
-	npmPackage + "/lib/testfile.js":   true,
-	"examples/playwright/app/page.js": true,
-	"examples/playwright/check.mjs":   true,
+	npmPackage + "/index.js":            true,
+	npmPackage + "/bin/tfg.js":          true,
+	npmPackage + "/lib/binary.js":       true,
+	npmPackage + "/lib/fileset.js":      true,
+	npmPackage + "/lib/run.js":          true,
+	npmPackage + "/lib/testfile.js":     true,
+	npmPackage + "/release/assemble.js": true,
+	"examples/playwright/app/page.js":   true,
+	"examples/playwright/check.mjs":     true,
 }
 
 func npmTextFiles(t *testing.T) []string {

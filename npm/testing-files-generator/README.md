@@ -4,8 +4,6 @@ Real files of exact sizes and formats for your tests, and what the system under 
 
 A PDF of exactly 1 MiB and one byte is a real PDF, so a server that looks inside it can only turn it away for its size. A file made with `Buffer.alloc` is zeros, so the same server turns it away for what it holds, and a test meant to prove a size limit passes on a server that has none. [The example](https://github.com/donislawdev/TestingFilesGenerator/tree/main/examples/playwright) shows exactly that.
 
-> **Not on npm yet.** It will be published with a release of tfg. Until then, [the example](https://github.com/donislawdev/TestingFilesGenerator/tree/main/examples/playwright) runs it from the repository.
-
 ## Contents
 
 - [What it is](#what-it-is)
@@ -43,7 +41,7 @@ npm install --save-dev testing-files-generator
 ```
 
 - **Node 22 or later.** Types for TypeScript come with the package, and both `import` and `require` work.
-- **The tfg program comes in a second package** that npm picks for your system: Windows on x64 and Arm, Linux on x64 and Arm, macOS on Apple silicon. Nothing runs when the package is installed, and nothing is downloaded when the tests run.
+- **The tfg program comes in a second package** that npm picks for your system: Windows on x64 and Arm, Linux on x64 and Arm, macOS on Apple silicon. Nothing runs when the package is installed, and nothing is downloaded when the tests run. The program is the one from the tfg release of the same version: signed on Windows, and on macOS signed and notarised inside the app it was signed in.
 - **Do not install with `--omit=optional`.** npm leaves that second package out with it, and the tests then stop with a message saying so. On a system with no package of its own, such as an Intel Mac, see [The tfg program](#the-tfg-program).
 
 ## Your first test

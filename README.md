@@ -109,6 +109,19 @@ The files land in the current directory. On Linux add
 belong to you. With no directory mounted the run stops with exit code 5
 instead of writing files that disappear with the container.
 
+**With npm, for tests in Node.** The
+[testing-files-generator](npm/testing-files-generator/README.md) package
+gives Playwright, Vitest and `node:test` a generated set and what the system
+under test should do with each file, and installs the `tfg` of the same
+release for your system:
+
+```
+npm install --save-dev testing-files-generator
+npx tfg version
+```
+
+It comes for Windows and Linux on x64 and Arm, and for macOS on Apple silicon.
+
 **With Go installed:**
 
 ```

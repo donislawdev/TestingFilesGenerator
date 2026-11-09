@@ -1,0 +1,393 @@
+name: npm packages
+
+# The packages a release puts on npm: testing-files-generator, and one package
+# per system carrying the tfg binary of that release. They are made of the
+# PUBLISHED release rather than built again, as the container image is
+# (docker.yml), and this workflow never publishes them. It stages them, and the
+# owner approves each one on npmjs.com with two-factor authentication - the
+# systems first, testing-files-generator last. docs/NPM-PUBLISH-2026-11-09.md.
+#
+# Every archive is held to the release's checksums and to the attestation
+# attest-release.yml made of the files people download. That is the only one
+# that fits all of them: the Windows archives are signed and the macOS one is
+# notarised after release.yml built them, so their bytes are not the ones it
+# attested. The packages are then installed from their files on the system
+# each is for, and only after every system has run its own does anything
+# reach npm.
+#
+# It starts when the owner publishes a release, and can be run by hand for the
+# latest one - a run that stopped half way stages only what is not staged or
+# published yet. A pull request that touches the packages tries them against
+# the latest release and stages nothing.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Published tag to stage the npm packages of, for example v0.6.0"
+        required: true
+  pull_request:
+    paths:
+      - "npm/**"
+      - ".github/workflows/npm.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-${{ github.event.release.tag_name || inputs.tag || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  which:
+    name: which release, and whether it goes to npm
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.which.outputs.tag }}
+      version: ${{ steps.which.outputs.version }}
+      stage: ${{ steps.which.outputs.stage }}
+    steps:
+      - name: which release
+        id: which
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+        # Asked of the API rather than taken from the event, because a run by
+        # hand has no event payload and a draft must never reach npm.
+        run: |
+          set -euo pipefail
+          latest="$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)"
+          case "$EVENT" in
+            release) tag="$RELEASE_TAG"; stage=true ;;
+            workflow_dispatch) tag="$INPUT_TAG"; stage=true ;;
+            *) tag="$latest"; stage=false ;;
+          esac
+          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::\"$tag\" is not a release tag, for example v0.6.0"
+            exit 1
+          fi
+          draft="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)"
+          if [ "$draft" != "false" ]; then
+            echo "::error::$tag is not published yet, and npm only ever gets what people can download"
+            exit 1
+          fi
+          # npm files a release under latest whatever its age, so staging an
+          # older one would take latest away from the newest. A prerelease goes
+          # under next and takes nothing away.
+          if [ "$stage" = true ] && [[ "$tag" != *-* ]] && [ "$tag" != "$latest" ]; then
+            echo "::error::$tag is not the latest release ($latest), and staging it would make npm install give people an older tfg"
+            exit 1
+          fi
+          {
+            echo "tag=$tag"
+            echo "version=${tag#v}"
+            echo "stage=$stage"
+          } >> "$GITHUB_OUTPUT"
+          echo "$tag, stage: $stage"
+
+  assemble:
+    name: the packages, made of the release's own archives
+    needs: which
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TAG: ${{ needs.which.outputs.tag }}
+      VERSION: ${{ needs.which.outputs.version }}
+    steps:
+      # The code of the package from the tagged commit, the one its binaries
+      # were built from. A pull request tries its own code against the latest
+      # release.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ needs.which.outputs.stage == 'true' && needs.which.outputs.tag || '' }}
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
+        with:
+          node-version: "22"
+
+      - name: the published archives, each checked before it is opened
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # The checksum says the download is the file the release lists. The
+        # attestation says attest-release.yml made a statement about these very
+        # bytes, and --signer-workflow holds it to that workflow.
+        run: |
+          set -euo pipefail
+          assemble=npm/testing-files-generator/release/assemble.js
+          if [ ! -f "$assemble" ]; then
+            echo "::error::the tree of $TAG has no $assemble, so it has no npm packages to make"
+            exit 1
+          fi
+          mkdir -p download binaries
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir download --pattern verify-SHA256SUMS.txt
+          node "$assemble" archives "$VERSION" > archives.txt
+          # Read into a list first, because gh reads standard input and a
+          # download inside the read loop eats the rest of the list.
+          mapfile -t lines < archives.txt
+          for line in "${lines[@]}"; do
+            read -r dir archive binary <<< "$line"
+            gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir download --pattern "$archive"
+            awk -v name="$archive" '$2 == name' download/verify-SHA256SUMS.txt > "download/$archive.sum"
+            if [ "$(wc -l < "download/$archive.sum")" != "1" ]; then
+              echo "::error::verify-SHA256SUMS.txt of $TAG does not name $archive exactly once"
+              exit 1
+            fi
+            (cd download && sha256sum -c "$archive.sum")
+            gh attestation verify "download/$archive" --repo "$GITHUB_REPOSITORY" \
+              --predicate-type https://spdx.dev/Document/v2.3 \
+              --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/attest-release.yml"
+            mkdir -p "binaries/$dir"
+            case "$archive" in
+              *.zip) unzip -q "download/$archive" -d "binaries/$dir" ;;
+              *) tar -xzf "download/$archive" -C "binaries/$dir" ;;
+            esac
+            echo "$dir $binary $(sha256sum "binaries/$dir/$binary" | cut -d' ' -f1)" >> binaries.txt
+          done
+
+      - name: lay out and pack them
+        # Packed here, on Linux, because npm packs a file without its
+        # executable bit on Windows and the binary for Linux would not run.
+        # Each package goes by its absolute path: npm reads packages/win32-x64
+        # as a repository on GitHub.
+        run: |
+          set -euo pipefail
+          node npm/testing-files-generator/release/assemble.js build "$VERSION" binaries packages > order.txt
+          mkdir tarballs
+          mapfile -t dirs < order.txt
+          for dir in "${dirs[@]}"; do
+            name="$(node -p "require('$dir/package.json').name")"
+            tarball="$(npm pack "$dir" --pack-destination tarballs --ignore-scripts | tail -n 1)"
+            echo "$name $tarball" >> tarballs/order.txt
+          done
+          node npm/testing-files-generator/release/assemble.js tag "$VERSION" > tarballs/dist-tag.txt
+          mv binaries.txt tarballs/binaries.txt
+          cat tarballs/order.txt
+          ls -l tarballs
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: npm-packages
+          path: tarballs/
+          retention-days: 7
+
+  try:
+    name: installed and run on ${{ matrix.package }}
+    needs: [which, assemble]
+    strategy:
+      fail-fast: false
+      # One runner per package, each on the system the package is for.
+      # internal/guard/npmpackage_test.go holds this list to lib/binary.js.
+      matrix:
+        include:
+          - package: win32-x64
+            runner: windows-latest
+          - package: win32-arm64
+            runner: windows-11-arm
+          - package: linux-x64
+            runner: ubuntu-latest
+          - package: linux-arm64
+            runner: ubuntu-24.04-arm
+          - package: darwin-arm64
+            runner: macos-latest
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    env:
+      VERSION: ${{ needs.which.outputs.version }}
+      PACKAGE: ${{ matrix.package }}
+    steps:
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
+        with:
+          node-version: "22"
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: npm-packages
+          path: tarballs
+
+      - name: install from the files, the way npm installs from the registry
+        shell: bash
+        # The runner is asked what it is rather than trusted to be it, because
+        # a runner label that moved to another architecture would otherwise try
+        # one package and report on another.
+        run: |
+          set -euo pipefail
+          here="$(node -p "process.platform + '-' + process.arch")"
+          if [ "$here" != "$PACKAGE" ]; then
+            echo "::error::this runner is $here, and it was to try $PACKAGE"
+            exit 1
+          fi
+          main="$(awk '$1 == "testing-files-generator" { print $2 }' tarballs/order.txt)"
+          platform="$(awk -v name="@testing-files-generator/$PACKAGE" '$1 == name { print $2 }' tarballs/order.txt)"
+          if [ -z "$main" ] || [ -z "$platform" ]; then
+            echo "::error::the packages made for $VERSION hold no testing-files-generator or no $PACKAGE"
+            exit 1
+          fi
+          mkdir try
+          cd try
+          npm init -y > /dev/null
+          npm install --no-audit --no-fund "../tarballs/$platform" "../tarballs/$main"
+
+      - name: the binary of the release answers, and a set is written through it
+        shell: bash
+        working-directory: try
+        run: |
+          set -euo pipefail
+          said="$(npx --no-install tfg version)"
+          if [ "$said" != "$VERSION" ]; then
+            echo "::error::npx tfg version says $said, and the release is $VERSION"
+            exit 1
+          fi
+          read -r _ binary sum <<< "$(awk -v dir="$PACKAGE" '$1 == dir' ../tarballs/binaries.txt)"
+          node -e '
+            const crypto = require("node:crypto");
+            const fs = require("node:fs");
+            const [pkg, binary, want] = process.argv.slice(1);
+            const where = require.resolve(pkg + "/" + binary);
+            const got = crypto.createHash("sha256").update(fs.readFileSync(where)).digest("hex");
+            if (got !== want) {
+              console.error(where + " hashes to " + got + ", and the binary in the release archive to " + want);
+              process.exit(1);
+            }
+            console.log(where + " is the binary of the release");
+          ' "@testing-files-generator/$PACKAGE" "$binary" "$sum"
+          if [ "$RUNNER_OS" = macOS ]; then
+            # The binary runs only inside the app it was signed in, so the app
+            # has to come out of npm whole.
+            codesign --verify --deep --strict "node_modules/@testing-files-generator/$PACKAGE/tfg.app"
+          fi
+          cat > try.cjs <<'JS'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const { fileSet } = require('testing-files-generator');
+
+          (async () => {
+            const set = fileSet({ preset: 'upload-validation', options: { limit: '64kb', bulk: 0 } });
+            assert.ok(set.files.length > 0, 'the set has no files');
+            for (const file of set.files) {
+              const where = await file.path();
+              assert.equal(fs.statSync(where).size, file.bytes, `${file.title} is not the size the manifest gives`);
+              if (!file.unspecified) {
+                const { outcome, reason } = file.expected;
+                file.check(outcome === 'reject' ? { outcome, reason } : outcome);
+              }
+            }
+            console.log(`${set.files.length} files written, each the size it should be`);
+          })().catch((err) => {
+            console.error(err);
+            process.exit(1);
+          });
+          JS
+          node try.cjs
+
+  rehearse:
+    name: what staging would send, without sending it
+    needs: [which, try]
+    if: needs.which.outputs.stage != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
+        with:
+          node-version: "26"
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: npm-packages
+          path: tarballs
+
+      - name: stage with --dry-run
+        # Every tarball as ./tarballs/..., because npm reads tarballs/x.tgz as a
+        # repository on GitHub and asks git for it (measured 2026-11-09).
+        run: |
+          set -euo pipefail
+          tag="$(cat tarballs/dist-tag.txt)"
+          mapfile -t lines < tarballs/order.txt
+          for line in "${lines[@]}"; do
+            read -r _ tarball <<< "$line"
+            npm stage publish "./tarballs/$tarball" --dry-run --access public --tag "$tag"
+          done
+
+  stage:
+    name: staged on npm for the owner to approve
+    needs: [which, try]
+    if: needs.which.outputs.stage == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # The OIDC token npm trusts once a package has a trusted publisher, and
+      # the provenance statement npm publishes beside each package.
+      id-token: write
+    env:
+      VERSION: ${{ needs.which.outputs.version }}
+    steps:
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
+        with:
+          node-version: "26"
+          registry-url: "https://registry.npmjs.org"
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: npm-packages
+          path: tarballs
+
+      - name: stage every package, the systems first
+        env:
+          # Only for the first release on npm, when no package exists yet and so
+          # none can trust this workflow. Remove the secret once the packages
+          # trust it - docs/NPM-PUBLISH-2026-11-09.md.
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # With no secret, the placeholder setup-node leaves stays, as in npm's
+        # own example of trusted publishing, and npm signs in with OIDC.
+        run: |
+          set -euo pipefail
+          if [ -n "$NPM_TOKEN" ]; then
+            export NODE_AUTH_TOKEN="$NPM_TOKEN"
+          fi
+          npm_version="$(npm --version)"
+          if ! node -e 'const [a, b] = process.argv[1].split(".").map(Number); process.exit(a > 11 || (a === 11 && b >= 15) ? 0 : 1)' "$npm_version"; then
+            echo "::error::npm $npm_version cannot stage a package, and staging needs npm 11.15.0 or later"
+            exit 1
+          fi
+          tag="$(cat tarballs/dist-tag.txt)"
+          staged=()
+          # Read into a list first, so that nothing npm runs can read the rest
+          # of it from standard input.
+          mapfile -t lines < tarballs/order.txt
+          for line in "${lines[@]}"; do
+            read -r name tarball <<< "$line"
+            if [ "$(npm view "$name@$VERSION" version 2>/dev/null || true)" = "$VERSION" ]; then
+              echo "$name@$VERSION is already published"
+              continue
+            fi
+            # Kept whole before it is searched: grep -q stops at the first
+            # match, and npm still writing would then end the pipe with a
+            # failure that reads as "not staged".
+            waiting="$(npm stage list "$name" --json 2>/dev/null || true)"
+            if grep -q -F "\"$VERSION\"" <<< "$waiting"; then
+              echo "$name@$VERSION is already staged"
+              staged+=("$name")
+              continue
+            fi
+            if [ -z "$NPM_TOKEN" ] && ! npm view "$name" name > /dev/null 2>&1; then
+              echo "::error::$name is not on npm yet, so it cannot trust this workflow, and there is no NPM_TOKEN secret to stage it with. The first release on npm needs one - docs/NPM-PUBLISH-2026-11-09.md"
+              exit 1
+            fi
+            npm stage publish "./tarballs/$tarball" --access public --tag "$tag" --provenance
+            staged+=("$name")
+          done
+          {
+            echo "## $VERSION staged on npm"
+            echo
+            echo "Approve each one on npmjs.com with two-factor authentication, in this order."
+            echo "The systems come first, so that nobody installs testing-files-generator before its binary is there."
+            echo
+            for name in "${staged[@]}"; do
+              echo "1. \`$name@$VERSION\`"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
