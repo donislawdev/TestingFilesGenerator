@@ -1,0 +1,30 @@
+# A package with no code of its own. It installs testing-files-generator of
+# the same version, whose pytest plugin pytest loads on its own, and is here so
+# that pytest's list of plugins and a search for a pytest plugin find it.
+# release/assemble.py of testing-files-generator writes its wheel, and pins
+# testing-files-generator to the version of the release. The version here is
+# never raised by hand.
+
+[project]
+name = "pytest-testing-files-generator"
+version = "0.0.0.dev0"
+description = "pytest plugin for testing-files-generator: real files of exact sizes and formats for tests, and what the system under test should do with each one."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MPL-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "DonislawDev" }]
+keywords = ["pytest", "pytest-plugin", "test files", "fixtures", "file upload", "upload testing", "qa"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Pytest",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = ["testing-files-generator", "pytest>=8"]
+
+[project.urls]
+Homepage = "https://github.com/donislawdev/TestingFilesGenerator/tree/main/python/testing-files-generator#readme"
+Source = "https://github.com/donislawdev/TestingFilesGenerator"
+Issues = "https://github.com/donislawdev/TestingFilesGenerator/issues"

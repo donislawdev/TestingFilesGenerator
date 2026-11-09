@@ -49,12 +49,17 @@ def system_name(system: str | None = None, machine: str | None = None) -> str:
     return f"{system} {_ARCH.get(machine, machine)}"
 
 
-def _why_none(bits: int) -> str:
+def _why_none(system: str, bits: int) -> str:
     # Why pip took the wheel without a binary on a system that has one. The
     # wheel pip takes is decided by the Python that installs it, and a 32-bit
-    # Python on 64-bit Windows is matched to wheels for 32-bit Python.
+    # Python on 64-bit Windows is matched to wheels for 32-bit Python. On
+    # macOS the wheel with the binary also names the oldest macOS the binary
+    # runs on, and pip passes it over on an older one.
     if bits == 32:
         return "this Python is 32-bit, and the binary comes in wheels for 64-bit Python"
+    if system == "darwin":
+        return ("pip found no wheel with a binary for this version of macOS. The name of the wheel for macOS "
+                "says the oldest version the binary runs on, such as macosx_13_0 for macOS 13")
     return "pip found no wheel with a binary for this system"
 
 
@@ -96,7 +101,7 @@ def binary_path(*, env: Mapping[str, str] | None = None, system: str | None = No
                            "package for Linux, or install tfg another way and set TFG_BINARY to its path."
                            + (_ROSETTA if name == "darwin x64" else ""))
     if not os.path.isdir(bin_dir):
-        raise RuntimeError(f"This install of testing-files-generator has no tfg binary: {_why_none(bits)}. "
+        raise RuntimeError(f"This install of testing-files-generator has no tfg binary: {_why_none(name.split(' ')[0], bits)}. "
                            f"The binary comes for {known}, each in a wheel of its own. Install the package with "
                            "a 64-bit Python made for this system, or install tfg another way and set "
                            "TFG_BINARY to its path.")
