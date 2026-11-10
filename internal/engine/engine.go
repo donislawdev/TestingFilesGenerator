@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -728,6 +729,21 @@ func (res *Result) entryFor(f PlannedFile, sha string, materialized bool, failur
 	}
 
 	label, _ := f.Plan.Properties[format.PropertyLabelEmbedded].(bool)
+	props := f.Plan.Properties
+	if label && f.Damaged() {
+		// The generator wrote the label and a damage came after it. Where the
+		// label sits differs by format - the first line of a text, pixels in
+		// a picture, a part inside a package - so whether a damage reached it
+		// cannot be said once for all of them. Measured 2026-11-09: zero-head
+		// on txt overwrote the label it sat beside, and the manifest still
+		// claimed it. So a damaged file never claims its label, and the note
+		// says why (docs/DAMAGE-ETAP-2-2026-11-09.md section 4.7).
+		label = false
+		props = maps.Clone(props)
+		props[format.PropertyLabelEmbedded] = false
+		notes = append(notes, res.note("label_not_guaranteed",
+			core.Says("engine.LabelNotGuaranteed", "The label was written before the file was damaged, so the damage may have overwritten it.")))
+	}
 
 	e := manifest.File{
 		ID:            f.ID,
@@ -741,7 +757,7 @@ func (res *Result) entryFor(f PlannedFile, sha string, materialized bool, failur
 		Seed:          core.SeedLabel(f.Seed),
 		Generator:     manifest.GeneratorRef{Name: f.Desc.ID, Version: f.Desc.GeneratorVersion},
 		Determinism:   string(f.Plan.Determinism),
-		Properties:    f.Plan.Properties,
+		Properties:    props,
 		LabelEmbedded: label,
 		Damage:        damageFor(f),
 		Notes:         notes,

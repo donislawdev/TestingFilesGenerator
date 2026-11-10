@@ -17092,4 +17092,25 @@ MUTATIONS = [
         "    if False:",
         "TestEveryDamageIsRefusedByTheStructuralCheckInEveryFormat",
     ),
+    (
+        "a damaged file claims its label again, as the generator left it",
+        "internal/engine/engine.go",
+        "	if label && f.Damaged() {",
+        "	if false && label && f.Damaged() {",
+        "TestADamagedFileNeverClaimsItsLabel",
+    ),
+    (
+        "a damaged file stops claiming its label in one place and keeps claiming it in its properties",
+        "internal/engine/engine.go",
+        "		props[format.PropertyLabelEmbedded] = false\n",
+        "",
+        "TestADamagedFileNeverClaimsItsLabel",
+    ),
+    (
+        "a damaged file stops claiming its label without saying why",
+        "internal/engine/engine.go",
+        '		notes = append(notes, res.note("label_not_guaranteed",',
+        '		_ = append(notes, res.note("label_not_guaranteed",',
+        "TestADamagedFileNeverClaimsItsLabel",
+    ),
 ]

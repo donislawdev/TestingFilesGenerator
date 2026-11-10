@@ -45,9 +45,9 @@ type witnessCase struct {
 // covered every format, including one added the day after the sweep. Now
 // every format in the registry meets every damage in the registry, with its
 // default values and each parameter at both ends, at the smallest size the
-// pair can be given and at 20 kB. Each file comes from the real engine, and
-// the structural checker judges it beside a healthy file of the same format
-// and size.
+// pair can be given and at 20 kB. Each file comes from the real engine with
+// its label, as both surfaces write by default, and the structural checker
+// judges it beside a healthy file of the same format and size.
 //
 // Red when a damaged file is accepted, and red when the checker falls over
 // instead of answering: a crash is a fault in the checker, never a witness. A
@@ -164,7 +164,8 @@ func damagePointsOf(t *testing.T, d damage.Descriptor) []damagePoint {
 // damage point at the two sizes, all in one run of the engine.
 func witnessCasesOf(t *testing.T, dir string, f format.Descriptor, points []damagePoint) []witnessCase {
 	t.Helper()
-	smallest := f.SmallestAccepted(format.Request{})
+	// With the label, because that is how both surfaces write by default.
+	smallest := f.SmallestAccepted(format.Request{Label: true})
 
 	var targets []engine.Target
 	var cases []witnessCase
@@ -177,11 +178,11 @@ func witnessCasesOf(t *testing.T, dir string, f format.Descriptor, points []dama
 		}
 		for _, size := range witnessSizes(max(smallest, floor)) {
 			id := fmt.Sprintf("p%d-%d", n, size)
-			targets = append(targets, engine.Target{ID: id, Format: f.ID, Sizes: engine.Uniform(1, size), Damage: chain})
+			targets = append(targets, engine.Target{ID: id, Format: f.ID, Sizes: engine.Uniform(1, size), Damage: chain, Label: true})
 			cases = append(cases, witnessCase{format: f.ID, point: p, size: size, broken: id})
 			if !sized[size] {
 				sized[size] = true
-				targets = append(targets, engine.Target{ID: fmt.Sprintf("good-%d", size), Format: f.ID, Sizes: engine.Uniform(1, size)})
+				targets = append(targets, engine.Target{ID: fmt.Sprintf("good-%d", size), Format: f.ID, Sizes: engine.Uniform(1, size), Label: true})
 			}
 		}
 	}
