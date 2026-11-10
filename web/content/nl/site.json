@@ -210,7 +210,8 @@
         "een bestand dat op extensie wordt gecontroleerd en nooit geopend, zodat een PDF met de naam .jpg erdoor komt",
         "een formulier dat de hele body in het geheugen leest voordat het kijkt hoe groot hij is",
         "een upload met de naam PHOTO.JPG die wordt geweigerd terwijl photo.jpg wordt aangenomen, of andersom",
-        "een naam met spaties, haakjes of tekens buiten ASCII die ongewijzigd naar schijf wordt geschreven"
+        "een naam met spaties, haakjes of tekens buiten ASCII die ongewijzigd naar schijf wordt geschreven",
+        "een naam met een pad erin, zoals ../, die ongewijzigd wordt gebruikt, waardoor het bestand buiten de uploadmap wordt geschreven"
       ],
       "details": {
         "limit": "De groottelimiet die je uploadformulier opgeeft. Deze set zet één stap aan beide kanten - voor een bestand op elke afstand draai je de preset size-boundaries.",

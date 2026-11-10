@@ -24,6 +24,7 @@
   "Catch.upload-validation.4": { "hash": "sha256-5f1862f0a060", "other": "formularz, który wczytuje całe żądanie do pamięci, zanim sprawdzi, jak jest duże" },
   "Catch.upload-validation.5": { "hash": "sha256-3d1670bd44fd", "other": "plik PHOTO.JPG odrzucony tam, gdzie photo.jpg przechodzi, albo odwrotnie" },
   "Catch.upload-validation.6": { "hash": "sha256-b918ae8fc864", "other": "nazwa ze spacjami, nawiasami albo znakami spoza ASCII zapisana na dysk bez zmian" },
+  "Catch.upload-validation.7": { "hash": "sha256-f906aaaefbdb", "other": "nazwa ze ścieżką w środku, na przykład ../, użyta tak, jak przyszła, przez co plik trafia poza katalog uploadu" },
   "Choice.algorithm.md5": { "hash": "sha256-3ebff31b62c0", "other": "md5" },
   "Choice.algorithm.sha1": { "hash": "sha256-b1565820a5cd", "other": "sha1" },
   "Choice.algorithm.sha256": { "hash": "sha256-5d5b09f6dcb2", "other": "sha256" },

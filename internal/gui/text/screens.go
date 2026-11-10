@@ -534,6 +534,7 @@ func DetailSizeWay() string {
 }
 func FieldGroup() string    { return say("FieldGroup", "Kind of case") }
 func FieldPurpose() string  { return say("FieldPurpose", "Purpose") }
+func FieldSendAs() string   { return say("FieldSendAs", "Send as") }
 func FieldExpected() string { return say("FieldExpected", "Expected outcome") }
 func FieldReason() string   { return say("FieldReason", "Rule being tested") }
 func FieldManifest() string { return say("FieldManifest", "Manifest file name") }
@@ -546,6 +547,9 @@ func HintBoundary() string {
 func HintGroup() string { return say("HintGroup", "Marks several batches as one kind of case.") }
 func HintPurpose() string {
 	return say("HintPurpose", "What these files are and why they are in the set.")
+}
+func HintSendAs() string {
+	return say("HintSendAs", "The name to give these files to your system, when it is not the name on disk.")
 }
 func HintExpected() string {
 	return say("HintExpected", "What the system under test should do with these files.")
@@ -562,6 +566,9 @@ func DetailBoundary() string {
 }
 func DetailPurpose() string {
 	return say("DetailPurpose", "It is written into the manifest and into the instructions beside it, which say what every file of the run is for. It changes no byte of any file.")
+}
+func DetailSendAs() string {
+	return say("DetailSendAs", "For a name no disk stores, such as ../climbed_out.jpg. The files keep their own names in the folder and the manifest carries this one, so a test can upload each file under it. It changes no byte of any file.")
 }
 func DetailGroup() string {
 	return say("DetailGroup", "It reaches the manifest, so a test can assert about a whole class of case at once.")

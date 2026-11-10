@@ -105,3 +105,27 @@ func HoldsUnseen(s string) bool {
 	}
 	return false
 }
+
+// ShownExactly writes a value so that a person can tell exactly what it is:
+// as itself when every character in it can be seen, and in double quotes with
+// escapes when one cannot.
+//
+// For a value that may hold a backslash of its own. Shown escapes a character
+// nobody can see with a backslash and leaves the rest alone, which is only
+// unambiguous for a file name, where a backslash is refused on every system. A
+// name a file is sent under may be a Windows path, and then a backslash, a u
+// and four digits written by its author would read the same as an escape
+// written here. The quotes are what tell the two apart: without them every
+// character is the one written, and inside them a backslash starts an escape.
+//
+// A value with a space at either end, or one that begins with a double quote,
+// is quoted too. A line of text hides the first, and the second would read as
+// the quoted form.
+func ShownExactly(s string) string {
+	plain := s != "" && !HoldsUnseen(s) && utf8.ValidString(s) &&
+		s[0] != ' ' && s[len(s)-1] != ' ' && s[0] != '"'
+	if plain {
+		return s
+	}
+	return strconv.Quote(s)
+}

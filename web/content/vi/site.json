@@ -210,7 +210,8 @@
         "tệp chỉ được kiểm bằng phần mở rộng mà không bao giờ mở, nên PDF đặt tên .jpg vẫn qua",
         "biểu mẫu đọc cả phần thân vào bộ nhớ trước khi xem nó lớn đến đâu",
         "lần tải lên tên PHOTO.JPG bị từ chối trong khi photo.jpg được nhận, hoặc ngược lại",
-        "tên có dấu cách, ngoặc hoặc ký tự ngoài ASCII được ghi xuống đĩa không thay đổi"
+        "tên có dấu cách, ngoặc hoặc ký tự ngoài ASCII được ghi xuống đĩa không thay đổi",
+        "tên có chứa đường dẫn, chẳng hạn ../, được dùng nguyên như vậy nên tệp bị ghi ra ngoài thư mục tải lên"
       ],
       "details": {
         "limit": "Giới hạn kích thước mà biểu mẫu tải lên của bạn khai báo. Bộ này đi một bước về mỗi phía - muốn tệp ở mọi khoảng cách, hãy chạy preset size-boundaries.",

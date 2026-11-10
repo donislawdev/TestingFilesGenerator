@@ -210,7 +210,8 @@
         "un archivo comprobado por su extensión y nunca abierto, de modo que un PDF llamado .jpg pasa",
         "un formulario que lee todo el cuerpo en memoria antes de mirar su tamaño",
         "una subida llamada PHOTO.JPG rechazada donde photo.jpg se acepta, o al revés",
-        "un nombre con espacios, paréntesis o caracteres fuera de ASCII escrito en disco sin cambios"
+        "un nombre con espacios, paréntesis o caracteres fuera de ASCII escrito en disco sin cambios",
+        "un nombre con una ruta dentro, como ../, usado tal cual, de modo que el archivo se escribe fuera del directorio de subida"
       ],
       "details": {
         "limit": "El límite de tamaño que declara tu formulario de subida. Este conjunto da un paso a cada lado - para un archivo a cada distancia, ejecuta el preset size-boundaries.",

@@ -21,11 +21,15 @@ function file(name) {
 
 test('every file says what the vectors say it says', () => {
   assert.ok(vectors.files.length >= 4);
+  // One file at least is sent under a name that is not its own, or the line
+  // about sendAs below compares a name with itself every time.
+  assert.ok(vectors.files.some((want) => want.send_as !== vectors.entries[want.entry].name));
   for (const want of vectors.files) {
     const f = file(want.entry);
     assert.equal(f.title, want.title, want.entry);
     assert.deepEqual(f.details.tag, want.marks.map((m) => `@${m}`), want.entry);
     assert.equal(f.whyUnspecified, want.why_unspecified, want.entry);
+    assert.equal(f.sendAs, want.send_as, want.entry);
   }
 });
 

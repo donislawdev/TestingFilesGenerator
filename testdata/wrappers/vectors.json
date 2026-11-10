@@ -1,5 +1,5 @@
 {
-  "about": "What a file of a set says of itself, and what check makes of what a system did, for the npm package (npm/testing-files-generator/test/vectors.test.js) and the Python package (python/testing-files-generator/tests/test_vectors.py). Both read this file, so a sentence changed in one package and not the other fails the tests of the other. result is pass, mismatch (with the whole message), unspecified or bad-input - the last two say what to do in the words of each language, so only the kind is shared. The groups are spelled differently on purpose - with a space, with a hyphen and with a punctuation mark (size limit, size-limit, hostile-names!) - because a group becomes a Playwright tag and a pytest marker, and these are the ways a group name can be written.",
+  "about": "What a file of a set says of itself, and what check makes of what a system did, for the npm package (npm/testing-files-generator/test/vectors.test.js) and the Python package (python/testing-files-generator/tests/test_vectors.py). Both read this file, so a sentence changed in one package and not the other fails the tests of the other. result is pass, mismatch (with the whole message), unspecified or bad-input - the last two say what to do in the words of each language, so only the kind is shared. The groups are spelled differently on purpose - with a space, with a hyphen and with a punctuation mark (size limit, size-limit, hostile-names!) - because a group becomes a Playwright tag and a pytest marker, and these are the ways a group name can be written. send_as is the name each package gives for handing the file to the system under test: the entry's send_as when it has one, and its name when it has none.",
   "entries": {
     "big": {
       "path": "big.jpg",
@@ -60,6 +60,20 @@
       "expected": {
         "outcome": "sanitize"
       }
+    },
+    "climbing": {
+      "path": "climbing_name.jpg",
+      "name": "climbing_name.jpg",
+      "send_as": "..\\tfg_climbed_out.jpg",
+      "target_id": "climbing_name",
+      "bytes": 4096,
+      "format": "jpg",
+      "group": "hostile-names",
+      "purpose": "A name that steps one directory up.",
+      "expected": {
+        "outcome": "unspecified",
+        "reason": "filename_traversal"
+      }
     }
   },
   "files": [
@@ -70,7 +84,8 @@
         "reject",
         "size-limit"
       ],
-      "why_unspecified": "big.jpg has no expected outcome - what your system does with it is its own policy. Taking it means the limit is not enforced."
+      "why_unspecified": "big.jpg has no expected outcome - what your system does with it is its own policy. Taking it means the limit is not enforced.",
+      "send_as": "big.jpg"
     },
     {
       "entry": "ok",
@@ -78,7 +93,8 @@
       "marks": [
         "accept"
       ],
-      "why_unspecified": "ok.png has no expected outcome - what your system does with it is its own policy."
+      "why_unspecified": "ok.png has no expected outcome - what your system does with it is its own policy.",
+      "send_as": "ok.png"
     },
     {
       "entry": "empty",
@@ -87,7 +103,8 @@
         "unspecified",
         "degenerate"
       ],
-      "why_unspecified": "empty.jpg has no expected outcome - what your system does with it is its own policy. An empty file."
+      "why_unspecified": "empty.jpg has no expected outcome - what your system does with it is its own policy. An empty file.",
+      "send_as": "empty.jpg"
     },
     {
       "entry": "spaced",
@@ -96,7 +113,18 @@
         "sanitize",
         "hostile-names-"
       ],
-      "why_unspecified": "a b.txt has no expected outcome - what your system does with it is its own policy."
+      "why_unspecified": "a b.txt has no expected outcome - what your system does with it is its own policy.",
+      "send_as": "a b.txt"
+    },
+    {
+      "entry": "climbing",
+      "title": "climbing_name.jpg - expected unspecified (filename_traversal)",
+      "marks": [
+        "unspecified",
+        "hostile-names"
+      ],
+      "why_unspecified": "climbing_name.jpg has no expected outcome - what your system does with it is its own policy. A name that steps one directory up.",
+      "send_as": "..\\tfg_climbed_out.jpg"
     }
   ],
   "checks": [

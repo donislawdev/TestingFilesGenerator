@@ -162,6 +162,20 @@ type File struct {
 	ID   string `json:"id"`
 	Path string `json:"path"`
 	Name string `json:"name"`
+	// SendAs is the name to hand the file to the system under test under,
+	// when the recipe asked for one that is not the name on disk - a name
+	// that climbs out of a directory, say, which no file system stores.
+	//
+	// Absent when nobody asked, so every manifest written before this
+	// existed is byte for byte what it was.
+	//
+	// A field of its own rather than a different value in Name, and that is a
+	// decision about other people's code. Name has always been the last part
+	// of Path, so a script that joins a directory and Name lands on the file.
+	// Handing that script "../x" in Name would put a path traversal into the
+	// consumer of a tool that exists to test for them. Nothing here reads this
+	// field to find a file: verify and cleanup go by Path alone.
+	SendAs string `json:"send_as,omitempty"`
 	// Materialized says whether the file is on disk. A name the host system
 	// refuses is still a test case, and its entry still exists.
 	Materialized bool `json:"materialized"`
@@ -234,9 +248,20 @@ type File struct {
 	// Notes are the things that must not be swallowed - a label that did not
 	// fit, a fidelity level lowered on the fly, a file that failed.
 	Notes []Note `json:"notes,omitempty"`
-	// Failed marks an entry the run could not produce. The run carries on and
-	// ends with the partial exit code, because nine thousand good files are
-	// worth keeping.
+	// Failure is set for an entry the run could not produce. Its two keys sit
+	// in the entry itself, beside the others, as they always have.
+	Failure
+}
+
+// Failure marks an entry the run could not produce, and says why. The run
+// carries on and ends with the partial exit code, because nine thousand good
+// files are worth keeping.
+//
+// A type of its own since the entry gained the name a file is sent under and
+// went past what one type should hold. These two are the pair that is always
+// set together and read together, and written inside File without a name they
+// keep their place in the document: the same two keys, last in the entry.
+type Failure struct {
 	Failed bool   `json:"failed,omitempty"`
 	Error  string `json:"error,omitempty"`
 }

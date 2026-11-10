@@ -46,6 +46,8 @@ export interface ManifestFile {
   path: string;
   /** The file's name. */
   name: string;
+  /** The name to upload the file under, for a file whose test is a name no disk stores, such as ../climbed_out.jpg. Absent for every other file. */
+  send_as?: string;
   /** Whether the file is on the disk. Every file of a plan has false. */
   materialized: boolean;
   /** The recipe target that made the file. */
@@ -133,6 +135,11 @@ export interface TestFile {
   readonly relativePath: string;
   /** The file's name. */
   readonly name: string;
+  /**
+   * The name to upload the file under: the manifest's send_as for a file whose test is a name no disk stores,
+   * and the file's own name for every other. Pass it wherever an upload takes a file name.
+   */
+  readonly sendAs: string;
   /** The file's format, such as jpg. */
   readonly format: string;
   /** The file's exact size in bytes. */

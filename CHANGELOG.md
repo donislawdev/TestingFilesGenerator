@@ -16,6 +16,14 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A file can be sent under a name no disk stores.** `send-as` in a recipe,
+  `--send-as` on the command line and Send as in the window take a name such
+  as `../climbed_out.jpg`. The file keeps an ordinary name on disk and the
+  manifest carries the other one in `send_as`, for a test to upload it under.
+  `upload-validation` gains four such files: a step up with either separator,
+  an absolute path and a drive letter. The npm and PyPI packages give the
+  name as `file.sendAs` and `file.send_as`. A path in `name` is still refused.
+
 - **Two more ways to break a file on purpose: `truncate` and `append-junk`.**
   `--damage truncate` cuts the end off a file, the way an interrupted upload
   leaves it, and `--damage append-junk` writes random bytes after its end.
@@ -72,6 +80,13 @@ because it turns other people's test suites red.
   installs `tfg` on Windows and macOS runners in GitHub Actions.
 
 ### Changed
+
+- **`upload-validation` is four files longer.** The files sent under a name
+  that leaves the upload directory are four targets more in the recipe
+  `tfg preset eject upload-validation` prints. A manifest from a run of that
+  preset records the hash of that recipe, so its `recipe_hash` differs from
+  one written before. Every file the preset wrote before is written as it
+  was and keeps its `id`, because the new four come last in the run.
 
 - **`expected: accept` beside a damage is allowed where the outcome depends
   on your system.** It used to be refused beside every damage. It is still

@@ -40,6 +40,13 @@ class TestFile {
 
   get relativePath() { return this.entry.path; }
   get name() { return this.entry.name; }
+
+  // The name to hand the file to the system under test under. A set can hold
+  // files whose test is a name no disk stores - one that climbs out of a
+  // directory, say - and such a file has an ordinary name on disk and the
+  // other one in send_as. Every other file goes under its own name, so one
+  // upload loop written with this serves the whole set.
+  get sendAs() { return this.entry.send_as ?? this.entry.name; }
   get format() { return this.entry.format; }
   get bytes() { return this.entry.bytes; }
   get group() { return this.entry.group ?? ''; }

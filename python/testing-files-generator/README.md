@@ -12,6 +12,7 @@ A PDF of exactly 1 MiB and one byte is a real PDF, so a server that looks inside
 - [The words this package uses](#the-words-this-package-uses)
 - [Telling the set what your system did](#telling-the-set-what-your-system-did)
 - [Files with no right answer](#files-with-no-right-answer)
+- [Files sent under another name](#files-sent-under-another-name)
 - [Choosing the files](#choosing-the-files)
 - [When the files are written, and where they are kept](#when-the-files-are-written-and-where-they-are-kept)
 - [In CI](#in-ci)
@@ -160,7 +161,7 @@ import requests
 @pytest.mark.parametrize("file", uploads.params())
 def test_upload_api(file):
     with open(file.path(), "rb") as body:
-        response = requests.post("http://localhost:3000/upload", files={"file": (file.name, body)})
+        response = requests.post("http://localhost:3000/upload", files={"file": (file.send_as, body)}, timeout=30)
     assert response.status_code < 500, "a server error is not a refusal"
     file.check("accept" if response.ok else {"outcome": "reject", "reason": response.json().get("reason")})
 ```
@@ -207,6 +208,31 @@ Once you have decided what your system should do with such a file, write that do
    ```
 
 `empty.jpg` is then a test like any other, named `empty.jpg - expected reject (size_zero)`, and it fails when your form takes an empty file.
+
+## Files sent under another name
+
+Four files of `upload-validation` test a name that no disk stores, such as `../tfg_climbed_out.jpg`. Each is written under an ordinary name, and `file.send_as` is the name to upload it under. For every other file `file.send_as` is the file's own name, so one loop serves the whole set.
+
+These four are `unspecified`, because two answers are right: turning the name away, and storing the file under a name with no path in it. What is wrong is a file written outside your upload directory, and no answer from the server shows that. So a test of your own sends the file and then looks where it must not be:
+
+```python
+import pytest
+import requests
+
+climbing = [file for file in uploads.files if file.send_as != file.name]
+
+
+@pytest.mark.parametrize("file", climbing, ids=lambda file: file.title)
+def test_a_name_with_a_path_stays_inside_the_upload_directory(file):
+    with open(file.path(), "rb") as body:
+        requests.post("http://localhost:3000/upload", files={"file": (file.send_as, body)}, timeout=30)
+    # Your own check: nothing called tfg_climbed_out is above the upload directory.
+```
+
+Two things to know:
+
+- **The name reaches your server as it is.** What your framework then hands your code may already be cut down to its last part, and that is the framework doing the right thing.
+- **Not every client sends a name unchanged.** `requests` does. `httpx` writes every backslash twice, so `..\tfg_climbed_out.jpg` arrives as `..\\tfg_climbed_out.jpg`, which is another name. Use `requests` for these files, or look at what your client puts in the request.
 
 ## Choosing the files
 
@@ -336,7 +362,7 @@ class Uploads(unittest.TestCase):
                 if file.unspecified:
                     self.skipTest(file.why_unspecified)
                 with open(file.path(), "rb") as body:
-                    response = requests.post("http://localhost:3000/upload", files={"file": (file.name, body)})
+                    response = requests.post("http://localhost:3000/upload", files={"file": (file.send_as, body)}, timeout=30)
                 self.assertLess(response.status_code, 500, "a server error is not a refusal")
                 file.check("accept" if response.ok else "reject")
 ```
@@ -381,6 +407,7 @@ Plans a set and gives it back. Nothing is written until a test asks for a file.
 | `path()` | writes the set the first time it is called, and gives this file's absolute path |
 | `check(observed)` | `"accept"`, `"reject"`, `"sanitize"` or `{"outcome": ..., "reason": ...}`. Raises `ExpectationError` when it is not what the file expects |
 | `name`, `relative_path` | the file's name, and its path within the set |
+| `send_as` | the name to upload the file under: the manifest's `send_as` when the file has one, and `name` when it has none |
 | `format`, `bytes` | the format, such as `jpg`, and the exact size in bytes |
 | `group`, `target`, `purpose` | the file's group, the recipe target that made it, and its purpose |
 | `expected` | `{"outcome", "reason", "detail", "confidence"}` as the manifest has it |

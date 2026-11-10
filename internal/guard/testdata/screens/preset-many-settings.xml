@@ -62,10 +62,10 @@
 										</widget>
 									</container>
 								</container>
-								<container pos="0,73" size="820x347">
-									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x347" strokeColor="button" strokeWidth="1"/>
-									<container size="820x347">
-										<container pos="16,16" size="788x315">
+								<container pos="0,73" size="820x367">
+									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x367" strokeColor="button" strokeWidth="1"/>
+									<container size="820x367">
+										<container pos="16,16" size="788x335">
 											<container size="788x36">
 												<container pos="-8,0" size="796x36">
 													<container size="792x36">
@@ -88,7 +88,7 @@
 													</container>
 												</container>
 											</container>
-											<container pos="0,52" size="788x262">
+											<container pos="0,52" size="788x283">
 												<container size="185x58">
 													<container size="185x58">
 														<container size="185x24">
@@ -116,7 +116,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="0,74" size="788x187">
+												<container pos="0,74" size="788x208">
 													<container size="788x16">
 														<widget pos="-6,-6" size="800x28" type="*widget.Label">
 															<widget size="800x28" type="*widget.RichText">
@@ -131,7 +131,7 @@
 															</widget>
 														</widget>
 													</container>
-													<container pos="0,65" size="788x121">
+													<container pos="0,65" size="788x142">
 														<container size="788x16">
 															<text color="rgba(211,211,215,255)" size="7x16">•</text>
 															<container pos="15,0" size="772x16">
@@ -192,13 +192,23 @@
 																</widget>
 															</container>
 														</container>
+														<container pos="0,125" size="788x16">
+															<text color="rgba(211,211,215,255)" size="7x16">•</text>
+															<container pos="15,0" size="772x16">
+																<widget pos="-6,-6" size="784x28" type="*widget.Label">
+																	<widget size="784x28" type="*widget.RichText">
+																		<text pos="6,6" size="655x16">a name with a path in it, such as ../, used as given, so the file is written outside the upload directory</text>
+																	</widget>
+																</widget>
+															</container>
+														</container>
 													</container>
 												</container>
 											</container>
 										</container>
 									</container>
 								</container>
-								<container pos="0,444" size="820x244">
+								<container pos="0,465" size="820x244">
 									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x244" strokeColor="button" strokeWidth="1"/>
 									<container size="820x244">
 										<container pos="16,16" size="788x212">
@@ -389,7 +399,7 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,713" size="820x222">
+								<container pos="0,734" size="820x222">
 									<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x222" strokeColor="button" strokeWidth="1"/>
 									<container size="820x222">
 										<container pos="16,16" size="788x190">
@@ -517,7 +527,7 @@
 														<container size="788x16">
 															<widget pos="-6,-6" size="800x28" type="*widget.Label">
 																<widget size="800x28" type="*widget.RichText">
-																	<text pos="6,6" size="421x16">71 files · 115.1 MB (120 639 488 B) · 6 formats · will go to /tfg/out</text>
+																	<text pos="6,6" size="422x16">75 files · 115.1 MB (120 655 872 B) · 6 formats · will go to /tfg/out</text>
 																</widget>
 															</widget>
 														</container>

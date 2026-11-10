@@ -3,6 +3,7 @@ package engine
 import (
 	"path/filepath"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
@@ -32,7 +33,7 @@ func checkFileName(setting string, where core.Said, name string) error {
 		return &RecipeError{Setting: setting,
 			Detail:  core.Says("engine.NameIsAPath", "%s produces the name %q, which is a path rather than a file name", core.A("Where", where), core.A("Name", name)),
 			Because: core.Says("engine.NameIsAPathWhy", "names stay inside the output directory, and a separator is refused on every system so that a recipe works everywhere"),
-			Remedy:  chooseTheDirectory()}
+			Remedy:  wayOutOfAPath(setting)}
 
 	// A colon, on every system, for the same reason as a separator.
 	//
@@ -166,6 +167,54 @@ func checkFileName(setting string, where core.Said, name string) error {
 // chooseTheDirectory is the way out of a name that tries to be a place.
 func chooseTheDirectory() core.Said {
 	return core.Says("engine.ChooseTheDirectory", "Choose the directory with the output setting instead")
+}
+
+// wayOutOfAPath is what a name refused for holding a separator is told to do.
+//
+// Only the name of a target's files can be sent under another one. The
+// manifest and the instructions beside it are never uploaded anywhere, so
+// naming send-as for them would send their reader to a setting that does
+// nothing for the file in front of them.
+func wayOutOfAPath(setting string) core.Said {
+	if setting == SettingName {
+		return keepTheNameAndSendItAs()
+	}
+	return chooseTheDirectory()
+}
+
+// keepTheNameAndSendItAs is the way out for somebody who wants the path in the
+// name on purpose, to see what their system does with it. The refusal above is
+// the first place they meet the rule, so it is where the other setting has to
+// be named.
+func keepTheNameAndSendItAs() core.Said {
+	return core.Says("engine.KeepTheNameAndSendItAs", "Choose the directory with the output setting instead. "+
+		"To test what your system does with such a name, keep an ordinary name here and write that one in the send-as setting")
+}
+
+// checkSendAs judges the name a target's files are handed over under.
+//
+// Almost nothing is refused, and that is the point of the setting: a
+// separator, a colon, a control character and a dot at the end are all names
+// somebody sends on purpose, and none of them touches a disk here. What is
+// left is what the manifest cannot carry - text that is not UTF-8, which JSON
+// would replace without a word - and a length nothing bounds.
+func checkSendAs(t *Target) error {
+	switch {
+	case !utf8.ValidString(t.SendAs):
+		return &RecipeError{Setting: core.SettingSendAs,
+			Detail:  core.Says("engine.SendAsNotText", "target %q has {a} {setting} value that is not valid UTF-8", core.A("Target", t.ID)),
+			Because: core.Says("engine.SendAsNotTextWhy", "the manifest is a JSON document, and it would carry a different name than the one asked for"),
+			Remedy:  core.Says("engine.SendAsNotTextFix", "Write the name in UTF-8")}
+
+	case len(t.SendAs) > core.MaxSendAsBytes:
+		return &RecipeError{Setting: core.SettingSendAs,
+			Detail: core.Says("engine.SendAsTooLong", "target %q has {a} {setting} value of %d bytes",
+				core.A("Target", t.ID), core.A("Length", len(t.SendAs))),
+			Because: core.Says("engine.SendAsTooLongWhy", "the name a file is sent under is kept to %d bytes, twice the longest path Linux takes, so that the manifest stays a size a tool can read",
+				core.A("Most", core.MaxSendAsBytes)),
+			Remedy: core.Says("engine.SendAsTooLongFix", "Shorten it to %d bytes or fewer", core.A("Most", core.MaxSendAsBytes))}
+	}
+	return nil
 }
 
 // forbiddenChars are the printable characters Windows refuses in a file name.

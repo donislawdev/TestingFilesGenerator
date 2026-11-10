@@ -101,8 +101,8 @@ func manifestSamples() map[string]*manifest.Manifest {
 		Expected: manifest.Expected{Outcome: "reject", Reason: "size_limit"}, Purpose: "a <b> & c", Group: "g"})
 	many.Add(manifest.File{ID: "deep", Path: "deep.zip", Name: "deep.zip", Format: "zip",
 		Properties: map[string]any{"contains": []any{map[string]any{"format": "txt", "count": 3}}, "depth": 2, "flat": true, "ratio": 0.5}})
-	many.Add(manifest.File{ID: "failed", Path: "failed.png", Name: "failed.png", Format: "png", Failed: true,
-		Error: "a generator stopped", Damage: []manifest.Damage{{Type: "zero-head", Settings: map[string]string{"bytes": "4"}}}})
+	many.Add(manifest.File{ID: "failed", Path: "failed.png", Name: "failed.png", Format: "png",
+		Failure: manifest.Failure{Failed: true, Error: "a generator stopped"}, Damage: []manifest.Damage{{Type: "zero-head", Settings: map[string]string{"bytes": "4"}}}})
 	documents["many entries"] = many
 	return documents
 }

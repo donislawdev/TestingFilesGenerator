@@ -311,6 +311,13 @@ func expandUploadValidation(args Args) ([]byte, error) {
 }
 
 // files is every file of the set except the three around the limit.
+//
+// The order is the order of the manifest, and a file's id there is its place
+// in the run. So a kind of file added to the set goes last, as the names that
+// leave the directory did: put beside the other names they would have moved
+// the id of every file of the mass upload, which is the handle a test written
+// against an earlier version holds. The instructions gather a group from
+// wherever its files stand, so a reader still finds them with the other names.
 func (s uploadSet) files() []setFile {
 	var out []setFile
 	out = append(out, s.farOverFiles()...)
@@ -321,6 +328,7 @@ func (s uploadSet) files() []setFile {
 	out = append(out, s.anomalyFiles()...)
 	out = append(out, s.nameFiles()...)
 	out = append(out, s.bulkFiles()...)
+	out = append(out, s.climbingNames()...)
 	return out
 }
 

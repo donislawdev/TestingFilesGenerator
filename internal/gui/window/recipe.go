@@ -731,6 +731,7 @@ func (b *batch) draft() recipe.TargetDraft {
 		Name:           b.name.Text,
 		Group:          b.notes.group.Text,
 		Purpose:        b.notes.purpose.Text,
+		SendAs:         b.notes.sendAs.Text,
 		Expected:       b.notes.expected.Selected,
 		ExpectedReason: b.notes.reason.Selected,
 		Properties:     props,

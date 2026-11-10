@@ -336,6 +336,9 @@ var reachableFromTheWindow = []string{
 	"recipe:targets.group",
 	// The box under the batch's manifest notes, since 2026-09-25.
 	"recipe:targets.purpose",
+	// The box beside it, since 2026-11-10: the name a file is handed to the
+	// system under test under, when no disk stores it.
+	"recipe:targets.send-as",
 	"recipe:targets.boundary",
 	"recipe:targets.contains",
 	"recipe:targets.expected",

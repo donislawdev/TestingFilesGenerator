@@ -210,7 +210,8 @@
         "eine Datei, die nur an der Endung geprüft und nie geöffnet wird, sodass ein PDF namens .jpg durchgeht",
         "ein Formular, das den ganzen Body in den Speicher liest, bevor es nachsieht, wie groß er ist",
         "ein Upload namens PHOTO.JPG, der abgewiesen wird, während photo.jpg durchkommt, oder umgekehrt",
-        "ein Name mit Leerzeichen, Klammern oder Zeichen außerhalb von ASCII, der unverändert auf die Platte geschrieben wird"
+        "ein Name mit Leerzeichen, Klammern oder Zeichen außerhalb von ASCII, der unverändert auf die Platte geschrieben wird",
+        "ein Name mit einem Pfad darin, etwa ../, der unverändert übernommen wird, sodass die Datei außerhalb des Upload-Verzeichnisses landet"
       ],
       "details": {
         "limit": "Das Größenlimit, das dein Upload-Formular angibt. Dieses Set geht je einen Schritt auf beiden Seiten davon - für eine Datei in jedem Abstand führe das Preset size-boundaries aus.",

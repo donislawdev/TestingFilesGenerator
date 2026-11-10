@@ -430,10 +430,7 @@ func engineTarget(t recipe.Target) engine.Target {
 		BoundaryLimit:    t.BoundaryLimit,
 		NameTmpl:         t.Name,
 		Label:            t.Label,
-		Expected:         t.Expected,
-		ExpectedReason:   t.ExpectedReason,
-		Group:            t.Group,
-		Purpose:          t.Purpose,
+		Notes:            engine.Notes(t.Notes),
 		Properties:       t.Properties,
 	}
 }

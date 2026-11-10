@@ -58,6 +58,18 @@ class TestFile:
         return self.entry["name"]
 
     @property
+    def send_as(self) -> str:
+        """The name to upload the file under.
+
+        A set can hold files whose test is a name no disk stores - one that
+        climbs out of a directory, say. Such a file has an ordinary name on
+        disk and the other one in the manifest's send_as. Every other file
+        goes under its own name, so one upload loop written with this serves
+        the whole set.
+        """
+        return self.entry.get("send_as") or self.entry["name"]
+
+    @property
     def format(self) -> str:
         return self.entry["format"]
 

@@ -210,7 +210,8 @@
         "un fichier contrôlé par son extension et jamais ouvert, si bien qu'un PDF nommé .jpg passe",
         "un formulaire qui lit tout le corps en mémoire avant de regarder sa taille",
         "un envoi nommé PHOTO.JPG refusé là où photo.jpg est accepté, ou l'inverse",
-        "un nom avec des espaces, des parenthèses ou des caractères hors ASCII écrit sur le disque tel quel"
+        "un nom avec des espaces, des parenthèses ou des caractères hors ASCII écrit sur le disque tel quel",
+        "un nom contenant un chemin, comme ../, utilisé tel quel, si bien que le fichier est écrit hors du répertoire d'envoi"
       ],
       "details": {
         "limit": "La limite de taille que déclare votre formulaire d'envoi. Ce jeu fait un pas de chaque côté - pour un fichier à chaque distance, lancez le préréglage size-boundaries.",

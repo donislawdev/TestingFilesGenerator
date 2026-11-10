@@ -179,3 +179,20 @@ func LastSettingSegment(address string) string {
 	}
 	return address
 }
+
+// SettingSendAs is the recipe key for the name a file is handed over under,
+// when that is not the name it has on disk.
+//
+// Here rather than in the engine or the recipe reader because both name it:
+// the reader takes the key and the engine words the refusals about its value,
+// and two spellings of one key is how a refusal comes to point at a box that
+// is not there.
+const SettingSendAs = "send-as"
+
+// MaxSendAsBytes is the longest value of that setting, in bytes of UTF-8.
+//
+// The value never names a file here, so no file system sets this limit. It is
+// set so that a manifest stays a document a tool can read, and at twice the
+// longest path Linux takes (PATH_MAX, 4096) so that a name one byte too long
+// for a path can still be asked for.
+const MaxSendAsBytes = 8192

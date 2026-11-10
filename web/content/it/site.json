@@ -210,7 +210,8 @@
         "un file controllato dall'estensione e mai aperto, così un PDF chiamato .jpg passa",
         "un modulo che legge l'intero corpo in memoria prima di guardare quanto è grande",
         "un upload chiamato PHOTO.JPG respinto dove photo.jpg viene accettato, o il contrario",
-        "un nome con spazi, parentesi o caratteri fuori dall'ASCII scritto su disco senza modifiche"
+        "un nome con spazi, parentesi o caratteri fuori dall'ASCII scritto su disco senza modifiche",
+        "un nome con un percorso al suo interno, come ../, usato così com'è, per cui il file viene scritto fuori dalla directory di upload"
       ],
       "details": {
         "limit": "Il limite di dimensione dichiarato dal tuo modulo di upload. Questo set fa un passo per lato - per un file a ogni distanza, esegui il preset size-boundaries.",

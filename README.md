@@ -365,6 +365,7 @@ tfg generate --format txt --size 1mb    settings come from the flags
 | `--count <n>` | how many files to produce. Default `1` |
 | `--id <name>` | target id, the anchor the seeds are derived from. Default `files` |
 | `--name <template>` | name template, for example `invoice_{index:04}.txt` |
+| `--send-as <name>` | the name to give the file to your system, when it is one no disk stores, such as `../climbed_out.jpg`. The file keeps its own name and the manifest carries this one |
 | `--out <dir>` | directory to write into. Default `.` |
 | `--seed <n>` | run seed. The same seed gives the same bytes |
 | `--set <k>=<v>` | a format setting, repeatable: `--set width=1920 --set height=1080` |
@@ -602,6 +603,7 @@ next to the recipe. Give an absolute path, or `--out`, when you want it fixed.
 | `boundary` | three files around a limit: under, at, over |
 | `contains` | for archives: entries of `format`, `count` and `size` |
 | `name` | name template, such as `invoice_{index:04}.pdf` |
+| `send-as` | the name to give these files to your system, when it is one no disk stores, such as `../climbed_out.jpg` |
 | `label` | override `defaults.label` for this target |
 | `group` | a label carried into the manifest, for grouping in reports |
 | `properties` | the format's own settings. See the table below |
@@ -779,6 +781,11 @@ Every entry also carries `target_id`, the id of the target in the recipe that
 produced the file, and `summary.by_target` counts the files each target came to.
 A recipe with several targets can therefore be checked target by target without
 reading file names.
+
+A file whose test is a name no disk stores, such as `../climbed_out.jpg`, is
+written under an ordinary name, and its entry carries the other one in
+`send_as`. Upload the file under that name. `tfg` never uses it as a path:
+`verify` and `cleanup` go by `path` alone.
 
 ## 🖥️ The desktop window
 
