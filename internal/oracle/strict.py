@@ -11,8 +11,15 @@ written to the specification rather than to what a viewer will put up with. It
 complements the tolerant readers rather than replacing them - a file has to
 pass both.
 
-Usage: python strict.py <format> <path>
+Usage: python strict.py <format> <path> [key=value ...]
 Prints "OK <detail>" or "FAIL <reason>".
+
+Or: python strict.py --batch
+Reads one JSON request per line, {"format": ..., "path": ..., "settings":
+{...}}, and writes one JSON answer per line, {"path": ..., "verdict": ...,
+"reason": ...}, in the order asked. The verdict is OK, FAIL, CRASH (the check
+stopped on an exception instead of giving a verdict) or ERROR (a request
+this script cannot act on).
 """
 
 import re
@@ -23,14 +30,28 @@ import zlib
 from html.parser import HTMLParser
 
 
+class Verdict(SystemExit):
+    """The answer a check gives, raised so that it stops the check where it is.
+
+    It is a SystemExit, so a check's own `except Exception` cannot catch a
+    verdict given inside it and carry on as if nothing had been said. The word
+    and the reason travel with it instead of being printed, so one process can
+    judge many files (--batch) and a check can ask another one in process
+    (html_picture_verdict) without capturing what it printed.
+    """
+
+    def __init__(self, word, reason):
+        super().__init__(0 if word == "OK" else 1)
+        self.word = word
+        self.reason = reason
+
+
 def fail(msg):
-    print("FAIL " + msg)
-    sys.exit(1)
+    raise Verdict("FAIL", msg)
 
 
 def ok(msg):
-    print("OK " + msg)
-    sys.exit(0)
+    raise Verdict("OK", msg)
 
 
 def check_png(data):
@@ -46,6 +67,8 @@ def check_png(data):
         body = data[pos + 8:pos + 8 + length]
         if len(body) != length:
             fail(f"chunk {kind!r} declares {length} B and the file holds {len(body)}")
+        if pos + 12 + length > len(data):
+            fail(f"chunk {kind!r} ends at {len(data)} B, before its 4 B checksum")
         want = struct.unpack(">I", data[pos + 8 + length:pos + 12 + length])[0]
         got = zlib.crc32(kind + body) & 0xFFFFFFFF
         if want != got:
@@ -54,6 +77,8 @@ def check_png(data):
         chunks += 1
         pos += 12 + length
 
+    if not seen:
+        fail("the signature is followed by no chunk at all")
     if seen[0] != b"IHDR":
         fail("the first chunk is not IHDR")
     if seen[-1] != b"IEND":
@@ -146,17 +171,66 @@ def check_pdf(data):
 
 
 def check_zip(data):
+    entries, comment_len = zip_structure(data)
+    ok(f"{entries} entries, comment {comment_len} B")
+
+
+def zip_structure(data):
+    """The archive as the specification lays it out, walked from its end.
+
+    The end of central directory record says where the central directory is
+    and how many entries it holds. Every entry there says where its local
+    header is, and that has to be a local header carrying the same name, with
+    its data ending before the central directory starts. Reading the end alone
+    took an archive whose first bytes were zeroed (measured 2026-11-09): every
+    record read from the end was intact, and the local header a reader needs
+    to reach the data was gone.
+
+    Shared with the Office packages, which are ZIP archives first.
+    Returns the number of entries and the length of the archive comment.
+    """
     end = data.rfind(b"PK\x05\x06")
-    if end < 0:
+    if end < 0 or end + 22 > len(data):
         fail("there is no end of central directory record")
     comment_len = struct.unpack("<H", data[end + 20:end + 22])[0]
     if end + 22 + comment_len != len(data):
         fail(f"the comment declares {comment_len} B and {len(data) - end - 22} follow the record")
     entries = struct.unpack("<H", data[end + 10:end + 12])[0]
-    cd_at = struct.unpack("<I", data[end + 16:end + 20])[0]
+    cd_size, cd_at = struct.unpack("<II", data[end + 12:end + 20])
     if data[cd_at:cd_at + 4] != b"PK\x01\x02":
         fail(f"the central directory should start at {cd_at} and does not")
-    ok(f"{entries} entries, comment {comment_len} B")
+    if cd_at + cd_size != end:
+        fail(f"the central directory is {cd_size} B from {cd_at}, so it ends at "
+             f"{cd_at + cd_size}, and the end record is at {end}")
+
+    pos = cd_at
+    for number in range(1, entries + 1):
+        if pos + 46 > end or data[pos:pos + 4] != b"PK\x01\x02":
+            fail(f"central directory entry {number} of {entries} should start at {pos} and does not")
+        packed = struct.unpack("<I", data[pos + 20:pos + 24])[0]
+        name_len, extra_len, note_len = struct.unpack("<HHH", data[pos + 28:pos + 34])
+        local = struct.unpack("<I", data[pos + 42:pos + 46])[0]
+        name = data[pos + 46:pos + 46 + name_len]
+        pos += 46 + name_len + extra_len + note_len
+        if pos > end:
+            fail(f"central directory entry {number} of {entries} runs past the end record at {end}")
+
+        if local + 30 > cd_at or data[local:local + 4] != b"PK\x03\x04":
+            fail(f"the central directory sends {name!r} to offset {local}, "
+                 f"where there is no local file header")
+        local_name_len, local_extra_len = struct.unpack("<HH", data[local + 26:local + 30])
+        local_name = data[local + 30:local + 30 + local_name_len]
+        if local_name != name:
+            fail(f"the local header at {local} names {local_name!r} "
+                 f"and the central directory names {name!r}")
+        data_end = local + 30 + local_name_len + local_extra_len + packed
+        if data_end > cd_at:
+            fail(f"the data of {name!r} runs from {local} to {data_end}, "
+                 f"past the start of the central directory at {cd_at}")
+
+    if pos != end:
+        fail(f"the {entries} central directory entries end at {pos} and the end record is at {end}")
+    return entries, comment_len
 
 
 OCTET = r"(?:0|[1-9][0-9]{0,2})"
@@ -834,26 +908,20 @@ def html_pictures(text, settings, nl):
 
 
 def html_picture_verdict(kind, n, raw):
-    """One picture judged by its own format's check. Those end the process with
-    their verdict, so each is caught here and only a failure is passed on.
+    """One picture judged by its own format's check, and only a failure passed on.
 
-    A check can also stop on bytes it did not expect - check_png unpacks a
-    checksum that is not there when a chunk runs to the very end - and that is
-    a verdict about the picture too, so it is given as one rather than as a
-    traceback (review of #178)."""
-    import contextlib
-    import io
-
-    said = io.StringIO()
+    A check that stops on an exception is not caught here. Until 2026-11-09 it
+    was, and given as a verdict about the picture (review of #178, a PNG whose
+    last chunk ran to the very end). That check now refuses such a PNG itself,
+    and an exception left anywhere is a fault in the checker. It has to show
+    as one (CRASH in --batch), because a crash counted as a refusal is how a
+    broken checker passes for a working one."""
     try:
-        with contextlib.redirect_stdout(said):
-            CHECKS[kind](raw)
-    except SystemExit as exc:
-        if exc.code not in (0, None):
-            fail(f"picture {n} is not a good {kind} file: {said.getvalue().strip()}")
+        CHECKS[kind](raw)
+    except Verdict as said:
+        if said.word != "OK":
+            fail(f"picture {n} is not a good {kind} file: {said.reason}")
         return
-    except Exception as exc:
-        fail(f"picture {n} is not a good {kind} file: {type(exc).__name__}: {str(exc)[:120]}")
     fail(f"the {kind} check gave no verdict on picture {n}")
 
 
@@ -1477,6 +1545,12 @@ def opc_check(data, roots, kind, key):
     """
     import xml.etree.ElementTree as ET
 
+    # The ZIP layer first, the same walk a plain archive gets. Python's own
+    # reader finds the central directory by searching back from the end, so
+    # bytes after the comment and a local header that is not there both reach
+    # the checks below unnoticed, or stop them with an exception instead of a
+    # verdict (measured 2026-11-09).
+    zip_structure(data)
     z = opc_open(data)
     names = [i.filename for i in z.infolist()]
 
@@ -1495,7 +1569,7 @@ def opc_check(data, roots, kind, key):
         fail("there is no _rels/.rels, so nothing points at the document")
 
     try:
-        types = ET.fromstring(z.read("[Content_Types].xml"))
+        types = ET.fromstring(opc_part(z, "[Content_Types].xml"))
     except ET.ParseError as exc:
         fail("[Content_Types].xml is not well formed: %s" % exc)
 
@@ -1527,7 +1601,7 @@ def opc_check(data, roots, kind, key):
         if not name.endswith(".xml") and not name.endswith(".rels"):
             continue
         try:
-            root = ET.fromstring(z.read(name))
+            root = ET.fromstring(opc_part(z, name))
         except ET.ParseError as exc:
             fail("the part %s is not well formed XML: %s" % (name, exc))
         roots_found.append((name, root.tag))
@@ -1537,7 +1611,7 @@ def opc_check(data, roots, kind, key):
         if not name.endswith(".rels"):
             continue
         base = name.rsplit("_rels/", 1)[0]
-        rels = ET.fromstring(z.read(name))
+        rels = ET.fromstring(opc_part(z, name))
         for rel in rels.findall(OPC_NS_REL + "Relationship"):
             if rel.get("TargetMode") == "External":
                 continue
@@ -1565,6 +1639,20 @@ def opc_check(data, roots, kind, key):
              % (type(exc).__name__, str(exc)[:120]))
     ok("%s, %d parts, %d B of padding, comment %d B, %s"
        % (kind, len(names), pad, len(z.comment), read))
+
+
+def opc_part(z, name):
+    """The bytes of one part, or a verdict when the archive will not give them.
+
+    A part whose checksum does not match, or whose compressed data ends early,
+    is a defect in the package, and it has to read as one rather than as a
+    stack trace from the ZIP reader.
+    """
+    import zipfile
+    try:
+        return z.read(name)
+    except (zipfile.BadZipFile, zlib.error, EOFError) as exc:
+        fail("the part %s cannot be read from the archive: %s" % (name, exc))
 
 
 def opc_resolve(base, target):
@@ -4073,7 +4161,74 @@ CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip
 # any other one is called.
 TAKES_SETTINGS = {"csv", "txt", "md", "json", "xml", "html", "geojson", "eml", "rtf"}
 
-if __name__ == "__main__":
+def run_check(kind, body, settings):
+    """Runs one check. It ends by raising its Verdict, or by an exception."""
+    if kind in TAKES_SETTINGS:
+        CHECKS[kind](body, settings)
+    else:
+        CHECKS[kind](body)
+
+
+def judge(kind, body, settings):
+    """One file judged: ("OK" | "FAIL" | "CRASH", what was said).
+
+    CRASH is the check stopping on an exception instead of giving a verdict.
+    It is kept apart from FAIL on purpose. A guard asking whether a damaged
+    file is refused must not count the checker falling over as a refusal.
+    """
+    try:
+        run_check(kind, body, settings)
+    except Verdict as said:
+        return said.word, said.reason
+    except Exception as exc:  # noqa: BLE001 - every exception here is a fault in a check, named below
+        return "CRASH", f"{type(exc).__name__}: {str(exc)[:200]}"
+    return "CRASH", "the check returned without a verdict"
+
+
+def batch_answer(line):
+    """The answer to one --batch request line, as a dict."""
+    import json
+
+    try:
+        ask = json.loads(line)
+        kind, path = ask["format"], ask["path"]
+        settings = ask.get("settings") or {}
+        if not isinstance(kind, str) or not isinstance(path, str):
+            # open() takes a number as a descriptor, which is not a file asked for.
+            raise TypeError("format and path have to be strings")
+    except (ValueError, KeyError, TypeError, AttributeError) as exc:
+        return {"path": "", "verdict": "ERROR", "reason": f"the request {line[:80]!r} is not readable: {exc}"}
+    answer = {"path": path, "verdict": "ERROR"}
+    if kind not in CHECKS:
+        answer["reason"] = f"there is no check for {kind!r}"
+    elif not isinstance(settings, dict) or not all(isinstance(v, str) for v in settings.values()):
+        answer["reason"] = "settings have to be an object of strings"
+    elif settings and kind not in TAKES_SETTINGS:
+        answer["reason"] = f"the {kind} check takes no settings, and was given {sorted(settings)}"
+    else:
+        try:
+            with open(path, "rb") as handle:
+                body = handle.read()
+        except OSError as exc:
+            answer["reason"] = f"the file cannot be read: {exc}"
+        else:
+            answer["verdict"], answer["reason"] = judge(kind, body, settings)
+    return answer
+
+
+def main_batch():
+    """Many files in one process, so a guard judging every format against every
+    damage does not start Python a few hundred times."""
+    import json
+
+    for raw in sys.stdin.buffer:
+        line = raw.decode("utf-8", errors="replace").strip()
+        if line:
+            sys.stdout.write(json.dumps(batch_answer(line)) + "\n")
+    sys.stdout.flush()
+
+
+def main_one():
     if len(sys.argv) < 3 or sys.argv[1] not in CHECKS:
         print("FAIL usage: strict.py <" + "|".join(CHECKS) + "> <path> [key=value ...]")
         sys.exit(1)
@@ -4090,7 +4245,17 @@ if __name__ == "__main__":
         sys.exit(1)
     with open(sys.argv[2], "rb") as handle:
         body = handle.read()
-    if kind in TAKES_SETTINGS:
-        CHECKS[kind](body, extra)
+    # An exception is left to end the process with its traceback, which is
+    # what a caller reading only OK and FAIL reports as a checker fault.
+    try:
+        run_check(kind, body, extra)
+    except Verdict as said:
+        print(said.word + " " + said.reason)
+        sys.exit(said.code)
+
+
+if __name__ == "__main__":
+    if sys.argv[1:] == ["--batch"]:
+        main_batch()
     else:
-        CHECKS[kind](body)
+        main_one()
