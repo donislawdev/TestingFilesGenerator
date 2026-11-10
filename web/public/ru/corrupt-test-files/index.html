@@ -199,7 +199,9 @@
     команда снова записывает те же байты.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     Настройки пишутся после двоеточия. Параметр можно повторять, а повреждения применяются в том
     порядке, в каком вы их записали. Это работает с каждым из 31 форматов.
@@ -226,6 +228,18 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   </thead>
   <tbody>
     <tr>
+      <td><code>append-junk</code></td>
+      <td>Дописывает случайные байты после конца файла и сохраняет ровно тот размер, который вы указали, как приходит файл, к концу которого что-то прилипло.</td>
+      <td class="num">64</td>
+      <td><code>bytes</code></td>
+    </tr>
+    <tr>
+      <td><code>truncate</code></td>
+      <td>Отрезает конец файла и сохраняет ровно тот размер, который вы указали, как оставляет файл прерванная загрузка или копирование.</td>
+      <td class="num">4</td>
+      <td><code>missing</code></td>
+    </tr>
+    <tr>
       <td><code>zero-head</code></td>
       <td>Перезаписывает первые байты файла нулями, не меняя его длину. Большинство программ чтения смотрят сначала туда, поэтому это повреждение замечает почти всё.</td>
       <td class="num">8</td>
@@ -242,14 +256,25 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     форматов получается повреждение, на которое не жалуется ни одна программа чтения, поэтому
     настройка начинается с четырёх.
   </p>
+  <p>
+    <code>truncate</code> отрезает конец файла, как оставляет его прерванная загрузка или
+    копирование, и файл всё равно имеет указанный вами размер: он создаётся больше, и на диск
+    попадает только его начало. <code>missing</code> говорит, какая часть всего файла пропадает,
+    половина, если не указать иное.
+  </p>
+  <p>
+    <code>append-junk</code> дописывает случайные байты после конца файла, 64, если не указать иное,
+    как приходит файл, к концу которого что-то прилипло. Одна и та же команда дописывает одни и те
+    же байты.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">Что говорит манифест</p>
   <h2>Манифест, который говорит, что должно произойти</h2>
   <p>
-    Каждый повреждённый файл получает запись о том, что ваша система должна его отклонить, а рядом
-    записано повреждение:
+    Там, где повреждение нарушает правила формата, запись говорит, что ваша система должна его
+    отклонить, а рядом записано повреждение:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -265,15 +290,40 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    Два запроса отклоняются до того, как что-либо записано, потому что каждый оставил бы на диске файл,
-    который манифест описывает неверно:
+    Там, где программы чтения расходятся, запись говорит об этом, а не гадает. Обрезанный текстовый
+    файл остаётся текстом, а большинство просмотрщиков пропускают байты после конца PNG, поэтому
+    запись оставляет ответ вашей системе, предлагает оба и объясняет почему:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> перечисляет форматы, в которых повреждение оставляет ответ
+    вашей системе, и причину.
+  </p>
+  <p>
+    Четыре запроса отклоняются до того, как что-либо записано, потому что каждый оставил бы на диске
+    файл, который манифест описывает неверно:
   </p>
   <ul>
     <li>файл меньше, чем нужно повреждению, который вышел бы нетронутым</li>
     <li>
-      <code>expected: accept</code> рядом с повреждением, потому что ничто не могло бы этого выполнить.
-      Напишите <code>sanitize</code>, если ваша система должна починить файл, или
-      <code>unspecified</code>, если именно это вы и проверяете
+      <code>expected: accept</code> рядом с повреждением, которое нарушает правила формата, потому
+      что ничто, что им следует, такой файл не примет. Там, где ответ зависит от вашей системы,
+      <code>accept</code> разрешён. Напишите <code>sanitize</code>, если ваша система должна
+      починить файл, или <code>unspecified</code>, если именно это вы и проверяете
+    </li>
+    <li>
+      <code>truncate</code> после <code>append-junk</code>, потому что он отрезал бы дописанные
+      байты. Поставьте <code>truncate</code> первым
+    </li>
+    <li>
+      <code>truncate</code> или <code>append-junk</code> для архива, размер которого берётся из
+      содержимого, потому что нет размера, от которого можно отталкиваться
     </li>
   </ul>
 </section>
@@ -311,11 +361,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    Файл с результатом <code>unspecified</code> здесь пропускается, потому что то, что ваша система
+    должна с ним сделать, определяет ваша собственная политика. Его запись объясняет почему, а
+    <code>policy_options</code> перечисляет возможные ответы.
+  </p>
   <p>
     Хороший отказ - это чистый отказ. Сообщение, говорящее, что было не так, - тот ответ, который вам
     нужен. Ошибка сервера, зависание или наполовину сохранённый файл - тот дефект, ради которого

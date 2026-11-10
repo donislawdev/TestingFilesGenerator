@@ -41,7 +41,9 @@
     文件先正常生成，再在写入磁盘的途中被弄坏。它保持你要求的大小，同一条命令再次写出的字节也完全相同。
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     设置写在冒号之后。该选项可以重复，损坏按你写下的顺序依次应用。它适用于全部 {{ .Facts.FormatCount }} 种格式。
   </p>
@@ -59,13 +61,19 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     <code>zero-head</code>
     把文件开头写成零。大多数读取器最先看的就是那里，也就是说明文件是什么的签名和文件头，所以几乎任何读取器都会发现。纯文本和日志没有签名，同样会被拒绝，因为一串零字节不是文本。低于四个字节时，有些格式产生的损坏没有任何读取器会抱怨，这就是该设置从四开始的原因。
   </p>
+  <p>
+    <code>truncate</code> 截掉文件的末尾，就像中断的上传或复制留下的那样，而文件仍然是你要求的大小：它先按更大的尺寸生成，只有开头部分写入磁盘。<code>missing</code> 表示整个文件丢失了多少，不另行指定时为一半。
+  </p>
+  <p>
+    <code>append-junk</code> 在文件末尾之后写入随机字节，不另行指定时为 64 个，就像末尾粘着东西送来的文件那样。同一条命令追加的字节也相同。
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">清单怎么说</p>
   <h2>一份说明应发生什么的清单</h2>
   <p>
-    每个损坏的文件都会得到一条记录，说明你的系统应该拒绝它，损坏方式记在旁边：
+    当损坏违反该格式的规则时，记录会说明你的系统应该拒绝它，损坏方式记在旁边：
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -81,13 +89,31 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    有两种请求会在写入任何内容之前被拒绝，因为各自都会在磁盘上留下一个清单描述有误的文件：
+    当各读取器的处理不一致时，记录会如实说明，而不是去猜测。被截短的文本文件仍然是文本，而大多数看图软件会跳过 PNG 结尾之后的字节，所以记录把答案留给你的系统，给出两种答案，并说明原因：
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> 会列出某种损坏把答案留给你的系统的格式及其原因。
+  </p>
+  <p>
+    有四种请求会在写入任何内容之前被拒绝，因为各自都会在磁盘上留下一个清单描述有误的文件：
   </p>
   <ul>
     <li>比损坏所需更小的文件，它会原样输出</li>
     <li>
-      在损坏旁边写 <code>expected: accept</code>，因为没有什么能满足它。如果你的系统本应修复文件，请写
-      <code>sanitize</code>，如果你要问的恰恰就是这一点，请写 <code>unspecified</code>
+      在违反格式规则的损坏旁边写 <code>expected: accept</code>，因为遵守这些规则的读取器都不会接受这个文件。当答案取决于你的系统时，可以写 <code>accept</code>。如果你的系统本应修复文件，请写 <code>sanitize</code>，如果你要问的恰恰就是这一点，请写 <code>unspecified</code>
+    </li>
+    <li>
+      在 <code>append-junk</code> 之后使用 <code>truncate</code>，因为它会把追加的字节截掉。请把 <code>truncate</code> 放在前面
+    </li>
+    <li>
+      对按所含内容决定大小的压缩包使用 <code>truncate</code> 或 <code>append-junk</code>，因为没有可以作为出发点的大小
     </li>
   </ul>
 </section>
@@ -123,11 +149,17 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    结果为 <code>unspecified</code> 的文件在这里被跳过，因为你的系统该如何处理它由你自己的策略决定。它的记录说明了原因，<code>policy_options</code> 列出了可能的答案。
+  </p>
   <p>
     好的拒绝是干净的拒绝。一条说明错在哪里的消息，就是你想要的答案。服务器错误、卡死或只保存了一半的文件，正是这个测试要找出来的缺陷。
   </p>

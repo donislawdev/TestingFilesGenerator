@@ -797,6 +797,46 @@
     "hash": "sha256-b90221bf868f",
     "other": "a damaged file is one a judge was measured to refuse, so expecting it to be accepted is an expectation nothing could meet"
   },
+  "damage.Eaten": {
+    "description": "Said by internal/damage - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.What}}, {{.Instead}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-6749ebcea05d",
+    "other": "{{.What}}. {{.Instead}}"
+  },
+  "damage.EatenInstead": {
+    "description": "Said by internal/damage - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Cut}}, {{.Added}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-a2a1e05e95ec",
+    "other": "Put {{.Cut}} before {{.Added}}."
+  },
+  "damage.EatenWhat": {
+    "description": "Said by internal/damage - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Cut}}, {{.Added}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-feb8c803f4e8",
+    "other": "{{.Cut}} comes after {{.Added}} and cuts away what it added"
+  },
+  "damage.EatenWhy": {
+    "description": "Said by internal/damage - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-bd0ef3c0b19a",
+    "other": "the manifest would list a damage whose bytes the file no longer holds"
+  },
+  "damage.NeedsSize": {
+    "description": "Said by internal/damage - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.What}}, {{.Instead}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-6749ebcea05d",
+    "other": "{{.What}}. {{.Instead}}"
+  },
+  "damage.NeedsSizeInstead": {
+    "description": "Said by internal/damage - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-bb7ddab6d307",
+    "other": "Give the target a size, or use a damage that keeps the length, such as zero-head."
+  },
+  "damage.NeedsSizeWhat": {
+    "description": "Said by internal/damage - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Damage}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-68ac855601a4",
+    "other": "{{.Damage}} changes the length of the file, and this target takes its size from what it holds"
+  },
+  "damage.NeedsSizeWhy": {
+    "description": "Said by internal/damage - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-0e57e6efc6c1",
+    "other": "that size is only known once the file is written, so there is no length to work from"
+  },
   "damage.NoChange": {
     "description": "Said by internal/damage - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.What}}, {{.Why}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-14c3ed651919",
@@ -977,6 +1017,31 @@
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.File}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-1e90995301d1",
     "other": "writing {{.File}}"
+  },
+  "engine.DamagedAboveWhy": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Damage}}, {{.Format}}, {{.Maximum}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-59fb1ae064c2",
+    "other": "{{.Damage}} has to start from a {{.Format}} file of at most {{.Maximum}}"
+  },
+  "engine.DamagedBelowWhy": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Damage}}, {{.Format}}, {{.Minimum}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-5fe7c6a1ed13",
+    "other": "{{.Damage}} has to start from a {{.Format}} file of at least {{.Minimum}}"
+  },
+  "engine.DamagedFloorWhy": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Damage}}, {{.Floor}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-7829143089a2",
+    "other": "{{.Damage}} needs at least {{.Floor}}"
+  },
+  "engine.DamagedSizeAtLeast": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Size}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-72fcb7ac9c01",
+    "other": "Ask for {{.Size}} or more."
+  },
+  "engine.DamagedSizeAtMost": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Size}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-2174959715d1",
+    "other": "Ask for {{.Size}} or less."
   },
   "engine.FilesSoFar": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",

@@ -192,7 +192,9 @@
     파일은 평소대로 생성된 뒤 디스크로 가는 길에 망가집니다. 요청한 크기는 그대로이고, 같은 명령은 같은 바이트를 다시 씁니다.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     설정은 콜론 뒤에 씁니다. 옵션은 반복할 수 있고, 손상은 쓴 순서대로 적용됩니다. 31개 형식 모두에서 동작합니다.
   </p>
@@ -217,6 +219,18 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   </thead>
   <tbody>
     <tr>
+      <td><code>append-junk</code></td>
+      <td>파일의 끝 뒤에 무작위 바이트를 쓰고 요청한 크기를 그대로 유지합니다. 끝에 무언가가 붙은 채 도착한 파일과 같은 모양입니다.</td>
+      <td class="num">64</td>
+      <td><code>bytes</code></td>
+    </tr>
+    <tr>
+      <td><code>truncate</code></td>
+      <td>파일의 끝을 잘라 내고 요청한 크기를 그대로 유지합니다. 중간에 끊긴 업로드나 복사가 남기는 모양과 같습니다.</td>
+      <td class="num">4</td>
+      <td><code>missing</code></td>
+    </tr>
+    <tr>
       <td><code>zero-head</code></td>
       <td>파일의 첫 바이트들을 길이는 그대로 둔 채 0으로 덮어씁니다. 대부분의 리더가 가장 먼저 그곳을 보므로 거의 모든 것이 이 손상을 알아챕니다.</td>
       <td class="num">8</td>
@@ -230,13 +244,19 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     그래서 거의 모든 리더가 알아챕니다. 일반 텍스트와 로그에는 시그니처가 없지만 역시 거부됩니다. 0 바이트의 연속은 텍스트가 아니기 때문입니다. 4바이트 미만에서는 어떤
     리더도 불평하지 않는 손상이 나오는 형식이 있으며, 설정이 4부터 시작하는 이유가 그것입니다.
   </p>
+  <p>
+    <code>truncate</code>는 중간에 끊긴 업로드나 복사가 남기는 것처럼 파일의 끝을 잘라 내지만, 파일은 여전히 요청한 크기입니다. 더 크게 생성되고 그 앞부분만 디스크에 닿기 때문입니다. <code>missing</code>은 전체 파일 중 얼마가 사라지는지를 나타내며, 따로 지정하지 않으면 절반입니다.
+  </p>
+  <p>
+    <code>append-junk</code>는 끝에 무언가가 붙은 채 도착한 파일처럼 파일의 끝 뒤에 무작위 바이트를 씁니다. 따로 지정하지 않으면 64바이트입니다. 같은 명령은 같은 바이트를 덧붙입니다.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">매니페스트가 말하는 것</p>
   <h2>무엇이 일어나야 하는지 말해 주는 매니페스트</h2>
   <p>
-    손상된 파일마다 시스템이 그것을 거부해야 한다는 항목이 붙고, 손상 내용이 그 옆에 기록됩니다.
+    손상이 형식의 규칙을 어기는 경우, 항목은 시스템이 그것을 거부해야 한다고 말하고 손상 내용이 그 옆에 기록됩니다.
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -252,13 +272,31 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    두 가지 요청은 무엇이든 쓰기 전에 거부됩니다. 둘 다 매니페스트가 잘못 설명하는 파일을 디스크에 남기게 되기 때문입니다.
+    리더마다 다르게 다루는 경우, 항목은 추측하는 대신 그렇다고 말합니다. 끝이 잘린 텍스트 파일도 여전히 텍스트이고, 대부분의 이미지 뷰어는 PNG의 끝 뒤에 있는 바이트를 건너뜁니다. 그래서 항목은 답을 시스템에 맡기고, 두 가지 답을 모두 제시하며, 이유를 적습니다.
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code>는 손상이 답을 시스템에 맡기는 형식과 그 이유를 나열합니다.
+  </p>
+  <p>
+    네 가지 요청은 무엇이든 쓰기 전에 거부됩니다. 모두 매니페스트가 잘못 설명하는 파일을 디스크에 남기게 되기 때문입니다.
   </p>
   <ul>
     <li>손상에 필요한 크기보다 작은 파일. 그대로 나오게 됩니다</li>
     <li>
-      손상 옆의 <code>expected: accept</code>. 어떤 것도 그것을 충족할 수 없기 때문입니다. 시스템이 파일을 복구해야 한다면
-      <code>sanitize</code>를, 바로 그것을 확인하려는 것이라면 <code>unspecified</code>를 쓰세요
+      형식의 규칙을 어기는 손상 옆의 <code>expected: accept</code>. 그 규칙을 따르는 것은 어떤 것도 그 파일을 받아들이지 않기 때문입니다. 답이 시스템에 달린 경우에는 <code>accept</code>를 쓸 수 있습니다. 시스템이 파일을 복구해야 한다면 <code>sanitize</code>를, 바로 그것을 확인하려는 것이라면 <code>unspecified</code>를 쓰세요
+    </li>
+    <li>
+      <code>append-junk</code> 뒤의 <code>truncate</code>. 덧붙인 바이트를 잘라 내기 때문입니다. <code>truncate</code>를 먼저 두세요
+    </li>
+    <li>
+      담긴 내용에서 크기를 정하는 아카이브에 대한 <code>truncate</code>나 <code>append-junk</code>. 기준이 될 크기가 없기 때문입니다
     </li>
   </ul>
 </section>
@@ -294,11 +332,17 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    결과가 <code>unspecified</code>인 파일은 여기서 건너뜁니다. 시스템이 그 파일을 어떻게 다뤄야 하는지는 여러분의 정책이 정하기 때문입니다. 항목에는 그 이유가 적혀 있고, <code>policy_options</code>에는 가능한 답이 나열됩니다.
+  </p>
   <p>
     좋은 거부는 깔끔한 거부입니다. 무엇이 잘못됐는지 알려 주는 메시지가 원하는 답입니다. 서버 오류, 멈춤, 반쯤 저장된 파일은 이 테스트가 찾아내려고 존재하는 결함입니다.
   </p>

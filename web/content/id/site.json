@@ -241,6 +241,8 @@
     "unspecified": "Tergantung pada aturan sistem Anda. Anda yang memutuskan, lalu memeriksa apakah yang terjadi sesuai maksud Anda."
   },
   "damages": {
+    "append-junk": "Menulis byte acak setelah akhir file dan mempertahankan ukuran persis yang Anda minta, seperti file yang tiba dengan sesuatu menempel di ujungnya.",
+    "truncate": "Memotong ujung file dan mempertahankan ukuran persis yang Anda minta, seperti yang ditinggalkan unggahan atau salinan yang terputus.",
     "zero-head": "Menimpa byte pertama file dengan nol tanpa mengubah panjangnya. Sebagian besar pembaca melihat ke sana lebih dulu, jadi hampir semua hal menyadari kerusakan ini."
   },
   "terms": {

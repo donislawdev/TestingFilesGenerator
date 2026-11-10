@@ -199,7 +199,9 @@
     a to samo polecenie zapisuje znowu te same bajty.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     Ustawienia podaje się po dwukropku. Flagę można powtarzać, a uszkodzenia są stosowane w kolejności,
     w jakiej je zapiszesz. Działa z każdym z 31 formatów.
@@ -226,6 +228,18 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   </thead>
   <tbody>
     <tr>
+      <td><code>append-junk</code></td>
+      <td>Dopisuje losowe bajty za końcem pliku i zachowuje dokładnie rozmiar, o który prosiłeś, tak jak przychodzi plik z czymś przyklejonym na końcu.</td>
+      <td class="num">64</td>
+      <td><code>bytes</code></td>
+    </tr>
+    <tr>
+      <td><code>truncate</code></td>
+      <td>Odcina koniec pliku i zachowuje dokładnie rozmiar, o który prosiłeś, tak jak zostawia go przerwane wysyłanie albo kopiowanie.</td>
+      <td class="num">4</td>
+      <td><code>missing</code></td>
+    </tr>
+    <tr>
       <td><code>zero-head</code></td>
       <td>Nadpisuje pierwsze bajty pliku zerami, nie zmieniając jego długości. Większość czytników zagląda tam najpierw, więc to uszkodzenie zauważy prawie wszystko.</td>
       <td class="num">8</td>
@@ -241,14 +255,24 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     czterech bajtów niektóre formaty wychodzą z uszkodzeniem, na które nie skarży się żaden czytnik,
     dlatego ustawienie zaczyna się od czterech.
   </p>
+  <p>
+    <code>truncate</code> odcina koniec pliku, tak jak zostawia go przerwane wysyłanie albo
+    kopiowanie, a plik ma nadal rozmiar, o który prosiłeś: powstaje większy i na dysk trafia tylko
+    jego początek. <code>missing</code> mówi, jaka część całego pliku znika, połowa, jeśli nie
+    podasz inaczej.
+  </p>
+  <p>
+    <code>append-junk</code> dopisuje losowe bajty za końcem pliku, 64, jeśli nie podasz inaczej,
+    tak jak przychodzi plik z czymś przyklejonym na końcu. To samo polecenie dopisuje te same bajty.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">Co mówi manifest</p>
   <h2>Manifest, który mówi, co ma się stać</h2>
   <p>
-    Każdy uszkodzony plik dostaje wpis mówiący, że system powinien go odrzucić, a obok zapisane jest
-    uszkodzenie:
+    Tam, gdzie uszkodzenie łamie reguły formatu, wpis mówi, że system powinien plik odrzucić, a obok
+    zapisane jest uszkodzenie:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -264,15 +288,40 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    Dwie prośby są odrzucane, zanim cokolwiek powstanie, bo każda zostawiłaby na dysku plik, który
+    Tam, gdzie czytniki się różnią, wpis mówi to wprost, zamiast zgadywać. Ucięty plik tekstowy jest
+    nadal tekstem, a większość przeglądarek obrazów pomija bajty za końcem PNG, więc wpis zostawia
+    odpowiedź twojemu systemowi, podaje obie i mówi dlaczego:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> wypisuje formaty, w których uszkodzenie zostawia odpowiedź
+    twojemu systemowi, i powód.
+  </p>
+  <p>
+    Cztery prośby są odrzucane, zanim cokolwiek powstanie, bo każda zostawiłaby na dysku plik, który
     manifest opisuje błędnie:
   </p>
   <ul>
     <li>plik mniejszy, niż potrzebuje uszkodzenie, bo wyszedłby nietknięty</li>
     <li>
-      <code>expected: accept</code> obok uszkodzenia, bo nic nie mogłoby tego spełnić. Napisz
-      <code>sanitize</code>, jeśli system ma plik naprawić, albo <code>unspecified</code>, jeśli
-      właśnie o to pytasz
+      <code>expected: accept</code> obok uszkodzenia, które łamie reguły formatu, bo nic, co ich
+      przestrzega, nie przyjmie takiego pliku. Tam, gdzie odpowiedź zależy od twojego systemu,
+      <code>accept</code> jest dozwolone. Napisz <code>sanitize</code>, jeśli system ma plik
+      naprawić, albo <code>unspecified</code>, jeśli właśnie o to pytasz
+    </li>
+    <li>
+      <code>truncate</code> po <code>append-junk</code>, bo odcięłoby dopisane bajty. Postaw
+      <code>truncate</code> pierwsze
+    </li>
+    <li>
+      <code>truncate</code> albo <code>append-junk</code> na archiwum, które bierze rozmiar z tego,
+      co zawiera, bo nie ma rozmiaru, od którego można wyjść
     </li>
   </ul>
 </section>
@@ -310,11 +359,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    Plik o wyniku <code>unspecified</code> jest tu pomijany, bo to, co twój system ma z nim zrobić,
+    jest twoją własną polityką. Jego wpis mówi dlaczego, a <code>policy_options</code> wymienia
+    możliwe odpowiedzi.
+  </p>
   <p>
     Dobre odrzucenie jest czyste. Komunikat mówiący, co było nie tak, to odpowiedź, o którą chodzi. Błąd
     serwera, zawieszenie albo plik zapisany do połowy to wada, którą ten test ma znaleźć.

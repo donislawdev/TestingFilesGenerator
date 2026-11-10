@@ -482,29 +482,48 @@ the tool holds in memory has a ceiling whatever the archive holds.
 
 ```
 tfg damage [--json]      every damage, with the smallest file it takes and its settings
-tfg damage <id>          what one damage does to the bytes, and what it takes
+tfg damage <id>          what one damage does to the bytes, what it takes, and where the
+                         outcome depends on your system
 ```
 
-A damaged file comes out **exactly** the size you asked for and is one a reader
-refuses, so the manifest records it as expected to be rejected. That is the third
+A damaged file comes out **exactly** the size you asked for. That is the third
 question an upload validator asks - does it open - and until damage arrived every
-file this tool wrote was well formed by definition.
+file this tool wrote was well formed by definition. Three damages work with every
+format:
+
+| damage | what it does |
+|---|---|
+| `zero-head` | overwrites the first bytes with zeros (`bytes`, 8 unless you say otherwise) |
+| `truncate` | cuts the end off, the way an interrupted upload leaves a file (`missing`, the percent of the whole file that is gone, 50 unless you say otherwise) |
+| `append-junk` | writes random bytes after the end (`bytes`, 64 unless you say otherwise) |
+
+Where the damage breaks the rules of the format, the manifest records the file as
+expected to be rejected, with certainty. Where readers differ - a text cut short is
+still text, and most viewers skip bytes after the end of a PNG - it says the outcome
+is `unspecified` and depends on your system, offers both answers in
+`policy_options`, and says why in `detail`. `tfg damage <id>` lists those formats,
+and `tfg damage --json` carries them as `policy_dependent`.
 
 Use them with `tfg generate --damage <id>`, repeatable and applied in the order
 given, or with the `damage` key of a target in a recipe:
 
 ```
 tfg generate --format png --size 20kb --count 10 --damage zero-head:bytes=16
+tfg generate --format zip --size 5mb --damage truncate:missing=30
 ```
 
 The smallest file a damage can be given follows its settings, so the column is
 measured with the defaults. Ask for less and the run is refused before anything is
 written, naming a size that would work.
 
-Asking for `--expected accept` beside a damage is refused too, because nothing
-could meet it. Write `sanitize` if the system under test is meant to repair the
-file, or `unspecified` if that is the question you are asking - both of those,
-and `reject`, work as they always did.
+Asking for `--expected accept` beside a damage that breaks the rules of the
+format is refused too, because nothing that follows them accepts the file. Where
+the outcome depends on your system, `accept` is allowed and records your policy.
+Write `sanitize` if the system under test is meant to repair the file, or
+`unspecified` if that is the question you are asking - both of those, and
+`reject`, work as they always did. `truncate` placed after `append-junk` is
+refused, because it would cut away the bytes that were added, and so is a damage
+that changes the length of an archive that takes its size from what it holds.
 
 ## 📜 Recipes
 
@@ -948,8 +967,10 @@ rounding are the two things this tool will not do.
 
 Yes. Add `--damage zero-head` and the file comes out at exactly the size you
 asked for with its first bytes overwritten by zeros, so a reader turns it away,
-and the manifest says your system should reject it. [`tfg damage`](#tfg-damage)
-lists what this build can do and what each damage takes.
+and the manifest says your system should reject it. `--damage truncate` cuts the
+end off and `--damage append-junk` writes bytes after it, still at the size you
+asked for. [`tfg damage`](#tfg-damage) lists what this build can do, what each
+damage takes, and where the outcome depends on your system.
 
 ```
 tfg generate --format png --size 2mb --damage zero-head --out ./out

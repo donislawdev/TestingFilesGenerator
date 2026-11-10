@@ -198,7 +198,9 @@
     richiesta, e lo stesso comando riscrive gli stessi byte.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     Le impostazioni vanno dopo i due punti. L'opzione si può ripetere, e i danni vengono applicati
     nell'ordine in cui li scrivi. Funziona con ognuno dei 31 formati.
@@ -225,6 +227,18 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   </thead>
   <tbody>
     <tr>
+      <td><code>append-junk</code></td>
+      <td>Scrive byte casuali dopo la fine del file e mantiene esattamente la dimensione richiesta, come arriva un file con qualcosa attaccato in fondo.</td>
+      <td class="num">64</td>
+      <td><code>bytes</code></td>
+    </tr>
+    <tr>
+      <td><code>truncate</code></td>
+      <td>Taglia la fine del file e mantiene esattamente la dimensione richiesta, come la lascia un caricamento o una copia interrotti.</td>
+      <td class="num">4</td>
+      <td><code>missing</code></td>
+    </tr>
+    <tr>
       <td><code>zero-head</code></td>
       <td>Sovrascrive con zeri i primi byte del file, lasciandone intatta la lunghezza. La maggior parte dei lettori guarda prima lì, quindi quasi tutto si accorge di questo danno.</td>
       <td class="num">8</td>
@@ -240,14 +254,24 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     byte nulli non è testo. Sotto i quattro byte alcuni formati escono con un danno di cui nessun
     lettore si lamenta, ed è per questo che l'impostazione parte da quattro.
   </p>
+  <p>
+    <code>truncate</code> taglia la fine del file, come la lascia un caricamento o una copia
+    interrotti, e il file ha comunque la dimensione richiesta: viene generato più grande e solo il
+    suo inizio arriva sul disco. <code>missing</code> dice quale parte del file intero manca, la
+    metà se non indichi altro.
+  </p>
+  <p>
+    <code>append-junk</code> scrive byte casuali dopo la fine del file, 64 se non indichi altro,
+    come arriva un file con qualcosa attaccato in fondo. Lo stesso comando aggiunge gli stessi byte.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">Cosa dice il manifest</p>
   <h2>Un manifest che dice cosa deve succedere</h2>
   <p>
-    Ogni file danneggiato riceve una voce che dice che il tuo sistema deve rifiutarlo, con il danno
-    registrato accanto:
+    Dove il danno viola le regole del formato, la voce dice che il tuo sistema deve rifiutarlo, con
+    il danno registrato accanto:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -263,15 +287,40 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    Due richieste vengono rifiutate prima che venga scritto qualcosa, perché ciascuna lascerebbe su
-    disco un file che il manifest descrive male:
+    Dove i lettori non concordano, la voce lo dice invece di tirare a indovinare. Un file di testo
+    tagliato è ancora testo, e la maggior parte dei visualizzatori ignora i byte dopo la fine di un
+    PNG, quindi la voce lascia la risposta al tuo sistema, offre entrambe e dice perché:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> elenca i formati in cui un danno lascia la risposta al tuo
+    sistema, e perché.
+  </p>
+  <p>
+    Quattro richieste vengono rifiutate prima che venga scritto qualcosa, perché ciascuna lascerebbe
+    su disco un file che il manifest descrive male:
   </p>
   <ul>
     <li>un file più piccolo di quanto serve al danno, che uscirebbe intatto</li>
     <li>
-      <code>expected: accept</code> accanto a un danno, perché nulla potrebbe soddisfarlo. Scrivi
-      <code>sanitize</code> se il tuo sistema deve riparare il file, oppure <code>unspecified</code>
-      se è proprio questa la domanda che poni
+      <code>expected: accept</code> accanto a un danno che viola le regole del formato, perché nulla
+      che le segua accetta il file. Dove la risposta dipende dal tuo sistema, <code>accept</code> è
+      consentito. Scrivi <code>sanitize</code> se il tuo sistema deve riparare il file, oppure
+      <code>unspecified</code> se è proprio questa la domanda che poni
+    </li>
+    <li>
+      <code>truncate</code> dopo <code>append-junk</code>, perché taglierebbe via i byte aggiunti.
+      Metti <code>truncate</code> per primo
+    </li>
+    <li>
+      <code>truncate</code> o <code>append-junk</code> su un archivio che prende la dimensione da
+      ciò che contiene, perché non c'è una dimensione da cui partire
     </li>
   </ul>
 </section>
@@ -309,11 +358,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    Un file il cui esito è <code>unspecified</code> viene escluso qui, perché cosa il tuo sistema
+    debba farne lo decide la tua politica. La sua voce dice perché, e <code>policy_options</code>
+    elenca le risposte possibili.
+  </p>
   <p>
     Un buon rifiuto è un rifiuto pulito. Un messaggio che dice cosa non andava è la risposta che vuoi.
     Un errore del server, un blocco o un file salvato a metà è il difetto che questo test esiste per

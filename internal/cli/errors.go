@@ -276,6 +276,18 @@ func classifyRequest(err error) (int, bool) {
 	if errors.As(err, &impossible) {
 		return ExitUsage, true
 	}
+	// The same class, for the same reason: a list of damages that cuts away
+	// what it added, and a damage that changes the length of an archive sized
+	// by what it holds, are wrong whatever format or size is asked for. The fix
+	// is in the invocation - the order of the flags, or a size.
+	var eaten *damage.EatenError
+	if errors.As(err, &eaten) {
+		return ExitUsage, true
+	}
+	var unsized *damage.NeedsSizeError
+	if errors.As(err, &unsized) {
+		return ExitUsage, true
+	}
 	if code, ok := classifyFormat(err); ok {
 		return code, true
 	}

@@ -5,6 +5,7 @@ import (
 	"io"
 	"sort"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
 
@@ -111,56 +112,206 @@ func (d Descriptor) Check(v Values) error {
 // those bytes do not move.
 type Chain []Spec
 
-// Floor is the smallest file every damage in the chain can be applied to.
-//
-// The largest of the floors rather than their sum: each damage is applied to
-// the whole file that reaches it, so a chain is bounded by its most demanding
-// member. That is true for length preserving damage, which is all this build
-// has - a length CHANGING damage makes the later members see a different file,
-// and that arithmetic arrives with truncate rather than being guessed at here.
-func (c Chain) Floor() (int64, string, error) {
-	var floor int64
-	var owner string
+// step is one entry of a chain with its declaration and its settings resolved,
+// which every question below needs and none should ask the registry twice for.
+type step struct {
+	d      Descriptor
+	values Values
+}
+
+func (c Chain) steps() ([]step, error) {
+	out := make([]step, 0, len(c))
 	for _, s := range c {
 		d, err := Get(s.ID)
 		if err != nil {
-			return 0, "", err
+			return nil, err
 		}
-		if f := d.Floor(withDefaults(d, s.Values)); f > floor {
-			floor, owner = f, s.ID
-		}
+		out = append(out, step{d: d, values: withDefaults(d, s.Values)})
 	}
-	return floor, owner, nil
+	return out, nil
 }
 
-// Open builds the chain as one writer, with the first damage of the list
-// outermost so that the bytes meet them in the order written.
+// lengths is how many bytes leave each damage for a file of size bytes on
+// disk, in the order of the chain, and how many the generator writes. ok is
+// false when some damage would be left fewer bytes than its floor, or handed
+// fewer than none.
+//
+// Worked from the END of the chain, because the size somebody asked for is
+// what leaves the last damage, and each damage says how much it needs to be
+// given for what it hands on.
+func lengths(steps []step, size int64) (outs []int64, generator int64, ok bool) {
+	outs = make([]int64, len(steps))
+	at := size
+	ok = true
+	for i := len(steps) - 1; i >= 0; i-- {
+		outs[i] = at
+		if at < steps[i].d.Floor(steps[i].values) {
+			ok = false
+		}
+		if steps[i].d.Length != nil {
+			at = steps[i].d.Length(steps[i].values, at)
+		}
+		if at < 0 {
+			ok = false
+			at = 0
+		}
+	}
+	return outs, at, ok
+}
+
+// lengthCeiling is where the search for a floor stops. Far past any size a
+// run accepts, and far enough below math.MaxInt64 that doubling towards it
+// cannot wrap.
+const lengthCeiling = int64(1) << 60
+
+// Floor is the smallest file on disk every damage in the chain can be applied
+// to, and the damage that sets it.
+//
+// For a chain whose damages keep the length this is the largest of their
+// floors, which is what it was before lengths could change. A damage that
+// changes the length makes the ones before it see a different file, so the
+// answer is searched for rather than added up: what leaves each damage grows
+// with the size asked for, so the smallest size that leaves every damage its
+// floor is one number, found by halving.
+func (c Chain) Floor() (int64, string, error) {
+	steps, err := c.steps()
+	if err != nil || len(steps) == 0 {
+		return 0, "", err
+	}
+	if _, _, ok := lengths(steps, 0); ok {
+		return 0, "", nil
+	}
+	lo, hi := int64(0), int64(1)
+	for {
+		if _, _, ok := lengths(steps, hi); ok {
+			break
+		}
+		if hi >= lengthCeiling {
+			return lengthCeiling, steps[len(steps)-1].d.ID, nil
+		}
+		lo, hi = hi, hi*2
+	}
+	// lo fails and hi passes, so the floor is in (lo, hi].
+	for hi-lo > 1 {
+		mid := lo + (hi-lo)/2
+		if _, _, ok := lengths(steps, mid); ok {
+			hi = mid
+		} else {
+			lo = mid
+		}
+	}
+	return hi, ownerOfFloor(steps, lo), nil
+}
+
+// ownerOfFloor is the damage that refuses a file of size bytes - the one a
+// refusal names. The last one that does, because a refusal speaks about the
+// size somebody wrote, and the last damage is the one that sees it.
+func ownerOfFloor(steps []step, size int64) string {
+	outs, _, _ := lengths(steps, size)
+	owner := steps[len(steps)-1].d.ID
+	for i := len(steps) - 1; i >= 0; i-- {
+		if outs[i] < steps[i].d.Floor(steps[i].values) {
+			return steps[i].d.ID
+		}
+	}
+	return owner
+}
+
+// Before is how many bytes the generator writes for a file of size bytes on
+// disk. It refuses a size below the chain's floor, in the same words the plan
+// does.
+func (c Chain) Before(size int64) (int64, error) {
+	steps, err := c.steps()
+	if err != nil {
+		return 0, err
+	}
+	_, generator, ok := lengths(steps, size)
+	if !ok {
+		floor, owner, err := c.Floor()
+		if err != nil {
+			return 0, err
+		}
+		return 0, &TooSmallError{Damage: owner, Requested: size, Floor: floor}
+	}
+	return generator, nil
+}
+
+// ChangesLength says whether the file the generator writes is a different
+// length from the one on disk.
+func (c Chain) ChangesLength() bool {
+	steps, err := c.steps()
+	if err != nil {
+		return false
+	}
+	for _, s := range steps {
+		if s.d.Length != nil {
+			return true
+		}
+	}
+	return false
+}
+
+// Stretches says the generator may write MORE than Before asks for and the
+// file on disk still comes out the size asked for.
+//
+// True when a damage cuts the tail and nothing before it changes the length:
+// whatever the generator writes past the cut is dropped, so a size the format
+// cannot write exactly - a band a PNG cannot reach, an odd number in UTF-16 -
+// can be moved up to one it can. That is what makes truncate's missing an
+// "at least" (owner's call, 2026-11-10).
+func (c Chain) Stretches() bool {
+	steps, err := c.steps()
+	if err != nil {
+		return false
+	}
+	for _, s := range steps {
+		if s.d.CutsTail {
+			return true
+		}
+		if s.d.Length != nil {
+			return false
+		}
+	}
+	return false
+}
+
+// Open builds the chain as one writer for a file of size bytes on disk, with
+// the first damage of the list outermost so that the bytes meet them in the
+// order written. seed is the file's own seed, and each damage is handed one
+// derived from it and its place in the list.
 //
 // Returns the streams as well, because whether each one changed anything is a
 // question asked per damage rather than once at the end - two damages can
 // cancel out, and a chain whose second member was idle would otherwise pass.
-func (c Chain) Open(out io.Writer) (io.Writer, []Stream, error) {
+func (c Chain) Open(out io.Writer, size int64, seed uint64) (io.Writer, []Stream, error) {
+	steps, err := c.steps()
+	if err != nil {
+		return nil, nil, err
+	}
+	outs, _, _ := lengths(steps, size)
 	w := out
-	streams := make([]Stream, 0, len(c))
+	streams := make([]Stream, len(steps))
 	// Built back to front so that the first entry ends up outermost.
-	for i := len(c) - 1; i >= 0; i-- {
-		d, err := Get(c[i].ID)
+	for i := len(steps) - 1; i >= 0; i-- {
+		s, err := steps[i].d.Open(steps[i].values, File{Seed: core.DamageSeed(seed, i), Bytes: outs[i]}, w)
 		if err != nil {
 			return nil, nil, err
 		}
-		s, err := d.Open(withDefaults(d, c[i].Values), w)
-		if err != nil {
-			return nil, nil, err
-		}
-		streams = append(streams, s)
+		streams[i] = s
 		w = s
 	}
-	// Back into the order of the list, so a caller reporting on stream i is
-	// reporting on entry i.
-	for l, r := 0, len(streams)-1; l < r; l, r = l+1, r-1 {
-		streams[l], streams[r] = streams[r], streams[l]
-	}
 	return w, streams, nil
+}
+
+// Finish ends every damage of the chain in the order of the list, after the
+// generator's last write.
+func (c Chain) Finish(streams []Stream) error {
+	for _, s := range streams {
+		if err := s.Finish(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Idle is the first damage of the chain that changed nothing, by name, or an

@@ -199,7 +199,9 @@
     сама команда знову записує ті самі байти.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     Налаштування пишуться після двокрапки. Параметр можна повторювати, а пошкодження застосовуються в
     тому порядку, в якому ви їх записали. Це працює з кожним із 31 форматів.
@@ -226,6 +228,18 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   </thead>
   <tbody>
     <tr>
+      <td><code>append-junk</code></td>
+      <td>Дописує випадкові байти після кінця файлу й зберігає саме той розмір, який ви вказали, як приходить файл, до кінця якого щось прилипло.</td>
+      <td class="num">64</td>
+      <td><code>bytes</code></td>
+    </tr>
+    <tr>
+      <td><code>truncate</code></td>
+      <td>Відрізає кінець файлу й зберігає саме той розмір, який ви вказали, як залишає файл перерване завантаження чи копіювання.</td>
+      <td class="num">4</td>
+      <td><code>missing</code></td>
+    </tr>
+    <tr>
       <td><code>zero-head</code></td>
       <td>Перезаписує перші байти файлу нулями, не змінюючи його довжину. Більшість програм читання дивляться спочатку туди, тому це пошкодження помічає майже все.</td>
       <td class="num">8</td>
@@ -241,14 +255,24 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     байтів не є текстом. Менше ніж чотири байти - і в деяких форматів виходить пошкодження, на яке
     не скаржиться жодна програма читання, тому налаштування починається з чотирьох.
   </p>
+  <p>
+    <code>truncate</code> відрізає кінець файлу, як залишає його перерване завантаження чи
+    копіювання, і файл однаково має вказаний вами розмір: він створюється більшим, і на диск
+    потрапляє лише його початок. <code>missing</code> каже, яка частина всього файлу зникає,
+    половина, якщо не вказати інше.
+  </p>
+  <p>
+    <code>append-junk</code> дописує випадкові байти після кінця файлу, 64, якщо не вказати інше, як
+    приходить файл, до кінця якого щось прилипло. Та сама команда дописує ті самі байти.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">Що каже маніфест</p>
   <h2>Маніфест, який каже, що має статися</h2>
   <p>
-    Кожен пошкоджений файл отримує запис про те, що ваша система має його відхилити, а поруч записано
-    пошкодження:
+    Там, де пошкодження порушує правила формату, запис каже, що ваша система має його відхилити, а
+    поруч записано пошкодження:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -264,15 +288,40 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    Два запити відхиляються, перш ніж щось буде записано, бо кожен залишив би на диску файл, який
+    Там, де програми читання розходяться, запис каже про це, а не вгадує. Обрізаний текстовий файл
+    лишається текстом, а більшість переглядачів пропускають байти після кінця PNG, тому запис
+    залишає відповідь вашій системі, пропонує обидві й пояснює чому:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> перелічує формати, у яких пошкодження залишає відповідь вашій
+    системі, і причину.
+  </p>
+  <p>
+    Чотири запити відхиляються, перш ніж щось буде записано, бо кожен залишив би на диску файл, який
     маніфест описує хибно:
   </p>
   <ul>
     <li>файл менший, ніж потрібно пошкодженню, який вийшов би недоторканим</li>
     <li>
-      <code>expected: accept</code> поруч із пошкодженням, бо ніщо не могло б цього виконати. Напишіть
-      <code>sanitize</code>, якщо ваша система має полагодити файл, або <code>unspecified</code>,
-      якщо саме це ви й перевіряєте
+      <code>expected: accept</code> поруч із пошкодженням, яке порушує правила формату, бо ніщо, що
+      їх дотримується, такого файлу не прийме. Там, де відповідь залежить від вашої системи,
+      <code>accept</code> дозволено. Напишіть <code>sanitize</code>, якщо ваша система має
+      полагодити файл, або <code>unspecified</code>, якщо саме це ви й перевіряєте
+    </li>
+    <li>
+      <code>truncate</code> після <code>append-junk</code>, бо він відрізав би дописані байти.
+      Поставте <code>truncate</code> першим
+    </li>
+    <li>
+      <code>truncate</code> або <code>append-junk</code> для архіву, розмір якого береться зі
+      вмісту, бо немає розміру, від якого можна відштовхнутися
     </li>
   </ul>
 </section>
@@ -310,11 +359,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    Файл із результатом <code>unspecified</code> тут пропускається, бо те, що ваша система має з ним
+    зробити, визначає ваша власна політика. Його запис пояснює чому, а <code>policy_options</code>
+    перелічує можливі відповіді.
+  </p>
   <p>
     Гарна відмова - це чиста відмова. Повідомлення, що каже, що було не так, - та відповідь, яка вам
     потрібна. Помилка сервера, зависання або наполовину збережений файл - той дефект, заради якого

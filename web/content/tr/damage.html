@@ -52,7 +52,9 @@
     aynı baytları yazar.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     Ayarlar iki noktadan sonra yazılır. Seçenek tekrarlanabilir ve hasarlar yazdığınız sırayla
     uygulanır. {{ .Facts.FormatCount }} biçimin her biriyle çalışır.
@@ -75,14 +77,25 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     Dört baytın altında bazı biçimler hiçbir okuyucunun şikâyet etmediği bir hasarla çıkar, ayarın
     dörtten başlamasının nedeni budur.
   </p>
+  <p>
+    <code>truncate</code> dosyanın sonunu keser, tıpkı yarıda kalan bir yüklemenin ya da
+    kopyalamanın bıraktığı gibi, ve dosya yine de istediğiniz boyuttadır: daha büyük üretilir ve
+    diske yalnızca başı ulaşır. <code>missing</code>, dosyanın tamamının ne kadarının kaybolduğunu
+    söyler, başka bir şey belirtmezseniz yarısı.
+  </p>
+  <p>
+    <code>append-junk</code> dosyanın sonundan sonra rastgele baytlar yazar, başka bir şey
+    belirtmezseniz 64, tıpkı sonuna bir şey yapışmış bir dosyanın gelişi gibi. Aynı komut aynı
+    baytları ekler.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">Bildirim ne söyler</p>
   <h2>Ne olması gerektiğini söyleyen bir bildirim</h2>
   <p>
-    Hasarlı her dosya, sisteminizin onu reddetmesi gerektiğini söyleyen bir kayıt alır ve hasar yanına
-    yazılır:
+    Hasarın biçimin kurallarını çiğnediği yerde kayıt, sisteminizin dosyayı reddetmesi gerektiğini
+    söyler ve hasar yanına yazılır:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -98,15 +111,40 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    İki istek, bir şey yazılmadan önce reddedilir, çünkü her biri diskte bildirimin yanlış tarif ettiği
-    bir dosya bırakırdı:
+    Okuyucuların ayrıştığı yerde kayıt, tahmin yürütmek yerine bunu söyler. Kesilmiş bir metin
+    dosyası yine metindir ve çoğu görüntüleyici bir PNG'nin sonundan sonraki baytları atlar, bu
+    yüzden kayıt yanıtı sisteminize bırakır, ikisini de sunar ve nedenini söyler:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code>, bir hasarın yanıtı sisteminize bıraktığı biçimleri nedeniyle
+    birlikte listeler.
+  </p>
+  <p>
+    Dört istek, bir şey yazılmadan önce reddedilir, çünkü her biri diskte bildirimin yanlış tarif
+    ettiği bir dosya bırakırdı:
   </p>
   <ul>
     <li>hasarın gerektirdiğinden küçük bir dosya, ki değişmeden çıkardı</li>
     <li>
-      Bir hasarın yanında <code>expected: accept</code>, çünkü hiçbir şey bunu karşılayamaz. Sisteminiz
-      dosyayı onarmalıysa <code>sanitize</code>, tam da bunu soruyorsanız <code>unspecified</code>
-      yazın
+      Biçimin kurallarını çiğneyen bir hasarın yanında <code>expected: accept</code>, çünkü bu
+      kurallara uyan hiçbir şey dosyayı kabul etmez. Yanıtın sisteminize bağlı olduğu yerde
+      <code>accept</code> serbesttir. Sisteminiz dosyayı onarmalıysa <code>sanitize</code>, tam da
+      bunu soruyorsanız <code>unspecified</code> yazın
+    </li>
+    <li>
+      <code>append-junk</code> sonrasında <code>truncate</code>, çünkü eklenen baytları keserdi.
+      <code>truncate</code> öğesini başa koyun
+    </li>
+    <li>
+      İçeriğinden boyut alan bir arşivde <code>truncate</code> ya da <code>append-junk</code>, çünkü
+      yola çıkılacak bir boyut yoktur
     </li>
   </ul>
 </section>
@@ -144,11 +182,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    Sonucu <code>unspecified</code> olan bir dosya burada atlanır, çünkü sisteminizin onunla ne
+    yapması gerektiği kendi politikanıza bağlıdır. Kaydı nedenini söyler,
+    <code>policy_options</code> ise olası yanıtları listeler.
+  </p>
   <p>
     İyi bir ret temiz bir rettir. Neyin yanlış olduğunu söyleyen bir ileti istediğiniz yanıttır. Sunucu
     hatası, takılma ya da yarım kaydedilmiş dosya, bu testin bulmak için var olduğu kusurdur.

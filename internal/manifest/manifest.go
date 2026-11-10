@@ -280,6 +280,13 @@ type Expected struct {
 	Reason     string `json:"reason,omitempty"`
 	Detail     string `json:"detail,omitempty"`
 	Confidence string `json:"confidence,omitempty"`
+	// PolicyOptions are the answers a policy dependent outcome leaves open,
+	// for a consumer that resolves it by its own policy (MF5).
+	//
+	// Absent from every file that has none, so each manifest written before
+	// it existed is byte for byte what it was, and the schema stays 1.0 by
+	// the rule MANIFEST.md section 10 states: it grows by adding.
+	PolicyOptions []string `json:"policy_options,omitempty"`
 }
 
 // Outcomes a manifest entry can declare.

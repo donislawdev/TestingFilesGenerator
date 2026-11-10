@@ -241,6 +241,8 @@
     "unspecified": "Sisteminizin kurallarına bağlı. Siz karar verirsiniz, sonra olanın amaçladığınız şey olduğunu doğrularsınız."
   },
   "damages": {
+    "append-junk": "Dosyanın sonundan sonra rastgele baytlar yazar ve istediğiniz boyutu tam olarak korur, tıpkı sonuna bir şey yapışmış bir dosyanın gelişi gibi.",
+    "truncate": "Dosyanın sonunu keser ve istediğiniz boyutu tam olarak korur, tıpkı yarıda kalan bir yüklemenin ya da kopyalamanın bıraktığı gibi.",
     "zero-head": "Dosyanın ilk baytlarını uzunluğuna dokunmadan sıfırlarla ezer. Okuyucuların çoğu önce oraya bakar, bu yüzden hemen her şey bu hasarı fark eder."
   },
   "terms": {

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"maps"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -201,6 +203,13 @@ func TestTheMachineReadableDamageListCarriesTheWholeDeclaration(t *testing.T) {
 			Default string `json:"default"`
 			Detail  string `json:"detail"`
 		} `json:"parameters"`
+		// A pointer, so a key that is missing is told apart from an empty
+		// list: the key is promised for every damage.
+		PolicyDependent *[]struct {
+			Format   string              `json:"format"`
+			Settings map[string][]string `json:"settings"`
+			Reason   string              `json:"reason"`
+		} `json:"policy_dependent"`
 	}
 	if err := json.Unmarshal([]byte(stdout), &entries); err != nil {
 		t.Fatalf("the list does not parse: %v\n%s", err, stdout)
@@ -210,7 +219,10 @@ func TestTheMachineReadableDamageListCarriesTheWholeDeclaration(t *testing.T) {
 			len(damage.All()), len(entries))
 	}
 
-	checked := 0
+	// Counted apart. Settings alone used to satisfy one shared count, so a
+	// registry declaring no policy case anywhere left that comparison unrun
+	// and this test green.
+	checked, policies := 0, 0
 	for _, e := range entries {
 		d, err := damage.Get(e.ID)
 		if err != nil {
@@ -223,6 +235,19 @@ func TestTheMachineReadableDamageListCarriesTheWholeDeclaration(t *testing.T) {
 		if e.SmallestFileBytes != d.Floor(d.Defaults()) {
 			t.Errorf("%s: the list says %d B and the declaration says %d B",
 				e.ID, e.SmallestFileBytes, d.Floor(d.Defaults()))
+		}
+		if e.PolicyDependent == nil {
+			t.Errorf("%s: policy_dependent is missing, and it is promised for every damage so a script reads one key", e.ID)
+		} else if got := *e.PolicyDependent; len(got) != len(d.Policy) {
+			t.Errorf("%s declares %d format(s) where the outcome depends on the reader and the list carries %d",
+				e.ID, len(d.Policy), len(got))
+		} else {
+			for i, c := range d.Policy {
+				if got[i].Format != c.Format || got[i].Reason != c.Why || !maps.EqualFunc(got[i].Settings, c.When, slices.Equal) {
+					t.Errorf("%s: policy case %d arrives as %+v and the declaration is %+v", e.ID, i, got[i], c)
+				}
+				policies++
+			}
 		}
 		if len(e.Parameters) != len(d.Parameters) {
 			t.Errorf("%s declares %d setting(s) and the list carries %d",
@@ -252,6 +277,97 @@ func TestTheMachineReadableDamageListCarriesTheWholeDeclaration(t *testing.T) {
 	if checked == 0 {
 		t.Fatal("no setting was compared, so this proved nothing")
 	}
+	if policies == 0 {
+		t.Fatal("no policy case was compared, so policy_dependent was not proved")
+	}
+}
+
+// The damage command says in words, not only in JSON, where the outcome of a
+// damaged file depends on the reader.
+//
+// The machine readable list is compared field by field above. What a person
+// reads had no guard: the list could stop naming the formats, or the
+// description of one damage could drop the reason, and every test stayed
+// green. Asked for by the review of 2026-11-10.
+//
+// Rebuilt from the declarations, like the guard on settings. A damage with no
+// case to declare is the control: it has to stay silent on the subject, or a
+// build printing the same lines under every damage would pass.
+func TestTheDamageCommandSaysInWordsWhereTheOutcomeDependsOnTheReader(t *testing.T) {
+	code, listing, errOut := run(t, "damage")
+	if code != cli.ExitOK {
+		t.Fatalf("listing the damages ended with %d: %s", code, errOut)
+	}
+	var reasons []string
+	for _, d := range damage.All() {
+		for _, c := range d.Policy {
+			reasons = append(reasons, c.Why)
+		}
+	}
+
+	dependent, certain := 0, 0
+	for _, d := range damage.All() {
+		code, described, errOut := run(t, "damage", d.ID)
+		if code != cli.ExitOK {
+			t.Fatalf("describing %q ended with %d: %s", d.ID, code, errOut)
+		}
+		under := strings.Join(listedUnder(listing, d.ID), "\n")
+		if len(d.Policy) == 0 {
+			certain++
+			if strings.TrimSpace(under) != d.Detail {
+				t.Errorf("%s declares no format where readers differ, and the list prints more than its sentence under it:\n%s", d.ID, under)
+			}
+			if slices.ContainsFunc(reasons, func(why string) bool { return strings.Contains(described, why) }) {
+				t.Errorf("%s declares no format where readers differ, and its description carries another damage's reason:\n%s", d.ID, described)
+			}
+			continue
+		}
+		dependent++
+		for _, c := range d.Policy {
+			for _, want := range policyWords(c) {
+				if !strings.Contains(under, want) {
+					t.Errorf("%s leaves %s to the reader and the list does not say %q under it:\n%s", d.ID, c.Format, want, under)
+				}
+				if !strings.Contains(described, want) {
+					t.Errorf("%s leaves %s to the reader and its description does not say %q:\n%s", d.ID, c.Format, want, described)
+				}
+			}
+			if !strings.Contains(described, c.Why) {
+				t.Errorf("%s leaves %s to the reader and its description does not say why:\n%s", d.ID, c.Format, described)
+			}
+		}
+	}
+	if dependent == 0 || certain == 0 {
+		t.Fatalf("%d damage(s) leave an outcome to the reader and %d leave none - both kinds are needed, or half of this proved nothing",
+			dependent, certain)
+	}
+}
+
+// policyWords is what a person has to be able to read about one case: the
+// format, and every value of a setting the case is narrowed to.
+func policyWords(c damage.PolicyCase) []string {
+	words := []string{c.Format}
+	for _, values := range c.When {
+		words = append(words, values...)
+	}
+	return words
+}
+
+// listedUnder is the lines the list of damages prints under one damage's row.
+func listedUnder(listing, id string) []string {
+	var block []string
+	inside := false
+	for _, line := range strings.Split(listing, "\n") {
+		switch {
+		case strings.HasPrefix(line, id+" "):
+			inside = true
+		case !strings.HasPrefix(line, "    "):
+			inside = false
+		case inside:
+			block = append(block, line)
+		}
+	}
+	return block
 }
 
 // Every command that gets its own arguments is watched for --help.

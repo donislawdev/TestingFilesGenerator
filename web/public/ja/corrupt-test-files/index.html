@@ -187,7 +187,9 @@
     ファイルは通常どおり生成され、ディスクへ向かう途中で壊されます。求めたサイズは保たれ、同じコマンドは同じバイトをもう一度書き出します。
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     設定はコロンの後ろに書きます。オプションは繰り返せて、破損は書いた順に適用されます。31種類すべての形式で使えます。
   </p>
@@ -212,6 +214,18 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   </thead>
   <tbody>
     <tr>
+      <td><code>append-junk</code></td>
+      <td>ファイルの末尾の後ろにランダムなバイトを書き込み、指定したサイズをそのまま保ちます。末尾に何かが付いたまま届いたファイルと同じ形です。</td>
+      <td class="num">64</td>
+      <td><code>bytes</code></td>
+    </tr>
+    <tr>
+      <td><code>truncate</code></td>
+      <td>ファイルの末尾を切り落とし、指定したサイズをそのまま保ちます。途中で止まったアップロードやコピーが残すのと同じ形です。</td>
+      <td class="num">4</td>
+      <td><code>missing</code></td>
+    </tr>
+    <tr>
       <td><code>zero-head</code></td>
       <td>ファイルの先頭のバイトをゼロで上書きし、長さは変えません。ほとんどのリーダーはまずそこを見るので、この破損にはほぼどれも気づきます。</td>
       <td class="num">8</td>
@@ -223,13 +237,19 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   <p>
     <code>zero-head</code>はファイルの先頭をゼロで上書きします。ほとんどのリーダーはまずそこを見ます。ファイルが何であるかを示すシグネチャとヘッダーです。そのため、ほぼどのリーダーでも気づきます。プレーンテキストやログにはシグネチャがありませんが、これらも拒否されます。ゼロのバイトの連なりはテキストではないからです。4バイト未満では、どのリーダーも文句を言わない破損になる形式があります。設定が4から始まるのはそのためです。
   </p>
+  <p>
+    <code>truncate</code>はファイルの末尾を切り落とします。途中で止まったアップロードやコピーが残すのと同じ形ですが、ファイルは指定したサイズのままです。大きめに生成され、その先頭だけがディスクに届くからです。<code>missing</code>はファイル全体のうちどれだけが失われるかを示し、指定しなければ半分です。
+  </p>
+  <p>
+    <code>append-junk</code>はファイルの末尾の後ろにランダムなバイトを書き込みます。指定しなければ64バイトで、末尾に何かが付いたまま届いたファイルと同じ形です。同じコマンドは同じバイトを付け加えます。
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">マニフェストの内容</p>
   <h2>何が起こるべきかを示すマニフェスト</h2>
   <p>
-    破損したファイルにはそれぞれ、システムがそれを拒否すべきことを示す項目が付き、破損の内容がその横に記録されます。
+    破損が形式の規則に反する場合、項目はシステムがそれを拒否すべきことを示し、破損の内容がその横に記録されます。
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -245,13 +265,31 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    2種類のリクエストは、何かが書き込まれる前に拒否されます。どちらもマニフェストの記述が誤ったファイルをディスクに残してしまうからです。
+    リーダーによって扱いが分かれる場合、項目は推測せずにそう伝えます。末尾を切られたテキストファイルもテキストのままですし、ほとんどの画像ビューアーはPNGの終わりの後ろのバイトを読み飛ばします。そのため項目は答えをシステムに委ね、両方の答えを示し、理由を書きます。
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code>は、破損が答えをシステムに委ねる形式とその理由を一覧にします。
+  </p>
+  <p>
+    4種類のリクエストは、何かが書き込まれる前に拒否されます。どれもマニフェストの記述が誤ったファイルをディスクに残してしまうからです。
   </p>
   <ul>
     <li>破損に必要なサイズより小さいファイル。そのままの状態で出てきてしまいます</li>
     <li>
-      破損と並べた<code>expected:
-      accept</code>。何もそれを満たせないためです。システムがファイルを修復するはずなら<code>sanitize</code>を、まさにそれを確かめたいなら<code>unspecified</code>を書いてください
+      形式の規則に反する破損と並べた<code>expected: accept</code>。規則に従うものはそのファイルを受け入れないためです。答えがシステム次第の場合は<code>accept</code>を書けます。システムがファイルを修復するはずなら<code>sanitize</code>を、まさにそれを確かめたいなら<code>unspecified</code>を書いてください
+    </li>
+    <li>
+      <code>append-junk</code>の後の<code>truncate</code>。付け加えたバイトを切り落としてしまうためです。<code>truncate</code>を先に置いてください
+    </li>
+    <li>
+      中身からサイズが決まるアーカイブに対する<code>truncate</code>や<code>append-junk</code>。基準になるサイズがないためです
     </li>
   </ul>
 </section>
@@ -287,11 +325,17 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    結果が<code>unspecified</code>のファイルはここでは除外します。システムがそれをどう扱うべきかは、あなた自身の方針で決まるからです。項目にはその理由が書かれ、<code>policy_options</code>には取りうる答えが並びます。
+  </p>
   <p>
     よい拒否は、きれいな拒否です。何が悪かったかを伝えるメッセージが、求めている答えです。サーバーエラー、ハング、書きかけで保存されたファイルは、このテストが見つけるために存在する欠陥です。
   </p>

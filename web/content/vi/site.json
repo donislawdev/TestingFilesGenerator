@@ -241,6 +241,8 @@
     "unspecified": "Tùy vào quy tắc của hệ thống bạn. Bạn quyết định, rồi kiểm tra điều xảy ra có đúng ý bạn không."
   },
   "damages": {
+    "append-junk": "Ghi các byte ngẫu nhiên sau phần cuối tệp và giữ đúng kích thước bạn yêu cầu, giống như một tệp đến nơi với thứ gì đó dính ở cuối.",
+    "truncate": "Cắt bỏ phần cuối tệp và giữ đúng kích thước bạn yêu cầu, giống như một lần tải lên hoặc sao chép bị ngắt giữa chừng để lại.",
     "zero-head": "Ghi đè các byte đầu của tệp bằng số không, giữ nguyên độ dài. Hầu hết trình đọc nhìn vào đó trước, nên gần như mọi thứ đều nhận ra hỏng hóc này."
   },
   "terms": {

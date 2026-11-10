@@ -199,7 +199,9 @@
     iar aceeași comandă scrie din nou aceiași octeți.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     Setările se scriu după două puncte. Opțiunea poate fi repetată, iar deteriorările se aplică în
     ordinea în care le scrii. Funcționează cu fiecare dintre cele 31 formate.
@@ -226,6 +228,18 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   </thead>
   <tbody>
     <tr>
+      <td><code>append-junk</code></td>
+      <td>Scrie octeți aleatori după sfârșitul fișierului și păstrează exact dimensiunea cerută, așa cum sosește un fișier cu ceva lipit la capăt.</td>
+      <td class="num">64</td>
+      <td><code>bytes</code></td>
+    </tr>
+    <tr>
+      <td><code>truncate</code></td>
+      <td>Taie sfârșitul fișierului și păstrează exact dimensiunea cerută, așa cum îl lasă o încărcare sau o copiere întreruptă.</td>
+      <td class="num">4</td>
+      <td><code>missing</code></td>
+    </tr>
+    <tr>
       <td><code>zero-head</code></td>
       <td>Suprascrie cu zerouri primii octeți ai fișierului, fără să îi schimbe lungimea. Majoritatea cititorilor se uită întâi acolo, deci aproape orice observă această deteriorare.</td>
       <td class="num">8</td>
@@ -241,14 +255,25 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     octeți nuli nu este text. Sub patru octeți, unele formate ies cu o deteriorare de care nu se
     plânge niciun cititor, de aceea setarea începe de la patru.
   </p>
+  <p>
+    <code>truncate</code> taie sfârșitul fișierului, așa cum îl lasă o încărcare sau o copiere
+    întreruptă, iar fișierul are totuși dimensiunea cerută: este generat mai mare și doar începutul
+    lui ajunge pe disc. <code>missing</code> spune ce parte din fișierul întreg lipsește, jumătate
+    dacă nu spui altceva.
+  </p>
+  <p>
+    <code>append-junk</code> scrie octeți aleatori după sfârșitul fișierului, 64 dacă nu spui
+    altceva, așa cum sosește un fișier cu ceva lipit la capăt. Aceeași comandă adaugă aceiași
+    octeți.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">Ce spune manifestul</p>
   <h2>Un manifest care spune ce trebuie să se întâmple</h2>
   <p>
-    Fiecare fișier deteriorat primește o intrare care spune că sistemul tău trebuie să îl respingă, cu
-    deteriorarea notată alături:
+    Acolo unde deteriorarea încalcă regulile formatului, intrarea spune că sistemul tău trebuie să
+    îl respingă, cu deteriorarea notată alături:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -264,15 +289,40 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    Două cereri sunt refuzate înainte să se scrie ceva, pentru că fiecare ar lăsa pe disc un fișier pe
-    care manifestul îl descrie greșit:
+    Acolo unde cititorii diferă, intrarea spune asta în loc să ghicească. Un fișier text tăiat
+    rămâne text, iar majoritatea vizualizatoarelor sar peste octeții de după sfârșitul unui PNG, așa
+    că intrarea lasă răspunsul sistemului tău, le oferă pe amândouă și spune de ce:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> enumeră formatele în care o deteriorare lasă răspunsul
+    sistemului tău, și de ce.
+  </p>
+  <p>
+    Patru cereri sunt refuzate înainte să se scrie ceva, pentru că fiecare ar lăsa pe disc un fișier
+    pe care manifestul îl descrie greșit:
   </p>
   <ul>
     <li>un fișier mai mic decât are nevoie deteriorarea, care ar ieși neschimbat</li>
     <li>
-      <code>expected: accept</code> lângă o deteriorare, pentru că nimic nu ar putea îndeplini asta. Scrie
-      <code>sanitize</code> dacă sistemul tău trebuie să repare fișierul sau
-      <code>unspecified</code> dacă tocmai asta este întrebarea pe care o pui
+      <code>expected: accept</code> lângă o deteriorare care încalcă regulile formatului, pentru că
+      nimic din ce le respectă nu acceptă fișierul. Acolo unde răspunsul depinde de sistemul tău,
+      <code>accept</code> este permis. Scrie <code>sanitize</code> dacă sistemul tău trebuie să
+      repare fișierul sau <code>unspecified</code> dacă tocmai asta este întrebarea pe care o pui
+    </li>
+    <li>
+      <code>truncate</code> după <code>append-junk</code>, pentru că ar tăia octeții adăugați. Pune
+      <code>truncate</code> primul
+    </li>
+    <li>
+      <code>truncate</code> sau <code>append-junk</code> pe o arhivă care își ia dimensiunea din ce
+      conține, pentru că nu există o dimensiune de la care să se plece
     </li>
   </ul>
 </section>
@@ -310,11 +360,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    Un fișier al cărui rezultat este <code>unspecified</code> este lăsat deoparte aici, pentru că ce
+    trebuie să facă sistemul tău cu el ține de propria ta politică. Intrarea lui spune de ce, iar
+    <code>policy_options</code> enumeră răspunsurile posibile.
+  </p>
   <p>
     O respingere bună este una curată. Un mesaj care spune ce a fost greșit este răspunsul pe care îl
     vrei. O eroare de server, o blocare sau un fișier salvat pe jumătate este defectul pe care acest

@@ -241,6 +241,8 @@
     "unspecified": "Dipende dalle regole del tuo sistema. Decidi tu, poi controlli che ciò che accade sia ciò che intendevi."
   },
   "damages": {
+    "append-junk": "Scrive byte casuali dopo la fine del file e mantiene esattamente la dimensione richiesta, come arriva un file con qualcosa attaccato in fondo.",
+    "truncate": "Taglia la fine del file e mantiene esattamente la dimensione richiesta, come la lascia un caricamento o una copia interrotti.",
     "zero-head": "Sovrascrive con zeri i primi byte del file, lasciandone intatta la lunghezza. La maggior parte dei lettori guarda prima lì, quindi quasi tutto si accorge di questo danno."
   },
   "terms": {

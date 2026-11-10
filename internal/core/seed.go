@@ -74,6 +74,24 @@ func SizeSeed(targetSeed uint64, index int) uint64 {
 	return binary.BigEndian.Uint64(h.Sum(nil)[:8])
 }
 
+// DamageSeed derives the seed one damage uses for one file, from the file's
+// seed and the damage's place in its chain.
+//
+// Its own separator byte, for the reason SizeSeed has one: the bytes a damage
+// writes and the bytes the generator wrote are two questions about the same
+// file, and drawing both from one state would tie the junk appended to a file
+// to the content before it. The place in the chain is what gives two of the
+// same damage on one file two different results.
+func DamageSeed(fileSeed uint64, place int) uint64 {
+	h := sha256.New()
+	var buf [8]byte
+	binary.BigEndian.PutUint64(buf[:], fileSeed)
+	h.Write(buf[:])
+	h.Write([]byte{2})
+	h.Write([]byte(strconv.Itoa(place)))
+	return binary.BigEndian.Uint64(h.Sum(nil)[:8])
+}
+
 // NewRand returns the random source for one file.
 //
 // It is deterministic given the seed and it is not shared between files. A

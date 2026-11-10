@@ -187,7 +187,9 @@
     檔案先正常產生，再在寫入磁碟的途中被弄壞。它保持你要求的大小，同一個指令再次寫出的位元組也完全相同。
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     設定寫在冒號之後。該選項可以重複，損毀依你寫下的順序逐一套用。它適用於全部 31 種格式。
   </p>
@@ -212,6 +214,18 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   </thead>
   <tbody>
     <tr>
+      <td><code>append-junk</code></td>
+      <td>在檔案結尾之後寫入隨機位元組，並完全保持你要求的大小，就像結尾黏著東西送來的檔案那樣。</td>
+      <td class="num">64</td>
+      <td><code>bytes</code></td>
+    </tr>
+    <tr>
+      <td><code>truncate</code></td>
+      <td>截掉檔案的結尾，並完全保持你要求的大小，就像中斷的上傳或複製留下的那樣。</td>
+      <td class="num">4</td>
+      <td><code>missing</code></td>
+    </tr>
+    <tr>
       <td><code>zero-head</code></td>
       <td>用零覆蓋檔案開頭的若干位元組，長度保持不變。大多數讀取器最先看的就是那裡，所以幾乎任何東西都會發現這種損毀。</td>
       <td class="num">8</td>
@@ -224,13 +238,19 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     <code>zero-head</code>
     把檔案開頭寫成零。大多數讀取器最先看的就是那裡，也就是說明檔案是什麼的簽章和檔頭，所以幾乎任何讀取器都會發現。純文字和日誌沒有簽章，同樣會被拒絕，因為一串零位元組不是文字。低於四個位元組時，有些格式產生的損毀沒有任何讀取器會抱怨，這就是該設定從四開始的原因。
   </p>
+  <p>
+    <code>truncate</code> 截掉檔案的結尾，就像中斷的上傳或複製留下的那樣，而檔案仍然是你要求的大小：它先按更大的尺寸產生，只有開頭部分寫入磁碟。<code>missing</code> 表示整個檔案遺失了多少，不另行指定時為一半。
+  </p>
+  <p>
+    <code>append-junk</code> 在檔案結尾之後寫入隨機位元組，不另行指定時為 64 個，就像結尾黏著東西送來的檔案那樣。同一道指令附加的位元組也相同。
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">清單怎麼說</p>
   <h2>一份說明應發生什麼的清單</h2>
   <p>
-    每個損毀的檔案都會得到一筆記錄，說明你的系統應該拒絕它，損毀方式記在旁邊：
+    當損毀違反該格式的規則時，記錄會說明你的系統應該拒絕它，損毀方式記在旁邊：
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -246,13 +266,31 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    有兩種請求會在寫入任何內容之前被拒絕，因為各自都會在磁碟上留下一個清單描述有誤的檔案：
+    當各讀取器的處理不一致時，記錄會如實說明，而不是去猜測。被截短的文字檔仍然是文字，而大多數看圖軟體會跳過 PNG 結尾之後的位元組，所以記錄把答案留給你的系統，給出兩種答案，並說明原因：
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> 會列出某種損毀把答案留給你的系統的格式及其原因。
+  </p>
+  <p>
+    有四種請求會在寫入任何內容之前被拒絕，因為各自都會在磁碟上留下一個清單描述有誤的檔案：
   </p>
   <ul>
     <li>比損毀所需更小的檔案，它會原樣輸出</li>
     <li>
-      在損毀旁邊寫 <code>expected: accept</code>，因為沒有什麼能滿足它。如果你的系統本應修復檔案，請寫
-      <code>sanitize</code>，如果你要問的恰恰就是這一點，請寫 <code>unspecified</code>
+      在違反格式規則的損毀旁邊寫 <code>expected: accept</code>，因為遵守這些規則的讀取器都不會接受這個檔案。當答案取決於你的系統時，可以寫 <code>accept</code>。如果你的系統本應修復檔案，請寫 <code>sanitize</code>，如果你要問的恰恰就是這一點，請寫 <code>unspecified</code>
+    </li>
+    <li>
+      在 <code>append-junk</code> 之後使用 <code>truncate</code>，因為它會把附加的位元組截掉。請把 <code>truncate</code> 放在前面
+    </li>
+    <li>
+      對依所含內容決定大小的壓縮檔使用 <code>truncate</code> 或 <code>append-junk</code>，因為沒有可以作為出發點的大小
     </li>
   </ul>
 </section>
@@ -288,11 +326,17 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    結果為 <code>unspecified</code> 的檔案在這裡被略過，因為你的系統該如何處理它由你自己的策略決定。它的記錄說明了原因，<code>policy_options</code> 列出了可能的答案。
+  </p>
   <p>
     好的拒絕是乾淨的拒絕。一則說明錯在哪裡的訊息，就是你想要的答案。伺服器錯誤、卡死或只儲存了一半的檔案，正是這個測試要找出來的缺陷。
   </p>

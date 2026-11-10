@@ -16,6 +16,14 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Two more ways to break a file on purpose: `truncate` and `append-junk`.**
+  `--damage truncate` cuts the end off a file, the way an interrupted upload
+  leaves it, and `--damage append-junk` writes random bytes after its end.
+  Both keep exactly the size you asked for and work with every format. Where
+  readers differ - a text cut short is still text - the manifest says the
+  outcome is `unspecified`, offers both answers in the new `policy_options`
+  field and says why. `tfg damage <id>` lists those formats.
+
 - **tfg is on npm, for tests in Node.**
   `npm install --save-dev testing-files-generator` gives Playwright, Vitest
   and `node:test` a generated set of files, and says what the system under
@@ -64,6 +72,12 @@ because it turns other people's test suites red.
   installs `tfg` on Windows and macOS runners in GitHub Actions.
 
 ### Changed
+
+- **`expected: accept` beside a damage is allowed where the outcome depends
+  on your system.** It used to be refused beside every damage. It is still
+  refused where the damage breaks the rules of the format, because nothing
+  that follows them accepts the file, and both the command line and a recipe
+  answer the same.
 
 - **The Windows archive of the window carries Mesa 26.2.4.** The software
   OpenGL renderer in the `opengl` folder, which the window loads only after

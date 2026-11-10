@@ -290,6 +290,11 @@ func settleTarget(ctx context.Context, t *Target, opt Options, seen map[string]b
 		return format.Descriptor{}, &format.NotAContainerError{Format: t.Format, Containers: format.Containers()}
 	}
 
+	desc, err = prepareDamage(t, desc)
+	if err != nil {
+		return format.Descriptor{}, err
+	}
+
 	// A size below the minimum is refused by the generator itself, on the first
 	// size that cannot be delivered, and planning writes nothing - so every size
 	// of a boundary set is judged before any file exists.
@@ -308,7 +313,7 @@ func settleTarget(ctx context.Context, t *Target, opt Options, seen map[string]b
 	// After the draw, because a range arrives here carrying only a count and a
 	// damage floor has to be judged against the sizes that will really be
 	// written.
-	if err := checkDamage(t); err != nil {
+	if err := checkDamage(t, desc); err != nil {
 		return format.Descriptor{}, err
 	}
 	return desc, nil
@@ -793,23 +798,12 @@ func (res *Result) note(code string, said core.Said) manifest.Note {
 func expectationFor(f PlannedFile) manifest.Expected {
 	switch f.Target.Expected {
 	case "":
-		// A damaged file is one a judge was measured to refuse, so reject is
-		// what it means rather than a guess - which is why this is allowed to
-		// state it with certainty where an ordinary file gets unspecified.
-		// Untouchable rule 5 forbids inventing an expectation, and this one is
-		// not invented: the witness rule says a damage with nothing able to
-		// refuse its result is a damage this tool does not offer.
-		//
 		// Only where nothing was declared. A recipe that states an expectation
 		// reaches the manifest unchanged, and the one statement that cannot be
-		// true beside damage - accept - is refused while reading the recipe
-		// rather than quietly replaced here.
+		// true beside damage that breaks a format's rules - accept - is
+		// refused while reading the recipe rather than quietly replaced here.
 		if f.Damaged() {
-			return manifest.Expected{
-				Outcome:    manifest.OutcomeReject,
-				Reason:     "content_malformed",
-				Confidence: "certain",
-			}
+			return damagedExpectation(f)
 		}
 		return manifest.Expected{
 			Outcome:    manifest.OutcomeUnspecified,

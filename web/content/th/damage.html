@@ -50,7 +50,9 @@
     และคำสั่งเดิมเขียนไบต์เดิมซ้ำอีกครั้ง
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     การตั้งค่าเขียนหลังเครื่องหมายทวิภาค ตัวเลือกนี้ใส่ซ้ำได้
     และความเสียหายจะถูกนำมาใช้ตามลำดับที่คุณเขียน ใช้ได้กับทั้ง {{ .Facts.FormatCount }} รูปแบบ
@@ -72,13 +74,19 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     ต่ำกว่าสี่ไบต์ บางรูปแบบออกมาพร้อมความเสียหายที่ไม่มีตัวอ่านใดบ่น
     นั่นคือเหตุผลที่การตั้งค่าเริ่มที่สี่
   </p>
+  <p>
+    <code>truncate</code> ตัดส่วนท้ายของไฟล์ทิ้ง เหมือนที่การอัปโหลดหรือการคัดลอกที่ถูกขัดจังหวะทิ้งไว้ แต่ไฟล์ยังมีขนาดตามที่คุณขอ เพราะไฟล์ถูกสร้างให้ใหญ่กว่า และมีเพียงส่วนต้นที่ไปถึงดิสก์ <code>missing</code> บอกว่าไฟล์ทั้งไฟล์หายไปเท่าใด คือครึ่งหนึ่งหากคุณไม่ได้ระบุเป็นอย่างอื่น
+  </p>
+  <p>
+    <code>append-junk</code> เขียนไบต์สุ่มต่อจากจุดจบของไฟล์ 64 ไบต์หากคุณไม่ได้ระบุเป็นอย่างอื่น เหมือนไฟล์ที่มาถึงพร้อมของบางอย่างติดอยู่ที่ท้าย คำสั่งเดียวกันจะต่อท้ายด้วยไบต์ชุดเดียวกัน
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">แมนิเฟสต์บอกอะไร</p>
   <h2>แมนิเฟสต์ที่บอกว่าควรเกิดอะไรขึ้น</h2>
   <p>
-    ไฟล์ที่เสียหายทุกไฟล์ได้รายการที่บอกว่าระบบของคุณควรปฏิเสธ โดยบันทึกความเสียหายไว้ข้างๆ:
+    ในกรณีที่ความเสียหายละเมิดกฎของรูปแบบ รายการจะบอกว่าระบบของคุณควรปฏิเสธ โดยบันทึกความเสียหายไว้ข้างๆ:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -94,14 +102,31 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    คำขอสองแบบถูกปฏิเสธก่อนที่จะมีอะไรถูกเขียน เพราะแต่ละแบบจะทิ้งไฟล์ไว้บนดิสก์ที่แมนิเฟสต์อธิบายผิด:
+    ในกรณีที่ตัวอ่านแต่ละตัวต่างกัน รายการจะบอกเช่นนั้นแทนการเดา ไฟล์ข้อความที่ถูกตัดก็ยังเป็นข้อความ และโปรแกรมดูภาพส่วนใหญ่ข้ามไบต์ที่อยู่หลังจุดจบของ PNG รายการจึงปล่อยคำตอบให้ระบบของคุณ เสนอทั้งสองคำตอบ และบอกเหตุผล:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> แสดงรายการรูปแบบที่ความเสียหายปล่อยคำตอบให้ระบบของคุณ พร้อมเหตุผล
+  </p>
+  <p>
+    คำขอสี่แบบถูกปฏิเสธก่อนที่จะมีอะไรถูกเขียน เพราะแต่ละแบบจะทิ้งไฟล์ไว้บนดิสก์ที่แมนิเฟสต์อธิบายผิด:
   </p>
   <ul>
     <li>ไฟล์ที่เล็กกว่าที่ความเสียหายต้องการ ซึ่งจะออกมาโดยไม่เปลี่ยนแปลง</li>
     <li>
-      <code>expected: accept</code> คู่กับความเสียหาย เพราะไม่มีอะไรทำให้เป็นจริงได้ เขียน
-      <code>sanitize</code> ถ้าระบบของคุณควรซ่อมไฟล์ หรือ <code>unspecified</code>
-      ถ้านั่นคือคำถามที่คุณกำลังถาม
+      <code>expected: accept</code> คู่กับความเสียหายที่ละเมิดกฎของรูปแบบ เพราะไม่มีสิ่งใดที่ทำตามกฎเหล่านั้นจะยอมรับไฟล์ ในกรณีที่คำตอบขึ้นกับระบบของคุณ <code>accept</code> ใช้ได้ เขียน <code>sanitize</code> ถ้าระบบของคุณควรซ่อมไฟล์ หรือ <code>unspecified</code> ถ้านั่นคือคำถามที่คุณถามอยู่พอดี
+    </li>
+    <li>
+      <code>truncate</code> หลัง <code>append-junk</code> เพราะจะตัดไบต์ที่เพิ่มเข้าไปทิ้ง ให้วาง <code>truncate</code> ไว้ก่อน
+    </li>
+    <li>
+      <code>truncate</code> หรือ <code>append-junk</code> กับไฟล์เก็บถาวรที่เอาขนาดมาจากสิ่งที่อยู่ข้างใน เพราะไม่มีขนาดให้ตั้งต้น
     </li>
   </ul>
 </section>
@@ -138,11 +163,17 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    ไฟล์ที่ผลลัพธ์เป็น <code>unspecified</code> จะถูกข้ามไปตรงนี้ เพราะสิ่งที่ระบบของคุณควรทำกับไฟล์นั้นเป็นนโยบายของคุณเอง รายการของไฟล์บอกเหตุผล และ <code>policy_options</code> แสดงคำตอบที่เป็นไปได้
+  </p>
   <p>
     การปฏิเสธที่ดีคือการปฏิเสธที่สะอาด ข้อความที่บอกว่าผิดตรงไหนคือคำตอบที่คุณต้องการ
     ส่วนข้อผิดพลาดของเซิร์ฟเวอร์ การค้าง

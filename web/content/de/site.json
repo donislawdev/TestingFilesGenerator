@@ -241,6 +241,8 @@
     "unspecified": "Das hängt von den Regeln deines Systems ab. Du entscheidest, dann prüfst du, ob das Ergebnis dem entspricht, was du gemeint hast."
   },
   "damages": {
+    "append-junk": "Schreibt zufällige Bytes hinter das Ende der Datei und behält genau die angegebene Größe, so wie eine Datei ankommt, an deren Ende etwas hängt.",
+    "truncate": "Schneidet das Ende der Datei ab und behält genau die angegebene Größe, so wie ein abgebrochener Upload oder Kopiervorgang die Datei hinterlässt.",
     "zero-head": "Überschreibt die ersten Bytes der Datei mit Nullen und lässt ihre Länge unverändert. Die meisten Leser schauen zuerst dorthin, deshalb bemerkt fast alles diese Beschädigung."
   },
   "terms": {
