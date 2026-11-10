@@ -26,6 +26,7 @@ unlisted 0.58
 67.9 TestADeclaredDefaultIsTheOneTheFormatUses
 64.3 TestNoTrackedFileCarriesPrivateContent
 63.8 TestNoGeneratorHoldsTheWholeFileInMemory
+60.8 TestEveryDamageIsRefusedByTheStructuralCheckInEveryFormat
 57.3 TestAFilmSaysItCarriesItsLabelOnlyWhenAPictureShowsItWhole
 55.3 TestAFilmOfANamedSizeKeepsEveryPictureInsideItsReserve
 53.4 TestTheArchiveScanLooksIntoTheArchivesInside

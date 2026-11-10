@@ -99,11 +99,18 @@ func missingShare(v Values) int64 {
 // that they are the stated share of the whole: out * m / (100 - m), rounded
 // up so the share is never less than stated.
 //
-// Divided before it is multiplied, so a size near the top of what an int64
-// holds does not wrap.
+// Divided before it is multiplied, so the remainder cannot wrap whatever the
+// size. The product still can, once the cut is larger than what is kept: nine
+// tenths missing is nine times the size, which passes the top of an int64
+// above about 1e18 B. It saturates there rather than wrapping to a smaller
+// number, which a format would have been asked for and a refusal would have
+// named.
 func cutFor(out, m int64) int64 {
 	rest := 100 - m
 	q, r := out/rest, out%rest
+	if q > (math.MaxInt64-m)/m {
+		return math.MaxInt64
+	}
 	return q*m + (r*m+rest-1)/rest
 }
 

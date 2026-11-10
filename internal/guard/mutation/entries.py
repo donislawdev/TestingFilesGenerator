@@ -5950,9 +5950,16 @@ MUTATIONS = [
     (
         "the refusal comes back as a format problem, telling a script to try another format",
         "internal/cli/errors.go",
-        "\t\treturn ExitUsage, true\n\t}\n\tif code, ok := classifyFormat(err); ok {",
-        "\t\treturn ExitFormat, true\n\t}\n\tif code, ok := classifyFormat(err); ok {",
+        "\tif errors.As(err, &impossible) {\n\t\treturn ExitUsage, true",
+        "\tif errors.As(err, &impossible) {\n\t\treturn ExitFormat, true",
         "TestTheCommandLineRefusesDamageBesideAcceptToo",
+    ),
+    (
+        "a chain that cuts away what it added comes back as a format problem, telling a script to try another format",
+        "internal/cli/errors.go",
+        "\tif errors.As(err, &eaten) {\n\t\treturn ExitUsage, true",
+        "\tif errors.As(err, &eaten) {\n\t\treturn ExitFormat, true",
+        "TestAChainThatCutsAwayWhatItAddedIsRefused",
     ),
     (
         "the word damage rules out drifts from the one the manifest knows",
@@ -17198,10 +17205,10 @@ MUTATIONS = [
         "TestADamagedFileIsExactlyTheSizeAskedFor",
     ),
     (
-        "every damage of a chain is handed the file's own seed rather than one of its own",
+        "every damage of a chain draws from the seed of the place after its own",
         "internal/damage/apply.go",
         "File{Seed: core.DamageSeed(seed, i), Bytes: outs[i]}",
-        "File{Seed: seed, Bytes: outs[i]}",
+        "File{Seed: core.DamageSeed(seed, i+1), Bytes: outs[i]}",
         "TestAppendedJunkIsTheWholeFileAndThenTheSameBytesEveryTime",
     ),
     (
@@ -17257,7 +17264,7 @@ MUTATIONS = [
         "every damaged file is called certain, where readers differ too",
         "internal/engine/damage.go",
         "\tif err != nil || certain {",
-        "\tif true {",
+        "\tif err != nil || certain || true {",
         "TestTheManifestSaysTheOutcomeDependsWhereReadersDiffer",
     ),
     (
@@ -17293,7 +17300,7 @@ MUTATIONS = [
         "internal/engine/damagedformat.go",
         "\tif err != nil && g.chain.Stretches() {",
         "\tif false && err != nil && g.chain.Stretches() {",
-        "TestADamagedFileIsExactlyTheSizeAskedFor",
+        "TestACutFromASizeTheFormatCannotWriteStartsFromTheNextOneItCan",
     ),
     (
         "the refusal of a damaged size names the format's first try rather than a size it writes",
@@ -17350,5 +17357,26 @@ MUTATIONS = [
         "\tr := core.NewRand(j.seed)",
         "\tr := core.NewRand(0)",
         "TestJunkComesAfterTheFileAndOnlyThere",
+    ),
+    (
+        "a cut larger than an int64 holds wraps to a smaller number instead of stopping at the largest",
+        "internal/damage/truncate.go",
+        "\tif q > (math.MaxInt64-m)/m {",
+        "\tif false && q > (math.MaxInt64-m)/m {",
+        "TestTheFloorOfACutFollowsItsShareAndAChainAddsUp",
+    ),
+    (
+        "the description of one damage names the formats where readers differ and drops the reason",
+        "internal/cli/damagecmd.go",
+        "c.Format+settingsNarrowing(c.When), c.Why)",
+        "c.Format+settingsNarrowing(c.When), \"\")",
+        "TestTheDamageCommandSaysInWordsWhereTheOutcomeDependsOnTheReader",
+    ),
+    (
+        "the list of damages stops saying where the outcome depends on the reader",
+        "internal/cli/damagecmd.go",
+        "\t\tif len(d.Policy) > 0 {",
+        "\t\tif len(d.Policy) > 0 && false {",
+        "TestTheDamageCommandSaysInWordsWhereTheOutcomeDependsOnTheReader",
     ),
 ]

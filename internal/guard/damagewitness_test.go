@@ -406,6 +406,9 @@ func settingVariants(f format.Descriptor) []map[string]string {
 			values = p.Choices
 		case format.PropertyBool:
 			values = []string{"true", "false"}
+		case format.PropertyInt, format.PropertySize, format.PropertyDuration, format.PropertyText:
+			// A number, a size, a length of time and free text are how much
+			// of the file there is, not which shape it takes. Not swept.
 		}
 		for _, v := range values {
 			if v != p.Default {

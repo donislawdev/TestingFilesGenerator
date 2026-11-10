@@ -500,7 +500,7 @@ format:
 Where the damage breaks the rules of the format, the manifest records the file as
 expected to be rejected, with certainty. Where readers differ - a text cut short is
 still text, and most viewers skip bytes after the end of a PNG - it says the outcome
-is `unspecified` and depends on your policy, offers both answers in
+is `unspecified` and depends on your system, offers both answers in
 `policy_options`, and says why in `detail`. `tfg damage <id>` lists those formats,
 and `tfg damage --json` carries them as `policy_dependent`.
 

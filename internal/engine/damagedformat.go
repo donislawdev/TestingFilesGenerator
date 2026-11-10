@@ -79,7 +79,7 @@ func (g *damagedGenerator) PlanContext(ctx context.Context, r format.Request) (f
 		return format.Plan{}, err
 	}
 	r.Bytes = want
-	p, err := format.PlanWith(ctx, g.inner, r)
+	p, err := g.plan(ctx, r)
 	if err != nil && g.chain.Stretches() {
 		p, err = g.stretch(ctx, r, err)
 	}
@@ -96,6 +96,23 @@ func (g *damagedGenerator) PlanContext(ctx context.Context, r format.Request) (f
 		Work:        p.Work,
 		Holds:       p.Holds,
 	}, nil
+}
+
+// plan asks the real generator, through the wrapper everything the engine asks
+// of a generator goes through.
+//
+// The engine reaches this generator from under that wrapper already, so a
+// crash in the real one never ended a run. What going through it again buys is
+// the callers with no wrapper in hand - SmallestDamaged is asked by guards -
+// and a rule with no exception to remember.
+//
+// One thing it changes, named rather than implied. A crash at a size this is
+// only TRYING - the damage's floor, or the next size a refusal named - is read
+// by the searches below as "not this size". The person is then told about the
+// size they asked for, which was refused in words before anything crashed. A
+// crash at the size they asked for is still reported as the crash it is.
+func (g *damagedGenerator) plan(ctx context.Context, r format.Request) (format.Plan, error) {
+	return planWithoutCrashing(ctx, format.Descriptor{ID: g.format, Generator: g.inner}, r)
 }
 
 // belowTheDamage is a size under the damage's own floor, refused in the shape a
@@ -156,17 +173,21 @@ func (g *damagedGenerator) stretch(ctx context.Context, r format.Request, first 
 	if err != nil {
 		return format.Plan{}, first
 	}
-	return format.PlanWith(ctx, g.inner, r)
+	return g.plan(ctx, r)
 }
 
 // firstWritable is the smallest size at or above from that the real generator
 // takes, jumping along the sizes its refusals name, as drawSizes does.
-// Sixty four rounds for the reason SmallestAccepted gives.
+//
+// Not the function drawSizes jumps with, although the jump is the same one.
+// That one stops at the top of a range, and there is no range here: what ends
+// a format that keeps naming larger sizes is a count of rounds, sixty four for
+// the reason SmallestAccepted gives.
 func (g *damagedGenerator) firstWritable(ctx context.Context, r format.Request, from int64) (int64, error) {
 	at := from
 	for round := 0; round < 64; round++ {
 		r.Bytes = at
-		_, err := format.PlanWith(ctx, g.inner, r)
+		_, err := g.plan(ctx, r)
 		if err == nil {
 			return at, nil
 		}

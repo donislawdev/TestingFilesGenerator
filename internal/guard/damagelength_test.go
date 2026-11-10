@@ -142,6 +142,38 @@ func TestADamagedFileIsExactlyTheSizeAskedFor(t *testing.T) {
 	}
 }
 
+// TestACutFromASizeTheFormatCannotWriteStartsFromTheNextOneItCan holds rule 1
+// where the file a cut starts from is not a size the format writes.
+//
+// The guard above never gets there. Half missing starts from twice the size,
+// which is always even, and the sizes it asks are ones every format writes -
+// the mutation run of 2026-11-10 took the move away and that guard stayed
+// green. So a third missing is asked of a UTF-16 file, where the whole file
+// would be an odd count the format refuses.
+//
+// It asserts that the whole file IS refused on its own. Without that, a
+// format learning to write odd counts would leave this measuring a cut that
+// needed no move, and passing.
+func TestACutFromASizeTheFormatCannotWriteStartsFromTheNextOneItCan(t *testing.T) {
+	chain := damage.Chain{{ID: damage.Truncate, Values: damage.Values{damage.SettingMissing: "33"}}}
+	properties := map[string]string{"encoding": "utf-16le", "bom": "true"}
+	const size = 701
+	whole, err := chain.Before(size)
+	if err != nil {
+		t.Fatal(err)
+	}
+	healthy := engine.Target{ID: "cut", Format: "xml", Properties: properties, Sizes: engine.Uniform(1, whole), Label: true}
+	if _, err := engine.Plan([]engine.Target{healthy}, engine.Options{OutDir: t.TempDir(), Seed: lengthSeed}); err == nil {
+		t.Fatalf("xml in UTF-16 writes %d B exactly, so a cut to %d B needs no move and this guard measures nothing", whole, size)
+	}
+
+	cut := engine.Target{ID: "cut", Format: "xml", Properties: properties, Sizes: engine.Uniform(1, size), Damage: chain, Label: true}
+	entries, paths := lengthRun(t, t.TempDir(), []engine.Target{cut})
+	if checkLength(t, cut, entries["cut"], paths["cut"], size) == 0 {
+		t.Fatal("the cut file was not measured, so this guard proved nothing")
+	}
+}
+
 // checkLength is one damaged file against the size it was asked to be, and
 // answers 1 for a file it measured.
 func checkLength(t *testing.T, tg engine.Target, m manifest.File, path string, want int64) int {

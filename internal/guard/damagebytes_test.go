@@ -3,6 +3,7 @@ package guard
 import (
 	"bytes"
 	"errors"
+	"math"
 	"strconv"
 	"testing"
 
@@ -309,6 +310,11 @@ func TestTheFloorOfACutFollowsItsShareAndAChainAddsUp(t *testing.T) {
 	// And the file a cut starts from: the share of the whole is never less
 	// than stated, so the cut is rounded up - at its floor, exactly the four
 	// bytes the floor is there for.
+	//
+	// The last row is a size whose cut does not fit in an int64: nine tenths
+	// missing is nine times what is kept. It has to come back as the largest
+	// number there is, which every format refuses in its own words. Wrapped,
+	// it was a smaller number that a format was asked for instead.
 	for _, c := range []struct {
 		missing    string
 		kept, from int64
@@ -318,6 +324,7 @@ func TestTheFloorOfACutFollowsItsShareAndAChainAddsUp(t *testing.T) {
 		{"1", 298, 302},
 		{"90", 1, 10},
 		{"33", 7, 11},
+		{"90", 2_100_000_000_000_000_000, math.MaxInt64},
 	} {
 		chain := damage.Chain{{ID: damage.Truncate, Values: damage.Values{damage.SettingMissing: c.missing}}}
 		if got, err := chain.Before(c.kept); err != nil || got != c.from {
