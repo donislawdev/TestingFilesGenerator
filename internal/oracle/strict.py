@@ -161,6 +161,8 @@ def check_pdf(data):
         parts = entry.split()
         if len(parts) < 3 or parts[2] != b"n":
             continue
+        if not parts[0].isdigit():
+            fail(f"the xref table gives object {i} the offset {parts[0]!r}, which is not a number")
         obj_at = int(parts[0])
         expected = str(i).encode() + b" 0 obj"
         if data[obj_at:obj_at + len(expected)] != expected:
@@ -796,7 +798,10 @@ def html_settings(text, shape, settings, nl):
     if re.match(r"<h1[ >]", body):
         # The label sits outside the levels, so a reader that drops the deep
         # ones still shows which file it read.
-        body = body[body.index("</h1>" + nl) + len("</h1>" + nl):]
+        label_end = body.find("</h1>" + nl)
+        if label_end < 0:
+            fail("the label heading is opened and never closed on its line")
+        body = body[label_end + len("</h1>" + nl):]
     div_open, div_close = "<div>" + nl, "</div>" + nl
     opened = 0
     while body.startswith(div_open, opened * len(div_open)):
@@ -1644,14 +1649,15 @@ def opc_check(data, roots, kind, key):
 def opc_part(z, name):
     """The bytes of one part, or a verdict when the archive will not give them.
 
-    A part whose checksum does not match, or whose compressed data ends early,
-    is a defect in the package, and it has to read as one rather than as a
-    stack trace from the ZIP reader.
+    A part whose checksum does not match, whose compressed data ends early, or
+    whose compression method no reader knows is a defect in the package, and
+    it has to read as one rather than as a stack trace from the ZIP reader.
+    Office packages are written with deflate or stored entries only.
     """
     import zipfile
     try:
         return z.read(name)
-    except (zipfile.BadZipFile, zlib.error, EOFError) as exc:
+    except (zipfile.BadZipFile, zlib.error, EOFError, NotImplementedError) as exc:
         fail("the part %s cannot be read from the archive: %s" % (name, exc))
 
 

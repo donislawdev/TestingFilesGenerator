@@ -17039,7 +17039,7 @@ MUTATIONS = [
     (
         "a part of an Office package that cannot be read stops the check with a traceback",
         "internal/oracle/strict.py",
-        "    except (zipfile.BadZipFile, zlib.error, EOFError) as exc:",
+        "    except (zipfile.BadZipFile, zlib.error, EOFError, NotImplementedError) as exc:",
         "    except KeyError as exc:",
         "TestTheStructuralCheckerRefusesBrokenBytesInsteadOfStopping",
     ),
@@ -17112,5 +17112,26 @@ MUTATIONS = [
         '		notes = append(notes, res.note("label_not_guaranteed",',
         '		_ = append(notes, res.note("label_not_guaranteed",',
         "TestADamagedFileNeverClaimsItsLabel",
+    ),
+    (
+        "a part of an Office package packed with a method no reader knows stops the check with a traceback",
+        "internal/oracle/strict.py",
+        "EOFError, NotImplementedError) as exc:",
+        "EOFError) as exc:",
+        "TestTheStructuralCheckerRefusesBrokenBytesInsteadOfStopping",
+    ),
+    (
+        "a cross reference offset that is not a number stops the PDF check with a traceback",
+        "internal/oracle/strict.py",
+        "        if not parts[0].isdigit():",
+        "        if False:",
+        "TestTheStructuralCheckerRefusesBrokenBytesInsteadOfStopping",
+    ),
+    (
+        "a label heading never closed stops the HTML check with a traceback",
+        "internal/oracle/strict.py",
+        "        if label_end < 0:",
+        "        if False:",
+        "TestTheStructuralCheckerRefusesBrokenBytesInsteadOfStopping",
     ),
 ]

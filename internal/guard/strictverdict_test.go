@@ -46,6 +46,8 @@ func TestTheStructuralCheckerRefusesBrokenBytesInsteadOfStopping(t *testing.T) {
 	docx := writeEncoded(t, "docx", 4096, nil)
 	xlsx := writeEncoded(t, "xlsx", 4096, nil)
 	pptx := writeEncoded(t, "pptx", 8192, nil)
+	pdf := writeEncoded(t, "pdf", 4096, nil)
+	html := writeEncoded(t, "html", 2048, nil)
 
 	cases := []strictCase{
 		{"healthy png", "png", png, oracle.StrictOK, ""},
@@ -53,6 +55,8 @@ func TestTheStructuralCheckerRefusesBrokenBytesInsteadOfStopping(t *testing.T) {
 		{"healthy docx", "docx", docx, oracle.StrictOK, ""},
 		{"healthy xlsx", "xlsx", xlsx, oracle.StrictOK, ""},
 		{"healthy pptx", "pptx", pptx, oracle.StrictOK, ""},
+		{"healthy pdf", "pdf", pdf, oracle.StrictOK, ""},
+		{"healthy html", "html", html, oracle.StrictOK, ""},
 
 		{"png with nothing after the signature", "png", png[:8], oracle.StrictFail, "no chunk at all"},
 		{"png one byte short", "png", png[:len(png)-1], oracle.StrictFail, "before its 4 B checksum"},
@@ -63,6 +67,9 @@ func TestTheStructuralCheckerRefusesBrokenBytesInsteadOfStopping(t *testing.T) {
 		{"pptx with a zeroed head", "pptx", zeroed(pptx, 4), oracle.StrictFail, "no local file header"},
 		{"docx with bytes after its end", "docx", appended(docx, 64), oracle.StrictFail, "the comment declares 0 B and 64 follow"},
 		{"docx with a part that does not match its checksum", "docx", flipped(t, docx), oracle.StrictFail, "cannot be read from the archive"},
+		{"docx with a compression method nobody knows", "docx", unknownMethod(t, docx), oracle.StrictFail, "compression method"},
+		{"pdf whose cross reference names an offset that is not a number", "pdf", garbledOffset(t, pdf), oracle.StrictFail, "which is not a number"},
+		{"html whose label heading is never closed", "html", unclosedLabel(t, html), oracle.StrictFail, "never closed on its line"},
 	}
 
 	dir := t.TempDir()
@@ -221,6 +228,51 @@ func renamed(t *testing.T, b []byte) []byte {
 	name, _ := firstEntry(t, out)
 	out[name] ^= 0x01
 	return out
+}
+
+// unknownMethod is the package with the compression method of its first
+// central directory entry set to one no reader knows.
+func unknownMethod(t *testing.T, b []byte) []byte {
+	out := append([]byte{}, b...)
+	at := bytes.Index(out, []byte("PK\x01\x02"))
+	if at < 0 || at+12 > len(out) {
+		t.Fatal("the package has no central directory entry to change, so this case would test nothing")
+	}
+	binary.LittleEndian.PutUint16(out[at+10:], 77)
+	return out
+}
+
+// garbledOffset is the PDF with the first digit of object 1's offset in its
+// cross reference table replaced by a letter.
+func garbledOffset(t *testing.T, b []byte) []byte {
+	out := append([]byte{}, b...)
+	// On a line of its own, because "startxref" near the end holds the word too.
+	at := bytes.LastIndex(out, []byte("\nxref\n"))
+	if at >= 0 {
+		at++
+	}
+	// Past the keyword, the count line and the free entry of object 0.
+	for range 3 {
+		next := bytes.IndexByte(out[max(at, 0):], '\n')
+		if at < 0 || next < 0 {
+			t.Fatal("the PDF has no cross reference entry for object 1, so this case would test nothing")
+		}
+		at += next + 1
+	}
+	if at >= len(out) || out[at] < '0' || out[at] > '9' {
+		t.Fatal("the entry for object 1 does not start with a digit, so this case would test nothing")
+	}
+	out[at] = 'x'
+	return out
+}
+
+// unclosedLabel is the page with the end tag of its label heading taken off.
+func unclosedLabel(t *testing.T, b []byte) []byte {
+	at := bytes.Index(b, []byte("</h1>"))
+	if at < 0 {
+		t.Fatal("the page has no label heading, so this case would test nothing")
+	}
+	return append(append([]byte{}, b[:at]...), b[at+len("</h1>"):]...)
 }
 
 // flipped is the package with one byte of the first part's data changed, so
