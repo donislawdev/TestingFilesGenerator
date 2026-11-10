@@ -5866,7 +5866,7 @@ MUTATIONS = [
         "internal/engine/parallel.go",
         "\tif f.Damaged() {\n\t\tdamaged, opened, err := f.Target.Damage.Open(counter)",
         "\tif f.Damaged() && false {\n\t\tdamaged, opened, err := f.Target.Damage.Open(counter)",
-        "TestADamagedFileIsRefusedByAJudge",
+        "TestEveryDamageIsRefusedByTheStructuralCheckInEveryFormat",
     ),
     (
         "the manifest stops recording what was broken about a file",
@@ -17077,5 +17077,19 @@ MUTATIONS = [
         "class Verdict(SystemExit):",
         "class Verdict(Exception):",
         "TestACheckThatStopsOnAnExceptionIsACrashNotARefusal",
+    ),
+    (
+        "the structural checker stops reading the PNG signature, so a PNG with a zeroed head passes",
+        "internal/oracle/strict.py",
+        '    if data[:8] != b"\\x89PNG\\r\\n\\x1a\\n":\n        fail("the signature is not a PNG signature")',
+        '    if False:\n        fail("the signature is not a PNG signature")',
+        "TestEveryDamageIsRefusedByTheStructuralCheckInEveryFormat",
+    ),
+    (
+        "the structural checker stops reading the PDF header, so a PDF with a zeroed head passes",
+        "internal/oracle/strict.py",
+        '    if not data.startswith(b"%PDF-"):',
+        "    if False:",
+        "TestEveryDamageIsRefusedByTheStructuralCheckInEveryFormat",
     ),
 ]

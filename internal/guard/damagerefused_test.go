@@ -13,53 +13,14 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
 	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
-	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
-	"github.com/donislawdev/TestingFilesGenerator/internal/oracle"
 	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 )
 
-// A damaged file has to be REFUSED, which is the reverse of everything else in
-// this package.
-//
-// Every other oracle guard here asks "does a judge accept what we wrote". This
-// one asks the opposite, and it is the whole reason the damage axis is worth
-// having: a broken file no reader complains about is a file nobody can write a
-// test against, so it is a file this tool has no business producing.
-//
-// The formats are the text ones plus png, because those are the ones whose
-// judges run without an external tool being installed. That is a limit of what
-// can be asked on any machine rather than of the damage: the full sweep across
-// all twenty four lives in tools/probes/corruptwitness, which is where the
-// witness matrix is measured.
-func TestADamagedFileIsRefusedByAJudge(t *testing.T) {
-	dir := t.TempDir()
-
-	for _, id := range []string{"txt", "md", "json", "xml", "csv", "html", "png"} {
-		t.Run(id, func(t *testing.T) {
-			good, broken := writeGoodAndBroken(t, dir, id)
-
-			// The control first. Without it this test passes for a build whose
-			// judge refuses everything, which would be the loudest possible
-			// way of proving nothing.
-			if res := oracle.Strict(id, good); res.Available && res.Err != nil {
-				t.Fatalf("the undamaged file was refused, so this row says nothing about damage: %v\n%s",
-					res.Err, res.Output)
-			}
-
-			res := oracle.Strict(id, broken)
-			if !res.Available {
-				t.Skipf("no structural check for %s on this machine", id)
-			}
-			if res.Err == nil {
-				t.Errorf("the damaged file was ACCEPTED. A broken file every reader takes is one "+
-					"nobody can write a test against, and the manifest calls it expected: reject.\n%s",
-					res.Output)
-			}
-		})
-	}
-}
+// Whether a damaged file is refused by a judge is asked of every format and
+// every damage in damagewitness_test.go, which replaced the seven formats
+// asked here until 2026-11-09.
 
 // The manifest of a damaged run says what was broken and expects a rejection.
 //
@@ -156,26 +117,6 @@ func TestADamageThatWouldChangeNothingStopsTheFile(t *testing.T) {
 type discard struct{}
 
 func (discard) Write(p []byte) (int, error) { return len(p), nil }
-
-// writeGoodAndBroken produces one file of this format twice, once whole and
-// once damaged, and returns both paths.
-func writeGoodAndBroken(t *testing.T, dir, id string) (good, broken string) {
-	t.Helper()
-
-	d, err := format.Get(id)
-	if err != nil {
-		t.Fatal(err)
-	}
-	size := d.SmallestAccepted(format.Request{}) + 4096
-
-	goodDir := filepath.Join(dir, id+"-good")
-	brokenDir := filepath.Join(dir, id+"-broken")
-	goodMan := runOne(t, goodDir, id, size, nil)
-	brokenMan := runOne(t, brokenDir, id, size, damage.Chain{{ID: damage.ZeroHead}})
-
-	return filepath.Join(goodDir, goodMan.Files[0].Name),
-		filepath.Join(brokenDir, brokenMan.Files[0].Name)
-}
 
 // runDamaged is one png of a comfortable size, with the chain given.
 func runDamaged(t *testing.T, dir, id string, chain damage.Chain) *manifest.Manifest {
