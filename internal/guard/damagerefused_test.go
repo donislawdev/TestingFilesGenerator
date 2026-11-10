@@ -100,7 +100,7 @@ func TestADamageThatWouldChangeNothingStopsTheFile(t *testing.T) {
 	chain := damage.Chain{{ID: damage.ZeroHead}}
 
 	var sink discard
-	w, streams, err := chain.Open(&sink)
+	w, streams, err := chain.Open(&sink, int64(len(source)), 1)
 	if err != nil {
 		t.Fatalf("opening the chain: %v", err)
 	}

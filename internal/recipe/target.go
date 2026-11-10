@@ -117,9 +117,12 @@ func (rt rawTarget) validate(p *problems, at func(id string) spot, def Defaults,
 
 	t.Damage = damages(p, where, rt.Damage)
 	t.Expected, t.ExpectedReason = expectation(p, where, rt.Expected)
-	refuseImpossibleExpectation(p, where, t)
 	rt.describe(p, where, &t)
 	t.Properties = properties(p, where, t.Format, rt.Properties)
+	// After the properties, because whether a damaged file can be expected to
+	// be accepted depends on its settings as well as its format.
+	refuseImpossibleExpectation(p, where, t)
+	refuseImpossibleDamage(p, where, t)
 
 	// The count, whether or not its list was built and whether or not its size
 	// was refused, so a run past the ceiling is said beside the target's own

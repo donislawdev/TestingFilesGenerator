@@ -62,7 +62,10 @@ func init() {
 			},
 		},
 		Floor: func(v Values) int64 { return int64(headBytes(v)) },
-		Open: func(v Values, out io.Writer) (Stream, error) {
+		// No policy cases: measured 2026-11-09 and again with every setting
+		// of every format on 2026-11-10, a zeroed head breaks the rules of
+		// all 31 formats (docs/DAMAGE-ETAP-2-2026-11-09.md section 2).
+		Open: func(v Values, _ File, out io.Writer) (Stream, error) {
 			return &zeroHead{out: out, left: headBytes(v)}, nil
 		},
 	})
@@ -139,3 +142,6 @@ func (z *zeroHead) Write(p []byte) (int, error) {
 }
 
 func (z *zeroHead) Touched() bool { return z.touched }
+
+// Finish has nothing to add. The head is behind it by the time the file ends.
+func (z *zeroHead) Finish() error { return nil }

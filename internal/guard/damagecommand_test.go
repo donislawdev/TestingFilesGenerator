@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"maps"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -201,6 +203,13 @@ func TestTheMachineReadableDamageListCarriesTheWholeDeclaration(t *testing.T) {
 			Default string `json:"default"`
 			Detail  string `json:"detail"`
 		} `json:"parameters"`
+		// A pointer, so a key that is missing is told apart from an empty
+		// list: the key is promised for every damage.
+		PolicyDependent *[]struct {
+			Format   string              `json:"format"`
+			Settings map[string][]string `json:"settings"`
+			Reason   string              `json:"reason"`
+		} `json:"policy_dependent"`
 	}
 	if err := json.Unmarshal([]byte(stdout), &entries); err != nil {
 		t.Fatalf("the list does not parse: %v\n%s", err, stdout)
@@ -223,6 +232,19 @@ func TestTheMachineReadableDamageListCarriesTheWholeDeclaration(t *testing.T) {
 		if e.SmallestFileBytes != d.Floor(d.Defaults()) {
 			t.Errorf("%s: the list says %d B and the declaration says %d B",
 				e.ID, e.SmallestFileBytes, d.Floor(d.Defaults()))
+		}
+		if e.PolicyDependent == nil {
+			t.Errorf("%s: policy_dependent is missing, and it is promised for every damage so a script reads one key", e.ID)
+		} else if got := *e.PolicyDependent; len(got) != len(d.Policy) {
+			t.Errorf("%s declares %d format(s) where the outcome depends on the reader and the list carries %d",
+				e.ID, len(d.Policy), len(got))
+		} else {
+			for i, c := range d.Policy {
+				if got[i].Format != c.Format || got[i].Reason != c.Why || !maps.EqualFunc(got[i].Settings, c.When, slices.Equal) {
+					t.Errorf("%s: policy case %d arrives as %+v and the declaration is %+v", e.ID, i, got[i], c)
+				}
+				checked++
+			}
 		}
 		if len(e.Parameters) != len(d.Parameters) {
 			t.Errorf("%s declares %d setting(s) and the list carries %d",

@@ -573,7 +573,7 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress
 	sink := io.Writer(counter)
 	var streams []damage.Stream
 	if f.Damaged() {
-		damaged, opened, err := f.Target.Damage.Open(counter)
+		damaged, opened, err := f.Target.Damage.Open(counter, f.Plan.Bytes, f.Seed)
 		if err != nil {
 			_ = fh.Close()
 			_ = os.Remove(tmp)
@@ -582,7 +582,7 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress
 		sink, streams = damaged, opened
 	}
 
-	writeErr := writeWithoutCrashing(ctx, f, sink)
+	writeErr := writeDamaged(ctx, f, sink, streams)
 	if writeErr == nil {
 		writeErr = buffered.Flush()
 	}

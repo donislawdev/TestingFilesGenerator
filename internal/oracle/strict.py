@@ -395,6 +395,19 @@ def check_csv(data, settings=None):
     except UnicodeDecodeError as exc:
         fail(f"not valid UTF-8: {exc}")
 
+    # RFC 4180 lets a field hold text, separators, quotes and line breaks, and
+    # no control character below a space - a NUL least of all, which is what a
+    # table whose bytes were overwritten holds, and where every reader handing
+    # a field to C code stops. Asked before the shape, because a table of one
+    # row has no other row to disagree with: measured 2026-11-10, zero-head on
+    # a csv with header=false at its smallest size came back OK. A tab is let
+    # through, because a field holding one is common and a tab is a separator
+    # this format offers.
+    control = re.search(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", text)
+    if control:
+        fail(f"the table holds the control character {control.group()!r} at {control.start()}, "
+             "which RFC 4180 does not allow in a field")
+
     if not text.endswith(eol):
         fail(f"the file does not end with {settings.get('line_ending', 'lf')}, "
              "so the last row is unterminated")

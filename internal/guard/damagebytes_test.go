@@ -2,6 +2,7 @@ package guard
 
 import (
 	"bytes"
+	"errors"
 	"strconv"
 	"testing"
 
@@ -36,7 +37,7 @@ func TestZeroHeadZeroesTheBytesItSaysAndNoOthers(t *testing.T) {
 				ID:     damage.ZeroHead,
 				Values: damage.Values{damage.SettingBytes: strconv.Itoa(head)},
 			}}
-			w, streams, err := chain.Open(&out)
+			w, streams, err := chain.Open(&out, size, 1)
 			if err != nil {
 				t.Fatalf("opening the chain: %v", err)
 			}
@@ -82,7 +83,7 @@ func TestADamageThatMovedNothingSaysSo(t *testing.T) {
 
 	var out bytes.Buffer
 	chain := damage.Chain{{ID: damage.ZeroHead}}
-	w, streams, err := chain.Open(&out)
+	w, streams, err := chain.Open(&out, int64(len(source)), 1)
 	if err != nil {
 		t.Fatalf("opening the chain: %v", err)
 	}
@@ -151,7 +152,7 @@ func TestAChainAppliesItsDamagesInTheOrderItListsThem(t *testing.T) {
 		{ID: damage.ZeroHead, Values: damage.Values{damage.SettingBytes: "4"}},
 		{ID: damage.ZeroHead, Values: damage.Values{damage.SettingBytes: "16"}},
 	}
-	w, streams, err := chain.Open(&out)
+	w, streams, err := chain.Open(&out, int64(len(source)), 1)
 	if err != nil {
 		t.Fatalf("opening the chain: %v", err)
 	}
@@ -180,5 +181,128 @@ func TestAChainAppliesItsDamagesInTheOrderItListsThem(t *testing.T) {
 	}
 	if idle := chain.Idle(streams); idle != "" {
 		t.Errorf("the chain names %q as idle and neither damage was", idle)
+	}
+}
+
+// A cut keeps exactly the bytes it was told to, and tells the generator to
+// stop on the write that crosses the line.
+//
+// The stop is what saves cutting 90% of a file from generating all of it, and
+// nothing outside the damage can see whether it happened - the file comes out
+// the same either way. So it is asked here, of the stream itself: the write
+// that crosses the line takes only the bytes kept and answers ErrKeptEnough,
+// and so does every write after it.
+func TestACutKeepsItsBytesAndStopsTheGenerator(t *testing.T) {
+	source := make([]byte, 100)
+	for i := range source {
+		source[i] = byte(i + 1)
+	}
+	var out bytes.Buffer
+	chain := damage.Chain{{ID: damage.Truncate}}
+	w, streams, err := chain.Open(&out, 30, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n, err := w.Write(source[:20]); n != 20 || err != nil {
+		t.Fatalf("a write inside the bytes kept gave %d, %v", n, err)
+	}
+	if streams[0].Touched() {
+		t.Error("nothing was cut yet and the cut says it touched the file")
+	}
+	n, err := w.Write(source[20:])
+	if n != 10 || !errors.Is(err, damage.ErrKeptEnough) {
+		t.Errorf("the write crossing the line gave %d, %v - it should take the 10 B kept and tell the generator to stop", n, err)
+	}
+	if n, err := w.Write(source[:5]); n != 0 || !errors.Is(err, damage.ErrKeptEnough) {
+		t.Errorf("a write after the line gave %d, %v", n, err)
+	}
+	if !bytes.Equal(out.Bytes(), source[:30]) {
+		t.Errorf("the cut passed on %d B, and should have passed the first 30 B unchanged", out.Len())
+	}
+	if !streams[0].Touched() {
+		t.Error("70 B were dropped and the cut says it touched nothing")
+	}
+}
+
+// Junk is written after the file, once, and nothing before it moves.
+func TestJunkComesAfterTheFileAndOnlyThere(t *testing.T) {
+	source := []byte("a whole file, ending here")
+	var out bytes.Buffer
+	chain := damage.Chain{{ID: damage.AppendJunk, Values: damage.Values{damage.SettingBytes: "100"}}}
+	size := int64(len(source) + 100)
+	w, streams, err := chain.Open(&out, size, 7)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := w.Write(source); err != nil {
+		t.Fatal(err)
+	}
+	if out.Len() != len(source) || streams[0].Touched() {
+		t.Fatal("junk arrived, or was claimed, before the file had ended")
+	}
+	if err := chain.Finish(streams); err != nil {
+		t.Fatal(err)
+	}
+	if int64(out.Len()) != size || !bytes.Equal(out.Bytes()[:len(source)], source) {
+		t.Errorf("after the junk the file is %d B, and should be the %d B before it and 100 B more", out.Len(), len(source))
+	}
+	if !streams[0].Touched() {
+		t.Error("100 B were appended and the damage says it touched nothing")
+	}
+	// The same seed gives the same junk, a different one different junk.
+	again := func(seed uint64) []byte {
+		var b bytes.Buffer
+		w, s, err := chain.Open(&b, size, seed)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := w.Write(source); err != nil {
+			t.Fatal(err)
+		}
+		if err := chain.Finish(s); err != nil {
+			t.Fatal(err)
+		}
+		return b.Bytes()
+	}
+	if !bytes.Equal(again(7), out.Bytes()) || bytes.Equal(again(8), out.Bytes()) {
+		t.Error("the junk does not follow the seed: the same seed has to give the same bytes and another seed others")
+	}
+}
+
+// The floor of a cut follows its share, and a chain works its floor out from
+// what each damage needs to leave.
+//
+// A cut has to drop at least four bytes, so the smallest file it can leave
+// grows as the share shrinks: half gone needs 4 B left, one percent gone
+// needs 298 B left before 1% of the whole is four bytes. In a chain, junk
+// after a cut needs its own 64 B on top of what the cut leaves.
+func TestTheFloorOfACutFollowsItsShareAndAChainAddsUp(t *testing.T) {
+	for _, c := range []struct {
+		chain damage.Chain
+		want  int64
+		owner string
+	}{
+		{damage.Chain{{ID: damage.Truncate}}, 4, damage.Truncate},
+		{damage.Chain{{ID: damage.Truncate, Values: damage.Values{damage.SettingMissing: "1"}}}, 298, damage.Truncate},
+		{damage.Chain{{ID: damage.Truncate, Values: damage.Values{damage.SettingMissing: "90"}}}, 1, damage.Truncate},
+		{damage.Chain{{ID: damage.AppendJunk}}, 64, damage.AppendJunk},
+		{damage.Chain{{ID: damage.Truncate}, {ID: damage.AppendJunk}}, 68, damage.Truncate},
+		{damage.Chain{{ID: damage.ZeroHead}, {ID: damage.Truncate}}, 4, damage.Truncate},
+	} {
+		got, owner, err := c.chain.Floor()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got != c.want || owner != c.owner {
+			t.Errorf("%s has a floor of %d B set by %q, and should be %d B set by %q", c.chain, got, owner, c.want, c.owner)
+		}
+		if _, err := c.chain.Before(got); err != nil {
+			t.Errorf("%s refuses its own floor of %d B: %v", c.chain, got, err)
+		}
+		if got > 0 {
+			if _, err := c.chain.Before(got - 1); err == nil {
+				t.Errorf("%s takes %d B, one under its floor", c.chain, got-1)
+			}
+		}
 	}
 }

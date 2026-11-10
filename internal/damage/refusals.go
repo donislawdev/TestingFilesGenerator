@@ -174,8 +174,14 @@ const RuledOutExpectation = "accept"
 // four case program - "reject", "sanitize", "" and "accept" all came back
 // err != nil - so the engine would have refused EVERY target, damaged or not,
 // and the guard beside this one asserts exactly that it does not.
-func (c Chain) ConflictsWithExpectation(expected string) error {
-	if bad := c.ExpectationConflict(expected); bad != nil {
+//
+// Only where the chain breaks the rules of this kind of file. Where the
+// manifest says the outcome depends on the reader - a text cut short, bytes
+// after a PNG's end - accepting the file is one of the two answers it offers,
+// so a recipe stating it is writing down its own policy. Owner's call on
+// 2026-11-10, by the rule of 2026-09-09: refuse only what cannot be true.
+func (c Chain) ConflictsWithExpectation(expected string, k Kind) error {
+	if bad := c.ExpectationConflict(expected, k); bad != nil {
 		return bad
 	}
 	return nil
@@ -183,11 +189,148 @@ func (c Chain) ConflictsWithExpectation(expected string) error {
 
 // ExpectationConflict is the same question answered with the refusal itself,
 // or nil. For a caller that needs the parts rather than an error.
-func (c Chain) ExpectationConflict(expected string) *ExpectationConflictError {
+func (c Chain) ExpectationConflict(expected string, k Kind) *ExpectationConflictError {
 	if len(c) == 0 || expected != RuledOutExpectation {
 		return nil
 	}
+	// An error here is a damage the registry does not know, and that is
+	// refused on its own in both surfaces, in its own words.
+	if certain, _, err := c.Certain(k); err != nil || !certain {
+		return nil
+	}
 	return &ExpectationConflictError{Outcome: expected}
+}
+
+// Eaten is the refusal a chain earns by cutting the tail after a damage that
+// added one, or nil.
+//
+// Asked in the plan because nothing later can see it. Each damage did move
+// bytes - the junk was written, and the cut dropped some - so the check that a
+// damage changed something passes both, and the manifest would list a damage
+// whose bytes the file no longer holds. Order is significant on purpose
+// (Chain), so the same two the other way round are allowed: cut, then append.
+func (c Chain) Eaten() *EatenError {
+	steps, err := c.steps()
+	if err != nil {
+		return nil
+	}
+	added := ""
+	for _, s := range steps {
+		if s.d.AddsTail && added == "" {
+			added = s.d.ID
+		}
+		if s.d.CutsTail && added != "" {
+			return &EatenError{Cut: s.d.ID, Added: added}
+		}
+	}
+	return nil
+}
+
+// EatenError is a damage that cuts the tail placed after one that added it.
+type EatenError struct {
+	Cut   string
+	Added string
+}
+
+// AboutSetting puts this on the damage, because the order of the list is the
+// thing to change.
+func (e *EatenError) AboutSetting() string { return "damage" }
+
+func (e *EatenError) What() string { return e.what().String() }
+
+func (e *EatenError) what() core.Said {
+	return core.Says("damage.EatenWhat", "%s comes after %s and cuts away what it added",
+		core.A("Cut", e.Cut), core.A("Added", e.Added))
+}
+
+func (e *EatenError) Why() string { return e.why().String() }
+
+func (e *EatenError) why() core.Said {
+	return core.Says("damage.EatenWhy", "the manifest would list a damage whose bytes the file no longer holds")
+}
+
+func (e *EatenError) Instead() string { return e.instead().String() }
+
+func (e *EatenError) instead() core.Said {
+	return core.Says("damage.EatenInstead", "Put %s before %s.", core.A("Cut", e.Cut), core.A("Added", e.Added))
+}
+
+// Parts is what happened, why and what to do instead, for a reader that lays
+// them out apart and in its own language.
+func (e *EatenError) Parts() (what, why, instead core.Said) {
+	return e.what(), e.why(), e.instead()
+}
+
+func (e *EatenError) Error() string { return e.Said().String() }
+
+// Said is the whole refusal, for a window that says it in its own language.
+func (e *EatenError) Said() core.Said {
+	return core.Says("damage.Eaten", "%s. %s", core.A("What", e.what()), core.A("Instead", e.instead()))
+}
+
+// SizeConflict is the refusal a chain earns by changing the length of a file
+// whose size comes from what it holds, or nil.
+func (c Chain) SizeConflict(sizeFromContents bool) *NeedsSizeError {
+	if !sizeFromContents {
+		return nil
+	}
+	steps, err := c.steps()
+	if err != nil {
+		return nil
+	}
+	for _, s := range steps {
+		if s.d.Length != nil {
+			return &NeedsSizeError{Damage: s.d.ID}
+		}
+	}
+	return nil
+}
+
+// NeedsSizeError is a damage that changes the length, on a container whose
+// size comes from what it holds.
+//
+// The two are two definitions of one number. The size of such an archive is
+// only known once it is written, so there is no length to cut to, and the
+// damage would have to choose one the person never stated (docs/DAMAGE-ETAP-2-2026-11-09.md
+// section 4.8).
+type NeedsSizeError struct {
+	Damage string
+}
+
+// AboutSetting puts this on the size box, because naming a size is the half
+// a person can change without giving up the damage.
+func (e *NeedsSizeError) AboutSetting() string { return "size" }
+
+func (e *NeedsSizeError) What() string { return e.what().String() }
+
+func (e *NeedsSizeError) what() core.Said {
+	return core.Says("damage.NeedsSizeWhat", "%s changes the length of the file, and this target takes its size from what it holds",
+		core.A("Damage", e.Damage))
+}
+
+func (e *NeedsSizeError) Why() string { return e.why().String() }
+
+func (e *NeedsSizeError) why() core.Said {
+	return core.Says("damage.NeedsSizeWhy", "that size is only known once the file is written, so there is no length to work from")
+}
+
+func (e *NeedsSizeError) Instead() string { return e.instead().String() }
+
+func (e *NeedsSizeError) instead() core.Said {
+	return core.Says("damage.NeedsSizeInstead", "Give the target a size, or use a damage that keeps the length, such as zero-head.")
+}
+
+// Parts is what happened, why and what to do instead, for a reader that lays
+// them out apart and in its own language.
+func (e *NeedsSizeError) Parts() (what, why, instead core.Said) {
+	return e.what(), e.why(), e.instead()
+}
+
+func (e *NeedsSizeError) Error() string { return e.Said().String() }
+
+// Said is the whole refusal, for a window that says it in its own language.
+func (e *NeedsSizeError) Said() core.Said {
+	return core.Says("damage.NeedsSize", "%s. %s", core.A("What", e.what()), core.A("Instead", e.instead()))
 }
 
 // ExpectationConflictError is a target that damages a file and expects it to

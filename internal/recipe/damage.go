@@ -171,13 +171,41 @@ func reportDamageSetting(p *problems, at spot, bad error) {
 // address of the target and beside every other problem of the same recipe -
 // while the engine asking it is what covers the command line, which never
 // reads a recipe at all. One rule, two callers. See O199.
+//
+// Only where the damage breaks the rules of this format with these settings.
+// Where the manifest says the outcome depends on the reader, accept is one of
+// its two answers and a recipe stating it is writing down its own policy
+// (owner's call, 2026-11-10). A format this build does not know is refused on
+// its own line, so it is not asked about here.
 func refuseImpossibleExpectation(p *problems, where spot, t Target) {
-	refusal := t.Damage.ExpectationConflict(t.Expected)
+	d, err := format.Get(t.Format)
+	if err != nil {
+		return
+	}
+	refusal := t.Damage.ExpectationConflict(t.Expected, damage.KindOf(d, t.Properties))
 	if refusal == nil {
 		return
 	}
 	what, why, instead := refusal.Parts()
 	p.add(where.of(refusal.AboutSetting()), whereWhat(where, what), why, instead)
+}
+
+// refuseImpossibleDamage stops a chain that cuts away what it added, and a
+// damage that changes the length on an archive sized by what it holds.
+//
+// Both are damage's rules rather than this file's, asked here as well as in
+// the engine for the reason refuseImpossibleExpectation gives: here they are
+// reported with the address of the target and beside every other problem of
+// the recipe, and the engine asking too is what covers the command line.
+func refuseImpossibleDamage(p *problems, where spot, t Target) {
+	if eaten := t.Damage.Eaten(); eaten != nil {
+		what, why, instead := eaten.Parts()
+		p.add(where.of(KeyDamage), whereWhat(where, what), why, instead)
+	}
+	if sized := t.Damage.SizeConflict(t.SizeFromContents); sized != nil {
+		what, why, instead := sized.Parts()
+		p.add(where.of(sized.AboutSetting()), whereWhat(where, what), why, instead)
+	}
 }
 
 // sortedKeysOf puts the settings of one entry in a stable order, so the same

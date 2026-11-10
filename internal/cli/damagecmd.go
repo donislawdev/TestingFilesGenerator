@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -32,6 +33,24 @@ type damageEntry struct {
 	// took 3286.
 	SmallestFileBytes int64           `json:"smallest_file_bytes"`
 	Parameters        []propertyEntry `json:"parameters,omitempty"`
+	// PolicyDependent is every format where the manifest says the outcome
+	// of this damage depends on the reader, with why.
+	//
+	// Always present, empty for a damage that breaks the rules of every
+	// format, so a script reads one key for every damage rather than asking
+	// whether it is there. Owner's call on 2026-11-10: every pair makes a
+	// file, and this is how a script learns before generating which files the
+	// manifest will be certain about.
+	PolicyDependent []policyEntry `json:"policy_dependent"`
+}
+
+// policyEntry is one format where a damage leaves the outcome to the reader.
+type policyEntry struct {
+	Format string `json:"format"`
+	// Settings narrows the entry to files whose setting holds one of these
+	// values. Absent when it covers every file of the format.
+	Settings map[string][]string `json:"settings,omitempty"`
+	Reason   string              `json:"reason"`
 }
 
 // damageEntryFor is one damage as a script sees it.
@@ -43,10 +62,43 @@ func damageEntryFor(d damage.Descriptor) damageEntry {
 			Unit: p.Unit, Choices: p.Choices, Default: p.Default, Detail: p.Detail,
 		})
 	}
+	policy := make([]policyEntry, 0, len(d.Policy))
+	for _, c := range d.Policy {
+		policy = append(policy, policyEntry{Format: c.Format, Settings: c.When, Reason: c.Why})
+	}
 	return damageEntry{
 		ID: d.ID, Detail: d.Detail,
-		SmallestFileBytes: defaultFloor(d), Parameters: params,
+		SmallestFileBytes: defaultFloor(d), Parameters: params, PolicyDependent: policy,
 	}
+}
+
+// policyFormats is the formats where a damage leaves the outcome to the
+// reader, as a person reads them in a list: a format narrowed to some of its
+// settings says which.
+func policyFormats(d damage.Descriptor) string {
+	names := make([]string, 0, len(d.Policy))
+	for _, c := range d.Policy {
+		names = append(names, c.Format+settingsNarrowing(c.When))
+	}
+	return strings.Join(names, ", ")
+}
+
+// settingsNarrowing is " (encoding utf-16be or utf-16le)" for a case narrowed
+// to some values of a setting, and nothing for one that covers the format.
+func settingsNarrowing(when map[string][]string) string {
+	if len(when) == 0 {
+		return ""
+	}
+	names := make([]string, 0, len(when))
+	for name := range when {
+		names = append(names, name)
+	}
+	slices.Sort(names)
+	parts := make([]string, 0, len(names))
+	for _, name := range names {
+		parts = append(parts, name+" "+strings.Join(when[name], " or "))
+	}
+	return " (" + strings.Join(parts, ", ") + ")"
 }
 
 // defaultFloor is the smallest file this damage takes when nobody states a
@@ -89,14 +141,23 @@ func describeOneDamage(d damage.Descriptor, out io.Writer) {
 
 	if len(d.Parameters) == 0 {
 		fmt.Fprint(out, "\nThis damage takes no settings.\n")
+	} else {
+		fmt.Fprintf(out, "\nsettings, written after a colon: %s\n", damageExample(d))
+		for _, p := range d.Parameters {
+			fmt.Fprintf(out, "  %-14s %s\n", p.Name, p.Allowed())
+			if p.Detail != "" {
+				fmt.Fprintf(out, "  %-14s %s\n", "", p.Detail)
+			}
+		}
+	}
+
+	if len(d.Policy) == 0 {
+		fmt.Fprint(out, "\nIn every format the manifest expects the damaged file to be rejected.\n")
 		return
 	}
-	fmt.Fprintf(out, "\nsettings, written after a colon: %s\n", damageExample(d))
-	for _, p := range d.Parameters {
-		fmt.Fprintf(out, "  %-14s %s\n", p.Name, p.Allowed())
-		if p.Detail != "" {
-			fmt.Fprintf(out, "  %-14s %s\n", "", p.Detail)
-		}
+	fmt.Fprint(out, "\nThe manifest expects the damaged file to be rejected, except in these formats,\nwhere it says the outcome depends on your system:\n")
+	for _, c := range d.Policy {
+		fmt.Fprintf(out, "  %s\n      %s\n", c.Format+settingsNarrowing(c.When), c.Why)
 	}
 }
 
@@ -122,17 +183,22 @@ func listDamages(out io.Writer) {
 		// reads "zero-head" and knows what comes out - so a list of names
 		// would say no more than the --damage flag help already says.
 		fmt.Fprintf(out, "    %s\n", d.Detail)
+		if len(d.Policy) > 0 {
+			fmt.Fprintf(out, "    Depends on your system in: %s\n", policyFormats(d))
+		}
 	}
-	fmt.Fprint(out, "\nRun \"tfg damage <id>\" for what one damage takes.\n")
-	fmt.Fprint(out, "The smallest file is what the default settings need.\n")
+	fmt.Fprint(out, "\nRun \"tfg damage <id>\" for what one damage takes and why the outcome depends on your system where it does.\n")
+	fmt.Fprint(out, "The smallest file is what the default settings need. A format can need more, because some damages start from a larger file.\n")
 }
 
 func damageUsage(w io.Writer, fs *flag.FlagSet, errOut io.Writer) {
 	fmt.Fprint(w, `tfg damage - list the ways this build can break a file on purpose.
 
-A damaged file comes out exactly the size you asked for and is one a reader
-refuses, so the manifest records it as expected to be rejected. Use them with
-"tfg generate --damage <id>" or with the damage key of a recipe.
+A damaged file comes out exactly the size you asked for. Where the damage
+breaks the rules of the format, the manifest expects the file to be rejected.
+Where readers differ - a text cut short is still text - it says the outcome
+depends on your system, and why. Use them with "tfg generate --damage <id>"
+or with the damage key of a recipe.
 
 Usage:
   tfg damage

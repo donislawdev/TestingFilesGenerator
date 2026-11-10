@@ -9,7 +9,12 @@
 package engine
 
 import (
+	"context"
+	"errors"
+	"io"
+
 	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
@@ -24,11 +29,35 @@ import (
 //
 // The floor first, because it names a number a person can act on. A target
 // earning both refusals gets that one.
-func checkDamage(t *Target) error {
+func checkDamage(t *Target, desc format.Descriptor) error {
 	if err := checkDamageFloor(t); err != nil {
 		return err
 	}
-	return checkDamageExpectation(t)
+	return checkDamageExpectation(t, desc)
+}
+
+// prepareDamage is what a damaged target is refused for before a size is
+// drawn, and the format its files are planned through.
+//
+// Before the draw, because a chain that cuts away what it added and a damage
+// with no size to work from are wrong whatever size comes out of the seed.
+// And the format it hands back is the one the draw has to ask: a damage that
+// changes the length needs the generator asked for a different size than the
+// one on disk (damagedformat.go).
+func prepareDamage(t *Target, desc format.Descriptor) (format.Descriptor, error) {
+	if len(t.Damage) == 0 {
+		return desc, nil
+	}
+	if eaten := t.Damage.Eaten(); eaten != nil {
+		return desc, eaten
+	}
+	if sized := t.Damage.SizeConflict(t.SizeFromContents); sized != nil {
+		return desc, sized
+	}
+	if !t.Damage.ChangesLength() {
+		return desc, nil
+	}
+	return damagedFormat(desc, t.Damage), nil
 }
 
 // checkDamageFloor refuses a file smaller than the damage it was given.
@@ -48,8 +77,13 @@ func checkDamage(t *Target) error {
 // against anything would be comparing against a number nobody set. The damage
 // still applies to the finished archive, and the check that it moved a byte
 // still runs - what is missing is only the early refusal.
+//
+// A chain that changes the length is left to the format it plans through
+// (damagedformat.go), which knows the format's floor as well as the damage's
+// and names the larger. Asked here, a PNG with junk appended would be told 64
+// B is enough and then refused at 64 B for needing 138.
 func checkDamageFloor(t *Target) error {
-	if len(t.Damage) == 0 || t.SizeFromContents {
+	if len(t.Damage) == 0 || t.SizeFromContents || t.Damage.ChangesLength() {
 		return nil
 	}
 	floor, owner, err := t.Damage.Floor()
@@ -78,8 +112,65 @@ func checkDamageFloor(t *Target) error {
 // The window cannot reach this today - damage sits on the generate screen and
 // the expectation on the recipe screen - and being here rather than in the
 // reader is what covers it on the day those two meet.
-func checkDamageExpectation(t *Target) error {
-	return t.Damage.ConflictsWithExpectation(t.Expected)
+func checkDamageExpectation(t *Target, desc format.Descriptor) error {
+	return t.Damage.ConflictsWithExpectation(t.Expected, damage.KindOf(desc, t.Properties))
+}
+
+// writeDamaged runs the generator into the writer it is given and, for a
+// damaged file, ends the damages once the generator has ended.
+//
+// A damage that cut the file short stops the generator with
+// damage.ErrKeptEnough, and that is the file being complete rather than a
+// failure: every byte it keeps has passed, and the rest was never going to
+// reach the disk. Only a damaged file can stop that way, so the error is read
+// as success for nothing else. A stop of the run arriving at the same moment
+// comes back as the context's own error, and the file fails and is removed
+// like any other file stopped part way.
+func writeDamaged(ctx context.Context, f PlannedFile, w io.Writer, streams []damage.Stream) error {
+	err := writeWithoutCrashing(ctx, f, w)
+	if !f.Damaged() {
+		return err
+	}
+	if errors.Is(err, damage.ErrKeptEnough) {
+		err = nil
+	}
+	if err != nil {
+		return err
+	}
+	return f.Target.Damage.Finish(streams)
+}
+
+// damagedExpectation is what the manifest says a system under test should do
+// with a damaged file nobody declared an expectation for.
+//
+// Reject, with certainty, where the damage breaks the rules of the format: the
+// guard TestEveryDamageIsRefusedByTheStructuralCheckInEveryFormat measures
+// that a judge refuses every such pair, so untouchable rule 5 is kept - the
+// expectation is not invented. Where the damage leaves the file's fate to the
+// reader, the manifest says so rather than guessing, in the shape MF5 gives
+// that case: unspecified, policy dependent, with both answers offered and the
+// reason in a sentence (owner's call, 2026-11-10).
+//
+// The settings are the ones the target stated, defaults filled in - the
+// same question the plan asked when it decided whether accept was allowed.
+func damagedExpectation(f PlannedFile) manifest.Expected {
+	certain, why, err := f.Target.Damage.Certain(damage.KindOf(f.Desc, f.Target.Properties))
+	if err != nil || certain {
+		// An error is a damage the registry does not know, which planning
+		// refused already - the file could not have been written.
+		return manifest.Expected{
+			Outcome:    manifest.OutcomeReject,
+			Reason:     "content_malformed",
+			Confidence: "certain",
+		}
+	}
+	return manifest.Expected{
+		Outcome:       manifest.OutcomeUnspecified,
+		Reason:        "content_malformed",
+		Detail:        why,
+		Confidence:    "policy_dependent",
+		PolicyOptions: []string{manifest.OutcomeAccept, manifest.OutcomeReject},
+	}
 }
 
 // damageFor records what was broken about this file, with the settings
