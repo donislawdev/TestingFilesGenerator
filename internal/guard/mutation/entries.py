@@ -17134,4 +17134,25 @@ MUTATIONS = [
         "        if False:",
         "TestTheStructuralCheckerRefusesBrokenBytesInsteadOfStopping",
     ),
+    (
+        "a batch line nested past what the JSON decoder goes stops the whole batch",
+        "internal/oracle/strict.py",
+        "    except (ValueError, KeyError, TypeError, AttributeError, RecursionError) as exc:",
+        "    except (ValueError, KeyError, TypeError, AttributeError) as exc:",
+        "TestTheStructuralCheckerAnswersARequestItCannotActOnWithAnError",
+    ),
+    (
+        "a batch request for a path holding a NUL stops the whole batch",
+        "internal/oracle/strict.py",
+        "        except (OSError, ValueError) as exc:",
+        "        except OSError as exc:",
+        "TestTheStructuralCheckerAnswersARequestItCannotActOnWithAnError",
+    ),
+    (
+        "the structural checker runs under a context of its own, so a stopped caller leaves it running",
+        "internal/oracle/strictbatch.go",
+        "	ctx, cancel := context.WithTimeout(ctx, limit)",
+        "	ctx, cancel := context.WithTimeout(context.Background(), limit)",
+        "TestAStoppedCallerStopsTheStructuralChecker",
+    ),
 ]

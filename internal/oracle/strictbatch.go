@@ -112,7 +112,7 @@ func StrictBatch(ctx context.Context, reqs []StrictRequest) ([]StrictJudgement, 
 		return nil, true, fmt.Errorf("reading the structural checker's answers: %w", err)
 	}
 	if len(got) != len(reqs) {
-		return nil, true, fmt.Errorf("the structural checker was asked about %d file(s) and answered %d", len(reqs), len(got))
+		return nil, true, fmt.Errorf("the structural checker's answers do not match its questions: asked %d, answered %d", len(reqs), len(got))
 	}
 	for i := range got {
 		if got[i].Path != reqs[i].Path {

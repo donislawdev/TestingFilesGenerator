@@ -4202,7 +4202,9 @@ def batch_answer(line):
         if not isinstance(kind, str) or not isinstance(path, str):
             # open() takes a number as a descriptor, which is not a file asked for.
             raise TypeError("format and path have to be strings")
-    except (ValueError, KeyError, TypeError, AttributeError) as exc:
+    except (ValueError, KeyError, TypeError, AttributeError, RecursionError) as exc:
+        # RecursionError is JSON nested deeper than the decoder goes. One bad
+        # line is one ERROR, and the requests after it are still answered.
         return {"path": "", "verdict": "ERROR", "reason": f"the request {line[:80]!r} is not readable: {exc}"}
     answer = {"path": path, "verdict": "ERROR"}
     if kind not in CHECKS:
@@ -4212,10 +4214,14 @@ def batch_answer(line):
     elif settings and kind not in TAKES_SETTINGS:
         answer["reason"] = f"the {kind} check takes no settings, and was given {sorted(settings)}"
     else:
+        # The whole file, with no limit, on purpose: every check walks offsets
+        # and checksums across all of it, so a limit would turn a large healthy
+        # file into a refusal. The files are ones the caller has just written.
+        # ValueError is a path holding a NUL, which open() will not take.
         try:
             with open(path, "rb") as handle:
                 body = handle.read()
-        except OSError as exc:
+        except (OSError, ValueError) as exc:
             answer["reason"] = f"the file cannot be read: {exc}"
         else:
             answer["verdict"], answer["reason"] = judge(kind, body, settings)

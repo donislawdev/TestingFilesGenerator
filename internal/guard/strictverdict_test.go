@@ -2,11 +2,13 @@ package guard
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -142,18 +144,7 @@ for kind in ("png", "gif", "bmp"):
 // Planted checks, because the real ones are meant to have no crash left in
 // them, so no real file can reach these states.
 func TestACheckThatStopsOnAnExceptionIsACrashNotARefusal(t *testing.T) {
-	python, err := exec.LookPath("python")
-	if err != nil {
-		t.Skip("the structural checker needs python, and there is none on this machine")
-	}
-	here, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	script, ok := oracle.StrictScriptUnder(here)
-	if !ok {
-		t.Fatalf("the structural checker is not above %s", here)
-	}
+	python, script := strictProgram(t)
 	plant := filepath.Join(t.TempDir(), "plant.py")
 	if err := os.WriteFile(plant, []byte(strictPlant), 0o600); err != nil {
 		t.Fatal(err)
@@ -187,6 +178,129 @@ func TestACheckThatStopsOnAnExceptionIsACrashNotARefusal(t *testing.T) {
 				"error handling.", i+1, j.Verdict, j.Reason, w.verdict, w.reason)
 		}
 	}
+}
+
+// TestTheStructuralCheckerAnswersARequestItCannotActOnWithAnError holds the
+// other side of the batch: a request the checker cannot act on is answered
+// ERROR, in its place, and every request after it is still answered.
+//
+// Through StrictBatch for what a Go caller can send (a format with no check,
+// settings to a check that takes none, a file that is not there, a path with
+// a NUL in it), and through the program itself for lines no Go caller writes
+// (a line that is not JSON, JSON nested past what the decoder goes). Before
+// 2026-11-10 the last two of the first group and the nested line stopped the
+// whole batch. The healthy file between them is the control: a batch that
+// answered ERROR to everything would pass the rest.
+func TestTheStructuralCheckerAnswersARequestItCannotActOnWithAnError(t *testing.T) {
+	dir := t.TempDir()
+	good := filepath.Join(dir, "good.zip")
+	if err := os.WriteFile(good, writeEncoded(t, "zip", 16384, nil), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	asked := []struct {
+		req    oracle.StrictRequest
+		answer string
+		reason string
+	}{
+		{oracle.StrictRequest{Format: "nothing-of-that-name", Path: good}, oracle.StrictError, "there is no check"},
+		{oracle.StrictRequest{Format: "zip", Path: good, Settings: map[string]string{"a": "b"}}, oracle.StrictError, "takes no settings"},
+		{oracle.StrictRequest{Format: "zip", Path: good}, oracle.StrictOK, ""},
+		{oracle.StrictRequest{Format: "zip", Path: filepath.Join(dir, "never-written.zip")}, oracle.StrictError, "cannot be read"},
+		{oracle.StrictRequest{Format: "zip", Path: good + "\x00.zip"}, oracle.StrictError, "cannot be read"},
+		{oracle.StrictRequest{Format: "zip", Path: good}, oracle.StrictOK, ""},
+	}
+	reqs := make([]oracle.StrictRequest, len(asked))
+	for i, a := range asked {
+		reqs[i] = a.req
+	}
+	got, available, err := oracle.StrictBatch(t.Context(), reqs)
+	if !available {
+		t.Skip("the structural checker needs python, and there is none on this machine")
+	}
+	if err != nil {
+		t.Fatalf("one request the checker cannot act on stopped the whole batch: %v", err)
+	}
+	for i, a := range asked {
+		if got[i].Verdict != a.answer || !strings.Contains(got[i].Reason, a.reason) {
+			t.Errorf("request %d (%s %q) was answered %s %q, and %s saying %q was wanted",
+				i+1, a.req.Format, a.req.Path, got[i].Verdict, got[i].Reason, a.answer, a.reason)
+		}
+	}
+
+	python, script := strictProgram(t)
+	lines := []string{
+		"this is not a request",
+		strings.Repeat("[", 200000) + strings.Repeat("]", 200000),
+		`{"format": "zip", "path": ` + strconv.Quote(good) + `}`,
+	}
+	// The interpreter is the one found on PATH, the script is the checker of
+	// this repository, and the input is the lines above.
+	// nosemgrep: go.lang.security.audit.dangerous-exec-command.dangerous-exec-command
+	cmd := exec.CommandContext(t.Context(), python, script, "--batch")
+	cmd.Stdin = strings.NewReader(strings.Join(lines, "\n") + "\n")
+	out, err := cmd.Output()
+	if err != nil {
+		t.Fatalf("a line the checker cannot read stopped the whole batch: %v", err)
+	}
+	answers := strings.Split(strings.TrimSpace(string(out)), "\n")
+	if len(answers) != len(lines) {
+		t.Fatalf("%d line(s) asked and %d answered:\n%s", len(lines), len(answers), out)
+	}
+	for i, want := range []string{oracle.StrictError, oracle.StrictError, oracle.StrictOK} {
+		var j oracle.StrictJudgement
+		if err := json.Unmarshal([]byte(strings.TrimSpace(answers[i])), &j); err != nil {
+			t.Fatalf("answer %d is not an answer: %v", i+1, err)
+		}
+		if j.Verdict != want {
+			t.Errorf("line %d was answered %s %q, and %s was wanted", i+1, j.Verdict, j.Reason, want)
+		}
+	}
+}
+
+// TestAStoppedCallerStopsTheStructuralChecker holds that the checker runs
+// under its caller's context. A guard stopped by its time limit has to stop
+// the Python process with it, rather than leave it running under a context
+// of its own.
+func TestAStoppedCallerStopsTheStructuralChecker(t *testing.T) {
+	dir := t.TempDir()
+	good := filepath.Join(dir, "good.zip")
+	if err := os.WriteFile(good, writeEncoded(t, "zip", 16384, nil), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	reqs := []oracle.StrictRequest{{Format: "zip", Path: good}}
+
+	// The control: the same request under a live context is answered.
+	if _, available, err := oracle.StrictBatch(t.Context(), reqs); !available {
+		t.Skip("the structural checker needs python, and there is none on this machine")
+	} else if err != nil {
+		t.Fatalf("the request was not answered under a live context: %v", err)
+	}
+
+	stopped, cancel := context.WithCancel(t.Context())
+	cancel()
+	if got, _, err := oracle.StrictBatch(stopped, reqs); err == nil {
+		t.Errorf("a stopped caller got %d answer(s) back. The checker ran under a context of its own, "+
+			"so a guard that is stopped leaves it running", len(got))
+	}
+}
+
+// strictProgram is the interpreter on PATH and the checker of this
+// repository, for a guard that runs the program itself.
+func strictProgram(t *testing.T) (python, script string) {
+	t.Helper()
+	python, err := exec.LookPath("python")
+	if err != nil {
+		t.Skip("the structural checker needs python, and there is none on this machine")
+	}
+	here, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	script, ok := oracle.StrictScriptUnder(here)
+	if !ok {
+		t.Fatalf("the structural checker is not above %s", here)
+	}
+	return python, script
 }
 
 // zeroed is the file with its first n bytes set to zero.
