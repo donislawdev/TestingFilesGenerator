@@ -50,6 +50,7 @@ func TestTheStructuralCheckerRefusesBrokenBytesInsteadOfStopping(t *testing.T) {
 	pptx := writeEncoded(t, "pptx", 8192, nil)
 	pdf := writeEncoded(t, "pdf", 4096, nil)
 	html := writeEncoded(t, "html", 2048, nil)
+	csv := writeEncoded(t, "csv", 2048, nil)
 
 	cases := []strictCase{
 		{"healthy png", "png", png, oracle.StrictOK, ""},
@@ -59,6 +60,7 @@ func TestTheStructuralCheckerRefusesBrokenBytesInsteadOfStopping(t *testing.T) {
 		{"healthy pptx", "pptx", pptx, oracle.StrictOK, ""},
 		{"healthy pdf", "pdf", pdf, oracle.StrictOK, ""},
 		{"healthy html", "html", html, oracle.StrictOK, ""},
+		{"healthy csv", "csv", csv, oracle.StrictOK, ""},
 
 		{"png with nothing after the signature", "png", png[:8], oracle.StrictFail, "no chunk at all"},
 		{"png one byte short", "png", png[:len(png)-1], oracle.StrictFail, "before its 4 B checksum"},
@@ -72,6 +74,10 @@ func TestTheStructuralCheckerRefusesBrokenBytesInsteadOfStopping(t *testing.T) {
 		{"docx with a compression method nobody knows", "docx", unknownMethod(t, docx), oracle.StrictFail, "compression method"},
 		{"pdf whose cross reference names an offset that is not a number", "pdf", garbledOffset(t, pdf), oracle.StrictFail, "which is not a number"},
 		{"html whose label heading is never closed", "html", unclosedLabel(t, html), oracle.StrictFail, "never closed on its line"},
+		// RFC 4180 lets no control character into a field. Before 2026-11-10 a
+		// one row table with its head zeroed came back OK, because the only
+		// thing asked of it was whether its rows agreed with each other.
+		{"csv with a NUL inside a field", "csv", nulInField(t, csv), oracle.StrictFail, "control character"},
 	}
 
 	dir := t.TempDir()
@@ -396,4 +402,20 @@ func flipped(t *testing.T, b []byte) []byte {
 	_, data := firstEntry(t, out)
 	out[data] ^= 0xff
 	return out
+}
+
+// nulInField is a healthy table with one letter of its second row replaced by
+// a NUL - a field that is still a field, holding a byte RFC 4180 forbids.
+func nulInField(t *testing.T, csv []byte) []byte {
+	t.Helper()
+	out := append([]byte(nil), csv...)
+	start := bytes.IndexByte(out, '\n') + 1
+	for i := start; i < len(out); i++ {
+		if c := out[i]; (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') {
+			out[i] = 0
+			return out
+		}
+	}
+	t.Fatal("the healthy table has no letter after its first line to replace")
+	return nil
 }

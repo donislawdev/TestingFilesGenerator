@@ -298,27 +298,40 @@ func TestTheSmallestDamagedFileIsTakenAndOneByteLessIsNot(t *testing.T) {
 			if smallest == 0 {
 				continue
 			}
-			err := plan(smallest - 1)
-			var below *format.BelowMinimumError
-			var small *damage.TooSmallError
-			switch {
-			case err == nil:
-				t.Errorf("%s with %s: %d B was taken, one byte under the %d B announced as the smallest", f.ID, chain, smallest-1, smallest)
-			case errors.As(err, &below):
-				if below.Minimum != smallest || below.Requested != smallest-1 {
-					t.Errorf("%s with %s: the refusal of %d B names %d B as the smallest and %d B as asked for: %v",
-						f.ID, chain, smallest-1, below.Minimum, below.Requested, err)
+			// One byte under, and far under: a refusal has to name the size
+			// that works from anywhere below it, not a floor of the damage
+			// that the format then refuses in turn.
+			for _, under := range []int64{smallest - 1, smallest / 3} {
+				if under == smallest-1 || under > 0 {
+					checkNamesTheSmallest(t, f.ID, chain, under, smallest, plan(under))
 				}
-			case errors.As(err, &small):
-				if small.Floor != smallest {
-					t.Errorf("%s with %s: the refusal of %d B names %d B as the smallest: %v", f.ID, chain, smallest-1, small.Floor, err)
-				}
-			default:
-				t.Errorf("%s with %s: %d B was refused with %T, which names no size: %v", f.ID, chain, smallest-1, err, err)
 			}
 		}
 	}
 	if asked == 0 {
 		t.Fatal("no pair was asked, so this guard proved nothing")
+	}
+}
+
+// checkNamesTheSmallest is one size under the smallest, refused in words that
+// name the smallest.
+func checkNamesTheSmallest(t *testing.T, formatID string, chain damage.Chain, under, smallest int64, err error) {
+	t.Helper()
+	var below *format.BelowMinimumError
+	var small *damage.TooSmallError
+	switch {
+	case err == nil:
+		t.Errorf("%s with %s: %d B was taken, under the %d B announced as the smallest", formatID, chain, under, smallest)
+	case errors.As(err, &below):
+		if below.Minimum != smallest || below.Requested != under {
+			t.Errorf("%s with %s: the refusal of %d B names %d B as the smallest and %d B as asked for: %v",
+				formatID, chain, under, below.Minimum, below.Requested, err)
+		}
+	case errors.As(err, &small):
+		if small.Floor != smallest {
+			t.Errorf("%s with %s: the refusal of %d B names %d B as the smallest: %v", formatID, chain, under, small.Floor, err)
+		}
+	default:
+		t.Errorf("%s with %s: %d B was refused with %T, which names no size: %v", formatID, chain, under, err, err)
 	}
 }

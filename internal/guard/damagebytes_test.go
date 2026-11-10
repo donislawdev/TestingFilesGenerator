@@ -305,4 +305,24 @@ func TestTheFloorOfACutFollowsItsShareAndAChainAddsUp(t *testing.T) {
 			}
 		}
 	}
+
+	// And the file a cut starts from: the share of the whole is never less
+	// than stated, so the cut is rounded up - at its floor, exactly the four
+	// bytes the floor is there for.
+	for _, c := range []struct {
+		missing    string
+		kept, from int64
+	}{
+		{"50", 4, 8},
+		{"50", 7, 14},
+		{"1", 298, 302},
+		{"90", 1, 10},
+		{"33", 7, 11},
+	} {
+		chain := damage.Chain{{ID: damage.Truncate, Values: damage.Values{damage.SettingMissing: c.missing}}}
+		if got, err := chain.Before(c.kept); err != nil || got != c.from {
+			t.Errorf("missing=%s keeping %d B starts from %d B (%v), and should start from %d B",
+				c.missing, c.kept, got, err, c.from)
+		}
+	}
 }

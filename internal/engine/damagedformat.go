@@ -104,7 +104,7 @@ func (g *damagedGenerator) PlanContext(ctx context.Context, r format.Request) (f
 		p, err = g.stretch(ctx, r, err)
 	}
 	if err != nil {
-		return format.Plan{}, g.inSizeOnDisk(size, err)
+		return format.Plan{}, g.inSizeOnDisk(ctx, r, size, err)
 	}
 	return format.Plan{
 		Bytes:       size,
@@ -181,14 +181,24 @@ func (g *damagedGenerator) firstWritable(ctx context.Context, r format.Request, 
 // Without it a person asking for a 30 B png cut in half would read "png
 // cannot be smaller than 74 B. Requested: 60 B" - a number they never wrote,
 // and a way out that does not work.
-func (g *damagedGenerator) inSizeOnDisk(size int64, err error) error {
+//
+// The size a format's refusal names is the next one worth trying, not always
+// one it writes - measured 2026-11-10, wav refuses 0 B naming 96 and then 96
+// naming 98 - so the way out is walked to a size it really writes first.
+// Translated after one step, the refusal named a size that was refused in
+// turn.
+func (g *damagedGenerator) inSizeOnDisk(ctx context.Context, r format.Request, size int64, err error) error {
 	var below *format.BelowMinimumError
 	if errors.As(err, &below) {
-		least := g.smallestReaching(below.Minimum)
+		first := below.Minimum
+		if writable, werr := g.firstWritable(ctx, r, first); werr == nil {
+			first = writable
+		}
+		least := g.smallestReaching(first)
 		return &format.BelowMinimumError{
 			Format: g.format, Requested: size, Minimum: least,
 			Reason: core.Says("engine.DamagedBelowWhy", "%s has to start from a %s file of at least %s",
-				core.A("Damage", g.names()), core.A("Format", g.format), core.A("Minimum", core.ExactBytes(below.Minimum))),
+				core.A("Damage", g.names()), core.A("Format", g.format), core.A("Minimum", core.ExactBytes(first))),
 			Hint: g.askFor(least, true)}
 	}
 	var above *format.AboveMaximumError
