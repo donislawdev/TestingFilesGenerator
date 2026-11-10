@@ -81,6 +81,13 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **`upload-validation` is four files longer.** The files sent under a name
+  that leaves the upload directory are four targets more in the recipe
+  `tfg preset eject upload-validation` prints. A manifest from a run of that
+  preset records the hash of that recipe, so its `recipe_hash` differs from
+  one written before. Every file the preset wrote before is written as it
+  was and keeps its `id`, because the new four come last in the run.
+
 - **`expected: accept` beside a damage is allowed where the outcome depends
   on your system.** It used to be refused beside every damage. It is still
   refused where the damage breaks the rules of the format, because nothing

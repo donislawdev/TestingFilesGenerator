@@ -30,11 +30,12 @@ import (
 // JSON a consumer receives rather than into the manifest package's own type,
 // so a field renamed there fails here instead of following along.
 type sentFile struct {
-	Path   string  `json:"path"`
-	Name   string  `json:"name"`
-	SendAs *string `json:"send_as"`
-	Group  string  `json:"group"`
-	Hashes struct {
+	Path    string  `json:"path"`
+	Name    string  `json:"name"`
+	SendAs  *string `json:"send_as"`
+	Group   string  `json:"group"`
+	Purpose string  `json:"purpose"`
+	Hashes  struct {
 		SHA256 string `json:"sha256"`
 	} `json:"hashes"`
 	Expected struct {
@@ -323,6 +324,22 @@ func TestARefusedPathInANameSaysWhereSuchANameGoes(t *testing.T) {
 	if len(files) != 1 || files[0].Name != "climbed_out.txt" || files[0].SendAs == nil || *files[0].SendAs != "../climbed_out.txt" {
 		t.Errorf("following the refusal gave %+v, expected climbed_out.txt sent as ../climbed_out.txt", files)
 	}
+
+	// The manifest is refused for the same reason and is never uploaded
+	// anywhere, so its refusal names the directory and stops there.
+	recipeDir := t.TempDir()
+	src := "version: 1\ntargets:\n  - id: a\n    format: txt\n    size: 1kb\n" +
+		"output:\n  dir: ./out\n  manifest: sub/run.json\n"
+	code, _, said = run(t, "generate", writeRecipe(t, recipeDir, src))
+	if code != cli.ExitRecipe || !strings.Contains(said, "which is a path rather than a file name") {
+		t.Fatalf("a path in output.manifest ended %d, expected the refusal of a path with %d: %s", code, cli.ExitRecipe, said)
+	}
+	if !strings.Contains(said, "Choose the directory with the output setting") {
+		t.Errorf("the refusal of a path in the manifest name does not say where a directory is chosen:\n%s", said)
+	}
+	if strings.Contains(said, "send-as") {
+		t.Errorf("the refusal of a path in the manifest name points at send-as, which does nothing for a manifest:\n%s", said)
+	}
 }
 
 // The instructions beside a manifest say under which name to hand a file over,
@@ -337,6 +354,7 @@ func TestTheInstructionsSayUnderWhichNameToSendAFile(t *testing.T) {
 		"  - id: climbing\n    format: txt\n    size: 1kb\n    purpose: A name that climbs.\n    send-as: ..\\climbed_out.txt\n" +
 		"  - id: several\n    format: txt\n    size: 1kb\n    count: 3\n    purpose: Three under one name.\n    send-as: /tmp/climbed_out.txt\n" +
 		"  - id: unseen\n    format: txt\n    size: 1kb\n    purpose: A name cut short.\n    send-as: \"a.php\\0.jpg\"\n" +
+		"  - id: spaced\n    format: txt\n    size: 1kb\n    purpose: A name that starts with a space.\n    send-as: \" leading.txt\"\n" +
 		"  - id: ordinary\n    format: txt\n    size: 1kb\n    purpose: Nothing special.\n"
 	if code, _, said := run(t, "generate", writeRecipe(t, dir, src), "--out", out); code != cli.ExitOK {
 		t.Fatalf("the run ended %d: %s", code, said)
@@ -351,13 +369,24 @@ func TestTheInstructionsSayUnderWhichNameToSendAFile(t *testing.T) {
 		"Send it under the name `..\\climbed_out.txt`, not the name on disk.\n",
 		"Send each of them under the name `/tmp/climbed_out.txt`, not the name on disk.\n",
 		"Send it under the name `\"a.php\\x00.jpg\"`, not the name on disk. The name is given in double quotes with escapes",
+		"Send it under the name `\" leading.txt\"`, not the name on disk. The name is given in double quotes with escapes",
 	} {
 		if !strings.Contains(text, want) {
 			t.Errorf("the instructions do not hold the line %q:\n%s", want, text)
 		}
 	}
-	if n := strings.Count(text, "under the name"); n != 3 {
-		t.Errorf("%d entries say under which name to send a file, and three targets asked for one:\n%s", n, text)
+	if n := strings.Count(text, "under the name"); n != 4 {
+		t.Errorf("%d entries say under which name to send a file, and four targets asked for one:\n%s", n, text)
+	}
+	// A name is quoted for a space at its edge as well as for a character
+	// nobody can see, and every character of " leading.txt" can be seen. So
+	// the sentence about the quotes gives the one reason true of both, and
+	// says the quotes are not sent.
+	if n := strings.Count(text, "The quotes around it are not part of the name."); n != 2 {
+		t.Errorf("%d quoted names say that the quotes are not part of the name, expected both of them:\n%s", n, text)
+	}
+	if strings.Contains(text, "cannot be seen") {
+		t.Errorf("the instructions say part of a name cannot be seen, which is false of a name quoted for a space at its edge:\n%s", text)
 	}
 	if strings.ContainsRune(text, 0) {
 		t.Error("the instructions hold a raw null character - a name nobody can see is written as an escape")
@@ -429,12 +458,38 @@ func TestTheUploadSetSendsFourFilesUnderNamesThatLeaveTheDirectory(t *testing.T)
 				t.Errorf("--allow %s: %s expects %s (%s), expected unspecified (filename_traversal) - both refusing and storing under a clean name are right",
 					c.allow, name, f.Expected.Outcome, f.Expected.Reason)
 			}
+			// The name to look for afterwards is the one the file was sent
+			// under, extension and all. Somebody searching for the bare word
+			// as a whole name finds nothing and calls an open form closed.
+			if !strings.Contains(f.Purpose, "no file called tfg_climbed_out"+c.extension) {
+				t.Errorf("--allow %s: the purpose of %s does not name tfg_climbed_out%s as the file to look for:\n%s", c.allow, name, c.extension, f.Purpose)
+			}
 			if f.Group != "hostile-names" {
 				t.Errorf("--allow %s: %s is in the group %q, expected hostile-names", c.allow, name, f.Group)
 			}
 		}
 		if len(ways) != 4 {
 			t.Errorf("--allow %s: the four names leave the directory in %d different ways, expected four: %v", c.allow, len(ways), ways)
+		}
+	}
+
+	// The four stand last in the run, after the mass upload. A file's id is its
+	// place in the manifest, so put anywhere else they would have moved the id
+	// of every file after them, and an id is the handle a test written against
+	// an earlier version of the set holds.
+	dir := filepath.Join(t.TempDir(), "out")
+	if code, _, said := run(t, "generate", "--preset", "upload-validation", "--limit", "64kb",
+		"--bulk", "2", "--far-over", "off", "--out", dir); code != cli.ExitOK {
+		t.Fatalf("the preset with a mass upload ended %d: %s", code, said)
+	}
+	files := sentFiles(t, dir)
+	if len(files) < 6 || files[len(files)-5].Group != "bulk-upload" {
+		t.Fatalf("the run of %d files does not hold a mass upload just before its last four, so this says nothing about what follows what", len(files))
+	}
+	for i, f := range files {
+		if last := i >= len(files)-4; (f.SendAs != nil) != last {
+			t.Errorf("%s stands at place %d of %d and send_as set is %t - the four names that leave the directory are the last four of the run",
+				f.Name, i+1, len(files), f.SendAs != nil)
 		}
 	}
 

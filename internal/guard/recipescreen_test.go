@@ -357,6 +357,7 @@ func TestWhatIsTypedOnTheRecipeScreenIsWhatGetsWritten(t *testing.T) {
 	set(1, recipe.KeySize, "1kb")
 	set(1, recipe.KeyCount, "2")
 	set(1, recipe.KeyGroup, "smoke")
+	set(1, recipe.KeySendAs, "../docs_climbed.txt")
 	choose(1, recipe.KeyExpected, "accept")
 
 	// A boundary set: three files, one byte either side of a limit. The way of
@@ -401,6 +402,7 @@ func TestWhatIsTypedOnTheRecipeScreenIsWhatGetsWritten(t *testing.T) {
 
 	for field, value := range map[string]string{
 		"the class of the first batch": `"group": "smoke"`,
+		"the name to send them under":  `"send_as": "../docs_climbed.txt"`,
 		"the declared expectation":     `"outcome": "accept"`,
 		"the label switch":             `"label_embedded": false`,
 		"the seed":                     `"seed": 4242`,

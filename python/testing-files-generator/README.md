@@ -161,7 +161,7 @@ import requests
 @pytest.mark.parametrize("file", uploads.params())
 def test_upload_api(file):
     with open(file.path(), "rb") as body:
-        response = requests.post("http://localhost:3000/upload", files={"file": (file.send_as, body)})
+        response = requests.post("http://localhost:3000/upload", files={"file": (file.send_as, body)}, timeout=30)
     assert response.status_code < 500, "a server error is not a refusal"
     file.check("accept" if response.ok else {"outcome": "reject", "reason": response.json().get("reason")})
 ```
@@ -225,7 +225,7 @@ climbing = [file for file in uploads.files if file.send_as != file.name]
 @pytest.mark.parametrize("file", climbing, ids=lambda file: file.title)
 def test_a_name_with_a_path_stays_inside_the_upload_directory(file):
     with open(file.path(), "rb") as body:
-        requests.post("http://localhost:3000/upload", files={"file": (file.send_as, body)})
+        requests.post("http://localhost:3000/upload", files={"file": (file.send_as, body)}, timeout=30)
     # Your own check: nothing called tfg_climbed_out is above the upload directory.
 ```
 
@@ -362,7 +362,7 @@ class Uploads(unittest.TestCase):
                 if file.unspecified:
                     self.skipTest(file.why_unspecified)
                 with open(file.path(), "rb") as body:
-                    response = requests.post("http://localhost:3000/upload", files={"file": (file.send_as, body)})
+                    response = requests.post("http://localhost:3000/upload", files={"file": (file.send_as, body)}, timeout=30)
                 self.assertLess(response.status_code, 500, "a server error is not a refusal")
                 file.check("accept" if response.ok else "reject")
 ```

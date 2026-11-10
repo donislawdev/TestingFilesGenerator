@@ -33,7 +33,7 @@ func checkFileName(setting string, where core.Said, name string) error {
 		return &RecipeError{Setting: setting,
 			Detail:  core.Says("engine.NameIsAPath", "%s produces the name %q, which is a path rather than a file name", core.A("Where", where), core.A("Name", name)),
 			Because: core.Says("engine.NameIsAPathWhy", "names stay inside the output directory, and a separator is refused on every system so that a recipe works everywhere"),
-			Remedy:  keepTheNameAndSendItAs()}
+			Remedy:  wayOutOfAPath(setting)}
 
 	// A colon, on every system, for the same reason as a separator.
 	//
@@ -167,6 +167,19 @@ func checkFileName(setting string, where core.Said, name string) error {
 // chooseTheDirectory is the way out of a name that tries to be a place.
 func chooseTheDirectory() core.Said {
 	return core.Says("engine.ChooseTheDirectory", "Choose the directory with the output setting instead")
+}
+
+// wayOutOfAPath is what a name refused for holding a separator is told to do.
+//
+// Only the name of a target's files can be sent under another one. The
+// manifest and the instructions beside it are never uploaded anywhere, so
+// naming send-as for them would send their reader to a setting that does
+// nothing for the file in front of them.
+func wayOutOfAPath(setting string) core.Said {
+	if setting == SettingName {
+		return keepTheNameAndSendItAs()
+	}
+	return chooseTheDirectory()
 }
 
 // keepTheNameAndSendItAs is the way out for somebody who wants the path in the

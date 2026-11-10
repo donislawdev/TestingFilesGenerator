@@ -154,7 +154,7 @@ func (s uploadSet) anomalyFiles() []setFile {
 }
 
 // nameFiles is three names a form has to write to disk, or refuse for a reason
-// it can say out loud, and four it must never use as given.
+// it can say out loud. The four it must never use as given are climbingNames.
 //
 // The names are what they are on purpose: a long one for a column that is 255
 // characters wide, one outside ASCII for a path handled as bytes, and one with
@@ -162,8 +162,7 @@ func (s uploadSet) anomalyFiles() []setFile {
 // did not quote it.
 func (s uploadSet) nameFiles() []setFile {
 	desc := s.allowed[0]
-	size := sampleFor(desc)
-	return append(s.storableNames(desc, size), s.climbingNames(desc, size)...)
+	return s.storableNames(desc, sampleFor(desc))
 }
 
 // climbedOut is the name the four files below ask to be stored under, once
@@ -192,7 +191,9 @@ const climbedOut = "tfg_climbed_out"
 // are right - refuse the name, or store the file under a name with no path in
 // it - and the wrong one, writing outside the directory, cannot be seen in
 // what the form answers (MF5).
-func (s uploadSet) climbingNames(desc format.Descriptor, size int64) []setFile {
+func (s uploadSet) climbingNames() []setFile {
+	desc := s.allowed[0]
+	size := sampleFor(desc)
 	landing := climbedOut + desc.Extension
 	check := "Your form should turn the name away or store the file under a name with no path in it."
 	file := func(id, sendAs, purpose string) setFile {
@@ -204,16 +205,16 @@ func (s uploadSet) climbingNames(desc format.Descriptor, size int64) []setFile {
 	return []setFile{
 		file("climbing_name", "../"+landing,
 			"A name that steps one directory up, written with a forward slash. A form that joins the name to its upload directory writes the file outside it. "+
-				check+" Then check that no file called "+climbedOut+" appeared above the upload directory."),
+				check+" Then check that no file called "+landing+" appeared above the upload directory."),
 		file("climbing_name_backslash", `..`+bs+landing,
 			"The same step up written with a backslash, which only Windows reads as a separator. A check made on Linux lets the name through whole, and a Windows machine that stores the file later steps out. "+
-				check+" Then check that no file called "+climbedOut+" appeared above the upload directory."),
+				check+" Then check that no file called "+landing+" appeared above the upload directory."),
 		file("absolute_name", "/tmp/"+landing,
 			"A name that is a whole path on Linux and macOS, starting at the root of the disk. A form that uses it as given writes to /tmp. "+
-				check+" Then check that /tmp holds no file called "+climbedOut+"."),
+				check+" Then check that /tmp holds no file called "+landing+"."),
 		file("drive_name", `C:`+bs+`Windows`+bs+`Temp`+bs+landing,
 			"A name that is a whole path on Windows, drive letter included. A form that uses it as given writes to that folder. "+
-				check+" Then check that the folder holds no file called "+climbedOut+"."),
+				check+" Then check that the folder holds no file called "+landing+"."),
 	}
 }
 

@@ -61,13 +61,21 @@ func TestEjectingAPresetGivesTheBytesItAlwaysGave(t *testing.T) {
 		{id: "size-boundaries", args: preset.Args{"format": "jpg", "limit": "10mb"}, bytes: 2489, sum: "6b8cd2e300de5f670a5c702e0145ef69d9965b9d43ed283943fbc3218efa8111"},
 		{id: "size-boundaries", args: preset.Args{"format": "jpg", "limit": "2kb", "spread": "1kb"}, bytes: 1182, sum: "cbbb4f47bd0eca3846cf2c4f2f599a0c801287e361722798ce565ae3dd6c4b45"},
 		{id: "size-boundaries", args: preset.Args{"format": "jpg", "limit": "300", "spread": "100"}, refused: "the preset size-boundaries cannot build this set - under_100 would be 200 B and the smallest JPG this build makes is 602 B. Raise the limit above 702 B, narrow the spread, or choose a format with a smaller minimum. The limit asked for was 300 B."},
-		{id: "upload-validation", args: preset.Args{}, bytes: 8220, sum: "735f46d99eaf038ae050448a0277777e8511e2bea384506bc0299633c5cb4d9e"},
-		{id: "upload-validation", args: preset.Args{"limit": "5mb"}, bytes: 8208, sum: "1d190c8e6a87b6ea09a8441759221cc3462b1baadaa09cb8a2809963ef5b55c3"},
+		// Every upload-validation row moved on 2026-11-10: the set gained four
+		// files sent under a name that leaves the upload directory, which is
+		// four targets more in the recipe (docs/SEND-AS-2026-11-10.md). The
+		// same shape as 2026-10-06, a Changed entry and no major: measured on
+		// the default set against the tree before, each of the 71 files it
+		// wrote keeps its bytes, its hash and its id, because the four stand
+		// last in the run. What moves is the recipe_hash of a run from the
+		// preset.
+		{id: "upload-validation", args: preset.Args{}, bytes: 10463, sum: "c1594b58f57784e77e2e3359cb735965e83b2b2af612dc10e0f916a9a4876df8"},
+		{id: "upload-validation", args: preset.Args{"limit": "5mb"}, bytes: 10451, sum: "34f0848ade008a9cc150d39389980827b5cca8aa850619ca3321346ae7e412c8"},
 		{id: "upload-validation", args: preset.Args{"limit": "3kb"}, refused: "the preset upload-validation cannot build this set - allowed_pdf would be 1536 B and the smallest PDF this build makes is 3415 B. Raise the limit to 6830 B or more, or take pdf out of the allowed types. The limit asked for was 3072 B."},
-		{id: "upload-validation", args: preset.Args{"allow": "docx,gif"}, bytes: 7618, sum: "1c4ffcc64e820f8384b98bc2b279df4fc0b16163e18f056fd9210f99fe879b1c"},
-		{id: "upload-validation", args: preset.Args{"allow": "xlsx,ico,wav"}, bytes: 8254, sum: "5c2326e18ac1fe3c076a2391eed6f4819de60ec3726db2dc052872f1195dace0"},
-		{id: "upload-validation", args: preset.Args{"bulk": "3", "far-over": "off"}, bytes: 7858, sum: "51b3271ed9c474af8f3c94ae9b38b82bf49b2bbcbfd67d6988259683df6f9024"},
-		{id: "upload-validation", args: preset.Args{"deny": "exe,js"}, bytes: 7622, sum: "237f17d9907ce228c7928de6362ef6e47ef9d0c14467a10e5d2e7cfc247a7233"},
+		{id: "upload-validation", args: preset.Args{"allow": "docx,gif"}, bytes: 9877, sum: "610fe420a1a73b24c8d3cadbde4999b62b3c5282f253e6fb39dc1e83ab8db7b2"},
+		{id: "upload-validation", args: preset.Args{"allow": "xlsx,ico,wav"}, bytes: 10497, sum: "6f310fa1b8e34c0a2df340288bc57eab1b4c765ceae6e4a8fd4c382cb9281de1"},
+		{id: "upload-validation", args: preset.Args{"bulk": "3", "far-over": "off"}, bytes: 10101, sum: "f10b91008524cb38f4418eeb8995fdbf079061fc35c0d0df010dbd79db1fef33"},
+		{id: "upload-validation", args: preset.Args{"deny": "exe,js"}, bytes: 9865, sum: "117deec7114242a7716ac965b8ea82f966769204d4731f06715474992db9f2e9"},
 		{id: "tabular-import", args: preset.Args{}, bytes: 6045, sum: "e3d5ef9cc2633d05654b4bee16d62b61a30a776ff7a38cbdf35b3b073e18972e"},
 		{id: "tabular-import", args: preset.Args{"rows": "100"}, bytes: 6042, sum: "7187e6a619e46a6f376361af433a45f9f4035c06f185c3cce7836179a3d4c2c0"},
 		{id: "tabular-import", args: preset.Args{"columns": "5"}, bytes: 6042, sum: "81b712fe1186372ffdbf0d7c92ca753e5fac0f9083bb101695c4f0d37d8d4644"},

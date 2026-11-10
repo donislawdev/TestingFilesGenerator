@@ -170,7 +170,7 @@ func writeSendAs(b *strings.Builder, f File, what string) {
 	shown := core.ShownExactly(f.SendAs)
 	fmt.Fprintf(b, "  Send %s under the name %s, not the name on disk.", what, codeSpan(shown))
 	if shown != f.SendAs {
-		b.WriteString(" The name is given in double quotes with escapes, because part of it cannot be seen.")
+		b.WriteString(" The name is given in double quotes with escapes, so that every character of it can be read. The quotes around it are not part of the name.")
 	}
 	b.WriteString("\n")
 }
