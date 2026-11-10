@@ -75,6 +75,8 @@ type TargetDraft struct {
 	// Purpose says in a sentence or two what these files are and why they are
 	// in the set. See Target.Purpose.
 	Purpose string
+	// SendAs is the name to hand the files over under. See Target.SendAs.
+	SendAs string
 	// Three ways of saying how big, and this type deliberately accepts all
 	// three at once. Two of them together is a refusal Parse already words and
 	// addresses - "states both a size and a size-range" - so a screen offering
@@ -202,6 +204,7 @@ func targetEntry(t TargetDraft) yaml.MapSlice {
 	add("size-range", t.SizeRange)
 	addNumber("boundary", t.Boundary)
 	add("name", t.Name)
+	add(KeySendAs, t.SendAs)
 	add("group", t.Group)
 	add(KeyPurpose, t.Purpose)
 
@@ -376,6 +379,10 @@ func refuseUnwritable(d Document) error {
 		check(where.of("name"), t.Name)
 		check(where.of("group"), t.Group)
 		check(where.of(KeyPurpose), t.Purpose)
+		// send-as is not checked, and it is the one typed value that is not. A
+		// control character in it is a name somebody sends on purpose, the
+		// document carries it as an escape inside double quotes, and the
+		// reader takes it back from there.
 		check(where.of("expected"), t.Expected)
 		check(where.of("expected.reason"), t.ExpectedReason)
 
@@ -460,6 +467,7 @@ const (
 	KeyName           = "name"
 	KeyGroup          = "group"
 	KeyPurpose        = "purpose"
+	KeySendAs         = core.SettingSendAs
 	KeyLabel          = "label"
 	KeyFill           = "fill"
 	KeyDamage         = "damage"

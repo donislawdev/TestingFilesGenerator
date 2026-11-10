@@ -210,7 +210,8 @@
         "um arquivo verificado pela extensão e nunca aberto, de modo que um PDF chamado .jpg passa",
         "um formulário que lê o corpo inteiro na memória antes de olhar o tamanho",
         "um upload chamado PHOTO.JPG recusado onde photo.jpg é aceito, ou o contrário",
-        "um nome com espaços, parênteses ou caracteres fora do ASCII gravado em disco sem alteração"
+        "um nome com espaços, parênteses ou caracteres fora do ASCII gravado em disco sem alteração",
+        "um nome com um caminho dentro, como ../, usado como veio, de modo que o arquivo é gravado fora do diretório de upload"
       ],
       "details": {
         "limit": "O limite de tamanho que seu formulário de upload declara. Este conjunto dá um passo para cada lado - para um arquivo em cada distância, rode o preset size-boundaries.",

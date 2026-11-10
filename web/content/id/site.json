@@ -210,7 +210,8 @@
         "file yang diperiksa dari ekstensinya dan tak pernah dibuka, sehingga PDF bernama .jpg lolos",
         "formulir yang membaca seluruh isi ke memori sebelum melihat seberapa besar isinya",
         "unggahan bernama PHOTO.JPG yang ditolak sementara photo.jpg diterima, atau sebaliknya",
-        "nama dengan spasi, tanda kurung, atau karakter di luar ASCII yang ditulis ke disk tanpa perubahan"
+        "nama dengan spasi, tanda kurung, atau karakter di luar ASCII yang ditulis ke disk tanpa perubahan",
+        "nama yang memuat path, seperti ../, dipakai apa adanya sehingga file ditulis di luar direktori unggahan"
       ],
       "details": {
         "limit": "Batas ukuran yang dinyatakan formulir unggah Anda. Set ini mengambil satu langkah di tiap sisinya - untuk file di setiap jarak, jalankan preset size-boundaries.",

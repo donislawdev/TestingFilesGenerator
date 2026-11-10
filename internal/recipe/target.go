@@ -34,6 +34,7 @@ type rawTarget struct {
 	Expected   any               `yaml:"expected"`
 	Group      *scalar           `yaml:"group"`
 	Purpose    *scalar           `yaml:"purpose"`
+	SendAs     *scalar           `yaml:"send-as"`
 
 	Boundary  *scalar             `yaml:"boundary"`
 	SizeRange *scalar             `yaml:"size-range"`
@@ -179,7 +180,48 @@ func (rt rawTarget) describe(p *problems, where spot, t *Target) {
 	if purpose, ok := oneValue(p, where.of(KeyPurpose), where.String()+" {setting}", "purpose: invoices as the accounting system exports them", rt.Purpose); ok {
 		t.Purpose = purpose
 	}
+	t.SendAs = rt.sendAs(p, where)
 }
+
+// sendAs reads the name these files are handed over under, and is empty when
+// the target does not say.
+//
+// It is the one text setting read without oneValue, for one reason. That
+// reader refuses a value holding a line break, because a block written under
+// a key arrives looking like that. This value is allowed a line break - a name
+// that breaks a header in two is a name somebody sends on purpose - and the
+// only way to write one on a single line is an escape inside double quotes. So
+// a quoted value is taken as it decodes, and only an unquoted one is asked
+// whether it is a list or a block.
+//
+// An empty value is refused rather than read as silence. The key was written,
+// so somebody meant something by it, and a file sent with no name at all is a
+// different case from a file sent under its own.
+func (rt rawTarget) sendAs(p *problems, where spot) string {
+	if rt.SendAs == nil {
+		return ""
+	}
+	at := where.of(KeySendAs)
+	if !rt.SendAs.quoted && !rt.SendAs.single() {
+		p.add(at,
+			core.Says("recipe.IsWrittenAsAListOr", "%s is written as a list or a block", core.A("Subject", where.String()+" {setting}")),
+			core.Says("recipe.ThisSettingIsOneValueWritten", "this setting is one value, written beside its name rather than indented under it"),
+			core.Says("recipe.WriteItOnOneLineSuch", "write it on one line, such as %s", core.A("Example", sendAsExample)))
+		return ""
+	}
+	if rt.SendAs.text == "" {
+		p.add(at,
+			core.Says("recipe.SendAsIsEmpty", "%s has {a} {setting} with nothing in it", core.A("Where", where)),
+			core.Says("recipe.SendAsIsTheNameTheFile", "this setting is the name the file is handed to the system under test under, and this build cannot ask for a file with no name at all"),
+			core.Says("recipe.WriteTheNameOrRemoveThe", "write the name, such as %s, or remove the line and the file goes under the name it has on disk", core.A("Example", sendAsExample)))
+		return ""
+	}
+	return rt.SendAs.text
+}
+
+// sendAsExample is what a refusal about that setting shows as the way to write
+// it: a name no file system stores, which is what the setting is for.
+const sendAsExample = `send-as: "../climbed_out.jpg"`
 
 // refuseSections names the parts of a target this build cannot honour.
 func (rt rawTarget) refuseSections(p *problems, where spot) {

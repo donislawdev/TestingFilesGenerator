@@ -210,7 +210,8 @@
         "plik sprawdzany po rozszerzeniu i nigdy nieotwierany, więc PDF nazwany .jpg przechodzi",
         "formularz, który wczytuje całe żądanie do pamięci, zanim sprawdzi, jak jest duże",
         "plik PHOTO.JPG odrzucony tam, gdzie photo.jpg przechodzi, albo odwrotnie",
-        "nazwa ze spacjami, nawiasami albo znakami spoza ASCII zapisana na dysk bez zmian"
+        "nazwa ze spacjami, nawiasami albo znakami spoza ASCII zapisana na dysk bez zmian",
+        "nazwa ze ścieżką w środku, na przykład ../, użyta tak, jak przyszła, przez co plik trafia poza katalog uploadu"
       ],
       "details": {
         "limit": "Limit rozmiaru, który deklaruje Twój formularz. Ten zestaw robi jeden krok w każdą stronę od niego - po plik w każdej odległości sięgnij po preset size-boundaries.",

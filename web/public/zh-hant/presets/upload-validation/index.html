@@ -169,6 +169,7 @@
     <li>表單在查看大小之前就把整個請求本文讀進記憶體</li>
     <li>名為 PHOTO.JPG 的上傳被拒絕，而 photo.jpg 被接受，或者相反</li>
     <li>含空格、括號或非 ASCII 字元的檔名被原封不動寫入磁碟</li>
+    <li>檔名中帶有路徑（如 ../）卻被原樣使用，導致檔案被寫到上傳目錄之外</li>
   </ul>
 </section>
 
@@ -179,9 +180,9 @@
   <div class="tablewrap">
     <table class="data">
       <tbody>
-        <tr><th scope="row">檔案數</th><td>71</td></tr>
-        <tr><th scope="row">其配方中的 target 數</th><td>22</td></tr>
-        <tr><th scope="row">總大小</th><td>120 639 488 B</td></tr>
+        <tr><th scope="row">檔案數</th><td>75</td></tr>
+        <tr><th scope="row">其配方中的 target 數</th><td>26</td></tr>
+        <tr><th scope="row">總大小</th><td>120 655 872 B</td></tr>
         <tr><th scope="row">格式</th><td>html, jpg, pdf, png, svg, txt</td></tr>
       </tbody>
     </table>
@@ -195,7 +196,7 @@
       <tbody>
         <tr><td><code>accept</code></td><td>你的系統應該接受這個檔案。</td><td class="num">56</td></tr>
         <tr><td><code>reject</code></td><td>你的系統應該拒絕這個檔案。</td><td class="num">10</td></tr>
-        <tr><td><code>unspecified</code></td><td>取決於你的系統規則。由你決定，然後檢查實際發生的是否符合你的本意。</td><td class="num">5</td></tr>
+        <tr><td><code>unspecified</code></td><td>取決於你的系統規則。由你決定，然後檢查實際發生的是否符合你的本意。</td><td class="num">9</td></tr>
       </tbody>
     </table>
   </div>

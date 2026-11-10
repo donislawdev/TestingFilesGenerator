@@ -94,6 +94,11 @@ func (r *Recipe) manifestNotes(b *batch, add addField) fyne.CanvasObject {
 		// allowed the row (TestOnlyAPathTakesTheWholeRow).
 		add(recipe.KeyPurpose, text.FieldPurpose(), text.HintPurpose(),
 			r.tips.Say(text.DetailPurpose()), parts.Text(n.purpose)),
+		// The name a test hands the files over under. Here rather than beside
+		// the name on disk because it is the other kind of thing: it names
+		// nothing in the folder and changes no byte, it is only carried.
+		add(recipe.KeySendAs, text.FieldSendAs(), text.HintSendAs(),
+			r.tips.Say(text.DetailSendAs()), parts.Text(n.sendAs)),
 		add(recipe.KeyExpected, text.FieldExpected(), text.HintExpected(),
 			r.tips.Say(text.DetailExpected()), n.expected),
 		add(recipe.KeyExpectedReason, text.FieldReason(), text.HintReason(),
@@ -115,6 +120,7 @@ func (r *Recipe) manifestNotes(b *batch, add addField) fyne.CanvasObject {
 // the batch reads.
 type batchNotes struct {
 	group, purpose   *parts.Entry
+	sendAs           *parts.Entry
 	expected, reason *parts.Chooser
 	fold             *parts.Folding
 	// folded survives a rebuild for the reason batch.settingsFolded gives, and
@@ -123,7 +129,7 @@ type batchNotes struct {
 }
 
 func newBatchNotes() batchNotes {
-	n := batchNotes{group: parts.NewEntry(), purpose: parts.NewEntry(), folded: true}
+	n := batchNotes{group: parts.NewEntry(), purpose: parts.NewEntry(), sendAs: parts.NewEntry(), folded: true}
 	// The class is optional metadata, so it says so the way the count does.
 	// It stood empty and silent beside the id, which is REFUSED when empty -
 	// two boxes side by side, one you must fill in and one you need not,
@@ -132,6 +138,7 @@ func newBatchNotes() batchNotes {
 	// may not, and TestABoxYouMayLeaveAloneSaysSo holds it from the registry.
 	n.group.SetPlaceHolder(text.PlaceholderNotStated())
 	n.purpose.SetPlaceHolder(text.PlaceholderNotStated())
+	n.sendAs.SetPlaceHolder(text.PlaceholderNotStated())
 
 	// Nothing is filled in with a default, on either list. A list carrying a
 	// value cannot say "I did not state this", and an expectation nobody stated
@@ -150,6 +157,7 @@ func newBatchNotes() batchNotes {
 func (n batchNotes) takeFrom(from batchNotes) {
 	n.group.SetText(from.group.Text)
 	n.purpose.SetText(from.purpose.Text)
+	n.sendAs.SetText(from.sendAs.Text)
 	n.expected.SetSelected(from.expected.Selected)
 	n.reason.SetSelected(from.reason.Selected)
 }
@@ -200,7 +208,7 @@ func (b *batch) settingsSaid() string {
 
 // said is what the manifest notes say while they are away.
 func (n *batchNotes) said() string {
-	return text.FoldedSummary(n.group.Text, n.purpose.Text, outcomeName(n.expected.Selected), reasonName(n.reason.Selected))
+	return text.FoldedSummary(n.group.Text, n.purpose.Text, n.sendAs.Text, outcomeName(n.expected.Selected), reasonName(n.reason.Selected))
 }
 
 // outcomeName and reasonName are a value of the two lists as the window says

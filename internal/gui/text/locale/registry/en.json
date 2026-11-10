@@ -124,6 +124,11 @@
     "hash": "sha256-b918ae8fc864",
     "other": "a name with spaces, brackets or characters outside ASCII written to disk unchanged"
   },
+  "Catch.upload-validation.7": {
+    "description": "One line of what the upload-validation preset typically finds, on the preset screen.",
+    "hash": "sha256-f906aaaefbdb",
+    "other": "a name with a path in it, such as ../, used as given, so the file is written outside the upload directory"
+  },
   "Choice.algorithm.md5": {
     "description": "One entry of the algorithm list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3ebff31b62c0",

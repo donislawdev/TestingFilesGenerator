@@ -210,7 +210,8 @@
         "uzantısına bakılıp hiç açılmayan bir dosya, böylece .jpg adlı bir PDF geçer",
         "ne kadar büyük olduğuna bakmadan önce tüm gövdeyi belleğe okuyan bir form",
         "photo.jpg kabul edilirken reddedilen PHOTO.JPG adlı bir yükleme veya tersi",
-        "boşluk, parantez veya ASCII dışı karakter içeren bir adın diske değişmeden yazılması"
+        "boşluk, parantez veya ASCII dışı karakter içeren bir adın diske değişmeden yazılması",
+        "içinde yol bulunan, örneğin ../ ile başlayan bir adın olduğu gibi kullanılması ve dosyanın yükleme dizininin dışına yazılması"
       ],
       "details": {
         "limit": "Yükleme formunuzun bildirdiği boyut sınırı. Bu set her iki yanda birer adım atar - her uzaklıktaki dosya için size-boundaries hazır ayarını çalıştırın.",

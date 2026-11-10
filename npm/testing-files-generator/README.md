@@ -12,6 +12,7 @@ A PDF of exactly 1 MiB and one byte is a real PDF, so a server that looks inside
 - [The words this package uses](#the-words-this-package-uses)
 - [Telling the set what your system did](#telling-the-set-what-your-system-did)
 - [Files with no right answer](#files-with-no-right-answer)
+- [Files sent under another name](#files-sent-under-another-name)
 - [Choosing the files](#choosing-the-files)
 - [When the files are written, and where they are kept](#when-the-files-are-written-and-where-they-are-kept)
 - [In CI](#in-ci)
@@ -212,6 +213,30 @@ Once you have decided what your system should do with such a file, write that do
 
 `empty.jpg` is then a test like any other, titled `empty.jpg - expected reject (size_zero)`, and it fails when your form takes an empty file.
 
+## Files sent under another name
+
+Four files of `upload-validation` test a name that no disk stores, such as `../tfg_climbed_out.jpg`. Each is written under an ordinary name, and `file.sendAs` is the name to upload it under. For every other file `file.sendAs` is the file's own name, so one loop serves the whole set.
+
+These four are `unspecified`, because two answers are right: turning the name away, and storing the file under a name with no path in it. What is wrong is a file written outside your upload directory, and no answer from the server shows that. So a test of your own sends the file and then looks where it must not be:
+
+```ts
+import { readFile } from 'node:fs/promises';
+
+for (const file of uploads.files.filter((f) => f.sendAs !== f.name)) {
+  test(`${file.title} stays inside the upload directory`, async ({ request }) => {
+    const buffer = await readFile(await file.path());
+    await request.post('/upload', { multipart: { file: { name: file.sendAs, mimeType: 'image/jpeg', buffer } } });
+    // Your own check: nothing called tfg_climbed_out is above the upload directory.
+  });
+}
+```
+
+Three things to know:
+
+- **A file given to a page by its path goes under the name it has on disk.** `setInputFiles(await file.path())` uploads `climbing_name.jpg`, which tests nothing about the name. Give the page the name as well: `setInputFiles({ name: file.sendAs, mimeType: 'image/jpeg', buffer })`.
+- **The name reaches your server as it is.** What your framework then hands your code may already be cut down to its last part, and that is the framework doing the right thing.
+- **`request.post` with `multipart` writes a double quote and a line break in a name as they are**, which breaks the request, where a browser writes `%22` and `%0A`. None of the four names holds either. It matters for a name of your own, written under `send-as` in a recipe.
+
 ## Choosing the files
 
 ### Presets
@@ -341,7 +366,7 @@ const uploads = fileSet({ preset: 'upload-validation', options: { limit: '2mb', 
 for (const file of uploads.files) {
   test(file.title, { skip: file.unspecified && file.whyUnspecified }, async () => {
     const body = new FormData();
-    body.append('file', await openAsBlob(await file.path()), file.name);
+    body.append('file', await openAsBlob(await file.path()), file.sendAs);
     const response = await fetch('http://localhost:3000/upload', { method: 'POST', body });
     assert.ok(response.status < 500, `the server failed with ${response.status}, which is not a refusal`);
     file.check(response.ok ? 'accept' : 'reject');
@@ -361,7 +386,7 @@ const uploads = fileSet({ preset: 'upload-validation', options: { limit: '2mb', 
 for (const file of uploads.files) {
   test.skipIf(file.unspecified)(file.title, async () => {
     const body = new FormData();
-    body.append('file', await openAsBlob(await file.path()), file.name);
+    body.append('file', await openAsBlob(await file.path()), file.sendAs);
     const response = await fetch('http://localhost:3000/upload', { method: 'POST', body });
     expect(response.status, 'a server error is not a refusal').toBeLessThan(500);
     file.check(response.ok ? 'accept' : 'reject');
@@ -406,6 +431,7 @@ Plans a set and gives it back. Nothing is written until a test asks for a file.
 | `path()` | writes the set the first time it is called, and gives this file's absolute path |
 | `check(observed)` | `'accept'`, `'reject'`, `'sanitize'` or `{ outcome, reason }`. Throws when it is not what the file expects |
 | `name`, `relativePath` | the file's name, and its path within the set |
+| `sendAs` | the name to upload the file under: the manifest's `send_as` when the file has one, and `name` when it has none |
 | `format`, `bytes` | the format, such as `jpg`, and the exact size in bytes |
 | `group`, `target`, `purpose` | the file's group, the recipe target that made it, and its purpose |
 | `expected` | `{ outcome, reason, detail, confidence }` as the manifest has it |

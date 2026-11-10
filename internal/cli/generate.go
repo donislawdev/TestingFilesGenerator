@@ -23,21 +23,22 @@ import (
 // A dozen separate pointers is what made this command the longest function in
 // the tree, because every piece of it had to be handed all of them.
 type generateOpts struct {
-	presetID       string
-	formatID       string
-	sizeStr        string
-	sizeRange      string
-	boundary       string
-	count          int
-	outDir         string
-	name           string
-	id             string
-	seed           int64
-	expected       string
-	expectedReason string
-	clean          bool
-	dryRun         bool
-	asJSON         bool
+	presetID  string
+	formatID  string
+	sizeStr   string
+	sizeRange string
+	boundary  string
+	count     int
+	outDir    string
+	name      string
+	id        string
+	seed      int64
+	// notes is what the flags say about the files rather than how to make
+	// them: the name to send them under, and the outcome with its reason.
+	notes  engine.Notes
+	clean  bool
+	dryRun bool
+	asJSON bool
 	// The flags a person may write more than once, in one piece rather than
 	// two fields. They are one thing on the screen and one thing in a recipe -
 	// what was stated repeatedly - and grouping them is what moving state out
@@ -57,10 +58,12 @@ func generateFlagSet(errOut io.Writer, g *generateOpts) (*flag.FlagSet, func(io.
 	fs.IntVar(&g.count, "count", 1, "how many files to produce")
 	fs.StringVar(&g.outDir, "out", ".", "directory to write into")
 	fs.StringVar(&g.name, "name", "", "name template, for example invoice_{index:04}.txt")
+	fs.StringVar(&g.notes.SendAs, "send-as", "", "the name to give the file to your system under, when it is one no disk stores, for example ../climbed_out.jpg. "+
+		"The file keeps its own name here and the manifest carries this one")
 	fs.StringVar(&g.id, "id", "files", "target id, the anchor the seeds are derived from")
 	fs.Int64Var(&g.seed, "seed", 0, "run seed, the same seed gives the same bytes")
-	fs.StringVar(&g.expected, "expected", "", "declared expectation: accept, reject, sanitize or unspecified")
-	fs.StringVar(&g.expectedReason, "expected-reason", "",
+	fs.StringVar(&g.notes.Expected, "expected", "", "declared expectation: accept, reject, sanitize or unspecified")
+	fs.StringVar(&g.notes.ExpectedReason, "expected-reason", "",
 		"why that outcome is expected, from the closed list. Run with an unknown value to see it")
 	fs.BoolVar(&g.clean, "clean", false, "turn off the self describing label")
 	fs.BoolVar(&g.dryRun, "dry-run", false, "count and show, write nothing at all")
@@ -315,42 +318,41 @@ func targetsFromFlags(g *generateOpts, given map[string]bool, errOut io.Writer) 
 
 	// An expectation nobody recognises is a typo, and a typo accepted in
 	// silence becomes an expectation no test will ever check.
-	switch g.expected {
+	switch g.notes.Expected {
 	case "", manifest.OutcomeAccept, manifest.OutcomeReject,
 		manifest.OutcomeSanitize, manifest.OutcomeUnspecified:
 	default:
 		fmt.Fprintf(errOut,
-			"tfg: --expected %q is not a known outcome. Use accept, reject, sanitize or unspecified.\n", g.expected)
+			"tfg: --expected %q is not a known outcome. Use accept, reject, sanitize or unspecified.\n", g.notes.Expected)
 		return nil, ExitUsage
 	}
 
 	// The list is closed so that a report can group by reason, and a typo would
 	// make a category of one. Same list the recipe uses rather than a second
 	// copy, because two copies is how the two surfaces drift apart.
-	if g.expectedReason != "" && !recipe.KnownReason(g.expectedReason) {
+	if g.notes.ExpectedReason != "" && !recipe.KnownReason(g.notes.ExpectedReason) {
 		fmt.Fprintf(errOut,
 			"tfg: --expected-reason %q is not on the list. The list is closed so that a report can group by reason. Use one of: %s.\n",
-			g.expectedReason, strings.Join(recipe.Reasons(), ", "))
+			g.notes.ExpectedReason, strings.Join(recipe.Reasons(), ", "))
 		return nil, ExitUsage
 	}
-	if g.expectedReason != "" && g.expected == "" {
+	if g.notes.ExpectedReason != "" && g.notes.Expected == "" {
 		fmt.Fprintln(errOut,
 			"tfg: --expected-reason says why an outcome is expected and no outcome was given. Add --expected accept, reject, sanitize or unspecified, or drop the reason.")
 		return nil, ExitUsage
 	}
 
 	return []engine.Target{{
-		ID:             g.id,
-		Format:         g.formatID,
-		Sizes:          sizes,
-		Range:          engine.SizeRange{Used: g.sizeRange != "", Min: rangeLow, Max: rangeHigh},
-		BoundaryLimit:  boundaryLimit,
-		NameTmpl:       g.name,
-		Label:          !g.clean,
-		Expected:       g.expected,
-		ExpectedReason: g.expectedReason,
-		Properties:     g.repeated.props,
-		Damage:         g.repeated.damage.chain,
+		ID:            g.id,
+		Format:        g.formatID,
+		Sizes:         sizes,
+		Range:         engine.SizeRange{Used: g.sizeRange != "", Min: rangeLow, Max: rangeHigh},
+		BoundaryLimit: boundaryLimit,
+		NameTmpl:      g.name,
+		Label:         !g.clean,
+		Notes:         g.notes,
+		Properties:    g.repeated.props,
+		Damage:        g.repeated.damage.chain,
 	}}, ExitOK
 }
 
@@ -544,10 +546,7 @@ func engineTarget(t recipe.Target, label bool) engine.Target {
 		BoundaryLimit:    t.BoundaryLimit,
 		NameTmpl:         t.Name,
 		Label:            label,
-		Expected:         t.Expected,
-		ExpectedReason:   t.ExpectedReason,
-		Group:            t.Group,
-		Purpose:          t.Purpose,
+		Notes:            engine.Notes(t.Notes),
 		Properties:       t.Properties,
 		Damage:           t.Damage,
 	}

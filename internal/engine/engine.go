@@ -72,17 +72,9 @@ type Target struct {
 	BoundaryLimit int64
 	NameTmpl      string
 	Label         bool
-	// Expected is what the system under test should do with these files, and
-	// ExpectedReason is why, from the closed list in docs/MANIFEST.md.
-	Expected       string
-	ExpectedReason string
-	// Group names the class of case these files belong to and reaches the
-	// manifest, so a test can assert about a whole class at once.
-	Group string
-	// Purpose is what these files are and why they are in the set, in words.
-	// It reaches the manifest and the instructions beside it, and never the
-	// seed - rewording it moves no byte of any file.
-	Purpose    string
+	// Notes is what the manifest says about these files and nothing writes
+	// into them. See Notes.
+	Notes
 	Properties map[string]string
 	// Damage is what to break about these files, in the order to break it.
 	//
@@ -279,6 +271,10 @@ func settleTarget(ctx context.Context, t *Target, opt Options, seen map[string]b
 	}
 
 	if err := desc.CheckProperties(t.Properties); err != nil {
+		return format.Descriptor{}, err
+	}
+
+	if err := checkSendAs(t); err != nil {
 		return format.Descriptor{}, err
 	}
 
@@ -754,6 +750,7 @@ func (res *Result) entryFor(f PlannedFile, sha string, materialized bool, failur
 		ID:            f.ID,
 		Path:          filepath.ToSlash(f.Name),
 		Name:          f.Name,
+		SendAs:        f.Target.SendAs,
 		Materialized:  materialized,
 		Bytes:         f.Plan.Bytes,
 		Format:        f.Desc.ID,

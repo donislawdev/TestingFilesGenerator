@@ -210,7 +210,8 @@
         "un fișier verificat după extensie și niciodată deschis, așa că un PDF numit .jpg trece",
         "un formular care citește tot corpul în memorie înainte să vadă cât de mare e",
         "o încărcare numită PHOTO.JPG respinsă acolo unde photo.jpg e acceptată, sau invers",
-        "un nume cu spații, paranteze sau caractere în afara ASCII scris pe disc neschimbat"
+        "un nume cu spații, paranteze sau caractere în afara ASCII scris pe disc neschimbat",
+        "un nume cu o cale în el, cum ar fi ../, folosit așa cum a venit, astfel că fișierul este scris în afara directorului de încărcare"
       ],
       "details": {
         "limit": "Limita de dimensiune declarată de formularul tău de încărcare. Acest set face câte un pas de fiecare parte - pentru un fișier la orice distanță rulează presetarea size-boundaries.",

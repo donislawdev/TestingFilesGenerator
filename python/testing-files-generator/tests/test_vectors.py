@@ -30,6 +30,10 @@ def test_every_file_says_what_the_vectors_say_it_says():
         assert f.title == want["title"], want["entry"]
         assert f.marks == want["marks"], want["entry"]
         assert f.why_unspecified == want["why_unspecified"], want["entry"]
+        assert f.send_as == want["send_as"], want["entry"]
+    # One file at least is sent under a name that is not its own, or the line
+    # about send_as above compares a name with itself every time.
+    assert any(want["send_as"] != VECTORS["entries"][want["entry"]]["name"] for want in VECTORS["files"])
 
 
 def test_check_makes_of_every_observation_what_the_vectors_say_it_makes():

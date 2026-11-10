@@ -279,6 +279,11 @@
     "hash": "sha256-823564b2ed53",
     "other": "On any machine and in any build of this tool. 0 is the seed a run uses when nobody asks for another one. It is a seed like any other rather than a request for random files, which this tool never produces."
   },
+  "DetailSendAs": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-a9163c047566",
+    "other": "For a name no disk stores, such as ../climbed_out.jpg. The files keep their own names in the folder and the manifest carries this one, so a test can upload each file under it. It changes no byte of any file."
+  },
   "DetailSize": {
     "description": "The longer explanation behind the button beside a field name.",
     "hash": "sha256-794528f6abe6",
@@ -404,6 +409,11 @@
     "hash": "sha256-367ef06b8fbf",
     "other": "Seed"
   },
+  "FieldSendAs": {
+    "description": "The name above a box somebody fills in.",
+    "hash": "sha256-400c736673b5",
+    "other": "Send as"
+  },
   "FieldSize": {
     "description": "The name above a box somebody fills in.",
     "hash": "sha256-1af851907331",
@@ -515,6 +525,11 @@
     "description": "The line under a field name, saying what the field does.",
     "hash": "sha256-5cd4cde003a4",
     "other": "The same seed gives the same bytes."
+  },
+  "HintSendAs": {
+    "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-0063c08f77b6",
+    "other": "The name to give these files to your system, when it is not the name on disk."
   },
   "HintSize": {
     "description": "The line under a field name, saying what the field does.",

@@ -1069,6 +1069,11 @@
     "hash": "sha256-7a1261279b19",
     "other": "cannot write the instructions to {{.Path}}: {{.Cause}}"
   },
+  "engine.KeepTheNameAndSendItAs": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-023ef86703ea",
+    "other": "Choose the directory with the output setting instead. To test what your system does with such a name, keep an ordinary name here and write that one in the send-as setting"
+  },
   "engine.LabelNotGuaranteed": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-9d0de3a39db8",
@@ -1328,6 +1333,36 @@
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Target}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-aff817760566",
     "other": "target {{.Target}} brings the run to a size that is too large to measure"
+  },
+  "engine.SendAsNotText": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Target}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-a7d3f98238da",
+    "other": "target {{.Target}} has {{.Setting}} value that is not valid UTF-8"
+  },
+  "engine.SendAsNotTextFix": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-7ee8676518fe",
+    "other": "Write the name in UTF-8"
+  },
+  "engine.SendAsNotTextWhy": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-53cf34e2c863",
+    "other": "the manifest is a JSON document, and it would carry a different name than the one asked for"
+  },
+  "engine.SendAsTooLong": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Target}}, {{.Length}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-0ff6b7278b05",
+    "other": "target {{.Target}} has {{.Setting}} value of {{.Length}} bytes"
+  },
+  "engine.SendAsTooLongFix": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-3e35301c7ba5",
+    "other": "Shorten it to {{.Most}} bytes or fewer"
+  },
+  "engine.SendAsTooLongWhy": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-b1e6e60b0375",
+    "other": "the name a file is sent under is kept to {{.Most}} bytes, twice the longest path Linux takes, so that the manifest stays a size a tool can read"
   },
   "engine.SizeMoved": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
@@ -3396,6 +3431,16 @@
     "hash": "sha256-789fd24618af",
     "other": "seed {{.Text}} is not a whole number"
   },
+  "recipe.SendAsIsEmpty": {
+    "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Where}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-ccbc7d05ff53",
+    "other": "{{.Where}} has {{.Setting}} with nothing in it"
+  },
+  "recipe.SendAsIsTheNameTheFile": {
+    "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-d0670e6a8016",
+    "other": "this setting is the name the file is handed to the system under test under, and this build cannot ask for a file with no name at all"
+  },
   "recipe.SettingAnchorsTheSeedOfA": {
     "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-77b6c3d3c3ba",
@@ -3740,6 +3785,11 @@
     "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-da431c8ff106",
     "other": "write the name on its own, or a mapping starting with type"
+  },
+  "recipe.WriteTheNameOrRemoveThe": {
+    "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Example}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-f127771519ee",
+    "other": "write the name, such as {{.Example}}, or remove the line and the file goes under the name it has on disk"
   },
   "recipe.WriteVersion": {
     "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.SchemaVersion}}, written the way the program writes them - keep each spelled exactly that way.",

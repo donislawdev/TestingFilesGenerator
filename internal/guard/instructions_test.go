@@ -98,7 +98,7 @@ func TestTheInstructionsFoldARunOfOneTargetIntoOneEntry(t *testing.T) {
 			TargetID: "bulk", Purpose: "Many files at once.", Expected: manifest.Expected{Outcome: "accept"}})
 	}
 	m.Add(manifest.File{Name: "bulk_0004.jpg", Path: "bulk_0004.jpg", Format: "jpg", TargetID: "bulk",
-		Failed: true, Error: "the disk said no", Purpose: "Many files at once."})
+		Failure: manifest.Failure{Failed: true, Error: "the disk said no"}, Purpose: "Many files at once."})
 	md := string(m.Instructions("manifest.json"))
 	if !strings.Contains(md, "- 3 files, `bulk_0001.jpg` to `bulk_0003.jpg` - jpg, 30 B in all.") {
 		t.Errorf("three files of one target were not one entry:\n%s", md)

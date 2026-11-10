@@ -129,6 +129,7 @@ func init() {
 			"a form that reads the whole body into memory before it looks at how big it is",
 			"an upload named PHOTO.JPG turned away where photo.jpg is taken, or the other way round",
 			"a name with spaces, brackets or characters outside ASCII written to disk unchanged",
+			"a name with a path in it, such as ../, used as given, so the file is written outside the upload directory",
 		},
 
 		Says:   saidAboutTheUploadSet,

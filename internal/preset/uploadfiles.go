@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
 
 // farOverFiles is the one file well past the limit, or none when it was turned
@@ -152,7 +154,7 @@ func (s uploadSet) anomalyFiles() []setFile {
 }
 
 // nameFiles is three names a form has to write to disk, or refuse for a reason
-// it can say out loud.
+// it can say out loud, and four it must never use as given.
 //
 // The names are what they are on purpose: a long one for a column that is 255
 // characters wide, one outside ASCII for a path handled as bytes, and one with
@@ -161,6 +163,65 @@ func (s uploadSet) anomalyFiles() []setFile {
 func (s uploadSet) nameFiles() []setFile {
 	desc := s.allowed[0]
 	size := sampleFor(desc)
+	return append(s.storableNames(desc, size), s.climbingNames(desc, size)...)
+}
+
+// climbedOut is the name the four files below ask to be stored under, once
+// the path in front of it has done its work. One word in every one of them,
+// so that a person checking afterwards has one thing to search a disk for.
+const climbedOut = "tfg_climbed_out"
+
+// climbingNames is four files sent under a name that leaves the upload
+// directory: a step up written with each of the two separators, an absolute
+// path, and a path with a drive letter.
+//
+// No disk stores such a name, so each file is written under an ordinary one
+// and carries the other in send-as, which is the name a test uploads it under.
+//
+// The name lands on a harmless file rather than on /etc/passwd, and that is
+// three decisions in one. A system that IS open then writes something nobody
+// minds, instead of trying to replace a system file on a test machine. The
+// person checking has a name to look for. And a filter in front of the
+// application knows /etc/passwd by sight, so a set built on it would measure
+// the filter and say nothing about the application behind it.
+//
+// One step up, not several. The directory just above the uploads is where a
+// write is most likely to succeed and so to leave something to find.
+//
+// The expectation is unspecified, like the three names above it. Two answers
+// are right - refuse the name, or store the file under a name with no path in
+// it - and the wrong one, writing outside the directory, cannot be seen in
+// what the form answers (MF5).
+func (s uploadSet) climbingNames(desc format.Descriptor, size int64) []setFile {
+	landing := climbedOut + desc.Extension
+	check := "Your form should turn the name away or store the file under a name with no path in it."
+	file := func(id, sendAs, purpose string) setFile {
+		return setFile{
+			id: id, group: nameGroup, desc: desc, name: id + desc.Extension, size: size,
+			sendAs: sendAs, expected: "unspecified", reason: "filename_traversal", purpose: purpose,
+		}
+	}
+	return []setFile{
+		file("climbing_name", "../"+landing,
+			"A name that steps one directory up, written with a forward slash. A form that joins the name to its upload directory writes the file outside it. "+
+				check+" Then check that no file called "+climbedOut+" appeared above the upload directory."),
+		file("climbing_name_backslash", `..`+bs+landing,
+			"The same step up written with a backslash, which only Windows reads as a separator. A check made on Linux lets the name through whole, and a Windows machine that stores the file later steps out. "+
+				check+" Then check that no file called "+climbedOut+" appeared above the upload directory."),
+		file("absolute_name", "/tmp/"+landing,
+			"A name that is a whole path on Linux and macOS, starting at the root of the disk. A form that uses it as given writes to /tmp. "+
+				check+" Then check that /tmp holds no file called "+climbedOut+"."),
+		file("drive_name", `C:`+bs+`Windows`+bs+`Temp`+bs+landing,
+			"A name that is a whole path on Windows, drive letter included. A form that uses it as given writes to that folder. "+
+				check+" Then check that the folder holds no file called "+climbedOut+"."),
+	}
+}
+
+// bs is the backslash, spelled once so that the names above read as names.
+const bs = `\`
+
+// storableNames is the three names a disk does store.
+func (s uploadSet) storableNames(desc format.Descriptor, size int64) []setFile {
 	return []setFile{
 		{
 			id: "long_name", group: nameGroup, desc: desc,

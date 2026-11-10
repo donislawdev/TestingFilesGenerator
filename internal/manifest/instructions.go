@@ -140,6 +140,7 @@ func writeRun(b *strings.Builder, run []File) {
 	fmt.Fprintf(b, "- %s, %s to %s - %s, %s in all.", core.Count(len(run), "file", "files"),
 		codeSpan(core.Shown(first.Name)), codeSpan(core.Shown(last.Name)), first.Format, core.ExactBytes(total))
 	writeExpected(b, first.Expected)
+	writeSendAs(b, first, "each of them")
 	writePurpose(b, first)
 }
 
@@ -152,7 +153,26 @@ func writeFile(b *strings.Builder, f File) {
 	case !f.Materialized:
 		b.WriteString("  Described in the manifest and not written to the disk.\n")
 	}
+	writeSendAs(b, f, "it")
 	writePurpose(b, f)
+}
+
+// writeSendAs says under which name to hand a file over, when the recipe asked
+// for one that is not the name on disk. Nothing for every other file.
+//
+// It is the line that makes such an entry mean anything to a person. The file
+// beside these instructions has an ordinary name, and uploaded under that
+// name it tests nothing of what it is there for.
+func writeSendAs(b *strings.Builder, f File, what string) {
+	if f.SendAs == "" {
+		return
+	}
+	shown := core.ShownExactly(f.SendAs)
+	fmt.Fprintf(b, "  Send %s under the name %s, not the name on disk.", what, codeSpan(shown))
+	if shown != f.SendAs {
+		b.WriteString(" The name is given in double quotes with escapes, because part of it cannot be seen.")
+	}
+	b.WriteString("\n")
 }
 
 // writeExpected ends the first line of an entry with what is expected of it.

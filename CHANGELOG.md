@@ -16,6 +16,14 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A file can be sent under a name no disk stores.** `send-as` in a recipe,
+  `--send-as` on the command line and Send as in the window take a name such
+  as `../climbed_out.jpg`. The file keeps an ordinary name on disk and the
+  manifest carries the other one in `send_as`, for a test to upload it under.
+  `upload-validation` gains four such files: a step up with either separator,
+  an absolute path and a drive letter. The npm and PyPI packages give the
+  name as `file.sendAs` and `file.send_as`. A path in `name` is still refused.
+
 - **Two more ways to break a file on purpose: `truncate` and `append-junk`.**
   `--damage truncate` cuts the end off a file, the way an interrupted upload
   leaves it, and `--damage append-junk` writes random bytes after its end.

@@ -65,30 +65,9 @@ type Target struct {
 	Format        string
 	Name          string
 	Label         bool
-	// Expected is what the system under test should do with these files, and
-	// ExpectedReason is why, from the closed list in docs/MANIFEST.md.
-	Expected       string
-	ExpectedReason string
-	// Group names the class of case these files belong to, and it reaches the
-	// manifest so a test can assert about a whole class at once rather than
-	// file by file - "every file in extension-content-mismatch was rejected".
-	//
-	// Presets are what fill it in practice, and it is a plain recipe key
-	// rather than something a preset passes around the recipe on purpose: PR5
-	// says an ejected preset is an ordinary recipe, and a field only a preset
-	// could set would make the ejected copy produce something different from
-	// the preset it came from.
-	Group string
-	// Purpose says in words what these files are and why they are in the
-	// set, for the person who opens the directory afterwards. It reaches the
-	// manifest and the instructions written beside it, and nothing else: it
-	// takes no part in the seed, so a sentence can be reworded without moving
-	// a byte of any file (D11).
-	//
-	// A plain recipe key for the reason Group gives. A preset that could
-	// explain its files only while it was a preset would make its ejected
-	// copy a different set (PR5).
-	Purpose    string
+	// Notes is what the recipe says about these files rather than how to make
+	// them. See Notes.
+	Notes
 	Properties map[string]string
 	// Damage is what to break about these files, in the order to break it.
 	//

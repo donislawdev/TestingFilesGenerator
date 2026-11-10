@@ -210,7 +210,8 @@
         "soubor kontrolovaný podle přípony a nikdy neotevřený, takže PDF s názvem .jpg projde",
         "formulář, který načte celé tělo do paměti, než se podívá, jak je velké",
         "nahrání s názvem PHOTO.JPG odmítnuté tam, kde se photo.jpg přijme, nebo naopak",
-        "název s mezerami, závorkami nebo znaky mimo ASCII zapsaný na disk beze změny"
+        "název s mezerami, závorkami nebo znaky mimo ASCII zapsaný na disk beze změny",
+        "název s cestou, například ../, použitý tak, jak přišel, takže se soubor zapíše mimo adresář pro nahrávání"
       ],
       "details": {
         "limit": "Limit velikosti, který váš formulář pro nahrávání deklaruje. Tato sada udělá jeden krok na každou stranu - pro soubor v každé vzdálenosti spusťte předvolbu size-boundaries.",
