@@ -1004,6 +1004,11 @@
     "hash": "sha256-7a1261279b19",
     "other": "cannot write the instructions to {{.Path}}: {{.Cause}}"
   },
+  "engine.LabelNotGuaranteed": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-9d0de3a39db8",
+    "other": "The label was written before the file was damaged, so the damage may have overwritten it."
+  },
   "engine.MemoryOverrun": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Name}}, {{.Holds}}, {{.Room}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-168a887a89fa",

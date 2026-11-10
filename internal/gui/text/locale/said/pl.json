@@ -199,6 +199,7 @@
   "engine.IDTwice": { "hash": "sha256-724959681477", "other": "nazwa partii {{.ID}} występuje dwa razy" },
   "engine.IDTwiceWhy": { "hash": "sha256-ded29dfee98c", "other": "nazwy wskazują partie, więc powtórzenie jest błędem, a nie cichym nadpisaniem" },
   "engine.InstructionsNotWritten": { "hash": "sha256-7a1261279b19", "other": "nie można zapisać instrukcji do {{.Path}}: {{.Cause}}" },
+  "engine.LabelNotGuaranteed": { "hash": "sha256-9d0de3a39db8", "other": "Etykieta została zapisana, zanim plik uszkodzono, więc uszkodzenie mogło ją nadpisać." },
   "engine.MemoryOverrun": { "hash": "sha256-168a887a89fa", "other": "{{.Name}} zajmuje przy zapisie około {{.Holds}}, więcej niż {{.Room}}, które ustawienie pamięci zostawiło zapisywanym plikom, więc został zapisany sam, a przebieg przekroczył ustawienie, dopóki go nie skończył" },
   "engine.MemoryUnknown": { "hash": "sha256-25e95b18a15e", "other": "nie udało się odczytać pamięci tej maszyny ({{.Cause}}), więc ten przebieg wziął {{.Limit}}, czyli najwięcej, ile brał każdy przebieg, zanim powstało ustawienie pamięci. Ustaw pamięć sam, żeby wybrać limit" },
   "engine.NameAbsolute": { "hash": "sha256-2dc5711eaa7d", "other": "{{.Where}} daje ścieżkę bezwzględną {{.Name}}" },

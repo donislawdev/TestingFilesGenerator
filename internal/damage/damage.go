@@ -19,7 +19,9 @@
 // What this package does NOT do is decide whether a damaged file is worth
 // writing. That is the witness rule - a pair with no judge able to refuse the
 // result is a pair this tool does not offer - and it belongs with the oracles,
-// because it is a measurement rather than a declaration.
+// because it is a measurement rather than a declaration. The guard
+// TestEveryDamageIsRefusedByTheStructuralCheckInEveryFormat takes that
+// measurement for every format and every damage registered here.
 package damage
 
 import (
