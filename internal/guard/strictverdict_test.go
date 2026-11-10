@@ -75,7 +75,7 @@ func TestTheStructuralCheckerRefusesBrokenBytesInsteadOfStopping(t *testing.T) {
 		reqs[i] = oracle.StrictRequest{Format: c.format, Path: path}
 	}
 
-	got, available, err := oracle.StrictBatch(reqs)
+	got, available, err := oracle.StrictBatch(t.Context(), reqs)
 	if !available {
 		t.Skip("the structural checker needs python, and there is none on this machine")
 	}

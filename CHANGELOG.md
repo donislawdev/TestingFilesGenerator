@@ -92,6 +92,12 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A damaged file no longer claims to carry its label.** Its manifest entry
+  said `label_embedded: true`, although the damage comes after the label is
+  written and can overwrite it. On a text file, `zero-head` zeroes the start of
+  the label itself. A damaged file now says `false`, in its `properties` too,
+  with a `label_not_guaranteed` note saying why. An undamaged file is
+  described as before, and `manifest_version` does not change.
 - **A recipe asking for more than a million files in all is refused before
   it takes the memory.** Targets were held to a million each and the run only
   once all their sizes were laid out, so `tfg validate` took 2.5 GB to refuse

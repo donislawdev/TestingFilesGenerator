@@ -55,7 +55,10 @@ const (
 // which the caller reports as a skip rather than passing quietly. An error
 // means the run itself went wrong - the process failed, or the answers do not
 // match the questions one to one - and no verdict in it can be trusted.
-func StrictBatch(reqs []StrictRequest) ([]StrictJudgement, bool, error) {
+//
+// The context is the caller's, so a guard that is stopped stops the checker
+// with it. A time limit of its own sits under it.
+func StrictBatch(ctx context.Context, reqs []StrictRequest) ([]StrictJudgement, bool, error) {
 	python, ok := inPath("python")()
 	if !ok {
 		return nil, false, nil
@@ -77,7 +80,7 @@ func StrictBatch(reqs []StrictRequest) ([]StrictJudgement, bool, error) {
 
 	// A minute for the process, and a second for every file on top.
 	limit := time.Minute + time.Duration(len(reqs))*time.Second
-	ctx, cancel := context.WithTimeout(context.Background(), limit)
+	ctx, cancel := context.WithTimeout(ctx, limit)
 	defer cancel()
 
 	//nolint:gosec // our own script, run against files this tool wrote
