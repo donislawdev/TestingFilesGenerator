@@ -139,17 +139,7 @@ func describeOneDamage(d damage.Descriptor, out io.Writer) {
 		d.ID, core.ExactBytes(defaultFloor(d)))
 	fmt.Fprintf(out, "  %s\n", d.Detail)
 
-	if len(d.Parameters) == 0 {
-		fmt.Fprint(out, "\nThis damage takes no settings.\n")
-	} else {
-		fmt.Fprintf(out, "\nsettings, written after a colon: %s\n", damageExample(d))
-		for _, p := range d.Parameters {
-			fmt.Fprintf(out, "  %-14s %s\n", p.Name, p.Allowed())
-			if p.Detail != "" {
-				fmt.Fprintf(out, "  %-14s %s\n", "", p.Detail)
-			}
-		}
-	}
+	describeDamageSettings(d, out)
 
 	if len(d.Policy) == 0 {
 		fmt.Fprint(out, "\nIn every format the manifest expects the damaged file to be rejected.\n")
@@ -158,6 +148,22 @@ func describeOneDamage(d damage.Descriptor, out io.Writer) {
 	fmt.Fprint(out, "\nThe manifest expects the damaged file to be rejected, except in these formats,\nwhere it says the outcome depends on your system:\n")
 	for _, c := range d.Policy {
 		fmt.Fprintf(out, "  %s\n      %s\n", c.Format+settingsNarrowing(c.When), c.Why)
+	}
+}
+
+// describeDamageSettings prints what one damage takes, with the flag a person
+// would type.
+func describeDamageSettings(d damage.Descriptor, out io.Writer) {
+	if len(d.Parameters) == 0 {
+		fmt.Fprint(out, "\nThis damage takes no settings.\n")
+		return
+	}
+	fmt.Fprintf(out, "\nsettings, written after a colon: %s\n", damageExample(d))
+	for _, p := range d.Parameters {
+		fmt.Fprintf(out, "  %-14s %s\n", p.Name, p.Allowed())
+		if p.Detail != "" {
+			fmt.Fprintf(out, "  %-14s %s\n", "", p.Detail)
+		}
 	}
 }
 

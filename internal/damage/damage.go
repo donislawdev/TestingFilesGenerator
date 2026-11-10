@@ -40,6 +40,7 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
 
@@ -95,7 +96,10 @@ type Stream interface {
 // generator writes from the front, so stopping early changes no byte that
 // reaches the disk - the guard TestATruncatedFileIsTheStartOfTheWholeOne holds
 // that byte for byte.
-var ErrKeptEnough = errors.New("damage: the file has every byte it keeps")
+//
+// A defect if it ever reaches a person: the engine reads it as success, so
+// only a fault in the program could let it out.
+var ErrKeptEnough = core.Defect(errors.New("damage: the file has every byte it keeps"))
 
 // File is what one damage is told about the file it is breaking.
 type File struct {

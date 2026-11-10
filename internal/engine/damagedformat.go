@@ -71,31 +71,11 @@ func (g *damagedGenerator) Plan(r format.Request) (format.Plan, error) {
 func (g *damagedGenerator) PlanContext(ctx context.Context, r format.Request) (format.Plan, error) {
 	size := r.Bytes
 	want, err := g.chain.Before(size)
+	var small *damage.TooSmallError
+	if errors.As(err, &small) {
+		return format.Plan{}, g.belowTheDamage(ctx, r, small)
+	}
 	if err != nil {
-		var small *damage.TooSmallError
-		if errors.As(err, &small) {
-			// In the shape a format refuses a size with, so that drawing a
-			// size from a range jumps past it instead of stopping. A fixed
-			// size never gets here: checkDamage refuses it first, in the
-			// damage's own words.
-			//
-			// The format may need more than the damage does - junk appended
-			// to a PNG needs the PNG under it as well - so the floor is asked
-			// in turn, and the larger answer is the one named.
-			if _, deeper := g.PlanContext(ctx, format.Request{Bytes: small.Floor, Seed: r.Seed, Label: r.Label,
-				Properties: r.Properties, Contains: r.Contains}); deeper != nil {
-				var below *format.BelowMinimumError
-				if errors.As(deeper, &below) && below.Minimum > small.Floor {
-					below.Requested = size
-					return format.Plan{}, below
-				}
-			}
-			return format.Plan{}, &format.BelowMinimumError{
-				Format: g.format, Requested: size, Minimum: small.Floor,
-				Reason: core.Says("engine.DamagedFloorWhy", "%s needs at least %s",
-					core.A("Damage", small.Damage), core.A("Floor", core.ExactBytes(small.Floor))),
-				Hint: g.askFor(small.Floor, true)}
-		}
 		return format.Plan{}, err
 	}
 	r.Bytes = want
@@ -116,6 +96,30 @@ func (g *damagedGenerator) PlanContext(ctx context.Context, r format.Request) (f
 		Work:        p.Work,
 		Holds:       p.Holds,
 	}, nil
+}
+
+// belowTheDamage is a size under the damage's own floor, refused in the shape a
+// format refuses a size with, so that drawing a size from a range jumps past
+// it instead of stopping. A fixed size of a chain that keeps the length never
+// gets here: checkDamage refuses it first, in the damage's own words.
+//
+// The format may need more than the damage does - junk appended to a PNG
+// needs the PNG under it as well - so the floor is asked in turn, and the
+// larger answer is the one named.
+func (g *damagedGenerator) belowTheDamage(ctx context.Context, r format.Request, small *damage.TooSmallError) error {
+	size := r.Bytes
+	r.Bytes = small.Floor
+	_, deeper := g.PlanContext(ctx, r)
+	var below *format.BelowMinimumError
+	if errors.As(deeper, &below) && below.Minimum > small.Floor {
+		below.Requested = size
+		return below
+	}
+	return &format.BelowMinimumError{
+		Format: g.format, Requested: size, Minimum: small.Floor,
+		Reason: core.Says("engine.DamagedFloorWhy", "%s needs at least %s",
+			core.A("Damage", small.Damage), core.A("Floor", core.ExactBytes(small.Floor))),
+		Hint: g.askFor(small.Floor, true)}
 }
 
 // Write hands the real plan to the real generator. The damage itself is not

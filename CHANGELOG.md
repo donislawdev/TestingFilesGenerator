@@ -19,17 +19,10 @@ because it turns other people's test suites red.
 - **Two more ways to break a file on purpose: `truncate` and `append-junk`.**
   `--damage truncate` cuts the end off a file, the way an interrupted upload
   leaves it, and `--damage append-junk` writes random bytes after its end.
-  Both keep exactly the size you asked for, and both work with every format.
-  `missing` says how much of the whole file is gone (50% unless you say
-  otherwise) and `bytes` how many bytes are appended (64 unless you say
-  otherwise). Where the damage breaks the rules of the format, the manifest
-  says the file should be rejected. Where readers differ - a text cut short is
-  still text, most viewers skip bytes after the end of a PNG - the manifest
-  says the outcome is `unspecified`, offers both answers in the new
-  `policy_options` field, and says why in `detail`. `tfg damage <id>` lists
-  those formats, and `tfg damage --json` carries them as `policy_dependent`.
-  `truncate` placed after `append-junk` is refused, because it would cut away
-  what was added. `manifest_version` does not change.
+  Both keep exactly the size you asked for and work with every format. Where
+  readers differ - a text cut short is still text - the manifest says the
+  outcome is `unspecified`, offers both answers in the new `policy_options`
+  field and says why. `tfg damage <id>` lists those formats.
 
 - **tfg is on npm, for tests in Node.**
   `npm install --save-dev testing-files-generator` gives Playwright, Vitest

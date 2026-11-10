@@ -26,20 +26,21 @@ import (
 // Keyed by file and by the function the call sits in, never by line, so moving
 // code inside a function does not make the list lie (pitfall 11).
 var contextRoots = map[string]string{
-	"cmd/tfg/main.go main":                            "the process's own context, the one the signal cancels",
-	"internal/gui/window/work.go begin":               "a preview, a run or a tool started in the window begins here, and Cancel or closing the window is what stops it",
-	"internal/oracle/oracle.go Checker.Check":         "the oracle runs somebody else's reader under a time limit of its own - a measuring instrument for the guards, never on the path of a run",
-	"internal/oracle/oracle.go PictureChanges":        "the same instrument, a reference reader under a time limit",
-	"internal/oracle/oracle.go Strict":                "the same instrument, a reference reader under a time limit",
-	"internal/engine/engine.go Plan":                  "the version without a context, for callers that have none - it is PlanContext, so it cannot disagree with it",
-	"internal/manifest/manifest.go Load":              "reads a document of at most sixteen megabytes that is in memory already, so there is nothing long to stop - verify and cleanup read through ReadClaims, which takes the caller's",
-	"internal/format/eml/eml.go generator.Plan":       "the Generator interface's Plan for callers without a context - the engine asks PlanContext",
-	"internal/format/htmlfile/html.go generator.Plan": "the Generator interface's Plan for callers without a context - the engine asks PlanContext",
-	"internal/format/rtf/rtf.go generator.Plan":       "the Generator interface's Plan for callers without a context - the engine asks PlanContext",
-	"internal/format/targz/targz.go generator.Plan":   "the Generator interface's Plan for callers without a context - the engine asks PlanContext",
-	"internal/format/zip/zip.go generator.Plan":       "the Generator interface's Plan for callers without a context - the engine asks PlanContext",
-	"internal/format/opc/opc.go size":                 "measures a package with the padding left out, so there is nothing long to stop",
-	"internal/format/zip/zip.go archiveSize":          "measures an archive with the contents left out, so there is nothing long to stop",
+	"cmd/tfg/main.go main":                                   "the process's own context, the one the signal cancels",
+	"internal/gui/window/work.go begin":                      "a preview, a run or a tool started in the window begins here, and Cancel or closing the window is what stops it",
+	"internal/oracle/oracle.go Checker.Check":                "the oracle runs somebody else's reader under a time limit of its own - a measuring instrument for the guards, never on the path of a run",
+	"internal/oracle/oracle.go PictureChanges":               "the same instrument, a reference reader under a time limit",
+	"internal/oracle/oracle.go Strict":                       "the same instrument, a reference reader under a time limit",
+	"internal/engine/engine.go Plan":                         "the version without a context, for callers that have none - it is PlanContext, so it cannot disagree with it",
+	"internal/manifest/manifest.go Load":                     "reads a document of at most sixteen megabytes that is in memory already, so there is nothing long to stop - verify and cleanup read through ReadClaims, which takes the caller's",
+	"internal/format/eml/eml.go generator.Plan":              "the Generator interface's Plan for callers without a context - the engine asks PlanContext",
+	"internal/format/htmlfile/html.go generator.Plan":        "the Generator interface's Plan for callers without a context - the engine asks PlanContext",
+	"internal/format/rtf/rtf.go generator.Plan":              "the Generator interface's Plan for callers without a context - the engine asks PlanContext",
+	"internal/format/targz/targz.go generator.Plan":          "the Generator interface's Plan for callers without a context - the engine asks PlanContext",
+	"internal/format/zip/zip.go generator.Plan":              "the Generator interface's Plan for callers without a context - the engine asks PlanContext",
+	"internal/engine/damagedformat.go damagedGenerator.Plan": "the Generator interface's Plan for callers without a context, such as SmallestAccepted - the engine asks PlanContext",
+	"internal/format/opc/opc.go size":                        "measures a package with the padding left out, so there is nothing long to stop",
+	"internal/format/zip/zip.go archiveSize":                 "measures an archive with the contents left out, so there is nothing long to stop",
 }
 
 func TestAContextIsMadeFromNothingOnlyWhereItIsMeantToStart(t *testing.T) {

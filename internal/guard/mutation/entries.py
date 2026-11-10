@@ -17337,4 +17337,18 @@ MUTATIONS = [
         "PolicyDependent: nil,",
         "TestTheMachineReadableDamageListCarriesTheWholeDeclaration",
     ),
+    (
+        "a policy case is narrowed by a setting the format does not have",
+        "internal/damage/appendjunk.go",
+        "{Format: \"txt\", When: map[string][]string{\"encoding\":",
+        "{Format: \"txt\", When: map[string][]string{\"encodings\":",
+        "TestEveryPolicyCaseNamesAFormatAndSettingsThatExist",
+    ),
+    (
+        "the junk is drawn from one seed for every file",
+        "internal/damage/appendjunk.go",
+        "\tr := core.NewRand(j.seed)",
+        "\tr := core.NewRand(0)",
+        "TestJunkComesAfterTheFileAndOnlyThere",
+    ),
 ]
