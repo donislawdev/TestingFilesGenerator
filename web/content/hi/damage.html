@@ -51,7 +51,9 @@
     रखती है, और वही कमांड फिर वही बाइट लिखता है।
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     सेटिंग कोलन के बाद लिखी जाती है। विकल्प दोहराया जा सकता है, और बिगाड़ आपके लिखे क्रम में लागू होते
     हैं। यह सभी {{ .Facts.FormatCount }} फ़ॉर्मैट के साथ चलता है।
@@ -73,14 +75,24 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     पाठ नहीं है। चार बाइट से नीचे कुछ फ़ॉर्मैट ऐसे बिगाड़ के साथ निकलते हैं जिसकी कोई रीडर शिकायत
     नहीं करता, इसीलिए सेटिंग चार से शुरू होती है।
   </p>
+  <p>
+    <code>truncate</code> फ़ाइल का अंत काट देता है, जैसे बीच में टूटा अपलोड या कॉपी उसे छोड़ता है,
+    और फ़ाइल फिर भी उसी आकार की रहती है जो आपने माँगा: वह बड़ी बनाई जाती है और डिस्क तक सिर्फ़ उसकी
+    शुरुआत पहुँचती है। <code>missing</code> बताता है कि पूरी फ़ाइल का कितना हिस्सा गायब है, आधा, जब
+    तक आप कुछ और न कहें।
+  </p>
+  <p>
+    <code>append-junk</code> फ़ाइल के अंत के बाद यादृच्छिक बाइट लिखता है, 64, जब तक आप कुछ और न
+    कहें, जैसे कोई फ़ाइल अपने अंत में कुछ चिपका हुआ लेकर आती है। एक ही कमांड वही बाइट जोड़ती है।
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">मैनिफ़ेस्ट क्या कहता है</p>
   <h2>एक मैनिफ़ेस्ट जो बताता है कि क्या होना चाहिए</h2>
   <p>
-    हर खराब फ़ाइल को एक प्रविष्टि मिलती है जो कहती है कि आपके सिस्टम को उसे अस्वीकार करना चाहिए, और
-    बिगाड़ उसके बगल में दर्ज रहता है:
+    जहाँ बिगाड़ फ़ॉर्मैट के नियम तोड़ता है, वहाँ प्रविष्टि कहती है कि आपके सिस्टम को उसे अस्वीकार
+    करना चाहिए, और बिगाड़ उसके बगल में दर्ज रहता है:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -96,15 +108,40 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    दो अनुरोध कुछ भी लिखे जाने से पहले ठुकरा दिए जाते हैं, क्योंकि हर एक डिस्क पर ऐसी फ़ाइल छोड़ देता
-    जिसका मैनिफ़ेस्ट गलत वर्णन करता:
+    जहाँ रीडर अलग-अलग बर्ताव करते हैं, वहाँ प्रविष्टि अंदाज़ा लगाने के बजाय यही कहती है। काटी गई पाठ
+    फ़ाइल फिर भी पाठ है, और ज़्यादातर इमेज व्यूअर PNG के अंत के बाद के बाइट छोड़ देते हैं, इसलिए
+    प्रविष्टि जवाब आपके सिस्टम पर छोड़ती है, दोनों विकल्प देती है और कारण बताती है:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> वे फ़ॉर्मैट और कारण बताता है जिनमें कोई बिगाड़ जवाब आपके
+    सिस्टम पर छोड़ता है।
+  </p>
+  <p>
+    चार अनुरोध कुछ भी लिखे जाने से पहले ठुकरा दिए जाते हैं, क्योंकि हर एक डिस्क पर ऐसी फ़ाइल छोड़
+    देता जिसका मैनिफ़ेस्ट गलत वर्णन करता:
   </p>
   <ul>
     <li>बिगाड़ को जितना चाहिए उससे छोटी फ़ाइल, जो ज्यों की त्यों निकलती</li>
     <li>
-      बिगाड़ के साथ <code>expected: accept</code>, क्योंकि कोई भी उसे पूरा नहीं कर सकता। अगर आपके सिस्टम
-      को फ़ाइल सुधारनी है तो <code>sanitize</code> लिखें, या अगर आप यही सवाल पूछ रहे हैं तो
-      <code>unspecified</code>
+      फ़ॉर्मैट के नियम तोड़ने वाले बिगाड़ के साथ <code>expected: accept</code>, क्योंकि उन नियमों को
+      मानने वाली कोई चीज़ फ़ाइल स्वीकार नहीं करती। जहाँ जवाब आपके सिस्टम पर निर्भर है, वहाँ
+      <code>accept</code> की अनुमति है। अगर आपके सिस्टम को फ़ाइल सुधारनी है तो <code>sanitize</code>
+      लिखें, और अगर आप ठीक यही पूछ रहे हैं तो <code>unspecified</code>
+    </li>
+    <li>
+      <code>append-junk</code> के बाद <code>truncate</code>, क्योंकि वह जोड़े गए बाइट काट देता।
+      <code>truncate</code> को पहले रखें
+    </li>
+    <li>
+      ऐसे आर्काइव पर <code>truncate</code> या <code>append-junk</code> जो अपना आकार अपनी सामग्री से
+      लेता है, क्योंकि शुरू करने के लिए कोई आकार नहीं है
     </li>
   </ul>
 </section>
@@ -142,11 +179,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    जिस फ़ाइल का नतीजा <code>unspecified</code> है, उसे यहाँ छोड़ दिया जाता है, क्योंकि आपके सिस्टम
+    को उसके साथ क्या करना है, यह आपकी अपनी नीति तय करती है। उसकी प्रविष्टि कारण बताती है, और
+    <code>policy_options</code> संभव जवाब गिनाता है।
+  </p>
   <p>
     अच्छा इनकार साफ़ इनकार होता है। जो संदेश बताए कि क्या गलत था, वही वह जवाब है जो आप चाहते हैं। सर्वर
     त्रुटि, अटक जाना या आधी सहेजी फ़ाइल वह खराबी है जिसे ढूँढ़ने के लिए यह टेस्ट है।

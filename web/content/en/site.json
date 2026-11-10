@@ -326,6 +326,8 @@
     }
   ],
   "damages": {
+    "append-junk": "Writes random bytes after the end of the file and keeps exactly the size you asked for, the way a file with something stuck to its end arrives.",
+    "truncate": "Cuts the end off the file and keeps exactly the size you asked for, the way an interrupted upload or copy leaves it.",
     "zero-head": "Overwrites the first bytes of the file with zeros, leaving its length alone. Most readers look there first, so this is the damage almost anything notices."
   }
 }

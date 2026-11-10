@@ -199,7 +199,9 @@
     grootte die je vroeg, en hetzelfde commando schrijft opnieuw dezelfde bytes.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     Instellingen komen achter een dubbele punt. De optie mag herhaald worden, en de beschadigingen
     worden toegepast in de volgorde waarin je ze schrijft. Het werkt met elk van de
@@ -227,6 +229,18 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   </thead>
   <tbody>
     <tr>
+      <td><code>append-junk</code></td>
+      <td>Schrijft willekeurige bytes achter het einde van het bestand en houdt precies de gevraagde grootte, zoals een bestand binnenkomt waar iets aan het einde aan vastzit.</td>
+      <td class="num">64</td>
+      <td><code>bytes</code></td>
+    </tr>
+    <tr>
+      <td><code>truncate</code></td>
+      <td>Knipt het einde van het bestand af en houdt precies de gevraagde grootte, zoals een afgebroken upload of kopie het achterlaat.</td>
+      <td class="num">4</td>
+      <td><code>missing</code></td>
+    </tr>
+    <tr>
       <td><code>zero-head</code></td>
       <td>Overschrijft de eerste bytes van het bestand met nullen en laat de lengte ongemoeid. De meeste lezers kijken daar eerst, dus bijna alles merkt deze beschadiging.</td>
       <td class="num">8</td>
@@ -242,14 +256,25 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     reeks nulbytes geen tekst is. Onder vier bytes komen sommige formaten uit met schade waar geen
     lezer over klaagt, en daarom begint de instelling bij vier.
   </p>
+  <p>
+    <code>truncate</code> knipt het einde van het bestand af, zoals een afgebroken upload of kopie
+    het achterlaat, en het bestand heeft toch de gevraagde grootte: het wordt groter gemaakt en
+    alleen het begin komt op de schijf. <code>missing</code> zegt welk deel van het hele bestand weg
+    is, de helft als je niets anders opgeeft.
+  </p>
+  <p>
+    <code>append-junk</code> schrijft willekeurige bytes achter het einde van het bestand, 64 als je
+    niets anders opgeeft, zoals een bestand binnenkomt waar iets aan het einde aan vastzit. Dezelfde
+    opdracht voegt dezelfde bytes toe.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">Wat het manifest zegt</p>
   <h2>Een manifest dat zegt wat er moet gebeuren</h2>
   <p>
-    Elk beschadigd bestand krijgt een regel die zegt dat je systeem het moet weigeren, met de
-    beschadiging ernaast vastgelegd:
+    Waar de beschadiging de regels van het formaat breekt, zegt de vermelding dat je systeem het
+    bestand moet weigeren, met de beschadiging ernaast vastgelegd:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -265,15 +290,40 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    Twee verzoeken worden geweigerd voordat er iets wordt geschreven, omdat elk een bestand op schijf
-    zou laten staan dat het manifest verkeerd beschrijft:
+    Waar lezers verschillen, zegt de vermelding dat in plaats van te gokken. Een afgeknipt
+    tekstbestand is nog steeds tekst, en de meeste viewers slaan bytes achter het einde van een PNG
+    over, dus laat de vermelding het antwoord aan je systeem, biedt beide aan en zegt waarom:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> noemt de formaten waarin een beschadiging het antwoord aan je
+    systeem laat, en waarom.
+  </p>
+  <p>
+    Vier verzoeken worden geweigerd voordat er iets wordt geschreven, omdat elk een bestand op
+    schijf zou laten staan dat het manifest verkeerd beschrijft:
   </p>
   <ul>
     <li>een bestand dat kleiner is dan de beschadiging nodig heeft en ongewijzigd zou uitkomen</li>
     <li>
-      <code>expected: accept</code> naast een beschadiging, omdat niets daaraan kan voldoen. Schrijf
-      <code>sanitize</code> als je systeem het bestand moet repareren, of <code>unspecified</code>
-      als dat juist de vraag is die je stelt
+      <code>expected: accept</code> naast een beschadiging die de regels van het formaat breekt,
+      omdat niets dat ze volgt het bestand accepteert. Waar het antwoord van je systeem afhangt, mag
+      <code>accept</code> wel. Schrijf <code>sanitize</code> als je systeem het bestand moet
+      repareren, of <code>unspecified</code> als dat juist de vraag is die je stelt
+    </li>
+    <li>
+      <code>truncate</code> na <code>append-junk</code>, omdat het de toegevoegde bytes weer zou
+      afknippen. Zet <code>truncate</code> vooraan
+    </li>
+    <li>
+      <code>truncate</code> of <code>append-junk</code> op een archief dat zijn grootte haalt uit
+      wat het bevat, omdat er geen grootte is om van uit te gaan
     </li>
   </ul>
 </section>
@@ -311,11 +361,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    Een bestand met de uitkomst <code>unspecified</code> wordt hier overgeslagen, omdat je eigen
+    beleid bepaalt wat je systeem ermee moet doen. De vermelding zegt waarom, en
+    <code>policy_options</code> noemt de mogelijke antwoorden.
+  </p>
   <p>
     Een goede weigering is een schone weigering. Een melding die zegt wat er mis was, is het antwoord
     dat je wilt. Een serverfout, een vastloper of een half opgeslagen bestand is het gebrek dat deze

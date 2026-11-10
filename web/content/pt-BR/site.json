@@ -241,6 +241,8 @@
     "unspecified": "Depende das regras do seu sistema. Você decide e depois confere se o que acontece é o que você queria."
   },
   "damages": {
+    "append-junk": "Grava bytes aleatórios depois do fim do arquivo e mantém exatamente o tamanho que você pediu, como chega um arquivo com algo grudado no fim.",
+    "truncate": "Corta o fim do arquivo e mantém exatamente o tamanho que você pediu, como um upload ou uma cópia interrompidos o deixam.",
     "zero-head": "Sobrescreve os primeiros bytes do arquivo com zeros, sem mexer no comprimento. A maioria dos leitores olha ali primeiro, então quase tudo percebe este dano."
   },
   "terms": {

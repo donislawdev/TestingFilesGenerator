@@ -52,7 +52,9 @@
     minta, dan perintah yang sama menulis byte yang sama lagi.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     Pengaturan ditulis setelah titik dua. Opsi ini bisa diulang, dan kerusakan diterapkan menurut urutan
     yang Anda tulis. Berlaku untuk semua {{ .Facts.FormatCount }} format.
@@ -75,14 +77,25 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     byte nol bukan teks. Di bawah empat byte, sebagian format keluar dengan kerusakan yang tidak
     dikeluhkan pembaca mana pun, itulah sebabnya pengaturan dimulai dari empat.
   </p>
+  <p>
+    <code>truncate</code> memotong ujung file, seperti yang ditinggalkan unggahan atau salinan yang
+    terputus, dan file tetap berukuran sesuai permintaan Anda: file dibuat lebih besar dan hanya
+    awalnya yang sampai ke disk. <code>missing</code> menyatakan berapa bagian dari file utuh yang
+    hilang, separuh jika Anda tidak menyebut lain.
+  </p>
+  <p>
+    <code>append-junk</code> menulis byte acak setelah akhir file, 64 jika Anda tidak menyebut lain,
+    seperti file yang tiba dengan sesuatu menempel di ujungnya. Perintah yang sama menambahkan byte
+    yang sama.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">Yang dikatakan manifes</p>
   <h2>Manifes yang menyatakan apa yang harus terjadi</h2>
   <p>
-    Setiap file yang rusak mendapat catatan yang menyatakan sistem Anda harus menolaknya, dengan
-    kerusakannya dicatat di sampingnya:
+    Jika kerusakan melanggar aturan format, catatannya menyatakan sistem Anda harus menolaknya,
+    dengan kerusakannya dicatat di sampingnya:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -98,15 +111,42 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    Dua permintaan ditolak sebelum apa pun ditulis, karena masing-masing akan meninggalkan file di disk
-    yang dijelaskan keliru oleh manifes:
+    Jika pembaca berbeda pendapat, catatannya menyatakan hal itu alih-alih menebak. File teks yang
+    terpotong tetap teks, dan sebagian besar penampil gambar melewati byte setelah akhir PNG, jadi
+    catatannya menyerahkan jawaban kepada sistem Anda, menawarkan keduanya, dan menjelaskan
+    alasannya:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> mencantumkan format tempat suatu kerusakan menyerahkan
+    jawaban kepada sistem Anda, beserta alasannya.
+  </p>
+  <p>
+    Empat permintaan ditolak sebelum apa pun ditulis, karena masing-masing akan meninggalkan file di
+    disk yang dijelaskan keliru oleh manifes:
   </p>
   <ul>
     <li>file yang lebih kecil dari yang dibutuhkan kerusakan, yang akan keluar tanpa perubahan</li>
     <li>
-      <code>expected: accept</code> di samping kerusakan, karena tidak ada yang bisa memenuhinya. Tulis
-      <code>sanitize</code> jika sistem Anda memang harus memperbaiki file itu, atau
-      <code>unspecified</code> jika justru itu pertanyaan Anda
+      <code>expected: accept</code> di samping kerusakan yang melanggar aturan format, karena tidak
+      ada yang mengikuti aturan itu yang menerima file tersebut. Jika jawabannya bergantung pada
+      sistem Anda, <code>accept</code> diperbolehkan. Tulis <code>sanitize</code> jika sistem Anda
+      memang harus memperbaiki file itu, atau <code>unspecified</code> jika justru itu pertanyaan
+      Anda
+    </li>
+    <li>
+      <code>truncate</code> setelah <code>append-junk</code>, karena akan memotong byte yang
+      ditambahkan. Letakkan <code>truncate</code> lebih dulu
+    </li>
+    <li>
+      <code>truncate</code> atau <code>append-junk</code> pada arsip yang mengambil ukurannya dari
+      isinya, karena tidak ada ukuran untuk dijadikan titik awal
     </li>
   </ul>
 </section>
@@ -144,11 +184,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    File dengan hasil <code>unspecified</code> dilewati di sini, karena apa yang harus dilakukan
+    sistem Anda terhadapnya adalah kebijakan Anda sendiri. Catatannya menjelaskan alasannya, dan
+    <code>policy_options</code> mencantumkan jawaban yang mungkin.
+  </p>
   <p>
     Penolakan yang baik adalah penolakan yang bersih. Pesan yang menyebut apa yang salah adalah jawaban
     yang Anda inginkan. Kesalahan server, macet, atau file yang tersimpan setengah adalah cacat yang

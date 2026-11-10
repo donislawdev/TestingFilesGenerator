@@ -241,6 +241,8 @@
     "unspecified": "Záleží na pravidlech vašeho systému. Rozhodnete vy, a pak ověříte, že to, co se stane, je to, co jste chtěli."
   },
   "damages": {
+    "append-junk": "Zapíše náhodné bajty za konec souboru a zachová přesně velikost, o kterou jste požádali, tak jak přijde soubor, na jehož konci něco visí.",
+    "truncate": "Odřízne konec souboru a zachová přesně velikost, o kterou jste požádali, tak jak ho nechá přerušené nahrávání nebo kopírování.",
     "zero-head": "Přepíše prvních několik bajtů souboru nulami a jeho délku nechá být. Většina čteček se dívá nejdřív tam, takže si tohoto poškození všimne téměř cokoli."
   },
   "terms": {

@@ -53,7 +53,9 @@
     verlangte Größe, und derselbe Befehl schreibt wieder dieselben Bytes.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     Einstellungen stehen nach einem Doppelpunkt. Die Option lässt sich wiederholen, und die
     Beschädigungen werden in der Reihenfolge angewendet, in der Sie sie schreiben. Es funktioniert
@@ -77,14 +79,25 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     eine Folge von Nullbytes kein Text ist. Unter vier Bytes entstehen bei manchen Formaten Schäden,
     über die sich kein Leser beschwert, deshalb beginnt die Einstellung bei vier.
   </p>
+  <p>
+    <code>truncate</code> schneidet das Ende der Datei ab, so wie ein abgebrochener Upload oder
+    Kopiervorgang sie hinterlässt, und die Datei hat trotzdem die angegebene Größe: Sie wird größer
+    erzeugt, und nur ihr Anfang landet auf der Festplatte. <code>missing</code> gibt an, welcher
+    Anteil der ganzen Datei fehlt, die Hälfte, wenn Sie nichts anderes angeben.
+  </p>
+  <p>
+    <code>append-junk</code> schreibt zufällige Bytes hinter das Ende der Datei, 64, wenn Sie nichts
+    anderes angeben, so wie eine Datei ankommt, an deren Ende etwas hängt. Derselbe Befehl hängt
+    dieselben Bytes an.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">Was das Manifest sagt</p>
   <h2>Ein Manifest, das sagt, was geschehen soll</h2>
   <p>
-    Jede beschädigte Datei bekommt einen Eintrag, der besagt, dass Ihr System sie ablehnen soll, mit der
-    Beschädigung daneben:
+    Wo die Beschädigung die Regeln des Formats bricht, besagt der Eintrag, dass Ihr System die Datei
+    ablehnen soll, mit der Beschädigung daneben:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -100,15 +113,40 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    Zwei Anfragen werden abgelehnt, bevor etwas geschrieben wird, denn jede würde eine Datei
+    Wo sich Leser unterscheiden, sagt der Eintrag das, statt zu raten. Eine gekürzte Textdatei ist
+    immer noch Text, und die meisten Bildbetrachter überspringen Bytes hinter dem Ende einer PNG,
+    also überlässt der Eintrag die Antwort Ihrem System, nennt beide und sagt, warum:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> listet die Formate auf, in denen eine Beschädigung die
+    Antwort Ihrem System überlässt, und warum.
+  </p>
+  <p>
+    Vier Anfragen werden abgelehnt, bevor etwas geschrieben wird, denn jede würde eine Datei
     hinterlassen, die das Manifest falsch beschreibt:
   </p>
   <ul>
     <li>eine Datei, die kleiner ist, als die Beschädigung braucht, und unverändert herauskäme</li>
     <li>
-      <code>expected: accept</code> neben einer Beschädigung, weil nichts es erfüllen könnte. Schreiben
-      Sie <code>sanitize</code>, wenn Ihr System die Datei reparieren soll, oder
-      <code>unspecified</code>, wenn genau das Ihre Frage ist
+      <code>expected: accept</code> neben einer Beschädigung, die die Regeln des Formats bricht,
+      weil nichts, was sich an sie hält, die Datei annimmt. Wo die Antwort von Ihrem System abhängt,
+      ist <code>accept</code> erlaubt. Schreiben Sie <code>sanitize</code>, wenn Ihr System die
+      Datei reparieren soll, oder <code>unspecified</code>, wenn genau das Ihre Frage ist
+    </li>
+    <li>
+      <code>truncate</code> nach <code>append-junk</code>, weil es die angehängten Bytes wieder
+      abschneiden würde. Stellen Sie <code>truncate</code> an den Anfang
+    </li>
+    <li>
+      <code>truncate</code> oder <code>append-junk</code> an einem Archiv, das seine Größe aus
+      seinem Inhalt bezieht, weil es keine Größe gibt, von der man ausgehen kann
     </li>
   </ul>
 </section>
@@ -146,11 +184,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    Eine Datei mit dem Ergebnis <code>unspecified</code> wird hier ausgelassen, weil Ihre eigene
+    Richtlinie bestimmt, was Ihr System mit ihr tun soll. Ihr Eintrag sagt, warum, und
+    <code>policy_options</code> nennt die möglichen Antworten.
+  </p>
   <p>
     Eine gute Ablehnung ist eine saubere. Eine Meldung, die sagt, was falsch war, ist die gewünschte
     Antwort. Ein Serverfehler, ein Hänger oder eine halb gespeicherte Datei ist der Fehler, den

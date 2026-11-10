@@ -53,7 +53,9 @@
     et la même commande écrit de nouveau les mêmes octets.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     Les réglages se placent après deux-points. L'option peut être répétée, et les dommages s'appliquent
     dans l'ordre où vous les écrivez. Ça marche avec chacun des {{ .Facts.FormatCount }} formats.
@@ -77,14 +79,25 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     sortent avec un dommage dont aucun lecteur ne se plaint, c'est pourquoi le réglage commence à
     quatre.
   </p>
+  <p>
+    <code>truncate</code> coupe la fin du fichier, comme le laisse un envoi ou une copie
+    interrompus, et le fichier garde la taille demandée&nbsp;: il est généré plus grand, et seul son
+    début atteint le disque. <code>missing</code> indique quelle part du fichier entier disparaît,
+    la moitié sauf indication contraire.
+  </p>
+  <p>
+    <code>append-junk</code> écrit des octets aléatoires après la fin du fichier, 64 sauf indication
+    contraire, comme arrive un fichier avec quelque chose collé à sa fin. La même commande ajoute
+    les mêmes octets.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">Ce que dit le manifeste</p>
   <h2>Un manifeste qui dit ce qui doit se passer</h2>
   <p>
-    Chaque fichier abîmé reçoit une entrée disant que votre système doit le rejeter, avec le dommage
-    noté à côté&nbsp;:
+    Là où le dommage enfreint les règles du format, l'entrée dit que votre système doit le rejeter,
+    avec le dommage noté à côté&nbsp;:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -100,15 +113,40 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    Deux demandes sont refusées avant que rien ne soit écrit, car chacune laisserait sur le disque un
-    fichier que le manifeste décrit mal&nbsp;:
+    Là où les lecteurs divergent, l'entrée le dit au lieu de deviner. Un fichier texte coupé reste
+    du texte, et la plupart des visionneuses ignorent les octets après la fin d'un PNG, donc
+    l'entrée laisse la réponse à votre système, propose les deux et dit pourquoi&nbsp;:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> liste les formats où un dommage laisse la réponse à votre
+    système, et pourquoi.
+  </p>
+  <p>
+    Quatre demandes sont refusées avant que rien ne soit écrit, car chacune laisserait sur le disque
+    un fichier que le manifeste décrit mal&nbsp;:
   </p>
   <ul>
     <li>un fichier plus petit que ce dont le dommage a besoin, qui sortirait intact</li>
     <li>
-      <code>expected: accept</code> à côté d'un dommage, car rien ne pourrait le satisfaire. Écrivez
-      <code>sanitize</code> si votre système doit réparer le fichier, ou <code>unspecified</code> si
-      c'est justement la question que vous posez
+      <code>expected: accept</code> à côté d'un dommage qui enfreint les règles du format, car rien
+      de ce qui les suit n'accepte le fichier. Là où la réponse dépend de votre système,
+      <code>accept</code> est permis. Écrivez <code>sanitize</code> si votre système doit réparer le
+      fichier, ou <code>unspecified</code> si c'est justement la question que vous posez
+    </li>
+    <li>
+      <code>truncate</code> après <code>append-junk</code>, qui couperait les octets ajoutés. Placez
+      <code>truncate</code> en premier
+    </li>
+    <li>
+      <code>truncate</code> ou <code>append-junk</code> sur une archive qui tire sa taille de son
+      contenu, car il n'y a pas de taille d'où partir
     </li>
   </ul>
 </section>
@@ -146,11 +184,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    Un fichier dont le résultat est <code>unspecified</code> est laissé de côté ici, car ce que
+    votre système doit en faire relève de votre propre politique. Son entrée dit pourquoi, et
+    <code>policy_options</code> liste les réponses possibles.
+  </p>
   <p>
     Un bon refus est un refus net. Un message qui dit ce qui n'allait pas est la réponse voulue. Une
     erreur serveur, un blocage ou un fichier à moitié enregistré est le défaut que ce test existe

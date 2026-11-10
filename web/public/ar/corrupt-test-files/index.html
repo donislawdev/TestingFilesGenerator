@@ -195,7 +195,9 @@
     البايتات نفسها مرة أخرى.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     تُكتب الإعدادات بعد النقطتين. يمكن تكرار الخيار، وتُطبَّق أنواع التلف بالترتيب الذي تكتبه. ويعمل مع
     كل واحدة من 31 صيغة.
@@ -221,6 +223,18 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   </thead>
   <tbody>
     <tr>
+      <td><code>append-junk</code></td>
+      <td>يكتب بايتات عشوائية بعد نهاية الملف ويحافظ على الحجم الذي طلبته بالضبط، كما يصل ملف التصق شيء بنهايته.</td>
+      <td class="num">64</td>
+      <td><code>bytes</code></td>
+    </tr>
+    <tr>
+      <td><code>truncate</code></td>
+      <td>يقطع نهاية الملف ويحافظ على الحجم الذي طلبته بالضبط، كما يتركه رفع أو نسخ انقطع في منتصفه.</td>
+      <td class="num">4</td>
+      <td><code>missing</code></td>
+    </tr>
+    <tr>
       <td><code>zero-head</code></td>
       <td>يكتب أصفارًا فوق أول بايتات الملف دون المساس بطوله. معظم القارئات تنظر إلى هناك أولًا، فيلاحظ هذا التلف كل شيء تقريبًا.</td>
       <td class="num">8</td>
@@ -230,10 +244,19 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
 </table>
 </div>
   <p>
-    يكتب <code>zero-head</code> أصفارًا فوق بداية الملف. معظم القارئات تنظر إلى هناك أولًا، إلى التوقيع
+    يكتب <code>zero-head</code> يكتب أصفارًا فوق بداية الملف. معظم القارئات تنظر إلى هناك أولًا، إلى التوقيع
     والترويسة اللذين يقولان ما هو الملف، فتلاحظ ذلك أي قارئة تقريبًا. والنص العادي والسجلات لا توقيع
     لها وتُرفض أيضًا، لأن سلسلة من البايتات الصفرية ليست نصًّا. وتحت أربعة بايتات تخرج بعض الصيغ
     بتلف لا تشتكي منه أي قارئة، ولهذا يبدأ الإعداد من أربعة.
+  </p>
+  <p>
+    <code>truncate</code> يقطع نهاية الملف، كما يتركه رفع أو نسخ انقطع في منتصفه، ويبقى الملف بالحجم
+    الذي طلبته: يُولَّد أكبر ولا يصل إلى القرص إلا أوله. ويقول <code>missing</code> أي جزء من الملف
+    كله يضيع، النصف ما لم تحدد غير ذلك.
+  </p>
+  <p>
+    <code>append-junk</code> يكتب بايتات عشوائية بعد نهاية الملف، 64 ما لم تحدد غير ذلك، كما يصل ملف
+    التصق شيء بنهايته. والأمر نفسه يضيف البايتات نفسها.
   </p>
 </section>
 
@@ -241,7 +264,7 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   <p class="eyebrow">ما يقوله البيان</p>
   <h2>بيان يقول ما ينبغي أن يحدث</h2>
   <p>
-    كل ملف تالف يحصل على مدخل يقول إن نظامك ينبغي أن يرفضه، ويُسجَّل التلف بجانبه:
+    حيث يخرق التلف قواعد الصيغة، يقول المدخل إن نظامك ينبغي أن يرفضه، ويُسجَّل التلف بجانبه:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -257,13 +280,39 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    يُرفض طلبان قبل أن يُكتب أي شيء، لأن كلًّا منهما سيترك على القرص ملفًا يصفه البيان وصفًا خاطئًا:
+    وحيث تختلف القارئات، يقول المدخل ذلك بدل التخمين. فالملف النصي المقطوع يبقى نصًّا، ومعظم عارضات
+    الصور تتجاهل البايتات بعد نهاية ملف PNG، لذلك يترك المدخل الجواب لنظامك ويعرض الجوابين ويقول
+    السبب:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    يسرد <code>tfg damage &lt;id&gt;</code> الصيغ التي يترك فيها التلف الجواب لنظامك، مع السبب.
+  </p>
+  <p>
+    تُرفض أربعة طلبات قبل أن يُكتب أي شيء، لأن كلًّا منها سيترك على القرص ملفًا يصفه البيان وصفًا
+    خاطئًا:
   </p>
   <ul>
     <li>ملف أصغر مما يحتاجه التلف، وكان سيخرج دون تغيير</li>
     <li>
-      <code>expected: accept</code> بجانب تلف، لأن لا شيء يمكنه تحقيق ذلك. اكتب <code>sanitize</code> إن
-      كان نظامك مقصودًا به إصلاح الملف، أو <code>unspecified</code> إن كان هذا هو السؤال الذي تطرحه
+      <code>expected: accept</code> بجانب تلف يخرق قواعد الصيغة، لأن لا شيء يتبع تلك القواعد يقبل
+      الملف. وحيث يتوقف الجواب على نظامك، يُسمح بـ <code>accept</code>. اكتب <code>sanitize</code>
+      إن كان نظامك مقصودًا به إصلاح الملف، أو <code>unspecified</code> إن كان هذا هو السؤال الذي
+      تطرحه
+    </li>
+    <li>
+      <code>truncate</code> بعد <code>append-junk</code>، لأنه سيقطع البايتات التي أُضيفت. ضع
+      <code>truncate</code> أولًا
+    </li>
+    <li>
+      <code>truncate</code> أو <code>append-junk</code> على أرشيف يأخذ حجمه مما يحويه، لأنه لا يوجد
+      حجم يُنطلق منه
     </li>
   </ul>
 </section>
@@ -300,11 +349,18 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    يُستبعد هنا الملف الذي نتيجته <code>unspecified</code>، لأن ما ينبغي لنظامك أن يفعله به هو
+    سياستك أنت. ومدخله يقول السبب، و<code>policy_options</code> يسرد الأجوبة الممكنة.
+  </p>
   <p>
     الرفض الجيد هو الرفض النظيف. رسالة تقول ما الخطأ هي الجواب الذي تريده. أما خطأ الخادم أو التعليق أو
     ملف حُفظ نصفه فهو العيب الذي وُجد هذا الاختبار لاكتشافه.

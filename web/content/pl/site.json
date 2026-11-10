@@ -326,6 +326,8 @@
     }
   ],
   "damages": {
+    "append-junk": "Dopisuje losowe bajty za końcem pliku i zachowuje dokładnie rozmiar, o który prosiłeś, tak jak przychodzi plik z czymś przyklejonym na końcu.",
+    "truncate": "Odcina koniec pliku i zachowuje dokładnie rozmiar, o który prosiłeś, tak jak zostawia go przerwane wysyłanie albo kopiowanie.",
     "zero-head": "Nadpisuje pierwsze bajty pliku zerami, nie zmieniając jego długości. Większość czytników zagląda tam najpierw, więc to uszkodzenie zauważy prawie wszystko."
   }
 }

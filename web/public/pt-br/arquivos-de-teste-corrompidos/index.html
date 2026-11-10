@@ -198,7 +198,9 @@
     o mesmo comando grava os mesmos bytes outra vez.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     As configurações vão depois de dois-pontos. A opção pode ser repetida, e os danos são aplicados na
     ordem em que você os escreve. Funciona com cada um dos 31 formatos.
@@ -224,6 +226,18 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   </thead>
   <tbody>
     <tr>
+      <td><code>append-junk</code></td>
+      <td>Grava bytes aleatórios depois do fim do arquivo e mantém exatamente o tamanho que você pediu, como chega um arquivo com algo grudado no fim.</td>
+      <td class="num">64</td>
+      <td><code>bytes</code></td>
+    </tr>
+    <tr>
+      <td><code>truncate</code></td>
+      <td>Corta o fim do arquivo e mantém exatamente o tamanho que você pediu, como um upload ou uma cópia interrompidos o deixam.</td>
+      <td class="num">4</td>
+      <td><code>missing</code></td>
+    </tr>
+    <tr>
       <td><code>zero-head</code></td>
       <td>Sobrescreve os primeiros bytes do arquivo com zeros, sem mexer no comprimento. A maioria dos leitores olha ali primeiro, então quase tudo percebe este dano.</td>
       <td class="num">8</td>
@@ -239,14 +253,25 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     bytes zero não é texto. Abaixo de quatro bytes, alguns formatos saem com um dano de que nenhum
     leitor reclama, e por isso a configuração começa em quatro.
   </p>
+  <p>
+    <code>truncate</code> corta o fim do arquivo, como um upload ou uma cópia interrompidos o
+    deixam, e o arquivo continua com o tamanho que você pediu: ele é gerado maior e só o seu início
+    chega ao disco. <code>missing</code> diz que parte do arquivo inteiro some, metade se você não
+    disser outra coisa.
+  </p>
+  <p>
+    <code>append-junk</code> grava bytes aleatórios depois do fim do arquivo, 64 se você não disser
+    outra coisa, como chega um arquivo com algo grudado no fim. O mesmo comando acrescenta os mesmos
+    bytes.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">O que o manifesto diz</p>
   <h2>Um manifesto que diz o que deve acontecer</h2>
   <p>
-    Cada arquivo danificado recebe uma entrada dizendo que o seu sistema deve rejeitá-lo, com o dano
-    registrado ao lado:
+    Onde o dano quebra as regras do formato, a entrada diz que o seu sistema deve rejeitá-lo, com o
+    dano registrado ao lado:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -262,15 +287,40 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    Dois pedidos são recusados antes de qualquer coisa ser gravada, porque cada um deixaria no disco um
-    arquivo que o manifesto descreve errado:
+    Onde os leitores divergem, a entrada diz isso em vez de adivinhar. Um arquivo de texto cortado
+    continua sendo texto, e a maioria dos visualizadores ignora bytes depois do fim de um PNG, então
+    a entrada deixa a resposta para o seu sistema, oferece as duas e diz por quê:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> lista os formatos em que um dano deixa a resposta para o seu
+    sistema, e por quê.
+  </p>
+  <p>
+    Quatro pedidos são recusados antes de qualquer coisa ser gravada, porque cada um deixaria no
+    disco um arquivo que o manifesto descreve errado:
   </p>
   <ul>
     <li>um arquivo menor do que o dano precisa, que sairia intacto</li>
     <li>
-      <code>expected: accept</code> ao lado de um dano, porque nada poderia cumprir isso. Escreva
-      <code>sanitize</code> se o seu sistema deve consertar o arquivo, ou <code>unspecified</code>
-      se essa é justamente a pergunta que você faz
+      <code>expected: accept</code> ao lado de um dano que quebra as regras do formato, porque nada
+      que as siga aceita o arquivo. Onde a resposta depende do seu sistema, <code>accept</code> é
+      permitido. Escreva <code>sanitize</code> se o seu sistema deve consertar o arquivo, ou
+      <code>unspecified</code> se essa é justamente a pergunta que você faz
+    </li>
+    <li>
+      <code>truncate</code> depois de <code>append-junk</code>, porque cortaria os bytes
+      acrescentados. Coloque <code>truncate</code> primeiro
+    </li>
+    <li>
+      <code>truncate</code> ou <code>append-junk</code> em um arquivo compactado que tira o tamanho
+      do que contém, porque não há um tamanho de onde partir
     </li>
   </ul>
 </section>
@@ -308,11 +358,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    Um arquivo cujo resultado é <code>unspecified</code> fica de fora aqui, porque o que o seu
+    sistema deve fazer com ele é a sua própria política. A entrada dele diz por quê, e
+    <code>policy_options</code> lista as respostas possíveis.
+  </p>
   <p>
     Uma boa recusa é uma recusa limpa. Uma mensagem que diz o que estava errado é a resposta que você
     quer. Um erro de servidor, uma trava ou um arquivo salvo pela metade é o defeito que este teste

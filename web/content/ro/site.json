@@ -241,6 +241,8 @@
     "unspecified": "Depinde de regulile sistemului tău. Tu decizi, apoi verifici că ce se întâmplă este ce ai vrut."
   },
   "damages": {
+    "append-junk": "Scrie octeți aleatori după sfârșitul fișierului și păstrează exact dimensiunea cerută, așa cum sosește un fișier cu ceva lipit la capăt.",
+    "truncate": "Taie sfârșitul fișierului și păstrează exact dimensiunea cerută, așa cum îl lasă o încărcare sau o copiere întreruptă.",
     "zero-head": "Suprascrie cu zerouri primii octeți ai fișierului, fără să îi schimbe lungimea. Majoritatea cititorilor se uită întâi acolo, deci aproape orice observă această deteriorare."
   },
   "terms": {

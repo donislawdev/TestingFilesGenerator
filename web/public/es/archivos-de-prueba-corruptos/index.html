@@ -198,7 +198,9 @@
     pediste, y el mismo comando vuelve a escribir los mismos bytes.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     Los ajustes van después de dos puntos. La opción se puede repetir, y los daños se aplican en el
     orden en que los escribes. Funciona con cada uno de los 31 formatos.
@@ -224,6 +226,18 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   </thead>
   <tbody>
     <tr>
+      <td><code>append-junk</code></td>
+      <td>Escribe bytes aleatorios después del final del archivo y mantiene exactamente el tamaño que pediste, como llega un archivo con algo pegado al final.</td>
+      <td class="num">64</td>
+      <td><code>bytes</code></td>
+    </tr>
+    <tr>
+      <td><code>truncate</code></td>
+      <td>Corta el final del archivo y mantiene exactamente el tamaño que pediste, como lo deja una subida o una copia interrumpida.</td>
+      <td class="num">4</td>
+      <td><code>missing</code></td>
+    </tr>
+    <tr>
       <td><code>zero-head</code></td>
       <td>Sobrescribe los primeros bytes del archivo con ceros sin tocar su longitud. La mayoría de los lectores miran ahí primero, así que casi todo nota este daño.</td>
       <td class="num">8</td>
@@ -239,14 +253,25 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     de bytes nulos no es texto. Por debajo de cuatro bytes algunos formatos salen con un daño del
     que ningún lector se queja, por eso el ajuste empieza en cuatro.
   </p>
+  <p>
+    <code>truncate</code> corta el final del archivo, como lo deja una subida o una copia
+    interrumpida, y el archivo sigue teniendo el tamaño que pediste: se genera más grande y solo su
+    comienzo llega al disco. <code>missing</code> dice qué parte del archivo completo falta, la
+    mitad si no indicas otra cosa.
+  </p>
+  <p>
+    <code>append-junk</code> escribe bytes aleatorios después del final del archivo, 64 si no
+    indicas otra cosa, como llega un archivo con algo pegado al final. El mismo comando añade los
+    mismos bytes.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">Lo que dice el manifiesto</p>
   <h2>Un manifiesto que dice lo que debe ocurrir</h2>
   <p>
-    Cada archivo dañado recibe una entrada que dice que tu sistema debe rechazarlo, con el daño anotado
-    al lado:
+    Donde el daño rompe las reglas del formato, la entrada dice que tu sistema debe rechazarlo, con
+    el daño anotado al lado:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -262,15 +287,40 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    Se rechazan dos peticiones antes de escribir nada, porque cada una dejaría en el disco un archivo
-    que el manifiesto describe mal:
+    Donde los lectores no coinciden, la entrada lo dice en lugar de adivinar. Un archivo de texto
+    cortado sigue siendo texto, y la mayoría de los visores ignoran los bytes después del final de
+    un PNG, así que la entrada deja la respuesta a tu sistema, ofrece las dos y dice por qué:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> enumera los formatos en los que un daño deja la respuesta a
+    tu sistema, y por qué.
+  </p>
+  <p>
+    Se rechazan cuatro peticiones antes de escribir nada, porque cada una dejaría en el disco un
+    archivo que el manifiesto describe mal:
   </p>
   <ul>
     <li>un archivo más pequeño de lo que el daño necesita, que saldría intacto</li>
     <li>
-      <code>expected: accept</code> junto a un daño, porque nada podría cumplirlo. Escribe
-      <code>sanitize</code> si tu sistema debe reparar el archivo, o <code>unspecified</code> si esa
-      es justo la pregunta que haces
+      <code>expected: accept</code> junto a un daño que rompe las reglas del formato, porque nada
+      que las siga acepta el archivo. Donde la respuesta depende de tu sistema, <code>accept</code>
+      está permitido. Escribe <code>sanitize</code> si tu sistema debe reparar el archivo, o
+      <code>unspecified</code> si esa es justo la pregunta que haces
+    </li>
+    <li>
+      <code>truncate</code> después de <code>append-junk</code>, porque cortaría los bytes añadidos.
+      Pon <code>truncate</code> primero
+    </li>
+    <li>
+      <code>truncate</code> o <code>append-junk</code> en un archivo comprimido que toma su tamaño
+      de lo que contiene, porque no hay un tamaño del que partir
     </li>
   </ul>
 </section>
@@ -308,11 +358,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    Un archivo cuyo resultado es <code>unspecified</code> se omite aquí, porque lo que tu sistema
+    debe hacer con él lo decide tu propia política. Su entrada dice por qué, y
+    <code>policy_options</code> enumera las respuestas posibles.
+  </p>
   <p>
     Un buen rechazo es un rechazo limpio. Un mensaje que dice qué estaba mal es la respuesta que
     quieres. Un error de servidor, un bloqueo o un archivo guardado a medias es el defecto que esta

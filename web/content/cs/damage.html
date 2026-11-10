@@ -51,7 +51,9 @@
     chtěli, a stejný příkaz zapíše znovu stejné bajty.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     Nastavení se píše za dvojtečku. Přepínač lze opakovat a poškození se použijí v pořadí, v jakém je
     zapíšete. Funguje s každým z {{ .Facts.FormatCount }} formátů.
@@ -73,13 +75,24 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     bajty některé formáty vyjdou s poškozením, na které si žádná čtečka nestěžuje, proto nastavení
     začíná na čtyřech.
   </p>
+  <p>
+    <code>truncate</code> odřízne konec souboru, tak jak ho nechá přerušené nahrávání nebo
+    kopírování, a soubor má přesto velikost, o kterou jste požádali: vytvoří se větší a na disk
+    dorazí jen jeho začátek. <code>missing</code> říká, jaká část celého souboru chybí, polovina,
+    pokud neuvedete jinak.
+  </p>
+  <p>
+    <code>append-junk</code> zapíše náhodné bajty za konec souboru, 64, pokud neuvedete jinak, tak
+    jak přijde soubor, na jehož konci něco visí. Stejný příkaz připojí stejné bajty.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">Co říká manifest</p>
   <h2>Manifest, který říká, co se má stát</h2>
   <p>
-    Každý poškozený soubor dostane záznam, že ho má váš systém odmítnout, s poškozením zapsaným vedle:
+    Tam, kde poškození porušuje pravidla formátu, záznam říká, že ho má váš systém odmítnout, s
+    poškozením zapsaným vedle:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -95,15 +108,40 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    Dva požadavky se odmítnou dřív, než se cokoli zapíše, protože každý by na disku nechal soubor, který
-    manifest popisuje špatně:
+    Tam, kde se čtečky liší, to záznam řekne, místo aby hádal. Zkrácený textový soubor je pořád text
+    a většina prohlížečů přeskočí bajty za koncem PNG, takže záznam nechá odpověď na vašem systému,
+    nabídne obě a řekne proč:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> vypíše formáty, ve kterých poškození nechává odpověď na vašem
+    systému, a důvod.
+  </p>
+  <p>
+    Čtyři požadavky se odmítnou dřív, než se cokoli zapíše, protože každý by na disku nechal soubor,
+    který manifest popisuje špatně:
   </p>
   <ul>
     <li>soubor menší, než poškození potřebuje, který by vyšel nezměněný</li>
     <li>
-      <code>expected: accept</code> vedle poškození, protože by to nic nemohlo splnit. Napište
-      <code>sanitize</code>, pokud má váš systém soubor opravit, nebo <code>unspecified</code>,
-      pokud je právě to vaše otázka
+      <code>expected: accept</code> vedle poškození, které porušuje pravidla formátu, protože nic,
+      co je dodržuje, takový soubor nepřijme. Tam, kde odpověď závisí na vašem systému, je
+      <code>accept</code> povoleno. Napište <code>sanitize</code>, pokud má váš systém soubor
+      opravit, nebo <code>unspecified</code>, pokud je právě to vaše otázka
+    </li>
+    <li>
+      <code>truncate</code> po <code>append-junk</code>, protože by odřízl připojené bajty. Dejte
+      <code>truncate</code> na začátek
+    </li>
+    <li>
+      <code>truncate</code> nebo <code>append-junk</code> na archiv, který bere svou velikost z
+      toho, co obsahuje, protože není velikost, ze které by se dalo vyjít
     </li>
   </ul>
 </section>
@@ -141,11 +179,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    Soubor s výsledkem <code>unspecified</code> se tu vynechá, protože co s ním má váš systém
+    udělat, určuje vaše vlastní pravidlo. Jeho záznam říká proč a <code>policy_options</code>
+    vypisuje možné odpovědi.
+  </p>
   <p>
     Dobré odmítnutí je čisté. Zpráva, která říká, co bylo špatně, je odpověď, kterou chcete. Chyba
     serveru, zaseknutí nebo napůl uložený soubor je vada, kterou má tento test najít.

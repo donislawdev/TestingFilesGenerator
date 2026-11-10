@@ -196,7 +196,9 @@
     cầu, và cùng một lệnh ghi lại đúng các byte đó.
   </p>
   <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken</code></pre>
+tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out ./broken
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
+tfg generate --format jpg --size 500kb --damage append-junk --out ./tail</code></pre>
   <p>
     Cài đặt viết sau dấu hai chấm. Tùy chọn có thể lặp lại, và các hỏng hóc được áp dụng theo thứ tự bạn
     viết. Nó dùng được với từng định dạng trong 31 định dạng.
@@ -223,6 +225,18 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   </thead>
   <tbody>
     <tr>
+      <td><code>append-junk</code></td>
+      <td>Ghi các byte ngẫu nhiên sau phần cuối tệp và giữ đúng kích thước bạn yêu cầu, giống như một tệp đến nơi với thứ gì đó dính ở cuối.</td>
+      <td class="num">64</td>
+      <td><code>bytes</code></td>
+    </tr>
+    <tr>
+      <td><code>truncate</code></td>
+      <td>Cắt bỏ phần cuối tệp và giữ đúng kích thước bạn yêu cầu, giống như một lần tải lên hoặc sao chép bị ngắt giữa chừng để lại.</td>
+      <td class="num">4</td>
+      <td><code>missing</code></td>
+    </tr>
+    <tr>
       <td><code>zero-head</code></td>
       <td>Ghi đè các byte đầu của tệp bằng số không, giữ nguyên độ dài. Hầu hết trình đọc nhìn vào đó trước, nên gần như mọi thứ đều nhận ra hỏng hóc này.</td>
       <td class="num">8</td>
@@ -238,14 +252,24 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
     bốn byte, một số định dạng ra với hỏng hóc mà không trình đọc nào phàn nàn, đó là lý do cài đặt
     bắt đầu từ bốn.
   </p>
+  <p>
+    <code>truncate</code> cắt bỏ phần cuối tệp, giống như một lần tải lên hoặc sao chép bị ngắt giữa
+    chừng để lại, và tệp vẫn có kích thước bạn yêu cầu: tệp được tạo lớn hơn và chỉ phần đầu của nó
+    tới đĩa. <code>missing</code> cho biết bao nhiêu phần của toàn bộ tệp bị mất, một nửa nếu bạn
+    không nói khác.
+  </p>
+  <p>
+    <code>append-junk</code> ghi các byte ngẫu nhiên sau phần cuối tệp, 64 nếu bạn không nói khác,
+    giống như một tệp đến nơi với thứ gì đó dính ở cuối. Cùng một lệnh sẽ thêm cùng những byte đó.
+  </p>
 </section>
 
 <section class="section" id="manifest">
   <p class="eyebrow">Manifest nói gì</p>
   <h2>Một manifest nói điều phải xảy ra</h2>
   <p>
-    Mỗi tệp bị hỏng nhận một mục nói rằng hệ thống của bạn phải từ chối nó, với hỏng hóc được ghi bên
-    cạnh:
+    Ở chỗ hỏng hóc vi phạm quy tắc của định dạng, mục nói rằng hệ thống của bạn phải từ chối tệp,
+    với hỏng hóc được ghi bên cạnh:
   </p>
   <pre><code>"expected": {
   "outcome": "reject",
@@ -261,15 +285,40 @@ tfg generate --format pdf --size 1mb --count 5 --damage zero-head:bytes=16 --out
   }
 ]</code></pre>
   <p>
-    Hai yêu cầu bị từ chối trước khi có gì được ghi, vì mỗi yêu cầu sẽ để lại trên đĩa một tệp mà
+    Ở chỗ các trình đọc khác nhau, mục nói rõ điều đó thay vì đoán. Một tệp văn bản bị cắt vẫn là
+    văn bản, và hầu hết trình xem ảnh bỏ qua các byte sau phần cuối của PNG, nên mục để câu trả lời
+    cho hệ thống của bạn, đưa ra cả hai và nói lý do:
+  </p>
+  <pre><code>"expected": {
+  "outcome": "unspecified",
+  "reason": "content_malformed",
+  "detail": "A PNG ends at its IEND chunk and most viewers skip what follows it.",
+  "confidence": "policy_dependent",
+  "policy_options": ["accept", "reject"]
+}</code></pre>
+  <p>
+    <code>tfg damage &lt;id&gt;</code> liệt kê các định dạng mà ở đó một hỏng hóc để câu trả lời cho
+    hệ thống của bạn, kèm lý do.
+  </p>
+  <p>
+    Bốn yêu cầu bị từ chối trước khi có gì được ghi, vì mỗi yêu cầu sẽ để lại trên đĩa một tệp mà
     manifest mô tả sai:
   </p>
   <ul>
     <li>một tệp nhỏ hơn mức hỏng hóc cần, sẽ ra mà không bị đổi</li>
     <li>
-      <code>expected: accept</code> cạnh một hỏng hóc, vì không gì có thể đáp ứng được. Viết
-      <code>sanitize</code> nếu hệ thống của bạn phải sửa tệp, hoặc <code>unspecified</code> nếu đó
-      chính là câu hỏi bạn đang đặt ra
+      <code>expected: accept</code> cạnh một hỏng hóc vi phạm quy tắc của định dạng, vì không thứ gì
+      tuân theo các quy tắc đó chấp nhận tệp. Ở chỗ câu trả lời tùy vào hệ thống của bạn,
+      <code>accept</code> được phép. Viết <code>sanitize</code> nếu hệ thống của bạn phải sửa tệp,
+      hoặc <code>unspecified</code> nếu đó chính là câu hỏi bạn đang đặt ra
+    </li>
+    <li>
+      <code>truncate</code> sau <code>append-junk</code>, vì nó sẽ cắt mất các byte đã thêm. Hãy đặt
+      <code>truncate</code> trước
+    </li>
+    <li>
+      <code>truncate</code> hoặc <code>append-junk</code> trên một tệp nén lấy kích thước từ những
+      gì nó chứa, vì không có kích thước nào để bắt đầu
     </li>
   </ul>
 </section>
@@ -307,11 +356,19 @@ directory = "healthy-and-broken"
 manifest = json.load(open(os.path.join(directory, "manifest.json")))
 
 for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
     response = upload(os.path.join(directory, entry["path"]))
-    if entry["expected"]["outcome"] == "reject":
+    if outcome == "reject":
         assert not response.ok
     else:
         assert response.ok</code></pre>
+  <p>
+    Một tệp có kết quả <code>unspecified</code> được bỏ qua ở đây, vì việc hệ thống của bạn phải làm
+    gì với nó là chính sách của riêng bạn. Mục của nó nói lý do, và <code>policy_options</code> liệt
+    kê các câu trả lời có thể.
+  </p>
   <p>
     Một lần từ chối tốt là một lần từ chối gọn. Một thông báo nói điều gì sai là câu trả lời bạn muốn.
     Lỗi máy chủ, treo máy hoặc một tệp lưu dở là khiếm khuyết mà bài kiểm thử này sinh ra để tìm.
