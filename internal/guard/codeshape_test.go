@@ -68,7 +68,11 @@ const (
 	// Held at 395 on 2026-11-03: the list of batches moved out of
 	// gui/window/recipe.go into recipelist.go when one import took it past
 	// the ceiling. The longest file is oracle/oracle.go now.
-	longestFile = 395
+	// Lowered from 395 on 2026-11-11: the caller of the structural checker
+	// moved out of oracle/oracle.go into strict.go when the format it
+	// learned took the file past the ceiling. The longest file is
+	// engine/engine.go now.
+	longestFile = 392
 
 	// Depth answers a different question than length, and it is the better
 	// question of the two. A hundred line function that is flat reads top to

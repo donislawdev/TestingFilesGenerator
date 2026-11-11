@@ -91,6 +91,10 @@ var appendPolicy = []PolicyCase{
 		Why: "In UTF-16 most random bytes are valid characters, so the file can still be valid text."},
 	{Format: "md", When: map[string][]string{"encoding": {"utf-16be", "utf-16le"}},
 		Why: "In UTF-16 most random bytes are valid characters, so the document can still be valid text."},
+	// Measured 2026-11-11 on the OpenTelemetry Collector 0.165.0, in all three
+	// layouts and through both of its receivers: 200 over HTTP, and the file
+	// receiver read every batch (docs/OTLP-2026-11-10.md section 12.3).
+	{Format: "otlp", Why: "The OpenTelemetry Collector reads every batch and skips the bytes after the last one, and a parser that takes the file as one JSON document refuses them."},
 }
 
 // junkBytes is how many bytes this run appends, falling back for the reason

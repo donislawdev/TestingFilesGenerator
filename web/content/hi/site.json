@@ -275,7 +275,8 @@
     "the id of a picture format, as tfg formats lists them": "किसी चित्र फ़ॉर्मैट का id, जैसा tfg formats सूचीबद्ध करता है",
     "the password, in plain text": "पासवर्ड, सादे टेक्स्ट में",
     "any text": "कोई भी टेक्स्ट",
-    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "2024-02-29 या 2024-02-29T13:45:00+02:00 जैसी तारीख, या none"
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "2024-02-29 या 2024-02-29T13:45:00+02:00 जैसी तारीख, या none",
+    "a moment in UTC such as 2026-08-01T12:00:00Z": "2026-08-01T12:00:00Z जैसा UTC का एक क्षण"
   },
   "faq": [
     {

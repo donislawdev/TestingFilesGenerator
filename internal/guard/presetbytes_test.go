@@ -113,7 +113,12 @@ func TestEjectingAPresetGivesTheBytesItAlwaysGave(t *testing.T) {
 		// rtf is a format more, so the set has its smallest document, 65 B - one
 		// target, minimal_rtf, and nothing else in the recipe moves
 		// (docs/RTF-2026-10-15.md).
-		{id: "empty-and-minimal", args: preset.Args{}, bytes: 10497, sum: "0853827d3b55354dbe34c80025e0f298731522704218ce09801dda90f8e04034"},
+		// Moved a ninth time on 2026-11-11, under the decision of 2026-10-06 and
+		// said to the owner before the code this time: otlp is a format more, so
+		// the set has its smallest file of spans, 1266 B - one target,
+		// minimal_otlp, which stands after mp4, so the files after it in the run
+		// take the next id (docs/OTLP-2026-11-10.md section 7).
+		{id: "empty-and-minimal", args: preset.Args{}, bytes: 10821, sum: "8ca10156851379fae52dbf52fc220fd7470d0656b2f2e4ebc5f18af2a90dc7c2"},
 		{id: "empty-and-minimal", args: preset.Args{"formats": "jpg,png,txt"}, bytes: 1472, sum: "19b12800372395ad3bf5cba6407ca654d7ed51eba3a5bc5436f76a94bc09253c"},
 		// The preset of unusual file names, measured 2026-09-25 on its first
 		// build: the default, and a format whose extension is a byte longer,

@@ -275,7 +275,8 @@
     "the id of a picture format, as tfg formats lists them": "id sebuah format gambar, seperti yang didaftar tfg formats",
     "the password, in plain text": "kata sandi, dalam teks biasa",
     "any text": "teks apa pun",
-    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "tanggal seperti 2024-02-29 atau 2024-02-29T13:45:00+02:00, atau none"
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "tanggal seperti 2024-02-29 atau 2024-02-29T13:45:00+02:00, atau none",
+    "a moment in UTC such as 2026-08-01T12:00:00Z": "waktu dalam UTC seperti 2026-08-01T12:00:00Z"
   },
   "faq": [
     {

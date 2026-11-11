@@ -276,7 +276,8 @@
     "the id of a picture format, as tfg formats lists them": "معرّف صيغة صورة، كما يسردها tfg formats",
     "the password, in plain text": "كلمة المرور، كنص عادي",
     "any text": "أي نص",
-    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "تاريخ مثل 2024-02-29 أو 2024-02-29T13:45:00+02:00، أو none"
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "تاريخ مثل 2024-02-29 أو 2024-02-29T13:45:00+02:00، أو none",
+    "a moment in UTC such as 2026-08-01T12:00:00Z": "لحظة بالتوقيت العالمي المنسق مثل 2026-08-01T12:00:00Z"
   },
   "faq": [
     {

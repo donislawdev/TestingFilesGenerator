@@ -2091,7 +2091,7 @@
     "other": "this size needs a padding chunk and the smallest one costs {{.ChunkHeader}} B, so nothing between {{.Fixed}} and {{.Fixed2}} B can be reached"
   },
   "format.TwoSettings": {
-    "description": "Said by internal/format/logfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Of}}, {{.By}}, written the way the program writes them - keep each spelled exactly that way.",
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Of}}, {{.By}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-a61ae8d11eb8",
     "other": "{{.Of}} and {{.By}}"
   },
@@ -2460,6 +2460,56 @@
     "description": "Said by internal/format/mp4 - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Duration}}, {{.FPS}}, {{.Interval}}, {{.Width}}, {{.Height}}, {{.Change}}, {{.Bytes}}, {{.Free}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-2d553380ec9d",
     "other": "a film of {{.Duration}} at {{.FPS}} frames a second with a key frame every {{.Interval}} and a new {{.Width}}x{{.Height}} picture every {{.Change}} takes {{.Bytes}} B, and the file always carries a free box, which costs {{.Free}} B even when it holds nothing"
+  },
+  "otlp.AFileHoldsWholeRecords": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-8bd4f63f9cb2",
+    "other": "a file holds whole records, and the longest one these settings can write needs that much"
+  },
+  "otlp.AFileThisLargeEndsAfter": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Rate}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-511e89a36bd2",
+    "other": "a file of this size at a rate of {{.Rate}} would date its last records after the year 2262. Choose an earlier start, a higher rate or a smaller file"
+  },
+  "otlp.ChooseAStartInThoseYears": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-c72b07e145c8",
+    "other": "Choose a start in those years, such as 2026-08-01T12:00:00Z."
+  },
+  "otlp.DropOneOfTheTwo": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Why}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-9d99490328fe",
+    "other": "{{.Why}}. Drop one of the two, or change the other"
+  },
+  "otlp.ItHasToLieInTheYears": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.First}}, {{.Last}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-2b01e1cc25a8",
+    "other": "it has to lie in the years {{.First}} to {{.Last}}"
+  },
+  "otlp.ItShapesLogRecordsAndSignal": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Signal}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-bcb9bc6dcb7b",
+    "other": "it shapes log records, and signal {{.Signal}} writes none"
+  },
+  "otlp.ItShapesSpansAndSignal": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Signal}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-0d5289829281",
+    "other": "it shapes spans, and signal {{.Signal}} writes none"
+  },
+  "otlp.ItTakesAMomentInUTC": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-3cebaa0f99ae",
+    "other": "it takes a moment in UTC written as 2026-08-01T12:00:00Z"
+  },
+  "otlp.OnlyOneLayoutHasBatches": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Lines}}, {{.Layout}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-b25305f5d3ab",
+    "other": "only {{.Lines}} cuts the file into batches, and {{.Layout}} writes one request"
+  },
+  "otlp.WriteTheMomentThatWay": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-b21a2d65cac8",
+    "other": "Write the date, a T, the time to the second and a Z, with no fraction of a second."
   },
   "pdf.Carrying": {
     "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.What}}, written the way the program writes them - keep each spelled exactly that way.",

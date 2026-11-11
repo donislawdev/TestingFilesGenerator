@@ -290,9 +290,13 @@ func TestTheMachineReadableDamageListCarriesTheWholeDeclaration(t *testing.T) {
 // description of one damage could drop the reason, and every test stayed
 // green. Asked for by the review of 2026-11-10.
 //
-// Rebuilt from the declarations, like the guard on settings. A damage with no
-// case to declare is the control: it has to stay silent on the subject, or a
-// build printing the same lines under every damage would pass.
+// Rebuilt from the declarations, like the guard on settings. The control is
+// the reasons of the other damages: a description may carry its own and none
+// of theirs, or a build printing the same lines under every damage would pass.
+// Until 2026-11-11 the control was zero-head, which declared no case at all.
+// It declares two since then - a log and an OTLP file of lines, where a reader
+// of lines loses one line and keeps the rest - so no damage is silent any
+// more, and a damage with nothing to declare is still held to saying nothing.
 func TestTheDamageCommandSaysInWordsWhereTheOutcomeDependsOnTheReader(t *testing.T) {
 	code, listing, errOut := run(t, "damage")
 	if code != cli.ExitOK {
@@ -305,20 +309,29 @@ func TestTheDamageCommandSaysInWordsWhereTheOutcomeDependsOnTheReader(t *testing
 		}
 	}
 
-	dependent, certain := 0, 0
+	dependent, foreign := 0, 0
 	for _, d := range damage.All() {
 		code, described, errOut := run(t, "damage", d.ID)
 		if code != cli.ExitOK {
 			t.Fatalf("describing %q ended with %d: %s", d.ID, code, errOut)
 		}
 		under := strings.Join(listedUnder(listing, d.ID), "\n")
+		own := map[string]bool{}
+		for _, c := range d.Policy {
+			own[c.Why] = true
+		}
+		for _, why := range reasons {
+			if own[why] {
+				continue
+			}
+			foreign++
+			if strings.Contains(described, why) {
+				t.Errorf("%s does not declare the case %q, and its description carries it:\n%s", d.ID, why, described)
+			}
+		}
 		if len(d.Policy) == 0 {
-			certain++
 			if strings.TrimSpace(under) != d.Detail {
 				t.Errorf("%s declares no format where readers differ, and the list prints more than its sentence under it:\n%s", d.ID, under)
-			}
-			if slices.ContainsFunc(reasons, func(why string) bool { return strings.Contains(described, why) }) {
-				t.Errorf("%s declares no format where readers differ, and its description carries another damage's reason:\n%s", d.ID, described)
 			}
 			continue
 		}
@@ -337,9 +350,9 @@ func TestTheDamageCommandSaysInWordsWhereTheOutcomeDependsOnTheReader(t *testing
 			}
 		}
 	}
-	if dependent == 0 || certain == 0 {
-		t.Fatalf("%d damage(s) leave an outcome to the reader and %d leave none - both kinds are needed, or half of this proved nothing",
-			dependent, certain)
+	if dependent == 0 || foreign == 0 {
+		t.Fatalf("%d damage(s) leave an outcome to the reader and %d reason(s) of another damage were looked for - both are needed, or half of this proved nothing",
+			dependent, foreign)
 	}
 }
 

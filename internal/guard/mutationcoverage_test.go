@@ -136,6 +136,11 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	// Runs only in the CI job that has the Collector, so a mutation job without
+	// one would meet a skip. What the guard adds to the structural check is the
+	// oracle itself, and the oracle was handed three files it has to refuse.
+	"TestEveryOTLPSettingSurvivesItsReferenceTool": "broken on 2026-11-11 by its input, through the same script in Docker with the Collector 0.165.0 (tools/probes/otlp/oracle-in-docker.py): a span with no status member, an enum written as its name and a line of 2 MiB. " +
+		"The oracle said the first two came back different at the byte where the Collector writes its own spelling, and that 0 of 1 batches came back for the third. Three healthy files passed beside them.",
 	// Reached only where the filesystem folds case and still keeps STRASSE.txt
 	// apart from a sharp s spelling - NTFS does, the Linux the mutation job runs
 	// on keeps every case apart and APFS joins the pair, so no CI mutation of

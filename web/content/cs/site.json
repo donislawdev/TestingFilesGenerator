@@ -275,7 +275,8 @@
     "the id of a picture format, as tfg formats lists them": "id obrázkového formátu tak, jak je vypisuje tfg formats",
     "the password, in plain text": "heslo ve formě prostého textu",
     "any text": "libovolný text",
-    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "datum, například 2024-02-29 nebo 2024-02-29T13:45:00+02:00, nebo none"
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "datum, například 2024-02-29 nebo 2024-02-29T13:45:00+02:00, nebo none",
+    "a moment in UTC such as 2026-08-01T12:00:00Z": "okamžik v UTC, například 2026-08-01T12:00:00Z"
   },
   "faq": [
     {

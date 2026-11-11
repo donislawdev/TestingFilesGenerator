@@ -634,6 +634,11 @@
     "hash": "sha256-862c4ec62def",
     "other": "mp4"
   },
+  "Choice.format.otlp": {
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-e81fa7c0883f",
+    "other": "otlp"
+  },
   "Choice.format.pdf": {
     "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-c35b21d6ca39",
@@ -1043,6 +1048,16 @@
     "description": "One entry of the rotate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-69f59c273b6e",
     "other": "90"
+  },
+  "Choice.signal.logs": {
+    "description": "One entry of the signal list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-98f38f12db22",
+    "other": "logs"
+  },
+  "Choice.signal.traces": {
+    "description": "One entry of the signal list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-b5ac69fc467c",
+    "other": "traces"
   },
   "Choice.status_mix.client-errors": {
     "description": "One entry of the status_mix list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
@@ -1569,6 +1584,51 @@
     "hash": "sha256-3085ac44f0e0",
     "other": "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."
   },
+  "Detail.format/otlp.batch": {
+    "description": "The sentence under the batch setting of the otlp format, after what it takes.",
+    "hash": "sha256-3c2c865d96f5",
+    "other": "How many spans or log records each line holds. 512 is the batch an OpenTelemetry SDK sends by default. Only record-per-line has batches, and beside another layout a batch is refused."
+  },
+  "Detail.format/otlp.depth": {
+    "description": "The sentence under the depth setting of the otlp format, after what it takes.",
+    "hash": "sha256-d1caceabbb7a",
+    "other": "How many spans each trace has, each one the child of the one before it. 1 leaves every span without a parent. It shapes spans, and beside signal logs it is refused."
+  },
+  "Detail.format/otlp.formatting": {
+    "description": "The sentence under the formatting setting of the otlp format, after what it takes.",
+    "hash": "sha256-a0bda4ebdc96",
+    "other": "How the file is laid out. record-per-line puts one batch on each line, which is what the OTLP file exporter writes and the file receiver of the OpenTelemetry Collector reads. minified and indented make the whole file one request, the body to post to an OTLP endpoint, and a file of that kind is one JSON document whatever its name ends in. Posted as a body, a file of several lines loses every line after the first in the Collector, and its file receiver reads nothing from an indented file."
+  },
+  "Detail.format/otlp.level_mix": {
+    "description": "The sentence under the level_mix setting of the otlp format, after what it takes.",
+    "hash": "sha256-96679b162c65",
+    "other": "Which severities the log records carry. Realistic is mostly INFO with some of the others. It shapes log records, and beside signal traces it is refused."
+  },
+  "Detail.format/otlp.rate": {
+    "description": "The sentence under the rate setting of the otlp format, after what it takes.",
+    "hash": "sha256-ce402f8f7753",
+    "other": "How many traces or log records begin each second."
+  },
+  "Detail.format/otlp.signal": {
+    "description": "The sentence under the signal setting of the otlp format, after what it takes.",
+    "hash": "sha256-a0541e2d1349",
+    "other": "Which kind of telemetry the file holds. traces writes spans and logs writes log records. A file holds one kind, as the OTLP file format asks."
+  },
+  "Detail.format/otlp.start": {
+    "description": "The sentence under the start setting of the otlp format, after what it takes.",
+    "hash": "sha256-a8823ab3b44e",
+    "other": "The moment the first span or log record is dated. The later ones follow it at the rate. Change it when the system that receives the file refuses or hides data that is too old."
+  },
+  "Detail.format/otlp.status_mix": {
+    "description": "The sentence under the status_mix setting of the otlp format, after what it takes.",
+    "hash": "sha256-06462e0e2639",
+    "other": "Which response codes the requests end with. A code of 500 or above marks its span as an error, as the HTTP conventions of OpenTelemetry ask, and every other code leaves the status unset. It shapes spans, and beside signal logs it is refused."
+  },
+  "Detail.format/otlp.trace_context": {
+    "description": "The sentence under the trace_context setting of the otlp format, after what it takes.",
+    "hash": "sha256-634b48d43770",
+    "other": "Whether every log record names the trace and the span it was written in. The file holds no spans, so those ids match nothing in it. It shapes log records, and beside signal traces it is refused."
+  },
   "Detail.format/pdf.author": {
     "description": "The sentence under the author setting of the pdf format, after what it takes.",
     "hash": "sha256-33b1ee363d86",
@@ -2049,6 +2109,11 @@
     "hash": "sha256-1f5265d4bfbb",
     "other": "MP4 video"
   },
+  "Format.otlp": {
+    "description": "What the otlp format is called, beside its id in a list of formats. The name of a standard stays as it is - only a name that describes the file is translated.",
+    "hash": "sha256-3aecb4b59e76",
+    "other": "OpenTelemetry Protocol JSON"
+  },
   "Format.pdf": {
     "description": "What the pdf format is called, beside its id in a list of formats. The name of a standard stays as it is - only a name that describes the file is translated.",
     "hash": "sha256-ccf9cd24dc07",
@@ -2268,6 +2333,11 @@
     "description": "The name beside the box of a setting a recipe writes as author.",
     "hash": "sha256-d95082a2ee57",
     "other": "Author"
+  },
+  "Label.batch": {
+    "description": "The name beside the box of a setting a recipe writes as batch.",
+    "hash": "sha256-320b5d80f8cf",
+    "other": "Batch"
   },
   "Label.bbox": {
     "description": "The name beside the box of a setting a recipe writes as bbox.",
@@ -2669,6 +2739,11 @@
     "hash": "sha256-218e0d43275e",
     "other": "Sample rate"
   },
+  "Label.signal": {
+    "description": "The name beside the box of a setting a recipe writes as signal.",
+    "hash": "sha256-1e9806e4227b",
+    "other": "Signal"
+  },
   "Label.slides": {
     "description": "The name beside the box of a setting a recipe writes as slides.",
     "hash": "sha256-a0ffe3818444",
@@ -2678,6 +2753,11 @@
     "description": "The name beside the box of a setting a recipe writes as spread.",
     "hash": "sha256-b11fb1f593a8",
     "other": "Spread"
+  },
+  "Label.start": {
+    "description": "The name beside the box of a setting a recipe writes as start.",
+    "hash": "sha256-e4bb9f1ece9a",
+    "other": "Start"
   },
   "Label.status_mix": {
     "description": "The name beside the box of a setting a recipe writes as status_mix.",
@@ -2713,6 +2793,11 @@
     "description": "The name beside the box of a setting a recipe writes as title.",
     "hash": "sha256-7e8cd2056da7",
     "other": "Title"
+  },
+  "Label.trace_context": {
+    "description": "The name beside the box of a setting a recipe writes as trace_context.",
+    "hash": "sha256-07b45d3adabb",
+    "other": "Trace context"
   },
   "Label.unlocated": {
     "description": "The name beside the box of a setting a recipe writes as unlocated.",
@@ -2813,6 +2898,11 @@
     "description": "What the text in a box has to look like, in the sentence under it.",
     "hash": "sha256-a40bd1decdc9",
     "other": "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none"
+  },
+  "Shape.a moment in UTC such as 2026-08-01T12:00:00Z": {
+    "description": "What the text in a box has to look like, in the sentence under it.",
+    "hash": "sha256-97f0219d13b4",
+    "other": "a moment in UTC such as 2026-08-01T12:00:00Z"
   },
   "Shape.algorithm names separated by commas, or all": {
     "description": "What the text in a box has to look like, in the sentence under it.",

@@ -144,6 +144,7 @@ var allowedURLs = map[string]string{
 	"internal/format/docx/docx.go|http://schemas.openxmlformats.org/officeDocument/2006/relationships": "OPC namespace, written into the document",
 	"internal/format/docx/docx.go|http://schemas.openxmlformats.org/wordprocessingml/2006/main":        "WordprocessingML namespace",
 	"internal/format/opc/opc.go|http://schemas.openxmlformats.org/package/2006/content-types":          "OPC content types namespace",
+	"internal/format/otlp/vocabulary.go|https://opentelemetry.io/schemas/1.45.0":                       "the schema address of the semantic conventions, written into every batch as OTLP asks and never opened",
 	"internal/format/opc/opc.go|http://schemas.openxmlformats.org/package/2006/relationships":          "OPC relationships namespace",
 	"internal/format/pptx/pptx.go|http://schemas.openxmlformats.org/drawingml/2006/main":               "DrawingML namespace",
 	"internal/format/pptx/pptx.go|http://schemas.openxmlformats.org/officeDocument/2006/relationships": "OPC namespace, written into the document",

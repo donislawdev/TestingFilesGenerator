@@ -79,6 +79,13 @@ var truncatePolicy = []PolicyCase{
 	{Format: "yaml", Why: "A YAML document cut short can still be valid YAML with fewer or shorter values."},
 	{Format: "toml", Why: "A TOML document cut short can still be valid TOML, for example when the cut falls between two lines or inside a number."},
 	{Format: "html", Why: "HTML readers are required to finish a page that is cut short."},
+	// One layout only, measured 2026-11-11 on the OpenTelemetry Collector
+	// 0.165.0 (docs/OTLP-2026-11-10.md section 12.3): its file receiver read
+	// every whole line and said nothing of the cut one, and over HTTP it
+	// answered 200. Cut short as one request, the same data is refused with
+	// 400.
+	{Format: "otlp", When: map[string][]string{"formatting": {"record-per-line"}},
+		Why: "An OTLP file cut short still holds whole lines, and a reader of lines keeps those and drops the cut one without a word."},
 }
 
 // missingShare is the share this run cuts, in percent.
