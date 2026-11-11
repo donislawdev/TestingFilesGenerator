@@ -6,7 +6,6 @@ import (
 	// here ever makes a secret.
 	// nosemgrep: go.lang.security.audit.crypto.math_random.math-random-used
 	"math/rand/v2"
-	"strconv"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
@@ -217,11 +216,11 @@ func (r *records) requestAttributes(sp span) {
 	e.textAttribute("url.scheme", "https")
 	e.wholeAttribute("http.response.status_code", int64(sp.status))
 	e.textAttribute("server.address", serverAddress)
-	e.textAttribute("client.address", clientNetwork+strconv.Itoa(sp.client))
+	e.numberedAttribute("client.address", clientNetwork, int64(sp.client))
 	e.textAttribute("user_agent.original", sp.agent)
 	if sp.failed() {
 		// The conventions ask for the class of the error where a request
 		// ended with one, and for a response code that class is the code.
-		e.textAttribute("error.type", strconv.Itoa(sp.status))
+		e.numberedAttribute("error.type", "", int64(sp.status))
 	}
 }

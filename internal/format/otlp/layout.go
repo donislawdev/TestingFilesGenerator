@@ -128,8 +128,18 @@ func (e *emitter) whole(v int64) { e.b = strconv.AppendInt(e.b, v, 10) }
 
 // quoted is a whole number written as text, which is how the JSON encoding of
 // OTLP writes every number of 64 bits, a time among them.
-func (e *emitter) quoted(v int64) {
+func (e *emitter) quoted(v int64) { e.numbered("", v) }
+
+// numbered is a string value made of a prefix and a whole number, appended
+// straight into the file.
+//
+// Never through strconv.Itoa, which builds a new string for every number from
+// 100 up. Measured on 2026-11-11: a client address and a response code built
+// that way cost 37292 objects for a 64 MiB file of spans, against a budget of
+// 128, and TestNoGeneratorHoldsTheWholeFileInMemory turned CI red on it.
+func (e *emitter) numbered(prefix string, v int64) {
 	e.b = append(e.b, '"')
+	e.b = append(e.b, prefix...)
 	e.whole(v)
 	e.b = append(e.b, '"')
 }
@@ -175,6 +185,15 @@ func (e *emitter) wholeAttribute(key string, value int64) {
 	e.attribute(key)
 	e.key("intValue")
 	e.quoted(value)
+	e.shut()
+}
+
+// numberedAttribute is an attribute holding text that ends in a whole number,
+// written without building the text first.
+func (e *emitter) numberedAttribute(key, prefix string, value int64) {
+	e.attribute(key)
+	e.key("stringValue")
+	e.numbered(prefix, value)
 	e.shut()
 }
 

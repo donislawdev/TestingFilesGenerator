@@ -297,18 +297,24 @@ func TestTheOTLPCheckRefusesWhatAJSONReaderLetsThrough(t *testing.T) {
 	}
 	deep := append(bytes.Repeat([]byte("["), 200000), bytes.Repeat([]byte("]"), 200000)...)
 	batch := map[string]string{otlp.Batch: "1"}
+	// because is what the refusal has to say. Refused is not enough: the
+	// checker has later checks, and a file let through by the first one can
+	// be refused by another for a different reason. Measured on 2026-11-11 -
+	// with NaN read quietly, the mutation run on #230 found the file still
+	// refused, by a later check, and reported the entry as a hole.
 	cases := []struct {
-		what string
-		req  oracle.StrictRequest
+		what    string
+		because string
+		req     oracle.StrictRequest
 	}{
-		{"NaN where the name of the service stands", oracle.StrictRequest{Format: "otlp", Settings: batch,
+		{"NaN where the name of the service stands", "NaN is not a JSON number", oracle.StrictRequest{Format: "otlp", Settings: batch,
 			Path: write("nan.jsonl", bytes.Replace(good, service, []byte(`{"doubleValue":NaN}`), 1))}},
-		{"Infinity in the same place", oracle.StrictRequest{Format: "otlp", Settings: batch,
+		{"Infinity in the same place", "Infinity is not a JSON number", oracle.StrictRequest{Format: "otlp", Settings: batch,
 			Path: write("infinity.jsonl", bytes.Replace(good, service, []byte(`{"doubleValue":Infinity}`), 1))}},
-		{"a document nested 200000 deep", oracle.StrictRequest{Format: "otlp", Settings: batch, Path: write("deep.jsonl", append(deep, '\n'))}},
-		{"a rate of nought", oracle.StrictRequest{Format: "otlp", Path: filepath.Join(dir, "good.jsonl"),
+		{"a document nested 200000 deep", "nested deeper than a JSON reader goes", oracle.StrictRequest{Format: "otlp", Settings: batch, Path: write("deep.jsonl", append(deep, '\n'))}},
+		{"a rate of nought", "rate='0'", oracle.StrictRequest{Format: "otlp", Path: filepath.Join(dir, "good.jsonl"),
 			Settings: map[string]string{otlp.Batch: "1", otlp.Rate: "0"}}},
-		{"a depth that is a word", oracle.StrictRequest{Format: "otlp", Path: filepath.Join(dir, "good.jsonl"),
+		{"a depth that is a word", "depth='deep'", oracle.StrictRequest{Format: "otlp", Path: filepath.Join(dir, "good.jsonl"),
 			Settings: map[string]string{otlp.Batch: "1", otlp.Depth: "deep"}}},
 	}
 	reqs := []oracle.StrictRequest{{Format: "otlp", Path: filepath.Join(dir, "good.jsonl"), Settings: batch}}
@@ -328,6 +334,8 @@ func TestTheOTLPCheckRefusesWhatAJSONReaderLetsThrough(t *testing.T) {
 	for i, c := range cases {
 		if j := got[i+1]; j.Verdict != oracle.StrictFail {
 			t.Errorf("%s: the checker answered %s (%s), and it has to refuse with a reason", c.what, j.Verdict, j.Reason)
+		} else if !strings.Contains(j.Reason, c.because) {
+			t.Errorf("%s: refused, but for another reason - %q, where it has to say %q", c.what, j.Reason, c.because)
 		}
 	}
 }
