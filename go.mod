@@ -90,7 +90,7 @@ go 1.27.4
 
 require (
 	fyne.io/fyne/v2 v2.8.2
-	github.com/gen2brain/gav1d v0.2.5
+	github.com/gen2brain/gav1d v0.2.6
 	github.com/gen2brain/jxl v0.2.0
 	github.com/goccy/go-yaml v1.19.2
 	github.com/nicksnyder/go-i18n/v2 v2.7.0
