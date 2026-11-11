@@ -136,6 +136,11 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	// What breaks it lives in a module, not in a file of this repository, so
+	// no mutation of this tree reaches it - the dependency it was written
+	// against is the break.
+	"TestAnAVIFLargerThanOneAV1TileSurvivesItsReferenceTool": "broken on 2026-11-11 by gav1d v0.2.5, go.mod as it stood before v0.2.6: both pictures went red saying tile_start_and_end_present_flag is set in an OBU_FRAME, " +
+		"the tile_info of several tiles read over the data of one. With v0.2.6 both read back as 2 tiles, gav1d's decoder read them whole and Pillow accepted them (docs/GAV1D-026-2026-11-11.md).",
 	// Runs only in the CI job that has the Collector, so a mutation job without
 	// one would meet a skip. What the guard adds to the structural check is the
 	// oracle itself, and the oracle was handed three files it has to refuse.

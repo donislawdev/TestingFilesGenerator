@@ -76,6 +76,12 @@ const (
 	// Measured on 2026-08-29 with the encoder that is actually here: 1080p
 	// costs 16 MB and 266 ms, 4K costs 63 MB and 1.06 s, 8K costs 253 MB and
 	// 4.7 s. All of them encode, none of them fail.
+	//
+	// What nobody did then was decode them. Up to gav1d v0.2.5 a picture wider
+	// than 4096 px or past 4096x2304, 8K among them, came out as a file no
+	// decoder reads, and v0.2.6 codes it in tiles
+	// (TestAnAVIFLargerThanOneAV1TileSurvivesItsReferenceTool,
+	// docs/GAV1D-026-2026-11-11.md).
 	maxPixels = 40_000_000
 
 	// minimumBytes is the smallest AVIF this generator produces, and it is one

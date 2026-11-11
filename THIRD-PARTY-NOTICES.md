@@ -121,7 +121,7 @@ Source: <https://go.googlesource.com/text>
 
 ## github.com/gen2brain/gav1d
 
-Version 0.2.5. Codes and reads AV1, which is what the picture inside an
+Version 0.2.6. Codes and reads AV1, which is what the picture inside an
 AVIF is. It is written in Go and assembly with no C in it and no module
 of its own behind it, so it brings nothing else along.
 

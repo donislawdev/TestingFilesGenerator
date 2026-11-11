@@ -96,7 +96,12 @@ type generator struct{}
 // 904), the sample lengths and the second pass's crew the difference -
 // and 1241 with one object allocated per frame, the defect the ceiling
 // exists for. 1024 sits between the two.
-func (generator) AllocCeiling() int64 { return 1024 }
+//
+// Raised to 1536 on 2026-11-11 with WebM's, by the owner's decision and for
+// WebM's reason, gav1d v0.2.6 allocating more a call. The default film is
+// 1398 to 1400 objects at one, four and sixteen threads, and one object a
+// frame takes it to 1698 to 1701 (docs/GAV1D-026-2026-11-11.md).
+func (generator) AllocCeiling() int64 { return 1536 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	need := func(st video.Stream) int64 { return newLayout(st).need() }

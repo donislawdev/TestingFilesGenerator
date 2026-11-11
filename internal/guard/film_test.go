@@ -490,7 +490,7 @@ func TestEveryFrameOfAFilmSurvivesItsReferenceTool(t *testing.T) {
 // before coding, and the pictures that used to be refused for not fitting one
 // tile are not.
 //
-// Until 2026-10-07 the bound was one AV1 tile, 4096x2304, because gav1d codes
+// Until 2026-10-07 the bound was one AV1 tile, 4096x2304, because gav1d coded
 // one tile correctly and no more (docs/REVIEW-165-2026-10-06.md). A picture
 // is cut into tiles of at most that now, and the bound is AV1's own: 8192 by
 // 4352, the 6.x levels' MaxPicSize, with either side up to 16384 (the owner's

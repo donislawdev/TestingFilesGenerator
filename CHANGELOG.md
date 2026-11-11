@@ -14,6 +14,17 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Breaking
+
+- **Some AVIF pictures and WebM and MP4 films are not byte for byte what
+  0.5.0 wrote.** The AV1 encoder underneath, gav1d, is now 0.2.6. Where the
+  right or bottom edge of a picture cuts through a block, the encoder now
+  predicts that block's colour the way every decoder does. Before, a viewer
+  showed those pixels along the edge up to 7 of 255 off from the picture that
+  was meant. Only pixels along those edges change, and many files do not
+  change at all. A test that compares a file with one 0.5.0 generated from the
+  same request can fail.
+
 ### Added
 
 - **A new format: `otlp`, OpenTelemetry traces and logs as OTLP JSON.**
@@ -145,6 +156,13 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **An AVIF picture wider than 4096 px, or larger than 4096 x 2304 px, opens
+  now.** Every release since AVIF arrived in 0.3.0 wrote such a picture as a
+  file no viewer reads: Pillow, ImageMagick and libaom all refused it as
+  corrupt, and tfg said nothing. The picture is now cut into the tiles AV1
+  requires at that size, and all three read it. A picture of 8000 x 5000 px is
+  also written about three times faster on a machine with several cores.
+  Smaller pictures and films were never affected.
 - **A damaged file no longer claims to carry its label.** Its manifest entry
   said `label_embedded: true`, although the damage comes after the label is
   written and can overwrite it. On a text file, `zero-head` zeroes the start of

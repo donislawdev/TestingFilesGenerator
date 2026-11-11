@@ -13695,7 +13695,8 @@ MUTATIONS = [
     ),
     (
         # One object per frame, the defect the film's own allocation ceiling
-        # sits below: measured at 698 objects against a ceiling of 512.
+        # sits below: measured at 698 objects against a ceiling of 512, and
+        # with gav1d v0.2.6 at 1634 to 1644 against 1536.
         "a film allocates a block header for every frame it writes",
         "internal/format/webm/webm.go",
         "		out.write(block[:])",
@@ -14022,7 +14023,8 @@ MUTATIONS = [
     ),
     (
         # One object per frame, the defect the film's own allocation ceiling
-        # sits below: measured at 1241 objects against a ceiling of 1024.
+        # sits below: measured at 1241 objects against a ceiling of 1024, and
+        # with gav1d v0.2.6 at 1698 to 1701 against 1536.
         "an MP4 allocates a copy of every frame it writes",
         "internal/format/mp4/mp4.go",
         "			o.write(frame[t.SampleAt(i)])",
@@ -17704,5 +17706,19 @@ MUTATIONS = [
         "fmt.Fprintf(out, \"  extension  %s\\n\", endings(d))",
         "fmt.Fprintf(out, \"  extension  %s\\n\", d.Extension)",
         "TestTheFormatsCommandSaysWhichSettingGivesWhichEnding",
+    ),
+    (
+        "pandoc's version line is read only without the .exe Windows prints, so pandoc 3.13 there is a version nobody knows",
+        'internal/oracle/rtfscripts.go',
+        '`(?m)^pandoc(?:\\.exe)? (\\d+)\\.(\\d+)`',
+        '`(?m)^pandoc (\\d+)\\.(\\d+)`',
+        'TestThePandocVersionDecidesWhatALiteralDocumentReadsAs',
+    ),
+    (
+        "pandoc's minor version is read from the major's digits, so 3.13 reads as 3.3 and is held to the old reading of literal",
+        'internal/oracle/rtfscripts.go',
+        'minor, errMinor := strconv.Atoi(m[2])',
+        'minor, errMinor := strconv.Atoi(m[1])',
+        'TestThePandocVersionDecidesWhatALiteralDocumentReadsAs',
     ),
 ]

@@ -102,7 +102,14 @@ type generator struct{}
 // ceiling exists for, takes it to 1177. 1024 sits between the two, as
 // 512 sat between 474 and 698 (docs/WEBM-WYDAJNOSC-2026-10-06.md
 // section 10).
-func (generator) AllocCeiling() int64 { return 1024 }
+//
+// Raised to 1536 on 2026-11-11 by the owner's decision, with gav1d v0.2.6,
+// which no longer reserves its entropy coder's buffer up front and grows it
+// instead: 36 to 57 objects a call where v0.2.5 made 21 to 22
+// (tools/probes/videotiles/allocs, docs/GAV1D-026-2026-11-11.md). The
+// default film is 1341 to 1350 objects at one, four and sixteen threads, and
+// one object a frame takes it to 1634 to 1644. 1536 sits between the two.
+func (generator) AllocCeiling() int64 { return 1536 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	need := func(st video.Stream) int64 { return newLayout(st).boundBytes() + minVoid }
