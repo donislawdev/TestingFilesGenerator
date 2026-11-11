@@ -17707,4 +17707,18 @@ MUTATIONS = [
         "fmt.Fprintf(out, \"  extension  %s\\n\", d.Extension)",
         "TestTheFormatsCommandSaysWhichSettingGivesWhichEnding",
     ),
+    (
+        "pandoc's version line is read only without the .exe Windows prints, so pandoc 3.13 there is a version nobody knows",
+        'internal/oracle/rtfscripts.go',
+        '`(?m)^pandoc(?:\\.exe)? (\\d+)\\.(\\d+)`',
+        '`(?m)^pandoc (\\d+)\\.(\\d+)`',
+        'TestThePandocVersionDecidesWhatALiteralDocumentReadsAs',
+    ),
+    (
+        "pandoc's minor version is read from the major's digits, so 3.13 reads as 3.3 and is held to the old reading of literal",
+        'internal/oracle/rtfscripts.go',
+        'minor, errMinor := strconv.Atoi(m[2])',
+        'minor, errMinor := strconv.Atoi(m[1])',
+        'TestThePandocVersionDecidesWhatALiteralDocumentReadsAs',
+    ),
 ]

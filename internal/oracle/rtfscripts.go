@@ -75,6 +75,13 @@ func PandocVersion() (major, minor int, ok bool) {
 	if res := c.Check(""); !res.Available || res.Err != nil {
 		return 0, 0, false
 	}
+	return ParsePandocVersion(out)
+}
+
+// ParsePandocVersion reads the major and minor version out of what pandoc
+// --version printed, "pandoc 3.13" or "pandoc.exe 3.1.3" on its first line.
+// ok is false when the output opens with anything else.
+func ParsePandocVersion(out string) (major, minor int, ok bool) {
 	m := pandocVersionLine.FindStringSubmatch(out)
 	if m == nil {
 		return 0, 0, false

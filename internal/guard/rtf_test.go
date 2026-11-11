@@ -3,6 +3,7 @@ package guard
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -79,9 +80,9 @@ func TestEveryRTFSettingSurvivesItsReferenceTool(t *testing.T) {
 		t.Fatal(err)
 	}
 	dir := t.TempDir()
-	var pv pandocVersion
-	if major, minor, ok := oracle.PandocVersion(); ok {
-		pv = pandocVersion{known: true, readsLiteral: major > 3 || major == 3 && minor >= 13}
+	major, minor, ok := oracle.PandocVersion()
+	pv := pandocVersionOf(major, minor, ok)
+	if ok {
 		t.Logf("pandoc %d.%d answers", major, minor)
 	}
 	var strict, byPandoc atomic.Int64
@@ -118,6 +119,50 @@ func TestEveryRTFSettingSurvivesItsReferenceTool(t *testing.T) {
 // after it (jgm/pandoc#11981).
 type pandocVersion struct {
 	known, readsLiteral bool
+}
+
+// pandocVersionOf is what oracle.PandocVersion's answer means to this guard.
+func pandocVersionOf(major, minor int, ok bool) pandocVersion {
+	if !ok {
+		return pandocVersion{}
+	}
+	return pandocVersion{known: true, readsLiteral: major > 3 || major == 3 && minor >= 13}
+}
+
+// The version pandoc says it is decides what a document written literal has
+// to read as, and that is held here on words written out rather than on the
+// pandoc installed: CI has 3.1.3 and this machine 3.13, so each of them only
+// ever asks one side of the boundary (jgm/pandoc#11981). Each version is held
+// to its reading and has to refuse the other side's.
+func TestThePandocVersionDecidesWhatALiteralDocumentReadsAs(t *testing.T) {
+	right := strings.Join([]string{rtfPolish, rtfRussian, rtfJapanese, rtfArabic}, "\n")
+	lost := "Za g ja." // the Polish line with the letter after each one written literal dropped
+	literal := map[string]string{rtf.Characters: rtf.International, rtf.TextEncoding: rtf.Literal}
+	for _, c := range []struct {
+		out          string
+		known, reads bool
+	}{
+		{"pandoc 3.1.3\nFeatures: +server +lua\n", true, false},
+		{"pandoc 3.12.1\n", true, false},
+		{"pandoc.exe 3.13\n", true, true},
+		{"pandoc 3.13.1\n", true, true},
+		{"pandoc 4.0\n", true, true},
+		{"pandoc: unknown flag --version\n", false, false},
+		{"", false, false},
+	} {
+		pv := pandocVersionOf(oracle.ParsePandocVersion(c.out))
+		if pv.known != c.known || pv.readsLiteral != c.reads {
+			t.Errorf("%q: known %v and reads literal %v, where %v and %v were meant", c.out, pv.known, pv.readsLiteral, c.known, c.reads)
+			continue
+		}
+		if !pv.known {
+			continue
+		}
+		onRight, onLost := rtfScriptsProblem(right, literal, pv.readsLiteral), rtfScriptsProblem(lost, literal, pv.readsLiteral)
+		if c.reads && (onRight != "" || onLost == "") || !c.reads && (onRight == "" || onLost != "") {
+			t.Errorf("%q: the four scripts read right say %q and the Polish line lost says %q", c.out, onRight, onLost)
+		}
+	}
 }
 
 // rtfSurvivesReaders asks the checker and pandoc about one document and says
@@ -206,23 +251,36 @@ func rtfPandocBreaksBinaryPictures(t *testing.T, path string, body []byte, props
 // 3.13 or later, which reads literal as it reads unicode.
 func rtfPandocReadings(t *testing.T, text string, props map[string]string, size int64, readsLiteral bool) {
 	t.Helper()
-	if props[rtf.Characters] == rtf.International {
-		enc := props[rtf.TextEncoding]
-		if enc == "" || enc == rtf.Unicode || enc == rtf.Both || enc == rtf.Literal && readsLiteral {
-			for _, line := range []string{rtfPolish, rtfRussian, rtfJapanese, rtfArabic} {
-				if !strings.Contains(text, line) {
-					t.Fatalf("%v at %d B: pandoc did not read %q", props, size, line)
-				}
-			}
-		} else if strings.Contains(text, rtfPolish) {
-			t.Fatalf("%v at %d B: pandoc read the Polish line right, and text_encoding says it shows %s wrong - the sentence has to change", props, size, enc)
-		}
+	if problem := rtfScriptsProblem(text, props, readsLiteral); problem != "" {
+		t.Fatalf("%v at %d B: %s", props, size, problem)
 	}
 	if props[rtf.Elements] == rtf.Every {
 		if !strings.Contains(text, "This sentence is in a footnote.") || strings.Contains(text, "This sentence is hidden text.") {
 			t.Fatalf("%v at %d B: elements says pandoc returns the footnote and leaves the hidden text out, and it read:\n%s", props, size, text)
 		}
 	}
+}
+
+// rtfScriptsProblem is what is wrong with pandoc's reading of the paragraphs
+// in other scripts, or nothing: read right in unicode and both, and in literal
+// from pandoc 3.13, and the Polish line read wrong otherwise.
+func rtfScriptsProblem(text string, props map[string]string, readsLiteral bool) string {
+	if props[rtf.Characters] != rtf.International {
+		return ""
+	}
+	enc := props[rtf.TextEncoding]
+	if enc == "" || enc == rtf.Unicode || enc == rtf.Both || enc == rtf.Literal && readsLiteral {
+		for _, line := range []string{rtfPolish, rtfRussian, rtfJapanese, rtfArabic} {
+			if !strings.Contains(text, line) {
+				return fmt.Sprintf("pandoc did not read %q", line)
+			}
+		}
+		return ""
+	}
+	if strings.Contains(text, rtfPolish) {
+		return fmt.Sprintf("pandoc read the Polish line right, and text_encoding says it shows %s wrong - the sentence has to change", enc)
+	}
+	return ""
 }
 
 // rtfSettings is a case as the words the structural checker is told, with the
