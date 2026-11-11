@@ -59,8 +59,11 @@ type Format struct {
 	// every page. A proper name is not translated, which is why the registry
 	// can own it - and the two that describe rather than name (plain text and
 	// a log) are the known exception, decided on 2026-09-24.
-	Name        string
-	Extension   string
+	Name string
+	// Extensions is every ending a file of the format can have, the usual
+	// one first - otlp writes .jsonl, and .json in a layout that makes one
+	// JSON document. Which setting gives which is said by tfg formats.
+	Extensions  []string
 	Fidelity    string
 	Determinism string
 	Smallest    int64

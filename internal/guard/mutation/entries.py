@@ -17670,4 +17670,25 @@ MUTATIONS = [
         "        doc = json.loads(text)",
         "TestTheOTLPCheckRefusesWhatAJSONReaderLetsThrough",
     ),
+    (
+        "the engine names every file by the format's own extension, whatever was chosen",
+        "internal/engine/plantarget.go",
+        "ext := desc.ExtensionFor(t.Properties)",
+        "ext := desc.Extension",
+        "TestEveryFileIsNamedForTheSettingsItWasMadeWith",
+    ),
+    (
+        "ExtensionFor answers the format's own extension, whatever was chosen",
+        "internal/format/extension.go",
+        "if ext, named := p.Extensions[props[p.Name]]; named {",
+        "if ext, named := p.Extensions[props[p.Name]]; named && false {",
+        "TestEveryFileIsNamedForTheSettingsItWasMadeWith",
+    ),
+    (
+        "otlp in a layout of one request keeps the .jsonl ending",
+        "internal/format/otlp/settings.go",
+        "\t\t\tExtensions: map[string]string{Indented: \".json\", Minified: \".json\"},\n",
+        "",
+        "TestEveryEndingASettingGivesIsDeclaredSoItCanBeTrusted",
+    ),
 ]

@@ -6,6 +6,9 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"maps"
+	"slices"
+	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -65,6 +68,12 @@ type propertyEntry struct {
 	Default string   `json:"default,omitempty"`
 	Detail  string   `json:"detail,omitempty"`
 	Group   string   `json:"group,omitempty"`
+	// Extensions are the values of this setting that change what a file's
+	// name ends in, each with its ending, so a script knows the name before
+	// the file is made. Absent for every setting that changes no name, which
+	// is every one a preset, a damage or a tool takes. Added on 2026-11-11,
+	// which widens this output and changes the meaning of no key in it.
+	Extensions map[string]string `json:"extensions,omitempty"`
 }
 
 // smallestAccepted is the number this command prints as the minimum.
@@ -95,7 +104,7 @@ func entryFor(d format.Descriptor) formatEntry {
 	props := make([]propertyEntry, 0, len(d.Properties))
 	for _, p := range d.Properties {
 		props = append(props, propertyEntry{
-			Name: p.Name, Kind: string(p.Kind), Min: p.Min, Max: p.Max,
+			Name: p.Name, Kind: string(p.Kind), Min: p.Min, Max: p.Max, Extensions: p.Extensions,
 			Unit: p.Unit, Choices: p.Choices, Default: p.Default, Detail: p.Detail,
 			Group: p.Group,
 		})
@@ -120,7 +129,7 @@ func describeOne(d format.Descriptor, out io.Writer) {
 	fmt.Fprintf(out, "%s - %s fidelity, %s deterministic, minimum %s\n",
 		d.ID, d.Fidelity, d.Determinism, core.ExactBytes(smallestAccepted(d)))
 	fmt.Fprintf(out, "  name       %s\n", d.Name)
-	fmt.Fprintf(out, "  extension  %s\n", d.Extension)
+	fmt.Fprintf(out, "  extension  %s\n", endings(d))
 	fmt.Fprintf(out, "  padding    %s\n", d.Padding.Name)
 	fmt.Fprintf(out, "  label      %s\n", d.Label)
 	fmt.Fprintf(out, "  oracle     %s\n", d.Oracle)
@@ -149,6 +158,25 @@ func describeOne(d format.Descriptor, out io.Writer) {
 	for _, j := range d.JointLimits {
 		fmt.Fprintf(out, "\n  and together:  %s\n", j.Describe())
 	}
+}
+
+// endings is the extension a file of d gets, and after it each one a setting
+// gives instead with the values that give it: ".jsonl, .json with formatting
+// indented or minified". Somebody choosing a layout learns the name before
+// the file is made, which is the point of declaring it.
+func endings(d format.Descriptor) string {
+	line := d.Extension
+	for _, p := range d.Properties {
+		giving := map[string][]string{}
+		for value, ext := range p.Extensions {
+			giving[ext] = append(giving[ext], value)
+		}
+		for _, ext := range slices.Sorted(maps.Keys(giving)) {
+			slices.Sort(giving[ext])
+			line += fmt.Sprintf(", %s with %s %s", ext, p.Name, strings.Join(giving[ext], " or "))
+		}
+	}
+	return line
 }
 
 // What a property accepts is asked of the declaration itself, through

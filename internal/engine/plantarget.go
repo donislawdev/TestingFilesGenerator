@@ -35,6 +35,9 @@ type planning struct {
 // position is the target's place in the recipe, counted from one, and it is
 // what every refusal below carries so a window can mark the right box.
 func (pl *planning) files(ctx context.Context, t *Target, desc format.Descriptor, targetSeed uint64, position int) error {
+	// One ending for every file of the target, because it follows the
+	// target's settings and every file shares them.
+	ext := desc.ExtensionFor(t.Properties)
 	for idx, size := range t.Sizes {
 		fileSeed := core.FileSeed(targetSeed, idx)
 
@@ -65,7 +68,7 @@ func (pl *planning) files(ctx context.Context, t *Target, desc format.Descriptor
 			})
 		}
 
-		name, err := renderName(t, desc, idx)
+		name, err := renderName(t, ext, idx)
 		if err != nil {
 			return atTarget(position, t, err)
 		}

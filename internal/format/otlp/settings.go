@@ -281,8 +281,12 @@ func fileProperties() []format.Property {
 			Name: Formatting, Kind: format.PropertyChoice,
 			Choices: []string{Indented, Minified, RecordPerLine},
 			Default: RecordPerLine,
-			Detail: "How the file is laid out. record-per-line puts one batch on each line, which is what the OTLP file exporter writes and the file receiver of the OpenTelemetry Collector reads. " +
-				"minified and indented make the whole file one request, the body to post to an OTLP endpoint, and a file of that kind is one JSON document whatever its name ends in. " +
+			// A file of one request is one JSON document, and .jsonl would
+			// tell a reader that picks its parser by the name to read it line
+			// by line. docs/ROZSZERZENIE-UKLADU-2026-11-11.md.
+			Extensions: map[string]string{Indented: ".json", Minified: ".json"},
+			Detail: "How the file is laid out. record-per-line puts one batch on each line, which is what the OTLP file exporter writes and the file receiver of the OpenTelemetry Collector reads, and the file name ends in .jsonl. " +
+				"minified and indented make the whole file one request, the body to post to an OTLP endpoint, and the file name ends in .json. " +
 				"Posted as a body, a file of several lines loses every line after the first in the Collector, and its file receiver reads nothing from an indented file.",
 		},
 		{

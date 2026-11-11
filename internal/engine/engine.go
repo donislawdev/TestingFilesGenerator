@@ -839,7 +839,9 @@ const indexToken = "{index:04}"
 // becoming one, across a flag and a preset that answer the same question.
 var boundaryRoles = [3]string{"under_1b", "at_limit", "over_1b"}
 
-func renderName(t *Target, d format.Descriptor, index int) (string, error) {
+// renderName is the name of one file of t, which ends in ext unless the user
+// wrote a template.
+func renderName(t *Target, ext string, index int) (string, error) {
 	tmpl := t.NameTmpl
 	switch {
 	case tmpl != "":
@@ -848,9 +850,9 @@ func renderName(t *Target, d format.Descriptor, index int) (string, error) {
 		// A boundary set says which file is which. The role goes in as literal
 		// text rather than as a token, so it still passes the same name checks
 		// below - the id comes from the user and can hold anything.
-		tmpl = t.ID + "_" + boundaryRoles[index] + d.Extension
+		tmpl = t.ID + "_" + boundaryRoles[index] + ext
 	default:
-		tmpl = t.ID + "_" + indexToken + d.Extension
+		tmpl = t.ID + "_" + indexToken + ext
 	}
 	name := strings.ReplaceAll(tmpl, indexToken, fmt.Sprintf("%04d", index+1))
 

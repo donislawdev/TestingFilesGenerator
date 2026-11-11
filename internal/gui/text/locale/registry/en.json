@@ -1596,8 +1596,8 @@
   },
   "Detail.format/otlp.formatting": {
     "description": "The sentence under the formatting setting of the otlp format, after what it takes.",
-    "hash": "sha256-a0bda4ebdc96",
-    "other": "How the file is laid out. record-per-line puts one batch on each line, which is what the OTLP file exporter writes and the file receiver of the OpenTelemetry Collector reads. minified and indented make the whole file one request, the body to post to an OTLP endpoint, and a file of that kind is one JSON document whatever its name ends in. Posted as a body, a file of several lines loses every line after the first in the Collector, and its file receiver reads nothing from an indented file."
+    "hash": "sha256-b094d2e4c7a2",
+    "other": "How the file is laid out. record-per-line puts one batch on each line, which is what the OTLP file exporter writes and the file receiver of the OpenTelemetry Collector reads, and the file name ends in .jsonl. minified and indented make the whole file one request, the body to post to an OTLP endpoint, and the file name ends in .json. Posted as a body, a file of several lines loses every line after the first in the Collector, and its file receiver reads nothing from an indented file."
   },
   "Detail.format/otlp.level_mix": {
     "description": "The sentence under the level_mix setting of the otlp format, after what it takes.",

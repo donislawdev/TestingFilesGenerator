@@ -18,12 +18,13 @@ because it turns other people's test suites red.
 
 - **A new format: `otlp`, OpenTelemetry traces and logs as OTLP JSON.**
   `tfg generate --format otlp` writes spans or log records to an exact size,
-  one batch on each line as the OTLP file exporter writes them, or as one
-  request for an OTLP endpoint (`formatting`). Settings choose `signal`, the
-  batch, the start time and rate, trace depth, response codes and severities.
-  A file of lines comes back from the OpenTelemetry Collector byte for byte,
-  and none of its lines passes 1 MiB, where the Collector's file receiver
-  drops a line without saying so. Metrics are not written yet.
+  one batch on each line as the OTLP file exporter writes them (`.jsonl`), or
+  one request for an OTLP endpoint (`.json`), chosen by `formatting`. Settings
+  choose `signal`, batch, start time, rate, trace depth, response codes and
+  severities. A file of lines comes back from the OpenTelemetry Collector byte
+  for byte, and no line passes 1 MiB, where the Collector's file receiver
+  silently drops it. `tfg formats --json` names each ending. Metrics are not
+  written yet.
 
 - **A file can be sent under a name no disk stores.** `send-as` in a recipe,
   `--send-as` on the command line and Send as in the window take a name such
