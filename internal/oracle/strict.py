@@ -4808,9 +4808,9 @@ def check_otlp(data, settings=None):
     try:
         batches = otlp_canonical(otlp_batches(text, settings), settings)
     except RecursionError:
-        # The JSON reader of Python goes about fifty times deeper than the
-        # functions that write and spell a batch again, measured 2026-11-11
-        # (review of #233).
+        # The JSON reader of Python goes deeper than the functions that write
+        # and spell a batch again, which stop at a thousand levels (review of
+        # #233).
         fail("a batch is nested deeper than this check follows")
     step = 10**9 // settings["rate"] if settings["signal"] != "metrics" else settings["interval"] * 10**9
     # The checks name the shapes this tool could get wrong. A shape nobody

@@ -461,9 +461,10 @@ func TestTheOTLPCheckRefusesWhatAJSONReaderLetsThrough(t *testing.T) {
 		return path
 	}
 	deep := append(bytes.Repeat([]byte("["), 200000), bytes.Repeat([]byte("]"), 200000)...)
-	// Deep enough for the functions that spell a batch again and shallow
-	// enough for the JSON reader, which goes about fifty times deeper.
-	readable := []byte(`{"resourceSpans":` + strings.Repeat("[", 3000) + strings.Repeat("]", 3000) + "}\n")
+	// Deeper than the thousand levels Python lets a function go, and shallow
+	// enough for its JSON reader, which CPython 3.12 and 3.13 stop at 3000
+	// levels on Windows and 10000 elsewhere (Include/cpython/pystate.h).
+	readable := []byte(`{"resourceSpans":` + strings.Repeat("[", 1200) + strings.Repeat("]", 1200) + "}\n")
 	batch := map[string]string{otlp.Batch: "1"}
 	// A superscript two, which str.isdigit takes for a digit and int() does not.
 	bare := map[string]string{otlp.Batch: "1", otlp.LargeNumbers: otlp.Number}
@@ -484,7 +485,7 @@ func TestTheOTLPCheckRefusesWhatAJSONReaderLetsThrough(t *testing.T) {
 		{"Infinity in the same place", "Infinity is not a JSON number", oracle.StrictRequest{Format: "otlp", Settings: batch,
 			Path: write("infinity.jsonl", bytes.Replace(good, service, []byte(`{"doubleValue":Infinity}`), 1))}},
 		{"a document nested 200000 deep", "nested deeper than a JSON reader goes", oracle.StrictRequest{Format: "otlp", Settings: batch, Path: write("deep.jsonl", append(deep, '\n'))}},
-		{"a batch nested 3000 deep", "nested deeper than this check follows", oracle.StrictRequest{Format: "otlp", Settings: batch, Path: write("readable.jsonl", readable)}},
+		{"a batch nested 1200 deep", "nested deeper than this check follows", oracle.StrictRequest{Format: "otlp", Settings: batch, Path: write("readable.jsonl", readable)}},
 		{"a superscript two as a time", "not a time in nanoseconds", oracle.StrictRequest{Format: "otlp", Settings: bare, Path: write("superscript.jsonl", superscript)}},
 		{"a rate of nought", "rate='0'", oracle.StrictRequest{Format: "otlp", Path: filepath.Join(dir, "good.jsonl"),
 			Settings: map[string]string{otlp.Batch: "1", otlp.Rate: "0"}}},
