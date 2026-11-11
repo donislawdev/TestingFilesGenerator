@@ -173,7 +173,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		// A comment carries the label without touching the content, and it can
 		// sit anywhere after the declaration. The label text uses spaced
 		// hyphens and never a double one, which a comment may not contain.
-		line := "<!-- " + core.Label("xml", r.Bytes, r.Seed) + " -->\n"
+		line := "<!-- " + r.LabelText("xml") + " -->\n"
 		// It has to leave room for a whole document beside it, or the file would
 		// be a comment and an empty root. The number is what the comment COSTS
 		// in this encoding, not how long it is to read - in UTF-16 those differ

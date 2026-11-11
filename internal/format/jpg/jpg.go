@@ -191,7 +191,7 @@ func segmentsFor(extra int64) (segments int, payload int64) {
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = core.Label("jpg", r.Bytes, r.Seed)
+		label = r.LabelText("jpg")
 	}
 
 	quality, err := qualityOf(r.Properties)

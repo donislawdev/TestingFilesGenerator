@@ -114,7 +114,7 @@ type memo struct {
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = core.Label("xlsx", r.Bytes, r.Seed)
+		label = r.LabelText("xlsx")
 	}
 
 	rows, err := intProperty(r.Properties, "rows", 1, minRows, maxRows)
@@ -252,7 +252,7 @@ func sheet(rows, columns int, seed uint64, label string) []byte {
 			// The label goes in the first cell, which is where a person looks
 			// and where a spreadsheet reader shows it without scrolling.
 			if row == 1 && col == 1 && label != "" {
-				text = opc.Text(opc.Fixed(label, opc.LabelWidth))
+				text = opc.Text(opc.FixedLabel(label))
 			}
 			b.WriteString(`<c r="` + column(col) + strconv.Itoa(row) + `" t="inlineStr"><is><t xml:space="preserve">`)
 			b.WriteString(text)
@@ -298,7 +298,7 @@ func intProperty(props map[string]string, key string, fallback, min, max int) (i
 // document the label is an extra paragraph and it goes the other way.
 func minimumBytes() int64 {
 	smallest := int64(1) << 62
-	for _, label := range []string{"", core.Label("xlsx", 0, 0)} {
+	for _, label := range []string{"", format.Request{}.LabelText("xlsx")} {
 		shape, err := opc.Measure(parts(1, 1, 0, label))
 		if err != nil {
 			continue

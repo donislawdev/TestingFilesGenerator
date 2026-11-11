@@ -109,12 +109,8 @@ func firstWritable(ctx context.Context, desc format.Descriptor, r format.Request
 // format.PlanWith asks the context before anything else, and a stop is not a
 // refusal about the size, so firstWritable hands it straight back.
 func drawSizes(ctx context.Context, t *Target, desc format.Descriptor, targetSeed uint64) error {
-	first := format.Request{
-		Contains:   t.Contains,
-		Seed:       core.FileSeed(targetSeed, 0),
-		Label:      t.Label,
-		Properties: t.Properties,
-	}
+	damaged := t.Damage.Label()
+	first := requestFor(t, core.FileSeed(targetSeed, 0), damaged)
 
 	// The low end is judged against what this format can do AT ALL, and that
 	// check is older than the snapping below it. The two answer different
@@ -155,12 +151,7 @@ func drawSizes(ctx context.Context, t *Target, desc format.Descriptor, targetSee
 			want = t.Range.Min + int64(r.Uint64N(span+1))
 		}
 
-		req := format.Request{
-			Contains:   t.Contains,
-			Seed:       core.FileSeed(targetSeed, i),
-			Label:      t.Label,
-			Properties: t.Properties,
-		}
+		req := requestFor(t, core.FileSeed(targetSeed, i), damaged)
 
 		got, err := firstWritable(ctx, desc, req, want, t.Range.Max)
 		if err != nil && want > t.Range.Min {

@@ -171,7 +171,7 @@ type memo struct {
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = core.Label("avif", r.Bytes, r.Seed)
+		label = r.LabelText("avif")
 	}
 
 	q, err := quality(r.Properties)

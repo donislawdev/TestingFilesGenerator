@@ -121,7 +121,7 @@ func pixelBytes(width, height int) int64 {
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = core.Label("bmp", r.Bytes, r.Seed)
+		label = r.LabelText("bmp")
 	}
 
 	w, h, err := chooseSize(r)

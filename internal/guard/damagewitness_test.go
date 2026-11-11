@@ -66,8 +66,13 @@ var policyRefusals = map[[2]string][]string{
 	{damage.Truncate, "html"}: {"was ordered and the page is not", "the document does not end with a closing"},
 	{damage.Truncate, "md"}:   {"so one block is never closed"},
 	{damage.Truncate, "eml"}: {"the message has no blank line after its header lines", "layout=newsletter and the plain text",
-		// A rule the cut breaks only when it falls between a CR and its LF.
-		"a carriage return or a line feed on its own"},
+		// A multipart message cut inside its body has no closing boundary,
+		// which RFC 2046 asks for and readers skip: Python's email reads such
+		// a cut multipart/alternative with its text part whole and notes a
+		// CloseBoundaryNotFoundDefect (measured 2026-11-12). Until the label
+		// of a damaged file named its damage, the cut at this size fell
+		// between a CR and its LF, and that reason came first.
+		"does not open with its boundary or has no closing one"},
 	{damage.Truncate, "txt"}: {},
 	// Bytes past the format's own end, which its rules forbid and readers skip.
 	{damage.AppendJunk, "png"}:   {"declares"},

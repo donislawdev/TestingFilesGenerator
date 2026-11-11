@@ -267,6 +267,49 @@ func TestARunFromTheWindowIsReallyDamaged(t *testing.T) {
 	}
 }
 
+// A damage setting outside its range, typed into the window, is refused under
+// its own box and writes nothing.
+//
+// The window hands the engine a chain without a recipe, so until 2026-11-12 it
+// sent bytes=99999 on, the engine zeroed the default eight and the manifest
+// recorded 99999 (O332). Pressed rather than settled, for the reason the guard
+// above gives, and asked of the box the value was typed into: a refusal at the
+// foot of the form would stop the run and leave a person looking for the box.
+func TestADamageSettingOutsideItsRangeIsRefusedUnderItsBox(t *testing.T) {
+	dir := t.TempDir()
+
+	host := newFakeHost(t)
+	gen := window.NewGenerate(host)
+	content := gen.Object()
+	t.Cleanup(func() { join(host) })
+
+	fields := gen.Fields()
+	chooserIn(t, fields, "format").SetSelected("png")
+	setBox(t, fields, "size", "20kb")
+
+	chooser, ok := controlUnder(content, text.FieldDamage()).(*parts.Chooser)
+	if !ok {
+		t.Fatalf("the damage field is not a list to choose from")
+	}
+	chooser.SetSelected(damage.ZeroHead)
+	setBox(t, fields, damage.SettingBytes, "99999")
+	if got := boxText(t, fields, damage.SettingBytes); got != "99999" {
+		t.Fatalf("the box holds %q, so there is no refusal to cause", got)
+	}
+
+	entryUnder(t, content, text.FieldOutputDir()).SetText(dir)
+	press(t, content, text.ButtonGenerate())
+	join(host)
+
+	if made, _ := filepath.Glob(filepath.Join(dir, "*")); len(made) != 0 {
+		t.Errorf("a refused run left %v behind", made)
+	}
+	said := fields.Lookup(damage.SettingBytes).Saying()
+	if !strings.Contains(said, "99999") {
+		t.Errorf("the box that holds 99999 says %q - the refusal went somewhere else. Marked: %v", said, fields.Marked())
+	}
+}
+
 // damageManifest reads a manifest as the manifest package spells it.
 //
 // Its own reader rather than the manifestShape the recipe guards share: that

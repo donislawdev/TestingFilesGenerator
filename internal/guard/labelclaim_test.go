@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagelabel"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/video"
@@ -77,7 +76,7 @@ func TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole(t *testing.T) {
 // drawn at. The guard above asks the lowest height and one with room, and an
 // answer one row out at the boundary passed it (found by review, 2026-10-27).
 func TestALabelIsReadableFromTheFirstHeightThatHoldsItsText(t *testing.T) {
-	label := core.Label("bmp", 2048, 1)
+	label := format.Request{Bytes: 2048, Seed: 1}.LabelText("bmp")
 	across := len(label)*4 + 4 // a glyph and its gap is four columns at scale 1, with the padding either side
 	for scale := 1; scale <= 4; scale++ {
 		width := across * scale
@@ -118,7 +117,7 @@ func TestALabelIsReadableFromTheFirstHeightThatHoldsItsText(t *testing.T) {
 // edges it can move at, and each series has to give both answers.
 func TestAFilmSaysItCarriesItsLabelOnlyWhenAPictureShowsItWhole(t *testing.T) {
 	const seed, tall = 7, 256
-	label := core.Label("webm", 1<<20, seed)
+	label := format.Request{Bytes: 1 << 20, Seed: seed}.LabelText("webm")
 	across := len(label)*4 + 4 // the width that draws it at scale 1, as in the guard above
 	timeline := func(changes int64) video.Timeline {
 		tl, err := video.NewTimeline("webm", changes*1000, 60_000, 1000, 30)

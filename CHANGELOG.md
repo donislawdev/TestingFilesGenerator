@@ -24,6 +24,13 @@ because it turns other people's test suites red.
   was meant. Only pixels along those edges change, and many files do not
   change at all. A test that compares a file with one 0.5.0 generated from the
   same request can fail.
+- **A damaged file names its damage in its label.** The label now reads
+  `tfg - txt - 10485760 B - damage truncate:missing=50 - seed c2a547b2`: the
+  size the file has on disk, then every damage with its settings, in the order
+  they were applied. A text cut by half and one cut by nine tenths used to begin
+  with the same line. A file damaged with `zero-head` and carrying a label is
+  therefore not byte for byte what 0.5.0 wrote. Files with no damage, and files
+  made with `--clean`, are unchanged.
 
 ### Added
 
@@ -164,6 +171,13 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **A damage setting outside its range is refused on the command line and in
+  the window.** `--damage truncate:missing=95` cut the default half, wrote the
+  file, ended with code 0 and recorded `missing: 95` in the manifest, and
+  `--damage zero-head:bytes=99999999999` zeroed 8 bytes. A setting the damage
+  does not take, such as `truncate:foo=1`, went through as well. Now the run
+  ends with code 2 before anything is written and says what the setting takes,
+  and the window shows that under the field. A recipe was already refused.
 - **An AVIF picture wider than 4096 px, or larger than 4096 x 2304 px, opens
   now.** Every release since AVIF arrived in 0.3.0 wrote such a picture as a
   file no viewer reads: Pillow, ImageMagick and libaom all refused it as

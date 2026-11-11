@@ -64,18 +64,35 @@ var glyphs = map[rune]string{
 	'/': "..#" + "..#" + ".#." + "#.." + "#..",
 	'+': "..." + ".#." + "###" + ".#." + "...",
 	'#': "#.#" + "###" + "#.#" + "###" + "#.#",
+	// The label of a damaged file names its settings - missing=50,
+	// bytes=16,other=2 - and these two are how it writes them.
+	'=': "..." + "###" + "..." + "###" + "...",
+	',': "..." + "..." + "..." + ".#." + "#..",
 }
 
 // unknown stands in for any character with no glyph, so a label never
-// silently loses part of itself.
+// silently loses part of itself. It is drawn the same as 0 and O, which is why
+// HasGlyph asks the table rather than comparing with this.
 const unknown = "###" + "#.#" + "#.#" + "#.#" + "###"
 
 func glyph(r rune) string {
-	if r >= 'a' && r <= 'z' {
-		r -= 'a' - 'A'
-	}
-	if g, ok := glyphs[r]; ok {
+	if g, ok := glyphs[upper(r)]; ok {
 		return g
 	}
 	return unknown
+}
+
+// HasGlyph says whether r is drawn as itself rather than as the stand-in, for
+// the guard that asks it of every character a label can hold.
+func HasGlyph(r rune) bool {
+	_, ok := glyphs[upper(r)]
+	return ok
+}
+
+// upper is r in the case the table is drawn in - see the top of this file.
+func upper(r rune) rune {
+	if r >= 'a' && r <= 'z' {
+		return r - ('a' - 'A')
+	}
+	return r
 }

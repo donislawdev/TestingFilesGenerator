@@ -92,7 +92,7 @@ type memo struct {
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = core.Label("pptx", r.Bytes, r.Seed)
+		label = r.LabelText("pptx")
 	}
 
 	slides, err := intProperty(r.Properties, "slides", 1)
@@ -210,7 +210,7 @@ func parts(slides int, seed uint64, label string) []opc.Part {
 	for i := 1; i <= slides; i++ {
 		text := opc.Line(rng, 6)
 		if i == 1 && label != "" {
-			text = opc.Text(opc.Fixed(label, opc.LabelWidth))
+			text = opc.Text(opc.FixedLabel(label))
 		}
 		out = append(out,
 			opc.Part{
@@ -347,7 +347,7 @@ func intProperty(props map[string]string, key string, fallback int) (int, error)
 // document the label is an extra paragraph and it goes the other way.
 func minimumBytes() int64 {
 	smallest := int64(1) << 62
-	for _, label := range []string{"", core.Label("pptx", 0, 0)} {
+	for _, label := range []string{"", format.Request{}.LabelText("pptx")} {
 		shape, err := opc.Measure(parts(1, 0, label))
 		if err != nil {
 			continue

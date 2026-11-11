@@ -93,7 +93,7 @@ func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan
 	describePictures(p.Properties, s.pictures, pictures)
 	m := memo{settings: s, seed: r.Seed, pictures: pictures, pictureBytes: pictureBytes}
 	if r.Label {
-		line := labelLine(core.Label("rtf", r.Bytes, r.Seed))
+		line := labelLine(r.LabelText("rtf"))
 		if min+int64(len(line)) <= r.Bytes {
 			m.labelLine = line
 		} else {

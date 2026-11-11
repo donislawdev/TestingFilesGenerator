@@ -1,6 +1,7 @@
 package damage
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -61,6 +62,41 @@ func (e *UnknownError) Said() core.Said {
 	}
 	return core.Says("damage.Unknown", "%s. This build has: %s",
 		core.A("What", e.what()), core.A("Known", strings.Join(e.Known, ", ")))
+}
+
+// SettingError is one entry of a chain stating a setting its damage does not
+// take, or a value the declaration of that setting does not allow.
+//
+// A wrapper around the declaration's own refusal rather than that refusal on
+// its own, for two things the refusal underneath cannot know. Which entry of
+// the list it is about, so a form marks the right box and the engine names the
+// address the recipe reader gives for the same mistake. And its class: a value
+// a damage does not allow is wrong whatever format and size are asked for, so
+// the command line ends with the code a mistyped flag gets, not the code for a
+// request no format can deliver - the call O199 made for an expectation.
+//
+// The words are the declaration's (format.Property.Allows and Instead), reached
+// through Unwrap, so a damage setting and a format setting refuse alike.
+type SettingError struct {
+	// Position is the entry's place in the chain, counted from one.
+	Position int
+	// Err is *format.PropertyValueError or *format.UnknownPropertyError.
+	Err error
+}
+
+func (e *SettingError) Error() string { return e.Err.Error() }
+
+func (e *SettingError) Unwrap() error { return e.Err }
+
+// AboutSetting is the setting inside its entry - damage[1].missing. The
+// engine puts the target in front, and a window showing one target keeps the
+// last part, which is the name its box is registered under.
+func (e *SettingError) AboutSetting() string {
+	var about interface{ AboutSetting() string }
+	if !errors.As(e.Err, &about) || about.AboutSetting() == "" {
+		return core.KeyDamage
+	}
+	return core.DamageAddress(e.Position, about.AboutSetting())
 }
 
 // TooSmallError is a file smaller than the damage it was given.
@@ -234,7 +270,7 @@ type EatenError struct {
 
 // AboutSetting puts this on the damage, because the order of the list is the
 // thing to change.
-func (e *EatenError) AboutSetting() string { return "damage" }
+func (e *EatenError) AboutSetting() string { return core.KeyDamage }
 
 func (e *EatenError) What() string { return e.what().String() }
 

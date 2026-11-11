@@ -231,7 +231,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	}
 
 	if r.Label {
-		m.info = infoChunk(core.Label("wav", r.Bytes, r.Seed))
+		m.info = infoChunk(r.LabelText("wav"))
 	}
 
 	fixed := int64(baseSize) + int64(len(m.info))

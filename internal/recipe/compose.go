@@ -470,7 +470,7 @@ const (
 	KeySendAs         = core.SettingSendAs
 	KeyLabel          = "label"
 	KeyFill           = "fill"
-	KeyDamage         = "damage"
+	KeyDamage         = core.KeyDamage
 	KeyProperties     = core.KeyProperties
 	KeyExpected       = "expected"
 	KeyExpectedReason = "expected.reason"

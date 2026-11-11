@@ -5,7 +5,6 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/jxl"
@@ -123,7 +122,7 @@ func TestEveryJxlRungStillFitsInsideItsDeclaredCeiling(t *testing.T) {
 				for _, withLabel := range []bool{true, false} {
 					label := ""
 					if withLabel {
-						label = core.Label("jxl", want, seed)
+						label = format.Request{Bytes: want, Seed: seed}.LabelText("jxl")
 					}
 					n, err := jxl.FileSizeFor(w, h, jxl.DefaultQuality, seed, label)
 					if err != nil {

@@ -136,6 +136,16 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	// Broken once each on 2026-11-12 while they were written, one change at a
+	// time and restored (docs/DAMAGE-SETTINGS-LABEL-2026-11-12.md). The first
+	// also carries a canary of its own check.
+	"TestEveryDamageSettingItsDeclarationForbidsIsRefusedWithoutARecipe": "its own canary - a plan that went through and a refusal about the first entry of the chain, both rejected by its check - and broken on 2026-11-12 " +
+		"by taking damage.Chain.Check out of engine.prepareDamage: red, every value went through.",
+	"TestADamageSettingOutsideItsRangeIsRefusedUnderItsBox": "broken on 2026-11-12 by taking damage.Chain.Check out of engine.prepareDamage: red, the window wrote the file and the box said nothing.",
+	"TestADamagedFileStatesItsSizeOnDiskAndItsDamage": "its own canary - the label it was written against, naming the size before the damage and no damage, rejected by its check - and broken on 2026-11-12 " +
+		"twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times.",
+	"TestATruncatedTextSaysHowMuchWasCut": "broken on 2026-11-12 twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times.",
+	"TestEveryCharacterOfADamagedLabelCanBeDrawn": "its own canary - a character the font never had must not count as drawn - and broken on 2026-11-12 by taking = out of the picture font: red.",
 	// What breaks it lives in a module, not in a file of this repository, so
 	// no mutation of this tree reaches it - the dependency it was written
 	// against is the break.

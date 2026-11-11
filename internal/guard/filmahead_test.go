@@ -8,7 +8,6 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/video"
@@ -40,7 +39,7 @@ func TestAFilmPaintsOnlyWhatChangesAndGetsTheWholePicture(t *testing.T) {
 		}
 		timelines[name] = tl
 	}
-	labels := map[string]string{"labelled": core.Label("webm", 1<<20, 7), "unlabelled": ""}
+	labels := map[string]string{"labelled": format.Request{Bytes: 1 << 20, Seed: 7}.LabelText("webm"), "unlabelled": ""}
 
 	compared, clocked, moved := 0, 0, 0
 	for _, size := range sizes {

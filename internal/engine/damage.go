@@ -39,14 +39,20 @@ func checkDamage(t *Target, desc format.Descriptor) error {
 // prepareDamage is what a damaged target is refused for before a size is
 // drawn, and the format its files are planned through.
 //
-// Before the draw, because a chain that cuts away what it added and a damage
-// with no size to work from are wrong whatever size comes out of the seed.
-// And the format it hands back is the one the draw has to ask: a damage that
-// changes the length needs the generator asked for a different size than the
-// one on disk (damagedformat.go).
+// Before the draw, because a setting the damage does not allow, a chain that
+// cuts away what it added and a damage with no size to work from are wrong
+// whatever size comes out of the seed. And the format it hands back is the one
+// the draw has to ask: a damage that changes the length needs the generator
+// asked for a different size than the one on disk (damagedformat.go).
+//
+// The settings first, because every question after them reads the settings
+// and would answer about the default where the value is out of range.
 func prepareDamage(t *Target, desc format.Descriptor) (format.Descriptor, error) {
 	if len(t.Damage) == 0 {
 		return desc, nil
+	}
+	if err := t.Damage.Check(); err != nil {
+		return desc, err
 	}
 	if eaten := t.Damage.Eaten(); eaten != nil {
 		return desc, eaten

@@ -185,7 +185,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		// label is a line of its own. It is the one line that is not an entry,
 		// and it says so in words rather than pretending to be one - except in
 		// JSON lines, where a comment is not a line any reader would take.
-		line := opt.shape.label(core.Label("log", r.Bytes, r.Seed), opt)
+		line := opt.shape.label(r.LabelText("log"), opt)
 		// It has to leave room for at least one whole entry, or the file would
 		// be a label and nothing else.
 		if int64(len(line))+min <= r.Bytes {

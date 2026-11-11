@@ -668,8 +668,18 @@ type Request struct {
 	// Seed determines the content. The same seed gives the same bytes.
 	Seed uint64
 	// Label asks for the self describing label. On by default, turned off
-	// with --clean.
+	// with --clean. A generator composes it with LabelText (label.go).
 	Label bool
+	// Damage is what the engine will break about this file once it is
+	// written, as the label states it - "truncate:missing=50" - or empty for
+	// a file nothing breaks. A generator does not apply it and reads it for
+	// nothing but the label, through LabelText.
+	Damage string
+	// OnDisk is the size the file has on disk once its damage has changed the
+	// length, where Bytes is the size of the whole file before it - a cut
+	// asks the generator for more than it keeps. Zero means Bytes is the size
+	// on disk. Read for the label alone, like Damage.
+	OnDisk int64
 	// Properties are format specific settings, straight from the recipe.
 	Properties map[string]string
 }

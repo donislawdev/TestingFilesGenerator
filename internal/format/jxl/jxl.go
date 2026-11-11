@@ -211,7 +211,7 @@ type memo struct {
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = core.Label("jxl", r.Bytes, r.Seed)
+		label = r.LabelText("jxl")
 	}
 
 	q, err := quality(r.Properties)

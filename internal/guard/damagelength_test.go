@@ -214,8 +214,12 @@ func TestATruncatedFileIsTheStartOfTheWholeOne(t *testing.T) {
 	}
 	compared := 0
 	for _, f := range format.All() {
-		cut := engine.Target{ID: "same", Format: f.ID, Sizes: engine.Uniform(1, size), Damage: chain, Label: true}
-		full := engine.Target{ID: "same", Format: f.ID, Sizes: engine.Uniform(1, whole), Label: true}
+		// Without the label, because a cut file's label states the size it
+		// keeps and the damage, and the whole file's states neither - the
+		// two differ on purpose (TestADamagedFileStatesItsSizeOnDiskAndItsDamage),
+		// and what this guard holds is every byte under them.
+		cut := engine.Target{ID: "same", Format: f.ID, Sizes: engine.Uniform(1, size), Damage: chain}
+		full := engine.Target{ID: "same", Format: f.ID, Sizes: engine.Uniform(1, whole)}
 		if _, err := engine.Plan([]engine.Target{full}, engine.Options{OutDir: t.TempDir(), Seed: lengthSeed}); err != nil {
 			// A size this format cannot write exactly: the cut started from
 			// the next one it can, which is a different whole file.
@@ -260,8 +264,9 @@ func TestAppendedJunkIsTheWholeFileAndThenTheSameBytesEveryTime(t *testing.T) {
 	}
 	junk := size - before
 
-	broken := engine.Target{ID: "same", Format: "txt", Sizes: engine.Uniform(1, size), Damage: chain, Label: true}
-	whole := engine.Target{ID: "same", Format: "txt", Sizes: engine.Uniform(1, before), Label: true}
+	// Without the label, for the reason the guard above gives.
+	broken := engine.Target{ID: "same", Format: "txt", Sizes: engine.Uniform(1, size), Damage: chain}
+	whole := engine.Target{ID: "same", Format: "txt", Sizes: engine.Uniform(1, before)}
 	_, brokenPath := lengthRun(t, filepath.Join(dir, "broken"), []engine.Target{broken})
 	_, wholePath := lengthRun(t, filepath.Join(dir, "whole"), []engine.Target{whole})
 	got, err := os.ReadFile(brokenPath["same"])

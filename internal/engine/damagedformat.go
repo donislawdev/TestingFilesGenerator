@@ -33,8 +33,10 @@ import (
 //
 // For a caller that has to know before planning - a guard measuring each pair
 // at its smallest, or a list announcing the number. Asked of the same format a
-// run plans through, so the number cannot be one the run refuses.
+// run plans through, so the number cannot be one the run refuses - with the
+// damage in the request, because the label names it and a run's does.
 func SmallestDamaged(d format.Descriptor, chain damage.Chain, r format.Request) int64 {
+	r.Damage = chain.Label()
 	floor, _, err := chain.Floor()
 	if err != nil {
 		return d.SmallestAccepted(r)
@@ -78,13 +80,9 @@ func (g *damagedGenerator) PlanContext(ctx context.Context, r format.Request) (f
 	if err != nil {
 		return format.Plan{}, err
 	}
-	r.Bytes = want
-	p, err := g.plan(ctx, r)
-	if err != nil && g.chain.Stretches() {
-		p, err = g.stretch(ctx, r, err)
-	}
+	p, inner, err := g.whole(ctx, r, want, size)
 	if err != nil {
-		return format.Plan{}, g.inSizeOnDisk(ctx, r, size, err)
+		return format.Plan{}, g.inSizeOnDisk(ctx, inner, size, err)
 	}
 	return format.Plan{
 		Bytes:       size,
@@ -96,6 +94,20 @@ func (g *damagedGenerator) PlanContext(ctx context.Context, r format.Request) (f
 		Work:        p.Work,
 		Holds:       p.Holds,
 	}, nil
+}
+
+// whole plans the file the damage starts from, want bytes long, for a file of
+// size bytes on disk, and answers the request it asked with.
+//
+// The label inside it states the file on disk, which is size - not the size
+// the generator writes, nor one stretch moves it to.
+func (g *damagedGenerator) whole(ctx context.Context, r format.Request, want, size int64) (format.Plan, format.Request, error) {
+	r.Bytes, r.OnDisk = want, size
+	p, err := g.plan(ctx, r)
+	if err != nil && g.chain.Stretches() {
+		p, err = g.stretch(ctx, r, err)
+	}
+	return p, r, err
 }
 
 // plan asks the real generator, through the wrapper everything the engine asks
@@ -215,11 +227,7 @@ func (g *damagedGenerator) firstWritable(ctx context.Context, r format.Request, 
 func (g *damagedGenerator) inSizeOnDisk(ctx context.Context, r format.Request, size int64, err error) error {
 	var below *format.BelowMinimumError
 	if errors.As(err, &below) {
-		first := below.Minimum
-		if writable, werr := g.firstWritable(ctx, r, first); werr == nil {
-			first = writable
-		}
-		least := g.smallestReaching(first)
+		first, least := g.floorOnDisk(ctx, r, below.Minimum)
 		return &format.BelowMinimumError{
 			Format: g.format, Requested: size, Minimum: least,
 			Reason: core.Says("engine.DamagedBelowWhy", "%s has to start from a %s file of at least %s",
@@ -236,6 +244,38 @@ func (g *damagedGenerator) inSizeOnDisk(ctx context.Context, r format.Request, s
 			Hint: g.askFor(most, false)}
 	}
 	return err
+}
+
+// floorOnDisk is the smallest file the damage can start from and the smallest
+// size on disk that reaches it, from the size a refusal of r named.
+//
+// Walked to a size the generator writes first, for the reason inSizeOnDisk
+// gives. Then asked again at the size on disk it comes to, because the label
+// of a damaged file states its size on disk: where that label is longer than
+// the room a format keeps for one, the floor moves with the number of digits.
+// A refusal of 428 B measured a label one byte shorter than the one the 1284 B
+// it named carries, and 1284 B was refused in turn (docx with append-junk,
+// measured 2026-11-12). A few rounds settle it, because the floor only grows
+// with the digits and the digits stop changing.
+func (g *damagedGenerator) floorOnDisk(ctx context.Context, r format.Request, named int64) (first, least int64) {
+	first = named
+	for round := 0; round < 4; round++ {
+		if writable, err := g.firstWritable(ctx, r, first); err == nil {
+			first = writable
+		}
+		least = g.smallestReaching(first)
+		want, err := g.chain.Before(least)
+		if err != nil {
+			return first, least
+		}
+		_, inner, err := g.whole(ctx, r, want, least)
+		var below *format.BelowMinimumError
+		if err == nil || !errors.As(err, &below) || below.Minimum <= first {
+			return first, least
+		}
+		r, first = inner, below.Minimum
+	}
+	return first, least
 }
 
 // smallestReaching is the smallest size on disk whose damage needs at least

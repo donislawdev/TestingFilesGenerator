@@ -161,7 +161,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 
 	m := memo{seed: r.Seed}
 	if r.Label {
-		line := "# " + core.Label("toml", r.Bytes, r.Seed) + "\n"
+		line := "# " + r.LabelText("toml") + "\n"
 		if int64(len(line))+min <= r.Bytes {
 			m.comment = line
 		} else {

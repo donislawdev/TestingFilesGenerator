@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -92,12 +94,30 @@ func (d Descriptor) checkOne(p format.Property, raw string) error {
 	}
 }
 
-// Check is the first problem with the values stated, for the one-target path
-// from the command line flags where there is no form to lay four of them out
-// on.
-func (d Descriptor) Check(v Values) error {
-	if bad := d.CheckEach(v); len(bad) > 0 {
-		return bad[0]
+// Check is the first problem with what this chain states: a damage this build
+// does not know, or a setting its declaration does not take or does not allow.
+//
+// The engine asks it, for the command line and the window, which hand it a
+// chain without reading a recipe. The recipe reader asks CheckEach of every
+// entry and reports each problem with its address, so this is a second caller
+// of the same rule rather than a copy of it - the shape O199 gave the
+// expectation. The first problem only, as format.Descriptor.CheckProperties
+// gives it beside this: a window draws one damage at a time, and the engine
+// addresses one refusal per target.
+//
+// Asked before a byte is written, because a value past the declaration does
+// not fail later. The settings are read with a fallback to the default
+// (missingShare, junkBytes, headBytes), so without this the file would be cut
+// by the default and the manifest would record the value as written.
+func (c Chain) Check() error {
+	for i, s := range c {
+		d, err := Get(s.ID)
+		if err != nil {
+			return err
+		}
+		if bad := d.CheckEach(s.Values); len(bad) > 0 {
+			return &SettingError{Position: i + 1, Err: bad[0]}
+		}
 	}
 	return nil
 }
@@ -345,6 +365,40 @@ func (c Chain) String() string {
 		out = append(out, s.String())
 	}
 	return fmt.Sprint(out)
+}
+
+// Label is the chain as the label of a damaged file states it: every entry in
+// order, its settings resolved the way the manifest records them, joined by
+// " then " - "truncate:missing=50 then append-junk:bytes=1024". Empty for an
+// empty chain, which is a file whose label does not change.
+//
+// Resolved rather than as written, for the reason Resolved gives: the label
+// answers what was done to this file, and its reader should not need the
+// defaults of the build that wrote it. ASCII whatever a setting holds, because
+// the label goes into encodings where nothing else is sure to survive
+// (format/label.go): a value with anything else in it, or with a space or one
+// of the separators, is written quoted with escapes.
+func (c Chain) Label() string {
+	out := make([]string, 0, len(c))
+	for _, s := range c {
+		values := Values{}
+		for name, value := range s.Resolved() {
+			values[name] = plainOrQuoted(value)
+		}
+		out = append(out, Spec{ID: s.ID, Values: values}.String())
+	}
+	return strings.Join(out, " then ")
+}
+
+// plainOrQuoted is v as it is when every byte of it is printable ASCII other
+// than the separators a label entry is written with, and quoted otherwise.
+func plainOrQuoted(v string) string {
+	for i := 0; i < len(v); i++ {
+		if b := v[i]; b <= ' ' || b > '~' || b == ',' || b == '=' || b == ':' || b == '"' {
+			return strconv.QuoteToASCII(v)
+		}
+	}
+	return v
 }
 
 // Resolved is the settings this entry was applied with, defaults filled in.

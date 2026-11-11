@@ -181,7 +181,7 @@ func belowMinimum(s settings, requested, min int64) error {
 // is what a part does rather than how long it is: this answers "does the label
 // fit and what does it cost", and Plan answers "is this request askable at all".
 func labelledHead(s settings, r format.Request, min int64) (head, heading string, note *format.Note) {
-	label := core.Label("html", r.Bytes, r.Seed)
+	label := r.LabelText("html")
 	m := s.spelling()
 	heading = m[labelOpen] + label + m[labelClose]
 	if s.indented() {
