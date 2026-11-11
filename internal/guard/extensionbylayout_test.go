@@ -1,12 +1,15 @@
 package guard
 
 import (
+	"encoding/json"
+	"maps"
 	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
 	"testing"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/cli"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
@@ -129,6 +132,57 @@ func TestEveryFileIsNamedForTheSettingsItWasMadeWith(t *testing.T) {
 	}
 	if checked == 0 {
 		t.Fatal("no file was named under a setting that gives an ending, so the loop proved nothing")
+	}
+}
+
+// TestTheFormatsCommandSaysWhichSettingGivesWhichEnding holds both outputs of
+// tfg formats to the declaration: the line a person reads and the key a script
+// reads. The names the engine gives are held above, and nothing there would
+// notice either output saying .jsonl alone (CodeRabbit on #231, 2026-11-11).
+func TestTheFormatsCommandSaysWhichSettingGivesWhichEnding(t *testing.T) {
+	code, text, errOut := run(t, "formats", "otlp")
+	if code != cli.ExitOK {
+		t.Fatalf("tfg formats otlp ended %d: %s", code, errOut)
+	}
+	// Written out, because the line is what a person reads before choosing a
+	// layout - built from the declaration it would agree with any declaration.
+	if want := "  extension  .jsonl, .json with formatting indented or minified\n"; !strings.Contains(text, want) {
+		t.Errorf("tfg formats otlp does not say which layout gives .json - it should hold %q:\n%s", want, text)
+	}
+
+	checked := 0
+	for _, d := range format.All() {
+		declared := map[string]map[string]string{}
+		for _, p := range d.Properties {
+			if len(p.Extensions) > 0 {
+				declared[p.Name] = p.Extensions
+			}
+		}
+		if len(declared) == 0 {
+			continue
+		}
+		code, out, errOut := run(t, "formats", d.ID, "--json")
+		if code != cli.ExitOK {
+			t.Fatalf("tfg formats %s --json ended %d: %s", d.ID, code, errOut)
+		}
+		var list []struct {
+			Properties []struct {
+				Name       string            `json:"name"`
+				Extensions map[string]string `json:"extensions"`
+			} `json:"properties"`
+		}
+		if err := json.Unmarshal([]byte(out), &list); err != nil || len(list) != 1 {
+			t.Fatalf("tfg formats %s --json is not one format: %v\n%s", d.ID, err, out)
+		}
+		for _, p := range list[0].Properties {
+			if want := declared[p.Name]; !maps.Equal(p.Extensions, want) {
+				t.Errorf("tfg formats %s --json gives %s the endings %v, and it declares %v", d.ID, p.Name, p.Extensions, want)
+			}
+			checked++
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no format declares an ending a setting gives, so --json was never read - otlp's formatting did")
 	}
 }
 

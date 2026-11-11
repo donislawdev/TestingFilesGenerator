@@ -17691,4 +17691,18 @@ MUTATIONS = [
         "",
         "TestEveryEndingASettingGivesIsDeclaredSoItCanBeTrusted",
     ),
+    (
+        "tfg formats --json stops carrying the endings a setting gives",
+        "internal/cli/formats.go",
+        "Max: p.Max, Extensions: p.Extensions,",
+        "Max: p.Max,",
+        "TestTheFormatsCommandSaysWhichSettingGivesWhichEnding",
+    ),
+    (
+        "the card of one format gives its extension alone, whatever a setting changes",
+        "internal/cli/formats.go",
+        "fmt.Fprintf(out, \"  extension  %s\\n\", endings(d))",
+        "fmt.Fprintf(out, \"  extension  %s\\n\", d.Extension)",
+        "TestTheFormatsCommandSaysWhichSettingGivesWhichEnding",
+    ),
 ]
