@@ -21,7 +21,10 @@ func (m *metricPlan) measure(rng *rand.Rand, p *point, st *seriesState, cumulati
 	var taken [mostMeasurements]micros
 	var where [mostMeasurements]int
 	m.cycle = [bucketCount]int64{}
-	for i := range n {
+	for i := range taken {
+		if i == n {
+			break
+		}
 		b := bands[rng.IntN(len(bands))]
 		taken[i] = b.low + rng.Int64N(b.high-b.low+1)
 		if inst.exemplary {
@@ -94,6 +97,8 @@ func (m *metricPlan) shapePoint(p *point, st *seriesState, held []int64, where [
 		// Prometheus client write one.
 		p.count, p.sum = st.count, st.sum
 		quantiles(p, taken)
+	case shapeGauge, shapeSum:
+		// A number is not measured, so it has no buckets and no quantiles.
 	}
 }
 

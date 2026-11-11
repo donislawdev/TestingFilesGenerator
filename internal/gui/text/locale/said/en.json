@@ -2473,8 +2473,8 @@
   },
   "otlp.AFileThisLargeCollectsAfter": {
     "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Interval}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-a57bf3d8c73f",
-    "other": "a file of this size collected every {{.Interval}} s would date its last collections after the year 2262. Choose an earlier start, a longer interval or a smaller file"
+    "hash": "sha256-a18c86e7715d",
+    "other": "a file of this size collected every {{.Interval}} s would date its last collections after the year 2262. Choose an earlier start, a shorter interval or a smaller file"
   },
   "otlp.AFileThisLargeEndsAfter": {
     "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Rate}}, written the way the program writes them - keep each spelled exactly that way.",

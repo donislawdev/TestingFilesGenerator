@@ -67,7 +67,7 @@ func pitfallProperties() []format.Property {
 var pitfallDetail = map[string]string{
 	IDEncoding: "How trace and span ids are written. hex is what the OTLP specification asks for. " +
 		"upper-hex writes the same digits in capitals, which the specification allows, and the OpenTelemetry Collector writes them back in lower case. " +
-		"base64 writes them the way the JSON mapping of protobuf writes bytes, which the specification forbids - the file receiver of the Collector drops every batch without a word and its HTTP receiver answers 400. " +
+		"base64 writes them the way the JSON mapping of protobuf writes bytes, which the specification forbids - the file receiver of the Collector drops every batch that holds an id without a word and its HTTP receiver answers 400. " +
 		"A reader built on the protobuf library reads base64 ids right and hex ids as something else.",
 	EnumEncoding: "How the kind of a span, the code of its status, the severity of a log record and the temporality of a sum or a histogram are written. number is what the OTLP specification asks for. " +
 		"name writes names such as SPAN_KIND_SERVER, which the specification forbids. The OpenTelemetry Collector reads them anyway and writes numbers back, and the Rust crate opentelemetry-proto refuses a span written that way.",

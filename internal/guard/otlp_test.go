@@ -4,8 +4,12 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
+	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -135,8 +139,22 @@ func TestAnOTLPFileIsWhatItsSettingsSay(t *testing.T) {
 	dir := t.TempDir()
 	var reqs []oracle.StrictRequest
 	batched := 0
+	// The checker is told what was asked. A check told by the manifest has to
+	// be told the same, so the manifest is held to every setting asked and to
+	// bom, which every file has. Its canaries: a manifest without bom, and one
+	// that records another value than was asked.
+	if otlpRecordedDisagrees(map[string]any{}, nil) == "" || otlpRecordedDisagrees(map[string]any{otlp.BOM: false}, map[string]string{otlp.BOM: "true"}) == "" {
+		t.Fatal("the comparison with the manifest found nothing wrong in a manifest made to be wrong")
+	}
 	for i, props := range append(append([]map[string]string{}, otlpCases...), otlpPitfallCases...) {
 		smallest := d.SmallestAccepted(format.Request{Properties: props})
+		p, err := d.Generator.Plan(format.Request{Bytes: smallest, Seed: uint64(57 + i), Label: true, Properties: props})
+		if err != nil {
+			t.Fatalf("planning %v: %v", props, err)
+		}
+		if why := otlpRecordedDisagrees(p.Properties, props); why != "" {
+			t.Errorf("%v: %s", props, why)
+		}
 		for _, size := range otlpSizes(smallest) {
 			path := filepath.Join(dir, strconv.Itoa(i)+"_"+strconv.FormatInt(size, 10)+".jsonl")
 			body := writeOTLP(t, path, size, uint64(57+i), props)
@@ -200,8 +218,8 @@ func TestEveryOTLPSettingSurvivesItsReferenceTool(t *testing.T) {
 
 // Every pitfall meets the Collector the way its description says: read and
 // written back in the spelling of the specification, or dropped without a
-// word - every batch for ids in base64, the first one behind a byte order
-// mark, and an empty envelope. Measured on 2026-11-11 and asked again here,
+// word - every batch with an id for ids in base64, the first one behind a
+// byte order mark, and an empty envelope. Measured on 2026-11-11 and asked again here,
 // because those sentences are what a tester reads before trusting the file.
 //
 // The structural check runs first and has to find each pitfall in its file.
@@ -210,18 +228,7 @@ func TestEveryOTLPSettingSurvivesItsReferenceTool(t *testing.T) {
 //
 // Named to match ReferenceTool, for the reason the guard above gives.
 func TestEveryOTLPPitfallMeetsItsReferenceTool(t *testing.T) {
-	dir := t.TempDir()
-	var reqs []oracle.StrictRequest
-	for i, props := range otlpPitfallCases {
-		path := filepath.Join(dir, "pitfall"+strconv.Itoa(i)+".jsonl")
-		size := int64(20000)
-		if props[otlp.Signal] == otlp.Metrics {
-			// Three collections, so a first line and a last one both exist.
-			size = 60000
-		}
-		writeOTLP(t, path, size, uint64(91+i), props)
-		reqs = append(reqs, oracle.StrictRequest{Format: "otlp", Path: path, Settings: props})
-	}
+	reqs := otlpPitfallFiles(t, t.TempDir())
 	got, available, err := oracle.StrictBatch(t.Context(), reqs)
 	if !available {
 		t.Skip("the structural check needs python, and without it no pitfall is known to be in its file")
@@ -454,7 +461,14 @@ func TestTheOTLPCheckRefusesWhatAJSONReaderLetsThrough(t *testing.T) {
 		return path
 	}
 	deep := append(bytes.Repeat([]byte("["), 200000), bytes.Repeat([]byte("]"), 200000)...)
+	// Deep enough for the functions that spell a batch again and shallow
+	// enough for the JSON reader, which goes about fifty times deeper.
+	readable := []byte(`{"resourceSpans":` + strings.Repeat("[", 3000) + strings.Repeat("]", 3000) + "}\n")
 	batch := map[string]string{otlp.Batch: "1"}
+	// A superscript two, which str.isdigit takes for a digit and int() does not.
+	bare := map[string]string{otlp.Batch: "1", otlp.LargeNumbers: otlp.Number}
+	numbered := writeOTLP(t, filepath.Join(dir, "numbered.jsonl"), 4096, 9, bare)
+	superscript := regexp.MustCompile(`"startTimeUnixNano":[0-9]+`).ReplaceAll(numbered, []byte("\"startTimeUnixNano\":\"\xc2\xb2\""))
 	// because is what the refusal has to say. Refused is not enough: the
 	// checker has later checks, and a file let through by the first one can
 	// be refused by another for a different reason. Measured on 2026-11-11 -
@@ -470,10 +484,14 @@ func TestTheOTLPCheckRefusesWhatAJSONReaderLetsThrough(t *testing.T) {
 		{"Infinity in the same place", "Infinity is not a JSON number", oracle.StrictRequest{Format: "otlp", Settings: batch,
 			Path: write("infinity.jsonl", bytes.Replace(good, service, []byte(`{"doubleValue":Infinity}`), 1))}},
 		{"a document nested 200000 deep", "nested deeper than a JSON reader goes", oracle.StrictRequest{Format: "otlp", Settings: batch, Path: write("deep.jsonl", append(deep, '\n'))}},
+		{"a batch nested 3000 deep", "nested deeper than this check follows", oracle.StrictRequest{Format: "otlp", Settings: batch, Path: write("readable.jsonl", readable)}},
+		{"a superscript two as a time", "not a time in nanoseconds", oracle.StrictRequest{Format: "otlp", Settings: bare, Path: write("superscript.jsonl", superscript)}},
 		{"a rate of nought", "rate='0'", oracle.StrictRequest{Format: "otlp", Path: filepath.Join(dir, "good.jsonl"),
 			Settings: map[string]string{otlp.Batch: "1", otlp.Rate: "0"}}},
 		{"a depth that is a word", "depth='deep'", oracle.StrictRequest{Format: "otlp", Path: filepath.Join(dir, "good.jsonl"),
 			Settings: map[string]string{otlp.Batch: "1", otlp.Depth: "deep"}}},
+		{"an interval of a superscript two", "interval='\xc2\xb2'", oracle.StrictRequest{Format: "otlp", Path: filepath.Join(dir, "good.jsonl"),
+			Settings: map[string]string{otlp.Batch: "1", otlp.Interval: "\xc2\xb2"}}},
 	}
 	reqs := []oracle.StrictRequest{{Format: "otlp", Path: filepath.Join(dir, "good.jsonl"), Settings: batch}}
 	for _, c := range cases {
@@ -496,6 +514,46 @@ func TestTheOTLPCheckRefusesWhatAJSONReaderLetsThrough(t *testing.T) {
 			t.Errorf("%s: refused, but for another reason - %q, where it has to say %q", c.what, j.Reason, c.because)
 		}
 	}
+}
+
+// otlpPitfallFiles writes a file of every pitfall case, and one of metrics
+// too small to reach the exemplars: a batch without ids, which the Collector
+// reads whatever id_encoding says (review of #233).
+func otlpPitfallFiles(t *testing.T, dir string) []oracle.StrictRequest {
+	t.Helper()
+	var reqs []oracle.StrictRequest
+	for i, props := range otlpPitfallCases {
+		path := filepath.Join(dir, "pitfall"+strconv.Itoa(i)+".jsonl")
+		size := int64(20000)
+		if props[otlp.Signal] == otlp.Metrics {
+			// Three collections, so a first line and a last one both exist.
+			size = 60000
+		}
+		writeOTLP(t, path, size, uint64(91+i), props)
+		reqs = append(reqs, oracle.StrictRequest{Format: "otlp", Path: path, Settings: props})
+	}
+	bare := map[string]string{otlp.Signal: otlp.Metrics, otlp.Exemplars: "true", otlp.IDEncoding: otlp.Base64}
+	path := filepath.Join(dir, "pitfall-without-ids.jsonl")
+	body := writeOTLP(t, path, otlpFormat(t).SmallestAccepted(format.Request{Properties: bare}), 91, bare)
+	if bytes.Contains(body, []byte(`"traceId"`)) || bytes.Contains(body, []byte(`"spanId"`)) {
+		t.Fatalf("%v at its smallest size names a trace or a span, so it no longer asks about a batch without ids", bare)
+	}
+	return append(reqs, oracle.StrictRequest{Format: "otlp", Path: path, Settings: bare})
+}
+
+// otlpRecordedDisagrees names the first setting asked for that the manifest
+// does not record as asked, or a manifest silent about bom. Empty when they
+// agree.
+func otlpRecordedDisagrees(recorded map[string]any, asked map[string]string) string {
+	if _, ok := recorded[otlp.BOM]; !ok {
+		return "the manifest does not say whether the file opens with a byte order mark"
+	}
+	for _, k := range slices.Sorted(maps.Keys(asked)) {
+		if got, ok := recorded[k]; !ok || fmt.Sprint(got) != asked[k] {
+			return fmt.Sprintf("asked for %s=%s and the manifest records %v", k, asked[k], got)
+		}
+	}
+	return ""
 }
 
 func otlpFormat(t *testing.T) format.Descriptor {

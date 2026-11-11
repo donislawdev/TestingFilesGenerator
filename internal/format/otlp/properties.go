@@ -16,6 +16,9 @@ func (s settings) recorded() map[string]any {
 		Signal:     s.signal,
 		Formatting: s.layout.name,
 		Start:      s.startText,
+		// Every file has a byte order mark or has none, so it is stated here
+		// rather than among the pitfalls that reach some files only.
+		BOM: s.bom,
 		// Stated even though it is always false here, so a test can assert on
 		// it without knowing which formats carry a label internally.
 		format.PropertyLabelEmbedded: false,
@@ -61,7 +64,7 @@ func (s settings) recordMetrics(out map[string]any) {
 func (s settings) recordPitfalls(out map[string]any) {
 	values := map[string]any{
 		IDEncoding: s.idEncoding, EnumEncoding: pick2(s.enumNames, Name, Number), KeyCase: pick2(s.snakeKeys, Snake, Camel),
-		LargeNumbers: pick2(s.bareNumbers, Number, AsText), BOM: s.bom, TimeOrder: pick2(s.outOfOrder, OutOfOrder, InOrder),
+		LargeNumbers: pick2(s.bareNumbers, Number, AsText), TimeOrder: pick2(s.outOfOrder, OutOfOrder, InOrder),
 		EndBeforeStart: s.endBeforeStart, EmptyEnvelope: s.emptyEnvelope, Body: pick2(s.anyBody, AnyValue, AsText), NonFinite: s.nonFinite,
 	}
 	for _, p := range pitfallProperties() {

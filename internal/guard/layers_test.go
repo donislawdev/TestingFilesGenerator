@@ -175,7 +175,7 @@ var sameLayerAllowed = map[string][]string{
 	"internal/format/csvfile":    {"internal/format"},
 	"internal/format/jsonfile":   {"internal/format"},
 	"internal/format/geojson":    {"internal/format"},
-	"internal/format/otlp":       {"internal/format"},
+	"internal/format/otlp":       {"internal/format", "internal/format/textenc"},
 	"internal/format/yamlfile":   {"internal/format"},
 	"internal/format/tomlfile":   {"internal/format", "internal/format/textenc"},
 	"internal/format/xmlfile":    {"internal/format", "internal/format/textenc"},

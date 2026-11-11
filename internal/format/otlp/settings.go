@@ -363,7 +363,7 @@ func (s settings) collectsInTime(bytes int64) error {
 		return &format.PropertyValueError{
 			Format: "otlp", Key: Start, Value: s.startText,
 			Reason: core.Says("otlp.AFileThisLargeCollectsAfter",
-				"a file of this size collected every %d s would date its last collections after the year 2262. Choose an earlier start, a longer interval or a smaller file",
+				"a file of this size collected every %d s would date its last collections after the year 2262. Choose an earlier start, a shorter interval or a smaller file",
 				core.A("Interval", s.interval)),
 		}
 	}

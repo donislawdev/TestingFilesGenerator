@@ -38,6 +38,8 @@ func (m *metricPlan) widestPoint(sl slot, wide []int64) point {
 		p.number = widestCount
 	case memoryUsed:
 		p.number = memoryPools[sl.series].high
+	case requestDuration, gcDuration, requestTimer:
+		// Measured, so the shape below writes them rather than a number.
 	}
 	switch inst.shape {
 	case shapeHistogram:
@@ -49,6 +51,8 @@ func (m *metricPlan) widestPoint(sl slot, wide []int64) point {
 		p.buckets, p.offset = wide, firstBucket
 	case shapeSummary:
 		p.quantiles = [3]micros{longestDuration - 1, longestDuration - 1, longestDuration - 1}
+	case shapeGauge, shapeSum:
+		// A number, written above.
 	}
 	return p
 }

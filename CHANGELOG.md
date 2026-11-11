@@ -28,14 +28,14 @@ because it turns other people's test suites red.
 ### Added
 
 - **A new format: `otlp`, OpenTelemetry traces, logs and metrics as OTLP
-  JSON.** `tfg generate --format otlp` writes spans, log records or metrics to
-  an exact size, one batch on each line as the OTLP file exporter writes them
-  (`.jsonl`), or one request for an OTLP endpoint (`.json`), chosen by
-  `formatting`. Metrics are what a Java service reports every `interval`:
-  gauges, sums, histograms, exponential histograms and summaries, cumulative
-  or delta. A file comes back from the OpenTelemetry Collector byte for byte,
-  and no line passes 1 MiB, where the Collector's file receiver silently drops
-  it.
+  JSON.** `tfg generate --format otlp` writes them to an exact size, one batch
+  on each line as the OTLP file exporter does (`.jsonl`), or one request for
+  an OTLP endpoint (`.json`), as `formatting` says. Metrics are what a Java
+  service reports every `interval`: gauges, sums, histograms, exponential
+  histograms and summaries, with sums and histograms cumulative or delta. A
+  file of one batch on each line comes back from the OpenTelemetry Collector
+  byte for byte, and no line passes 1 MiB, where the Collector's file receiver
+  silently drops it.
 
 - **`otlp` can write the mistakes OTLP readers disagree about.** Ten
   settings, each off unless chosen: ids in capitals or base64, enums by

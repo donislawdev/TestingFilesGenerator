@@ -99,6 +99,22 @@ def canonical(value, key=None):
 def spelled(line):
     return json.dumps(canonical(json.loads(line)), separators=(",", ":"), ensure_ascii=False).encode("utf-8")
 
+def carries_ids(value):
+    # Whether a batch names a trace or a span anywhere. The Collector drops a
+    # batch whose ids are not hex and has nothing to drop in one with none,
+    # such as metrics a size too small to reach the exemplars (review of #233).
+    stack = [value]
+    while stack:
+        v = stack.pop()
+        if isinstance(v, dict):
+            for k, x in v.items():
+                if k in ID_KEYS and x:
+                    return True
+                stack.append(x)
+        elif isinstance(v, list):
+            stack.extend(v)
+    return False
+
 named = os.environ.get("TFG_OTELCOL", "")
 collector = named or shutil.which("otelcol-contrib")
 if not collector:
@@ -173,7 +189,7 @@ if told:
         why = None
         if not next(iter(doc.values())):
             why = "an empty envelope"
-        elif told.get("id_encoding") == "base64":
+        elif told.get("id_encoding") == "base64" and carries_ids(doc):
             why = "ids in base64"
         elif bom and number == 1:
             why = "the line behind the byte order mark"
@@ -187,11 +203,12 @@ try:
     os.mkdir(os.path.join(work, "in"))
     with open(os.path.join(work, "in", "data.jsonl"), "wb") as f:
         f.write(b"\n".join(fed) + b"\n")
-    if told:
-        # A batch the Collector reads whatever the file holds: once it is back,
-        # the file beside it has been read too, so a file that has to come
-        # back empty does not wait for the whole budget.
-        with open(os.path.join(work, "in", "zz-sentinel.jsonl"), "wb") as f:
+        if told:
+            # A batch the Collector reads whatever the file holds, last in the
+            # same file. The receiver reads every file on a reader of its own
+            # and the lines of one in order, so once this batch is back every
+            # line before it has been read - and a file that has to come back
+            # empty does not wait for the whole budget (review of #233).
             f.write(SENTINELS[signal].encode("utf-8") + b"\n")
     out = os.path.join(work, "out.jsonl")
     longest = max(len(w) for w in wanted)
@@ -218,18 +235,16 @@ try:
 
     got, deadline = [], STARTED + BUDGET
     try:
-        seen, still = 0, time.time()
         while time.time() < deadline and process.poll() is None:
             time.sleep(0.2)
             got = written()
+            # Told, the sentinel ends the input and its return says all of it
+            # was read. Otherwise every batch has to come back.
             if told:
-                # Done once the sentinel is back and nothing more has come for
-                # a second and a half.
-                if len(got) != seen:
-                    seen, still = len(got), time.time()
-                elif any(b"tfg.sentinel" in g for g in got) and time.time() - still > 1.5:
-                    break
-            elif len(got) >= len(wanted):
+                back = any(b"tfg.sentinel" in g for g in got)
+            else:
+                back = len(got) >= len(wanted)
+            if back:
                 # One more look, so a batch the Collector wrote twice shows.
                 time.sleep(0.6)
                 got = written()

@@ -1741,8 +1741,8 @@
   },
   "Detail.format/otlp.id_encoding": {
     "description": "The sentence under the id_encoding setting of the otlp format, after what it takes.",
-    "hash": "sha256-8dac2112d3f4",
-    "other": "How trace and span ids are written. hex is what the OTLP specification asks for. upper-hex writes the same digits in capitals, which the specification allows, and the OpenTelemetry Collector writes them back in lower case. base64 writes them the way the JSON mapping of protobuf writes bytes, which the specification forbids - the file receiver of the Collector drops every batch without a word and its HTTP receiver answers 400. A reader built on the protobuf library reads base64 ids right and hex ids as something else."
+    "hash": "sha256-76bf0def8c16",
+    "other": "How trace and span ids are written. hex is what the OTLP specification asks for. upper-hex writes the same digits in capitals, which the specification allows, and the OpenTelemetry Collector writes them back in lower case. base64 writes them the way the JSON mapping of protobuf writes bytes, which the specification forbids - the file receiver of the Collector drops every batch that holds an id without a word and its HTTP receiver answers 400. A reader built on the protobuf library reads base64 ids right and hex ids as something else."
   },
   "Detail.format/otlp.interval": {
     "description": "The sentence under the interval setting of the otlp format, after what it takes.",

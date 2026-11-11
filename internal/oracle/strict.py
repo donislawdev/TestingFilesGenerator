@@ -4209,6 +4209,7 @@ OTLP_ENUM_NAMES = {"kind": {1: "SPAN_KIND_INTERNAL", 2: "SPAN_KIND_SERVER"}, "co
 OTLP_WIDE = {"startTimeUnixNano", "endTimeUnixNano", "timeUnixNano", "observedTimeUnixNano", "intValue", "asInt",
              "count", "bucketCounts", "zeroCount"}
 OTLP_ID_KEYS = {"traceId", "spanId", "parentSpanId"}
+OTLP_DIGITS = re.compile(r"[0-9]{1,20}")
 OTLP_PITFALLS = {"id_encoding": ("hex", "upper-hex", "base64"), "enum_encoding": ("number", "name"), "key_case": ("camel", "snake"),
                  "large_numbers": ("text", "number"), "bom": ("false", "true"), "time_order": ("in-order", "out-of-order"),
                  "end_before_start": ("false", "true"), "empty_envelope": ("false", "true"), "body": ("text", "any-value"),
@@ -4251,7 +4252,9 @@ def otlp_respell(value, settings, canonical, key=None):
     if key in OTLP_WIDE and settings["large_numbers"] == "number":
         if canonical:
             return str(value) if type(value) is int else value
-        return int(value) if isinstance(value, str) and value.isdigit() else value
+        # ASCII digits alone: str.isdigit also takes a superscript two, which
+        # int() refuses (review of #233). Twenty is the most a uint64 has.
+        return int(value) if isinstance(value, str) and OTLP_DIGITS.fullmatch(value) else value
     if key in OTLP_ID_KEYS and settings["id_encoding"] != "hex" and isinstance(value, str):
         if settings["id_encoding"] == "upper-hex":
             return value.lower() if canonical else value.upper()
@@ -4425,7 +4428,7 @@ def otlp_text(what, value):
 
 def otlp_whole(what, value):
     """A whole number, which the JSON encoding of OTLP writes as text."""
-    if list(value) != ["intValue"] or not isinstance(value["intValue"], str) or not value["intValue"].isdigit():
+    if list(value) != ["intValue"] or not isinstance(value["intValue"], str) or not OTLP_DIGITS.fullmatch(value["intValue"]):
         fail(f"{what} has a whole number that is not written as text of digits")
     return int(value["intValue"])
 
@@ -4607,7 +4610,7 @@ def otlp_double(what, value, low=0.0, high=1e16):
 
 
 def otlp_count(what, value):
-    if not isinstance(value, str) or not value.isdigit() or (len(value) > 1 and value[0] == "0"):
+    if not isinstance(value, str) or not OTLP_DIGITS.fullmatch(value) or (len(value) > 1 and value[0] == "0"):
         fail(f"{what} is {value!r}, not a count written as text of digits")
     return int(value)
 
@@ -4770,7 +4773,7 @@ def check_otlp(data, settings=None):
     # (review of #230).
     for name, default, most in (("batch", "512", 1000), ("rate", "1", 1000000), ("depth", "3", 100), ("interval", "60", 86400)):
         told = given.get(name, default)
-        if not told.isdigit() or not 1 <= int(told) <= most:
+        if not OTLP_DIGITS.fullmatch(told) or not 1 <= int(told) <= most:
             fail(f"the otlp check was told {name}={told!r}, and {name} is a whole number from 1 to {most}")
         settings[name] = int(told)
     if settings["signal"] not in OTLP_NAMES:
@@ -4802,7 +4805,13 @@ def check_otlp(data, settings=None):
         if settings["formatting"] != "record-per-line" or not text.startswith(empty):
             fail(f"empty_envelope=true and the file does not open with the line {empty.strip()}")
         text = text[len(empty):]
-    batches = otlp_canonical(otlp_batches(text, settings), settings)
+    try:
+        batches = otlp_canonical(otlp_batches(text, settings), settings)
+    except RecursionError:
+        # The JSON reader of Python goes about fifty times deeper than the
+        # functions that write and spell a batch again, measured 2026-11-11
+        # (review of #233).
+        fail("a batch is nested deeper than this check follows")
     step = 10**9 // settings["rate"] if settings["signal"] != "metrics" else settings["interval"] * 10**9
     # The checks name the shapes this tool could get wrong. A shape nobody
     # thought of still has to come out as a refusal with a reason rather than
