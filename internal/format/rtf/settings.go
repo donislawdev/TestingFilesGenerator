@@ -101,7 +101,7 @@ func ownProperties() []format.Property {
 			"codepage writes only the code page bytes, and the emoji still as numbers, since no code page holds them. " +
 			"literal writes the question mark as a plain character. " +
 			"LibreOffice, Tika and the RichEdit control of Windows read all four. " +
-			"pandoc shows codepage text in the wrong letters and drops the character after every letter written literal, and pandoc 3.1 and 3.7 drop the emoji in all four. " +
+			"pandoc shows codepage text in the wrong letters. pandoc before 3.13 also drops the character after every letter written literal, and pandoc 3.1 and 3.7 drop the emoji in all four. " +
 			"striprtf returns an emoji as two halves, which Python refuses to write as UTF-8.",
 	}, {
 		Name: Elements, Kind: format.PropertyChoice,

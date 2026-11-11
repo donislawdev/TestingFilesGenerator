@@ -1751,8 +1751,8 @@
   },
   "Detail.format/rtf.text_encoding": {
     "description": "The sentence under the text_encoding setting of the rtf format, after what it takes.",
-    "hash": "sha256-e6a5e55837f3",
-    "other": "How the letters outside ASCII are written, which changes nothing while characters is ascii. unicode writes each one as a number with a question mark after it for a reader that does not know numbers. both puts the letter in the code page of its font after the number, two bytes for Japanese, the way Word writes it. codepage writes only the code page bytes, and the emoji still as numbers, since no code page holds them. literal writes the question mark as a plain character. LibreOffice, Tika and the RichEdit control of Windows read all four. pandoc shows codepage text in the wrong letters and drops the character after every letter written literal, and pandoc 3.1 and 3.7 drop the emoji in all four. striprtf returns an emoji as two halves, which Python refuses to write as UTF-8."
+    "hash": "sha256-3766bb620616",
+    "other": "How the letters outside ASCII are written, which changes nothing while characters is ascii. unicode writes each one as a number with a question mark after it for a reader that does not know numbers. both puts the letter in the code page of its font after the number, two bytes for Japanese, the way Word writes it. codepage writes only the code page bytes, and the emoji still as numbers, since no code page holds them. literal writes the question mark as a plain character. LibreOffice, Tika and the RichEdit control of Windows read all four. pandoc shows codepage text in the wrong letters. pandoc before 3.13 also drops the character after every letter written literal, and pandoc 3.1 and 3.7 drop the emoji in all four. striprtf returns an emoji as two halves, which Python refuses to write as UTF-8."
   },
   "Detail.format/svg.height": {
     "description": "The sentence under the height setting of the svg format, after what it takes.",

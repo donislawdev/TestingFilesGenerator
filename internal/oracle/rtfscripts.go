@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -14,11 +15,12 @@ import (
 // our language.
 //
 // It is also the strictest reader in a way that is not a virtue - it shows
-// codepage text in the wrong letters and drops a character after every letter
-// written literal. Those are its readings of good files, which the guard of the
-// format holds as such, so this checker asks only whether it read the file and
-// said nothing about it. A warning on standard error counts as a complaint,
-// the way it does for ffprobe.
+// codepage text in the wrong letters, and before 3.13 it dropped a character
+// after every letter written literal (jgm/pandoc#11981). Those are its
+// readings of good files, which the guard of the format holds as such, by
+// PandocVersion where they differ, so this checker asks only whether it read
+// the file and said nothing about it. A warning on standard error counts as a
+// complaint, the way it does for ffprobe.
 var pandocRTF = Checker{
 	Name: "pandoc",
 	find: inPath("pandoc"),
@@ -49,6 +51,37 @@ func PandocRTF(path string) (text, warnings string, res Result) {
 	}
 	res = c.Check(path)
 	return out, strings.TrimSpace(errOut), res
+}
+
+// pandocVersionLine is the line pandoc --version opens with, "pandoc 3.13",
+// with the major and minor version in it.
+var pandocVersionLine = regexp.MustCompile(`(?m)^pandoc(?:\.exe)? (\d+)\.(\d+)`)
+
+// PandocVersion is the major and minor version of the pandoc PandocRTF runs,
+// for a guard whose reading of a good file changed between versions. ok is
+// false when pandoc is missing, refuses --version or opens with something
+// else.
+func PandocVersion() (major, minor int, ok bool) {
+	c := pandocRTF
+	var out string
+	c.args = func(string) []string { return []string{"--version"} }
+	c.accept = func(stdout, _ string, code int) error {
+		out = stdout
+		if code != 0 {
+			return fmt.Errorf("pandoc --version ended with %d", code)
+		}
+		return nil
+	}
+	if res := c.Check(""); !res.Available || res.Err != nil {
+		return 0, 0, false
+	}
+	m := pandocVersionLine.FindStringSubmatch(out)
+	if m == nil {
+		return 0, 0, false
+	}
+	major, errMajor := strconv.Atoi(m[1])
+	minor, errMinor := strconv.Atoi(m[2])
+	return major, minor, errMajor == nil && errMinor == nil
 }
 
 // pandocPicture is how pandoc's markdown points at a picture it wrote out.
