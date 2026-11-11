@@ -20,8 +20,8 @@ type entry struct {
 	function string
 	line     int64
 
-	traceHigh, traceLow uint64
-	span                uint64
+	trace traceID
+	span  spanID
 }
 
 // drawEntry draws the next log record of the file. n is how many came before
@@ -32,15 +32,16 @@ type entry struct {
 // context off changes nothing else about a record.
 func (r *records) drawEntry(rng *rand.Rand, n int64) entry {
 	lv := r.s.levels[rng.IntN(len(r.s.levels))]
-	return entry{
-		at:        r.s.start + n*r.s.step(),
-		level:     lv,
-		message:   lv.messages[rng.IntN(len(lv.messages))],
-		function:  functions[rng.IntN(len(functions))],
-		line:      firstLine + rng.Int64N(lastLine-firstLine+1),
-		traceHigh: nonZero(rng.Uint64()), traceLow: rng.Uint64(),
-		span: nonZero(rng.Uint64()),
+	en := entry{
+		at:       r.s.start + n*r.s.step(),
+		level:    lv,
+		message:  lv.messages[rng.IntN(len(lv.messages))],
+		function: functions[rng.IntN(len(functions))],
+		line:     firstLine + rng.Int64N(lastLine-firstLine+1),
 	}
+	drawID(en.trace[:], rng)
+	drawID(en.span[:], rng)
+	return en
 }
 
 // widestEntries are the longest log records the settings can draw, one for
@@ -92,9 +93,9 @@ func (r *records) writeEntry(en entry, padded bool) (at int) {
 		e.key("flags")
 		e.whole(sampled)
 		e.key("traceId")
-		e.id(en.traceHigh, en.traceLow)
+		e.id(en.trace[:])
 		e.key("spanId")
-		e.id(en.span)
+		e.id(en.span[:])
 	}
 	e.close('}')
 	return at

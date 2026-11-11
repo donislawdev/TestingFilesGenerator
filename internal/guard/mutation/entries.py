@@ -30,7 +30,7 @@ MUTATIONS = [
     (
         "the contributing guide names a Go version this module does not admit",
         "CONTRIBUTING.md",
-        "Needs Go 1.27.3 or newer",
+        "Needs Go 1.27.4 or newer",
         "Needs Go 1.21 or newer",
         "TestTheBuildFloorIsThePinnedToolchainAndTheDocumentsSaySo",
     ),
@@ -296,14 +296,14 @@ MUTATIONS = [
     (
         "the README goes back to naming a floor the module no longer admits",
         "README.md",
-        "**From source.** Needs Go 1.27.3 or newer, and nothing else:",
+        "**From source.** Needs Go 1.27.4 or newer, and nothing else:",
         "**From source.** Needs Go 1.26.5 or newer, and nothing else:",
         "TestTheBuildFloorIsThePinnedToolchainAndTheDocumentsSaySo",
     ),
     (
         "CI builds with a compiler older than the floor go.mod admits",
         ".github/workflows/ci.yml",
-        'GO_VERSION: "1.27.3"',
+        'GO_VERSION: "1.27.4"',
         'GO_VERSION: "1.26.8"',
         "TestTheBuildFloorIsThePinnedToolchainAndTheDocumentsSaySo",
     ),
@@ -17601,8 +17601,8 @@ MUTATIONS = [
         # until it learned to advance.
         "otlp log records all carry the moment the file starts at",
         "internal/format/otlp/logs.go",
-        "\t\tat:        r.s.start + n*r.s.step(),",
-        "\t\tat:        r.s.start + 0*n*r.s.step(),",
+        "\t\tat:       r.s.start + n*r.s.step(),",
+        "\t\tat:       r.s.start + 0*n*r.s.step(),",
         "TestAnOTLPFileIsWhatItsSettingsSay",
     ),
     (
@@ -17660,5 +17660,14 @@ MUTATIONS = [
         "; ticks <= room {",
         "; ticks <= room || true {",
         "TestOTLPRefusesAStartItCannotWrite",
+    ),
+    (
+        # CPython's json reads NaN and Infinity and writes them back, so a
+        # value nothing else looks at passes the comparison of the layout.
+        "the otlp check reads a number that is not JSON without a word",
+        "internal/oracle/strict.py",
+        "        doc = json.loads(text, parse_constant=otlp_not_json)",
+        "        doc = json.loads(text)",
+        "TestTheOTLPCheckRefusesWhatAJSONReaderLetsThrough",
     ),
 ]

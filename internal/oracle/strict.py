@@ -4200,11 +4200,20 @@ def otlp_parted(text, expected):
     return f"at byte {at}, {text[max(0, at - 30):at + 30]!r}"
 
 
+def otlp_not_json(literal):
+    """NaN, Infinity and -Infinity, which CPython's json reads and writes back
+    and no JSON grammar has. Read quietly, one of them in a value nothing else
+    looks at would pass the comparison of the layout (review of #230)."""
+    raise ValueError(f"{literal} is not a JSON number")
+
+
 def otlp_object(text, where):
     import json
 
     try:
-        doc = json.loads(text)
+        doc = json.loads(text, parse_constant=otlp_not_json)
+    except RecursionError:
+        fail(f"{where} is nested deeper than a JSON reader goes")
     except ValueError as exc:
         fail(f"{where} is not JSON: {exc}")
     if not isinstance(doc, dict):
@@ -4251,11 +4260,16 @@ def otlp_records(batches, settings):
             fail(f"batch {number}: the resource entry has the members {list(res)}, not a resource, {mid} and the schema of the conventions")
         if list(res["resource"]) != ["attributes"] or [a["key"] for a in res["resource"]["attributes"]] != ["service.name", "service.version"]:
             fail(f"batch {number}: the resource does not carry service.name and service.version and nothing else")
+        for a in res["resource"]["attributes"]:
+            if list(a) != ["key", "value"] or not otlp_text(f"the resource of batch {number}", a["value"]):
+                fail(f"batch {number}: the resource attribute {a['key']} is not one key with a text in it")
         if len(res[mid]) != 1:
             fail(f"batch {number} holds {len(res[mid])} scopes, not one")
         scope = res[mid][0]
         if list(scope) != ["scope", leaf, "schemaUrl"] or scope["schemaUrl"] != OTLP_SCHEMA or list(scope["scope"]) != ["name", "version"]:
             fail(f"batch {number}: the scope entry has the members {list(scope)}, not a named scope, {leaf} and the schema of the conventions")
+        if not all(isinstance(v, str) and v for v in scope["scope"].values()):
+            fail(f"batch {number}: the scope does not carry its name and its version as text")
         if not scope[leaf]:
             fail(f"batch {number} holds no record, an envelope the specification asks senders not to write")
         sizes.append(len(scope[leaf]))
@@ -4421,24 +4435,35 @@ def check_otlp(data, settings=None):
     settings = {
         "signal": given.get("signal", "traces"),
         "formatting": given.get("formatting", "record-per-line"),
-        "batch": int(given.get("batch", "512")),
         "start": given.get("start", "2026-08-01T12:00:00Z"),
-        "rate": int(given.get("rate", "1")),
-        "depth": int(given.get("depth", "3")),
         "status_mix": given.get("status_mix", "realistic"),
         "level_mix": given.get("level_mix", "realistic"),
         "trace_context": given.get("trace_context", "true") == "true",
     }
+    # The numbers are read against the ranges the format declares, so a word
+    # or a nought handed to this check is a refusal that names the setting
+    # rather than a traceback a guard would read as the checker falling over
+    # (review of #230).
+    for name, default, most in (("batch", "512", 1000), ("rate", "1", 1000000), ("depth", "3", 100)):
+        told = given.get(name, default)
+        if not told.isdigit() or not 1 <= int(told) <= most:
+            fail(f"the otlp check was told {name}={told!r}, and {name} is a whole number from 1 to {most}")
+        settings[name] = int(told)
     if settings["signal"] not in OTLP_NAMES:
         fail(f"the otlp check was told signal={settings['signal']!r}, which is not a kind of telemetry this tool writes")
+    if settings["status_mix"] not in OTLP_STATUSES or settings["level_mix"] not in OTLP_LEVEL_MIXES:
+        fail(f"the otlp check was told status_mix={settings['status_mix']!r} and level_mix={settings['level_mix']!r}, and one of them is not a mix this tool draws from")
     if data.startswith(b"\xef\xbb\xbf"):
         fail("the file starts with a byte order mark")
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError as exc:
         fail(f"not valid UTF-8: {exc}")
+    try:
+        start = calendar.timegm(time.strptime(settings["start"], "%Y-%m-%dT%H:%M:%SZ")) * 10**9
+    except ValueError:
+        fail(f"the otlp check was told start={settings['start']!r}, which is not a moment written as 2026-08-01T12:00:00Z")
     batches = otlp_batches(text, settings)
-    start = calendar.timegm(time.strptime(settings["start"], "%Y-%m-%dT%H:%M:%SZ")) * 10**9
     step = 10**9 // settings["rate"]
     # The checks name the shapes this tool could get wrong. A shape nobody
     # thought of still has to come out as a refusal with a reason rather than

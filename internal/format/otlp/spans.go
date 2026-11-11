@@ -7,6 +7,8 @@ import (
 	// nosemgrep: go.lang.security.audit.crypto.math_random.math-random-used
 	"math/rand/v2"
 	"strconv"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // The kinds of span a file holds, as trace.proto numbers them. The encoding
@@ -23,8 +25,8 @@ const (
 // span is everything one span says, drawn or chosen in one place so the
 // smallest file is measured with the same code that writes every other one.
 type span struct {
-	traceHigh, traceLow uint64
-	id, parent          uint64
+	trace      traceID
+	id, parent spanID
 	// level is how deep the span sits in its trace. Nought is the request
 	// itself, a span of the server kind, and every other one is work done
 	// inside it.
@@ -44,12 +46,31 @@ type span struct {
 type trace struct {
 	// begun is how many traces the file has started, which is what moves the
 	// clock.
-	begun     int64
-	level     int
-	high, low uint64
-	parent    uint64
-	start     int64
-	length    int64
+	begun  int64
+	level  int
+	id     traceID
+	parent spanID
+	start  int64
+	length int64
+}
+
+// The two ids of the OTLP data model, sixteen bytes and eight.
+type (
+	traceID [16]byte
+	spanID  [8]byte
+)
+
+// drawID fills an id from the generator, through the primitive every format
+// draws its random bytes with, and keeps it from being all zeros - which the
+// specification calls invalid and the Collector reads as no id at all.
+func drawID(id []byte, rng *rand.Rand) {
+	core.FillRandomBE(id, rng)
+	for _, b := range id {
+		if b != 0 {
+			return
+		}
+	}
+	id[len(id)-1] = 1
 }
 
 // drawSpan draws the next span of the file and moves the trace on.
@@ -60,7 +81,7 @@ type trace struct {
 func (r *records) drawSpan(rng *rand.Rand) span {
 	t := &r.st.trace
 	if t.level == 0 {
-		t.high, t.low = nonZero(rng.Uint64()), rng.Uint64()
+		drawID(t.id[:], rng)
 		t.start = r.s.start + t.begun*r.s.step()
 		t.length = int64(shortestSpan) + rng.Int64N(int64(longestSpan-shortestSpan))
 		t.begun++
@@ -69,10 +90,8 @@ func (r *records) drawSpan(rng *rand.Rand) span {
 	// step, so a child always lies inside the span it belongs to. The request
 	// is long enough for the deepest trace the settings allow.
 	inset := int64(t.level) * t.length / int64(2*r.s.depth)
-	sp := span{
-		traceHigh: t.high, traceLow: t.low, id: nonZero(rng.Uint64()), parent: t.parent,
-		level: t.level, start: t.start + inset, end: t.start + t.length - inset,
-	}
+	sp := span{trace: t.id, parent: t.parent, level: t.level, start: t.start + inset, end: t.start + t.length - inset}
+	drawID(sp.id[:], rng)
 	if sp.level == 0 {
 		sp.request = requests[rng.IntN(len(requests))]
 		sp.status = r.s.statuses[rng.IntN(len(r.s.statuses))]
@@ -84,15 +103,6 @@ func (r *records) drawSpan(rng *rand.Rand) span {
 	t.parent = sp.id
 	t.level = (t.level + 1) % r.s.depth
 	return sp
-}
-
-// nonZero keeps an id from being all zeros, which the specification calls
-// invalid and the Collector reads as no id at all.
-func nonZero(v uint64) uint64 {
-	if v == 0 {
-		return 1
-	}
-	return v
 }
 
 // widestSpans are the longest spans the settings can draw, one of each shape:
@@ -146,12 +156,12 @@ func (r *records) writeSpan(sp span, padded bool) (at int) {
 	e.next()
 	e.open('{')
 	e.key("traceId")
-	e.id(sp.traceHigh, sp.traceLow)
+	e.id(sp.trace[:])
 	e.key("spanId")
-	e.id(sp.id)
+	e.id(sp.id[:])
 	if sp.level > 0 {
 		e.key("parentSpanId")
-		e.id(sp.parent)
+		e.id(sp.parent[:])
 	}
 	e.key("name")
 	if sp.level == 0 {

@@ -1,6 +1,9 @@
 package otlp
 
-import "strconv"
+import (
+	"encoding/hex"
+	"strconv"
+)
 
 // layout is how a file is laid out: whether it is cut into lines, one batch
 // to a line, and whether every value stands on a line of its own.
@@ -49,8 +52,6 @@ const (
 	// own prefix, so it cannot be mistaken for an attribute the semantic
 	// conventions define.
 	paddingKey = "tfg.padding"
-
-	hexDigits = "0123456789abcdef"
 )
 
 // emitter appends JSON tokens with the whitespace its layout asks for.
@@ -136,20 +137,12 @@ func (e *emitter) quoted(v int64) {
 // nothing is an object with no member, written the same in every layout.
 func (e *emitter) nothing() { e.b = append(e.b, '{', '}') }
 
-// hex writes 64 bits as sixteen lower case digits. Lower case because that is
-// what the Collector writes back, though the specification takes either.
-func (e *emitter) hex(v uint64) {
-	for shift := 60; shift >= 0; shift -= 4 {
-		e.b = append(e.b, hexDigits[(v>>uint(shift))&0xf])
-	}
-}
-
-// id is a span id, and a trace id when given both halves of one.
-func (e *emitter) id(halves ...uint64) {
+// id is a trace id or a span id, two hex digits a byte. Lower case because
+// that is what the Collector writes back, though the specification takes
+// either.
+func (e *emitter) id(id []byte) {
 	e.b = append(e.b, '"')
-	for _, h := range halves {
-		e.hex(h)
-	}
+	e.b = hex.AppendEncode(e.b, id)
 	e.b = append(e.b, '"')
 }
 

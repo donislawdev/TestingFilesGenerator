@@ -11,9 +11,12 @@
 // is valid and exactly as large as asked is how a tester finds out which of
 // those the system under test does.
 //
-// Every file is written the way the Collector writes one back, key for key
-// and byte for byte, so the reference reader can be asked for more than "did
-// you read it" - see section 5 of the same document.
+// Every batch is spelled the way the Collector writes one back, key for key
+// and value for value, so the reference reader can be asked for more than
+// "did you read it" - see section 5 of the same document. Laid out in lines a
+// file comes back from it byte for byte. Laid out as one request it comes
+// back the same once the whitespace between its tokens is taken out, because
+// the Collector writes no whitespace of its own.
 package otlp
 
 import (

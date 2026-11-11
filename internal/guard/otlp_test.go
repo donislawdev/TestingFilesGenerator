@@ -270,6 +270,68 @@ func TestOTLPRefusesAStartItCannotWrite(t *testing.T) {
 	}
 }
 
+// CPython's json reads NaN and Infinity, which no JSON grammar has, and
+// writes them back, so one of them in a value nothing else looked at passed
+// the comparison of the layout and the file was called sound. A document
+// nested past what the decoder walks ended the checker with an exception,
+// and so did a rate of nought handed to it. All three were found by the
+// review of #230 and measured on the checker as it stood: OK, a traceback, a
+// traceback.
+//
+// Each has to be a refusal with a reason. A crash also turns a guard red, and
+// a guard asking whether a damaged file is refused must not count the
+// checker falling over as a refusal.
+func TestTheOTLPCheckRefusesWhatAJSONReaderLetsThrough(t *testing.T) {
+	dir := t.TempDir()
+	good := writeOTLP(t, filepath.Join(dir, "good.jsonl"), 4096, 9, map[string]string{otlp.Batch: "1"})
+	service := []byte(`{"stringValue":"shop"}`)
+	if bytes.Count(good, service) == 0 {
+		t.Fatal("the file names no service, so there is nowhere to put a number that is not JSON")
+	}
+	write := func(name string, body []byte) string {
+		path := filepath.Join(dir, name)
+		if err := os.WriteFile(path, body, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		return path
+	}
+	deep := append(bytes.Repeat([]byte("["), 200000), bytes.Repeat([]byte("]"), 200000)...)
+	batch := map[string]string{otlp.Batch: "1"}
+	cases := []struct {
+		what string
+		req  oracle.StrictRequest
+	}{
+		{"NaN where the name of the service stands", oracle.StrictRequest{Format: "otlp", Settings: batch,
+			Path: write("nan.jsonl", bytes.Replace(good, service, []byte(`{"doubleValue":NaN}`), 1))}},
+		{"Infinity in the same place", oracle.StrictRequest{Format: "otlp", Settings: batch,
+			Path: write("infinity.jsonl", bytes.Replace(good, service, []byte(`{"doubleValue":Infinity}`), 1))}},
+		{"a document nested 200000 deep", oracle.StrictRequest{Format: "otlp", Settings: batch, Path: write("deep.jsonl", append(deep, '\n'))}},
+		{"a rate of nought", oracle.StrictRequest{Format: "otlp", Path: filepath.Join(dir, "good.jsonl"),
+			Settings: map[string]string{otlp.Batch: "1", otlp.Rate: "0"}}},
+		{"a depth that is a word", oracle.StrictRequest{Format: "otlp", Path: filepath.Join(dir, "good.jsonl"),
+			Settings: map[string]string{otlp.Batch: "1", otlp.Depth: "deep"}}},
+	}
+	reqs := []oracle.StrictRequest{{Format: "otlp", Path: filepath.Join(dir, "good.jsonl"), Settings: batch}}
+	for _, c := range cases {
+		reqs = append(reqs, c.req)
+	}
+	got, available, err := oracle.StrictBatch(t.Context(), reqs)
+	if !available {
+		t.Skip("the structural check needs python")
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got[0].Verdict != oracle.StrictOK {
+		t.Fatalf("the file every case is made from is itself refused, so no refusal below says anything: %s", got[0].Reason)
+	}
+	for i, c := range cases {
+		if j := got[i+1]; j.Verdict != oracle.StrictFail {
+			t.Errorf("%s: the checker answered %s (%s), and it has to refuse with a reason", c.what, j.Verdict, j.Reason)
+		}
+	}
+}
+
 func otlpFormat(t *testing.T) format.Descriptor {
 	t.Helper()
 	d, err := format.Get("otlp")

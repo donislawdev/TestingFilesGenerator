@@ -145,7 +145,7 @@ macOS on Apple silicon. uv installs it as well.
 go install -tags noasm github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest
 ```
 
-**From source.** Needs Go 1.27.3 or newer, and nothing else:
+**From source.** Needs Go 1.27.4 or newer, and nothing else:
 
 ```
 git clone https://github.com/donislawdev/TestingFilesGenerator

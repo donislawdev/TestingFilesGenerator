@@ -2468,18 +2468,13 @@
   },
   "otlp.AFileThisLargeEndsAfter": {
     "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Rate}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-b2ed22de6644",
-    "other": "a file of this size at a rate of {{.Rate}} would date its last records after the year 2262"
+    "hash": "sha256-511e89a36bd2",
+    "other": "a file of this size at a rate of {{.Rate}} would date its last records after the year 2262. Choose an earlier start, a higher rate or a smaller file"
   },
   "otlp.ChooseAStartInThoseYears": {
     "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-c72b07e145c8",
     "other": "Choose a start in those years, such as 2026-08-01T12:00:00Z."
-  },
-  "otlp.ChooseAnEarlierStartA": {
-    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run.",
-    "hash": "sha256-4a4937dab391",
-    "other": "Choose an earlier start, a higher rate or a smaller file."
   },
   "otlp.DropOneOfTheTwo": {
     "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Why}}, written the way the program writes them - keep each spelled exactly that way.",

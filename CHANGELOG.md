@@ -20,10 +20,10 @@ because it turns other people's test suites red.
   `tfg generate --format otlp` writes spans or log records to an exact size,
   one batch on each line as the OTLP file exporter writes them, or as one
   request for an OTLP endpoint (`formatting`). Settings choose `signal`, the
-  batch, the start time and rate, the depth of a trace, the response codes
-  and the severities. The OpenTelemetry Collector writes every file back byte
-  for byte. No line passes 1 MiB, where its file receiver drops a line
-  without saying so. Metrics are not written yet.
+  batch, the start time and rate, trace depth, response codes and severities.
+  A file of lines comes back from the OpenTelemetry Collector byte for byte,
+  and none of its lines passes 1 MiB, where the Collector's file receiver
+  drops a line without saying so. Metrics are not written yet.
 
 - **A file can be sent under a name no disk stores.** `send-as` in a recipe,
   `--send-as` on the command line and Send as in the window take a name such
@@ -246,9 +246,10 @@ because it turns other people's test suites red.
 
 ### Security
 
-- **Built with Go 1.27.3.** It fixes a vulnerability in `crypto/x509` of the
-  Go standard library, which only the desktop window links. The command line
-  tool was not affected. Building from source now needs Go 1.27.3.
+- **Built with Go 1.27.4.** It fixes vulnerabilities in `crypto/x509` and
+  `net/http` of the Go standard library, which only the desktop window links.
+  The command line tool was not affected. Building from source now needs
+  Go 1.27.4. No generated file changes.
 - **The window is built with `golang.org/x/net` 0.62.0.** The version before
   had two published vulnerabilities in the package that reads and writes HTML.
   The window uses the package only to read the SVG pictures it draws. Neither

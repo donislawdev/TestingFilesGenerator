@@ -173,10 +173,14 @@ func (s settings) endsInTime(bytes int64) error {
 	if room := (lastNanos - s.start - int64(longestSpan)) / s.step(); ticks <= room {
 		return nil
 	}
+	// The advice stands in the reason, the way the log format writes a
+	// conflict: the command line prints the reason and nothing after it, and
+	// no range declared for start could say what to do here.
 	return &format.PropertyValueError{
 		Format: "otlp", Key: Start, Value: s.startText,
-		Reason: core.Says("otlp.AFileThisLargeEndsAfter", "a file of this size at a rate of %d would date its last records after the year 2262", core.A("Rate", s.rate)),
-		Remedy: core.Says("otlp.ChooseAnEarlierStartA", "Choose an earlier start, a higher rate or a smaller file."),
+		Reason: core.Says("otlp.AFileThisLargeEndsAfter",
+			"a file of this size at a rate of %d would date its last records after the year 2262. Choose an earlier start, a higher rate or a smaller file",
+			core.A("Rate", s.rate)),
 	}
 }
 
@@ -278,7 +282,7 @@ func fileProperties() []format.Property {
 			Choices: []string{Indented, Minified, RecordPerLine},
 			Default: RecordPerLine,
 			Detail: "How the file is laid out. record-per-line puts one batch on each line, which is what the OTLP file exporter writes and the file receiver of the OpenTelemetry Collector reads. " +
-				"minified and indented make the whole file one request, the body to post to an OTLP endpoint. " +
+				"minified and indented make the whole file one request, the body to post to an OTLP endpoint, and a file of that kind is one JSON document whatever its name ends in. " +
 				"Posted as a body, a file of several lines loses every line after the first in the Collector, and its file receiver reads nothing from an indented file.",
 		},
 		{

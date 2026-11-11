@@ -27,6 +27,12 @@ var otelcol = Checker{
 const otelcolScript = `
 import json, os, shutil, subprocess, sys, tempfile, time
 
+# Counted from here rather than from the moment the Collector starts: whoever
+# runs this script stops it after a minute, and stops this process alone. A
+# Collector still running then would be left behind, so everything below ends
+# well inside that minute (review of #230).
+STARTED = time.time()
+BUDGET = 40
 LINE_CEILING = 1 << 20
 SIGNALS = {b'{"resourceSpans"': "traces", b'{"resourceLogs"': "logs", b'{"resourceMetrics"': "metrics"}
 
@@ -61,7 +67,7 @@ def squeezed(data):
 def is_object(line):
     try:
         return isinstance(json.loads(line), dict)
-    except ValueError:
+    except (ValueError, RecursionError):
         return False
 
 with open(sys.argv[1], "rb") as f:
@@ -75,6 +81,9 @@ else:
     # on one line, and told to read a line that long.
     try:
         json.loads(data)
+    except RecursionError:
+        print("FAIL the file is nested deeper than a JSON reader goes")
+        sys.exit(1)
     except ValueError as err:
         print("FAIL the file is neither a batch on every line nor one JSON document: %s" % err)
         sys.exit(1)
@@ -113,7 +122,7 @@ try:
         with open(out, "rb") as f:
             return f.read().split(b"\n")[:-1]
 
-    got, deadline = [], time.time() + 30
+    got, deadline = [], STARTED + BUDGET
     try:
         while time.time() < deadline and process.poll() is None:
             time.sleep(0.2)

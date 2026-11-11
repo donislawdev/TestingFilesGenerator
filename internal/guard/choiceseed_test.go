@@ -110,6 +110,11 @@ var choiceCompanions = map[string]map[string]string{
 	"log.level_mix=debug":  {"entry_format": "plain"},
 	"log.level_mix=errors": {"entry_format": "plain"},
 	"log.level_mix=quiet":  {"entry_format": "plain"},
+	// A setting that shapes log records needs a file of them.
+	"otlp.level_mix=debug":     {"signal": "logs"},
+	"otlp.level_mix=errors":    {"signal": "logs"},
+	"otlp.level_mix=quiet":     {"signal": "logs"},
+	"otlp.trace_context=false": {"signal": "logs"},
 	// XML in UTF-16 opens with a byte order mark.
 	"xml.encoding=utf-16be": {"bom": "true"},
 	"xml.encoding=utf-16le": {"bom": "true"},
