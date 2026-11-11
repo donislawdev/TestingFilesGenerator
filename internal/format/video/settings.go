@@ -41,12 +41,14 @@ const (
 	maxQuality     = 100
 	defaultQuality = 60
 
-	// The picture's bounds are AV1's, not the encoder's. gav1d codes one tile
-	// correctly and no more - a larger frame comes out of it with a header
-	// that announces several tiles over the data of one (measured 2026-10-06,
-	// docs/REVIEW-165-2026-10-06.md), and until 2026-10-07 that held the
-	// picture to 4096x2304. A picture is cut into tiles here now (grid.go) and
-	// every tile is within one of gav1d's, so the bound left is the format's:
+	// The picture's bounds are AV1's, not the encoder's. gav1d up to v0.2.5
+	// coded one tile correctly and no more - a larger frame came out of it
+	// with a header that announced several tiles over the data of one
+	// (measured 2026-10-06, docs/REVIEW-165-2026-10-06.md), and until
+	// 2026-10-07 that held the picture to 4096x2304. A picture is cut into
+	// tiles here now (grid.go) and every tile is within one of gav1d's - still
+	// so with v0.2.6, which codes several, because a tile no picture changes
+	// is then coded once a film - so the bound left is the format's:
 	// maxPixels is the largest picture an AV1 level describes, 8192 by 4352
 	// (MaxPicSize of the 6.x levels, annex.a.levels.md lines 89-92). A larger
 	// one could declare no level but the maximum parameters one, which a

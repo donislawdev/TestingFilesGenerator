@@ -408,8 +408,8 @@
     },
     "webm_wide": {
       "bytes": 524288,
-      "sha256": "270aab596f2a59abe47cf9ab35236964b88dcd1be2ea24247cbce8c72c3c1cd0",
-      "measured_on": "2026-10-07"
+      "sha256": "a7b10a755815dfc0082c70318ca72fc890b6b04c3212e67bfab1d691cc36f932",
+      "measured_on": "2026-11-11"
     },
     "mp4_64kib": {
       "bytes": 65536,
@@ -433,8 +433,8 @@
     },
     "mp4_wide": {
       "bytes": 524288,
-      "sha256": "ae5d267ff067caf04aa42e72916f67a89a19584d2ea30445a955202571fc45c3",
-      "measured_on": "2026-10-07"
+      "sha256": "f2a09c9a2dacccdb778a8e828b3afa2fdf0b98e4d91f79f41b6488c4a67112bb",
+      "measured_on": "2026-11-11"
     },
     "geojson_8kib": {
       "bytes": 8192,
@@ -822,6 +822,14 @@
       "files": [
         "wav_32bit_past_one_cycle",
         "wav_past_one_cycle"
+      ]
+    },
+    {
+      "on": "2026-11-11",
+      "why": "gav1d v0.2.6 under every film and AVIF picture. Its encoder now pads the luma it predicts chroma from (CfL) the way the decoder does, by the luma transform rather than the chroma one, so a block cut by the right or bottom edge of a picture is coded against the prediction a decoder makes - before, the picture decoded differed from the one coded in those blocks by up to 7 of 255. The two wide films have such blocks in their bottom row and change there, every frame, by up to 5 of 255. The CI of the Dependabot pull request measured both on windows, linux and macos alike. A breaking change, taken with the bump, docs/GAV1D-026-2026-11-11.md.",
+      "files": [
+        "mp4_wide",
+        "webm_wide"
       ]
     }
   ]

@@ -13695,7 +13695,8 @@ MUTATIONS = [
     ),
     (
         # One object per frame, the defect the film's own allocation ceiling
-        # sits below: measured at 698 objects against a ceiling of 512.
+        # sits below: measured at 698 objects against a ceiling of 512, and
+        # with gav1d v0.2.6 at 1634 to 1644 against 1536.
         "a film allocates a block header for every frame it writes",
         "internal/format/webm/webm.go",
         "		out.write(block[:])",
@@ -14022,7 +14023,8 @@ MUTATIONS = [
     ),
     (
         # One object per frame, the defect the film's own allocation ceiling
-        # sits below: measured at 1241 objects against a ceiling of 1024.
+        # sits below: measured at 1241 objects against a ceiling of 1024, and
+        # with gav1d v0.2.6 at 1698 to 1701 against 1536.
         "an MP4 allocates a copy of every frame it writes",
         "internal/format/mp4/mp4.go",
         "			o.write(frame[t.SampleAt(i)])",

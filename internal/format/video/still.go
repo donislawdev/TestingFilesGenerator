@@ -33,9 +33,10 @@ type tileCoded struct {
 // which every tile of one frame has to be: gav1d writes them from the
 // quantizer alone (gav1d v0.2.5, av1/encode_hdr.go, writeFrameHdr - the loop
 // filter off, no delta, no tx_mode_select), measured on 2026-10-06 as one
-// suffix per quantizer across 27 pictures of 9 sizes. A later gav1d that chose
-// them from the picture would break that, and the frame is refused rather
-// than written with one tile's header over another's data.
+// suffix per quantizer across 27 pictures of 9 sizes. v0.2.6 changed only
+// tile_info in that function (docs/GAV1D-026-2026-11-11.md). A later gav1d
+// that chose them from the picture would break that, and the frame is refused
+// rather than written with one tile's header over another's data.
 func (t tileCoded) sameHeader(o tileCoded) bool {
 	if t.to-t.from != o.to-o.from {
 		return false
