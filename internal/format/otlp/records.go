@@ -25,6 +25,8 @@ type records struct {
 	tail       []byte
 	st, before state
 	shortest   int64
+	// m is how a file of metrics is laid out, nil for spans and log records.
+	m *metricPlan
 }
 
 // state is what the builder remembers from one record to the next. Kept in one
@@ -41,8 +43,11 @@ type state struct {
 
 func newRecords(s settings) *records {
 	r := &records{
-		s: s, e: emitter{indent: s.layout.indent},
-		open: opening(envelopes[s.signal], s.layout.indent), shut: closing(s.layout),
+		s: s, e: emitter{indent: s.layout.indent, sp: s.spelling()},
+		open: opening(envelopes[s.signal], s.layout.indent, s.spelling()), shut: closing(s.layout, s.spelling()),
+	}
+	if s.signal == Metrics {
+		r.m = newMetricPlan(s)
 	}
 	r.shortest = r.measureShortest()
 	return r
@@ -54,9 +59,15 @@ func newRecords(s settings) *records {
 func (r *records) Shortest() int64 { return r.shortest }
 
 // Discard takes back everything the thrown away record changed: its place in
-// the batch, its tick of the clock and its place in its trace. The closing
-// record then carries all three instead.
-func (r *records) Discard() { r.st = r.before }
+// the batch, its tick of the clock and its place in its trace, or what its
+// series of metrics had measured. The closing record then carries them all
+// instead.
+func (r *records) Discard() {
+	r.st = r.before
+	if r.m != nil {
+		r.m.states[r.m.savedAt] = r.m.saved
+	}
+}
 
 func (r *records) Append(dst []byte, rng *rand.Rand) []byte {
 	r.before = r.st
@@ -88,10 +99,19 @@ func (r *records) record(dst []byte, rng *rand.Rand, padded bool) (out []byte, a
 		dst = append(dst, r.open...)
 	}
 	r.e.b, r.e.depth, r.e.fresh = dst, recordDepth, r.st.inBatch == 0
-	if r.s.signal == Traces {
+	switch r.s.signal {
+	case Traces:
 		at = r.writeSpan(r.drawSpan(rng), padded)
-	} else {
+	case Logs:
 		at = r.writeEntry(r.drawEntry(rng, r.st.count), padded)
+	default:
+		p := r.m.draw(rng, r.st.count)
+		if p.slot.series > 0 {
+			// Inside the metric the point before it opened.
+			r.e.depth, r.e.fresh = pointDepth, false
+		}
+		// The closing point of the file closes its metric wherever it falls.
+		at = pointWriter{&r.e}.write(p, p.slot.series == 0, padded, padded || p.slot.last)
 	}
 	r.st.count++
 	r.st.inBatch++
@@ -109,7 +129,22 @@ func (r *records) measureShortest() int64 {
 	for _, en := range r.widestEntries() {
 		widest = max(widest, r.measured(func() { r.writeEntry(en, true) }))
 	}
-	return int64(len(r.open) + widest + len(r.shut))
+	return int64(len(r.open) + max(widest, r.widestPoint()) + len(r.shut))
+}
+
+// widestPoint is the longest closing point the settings can write, nought
+// when the file holds no metrics. Measured as the first of its metric, with
+// the name in front and the close behind, because the closing point may be
+// either or both.
+func (r *records) widestPoint() int {
+	if r.m == nil {
+		return 0
+	}
+	widest := 0
+	for _, p := range r.m.widest() {
+		widest = max(widest, r.measured(func() { pointWriter{&r.e}.write(&p, true, true, true) }))
+	}
+	return widest
 }
 
 // measured is how many bytes write adds as the first record of a batch.

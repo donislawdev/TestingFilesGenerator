@@ -725,6 +725,51 @@
       "bytes": 8192,
       "sha256": "1380382a49470452d1662988429244b75a801dd50b8b7d0af21f773aee32f62d",
       "measured_on": "2026-11-11"
+    },
+    "otlp_40kib_pitfalls_metrics": {
+      "bytes": 40960,
+      "sha256": "d5ad4a69f29fb9eec5e58174d30f68c84487eb18e713557b6e1b1f7678b12bd1",
+      "measured_on": "2026-11-11"
+    },
+    "otlp_8kib_pitfalls_logs": {
+      "bytes": 8192,
+      "sha256": "ff58422e4bbf6711680b50090c80295ea62c741a08f3f415125810c74dbfe405",
+      "measured_on": "2026-11-11"
+    },
+    "otlp_8kib_pitfalls_spans": {
+      "bytes": 8192,
+      "sha256": "c6494ee30e3be319b0e9571da4fdfe23e353bcba4c2d14d20306af417aa0c1c9",
+      "measured_on": "2026-11-11"
+    },
+    "otlp_20kib_metrics_summary_indented": {
+      "bytes": 20480,
+      "sha256": "2db2f14bd882fcee5cc669db6045ca30618e93e2177f9eb50fdb3a0e1e132925",
+      "measured_on": "2026-11-11"
+    },
+    "otlp_40kib_metrics_histogram_exemplars": {
+      "bytes": 40960,
+      "sha256": "2ce27d33d20f216830f041718565aed4be909b5e91892ab5b045ddc29d5a2315",
+      "measured_on": "2026-11-11"
+    },
+    "otlp_8kib_metrics": {
+      "bytes": 8192,
+      "sha256": "4e1ddcb1ceb401a5aea8897ee25434753e3613cc823a173767df1dd4f375cccd",
+      "measured_on": "2026-11-11"
+    },
+    "otlp_8kib_metrics_exponential": {
+      "bytes": 8192,
+      "sha256": "8a40f7f40e96d85f4123e0d91ddf1e97acb21f10e0d8d3802a3768f0cdae2280",
+      "measured_on": "2026-11-11"
+    },
+    "otlp_8kib_metrics_gauge": {
+      "bytes": 8192,
+      "sha256": "51f986adf4774fa178f4d79ea64f3d4af1bcf74cf373308c61adf5477d39289b",
+      "measured_on": "2026-11-11"
+    },
+    "otlp_8kib_metrics_sum_delta": {
+      "bytes": 8192,
+      "sha256": "09453a63d9e92e5e78fc0bf62352b00bfbcace558584a11a7bf04db54de8e7f0",
+      "measured_on": "2026-11-11"
     }
   },
   "remeasured": [

@@ -95,6 +95,8 @@ var functions = []string{
 type level struct {
 	text   string
 	number int64
+	// enum is the name logs.proto gives the number.
+	enum string
 	// messages are what a record of this severity says, so an ERROR never
 	// reports that an order was accepted.
 	messages []string
@@ -103,10 +105,10 @@ type level struct {
 // The four severities, with the numbers logs.proto gives the first of each
 // range.
 var (
-	levelDebug = level{"DEBUG", 5, []string{"cache miss", "loading order", "query finished", "stock checked"}}
-	levelInfo  = level{"INFO", 9, []string{"order accepted", "invoice sent", "customer signed in", "report generated"}}
-	levelWarn  = level{"WARN", 13, []string{"slow query", "retrying payment", "stock running low"}}
-	levelError = level{"ERROR", 17, []string{"payment refused", "invoice could not be rendered", "upstream timed out"}}
+	levelDebug = level{"DEBUG", 5, "SEVERITY_NUMBER_DEBUG", []string{"cache miss", "loading order", "query finished", "stock checked"}}
+	levelInfo  = level{"INFO", 9, "SEVERITY_NUMBER_INFO", []string{"order accepted", "invoice sent", "customer signed in", "report generated"}}
+	levelWarn  = level{"WARN", 13, "SEVERITY_NUMBER_WARN", []string{"slow query", "retrying payment", "stock running low"}}
+	levelError = level{"ERROR", 17, "SEVERITY_NUMBER_ERROR", []string{"payment refused", "invoice could not be rendered", "upstream timed out"}}
 )
 
 // levelSets are the mixes of severities, under the names and in the shares the

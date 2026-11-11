@@ -443,8 +443,13 @@ func rtfGoldenCases() map[string]engine.Target {
 // telemetryGoldenCases are the golden cases of the otlp format, a table of
 // their own for the reason mailGoldenCases gives.
 func telemetryGoldenCases() map[string]engine.Target {
-	one := func(props map[string]string) engine.Target {
-		return engine.Target{ID: "g", Format: "otlp", Sizes: engine.Uniform(1, 8192), Label: true, Properties: props}
+	sized := func(size int64, props map[string]string) engine.Target {
+		return engine.Target{ID: "g", Format: "otlp", Sizes: engine.Uniform(1, size), Label: true, Properties: props}
+	}
+	one := func(props map[string]string) engine.Target { return sized(8192, props) }
+	metrics := func(props map[string]string) map[string]string {
+		props["signal"] = "metrics"
+		return props
 	}
 	return map[string]engine.Target{
 		// One case for each path the bytes take rather than one for each
@@ -468,6 +473,30 @@ func telemetryGoldenCases() map[string]engine.Target {
 		"otlp_8kib_logs":                   one(map[string]string{"signal": "logs"}),
 		"otlp_8kib_logs_batches":           one(map[string]string{"signal": "logs", "batch": "2", "rate": "1000000"}),
 		"otlp_8kib_logs_indented_no_trace": one(map[string]string{"signal": "logs", "formatting": "indented", "trace_context": "false", "level_mix": "errors"}),
+
+		// Metrics: every kind in one collection cut short, so every name and
+		// every closing is written once. Gauges and sums over many lines on
+		// two clocks and both temporalities, where a line ends a collection.
+		// Request durations with exemplars counted by the collection, the one
+		// case of an exemplar and of a bucket kept by its last measurement.
+		// Exponential buckets over lines, where the first bucket written
+		// moves. The summary indented, where its quantiles nest deepest.
+		"otlp_8kib_metrics":                      one(metrics(map[string]string{})),
+		"otlp_8kib_metrics_gauge":                one(metrics(map[string]string{"metric_kind": "gauge", "interval": "1"})),
+		"otlp_8kib_metrics_sum_delta":            one(metrics(map[string]string{"metric_kind": "sum", "temporality": "delta", "interval": "86400"})),
+		"otlp_40kib_metrics_histogram_exemplars": sized(40960, metrics(map[string]string{"metric_kind": "histogram", "temporality": "delta", "exemplars": "true"})),
+		"otlp_8kib_metrics_exponential":          one(metrics(map[string]string{"metric_kind": "exponential-histogram", "start": "2002-01-01T00:00:00Z"})),
+		"otlp_20kib_metrics_summary_indented":    sized(20480, metrics(map[string]string{"metric_kind": "summary", "formatting": "indented"})),
+
+		// The pitfalls, every one in at least one case and as many as fit
+		// together in each: what each spells and dates differently is a path
+		// of its own through the bytes.
+		"otlp_8kib_pitfalls_spans": one(map[string]string{"batch": "3", "id_encoding": "base64", "enum_encoding": "name", "key_case": "snake",
+			"large_numbers": "number", "bom": "true", "time_order": "out-of-order", "end_before_start": "true", "empty_envelope": "true"}),
+		"otlp_8kib_pitfalls_logs": one(map[string]string{"signal": "logs", "batch": "2", "id_encoding": "upper-hex", "body": "any-value",
+			"large_numbers": "number", "time_order": "out-of-order"}),
+		"otlp_40kib_pitfalls_metrics": sized(40960, metrics(map[string]string{"exemplars": "true", "id_encoding": "upper-hex", "enum_encoding": "name",
+			"non_finite": "true", "key_case": "snake"})),
 	}
 }
 

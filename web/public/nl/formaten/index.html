@@ -869,12 +869,17 @@
     <tr>
       <td><code>otlp</code></td>
       <td><code>signal</code></td>
-      <td>logs, traces</td>
+      <td>logs, metrics, traces</td>
     </tr>
     <tr>
       <td></td>
       <td><code>formatting</code></td>
       <td>indented, minified, record-per-line</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>bom</code></td>
+      <td>waar of onwaar</td>
     </tr>
     <tr>
       <td></td>
@@ -909,6 +914,71 @@
     <tr>
       <td></td>
       <td><code>trace_context</code></td>
+      <td>waar of onwaar</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>metric_kind</code></td>
+      <td>exponential-histogram, gauge, histogram, mixed, sum, summary</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>temporality</code></td>
+      <td>cumulative, delta</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>exemplars</code></td>
+      <td>waar of onwaar</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>interval</code></td>
+      <td>1 - 86400 seconden</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>id_encoding</code></td>
+      <td>base64, hex, upper-hex</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>enum_encoding</code></td>
+      <td>name, number</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>key_case</code></td>
+      <td>camel, snake</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>large_numbers</code></td>
+      <td>number, text</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>time_order</code></td>
+      <td>in-order, out-of-order</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>end_before_start</code></td>
+      <td>waar of onwaar</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>empty_envelope</code></td>
+      <td>waar of onwaar</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>body</code></td>
+      <td>any-value, text</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><code>non_finite</code></td>
       <td>waar of onwaar</td>
     </tr>
     <tr>

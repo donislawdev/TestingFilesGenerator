@@ -115,6 +115,16 @@ var choiceCompanions = map[string]map[string]string{
 	"otlp.level_mix=errors":    {"signal": "logs"},
 	"otlp.level_mix=quiet":     {"signal": "logs"},
 	"otlp.trace_context=false": {"signal": "logs"},
+	"otlp.body=any-value":      {"signal": "logs"},
+	// And one that shapes metrics, a file of metrics.
+	"otlp.metric_kind=exponential-histogram": {"signal": "metrics"},
+	"otlp.metric_kind=gauge":                 {"signal": "metrics"},
+	"otlp.metric_kind=histogram":             {"signal": "metrics"},
+	"otlp.metric_kind=sum":                   {"signal": "metrics"},
+	"otlp.metric_kind=summary":               {"signal": "metrics"},
+	"otlp.temporality=delta":                 {"signal": "metrics"},
+	"otlp.exemplars=true":                    {"signal": "metrics"},
+	"otlp.non_finite=true":                   {"signal": "metrics"},
 	// XML in UTF-16 opens with a byte order mark.
 	"xml.encoding=utf-16be": {"bom": "true"},
 	"xml.encoding=utf-16le": {"bom": "true"},

@@ -223,7 +223,7 @@ owns it, at the exact size you asked for:
 | ⚙️ **Configuration** | `yaml`, `toml` |
 | 🗺️ **Maps** | `geojson` (RFC 7946) |
 | ✉️ **Mail** | `eml` (RFC 5322 with MIME, real files attached) |
-| 📡 **Telemetry** | `otlp` (OpenTelemetry traces and logs as OTLP JSON) |
+| 📡 **Telemetry** | `otlp` (OpenTelemetry traces, logs and metrics as OTLP JSON) |
 | 🗜️ **Archives** | `zip`, `targz` (`.tar.gz`) |
 | 🔊 **Audio** | `wav` |
 | 🎞️ **Video** | `webm`, `mp4` (both AV1, no sound) |
@@ -713,7 +713,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `txt`, `md`, `xml` | `encoding`, `bom` |
 | `json` | `formatting` |
 | `geojson` | `geometry`, `formatting`, `precision`, `altitude`, `vertices`, `holes`, `winding`, `antimeridian`, `unlocated`, `ids`, `bbox` |
-| `otlp` | `signal`, `formatting`, `batch`, `start`, `rate`, `depth`, `status_mix`, `level_mix`, `trace_context` |
+| `otlp` | `signal`, `formatting`, `batch`, `start`, `rate`, `depth`, `status_mix`, `level_mix`, `trace_context`, `metric_kind`, `temporality`, `exemplars`, `interval`, `id_encoding`, `enum_encoding`, `key_case`, `large_numbers`, `bom`, `time_order`, `end_before_start`, `empty_envelope`, `body`, `non_finite` |
 | `eml` | `body`, `layout`, `text_encoding`, `charset`, `headers`, `recipients`, `line_endings`, `attachments`, `attachment_format`, `attachment_size`, `filename_style`, `message_depth`, `inline`, `inline_format`, `inline_size` |
 | `svg` | `width`, `height` |
 | `html` | `structure`, `nesting`, `characters`, `elements`, `links`, `bom`, `formatting`, `styles`, `inline`, `inline_format`, `inline_size` |

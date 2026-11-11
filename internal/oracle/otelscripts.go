@@ -1,5 +1,7 @@
 package oracle
 
+import "encoding/json"
+
 // otelcol is the OpenTelemetry Collector: its file receiver reads the file and
 // its file exporter writes back what it understood.
 //
@@ -24,6 +26,21 @@ var otelcol = Checker{
 	accept: expectOK("the OpenTelemetry Collector"),
 }
 
+// OTLPPitfalls asks the Collector about a file written with pitfalls, told
+// which ones: the same script, which then spells every line the way the
+// specification asks before it compares, and expects the lines the Collector
+// was measured to drop to be missing. Byte for byte would be the wrong
+// question here - the Collector writes its own spelling of what it read.
+func OTLPPitfalls(path string, pitfalls map[string]string) Result {
+	told, err := json.Marshal(pitfalls)
+	if err != nil {
+		return Result{Available: true, Tool: otelcol.Name, Err: err}
+	}
+	c := otelcol
+	c.args = func(p string) []string { return []string{"-c", otelcolScript, p, string(told)} }
+	return c.Check(path)
+}
+
 const otelcolScript = `
 import json, os, shutil, subprocess, sys, tempfile, time
 
@@ -34,7 +51,69 @@ import json, os, shutil, subprocess, sys, tempfile, time
 STARTED = time.time()
 BUDGET = 40
 LINE_CEILING = 1 << 20
-SIGNALS = {b'{"resourceSpans"': "traces", b'{"resourceLogs"': "logs", b'{"resourceMetrics"': "metrics"}
+SIGNALS = {b'{"resourceSpans"': "traces", b'{"resourceLogs"': "logs", b'{"resourceMetrics"': "metrics",
+           b'{"resource_spans"': "traces", b'{"resource_logs"': "logs", b'{"resource_metrics"': "metrics"}
+BOM = b"\xef\xbb\xbf"
+
+# The pitfalls the file was written with, when the guard says. Without them
+# the question is the strong one below: the same bytes back. With them the
+# Collector writes its own spelling of what it read, so each line is first
+# spelled the way the specification asks and then compared, and a line the
+# Collector was measured to drop is expected to be missing
+# (docs/OTLP-2026-11-10.md section 13).
+told = json.loads(sys.argv[2]) if len(sys.argv) > 2 else {}
+ENUMS = {"SPAN_KIND_INTERNAL": 1, "SPAN_KIND_SERVER": 2, "STATUS_CODE_ERROR": 2,
+         "SEVERITY_NUMBER_DEBUG": 5, "SEVERITY_NUMBER_INFO": 9, "SEVERITY_NUMBER_WARN": 13, "SEVERITY_NUMBER_ERROR": 17,
+         "AGGREGATION_TEMPORALITY_DELTA": 1, "AGGREGATION_TEMPORALITY_CUMULATIVE": 2}
+ENUM_KEYS = {"kind", "code", "severityNumber", "aggregationTemporality"}
+WIDE_KEYS = {"startTimeUnixNano", "endTimeUnixNano", "timeUnixNano", "observedTimeUnixNano", "intValue", "asInt",
+             "count", "bucketCounts", "zeroCount"}
+ID_KEYS = {"traceId", "spanId", "parentSpanId"}
+SENTINELS = {
+    "traces": '{"resourceSpans":[{"resource":{},"scopeSpans":[{"scope":{"name":"tfg.sentinel"},"spans":[{"traceId":"0102030405060708090a0b0c0d0e0f10",'
+              '"spanId":"0102030405060708","name":"sentinel","kind":1,"startTimeUnixNano":"1","endTimeUnixNano":"2","status":{}}]}]}]}',
+    "logs": '{"resourceLogs":[{"resource":{},"scopeLogs":[{"scope":{"name":"tfg.sentinel"},"logRecords":[{"timeUnixNano":"1","body":{"stringValue":"sentinel"}}]}]}]}',
+    "metrics": '{"resourceMetrics":[{"resource":{},"scopeMetrics":[{"scope":{"name":"tfg.sentinel"},"metrics":[{"name":"sentinel",'
+               '"gauge":{"dataPoints":[{"timeUnixNano":"1","asInt":"1"}]}}]}]}]}',
+}
+
+def camel(key):
+    head, *rest = key.split("_")
+    return head + "".join(p[:1].upper() + p[1:] for p in rest)
+
+def canonical(value, key=None):
+    # What the specification spells: keys in lower camel case, an enum as its
+    # number, a number of 64 bits as text, ids as hex in lower case.
+    if isinstance(value, dict):
+        return {camel(k): canonical(v, camel(k)) for k, v in value.items()}
+    if isinstance(value, list):
+        return [canonical(v, key) for v in value]
+    if key in ENUM_KEYS and isinstance(value, str):
+        return ENUMS.get(value, value)
+    if key in WIDE_KEYS and type(value) is int:
+        return str(value)
+    if key in ID_KEYS and isinstance(value, str):
+        return value.lower()
+    return value
+
+def spelled(line):
+    return json.dumps(canonical(json.loads(line)), separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+
+def carries_ids(value):
+    # Whether a batch names a trace or a span anywhere. The Collector drops a
+    # batch whose ids are not hex and has nothing to drop in one with none,
+    # such as metrics a size too small to reach the exemplars (review of #233).
+    stack = [value]
+    while stack:
+        v = stack.pop()
+        if isinstance(v, dict):
+            for k, x in v.items():
+                if k in ID_KEYS and x:
+                    return True
+                stack.append(x)
+        elif isinstance(v, list):
+            stack.extend(v)
+    return False
 
 named = os.environ.get("TFG_OTELCOL", "")
 collector = named or shutil.which("otelcol-contrib")
@@ -72,6 +151,12 @@ def is_object(line):
 
 with open(sys.argv[1], "rb") as f:
     data = f.read()
+bom = told.get("bom") == "true"
+if bom:
+    if not data.startswith(BOM):
+        print("FAIL bom=true and the file does not open with a byte order mark")
+        sys.exit(1)
+    data = data[len(BOM):]
 pieces = data.split(b"\n")
 by_line = data.endswith(b"\n") and all(is_object(p) for p in pieces[:-1])
 if by_line:
@@ -94,11 +179,37 @@ if signal is None:
     print("FAIL the file does not open with resourceSpans, resourceLogs or resourceMetrics")
     sys.exit(1)
 
+# What the file receiver is handed, and what it has to write back.
+fed, expected, dropped = wanted, wanted, []
+if told:
+    fed = [BOM + wanted[0]] + wanted[1:] if bom else wanted
+    expected = []
+    for number, w in enumerate(wanted, start=1):
+        doc = canonical(json.loads(w))
+        why = None
+        if not next(iter(doc.values())):
+            why = "an empty envelope"
+        elif told.get("id_encoding") == "base64" and carries_ids(doc):
+            why = "ids in base64"
+        elif bom and number == 1:
+            why = "the line behind the byte order mark"
+        if why:
+            dropped.append("%d (%s)" % (number, why))
+        else:
+            expected.append(spelled(w))
+
 work = tempfile.mkdtemp(prefix="tfg-otelcol-")
 try:
     os.mkdir(os.path.join(work, "in"))
     with open(os.path.join(work, "in", "data.jsonl"), "wb") as f:
-        f.write(b"\n".join(wanted) + b"\n")
+        f.write(b"\n".join(fed) + b"\n")
+        if told:
+            # A batch the Collector reads whatever the file holds, last in the
+            # same file. The receiver reads every file on a reader of its own
+            # and the lines of one in order, so once this batch is back every
+            # line before it has been read - and a file that has to come back
+            # empty does not wait for the whole budget (review of #233).
+            f.write(SENTINELS[signal].encode("utf-8") + b"\n")
     out = os.path.join(work, "out.jsonl")
     longest = max(len(w) for w in wanted)
     lines = ["receivers:", "  otlp_json_file:", "    include: ['%s']" % (work.replace(os.sep, "/") + "/in/*.jsonl"),
@@ -127,7 +238,13 @@ try:
         while time.time() < deadline and process.poll() is None:
             time.sleep(0.2)
             got = written()
-            if len(got) >= len(wanted):
+            # Told, the sentinel ends the input and its return says all of it
+            # was read. Otherwise every batch has to come back.
+            if told:
+                back = any(b"tfg.sentinel" in g for g in got)
+            else:
+                back = len(got) >= len(wanted)
+            if back:
                 # One more look, so a batch the Collector wrote twice shows.
                 time.sleep(0.6)
                 got = written()
@@ -145,6 +262,24 @@ try:
             tail = f.read()[-600:].decode("utf-8", "replace")
         print("FAIL the Collector did not run: %s" % tail.strip())
         sys.exit(1)
+    if told:
+        if not any(b"tfg.sentinel" in g for g in got):
+            print("FAIL the Collector wrote nothing back in %d s, not even the batch every reader takes" % BUDGET)
+            sys.exit(1)
+        got = [g for g in got if b"tfg.sentinel" not in g]
+        if len(got) != len(expected):
+            print("FAIL %d batches came back and %d were expected, with batches %s dropped as measured" % (
+                len(got), len(expected), ", ".join(dropped) or "none"))
+            sys.exit(1)
+        for number, (a, b) in enumerate(zip(expected, got), start=1):
+            if a != b:
+                at = next((i for i in range(min(len(a), len(b))) if a[i] != b[i]), min(len(a), len(b)))
+                print("FAIL batch %d came back different at byte %d once spelled the way the specification asks: ...%s against ...%s" % (
+                    number, at, a[max(0, at - 40):at + 40].decode("utf-8", "replace"), b[max(0, at - 40):at + 40].decode("utf-8", "replace")))
+                sys.exit(1)
+        print("OK %d of %d batches of %s came back in the spelling of the specification, dropped as measured: %s" % (
+            len(got), len(wanted), signal, ", ".join(dropped) or "none"))
+        sys.exit(0)
     if len(got) != len(wanted):
         print("FAIL %d of %d batches came back - the Collector dropped the rest without a word, which is what it does "
               "with a line longer than %d bytes and with one it cannot read" % (len(got), len(wanted), LINE_CEILING))

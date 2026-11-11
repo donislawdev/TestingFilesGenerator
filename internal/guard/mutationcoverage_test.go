@@ -141,6 +141,15 @@ var provenByProbe = map[string]string{
 	// against is the break.
 	"TestAnAVIFLargerThanOneAV1TileSurvivesItsReferenceTool": "broken on 2026-11-11 by gav1d v0.2.5, go.mod as it stood before v0.2.6: both pictures went red saying tile_start_and_end_present_flag is set in an OBU_FRAME, " +
 		"the tile_info of several tiles read over the data of one. With v0.2.6 both read back as 2 tiles, gav1d's decoder read them whole and Pillow accepted them (docs/GAV1D-026-2026-11-11.md).",
+	// Their canaries run inside them on every machine with python, which is
+	// the proof the owner asked for first on 2026-11-11: a check that cannot
+	// fail turns them red where they stand, with no entry to rewrite when the
+	// code moves.
+	"TestTheOTLPCheckRefusesMetricsThatDoNotAddUp": "its own canaries: six files of metrics broken one way each - a temporality, the empty negative buckets, a bucket, a date, a counter that falls, exemplars nobody asked for - " +
+		"each refused with the reason that names it, beside two healthy files that pass. On 2026-11-11 one canary was refused for another reason and the guard went red, which is how it found that a count one more never reaches the check of the buckets.",
+	"TestTheExponentialBucketsEndWhereTheirBoundsSay": "its own canary: the table with one entry a microsecond high and then a microsecond low, each refused at that entry alone, before the table itself is asked.",
+	"TestEveryOTLPPitfallMeetsItsReferenceTool": "its own canary: a file of ids in capitals handed to the oracle as ids in base64, which the Collector reads whole where it was told to expect nothing back, and the oracle has to refuse it. " +
+		"On 2026-11-11 the guard passed with the Collector 0.165.0 on Windows over 34 files, every pitfall in every kind of telemetry, in 124 s.",
 	// Runs only in the CI job that has the Collector, so a mutation job without
 	// one would meet a skip. What the guard adds to the structural check is the
 	// oracle itself, and the oracle was handed three files it has to refuse.
