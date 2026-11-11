@@ -102,7 +102,7 @@ func factsFromTheProgram(t *testing.T) site.Facts {
 		formats = append(formats, site.Format{
 			ID:          d.ID,
 			Name:        d.Name,
-			Extension:   d.Extension,
+			Extensions:  d.Extensions(),
 			Fidelity:    string(d.Fidelity),
 			Determinism: string(d.Determinism),
 			// The same number the command line prints, from the same call.

@@ -215,6 +215,20 @@ type Property struct {
 	// has (docs/NARZEDZIA-SUMY-2026-09-29.md §14, the owner's decision of
 	// 2026-09-30). Ignored by every kind but text.
 	Long bool
+
+	// Extensions are the values of a choice that change what the name of a
+	// file ends in, each with the ending it gets - a layout that makes one
+	// JSON document of a file that is JSON Lines by default. A value left out
+	// keeps the format's Extension, and so does the default, which is never
+	// listed: the default's ending has one place to live, and a guard refuses
+	// a second.
+	//
+	// Declared rather than decided by the generator, so the name a file will
+	// get is known before the file is made: tfg formats prints it, a script
+	// reads it from --json, and a window shows it in the setting's sentence.
+	// The engine names every file by Descriptor.ExtensionFor. Ignored by every
+	// kind but choice. docs/ROZSZERZENIE-UKLADU-2026-11-11.md.
+	Extensions map[string]string
 }
 
 // Descriptor is everything a format announces about itself. A format missing

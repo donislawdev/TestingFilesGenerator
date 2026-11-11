@@ -113,7 +113,7 @@
     <tr>
       <td><code>{{ .ID }}</code></td>
       <td>{{ .Name }}</td>
-      <td><code>{{ .Extension }}</code></td>
+      <td>{{ range $i, $e := .Extensions }}{{ if $i }} {{ end }}<code>{{ $e }}</code>{{ end }}</td>
       <td class="num">{{ .Smallest }}</td>
       <td>{{ .Fidelity }}</td>
       <td>{{ if eq .Oracle "none" }}<span class="muted">{{ $.Term "oracleNone" }}</span>{{ else }}{{ .Oracle }}{{ end }}</td>
