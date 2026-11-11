@@ -509,7 +509,7 @@ MUTATIONS = [
         # point: both paths resolve here, so breaking one leaves the other
         # answering and the guard stays green while proving nothing.
         "the structural checker looks for an interpreter nobody installed",
-        "internal/oracle/oracle.go",
+        "internal/oracle/strict.go",
         'python, ok := inPath("python")()',
         'python, ok := inPath("python-not-here")()',
         "TestTheStructuralCheckerIsAvailableWhereItWasBuilt",
@@ -520,7 +520,7 @@ MUTATIONS = [
         # runs to the top of the disk and finds nothing - which is what the
         # container did for months while every structural check reported a skip.
         "the walk for the structural checker looks for a name that is not there",
-        "internal/oracle/oracle.go",
+        "internal/oracle/strict.go",
         'filepath.Join(dir, "internal", "oracle", "strict.py")',
         'filepath.Join(dir, "internal", "oracle", "strict.pyc")',
         "TestTheStructuralCheckerIsFoundByABinaryBuiltSomewhereElse",
@@ -530,7 +530,7 @@ MUTATIONS = [
         # it starts in, so it never climbs to where the script actually is. This
         # is the state the code was in before the walk existed at all.
         "the walk for the structural checker stops where it starts",
-        "internal/oracle/oracle.go",
+        "internal/oracle/strict.go",
         "if up == dir {",
         "if up == dir || true {",
         "TestTheStructuralCheckerIsFoundByABinaryBuiltSomewhereElse",
@@ -3078,7 +3078,7 @@ MUTATIONS = [
         # simply skips that layer, in silence. That is why the list is declared
         # and compared rather than trusted.
         "a format loses its structural check without anything saying so",
-        "internal/oracle/oracle.go",
+        "internal/oracle/strict.go",
         'case "png", "wav", "pdf", "zip", "targz", "log", "csv", "json", "xml", "svg", "html",',
         'case "png", "wav", "pdf", "zip", "log", "csv", "json", "xml", "svg", "html",',
         "TestTheStructuralCheckerCoversEveryFormatItShould",
@@ -17567,5 +17567,98 @@ MUTATIONS = [
         "\t\tSendAs:         b.notes.sendAs.Text,",
         "\t\tSendAs:         \"\",",
         "TestWhatIsTypedOnTheRecipeScreenIsWhatGetsWritten",
+    ),
+    (
+        # The record built only to learn it does not fit keeps its place in
+        # the batch, its tick and its place in its trace. The size stays exact
+        # and every line parses. The checker finds a trace opened a tick late.
+        "an otlp record thrown away is not undone, so the clock and the traces skip",
+        "internal/format/otlp/records.go",
+        "func (r *records) Discard() { r.st = r.before }",
+        "func (r *records) Discard() {}",
+        "TestAnOTLPFileIsWhatItsSettingsSay",
+    ),
+    (
+        # Every child takes the whole of its parent's time. The same number of
+        # digits, so the size and the Collector's reading do not move.
+        "an otlp child span is as long as its parent rather than inside it",
+        "internal/format/otlp/spans.go",
+        "\tinset := int64(t.level) * t.length / int64(2*r.s.depth)",
+        "\tinset := int64(0) * t.length / int64(2*r.s.depth)",
+        "TestAnOTLPFileIsWhatItsSettingsSay",
+    ),
+    (
+        # A response of exactly 500 stops being an error. The smallest file is
+        # measured with the largest code of the mix, so no size moves.
+        "an otlp span that ends with 500 is not recorded as an error",
+        "internal/format/otlp/spans.go",
+        "func (sp span) failed() bool { return sp.level == 0 && sp.status >= serverError }",
+        "func (sp span) failed() bool { return sp.level == 0 && sp.status > serverError }",
+        "TestAnOTLPFileIsWhatItsSettingsSay",
+    ),
+    (
+        # Every log record at one instant, which is what the log format wrote
+        # until it learned to advance.
+        "otlp log records all carry the moment the file starts at",
+        "internal/format/otlp/logs.go",
+        "\t\tat:        r.s.start + n*r.s.step(),",
+        "\t\tat:        r.s.start + 0*n*r.s.step(),",
+        "TestAnOTLPFileIsWhatItsSettingsSay",
+    ),
+    (
+        # The padding attribute on every log record instead of the last. The
+        # closing record still takes the remainder, so the size is exact.
+        "every otlp log record carries the padding attribute",
+        "internal/format/otlp/logs.go",
+        "\tif padded {",
+        "\tif padded || true {",
+        "TestAnOTLPFileIsWhatItsSettingsSay",
+    ),
+    (
+        # The bound on a line worked out as if a record were one byte long.
+        "the longest otlp line is worked out far too short",
+        "internal/format/otlp/records.go",
+        "\trecord := r.shortest - int64(len(r.open)+len(r.shut)) + 1",
+        "\trecord := r.shortest - r.shortest + 1",
+        "TestNoOTLPLineIsLongerThanTheFileReceiverReads",
+    ),
+    (
+        "otlp takes a setting that shapes spans beside signal logs",
+        "internal/format/otlp/settings.go",
+        "\t\tif s.signal != Traces {",
+        "\t\tif s.signal != Traces && false {",
+        "TestOTLPRefusesASettingThatHasNothingToShape",
+    ),
+    (
+        # The other half of the same guard: a default that arrived is refused
+        # as if it had been chosen, which is what puts a signal out of reach
+        # from a window that sends every setting it draws.
+        "otlp refuses a misplaced setting that was sent at its default",
+        "internal/format/otlp/settings.go",
+        "\t\tif !chosen || v == \"\" || v == p.Default {",
+        "\t\tif !chosen || v == \"\" {",
+        "TestOTLPRefusesASettingThatHasNothingToShape",
+    ),
+    (
+        # Go's parser takes a fraction of a second the layout does not have.
+        "otlp start is not written back and compared, so a fraction of a second passes",
+        "internal/format/otlp/settings.go",
+        "\tif err != nil || at.Format(startLayout) != raw {",
+        "\tif err != nil {",
+        "TestOTLPRefusesAStartItCannotWrite",
+    ),
+    (
+        "otlp start is taken from any year",
+        "internal/format/otlp/settings.go",
+        "\tif at.Year() < firstYear || at.Year() > lastYear {",
+        "\tif (at.Year() < firstYear || at.Year() > lastYear) && false {",
+        "TestOTLPRefusesAStartItCannotWrite",
+    ),
+    (
+        "an otlp file that runs past the last moment a time can name is planned",
+        "internal/format/otlp/settings.go",
+        "; ticks <= room {",
+        "; ticks <= room || true {",
+        "TestOTLPRefusesAStartItCannotWrite",
     ),
 ]

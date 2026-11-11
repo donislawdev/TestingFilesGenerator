@@ -1460,6 +1460,22 @@ jobs:
           echo "TFG_MAILPARSER=$RUNNER_TEMP/mailparser/node_modules/mailparser" >> "$GITHUB_ENV"
           node -e "console.log('mailparser', require(process.argv[1] + '/package.json').version)" "$RUNNER_TEMP/mailparser/node_modules/mailparser"
 
+          # OTLP is read by the OpenTelemetry Collector, which is asked to
+          # write every file back byte for byte (docs/OTLP-2026-11-10.md
+          # section 5). The contrib distribution is the one that carries the
+          # file receiver and the file exporter. Pinned by version and by the
+          # checksum its release publishes, unpacked outside the checkout and
+          # named to the guard through TFG_OTELCOL. Asked for its version, so
+          # an archive that did not unpack stops this step rather than turning
+          # the OTLP guard into a skip.
+          otelcol=otelcol-contrib_0.165.0_linux_amd64.tar.gz
+          curl -fsSL -o "$RUNNER_TEMP/$otelcol" "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.165.0/$otelcol"
+          echo "bd6e73d94bf3359ad6fac25529a8ee308adb9b0b8a0e8af034ed3891fbe5aa33  $RUNNER_TEMP/$otelcol" | sha256sum --check
+          mkdir -p "$RUNNER_TEMP/otelcol"
+          tar -xzf "$RUNNER_TEMP/$otelcol" -C "$RUNNER_TEMP/otelcol"
+          echo "TFG_OTELCOL=$RUNNER_TEMP/otelcol/otelcol-contrib" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/otelcol/otelcol-contrib" --version
+
           # The distribution's Pillow cannot open an AVIF - measured on this
           # runner, PIL.UnidentifiedImageError on a file the structural checker
           # had just called sound. Installed for the SAME interpreter the oracle

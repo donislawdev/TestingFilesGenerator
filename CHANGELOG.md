@@ -16,6 +16,15 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A new format: `otlp`, OpenTelemetry traces and logs as OTLP JSON.**
+  `tfg generate --format otlp` writes spans or log records to an exact size,
+  one batch on each line as the OTLP file exporter writes them, or as one
+  request for an OTLP endpoint (`formatting`). Settings choose `signal`, the
+  batch, the start time and rate, the depth of a trace, the response codes
+  and the severities. The OpenTelemetry Collector writes every file back byte
+  for byte. No line passes 1 MiB, where its file receiver drops a line
+  without saying so. Metrics are not written yet.
+
 - **A file can be sent under a name no disk stores.** `send-as` in a recipe,
   `--send-as` on the command line and Send as in the window take a name such
   as `../climbed_out.jpg`. The file keeps an ordinary name on disk and the
@@ -80,6 +89,20 @@ because it turns other people's test suites red.
   installs `tfg` on Windows and macOS runners in GitHub Actions.
 
 ### Changed
+
+- **`empty-and-minimal` now includes `otlp`.** The preset builds the smallest
+  file of every format this build has, so with `formats` left at `all` it
+  gains an `otlp` target of 1266 B, and the recipe `tfg preset eject
+  empty-and-minimal` prints is one target longer. A manifest from a run of
+  that preset records the hash of that recipe, so its `recipe_hash` differs
+  from one written before. Every file the preset wrote before is written as
+  it was. The files that come after `otlp` in the run take the next `id`,
+  and a run that names its `formats` is untouched.
+
+- **`zero-head` on a log no longer promises a refusal.** A reader that takes
+  a log line by line fails on the first line and reads the rest, so the
+  manifest of such a file now says the outcome depends on the reader. The
+  file itself is written as before.
 
 - **`upload-validation` is four files longer.** The files sent under a name
   that leaves the upload directory are four targets more in the recipe

@@ -275,7 +275,8 @@
     "the id of a picture format, as tfg formats lists them": "รหัสของรูปแบบรูปภาพ ตามที่ tfg formats แสดง",
     "the password, in plain text": "รหัสผ่านในรูปข้อความธรรมดา",
     "any text": "ข้อความใดก็ได้",
-    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "วันที่ เช่น 2024-02-29 หรือ 2024-02-29T13:45:00+02:00 หรือ none"
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "วันที่ เช่น 2024-02-29 หรือ 2024-02-29T13:45:00+02:00 หรือ none",
+    "a moment in UTC such as 2026-08-01T12:00:00Z": "เวลาใน UTC เช่น 2026-08-01T12:00:00Z"
   },
   "faq": [
     {

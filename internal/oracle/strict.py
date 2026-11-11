@@ -4164,6 +4164,297 @@ def rtf_every(text, settings):
             fail(f"{piece!r} comes after the first paragraph, and RTF puts it in front of the text")
 
 
+OTLP_LINE_CEILING = 1 << 20
+OTLP_SCHEMA = "https://opentelemetry.io/schemas/1.45.0"
+OTLP_PADDING = "tfg.padding"
+OTLP_NAMES = {"traces": ("resourceSpans", "scopeSpans", "spans"), "logs": ("resourceLogs", "scopeLogs", "logRecords")}
+OTLP_STATUSES = {"realistic": {200, 201, 204, 301, 302, 304, 400, 401, 403, 404, 409, 429, 500, 502, 503},
+                 "success": {200, 201, 204, 206},
+                 "client-errors": {400, 401, 403, 404, 409, 410, 422, 429},
+                 "server-errors": {500, 502, 503, 504}}
+# The severity numbers logs.proto gives the first of each range.
+OTLP_LEVELS = {"DEBUG": 5, "INFO": 9, "WARN": 13, "ERROR": 17}
+OTLP_LEVEL_MIXES = {"realistic": {"INFO", "WARN", "ERROR", "DEBUG"}, "quiet": {"INFO"},
+                    "errors": {"ERROR", "WARN", "INFO"}, "debug": {"DEBUG", "INFO", "WARN"}}
+# What the HTTP conventions ask of a server span, in the order this tool writes them.
+OTLP_REQUEST_ATTRIBUTES = ["http.request.method", "http.route", "url.path", "url.scheme", "http.response.status_code",
+                           "server.address", "client.address", "user_agent.original"]
+OTLP_HEX = re.compile(r"^[0-9a-f]+$")
+# Nineteen digits: every moment from 2001 to 2262 counted in nanoseconds.
+OTLP_TIME = re.compile(r"^[1-9][0-9]{18}$")
+
+
+def otlp_dump(value, indented):
+    """The text one layout makes of a value: no whitespace at all, or two
+    spaces a level with every value on its own line."""
+    import json
+
+    if indented:
+        return json.dumps(value, indent=2, ensure_ascii=False)
+    return json.dumps(value, separators=(",", ":"), ensure_ascii=False)
+
+
+def otlp_parted(text, expected):
+    """Where a text parts from the text it should be, with what stands there."""
+    at = next((i for i, (a, b) in enumerate(zip(text, expected)) if a != b), min(len(text), len(expected)))
+    return f"at byte {at}, {text[max(0, at - 30):at + 30]!r}"
+
+
+def otlp_object(text, where):
+    import json
+
+    try:
+        doc = json.loads(text)
+    except ValueError as exc:
+        fail(f"{where} is not JSON: {exc}")
+    if not isinstance(doc, dict):
+        fail(f"{where} is not a JSON object")
+    return doc
+
+
+def otlp_batches(text, settings):
+    """The batches of the file, each read from text laid out the way formatting
+    says and written exactly the way this tool writes a batch."""
+    layout = settings["formatting"]
+    if layout == "record-per-line":
+        if not text.endswith("\n"):
+            fail("the file does not end with a newline")
+        batches = []
+        for number, line in enumerate(text[:-1].split("\n"), start=1):
+            size = len(line.encode("utf-8"))
+            if size > OTLP_LINE_CEILING:
+                fail(f"line {number} is {size} B, and the file receiver of the Collector drops a line longer than {OTLP_LINE_CEILING} B")
+            doc = otlp_object(line, f"line {number}")
+            if otlp_dump(doc, False) != line:
+                fail(f"line {number} is not written the way a batch is: it parts from the rule {otlp_parted(line, otlp_dump(doc, False))}")
+            batches.append(doc)
+        return batches
+    if layout not in ("minified", "indented"):
+        fail(f"the otlp check was told formatting={layout!r}, which is not a layout this tool writes")
+    doc = otlp_object(text, "the file")
+    expected = otlp_dump(doc, True) + "\n" if layout == "indented" else otlp_dump(doc, False)
+    if text != expected:
+        fail(f"the file is not laid out {layout}: it parts from the rule {otlp_parted(text, expected)}")
+    return [doc]
+
+
+def otlp_records(batches, settings):
+    """Every record of the file in order, out of batches that each name one
+    resource and one scope and hold as many records as batch says."""
+    top, mid, leaf = OTLP_NAMES[settings["signal"]]
+    records, sizes = [], []
+    for number, doc in enumerate(batches, start=1):
+        if list(doc) != [top] or len(doc[top]) != 1:
+            fail(f"batch {number} is not one {top} entry: its members are {list(doc)}")
+        res = doc[top][0]
+        if list(res) != ["resource", mid, "schemaUrl"] or res["schemaUrl"] != OTLP_SCHEMA:
+            fail(f"batch {number}: the resource entry has the members {list(res)}, not a resource, {mid} and the schema of the conventions")
+        if list(res["resource"]) != ["attributes"] or [a["key"] for a in res["resource"]["attributes"]] != ["service.name", "service.version"]:
+            fail(f"batch {number}: the resource does not carry service.name and service.version and nothing else")
+        if len(res[mid]) != 1:
+            fail(f"batch {number} holds {len(res[mid])} scopes, not one")
+        scope = res[mid][0]
+        if list(scope) != ["scope", leaf, "schemaUrl"] or scope["schemaUrl"] != OTLP_SCHEMA or list(scope["scope"]) != ["name", "version"]:
+            fail(f"batch {number}: the scope entry has the members {list(scope)}, not a named scope, {leaf} and the schema of the conventions")
+        if not scope[leaf]:
+            fail(f"batch {number} holds no record, an envelope the specification asks senders not to write")
+        sizes.append(len(scope[leaf]))
+        records.extend(scope[leaf])
+    if settings["formatting"] == "record-per-line":
+        size = settings["batch"]
+        if any(n != size for n in sizes[:-1]) or sizes[-1] > size:
+            fail(f"the batches hold {sizes[:6]} records, and batch={size} asks for that many on every line and no more on the last")
+    return records
+
+
+def otlp_attributes(what, record, last):
+    """The attributes of a record by key, in the order written. The padding
+    attribute is taken out: it belongs on the last record of the file and on
+    no other, after every attribute that says something."""
+    found = {}
+    for a in record["attributes"]:
+        if list(a) != ["key", "value"] or len(a["value"]) != 1 or a["key"] in found:
+            fail(f"{what} has an attribute that is not one key with one value, or a key twice")
+        found[a["key"]] = a["value"]
+    if (OTLP_PADDING in found) != last:
+        fail(f"{what} {'carries' if OTLP_PADDING in found else 'carries no'} {OTLP_PADDING} attribute, and the last record of the file is the one that does")
+    if last:
+        if list(found)[-1] != OTLP_PADDING:
+            fail(f"{what} does not carry {OTLP_PADDING} as its last attribute")
+        otlp_text(what, found.pop(OTLP_PADDING))
+    return found
+
+
+def otlp_text(what, value):
+    if list(value) != ["stringValue"] or not isinstance(value["stringValue"], str):
+        fail(f"{what} has a value that is not text where this tool writes text")
+    return value["stringValue"]
+
+
+def otlp_whole(what, value):
+    """A whole number, which the JSON encoding of OTLP writes as text."""
+    if list(value) != ["intValue"] or not isinstance(value["intValue"], str) or not value["intValue"].isdigit():
+        fail(f"{what} has a whole number that is not written as text of digits")
+    return int(value["intValue"])
+
+
+def otlp_id(what, value, digits):
+    if not isinstance(value, str) or len(value) != digits or not OTLP_HEX.match(value) or not value.strip("0"):
+        fail(f"{what} is {value!r}, not {digits} hex digits in lower case with a bit set")
+
+
+def otlp_time(what, value):
+    if not isinstance(value, str) or not OTLP_TIME.match(value):
+        fail(f"{what} is {value!r}, not a time in nanoseconds written as text of nineteen digits")
+    return int(value)
+
+
+def otlp_spans(spans, settings, start, step):
+    """Spans in traces of depth spans each: a request, then the work inside it,
+    every span the child of the one before and lying inside it."""
+    depth, traces, previous = settings["depth"], 0, None
+    for number, sp in enumerate(spans, start=1):
+        level, what = (number - 1) % depth, f"span {number}"
+        want = (["traceId", "spanId"] + (["parentSpanId"] if level else [])
+                + ["name", "kind", "startTimeUnixNano", "endTimeUnixNano", "attributes", "status"])
+        if list(sp) != want:
+            fail(f"{what} has the members {list(sp)}, not {want}")
+        otlp_id(f"the trace id of {what}", sp["traceId"], 32)
+        otlp_id(f"the id of {what}", sp["spanId"], 16)
+        begin, end = otlp_time(f"the start of {what}", sp["startTimeUnixNano"]), otlp_time(f"the end of {what}", sp["endTimeUnixNano"])
+        if end <= begin:
+            fail(f"{what} ends at or before the moment it starts")
+        attrs = otlp_attributes(what, sp, number == len(spans))
+        if level == 0:
+            if begin != start + traces * step:
+                fail(f"{what} opens trace {traces + 1} at {begin}, and start and rate put it at {start + traces * step}")
+            traces += 1
+            otlp_request(what, sp, attrs, settings)
+        else:
+            if sp["traceId"] != previous[0]["traceId"] or sp["parentSpanId"] != previous[0]["spanId"]:
+                fail(f"{what} is not the child of the span before it, in the same trace")
+            if type(sp["kind"]) is not int or sp["kind"] != 1 or sp["status"] != {}:
+                fail(f"{what} is work inside a request, and is not an internal span with its status unset")
+            if list(attrs) != ["code.function.name"] or otlp_text(what, attrs["code.function.name"]) != sp["name"]:
+                fail(f"{what} is not named after the function it carries")
+            if not (previous[1] < begin and end < previous[2]):
+                fail(f"{what} does not lie inside its parent")
+        previous = (sp, begin, end)
+    return f"{len(spans)} spans in {traces} traces"
+
+
+def otlp_request(what, sp, attrs, settings):
+    """A server span of the HTTP conventions: named after its method and its
+    route, and an error exactly when the response code is 500 or above."""
+    if list(attrs)[:len(OTLP_REQUEST_ATTRIBUTES)] != OTLP_REQUEST_ATTRIBUTES:
+        fail(f"{what} carries the attributes {list(attrs)}, not those the HTTP conventions ask of a server span")
+    code = otlp_whole(what, attrs["http.response.status_code"])
+    failed = code >= 500
+    if list(attrs)[len(OTLP_REQUEST_ATTRIBUTES):] != (["error.type"] if failed else []):
+        fail(f"{what} ends with {code} and {'carries no' if failed else 'carries an'} error.type beside it")
+    if type(sp["kind"]) is not int or sp["kind"] != 2:
+        fail(f"{what} is a request and its kind is {sp['kind']!r}, not 2 for a server span")
+    if sp["name"] != otlp_text(what, attrs["http.request.method"]) + " " + otlp_text(what, attrs["http.route"]):
+        fail(f"{what} is named {sp['name']!r}, not after its method and its route")
+    if code not in OTLP_STATUSES[settings["status_mix"]]:
+        fail(f"{what} ends with {code}, which status_mix={settings['status_mix']} does not hold")
+    if failed and (otlp_text(what, attrs["error.type"]) != str(code) or sp["status"] != {"code": 2}):
+        fail(f"{what} ends with {code} and is not recorded as an error with that code as its type")
+    if not failed and sp["status"] != {}:
+        fail(f"{what} ends with {code} and its status is {sp['status']!r}, where the conventions leave it unset")
+
+
+def otlp_log_records(entries, settings, start, step):
+    """Log records one tick of the clock apart, each with a severity of the mix
+    and, when trace_context says so, the trace and the span it was written in."""
+    context = ["flags", "traceId", "spanId"] if settings["trace_context"] else []
+    want = ["timeUnixNano", "observedTimeUnixNano", "severityNumber", "severityText", "body", "attributes"] + context
+    for number, en in enumerate(entries, start=1):
+        what = f"log record {number}"
+        if list(en) != want:
+            fail(f"{what} has the members {list(en)}, not {want}")
+        at = otlp_time(f"the time of {what}", en["timeUnixNano"])
+        if at != start + (number - 1) * step or en["observedTimeUnixNano"] != en["timeUnixNano"]:
+            fail(f"{what} is dated {at}, and start and rate put it at {start + (number - 1) * step} with the same moment observed")
+        level = en["severityText"]
+        if level not in OTLP_LEVEL_MIXES[settings["level_mix"]]:
+            fail(f"{what} has the severity {level!r}, which level_mix={settings['level_mix']} does not hold")
+        if type(en["severityNumber"]) is not int or en["severityNumber"] != OTLP_LEVELS[level]:
+            fail(f"{what} says {level} and carries the number {en['severityNumber']!r}, not {OTLP_LEVELS[level]}")
+        if not otlp_text(what, en["body"]):
+            fail(f"{what} says nothing")
+        attrs = otlp_attributes(what, en, number == len(entries))
+        if list(attrs) != ["code.function.name", "code.line.number"]:
+            fail(f"{what} carries the attributes {list(attrs)}, not the function and the line it was written at")
+        otlp_text(what, attrs["code.function.name"])
+        otlp_whole(what, attrs["code.line.number"])
+        if context:
+            if type(en["flags"]) is not int or en["flags"] != 1:
+                fail(f"{what} names a trace and its flags are {en['flags']!r}, not 1")
+            otlp_id(f"the trace id of {what}", en["traceId"], 32)
+            otlp_id(f"the span id of {what}", en["spanId"], 16)
+    return f"{len(entries)} log records"
+
+
+def check_otlp(data, settings=None):
+    """OTLP in its JSON encoding, made the way it was ordered.
+
+    The Collector reads the same file in the reference tool beside this and is
+    asked to write it back byte for byte. What only this layer asks, because
+    it is told the settings: that the file is laid out as formatting says and
+    no line is longer than the file receiver reads, that every batch but the
+    last holds batch records, that the clock runs from start at rate, that the
+    traces are depth spans deep with every child inside its parent, that a
+    span is an error exactly when its response code says so, that the
+    severities and the response codes come from the mix ordered, and that the
+    padding attribute sits on the last record and on no other.
+
+    Measured 2026-11-10 (docs/OTLP-2026-11-10.md section 3): the Collector
+    reads an enum written as a name, keys in snake case and a span that ends
+    before it starts, and drops a line it cannot read without a word. All of
+    them are refused here.
+    """
+    import calendar
+    import time
+
+    given = settings or {}
+    settings = {
+        "signal": given.get("signal", "traces"),
+        "formatting": given.get("formatting", "record-per-line"),
+        "batch": int(given.get("batch", "512")),
+        "start": given.get("start", "2026-08-01T12:00:00Z"),
+        "rate": int(given.get("rate", "1")),
+        "depth": int(given.get("depth", "3")),
+        "status_mix": given.get("status_mix", "realistic"),
+        "level_mix": given.get("level_mix", "realistic"),
+        "trace_context": given.get("trace_context", "true") == "true",
+    }
+    if settings["signal"] not in OTLP_NAMES:
+        fail(f"the otlp check was told signal={settings['signal']!r}, which is not a kind of telemetry this tool writes")
+    if data.startswith(b"\xef\xbb\xbf"):
+        fail("the file starts with a byte order mark")
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        fail(f"not valid UTF-8: {exc}")
+    batches = otlp_batches(text, settings)
+    start = calendar.timegm(time.strptime(settings["start"], "%Y-%m-%dT%H:%M:%SZ")) * 10**9
+    step = 10**9 // settings["rate"]
+    # The checks name the shapes this tool could get wrong. A shape nobody
+    # thought of still has to come out as a refusal with a reason rather than
+    # a Python traceback, because a crash also turns a guard red and proves
+    # nothing (the lesson of check_geojson, review of #171).
+    try:
+        records = otlp_records(batches, settings)
+        if settings["signal"] == "traces":
+            held = otlp_spans(records, settings, start, step)
+        else:
+            held = otlp_log_records(records, settings, start, step)
+    except (TypeError, KeyError, IndexError, AttributeError, ValueError) as exc:
+        fail(f"a record is not shaped the way this tool writes one: {type(exc).__name__}: {exc}")
+    ok(f"{held}, {len(batches)} batches, laid out {settings['formatting']}")
+
+
 CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip,
           "log": check_log, "csv": check_csv, "json": check_json, "xml": check_xml,
           "svg": check_svg, "html": check_html, "targz": check_targz,
@@ -4173,12 +4464,12 @@ CHECKS = {"png": check_png, "wav": check_wav, "pdf": check_pdf, "zip": check_zip
           "docx": check_docx, "xlsx": check_xlsx, "pptx": check_pptx,
           "txt": check_txt, "md": check_md,
           "yaml": check_yaml, "toml": check_toml, "geojson": check_geojson,
-          "eml": check_eml, "rtf": check_rtf}
+          "eml": check_eml, "rtf": check_rtf, "otlp": check_otlp}
 
 # Checks that take the shape of the file as well as its bytes. Everything else
 # is handed the bytes alone, so adding a setting to one check cannot change how
 # any other one is called.
-TAKES_SETTINGS = {"csv", "txt", "md", "json", "xml", "html", "geojson", "eml", "rtf"}
+TAKES_SETTINGS = {"csv", "txt", "md", "json", "xml", "html", "geojson", "eml", "rtf", "otlp"}
 
 def run_check(kind, body, settings):
     """Runs one check. It ends by raising its Verdict, or by an exception."""

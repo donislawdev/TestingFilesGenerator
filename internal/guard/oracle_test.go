@@ -191,6 +191,11 @@ var structurallyChecked = map[string]bool{
 	// brace among them, and only this layer knows which fallback each letter
 	// was ordered to carry (docs/RTF-2026-10-15.md section 6.1).
 	"rtf": true,
+	// Since 2026-11-11, from its first day: the Collector read an enum written
+	// as a name, keys in snake case and a span that ends before it starts, and
+	// only this layer knows the batch, the clock and the depth that were
+	// ordered (docs/OTLP-2026-11-10.md section 3).
+	"otlp": true,
 }
 
 func TestTheStructuralCheckerCoversEveryFormatItShould(t *testing.T) {

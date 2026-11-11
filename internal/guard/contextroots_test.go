@@ -30,7 +30,7 @@ var contextRoots = map[string]string{
 	"internal/gui/window/work.go begin":                      "a preview, a run or a tool started in the window begins here, and Cancel or closing the window is what stops it",
 	"internal/oracle/oracle.go Checker.Check":                "the oracle runs somebody else's reader under a time limit of its own - a measuring instrument for the guards, never on the path of a run",
 	"internal/oracle/oracle.go PictureChanges":               "the same instrument, a reference reader under a time limit",
-	"internal/oracle/oracle.go Strict":                       "the same instrument, a reference reader under a time limit",
+	"internal/oracle/strict.go Strict":                       "the same instrument, a reference reader under a time limit",
 	"internal/engine/engine.go Plan":                         "the version without a context, for callers that have none - it is PlanContext, so it cannot disagree with it",
 	"internal/manifest/manifest.go Load":                     "reads a document of at most sixteen megabytes that is in memory already, so there is nothing long to stop - verify and cleanup read through ReadClaims, which takes the caller's",
 	"internal/format/eml/eml.go generator.Plan":              "the Generator interface's Plan for callers without a context - the engine asks PlanContext",

@@ -62,13 +62,32 @@ func init() {
 			},
 		},
 		Floor: func(v Values) int64 { return int64(headBytes(v)) },
-		// No policy cases: measured 2026-11-09 and again with every setting
-		// of every format on 2026-11-10, a zeroed head breaks the rules of
-		// all 31 formats (docs/DAMAGE-ETAP-2-2026-11-09.md section 2).
+		// A zeroed head breaks the rules of every format, measured 2026-11-09
+		// and again with every setting of every format on 2026-11-10
+		// (docs/DAMAGE-ETAP-2-2026-11-09.md section 2). The policy cases are
+		// the two formats read a line at a time, where the reader meets the
+		// damage on one line and carries on with the next.
+		Policy: zeroHeadPolicy,
 		Open: func(v Values, _ File, out io.Writer) (Stream, error) {
 			return &zeroHead{out: out, left: headBytes(v)}, nil
 		},
 	})
+}
+
+// zeroHeadPolicy is where a zeroed head costs a reader one line rather than
+// the file.
+//
+// Measured 2026-11-11 on the OpenTelemetry Collector 0.165.0
+// (docs/OTLP-2026-11-10.md section 12.3). Its file log receiver with a parser
+// of access log lines read every entry of a log whose first eight bytes were
+// zeroed and failed on the first line alone, which in a labelled log is the
+// label. Its OTLP file receiver dropped the first batch of an OTLP file
+// without a word and read the others, and sent the same file as a request it
+// answered 400. An OTLP file laid out as one request is refused whole.
+var zeroHeadPolicy = []PolicyCase{
+	{Format: "log", Why: "A reader that takes a log line by line fails on the first line and reads the rest."},
+	{Format: "otlp", When: map[string][]string{"formatting": {"record-per-line"}},
+		Why: "A reader of lines drops the first batch of an OTLP file without a word and keeps the others, and an endpoint sent the file as a request refuses it."},
 }
 
 // headBytes is how many bytes this run zeroes.

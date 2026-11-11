@@ -395,7 +395,7 @@ func goldenCases() map[string]engine.Target {
 		// have to agree to the byte.
 		"targz_past_the_comment_limit": {ID: "g", Format: "targz", Sizes: engine.Uniform(1, 262144), Label: true},
 	}
-	for _, more := range []map[string]engine.Target{mapGoldenCases(), mailGoldenCases(), pageGoldenCases(), rtfGoldenCases(), cutLabelGoldenCases()} {
+	for _, more := range []map[string]engine.Target{mapGoldenCases(), mailGoldenCases(), pageGoldenCases(), rtfGoldenCases(), cutLabelGoldenCases(), telemetryGoldenCases()} {
 		for name, target := range more {
 			cases[name] = target
 		}
@@ -437,6 +437,37 @@ func rtfGoldenCases() map[string]engine.Target {
 		"rtf_64kib_all": {ID: "g", Format: "rtf", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"links": "18", "inline": "2", "inline_size": "4kb", "picture_data": "binary",
 				"characters": "international", "elements": "every", "nesting": "50"}},
+	}
+}
+
+// telemetryGoldenCases are the golden cases of the otlp format, a table of
+// their own for the reason mailGoldenCases gives.
+func telemetryGoldenCases() map[string]engine.Target {
+	one := func(props map[string]string) engine.Target {
+		return engine.Target{ID: "g", Format: "otlp", Sizes: engine.Uniform(1, 8192), Label: true, Properties: props}
+	}
+	return map[string]engine.Target{
+		// One case for each path the bytes take rather than one for each
+		// setting. Spans in the three layouts, where what opens and ends a
+		// batch is written by different code each time. Batches of three, so
+		// a line ends and the next one opens inside the file. Traces of one
+		// span, which never write a parent, and traces seven deep on a faster
+		// clock from another year with every request failing, which write the
+		// error attribute and the status code. The label never reaches the
+		// content, so it is pinned in one position.
+		"otlp_8kib":               one(nil),
+		"otlp_8kib_minified":      one(map[string]string{"formatting": "minified"}),
+		"otlp_8kib_indented":      one(map[string]string{"formatting": "indented"}),
+		"otlp_8kib_batches":       one(map[string]string{"batch": "3"}),
+		"otlp_8kib_single_spans":  one(map[string]string{"depth": "1"}),
+		"otlp_8kib_deep_failures": one(map[string]string{"depth": "7", "status_mix": "server-errors", "rate": "1000", "start": "2030-01-01T00:00:00Z"}),
+
+		// Log records the same way: the default, batches of two on the
+		// fastest clock, and indented with no trace named and a mix that draws
+		// the longest severity number.
+		"otlp_8kib_logs":                   one(map[string]string{"signal": "logs"}),
+		"otlp_8kib_logs_batches":           one(map[string]string{"signal": "logs", "batch": "2", "rate": "1000000"}),
+		"otlp_8kib_logs_indented_no_trace": one(map[string]string{"signal": "logs", "formatting": "indented", "trace_context": "false", "level_mix": "errors"}),
 	}
 }
 

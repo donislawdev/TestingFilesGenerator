@@ -275,7 +275,8 @@
     "the id of a picture format, as tfg formats lists them": "id của một định dạng hình ảnh, như tfg formats liệt kê",
     "the password, in plain text": "mật khẩu, ở dạng văn bản thuần",
     "any text": "văn bản bất kỳ",
-    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "ngày như 2024-02-29 hoặc 2024-02-29T13:45:00+02:00, hoặc none"
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "ngày như 2024-02-29 hoặc 2024-02-29T13:45:00+02:00, hoặc none",
+    "a moment in UTC such as 2026-08-01T12:00:00Z": "thời điểm theo UTC như 2026-08-01T12:00:00Z"
   },
   "faq": [
     {

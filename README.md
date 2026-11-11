@@ -23,7 +23,7 @@
 
 **Testing Files Generator** is a tool for QA engineers and developers who need real
 files to test against - an upload form, a parser, anything that takes a file and
-has an opinion about it. You pick one of its 31 formats and the size you want,
+has an opinion about it. You pick one of its 32 formats and the size you want,
 and you get **exactly that**: ask for a 10 MB PDF and you get a PDF that a reader
 will open, at 10 MB to the byte. Every run also leaves a manifest saying **what
 your system should do with each file**, which is the part other generators leave
@@ -36,7 +36,7 @@ needs it finds out it exists.
 
 - **Hit an exact size, to the byte** - ask for 10485761 bytes and get exactly
   that, never a silently rounded file.
-- **Write 31 real formats** - a generated PNG opens in an image viewer, a DOCX
+- **Write 32 real formats** - a generated PNG opens in an image viewer, a DOCX
   opens in Word, a ZIP extracts. Not padded zeros with an extension.
 - **Say what should happen to each file** - the manifest carries an expected
   outcome, so your test reads the assertion instead of you writing it out.
@@ -223,6 +223,7 @@ owns it, at the exact size you asked for:
 | ⚙️ **Configuration** | `yaml`, `toml` |
 | 🗺️ **Maps** | `geojson` (RFC 7946) |
 | ✉️ **Mail** | `eml` (RFC 5322 with MIME, real files attached) |
+| 📡 **Telemetry** | `otlp` (OpenTelemetry traces and logs as OTLP JSON) |
 | 🗜️ **Archives** | `zip`, `targz` (`.tar.gz`) |
 | 🔊 **Audio** | `wav` |
 | 🎞️ **Video** | `webm`, `mp4` (both AV1, no sound) |
@@ -712,6 +713,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `txt`, `md`, `xml` | `encoding`, `bom` |
 | `json` | `formatting` |
 | `geojson` | `geometry`, `formatting`, `precision`, `altitude`, `vertices`, `holes`, `winding`, `antimeridian`, `unlocated`, `ids`, `bbox` |
+| `otlp` | `signal`, `formatting`, `batch`, `start`, `rate`, `depth`, `status_mix`, `level_mix`, `trace_context` |
 | `eml` | `body`, `layout`, `text_encoding`, `charset`, `headers`, `recipients`, `line_endings`, `attachments`, `attachment_format`, `attachment_size`, `filename_style`, `message_depth`, `inline`, `inline_format`, `inline_size` |
 | `svg` | `width`, `height` |
 | `html` | `structure`, `nesting`, `characters`, `elements`, `links`, `bom`, `formatting`, `styles`, `inline`, `inline_format`, `inline_size` |

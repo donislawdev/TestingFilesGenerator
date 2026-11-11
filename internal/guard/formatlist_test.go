@@ -211,7 +211,8 @@ func TestTypingIntoTheFormatListNarrowsItAndLandsOnWhatStartsWithIt(t *testing.T
 // so Down from jxl has a heading in its way - the cost the deferral of
 // 2026-08-25 wrote down, before there were any headings to step over. geojson
 // joined the second heading on 2026-10-07, and the walk goes through it both
-// ways rather than around it.
+// ways rather than around it. otlp joined on 2026-11-11 by its name, which
+// ends in JSON, and is where the walk now turns round.
 func TestTheArrowsInTheFormatListStepOverTheHeadings(t *testing.T) {
 	_, _, list, filter := openFormatList(t)
 	typeInto(filter, "j")
@@ -222,7 +223,9 @@ func TestTheArrowsInTheFormatListStepOverTheHeadings(t *testing.T) {
 		{fyne.KeyDown, "jxl"},
 		{fyne.KeyDown, "geojson"},
 		{fyne.KeyDown, "json"},
-		{fyne.KeyDown, "json"},
+		{fyne.KeyDown, "otlp"},
+		{fyne.KeyDown, "otlp"},
+		{fyne.KeyUp, "json"},
 		{fyne.KeyUp, "geojson"},
 		{fyne.KeyUp, "jxl"},
 		{fyne.KeyUp, "jpg"},

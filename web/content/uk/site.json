@@ -275,7 +275,8 @@
     "the id of a picture format, as tfg formats lists them": "id формату зображення в тому вигляді, як його виводить tfg formats",
     "the password, in plain text": "пароль відкритим текстом",
     "any text": "будь-який текст",
-    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "дата на кшталт 2024-02-29 або 2024-02-29T13:45:00+02:00, або none"
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "дата на кшталт 2024-02-29 або 2024-02-29T13:45:00+02:00, або none",
+    "a moment in UTC such as 2026-08-01T12:00:00Z": "момент в UTC на кшталт 2026-08-01T12:00:00Z"
   },
   "faq": [
     {

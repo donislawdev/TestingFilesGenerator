@@ -90,6 +90,13 @@ var policyRefusals = map[[2]string][]string{
 	{damage.AppendJunk, "txt"}: {"that are not printable ASCII", "does not decode as utf-16"},
 	{damage.AppendJunk, "md"}:  {"that are not printable ASCII", "does not decode as utf-16"},
 	// Bytes the format allows: nothing points at them.
+	// A reader of lines meets the damage on one line and carries on with the
+	// next, measured 2026-11-11 (docs/OTLP-2026-11-10.md section 12.3). The
+	// checker names the line the damage is on.
+	{damage.ZeroHead, "log"}:    {"line 1 is not a whole entry in any shape this tool writes", "the file does not end with a newline"},
+	{damage.ZeroHead, "otlp"}:   {"line 1 is not JSON", "the file does not end with a newline"},
+	{damage.Truncate, "otlp"}:   {"the file does not end with a newline"},
+	{damage.AppendJunk, "otlp"}: {"not valid UTF-8"},
 	{damage.AppendJunk, "ico"}:  {},
 	{damage.AppendJunk, "tiff"}: {},
 }

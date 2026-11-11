@@ -275,7 +275,8 @@
     "the id of a picture format, as tfg formats lists them": "die ID eines Bildformats, wie tfg formats sie auflistet",
     "the password, in plain text": "das Passwort im Klartext",
     "any text": "beliebiger Text",
-    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "ein Datum wie 2024-02-29 oder 2024-02-29T13:45:00+02:00, oder none"
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "ein Datum wie 2024-02-29 oder 2024-02-29T13:45:00+02:00, oder none",
+    "a moment in UTC such as 2026-08-01T12:00:00Z": "ein Zeitpunkt in UTC wie 2026-08-01T12:00:00Z"
   },
   "faq": [
     {

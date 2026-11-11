@@ -169,6 +169,7 @@ var fileKinds = map[string]fileKind{
 	"json":    kindWords,
 	"log":     kindWords,
 	"md":      kindWords,
+	"otlp":    kindWords,
 	"toml":    kindWords,
 	"txt":     kindWords,
 	"xml":     kindWords,

@@ -275,7 +275,8 @@
     "the id of a picture format, as tfg formats lists them": "id-ul unui format de imagine, așa cum îl listează tfg formats",
     "the password, in plain text": "parola, în text simplu",
     "any text": "orice text",
-    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "o dată precum 2024-02-29 sau 2024-02-29T13:45:00+02:00, sau none"
+    "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "o dată precum 2024-02-29 sau 2024-02-29T13:45:00+02:00, sau none",
+    "a moment in UTC such as 2026-08-01T12:00:00Z": "un moment în UTC precum 2026-08-01T12:00:00Z"
   },
   "faq": [
     {
