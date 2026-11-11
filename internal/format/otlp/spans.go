@@ -81,7 +81,7 @@ func (r *records) drawSpan(rng *rand.Rand) span {
 	t := &r.st.trace
 	if t.level == 0 {
 		drawID(t.id[:], rng)
-		t.start = r.s.start + t.begun*r.s.step()
+		t.start = r.s.start + r.s.order(t.begun)*r.s.step()
 		t.length = int64(shortestSpan) + rng.Int64N(int64(longestSpan-shortestSpan))
 		t.begun++
 	}
@@ -166,16 +166,20 @@ func (r *records) writeSpan(sp span, padded bool) (at int) {
 	if sp.level == 0 {
 		e.text(sp.request.method + " " + sp.request.route)
 		e.key("kind")
-		e.whole(kindServer)
+		e.enum(kindServer, "SPAN_KIND_SERVER")
 	} else {
 		e.text(sp.function)
 		e.key("kind")
-		e.whole(kindInternal)
+		e.enum(kindInternal, "SPAN_KIND_INTERNAL")
+	}
+	begin, end := sp.start, sp.end
+	if r.s.endBeforeStart {
+		begin, end = end, begin
 	}
 	e.key("startTimeUnixNano")
-	e.quoted(sp.start)
+	e.quoted(begin)
 	e.key("endTimeUnixNano")
-	e.quoted(sp.end)
+	e.quoted(end)
 	e.key("attributes")
 	e.open('[')
 	if sp.level == 0 {
@@ -191,7 +195,7 @@ func (r *records) writeSpan(sp span, padded bool) (at int) {
 	if sp.failed() {
 		e.open('{')
 		e.key("code")
-		e.whole(statusError)
+		e.enum(statusError, "STATUS_CODE_ERROR")
 		e.close('}')
 	} else {
 		// Always there, also with nothing in it: that is how the Collector

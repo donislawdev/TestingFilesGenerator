@@ -85,9 +85,9 @@ func defaultSettings() settings {
 	return s
 }
 
-// minimumBytes is one batch holding the longest closing record the settings
-// can write, measured rather than written down.
-func minimumBytes(s settings) int64 { return newRecords(s).Shortest() }
+// minimumBytes is what the file opens with and one batch holding the longest
+// closing record the settings can write, measured rather than written down.
+func minimumBytes(s settings) int64 { return int64(len(s.prologue())) + newRecords(s).Shortest() }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	s, err := parse(r.Properties)
@@ -120,8 +120,14 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	if !ok {
 		return core.Defect(fmt.Errorf("otlp: the plan was not produced by this generator"))
 	}
-	// No prologue of its own: what opens a batch is written with the first
-	// record of that batch, because in the default layout every line opens
-	// one.
-	return core.FillRecords(ctx, w, core.NewRand(m.seed), p.Bytes, newRecords(m.s))
+	// What opens a batch is written with the first record of that batch,
+	// because in the default layout every line opens one. Only a pitfall
+	// writes anything before it.
+	prologue := m.s.prologue()
+	if len(prologue) > 0 {
+		if err := core.WriteAll(w, prologue); err != nil {
+			return err
+		}
+	}
+	return core.FillRecords(ctx, w, core.NewRand(m.seed), p.Bytes-int64(len(prologue)), newRecords(m.s))
 }

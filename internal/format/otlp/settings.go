@@ -7,6 +7,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/textenc"
 )
 
 // The names of the settings, for the guards that set them.
@@ -20,13 +21,70 @@ const (
 	StatusMix    = "status_mix"
 	LevelMix     = "level_mix"
 	TraceContext = "trace_context"
+	MetricKind   = "metric_kind"
+	Temporality  = "temporality"
+	Exemplars    = "exemplars"
+	Interval     = "interval"
+
+	IDEncoding     = "id_encoding"
+	EnumEncoding   = "enum_encoding"
+	KeyCase        = "key_case"
+	LargeNumbers   = "large_numbers"
+	BOM            = textenc.SettingBOM
+	TimeOrder      = "time_order"
+	EndBeforeStart = "end_before_start"
+	EmptyEnvelope  = "empty_envelope"
+	Body           = "body"
+	NonFinite      = "non_finite"
+)
+
+// The values of the pitfalls, the first of each pair the spelling of the
+// specification.
+const (
+	Hex        = "hex"
+	UpperHex   = "upper-hex"
+	Base64     = "base64"
+	Number     = "number"
+	Name       = "name"
+	Camel      = "camel"
+	Snake      = "snake"
+	AsText     = "text"
+	InOrder    = "in-order"
+	OutOfOrder = "out-of-order"
+	AnyValue   = "any-value"
 )
 
 // The kinds of telemetry a file can hold. One kind to a file, which is what
 // the specification of the OTLP file exporter asks.
 const (
-	Traces = "traces"
-	Logs   = "logs"
+	Traces  = "traces"
+	Logs    = "logs"
+	Metrics = "metrics"
+)
+
+// The kinds of metric, under the names metric_kind gives them: one for each
+// kind of data metrics.proto has, and all of them together.
+const (
+	Gauge                = "gauge"
+	Sum                  = "sum"
+	Histogram            = "histogram"
+	ExponentialHistogram = "exponential-histogram"
+	Summary              = "summary"
+	Mixed                = "mixed"
+)
+
+// The aggregation temporalities, under the names temporality gives them.
+const (
+	Cumulative = "cumulative"
+	Delta      = "delta"
+)
+
+// The blocks the settings that shape one kind of record are drawn in.
+const (
+	spansGroup    = "Spans"
+	logsGroup     = "Log records"
+	metricsGroup  = "Metrics"
+	pitfallsGroup = "Pitfalls"
 )
 
 // The layouts, under the names json and geojson use for theirs.
@@ -49,6 +107,12 @@ const (
 
 	defaultDepth = 3
 	maxDepth     = 100
+
+	// defaultInterval is how often the periodic reader of an SDK collects,
+	// exportIntervalMillis in metrics/sdk.md of the specification. A day at
+	// the most.
+	defaultInterval = 60
+	maxInterval     = 86400
 
 	// defaultStart is the moment the log format starts at, so two files of
 	// one run tell the same time.
@@ -88,10 +152,80 @@ type settings struct {
 	levelMix     string
 	levels       []level
 	traceContext bool
+
+	metricChoices
+	pitfallChoices
 }
 
-// step is how far the clock moves from one trace or log record to the next.
-func (s settings) step() int64 { return int64(time.Second) / int64(s.rate) }
+// metricChoices are what shapes a file of metrics.
+type metricChoices struct {
+	metricKind  string
+	instruments []*instrument
+	temporality string
+	exemplars   bool
+	// interval is how many seconds lie between two collections.
+	interval int64
+}
+
+// pitfallChoices are the pitfalls. Each is off, or spelled the way the
+// specification asks, unless chosen.
+type pitfallChoices struct {
+	idEncoding     string
+	enumNames      bool
+	snakeKeys      bool
+	bareNumbers    bool
+	bom            bool
+	outOfOrder     bool
+	endBeforeStart bool
+	emptyEnvelope  bool
+	anyBody        bool
+	nonFinite      bool
+}
+
+// order is the place on the clock of the trace, log record or collection a
+// file draws as the nth: the nth itself, or with time_order out-of-order its
+// neighbour, so every second one is dated before the one in front of it.
+func (s settings) order(n int64) int64 {
+	if s.outOfOrder {
+		return n ^ 1
+	}
+	return n
+}
+
+// prologue is what the file opens with before its first batch: a byte order
+// mark, and a line holding an empty envelope.
+func (s settings) prologue() []byte {
+	var out []byte
+	if s.bom {
+		out = append(out, 0xEF, 0xBB, 0xBF)
+	}
+	if s.emptyEnvelope {
+		e := &emitter{sp: s.spelling()}
+		e.open('{')
+		e.key(envelopes[s.signal].resources)
+		e.b = append(e.b, '[', ']', '}', '\n')
+		out = append(out, e.b...)
+	}
+	return out
+}
+
+// step is how far the clock moves from one trace, log record or collection to
+// the next.
+func (s settings) step() int64 {
+	if s.signal == Metrics {
+		return s.interval * int64(time.Second)
+	}
+	return int64(time.Second) / int64(s.rate)
+}
+
+// points is how many points a collection of these settings holds.
+func (s settings) points() int {
+	n := 0
+	for _, inst := range s.instruments {
+		n += len(inst.series)
+	}
+	return n
+}
 
 func parse(props map[string]string) (settings, error) {
 	values := map[string]string{}
@@ -105,7 +239,28 @@ func parse(props map[string]string) (settings, error) {
 	batch, _ := strconv.Atoi(values[Batch])
 	rate, _ := strconv.Atoi(values[Rate])
 	depth, _ := strconv.Atoi(values[Depth])
+	interval, _ := strconv.ParseInt(values[Interval], 10, 64)
 	s := settings{
+		metricChoices: metricChoices{
+			metricKind:  values[MetricKind],
+			instruments: kinds[values[MetricKind]],
+			temporality: values[Temporality],
+			exemplars:   values[Exemplars] == "true",
+			interval:    interval,
+		},
+		pitfallChoices: pitfallChoices{
+			idEncoding:     values[IDEncoding],
+			enumNames:      values[EnumEncoding] == Name,
+			snakeKeys:      values[KeyCase] == Snake,
+			bareNumbers:    values[LargeNumbers] == Number,
+			bom:            values[BOM] == "true",
+			outOfOrder:     values[TimeOrder] == OutOfOrder,
+			endBeforeStart: values[EndBeforeStart] == "true",
+			emptyEnvelope:  values[EmptyEnvelope] == "true",
+			anyBody:        values[Body] == AnyValue,
+			nonFinite:      values[NonFinite] == "true",
+		},
+
 		signal:       values[Signal],
 		layout:       layouts[values[Formatting]],
 		batch:        batch,
@@ -123,6 +278,11 @@ func parse(props map[string]string) (settings, error) {
 		return settings{}, err
 	}
 	s.start = start
+	if s.signal == Metrics {
+		// A line of metrics is one collection, so the batch is as many
+		// points as a collection holds rather than a number anybody chose.
+		s.batch = s.points()
+	}
 	return s, misplaced(props, s)
 }
 
@@ -169,6 +329,9 @@ func readStart(raw string) (int64, error) {
 // that carries it is a byte longer than planned, and the file would come out
 // the wrong size somewhere near its end.
 func (s settings) endsInTime(bytes int64) error {
+	if s.signal == Metrics {
+		return s.collectsInTime(bytes)
+	}
 	ticks := bytes / leastRecordBytes
 	if room := (lastNanos - s.start - int64(longestSpan)) / s.step(); ticks <= room {
 		return nil
@@ -184,158 +347,36 @@ func (s settings) endsInTime(bytes int64) error {
 	}
 }
 
-// misplaced refuses a setting somebody chose that can do nothing in this
-// file: one that shapes spans beside logs, one that shapes log records beside
-// traces, and a batch beside a layout that has none.
+// collectsInTime is endsInTime for a file of metrics, which counts
+// collections rather than records, and asks one thing more.
 //
-// Only a real choice can be out of place. A window sends every setting it
-// draws, at its default, so a key that arrived says nothing - the same lesson
-// the log format wrote down on 2026-08-31.
-func misplaced(props map[string]string, s settings) error {
-	for _, p := range properties() {
-		v, chosen := props[p.Name]
-		if !chosen || v == "" || v == p.Default {
-			continue
+// The time a cumulative series has measured grows with every collection and
+// is written to the microsecond. Past microCeiling a sum would need a seventh
+// decimal to be read back as written, so a file that could reach it is
+// refused - a file of hundreds of gigabytes at the least, and worth the
+// refusal for the reason endsInTime gives.
+func (s settings) collectsInTime(bytes int64) error {
+	// One more than the file can hold, and one more for time_order
+	// out-of-order, which dates a collection where the next would stand.
+	collections := bytes/(leastRecordBytes*int64(s.points())) + 2
+	if room := (lastNanos - s.start) / s.step(); collections > room {
+		return &format.PropertyValueError{
+			Format: "otlp", Key: Start, Value: s.startText,
+			Reason: core.Says("otlp.AFileThisLargeCollectsAfter",
+				"a file of this size collected every %d s would date its last collections after the year 2262. Choose an earlier start, a longer interval or a smaller file",
+				core.A("Interval", s.interval)),
 		}
-		if why, other := outOfPlace(p.Name, s); !why.IsZero() {
-			return conflict(p.Name, other, v, why)
+	}
+	for _, inst := range s.instruments {
+		measures := inst.shape == shapeHistogram || inst.shape == shapeExponential || inst.shape == shapeSummary
+		if measures && s.cumulative(inst) && collections > (microCeiling-1)/(mostMeasurements*longestDuration) {
+			return &format.PropertyValueError{
+				Format: "otlp", Key: MetricKind, Value: s.metricKind,
+				Reason: core.Says("otlp.AFileThisLargeAddsUpMore",
+					"a file of this size would add up more time in one series of %s than can be written to the microsecond. Choose a smaller file, or temporality delta where the kind has it",
+					core.A("Metric", inst.name)),
+			}
 		}
 	}
 	return nil
-}
-
-// outOfPlace says why a setting does nothing beside the rest of s, and which
-// other setting it disagrees with. Nothing when it has work to do.
-func outOfPlace(name string, s settings) (why core.Said, other string) {
-	chosen := core.Choice{Of: Signal, Value: s.signal}
-	switch name {
-	case Depth, StatusMix:
-		if s.signal != Traces {
-			return core.Says("otlp.ItShapesSpansAndSignal", "it shapes spans, and signal %s writes none", core.A("Signal", chosen)), Signal
-		}
-	case LevelMix, TraceContext:
-		if s.signal != Logs {
-			return core.Says("otlp.ItShapesLogRecordsAndSignal", "it shapes log records, and signal %s writes none", core.A("Signal", chosen)), Signal
-		}
-	case Batch:
-		if !s.layout.lines {
-			return core.Says("otlp.OnlyOneLayoutHasBatches", "only %s cuts the file into batches, and %s writes one request",
-				core.A("Lines", core.Choice{Of: Formatting, Value: RecordPerLine}),
-				core.A("Layout", core.Choice{Of: Formatting, Value: s.layout.name})), Formatting
-		}
-	}
-	return core.Said{}, ""
-}
-
-// conflict names both settings, because naming one of a pair leaves the reader
-// to guess which of the two to change.
-func conflict(one, other, val string, why core.Said) error {
-	return &format.PropertyValueError{
-		Format: "otlp", Key: one + " and " + other, Value: val,
-		Subject: core.Says("format.TwoSettings", "%s and %s", core.A("Of", core.LabelTerm(one)), core.A("By", core.LabelTerm(other))),
-		Reason:  core.Says("otlp.DropOneOfTheTwo", "%s. Drop one of the two, or change the other", core.A("Why", why)),
-	}
-}
-
-// recorded is what the manifest says about the file: only what is true of
-// this signal and this layout, so a test never asserts on a setting that left
-// no trace in the bytes.
-func (s settings) recorded() map[string]any {
-	out := map[string]any{
-		"encoding": "utf-8",
-		Signal:     s.signal,
-		Formatting: s.layout.name,
-		Start:      s.startText,
-		Rate:       s.rate,
-		// Stated even though it is always false here, so a test can assert on
-		// it without knowing which formats carry a label internally.
-		format.PropertyLabelEmbedded: false,
-	}
-	if s.layout.lines {
-		out[Batch] = s.batch
-	}
-	if s.signal == Traces {
-		out[Depth] = s.depth
-		out[StatusMix] = s.statusMix
-	} else {
-		out[LevelMix] = s.levelMix
-		out[TraceContext] = s.traceContext
-	}
-	return out
-}
-
-func properties() []format.Property {
-	return append(fileProperties(), recordProperties()...)
-}
-
-// fileProperties are the settings every file has, whatever it holds.
-func fileProperties() []format.Property {
-	return []format.Property{
-		{
-			Name: Signal, Kind: format.PropertyChoice,
-			Choices: []string{Logs, Traces},
-			Default: Traces,
-			Detail:  "Which kind of telemetry the file holds. traces writes spans and logs writes log records. A file holds one kind, as the OTLP file format asks.",
-		},
-		{
-			Name: Formatting, Kind: format.PropertyChoice,
-			Choices: []string{Indented, Minified, RecordPerLine},
-			Default: RecordPerLine,
-			// A file of one request is one JSON document, and .jsonl would
-			// tell a reader that picks its parser by the name to read it line
-			// by line. docs/ROZSZERZENIE-UKLADU-2026-11-11.md.
-			Extensions: map[string]string{Indented: ".json", Minified: ".json"},
-			Detail: "How the file is laid out. record-per-line puts one batch on each line, which is what the OTLP file exporter writes and the file receiver of the OpenTelemetry Collector reads, and the file name ends in .jsonl. " +
-				"minified and indented make the whole file one request, the body to post to an OTLP endpoint, and the file name ends in .json. " +
-				"Posted as a body, a file of several lines loses every line after the first in the Collector, and its file receiver reads nothing from an indented file.",
-		},
-		{
-			Name: Batch, Kind: format.PropertyInt,
-			Min: 1, Max: maxBatch,
-			Default: strconv.Itoa(defaultBatch),
-			Detail:  "How many spans or log records each line holds. 512 is the batch an OpenTelemetry SDK sends by default. Only record-per-line has batches, and beside another layout a batch is refused.",
-		},
-		{
-			Name: Start, Kind: format.PropertyText,
-			Shape:   "a moment in UTC such as 2026-08-01T12:00:00Z",
-			Default: defaultStart,
-			Detail:  "The moment the first span or log record is dated. The later ones follow it at the rate. Change it when the system that receives the file refuses or hides data that is too old.",
-		},
-		{
-			Name: Rate, Kind: format.PropertyInt,
-			Min: 1, Max: maxRate, Unit: "entries per second",
-			Default: strconv.Itoa(defaultRate),
-			Detail:  "How many traces or log records begin each second.",
-		},
-	}
-}
-
-// recordProperties are the settings that shape one kind of record. Each says
-// which kind, because beside the other it is refused.
-func recordProperties() []format.Property {
-	return []format.Property{
-		{
-			Name: Depth, Kind: format.PropertyInt,
-			Min: 1, Max: maxDepth,
-			Default: strconv.Itoa(defaultDepth),
-			Detail:  "How many spans each trace has, each one the child of the one before it. 1 leaves every span without a parent. It shapes spans, and beside signal logs it is refused.",
-		},
-		{
-			Name: StatusMix, Kind: format.PropertyChoice,
-			Choices: []string{"client-errors", "realistic", "server-errors", "success"},
-			Default: "realistic",
-			Detail:  "Which response codes the requests end with. A code of 500 or above marks its span as an error, as the HTTP conventions of OpenTelemetry ask, and every other code leaves the status unset. It shapes spans, and beside signal logs it is refused.",
-		},
-		{
-			Name: LevelMix, Kind: format.PropertyChoice,
-			Choices: []string{"debug", "errors", "quiet", "realistic"},
-			Default: "realistic",
-			Detail:  "Which severities the log records carry. Realistic is mostly INFO with some of the others. It shapes log records, and beside signal traces it is refused.",
-		},
-		{
-			Name: TraceContext, Kind: format.PropertyBool,
-			Default: "true",
-			Detail:  "Whether every log record names the trace and the span it was written in. The file holds no spans, so those ids match nothing in it. It shapes log records, and beside signal traces it is refused.",
-		},
-	}
 }

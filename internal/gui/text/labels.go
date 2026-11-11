@@ -41,16 +41,20 @@ func EnglishLabel(key string) string {
 // window for the first time does not know. Inline is what MIME calls a picture
 // the text shows (the owner's decision of 2026-10-14,
 // docs/EML-2-2026-10-13.md section 8). The key is still one hover away. bom is
-// an abbreviation, and spelled out of the key it read "Bom" (O278).
+// an abbreviation, and spelled out of the key it read "Bom" (O278). id is one
+// too, and non_finite read "Non finite", which names the values it writes in
+// no words a reader of OTLP knows.
 //
 // Keyed by the recipe key rather than declared on a format's setting, because
 // a label belongs to the key: every format, preset and tool declaring one key
 // shares one Label entry in the catalogue.
 var respelled = map[string]string{
 	"bom":           "BOM",
+	"id_encoding":   "ID encoding",
 	"inline":        "Pictures",
 	"inline_format": "Picture format",
 	"inline_size":   "Picture size",
+	"non_finite":    "NaN and Infinity",
 }
 
 // RespelledKeys are the keys EnglishLabel does not spell out of themselves,

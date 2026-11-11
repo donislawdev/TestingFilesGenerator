@@ -174,6 +174,11 @@
     "hash": "sha256-27747689baf9",
     "other": "alternative"
   },
+  "Choice.body.any-value": {
+    "description": "One entry of the body list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-cc8f80439173",
+    "other": "any-value"
+  },
   "Choice.body.html": {
     "description": "One entry of the body list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-e5e239560bc1",
@@ -183,6 +188,11 @@
     "description": "One entry of the body list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-a116c9ed46d6",
     "other": "plain"
+  },
+  "Choice.body.text": {
+    "description": "One entry of the body list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-982d9e3eb996",
+    "other": "text"
   },
   "Choice.characters.ascii": {
     "description": "One entry of the characters list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
@@ -423,6 +433,16 @@
     "description": "One entry of the entry_owner list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-04f8996da763",
     "other": "user"
+  },
+  "Choice.enum_encoding.name": {
+    "description": "One entry of the enum_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-82a3537ff0db",
+    "other": "name"
+  },
+  "Choice.enum_encoding.number": {
+    "description": "One entry of the enum_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-12886f9d0005",
+    "other": "number"
   },
   "Choice.expected.accept": {
     "description": "One entry of the list of what the system under test should do with a file. The manifest writes the value itself.",
@@ -849,6 +869,21 @@
     "hash": "sha256-941b7ecd47e5",
     "other": "utf8"
   },
+  "Choice.id_encoding.base64": {
+    "description": "One entry of the id_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-371a286d5872",
+    "other": "base64"
+  },
+  "Choice.id_encoding.hex": {
+    "description": "One entry of the id_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-128df13c1e54",
+    "other": "hex"
+  },
+  "Choice.id_encoding.upper-hex": {
+    "description": "One entry of the id_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-18b09d853661",
+    "other": "upper-hex"
+  },
   "Choice.ids.mixed": {
     "description": "One entry of the ids list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3f8fee624f43",
@@ -883,6 +918,26 @@
     "description": "One entry of the ip_version list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3e8286044388",
     "other": "v6"
+  },
+  "Choice.key_case.camel": {
+    "description": "One entry of the key_case list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-4812585e9449",
+    "other": "camel"
+  },
+  "Choice.key_case.snake": {
+    "description": "One entry of the key_case list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-538d7d9fe78e",
+    "other": "snake"
+  },
+  "Choice.large_numbers.number": {
+    "description": "One entry of the large_numbers list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-12886f9d0005",
+    "other": "number"
+  },
+  "Choice.large_numbers.text": {
+    "description": "One entry of the large_numbers list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-982d9e3eb996",
+    "other": "text"
   },
   "Choice.layout.newsletter": {
     "description": "One entry of the layout list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
@@ -948,6 +1003,36 @@
     "description": "One entry of the methods list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3316348dbadf",
     "other": "read"
+  },
+  "Choice.metric_kind.exponential-histogram": {
+    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-9e08a9dd9e02",
+    "other": "exponential-histogram"
+  },
+  "Choice.metric_kind.gauge": {
+    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-a90fd9a9a1e6",
+    "other": "gauge"
+  },
+  "Choice.metric_kind.histogram": {
+    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-56f0e5b2847c",
+    "other": "histogram"
+  },
+  "Choice.metric_kind.mixed": {
+    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-3f8fee624f43",
+    "other": "mixed"
+  },
+  "Choice.metric_kind.sum": {
+    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-09f5ffef2830",
+    "other": "sum"
+  },
+  "Choice.metric_kind.summary": {
+    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-761b7ad8ad43",
+    "other": "summary"
   },
   "Choice.orientation.landscape": {
     "description": "One entry of the orientation list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
@@ -1054,6 +1139,11 @@
     "hash": "sha256-98f38f12db22",
     "other": "logs"
   },
+  "Choice.signal.metrics": {
+    "description": "One entry of the signal list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-177a7ea3611f",
+    "other": "metrics"
+  },
   "Choice.signal.traces": {
     "description": "One entry of the signal list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-b5ac69fc467c",
@@ -1104,6 +1194,16 @@
     "hash": "sha256-140bedbf9c3f",
     "other": "none"
   },
+  "Choice.temporality.cumulative": {
+    "description": "One entry of the temporality list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-2dfda8e4279b",
+    "other": "cumulative"
+  },
+  "Choice.temporality.delta": {
+    "description": "One entry of the temporality list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-4f4a9410ffcd",
+    "other": "delta"
+  },
   "Choice.text_encoding.7bit": {
     "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-af6ec1d82852",
@@ -1143,6 +1243,16 @@
     "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-2fcf76a4c3c7",
     "other": "unicode"
+  },
+  "Choice.time_order.in-order": {
+    "description": "One entry of the time_order list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-d733f4e84323",
+    "other": "in-order"
+  },
+  "Choice.time_order.out-of-order": {
+    "description": "One entry of the time_order list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-da48228bd1a4",
+    "other": "out-of-order"
   },
   "Choice.timestamps.advancing": {
     "description": "One entry of the timestamps list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
@@ -1586,48 +1696,118 @@
   },
   "Detail.format/otlp.batch": {
     "description": "The sentence under the batch setting of the otlp format, after what it takes.",
-    "hash": "sha256-3c2c865d96f5",
-    "other": "How many spans or log records each line holds. 512 is the batch an OpenTelemetry SDK sends by default. Only record-per-line has batches, and beside another layout a batch is refused."
+    "hash": "sha256-793fcaf7d3f2",
+    "other": "How many spans or log records each line holds. 512 is the batch an OpenTelemetry SDK sends by default. Only record-per-line has batches, and beside another layout or beside signal metrics, where a line holds one collection, a batch is refused."
+  },
+  "Detail.format/otlp.body": {
+    "description": "The sentence under the body setting of the otlp format, after what it takes.",
+    "hash": "sha256-483c91e6d770",
+    "other": "What the body of a log record holds. text is a sentence. any-value gives the seven kinds of value OTLP has in turn - text, a boolean, the whole number 2^53 + 1, a fraction, a list, a map and bytes - and the OpenTelemetry Collector reads them and writes them back unchanged. With large_numbers number, a reader that holds numbers as doubles reads that whole number one less. It shapes log records, and beside signal traces or metrics it is refused."
+  },
+  "Detail.format/otlp.bom": {
+    "description": "The sentence under the bom setting of the otlp format, after what it takes.",
+    "hash": "sha256-a2d6a88583d6",
+    "other": "Whether the file opens with a byte order mark. A reader that has to guess the encoding needs one, and a reader that does not expect it shows it as stray characters at the start of the file."
   },
   "Detail.format/otlp.depth": {
     "description": "The sentence under the depth setting of the otlp format, after what it takes.",
-    "hash": "sha256-d1caceabbb7a",
-    "other": "How many spans each trace has, each one the child of the one before it. 1 leaves every span without a parent. It shapes spans, and beside signal logs it is refused."
+    "hash": "sha256-569c03730a30",
+    "other": "How many spans each trace has, each one the child of the one before it. 1 leaves every span without a parent. It shapes spans, and beside signal logs or metrics it is refused."
+  },
+  "Detail.format/otlp.empty_envelope": {
+    "description": "The sentence under the empty_envelope setting of the otlp format, after what it takes.",
+    "hash": "sha256-62ac042d001f",
+    "other": "Whether the file opens with a line holding a batch with nothing in it, which the OTLP specification asks senders not to write. The file receiver of the OpenTelemetry Collector reads the line and writes nothing for it. Only record-per-line has a line to spare, and beside another layout it is refused."
+  },
+  "Detail.format/otlp.end_before_start": {
+    "description": "The sentence under the end_before_start setting of the otlp format, after what it takes.",
+    "hash": "sha256-0a13a989796c",
+    "other": "Whether every span is dated with its end before its start, the two times changed places. The OpenTelemetry Collector reads such a span and writes it back unchanged. It shapes spans, and beside signal logs or metrics it is refused."
+  },
+  "Detail.format/otlp.enum_encoding": {
+    "description": "The sentence under the enum_encoding setting of the otlp format, after what it takes.",
+    "hash": "sha256-428ff808c144",
+    "other": "How the kind of a span, the code of its status, the severity of a log record and the temporality of a sum or a histogram are written. number is what the OTLP specification asks for. name writes names such as SPAN_KIND_SERVER, which the specification forbids. The OpenTelemetry Collector reads them anyway and writes numbers back, and the Rust crate opentelemetry-proto refuses a span written that way."
+  },
+  "Detail.format/otlp.exemplars": {
+    "description": "The sentence under the exemplars setting of the otlp format, after what it takes.",
+    "hash": "sha256-ac0f521a7266",
+    "other": "Whether the durations of requests name the trace and the span a measurement was taken in, one for each bucket a collection measured in. The file holds no spans, so those ids match nothing in it. Only http.server.request.duration has them, and beside a metric_kind without it exemplars are refused."
   },
   "Detail.format/otlp.formatting": {
     "description": "The sentence under the formatting setting of the otlp format, after what it takes.",
     "hash": "sha256-b094d2e4c7a2",
     "other": "How the file is laid out. record-per-line puts one batch on each line, which is what the OTLP file exporter writes and the file receiver of the OpenTelemetry Collector reads, and the file name ends in .jsonl. minified and indented make the whole file one request, the body to post to an OTLP endpoint, and the file name ends in .json. Posted as a body, a file of several lines loses every line after the first in the Collector, and its file receiver reads nothing from an indented file."
   },
+  "Detail.format/otlp.id_encoding": {
+    "description": "The sentence under the id_encoding setting of the otlp format, after what it takes.",
+    "hash": "sha256-8dac2112d3f4",
+    "other": "How trace and span ids are written. hex is what the OTLP specification asks for. upper-hex writes the same digits in capitals, which the specification allows, and the OpenTelemetry Collector writes them back in lower case. base64 writes them the way the JSON mapping of protobuf writes bytes, which the specification forbids - the file receiver of the Collector drops every batch without a word and its HTTP receiver answers 400. A reader built on the protobuf library reads base64 ids right and hex ids as something else."
+  },
+  "Detail.format/otlp.interval": {
+    "description": "The sentence under the interval setting of the otlp format, after what it takes.",
+    "hash": "sha256-2ce89e34952b",
+    "other": "How long a service waits between two collections of its metrics. 60 is what an SDK uses by default. Every point of a collection is dated at the same moment, and in record-per-line a line holds one collection."
+  },
+  "Detail.format/otlp.key_case": {
+    "description": "The sentence under the key_case setting of the otlp format, after what it takes.",
+    "hash": "sha256-4f17fdd9113b",
+    "other": "How the keys of the file are written. camel is what the OTLP specification asks for, such as traceId. snake writes the names the .proto files give the fields, such as trace_id, which the specification calls not valid. The OpenTelemetry Collector reads them and writes camel case back, and the Rust crate opentelemetry-proto refuses the file."
+  },
+  "Detail.format/otlp.large_numbers": {
+    "description": "The sentence under the large_numbers setting of the otlp format, after what it takes.",
+    "hash": "sha256-da573f0e1080",
+    "other": "How times and the other numbers of 64 bits are written. text is what the OTLP specification asks a writer for, such as \"1785585600000000000\". number writes them as JSON numbers, which a reader is told to take as well, and the OpenTelemetry Collector does. A reader that holds every JSON number as a double, as JavaScript does, gets every time to the nearest 256 nanoseconds."
+  },
   "Detail.format/otlp.level_mix": {
     "description": "The sentence under the level_mix setting of the otlp format, after what it takes.",
-    "hash": "sha256-96679b162c65",
-    "other": "Which severities the log records carry. Realistic is mostly INFO with some of the others. It shapes log records, and beside signal traces it is refused."
+    "hash": "sha256-013335bf03aa",
+    "other": "Which severities the log records carry. Realistic is mostly INFO with some of the others. It shapes log records, and beside signal traces or metrics it is refused."
+  },
+  "Detail.format/otlp.metric_kind": {
+    "description": "The sentence under the metric_kind setting of the otlp format, after what it takes.",
+    "hash": "sha256-c1a86feb6d4f",
+    "other": "Which metrics the file holds. gauge writes jvm.cpu.recent_utilization and shop.orders.pending, sum writes jvm.cpu.time, jvm.class.loaded and jvm.memory.used, histogram writes http.server.request.duration in the buckets the OpenTelemetry conventions name, exponential-histogram writes jvm.gc.duration in buckets that double every eight, and summary writes http.server.requests as three percentiles, the way Micrometer writes a timer. mixed writes all of them. gauge and sum each hold whole numbers and fractions."
+  },
+  "Detail.format/otlp.non_finite": {
+    "description": "The sentence under the non_finite setting of the otlp format, after what it takes.",
+    "hash": "sha256-3cbadc5f5abb",
+    "other": "Whether jvm.cpu.recent_utilization reports values that are not numbers: NaN in the second of every four collections, and Infinity and -Infinity in turn in the fourth, written as text the way the JSON mapping of protobuf writes them. The OpenTelemetry Collector reads them and writes them back unchanged. Beside a metric_kind without that gauge it is refused."
   },
   "Detail.format/otlp.rate": {
     "description": "The sentence under the rate setting of the otlp format, after what it takes.",
-    "hash": "sha256-ce402f8f7753",
-    "other": "How many traces or log records begin each second."
+    "hash": "sha256-7e71b4f3b48f",
+    "other": "How many traces or log records begin each second. Metrics are collected every interval instead, and beside signal metrics a rate is refused."
   },
   "Detail.format/otlp.signal": {
     "description": "The sentence under the signal setting of the otlp format, after what it takes.",
-    "hash": "sha256-a0541e2d1349",
-    "other": "Which kind of telemetry the file holds. traces writes spans and logs writes log records. A file holds one kind, as the OTLP file format asks."
+    "hash": "sha256-5d461667592e",
+    "other": "Which kind of telemetry the file holds. traces writes spans, logs writes log records and metrics writes the measurements of a service, collected every interval. A file holds one kind, as the OTLP file format asks."
   },
   "Detail.format/otlp.start": {
     "description": "The sentence under the start setting of the otlp format, after what it takes.",
-    "hash": "sha256-a8823ab3b44e",
-    "other": "The moment the first span or log record is dated. The later ones follow it at the rate. Change it when the system that receives the file refuses or hides data that is too old."
+    "hash": "sha256-f6d93ca7613b",
+    "other": "The moment the first span or log record is dated, and the moment a service writing metrics started. The later ones follow it at the rate or every interval. Change it when the system that receives the file refuses or hides data that is too old."
   },
   "Detail.format/otlp.status_mix": {
     "description": "The sentence under the status_mix setting of the otlp format, after what it takes.",
-    "hash": "sha256-06462e0e2639",
-    "other": "Which response codes the requests end with. A code of 500 or above marks its span as an error, as the HTTP conventions of OpenTelemetry ask, and every other code leaves the status unset. It shapes spans, and beside signal logs it is refused."
+    "hash": "sha256-bb5ae4b2ee09",
+    "other": "Which response codes the requests end with. A code of 500 or above marks its span as an error, as the HTTP conventions of OpenTelemetry ask, and every other code leaves the status unset. It shapes spans, and beside signal logs or metrics it is refused."
+  },
+  "Detail.format/otlp.temporality": {
+    "description": "The sentence under the temporality setting of the otlp format, after what it takes.",
+    "hash": "sha256-0f6234dad243",
+    "other": "Whether a sum or a histogram counts everything since the service started or only what came since the collection before. cumulative is what an SDK sends by default. delta leaves jvm.memory.used cumulative, as the delta setting of an SDK does. Beside metric_kind gauge or summary it is refused."
+  },
+  "Detail.format/otlp.time_order": {
+    "description": "The sentence under the time_order setting of the otlp format, after what it takes.",
+    "hash": "sha256-223b0e56bd8a",
+    "other": "Whether every trace, log record or collection is dated later than the one before it. out-of-order swaps the times of every two neighbours, so every second one is dated before the one in front of it. The specification of the OTLP file promises no order, and the OpenTelemetry Collector reads the file and writes it back unchanged. What the system storing the data does with what comes late is the question this file asks."
   },
   "Detail.format/otlp.trace_context": {
     "description": "The sentence under the trace_context setting of the otlp format, after what it takes.",
-    "hash": "sha256-634b48d43770",
-    "other": "Whether every log record names the trace and the span it was written in. The file holds no spans, so those ids match nothing in it. It shapes log records, and beside signal traces it is refused."
+    "hash": "sha256-918e5211764c",
+    "other": "Whether every log record names the trace and the span it was written in. The file holds no spans, so those ids match nothing in it. It shapes log records, and beside signal traces or metrics it is refused."
   },
   "Detail.format/pdf.author": {
     "description": "The sentence under the author setting of the pdf format, after what it takes.",
@@ -2209,6 +2389,26 @@
     "hash": "sha256-af608b8ed33a",
     "other": "Pictures in the page"
   },
+  "Group.format/otlp.Log records": {
+    "description": "The heading over a block of settings of the otlp format.",
+    "hash": "sha256-1eb4f5f3f4e1",
+    "other": "Log records"
+  },
+  "Group.format/otlp.Metrics": {
+    "description": "The heading over a block of settings of the otlp format.",
+    "hash": "sha256-a58da793c725",
+    "other": "Metrics"
+  },
+  "Group.format/otlp.Pitfalls": {
+    "description": "The heading over a block of settings of the otlp format.",
+    "hash": "sha256-24f33462a118",
+    "other": "Pitfalls"
+  },
+  "Group.format/otlp.Spans": {
+    "description": "The heading over a block of settings of the otlp format.",
+    "hash": "sha256-b3393bfb2a55",
+    "other": "Spans"
+  },
   "Group.format/pdf.Document properties": {
     "description": "The heading over a block of settings of the pdf format.",
     "hash": "sha256-7115a778ab47",
@@ -2454,6 +2654,11 @@
     "hash": "sha256-7512561d2f68",
     "other": "Embed"
   },
+  "Label.empty_envelope": {
+    "description": "The name beside the box of a setting a recipe writes as empty_envelope.",
+    "hash": "sha256-c06d29fdbae1",
+    "other": "Empty envelope"
+  },
   "Label.encoding": {
     "description": "The name beside the box of a setting a recipe writes as encoding.",
     "hash": "sha256-4d25a47625ce",
@@ -2463,6 +2668,11 @@
     "description": "The name beside the box of a setting a recipe writes as encryption.",
     "hash": "sha256-82f4e719a19c",
     "other": "Encryption"
+  },
+  "Label.end_before_start": {
+    "description": "The name beside the box of a setting a recipe writes as end_before_start.",
+    "hash": "sha256-1ce5eed0b42b",
+    "other": "End before start"
   },
   "Label.entries": {
     "description": "The name beside the box of a setting a recipe writes as entries.",
@@ -2488,6 +2698,16 @@
     "description": "The name beside the box of a setting a recipe writes as entry_size.",
     "hash": "sha256-1190635edb6f",
     "other": "Entry size"
+  },
+  "Label.enum_encoding": {
+    "description": "The name beside the box of a setting a recipe writes as enum_encoding.",
+    "hash": "sha256-22601c0211e1",
+    "other": "Enum encoding"
+  },
+  "Label.exemplars": {
+    "description": "The name beside the box of a setting a recipe writes as exemplars.",
+    "hash": "sha256-92f6b3f1e81e",
+    "other": "Exemplars"
   },
   "Label.expected": {
     "description": "The name beside the box of a setting a recipe writes as expected.",
@@ -2564,6 +2784,11 @@
     "hash": "sha256-158a3b71a54c",
     "other": "Holes"
   },
+  "Label.id_encoding": {
+    "description": "The name beside the box of a setting a recipe writes as id_encoding.",
+    "hash": "sha256-fd8f6b3477c6",
+    "other": "ID encoding"
+  },
   "Label.ids": {
     "description": "The name beside the box of a setting a recipe writes as ids.",
     "hash": "sha256-d9aa9d4aca97",
@@ -2584,10 +2809,20 @@
     "hash": "sha256-28a0f4295d32",
     "other": "Picture size"
   },
+  "Label.interval": {
+    "description": "The name beside the box of a setting a recipe writes as interval.",
+    "hash": "sha256-6f45b0005e3b",
+    "other": "Interval"
+  },
   "Label.ip_version": {
     "description": "The name beside the box of a setting a recipe writes as ip_version.",
     "hash": "sha256-29016036fada",
     "other": "Ip version"
+  },
+  "Label.key_case": {
+    "description": "The name beside the box of a setting a recipe writes as key_case.",
+    "hash": "sha256-35a6d2a884c1",
+    "other": "Key case"
   },
   "Label.keyframe_interval": {
     "description": "The name beside the box of a setting a recipe writes as keyframe_interval.",
@@ -2598,6 +2833,11 @@
     "description": "The name beside the box of a setting a recipe writes as keywords.",
     "hash": "sha256-8bfdb93cafaa",
     "other": "Keywords"
+  },
+  "Label.large_numbers": {
+    "description": "The name beside the box of a setting a recipe writes as large_numbers.",
+    "hash": "sha256-428384dda8c4",
+    "other": "Large numbers"
   },
   "Label.layout": {
     "description": "The name beside the box of a setting a recipe writes as layout.",
@@ -2639,6 +2879,11 @@
     "hash": "sha256-8696622f3441",
     "other": "Methods"
   },
+  "Label.metric_kind": {
+    "description": "The name beside the box of a setting a recipe writes as metric_kind.",
+    "hash": "sha256-c02cc2ddbac5",
+    "other": "Metric kind"
+  },
   "Label.missing": {
     "description": "The name beside the box of a setting a recipe writes as missing.",
     "hash": "sha256-6be36ca49ee8",
@@ -2653,6 +2898,11 @@
     "description": "The name beside the box of a setting a recipe writes as nesting.",
     "hash": "sha256-f342629fc0e1",
     "other": "Nesting"
+  },
+  "Label.non_finite": {
+    "description": "The name beside the box of a setting a recipe writes as non_finite.",
+    "hash": "sha256-7bd147326f22",
+    "other": "NaN and Infinity"
   },
   "Label.orientation": {
     "description": "The name beside the box of a setting a recipe writes as orientation.",
@@ -2779,10 +3029,20 @@
     "hash": "sha256-68971283841a",
     "other": "Subject"
   },
+  "Label.temporality": {
+    "description": "The name beside the box of a setting a recipe writes as temporality.",
+    "hash": "sha256-ea2c5cea729a",
+    "other": "Temporality"
+  },
   "Label.text_encoding": {
     "description": "The name beside the box of a setting a recipe writes as text_encoding.",
     "hash": "sha256-f6726ca0b9fe",
     "other": "Text encoding"
+  },
+  "Label.time_order": {
+    "description": "The name beside the box of a setting a recipe writes as time_order.",
+    "hash": "sha256-88f72f946cf6",
+    "other": "Time order"
   },
   "Label.timestamps": {
     "description": "The name beside the box of a setting a recipe writes as timestamps.",
@@ -3268,6 +3528,11 @@
     "description": "What a number counts, after it, as in: from 1 to 20000 rows. Written the way the language puts a noun after a number.",
     "hash": "sha256-bc51e9e65d79",
     "other": "rows"
+  },
+  "Unit.seconds": {
+    "description": "What a number counts, after it, as in: from 1 to 20000 seconds. Written the way the language puts a noun after a number.",
+    "hash": "sha256-59f006d63bd0",
+    "other": "seconds"
   },
   "Unit.slides": {
     "description": "What a number counts, after it, as in: from 1 to 20000 slides. Written the way the language puts a noun after a number.",

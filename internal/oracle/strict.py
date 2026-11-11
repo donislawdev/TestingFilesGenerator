@@ -4167,7 +4167,118 @@ def rtf_every(text, settings):
 OTLP_LINE_CEILING = 1 << 20
 OTLP_SCHEMA = "https://opentelemetry.io/schemas/1.45.0"
 OTLP_PADDING = "tfg.padding"
-OTLP_NAMES = {"traces": ("resourceSpans", "scopeSpans", "spans"), "logs": ("resourceLogs", "scopeLogs", "logRecords")}
+OTLP_NAMES = {"traces": ("resourceSpans", "scopeSpans", "spans"), "logs": ("resourceLogs", "scopeLogs", "logRecords"),
+              "metrics": ("resourceMetrics", "scopeMetrics", "metrics")}
+# The instruments of a file of metrics, written out here a second time rather
+# than read from the generator: the member that holds the points, the unit,
+# what a point carries, how many series, the attribute keys of a series, and
+# whether a sum only grows or stays cumulative under delta (UpDownCounter).
+OTLP_HTTP_KEYS = (["http.request.method", "url.scheme", "http.response.status_code", "http.route"],
+                  ["http.request.method", "url.scheme", "error.type", "http.response.status_code", "http.route"])
+OTLP_INSTRUMENTS = {
+    "jvm.cpu.recent_utilization": {"member": "gauge", "unit": "1", "value": "double", "series": 1, "keys": ([],)},
+    "shop.orders.pending": {"member": "gauge", "unit": "{order}", "value": "int", "series": 1, "keys": ([],)},
+    "jvm.cpu.time": {"member": "sum", "unit": "s", "value": "double", "series": 1, "keys": ([],), "monotonic": True},
+    "jvm.class.loaded": {"member": "sum", "unit": "{class}", "value": "int", "series": 1, "keys": ([],), "monotonic": True},
+    "jvm.memory.used": {"member": "sum", "unit": "By", "value": "int", "series": 3, "keys": (["jvm.memory.pool.name", "jvm.memory.type"],),
+                        "updown": True},
+    "http.server.request.duration": {"member": "histogram", "unit": "s", "value": "histogram", "series": 16, "keys": OTLP_HTTP_KEYS},
+    "jvm.gc.duration": {"member": "exponentialHistogram", "unit": "s", "value": "exponential", "series": 2,
+                        "keys": (["jvm.gc.action", "jvm.gc.name"],)},
+    "http.server.requests": {"member": "summary", "unit": "s", "value": "summary", "series": 16,
+                             "keys": (["exception", "method", "outcome", "status", "uri"],)},
+}
+OTLP_METRIC_KINDS = {
+    "gauge": ["jvm.cpu.recent_utilization", "shop.orders.pending"],
+    "sum": ["jvm.cpu.time", "jvm.class.loaded", "jvm.memory.used"],
+    "histogram": ["http.server.request.duration"],
+    "exponential-histogram": ["jvm.gc.duration"],
+    "summary": ["http.server.requests"],
+}
+OTLP_METRIC_KINDS["mixed"] = [n for k in ("gauge", "sum", "histogram", "exponential-histogram", "summary") for n in OTLP_METRIC_KINDS[k]]
+# The bucket boundaries the HTTP conventions name for request durations.
+OTLP_REQUEST_BOUNDS = [0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]
+OTLP_QUANTILES = [0.5, 0.95, 0.99]
+OTLP_MOST_MEASUREMENTS = 3
+# The pitfalls. The enums by the names their .proto files give them, the
+# fields that hold a number of 64 bits, and the fields that hold an id.
+OTLP_ENUM_NAMES = {"kind": {1: "SPAN_KIND_INTERNAL", 2: "SPAN_KIND_SERVER"}, "code": {2: "STATUS_CODE_ERROR"},
+                   "severityNumber": {5: "SEVERITY_NUMBER_DEBUG", 9: "SEVERITY_NUMBER_INFO", 13: "SEVERITY_NUMBER_WARN",
+                                      17: "SEVERITY_NUMBER_ERROR"},
+                   "aggregationTemporality": {1: "AGGREGATION_TEMPORALITY_DELTA", 2: "AGGREGATION_TEMPORALITY_CUMULATIVE"}}
+OTLP_WIDE = {"startTimeUnixNano", "endTimeUnixNano", "timeUnixNano", "observedTimeUnixNano", "intValue", "asInt",
+             "count", "bucketCounts", "zeroCount"}
+OTLP_ID_KEYS = {"traceId", "spanId", "parentSpanId"}
+OTLP_PITFALLS = {"id_encoding": ("hex", "upper-hex", "base64"), "enum_encoding": ("number", "name"), "key_case": ("camel", "snake"),
+                 "large_numbers": ("text", "number"), "bom": ("false", "true"), "time_order": ("in-order", "out-of-order"),
+                 "end_before_start": ("false", "true"), "empty_envelope": ("false", "true"), "body": ("text", "any-value"),
+                 "non_finite": ("false", "true")}
+# 2^53 + 1, the whole number a log body of any-value holds.
+OTLP_BEYOND_DOUBLES = "9007199254740993"
+
+
+def otlp_camel(key):
+    head, *rest = key.split("_")
+    return head + "".join(p[:1].upper() + p[1:] for p in rest)
+
+
+def otlp_snake(key):
+    return "".join("_" + c.lower() if c.isupper() else c for c in key)
+
+
+def otlp_respell(value, settings, canonical, key=None):
+    """A batch spelled the way the specification asks, out of one spelled with
+    the pitfalls of settings, or the other way round. Each way changes only
+    what the settings name, so a file that ignored one of them does not come
+    back to itself when spelled again."""
+    import base64
+    import binascii
+
+    if isinstance(value, dict):
+        out = {}
+        for k, v in value.items():
+            plain = otlp_camel(k) if canonical and settings["key_case"] == "snake" else k
+            name = otlp_snake(k) if not canonical and settings["key_case"] == "snake" else plain
+            out[name] = otlp_respell(v, settings, canonical, plain)
+        return out
+    if isinstance(value, list):
+        return [otlp_respell(v, settings, canonical, key) for v in value]
+    if key in OTLP_ENUM_NAMES and settings["enum_encoding"] == "name":
+        names = OTLP_ENUM_NAMES[key]
+        if canonical:
+            return {n: v for v, n in names.items()}.get(value, value) if isinstance(value, str) else value
+        return names.get(value, value) if type(value) is int else value
+    if key in OTLP_WIDE and settings["large_numbers"] == "number":
+        if canonical:
+            return str(value) if type(value) is int else value
+        return int(value) if isinstance(value, str) and value.isdigit() else value
+    if key in OTLP_ID_KEYS and settings["id_encoding"] != "hex" and isinstance(value, str):
+        if settings["id_encoding"] == "upper-hex":
+            return value.lower() if canonical else value.upper()
+        try:
+            return base64.b64decode(value, validate=True).hex() if canonical else base64.b64encode(bytes.fromhex(value)).decode()
+        except (binascii.Error, ValueError):
+            return value
+    return value
+
+
+def otlp_canonical(batches, settings):
+    """The batches spelled the way the specification asks, each checked to be
+    exactly what the pitfalls make of that spelling."""
+    out = []
+    for number, doc in enumerate(batches, start=1):
+        canon = otlp_respell(doc, settings, True)
+        if otlp_respell(canon, settings, False) != doc:
+            fail(f"batch {number} is not spelled the way id_encoding={settings['id_encoding']}, enum_encoding={settings['enum_encoding']}, "
+                 f"key_case={settings['key_case']} and large_numbers={settings['large_numbers']} spell it")
+        out.append(canon)
+    return out
+
+
+def otlp_tick(n, settings):
+    """Where on the clock the nth trace, log record or collection is dated:
+    there, or with time_order out-of-order where its neighbour would be."""
+    return n ^ 1 if settings["time_order"] == "out-of-order" else n
 OTLP_STATUSES = {"realistic": {200, 201, 204, 301, 302, 304, 400, 401, 403, 404, 409, 429, 500, 502, 503},
                  "success": {200, 201, 204, 206},
                  "client-errors": {400, 401, 403, 404, 409, 410, 422, 429},
@@ -4250,35 +4361,42 @@ def otlp_batches(text, settings):
 def otlp_records(batches, settings):
     """Every record of the file in order, out of batches that each name one
     resource and one scope and hold as many records as batch says."""
-    top, mid, leaf = OTLP_NAMES[settings["signal"]]
     records, sizes = [], []
     for number, doc in enumerate(batches, start=1):
-        if list(doc) != [top] or len(doc[top]) != 1:
-            fail(f"batch {number} is not one {top} entry: its members are {list(doc)}")
-        res = doc[top][0]
-        if list(res) != ["resource", mid, "schemaUrl"] or res["schemaUrl"] != OTLP_SCHEMA:
-            fail(f"batch {number}: the resource entry has the members {list(res)}, not a resource, {mid} and the schema of the conventions")
-        if list(res["resource"]) != ["attributes"] or [a["key"] for a in res["resource"]["attributes"]] != ["service.name", "service.version"]:
-            fail(f"batch {number}: the resource does not carry service.name and service.version and nothing else")
-        for a in res["resource"]["attributes"]:
-            if list(a) != ["key", "value"] or not otlp_text(f"the resource of batch {number}", a["value"]):
-                fail(f"batch {number}: the resource attribute {a['key']} is not one key with a text in it")
-        if len(res[mid]) != 1:
-            fail(f"batch {number} holds {len(res[mid])} scopes, not one")
-        scope = res[mid][0]
-        if list(scope) != ["scope", leaf, "schemaUrl"] or scope["schemaUrl"] != OTLP_SCHEMA or list(scope["scope"]) != ["name", "version"]:
-            fail(f"batch {number}: the scope entry has the members {list(scope)}, not a named scope, {leaf} and the schema of the conventions")
-        if not all(isinstance(v, str) and v for v in scope["scope"].values()):
-            fail(f"batch {number}: the scope does not carry its name and its version as text")
-        if not scope[leaf]:
-            fail(f"batch {number} holds no record, an envelope the specification asks senders not to write")
-        sizes.append(len(scope[leaf]))
-        records.extend(scope[leaf])
+        held = otlp_scope(doc, number, settings)
+        sizes.append(len(held))
+        records.extend(held)
     if settings["formatting"] == "record-per-line":
         size = settings["batch"]
         if any(n != size for n in sizes[:-1]) or sizes[-1] > size:
             fail(f"the batches hold {sizes[:6]} records, and batch={size} asks for that many on every line and no more on the last")
     return records
+
+
+def otlp_scope(doc, number, settings):
+    """The records of one batch, out of an envelope that names one resource
+    and one scope."""
+    top, mid, leaf = OTLP_NAMES[settings["signal"]]
+    if list(doc) != [top] or len(doc[top]) != 1:
+        fail(f"batch {number} is not one {top} entry: its members are {list(doc)}")
+    res = doc[top][0]
+    if list(res) != ["resource", mid, "schemaUrl"] or res["schemaUrl"] != OTLP_SCHEMA:
+        fail(f"batch {number}: the resource entry has the members {list(res)}, not a resource, {mid} and the schema of the conventions")
+    if list(res["resource"]) != ["attributes"] or [a["key"] for a in res["resource"]["attributes"]] != ["service.name", "service.version"]:
+        fail(f"batch {number}: the resource does not carry service.name and service.version and nothing else")
+    for a in res["resource"]["attributes"]:
+        if list(a) != ["key", "value"] or not otlp_text(f"the resource of batch {number}", a["value"]):
+            fail(f"batch {number}: the resource attribute {a['key']} is not one key with a text in it")
+    if len(res[mid]) != 1:
+        fail(f"batch {number} holds {len(res[mid])} scopes, not one")
+    scope = res[mid][0]
+    if list(scope) != ["scope", leaf, "schemaUrl"] or scope["schemaUrl"] != OTLP_SCHEMA or list(scope["scope"]) != ["name", "version"]:
+        fail(f"batch {number}: the scope entry has the members {list(scope)}, not a named scope, {leaf} and the schema of the conventions")
+    if not all(isinstance(v, str) and v for v in scope["scope"].values()):
+        fail(f"batch {number}: the scope does not carry its name and its version as text")
+    if not scope[leaf]:
+        fail(f"batch {number} holds no record, an envelope the specification asks senders not to write")
+    return scope[leaf]
 
 
 def otlp_attributes(what, record, last):
@@ -4336,12 +4454,16 @@ def otlp_spans(spans, settings, start, step):
         otlp_id(f"the trace id of {what}", sp["traceId"], 32)
         otlp_id(f"the id of {what}", sp["spanId"], 16)
         begin, end = otlp_time(f"the start of {what}", sp["startTimeUnixNano"]), otlp_time(f"the end of {what}", sp["endTimeUnixNano"])
+        if settings["end_before_start"] == "true":
+            if end >= begin:
+                fail(f"{what} ends at or after the moment it starts, and end_before_start=true dates every span the other way round")
+            begin, end = end, begin
         if end <= begin:
             fail(f"{what} ends at or before the moment it starts")
         attrs = otlp_attributes(what, sp, number == len(spans))
         if level == 0:
-            if begin != start + traces * step:
-                fail(f"{what} opens trace {traces + 1} at {begin}, and start and rate put it at {start + traces * step}")
+            if begin != start + otlp_tick(traces, settings) * step:
+                fail(f"{what} opens trace {traces + 1} at {begin}, and start, rate and time_order put it at {start + otlp_tick(traces, settings) * step}")
             traces += 1
             otlp_request(what, sp, attrs, settings)
         else:
@@ -4388,15 +4510,15 @@ def otlp_log_records(entries, settings, start, step):
         if list(en) != want:
             fail(f"{what} has the members {list(en)}, not {want}")
         at = otlp_time(f"the time of {what}", en["timeUnixNano"])
-        if at != start + (number - 1) * step or en["observedTimeUnixNano"] != en["timeUnixNano"]:
-            fail(f"{what} is dated {at}, and start and rate put it at {start + (number - 1) * step} with the same moment observed")
+        due = start + otlp_tick(number - 1, settings) * step
+        if at != due or en["observedTimeUnixNano"] != en["timeUnixNano"]:
+            fail(f"{what} is dated {at}, and start, rate and time_order put it at {due} with the same moment observed")
         level = en["severityText"]
         if level not in OTLP_LEVEL_MIXES[settings["level_mix"]]:
             fail(f"{what} has the severity {level!r}, which level_mix={settings['level_mix']} does not hold")
         if type(en["severityNumber"]) is not int or en["severityNumber"] != OTLP_LEVELS[level]:
             fail(f"{what} says {level} and carries the number {en['severityNumber']!r}, not {OTLP_LEVELS[level]}")
-        if not otlp_text(what, en["body"]):
-            fail(f"{what} says nothing")
+        otlp_body(what, en["body"], number - 1, settings)
         attrs = otlp_attributes(what, en, number == len(entries))
         if list(attrs) != ["code.function.name", "code.line.number"]:
             fail(f"{what} carries the attributes {list(attrs)}, not the function and the line it was written at")
@@ -4408,6 +4530,205 @@ def otlp_log_records(entries, settings, start, step):
             otlp_id(f"the trace id of {what}", en["traceId"], 32)
             otlp_id(f"the span id of {what}", en["spanId"], 16)
     return f"{len(entries)} log records"
+
+
+def otlp_body(what, body, n, settings):
+    """What a log record says: a sentence, or with body any-value the seven
+    kinds of AnyValue in turn, each holding what the record says."""
+    import base64
+
+    kind = n % 7 if settings["body"] == "any-value" else 0
+    shapes = ["stringValue", "boolValue", "intValue", "doubleValue", "arrayValue", "kvlistValue", "bytesValue"]
+    if list(body) != [shapes[kind]]:
+        fail(f"{what} has the body {list(body)}, and record {n + 1} with body={settings['body']} holds {shapes[kind]}")
+    v = body[shapes[kind]]
+    good = {
+        0: lambda: isinstance(v, str) and v,
+        1: lambda: v is True,
+        2: lambda: v == OTLP_BEYOND_DOUBLES,
+        3: lambda: type(v) in (int, float) and 0 < v < 1,
+        4: lambda: [list(x) for x in v["values"]] == [["stringValue"], ["intValue"]] and v["values"][0]["stringValue"],
+        5: lambda: [x["key"] for x in v["values"]] == ["message", "code.line.number"],
+        6: lambda: base64.b64decode(v, validate=True).decode("utf-8"),
+    }[kind]
+    try:
+        held = good()
+    except (ValueError, TypeError, KeyError, UnicodeDecodeError):
+        held = False
+    if not held:
+        fail(f"{what} has a {shapes[kind]} body that does not hold what a record says")
+
+
+def otlp_metric_points(batches, settings):
+    """Every point of the file in order, each with its metric and its place in
+    a collection: the instruments of metric_kind in their order, every series
+    of each, a metric opening at the first series of a collection and closing
+    at the last, and in record-per-line one collection to a line."""
+    names = OTLP_METRIC_KINDS[settings["metric_kind"]]
+    slots = [(name, j) for name in names for j in range(OTLP_INSTRUMENTS[name]["series"])]
+    points, sizes = [], []
+    for number, doc in enumerate(batches, start=1):
+        held = 0
+        for m in otlp_scope(doc, number, settings):
+            inst = OTLP_INSTRUMENTS.get(m.get("name")) if isinstance(m, dict) else None
+            if inst is None:
+                fail(f"batch {number} holds a metric {m.get('name') if isinstance(m, dict) else m!r} this tool does not write")
+            if list(m) != ["name", "description", "unit", inst["member"]] or not m["description"] or m["unit"] != inst["unit"]:
+                fail(f"the metric {m['name']} has the members {list(m)} and the unit {m.get('unit')!r}, not a {inst['member']} in {inst['unit']}")
+            data = m[inst["member"]]
+            temporal = inst["member"] in ("sum", "histogram", "exponentialHistogram")
+            want = ["dataPoints"] + (["aggregationTemporality"] if temporal else []) + (["isMonotonic"] if inst.get("monotonic") else [])
+            if list(data) != want or (inst.get("monotonic") and data["isMonotonic"] is not True):
+                fail(f"the {inst['member']} of {m['name']} has the members {list(data)}, not {want}")
+            if temporal:
+                cumulative = settings["temporality"] == "cumulative" or inst.get("updown")
+                if type(data["aggregationTemporality"]) is not int or data["aggregationTemporality"] != (2 if cumulative else 1):
+                    fail(f"{m['name']} states the temporality {data['aggregationTemporality']!r} and temporality={settings['temporality']} asks for {2 if cumulative else 1}")
+            if not data["dataPoints"]:
+                fail(f"{m['name']} in batch {number} holds no point")
+            for k, pt in enumerate(data["dataPoints"]):
+                name, series = slots[len(points) % len(slots)]
+                if name != m["name"] or (k == 0 and series != 0):
+                    fail(f"point {len(points) + 1} is a point of {m['name']}, where the order of a collection puts series {series + 1} of {name}")
+                points.append((m["name"], series, len(points) // len(slots), pt))
+            held += len(data["dataPoints"])
+            if points[-1][1] != OTLP_INSTRUMENTS[m["name"]]["series"] - 1 and number != len(batches):
+                fail(f"{m['name']} in batch {number} closes before its last series")
+        sizes.append(held)
+    if settings["formatting"] == "record-per-line" and (any(n != len(slots) for n in sizes[:-1]) or sizes[-1] > len(slots)):
+        fail(f"the lines hold {sizes[:6]} points, and a line holds one collection of {len(slots)}")
+    return points
+
+
+def otlp_double(what, value, low=0.0, high=1e16):
+    if type(value) not in (int, float) or not low <= value < high:
+        fail(f"{what} is {value!r}, not a number from {low} up to {high}")
+    return value
+
+
+def otlp_count(what, value):
+    if not isinstance(value, str) or not value.isdigit() or (len(value) > 1 and value[0] == "0"):
+        fail(f"{what} is {value!r}, not a count written as text of digits")
+    return int(value)
+
+
+def otlp_metrics(batches, settings, start, step):
+    """Points dated by their collection, every series carrying the same
+    attributes in every collection, and values that add up: a cumulative count
+    never falls, the buckets of a histogram hold its count, a delta holds what
+    one interval measured, and an exemplar sits in a bucket its collection
+    counted."""
+    points = otlp_metric_points(batches, settings)
+    seen, before = {}, {}
+    for number, (name, series, collection, pt) in enumerate(points, start=1):
+        inst, what = OTLP_INSTRUMENTS[name], f"point {number} ({name})"
+        cumulative = settings["temporality"] == "cumulative" or inst.get("updown") or inst["member"] in ("gauge", "summary")
+        at = start + (otlp_tick(collection, settings) + 1) * step
+        if otlp_time(f"the time of {what}", pt.get("timeUnixNano")) != at:
+            fail(f"{what} is dated {pt.get('timeUnixNano')}, and collection {collection + 1} at interval={settings['interval']} is at {at}")
+        begun = otlp_time(f"the start of {what}", pt.get("startTimeUnixNano"))
+        if begun != (start if cumulative else at - step):
+            fail(f"{what} starts at {begun}, and a {'cumulative' if cumulative else 'delta'} point starts at {start if cumulative else at - step}")
+        attrs = otlp_attributes(what, pt, number == len(points)) if "attributes" in pt else {}
+        if "attributes" not in pt and number == len(points):
+            fail(f"{what} is the last point of the file and carries no {OTLP_PADDING} attribute")
+        if list(attrs) not in [list(k) for k in inst["keys"]]:
+            fail(f"{what} carries the attributes {list(attrs)}, not those of {name}")
+        key = (name, series)
+        if seen.setdefault(key, attrs) != attrs:
+            fail(f"{what} carries other attributes than series {series + 1} of {name} carried before")
+        rest = [k for k in pt if k not in ("attributes", "startTimeUnixNano", "timeUnixNano")]
+        value = inst["value"]
+        if value in ("double", "int"):
+            if rest != (["asDouble"] if value == "double" else ["asInt"]):
+                fail(f"{what} carries {rest}, not one {'asDouble' if value == 'double' else 'asInt'}")
+            if name == "jvm.cpu.recent_utilization" and settings["non_finite"] == "true" and collection % 4 in (1, 3):
+                want = "NaN" if collection % 4 == 1 else ("Infinity" if collection // 4 % 2 == 0 else "-Infinity")
+                if pt["asDouble"] != want:
+                    fail(f"{what} reports {pt['asDouble']!r} in collection {collection + 1}, where non_finite=true reports {want!r}")
+                continue
+            n = otlp_double(what, pt["asDouble"], 0.0001) if value == "double" else otlp_count(what, pt["asInt"])
+            if name == "jvm.cpu.recent_utilization" and not n < 1:
+                fail(f"{what} says the process used {n} of one processor")
+            if inst.get("monotonic") and cumulative and n < before.get(key, 0):
+                fail(f"{what} is {n}, below the {before[key]} the counter had reached")
+            before[key] = n
+            continue
+        count = otlp_count(f"the count of {what}", pt.get("count"))
+        total = otlp_double(f"the sum of {what}", pt.get("sum"), 0.0001)
+        if count < 1 or (not cumulative and count > OTLP_MOST_MEASUREMENTS):
+            fail(f"{what} counts {count} measurements, and a {'cumulative' if cumulative else 'delta'} point here counts 1 to {OTLP_MOST_MEASUREMENTS if not cumulative else 'any'}")
+        if cumulative and count < before.get(key, (0,))[0]:
+            fail(f"{what} counts {count}, fewer than the {before[key][0]} the series had counted")
+        if value == "summary":
+            if rest != ["count", "sum", "quantileValues"]:
+                fail(f"{what} carries {rest}, not the count, the sum and the quantiles")
+            qs = pt["quantileValues"]
+            if [q.get("quantile") for q in qs] != OTLP_QUANTILES or any(list(q) != ["quantile", "value"] for q in qs):
+                fail(f"{what} reports the quantiles {[q.get('quantile') for q in qs]}, not {OTLP_QUANTILES}")
+            vals = [otlp_double(f"a quantile of {what}", q["value"], 0.001, 2.000001) for q in qs]
+            if vals != sorted(vals):
+                fail(f"{what} has quantile values {vals} that fall")
+            before[key] = (count,)
+            continue
+        least = otlp_double(f"the least of {what}", pt.get("min"), 0.001, 2.000001)
+        most = otlp_double(f"the most of {what}", pt.get("max"), least, 2.000001)
+        if not count * least - 1e-6 <= total <= count * most + 1e-6:
+            fail(f"{what} sums {total} over {count} measurements from {least} to {most}")
+        if value == "histogram":
+            want = ["count", "sum", "bucketCounts", "explicitBounds"] + (["exemplars"] if "exemplars" in pt else []) + ["min", "max"]
+            if rest != want or pt["explicitBounds"] != OTLP_REQUEST_BOUNDS:
+                fail(f"{what} carries {rest}, not {want} with the bounds the HTTP conventions name")
+            buckets = [otlp_count(f"a bucket of {what}", c) for c in pt["bucketCounts"]]
+            if len(buckets) != len(OTLP_REQUEST_BOUNDS) + 1:
+                fail(f"{what} has {len(buckets)} buckets for {len(OTLP_REQUEST_BOUNDS)} bounds")
+            otlp_exemplars(what, pt, settings, buckets, at, step, cumulative, before.get(key))
+        else:
+            want = ["count", "sum", "scale", "positive", "negative", "min", "max"]
+            if rest != want or type(pt["scale"]) is not int or pt["scale"] != 3 or pt["negative"] != {}:
+                fail(f"{what} carries {rest} at scale {pt.get('scale')!r}, not {want} at scale 3 with nothing below nought")
+            positive = pt["positive"]
+            offset = positive.get("offset", 0)
+            if list(positive) not in (["offset", "bucketCounts"], ["bucketCounts"]) or type(offset) is not int or offset == 0 and "offset" in positive:
+                fail(f"{what} has the positive buckets {list(positive)}, not an offset left out at nought and the counts")
+            buckets = [otlp_count(f"a bucket of {what}", c) for c in positive["bucketCounts"]]
+            if not buckets or buckets[0] == 0 or buckets[-1] == 0 or offset < -80 or offset + len(buckets) > 8:
+                fail(f"{what} writes buckets {offset} to {offset + len(buckets) - 1}, which do not start and end with a count inside -80 to 7")
+            if not 2 ** ((offset) / 8) < least * (1 + 1e-9) or not most <= 2 ** ((offset + len(buckets)) / 8) * (1 + 1e-9):
+                fail(f"{what} measured from {least} to {most}, outside the buckets it writes")
+        if sum(buckets) != count:
+            fail(f"the buckets of {what} hold {sum(buckets)} measurements and its count says {count}")
+        if cumulative and value == "histogram" and key in before and any(a < b for a, b in zip(buckets, before[key][1])):
+            fail(f"a bucket of {what} holds fewer measurements than it held a collection before")
+        before[key] = (count, buckets)
+    return f"{len(points)} points in {points[-1][2] + 1} collections"
+
+
+def otlp_exemplars(what, pt, settings, buckets, at, step, cumulative, earlier):
+    """When exemplars is on, one exemplar for every bucket the collection
+    measured in and none for any other, each dated inside its interval, in the
+    order of the buckets."""
+    measured = buckets if not cumulative or earlier is None else [a - b for a, b in zip(buckets, earlier[1])]
+    if "exemplars" not in pt:
+        if settings["exemplars"]:
+            fail(f"{what} names no measurement, and exemplars=true asks it to")
+        return
+    if not settings["exemplars"]:
+        fail(f"{what} names measurements, and exemplars=false asks for none")
+    hit = [i for i, n in enumerate(measured) if n]
+    found = []
+    for ex in pt["exemplars"]:
+        if list(ex) != ["timeUnixNano", "asDouble", "traceId", "spanId"]:
+            fail(f"an exemplar of {what} has the members {list(ex)}, not the time, the value, the trace and the span")
+        when = otlp_time(f"the time of an exemplar of {what}", ex["timeUnixNano"])
+        if not at - step < when <= at:
+            fail(f"an exemplar of {what} is dated {when}, outside the interval its collection covers")
+        otlp_id(f"the trace of an exemplar of {what}", ex["traceId"], 32)
+        otlp_id(f"the span of an exemplar of {what}", ex["spanId"], 16)
+        v = otlp_double(f"the value of an exemplar of {what}", ex["asDouble"], 0.001, 2.000001)
+        found.append(next((i for i, b in enumerate(OTLP_REQUEST_BOUNDS) if v <= b), len(OTLP_REQUEST_BOUNDS)))
+    if found != hit:
+        fail(f"{what} names measurements in the buckets {found}, and its collection measured in {hit}")
 
 
 def check_otlp(data, settings=None):
@@ -4439,12 +4760,15 @@ def check_otlp(data, settings=None):
         "status_mix": given.get("status_mix", "realistic"),
         "level_mix": given.get("level_mix", "realistic"),
         "trace_context": given.get("trace_context", "true") == "true",
+        "metric_kind": given.get("metric_kind", "mixed"),
+        "temporality": given.get("temporality", "cumulative"),
+        "exemplars": given.get("exemplars", "false") == "true",
     }
     # The numbers are read against the ranges the format declares, so a word
     # or a nought handed to this check is a refusal that names the setting
     # rather than a traceback a guard would read as the checker falling over
     # (review of #230).
-    for name, default, most in (("batch", "512", 1000), ("rate", "1", 1000000), ("depth", "3", 100)):
+    for name, default, most in (("batch", "512", 1000), ("rate", "1", 1000000), ("depth", "3", 100), ("interval", "60", 86400)):
         told = given.get(name, default)
         if not told.isdigit() or not 1 <= int(told) <= most:
             fail(f"the otlp check was told {name}={told!r}, and {name} is a whole number from 1 to {most}")
@@ -4453,8 +4777,17 @@ def check_otlp(data, settings=None):
         fail(f"the otlp check was told signal={settings['signal']!r}, which is not a kind of telemetry this tool writes")
     if settings["status_mix"] not in OTLP_STATUSES or settings["level_mix"] not in OTLP_LEVEL_MIXES:
         fail(f"the otlp check was told status_mix={settings['status_mix']!r} and level_mix={settings['level_mix']!r}, and one of them is not a mix this tool draws from")
-    if data.startswith(b"\xef\xbb\xbf"):
-        fail("the file starts with a byte order mark")
+    if settings["metric_kind"] not in OTLP_METRIC_KINDS or settings["temporality"] not in ("cumulative", "delta"):
+        fail(f"the otlp check was told metric_kind={settings['metric_kind']!r} and temporality={settings['temporality']!r}, and one of them is not one this tool writes")
+    for name, spellings in OTLP_PITFALLS.items():
+        settings[name] = given.get(name, spellings[0])
+        if settings[name] not in spellings:
+            fail(f"the otlp check was told {name}={settings[name]!r}, and {name} is one of {', '.join(spellings)}")
+    bom = data.startswith(b"\xef\xbb\xbf")
+    if bom != (settings["bom"] == "true"):
+        fail(f"the file {'starts' if bom else 'does not start'} with a byte order mark, and bom={settings['bom']}")
+    if bom:
+        data = data[3:]
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError as exc:
@@ -4463,18 +4796,25 @@ def check_otlp(data, settings=None):
         start = calendar.timegm(time.strptime(settings["start"], "%Y-%m-%dT%H:%M:%SZ")) * 10**9
     except ValueError:
         fail(f"the otlp check was told start={settings['start']!r}, which is not a moment written as 2026-08-01T12:00:00Z")
-    batches = otlp_batches(text, settings)
-    step = 10**9 // settings["rate"]
+    if settings["empty_envelope"] == "true":
+        top = OTLP_NAMES[settings["signal"]][0]
+        empty = '{"%s":[]}\n' % (otlp_snake(top) if settings["key_case"] == "snake" else top)
+        if settings["formatting"] != "record-per-line" or not text.startswith(empty):
+            fail(f"empty_envelope=true and the file does not open with the line {empty.strip()}")
+        text = text[len(empty):]
+    batches = otlp_canonical(otlp_batches(text, settings), settings)
+    step = 10**9 // settings["rate"] if settings["signal"] != "metrics" else settings["interval"] * 10**9
     # The checks name the shapes this tool could get wrong. A shape nobody
     # thought of still has to come out as a refusal with a reason rather than
     # a Python traceback, because a crash also turns a guard red and proves
     # nothing (the lesson of check_geojson, review of #171).
     try:
-        records = otlp_records(batches, settings)
-        if settings["signal"] == "traces":
-            held = otlp_spans(records, settings, start, step)
+        if settings["signal"] == "metrics":
+            held = otlp_metrics(batches, settings, start, step)
+        elif settings["signal"] == "traces":
+            held = otlp_spans(otlp_records(batches, settings), settings, start, step)
         else:
-            held = otlp_log_records(records, settings, start, step)
+            held = otlp_log_records(otlp_records(batches, settings), settings, start, step)
     except (TypeError, KeyError, IndexError, AttributeError, ValueError) as exc:
         fail(f"a record is not shaped the way this tool writes one: {type(exc).__name__}: {exc}")
     ok(f"{held}, {len(batches)} batches, laid out {settings['formatting']}")

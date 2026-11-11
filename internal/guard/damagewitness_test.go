@@ -94,7 +94,11 @@ var policyRefusals = map[[2]string][]string{
 	// next, measured 2026-11-11 (docs/OTLP-2026-11-10.md section 12.3). The
 	// checker names the line the damage is on.
 	{damage.ZeroHead, "log"}:    {"line 1 is not a whole entry in any shape this tool writes", "the file does not end with a newline"},
-	{damage.ZeroHead, "otlp"}:   {"line 1 is not JSON", "the file does not end with a newline"},
+	// The head the damage zeroes also held the byte order mark or the empty
+	// envelope the pitfalls put first, and the checker names that before it
+	// reaches line 1.
+	{damage.ZeroHead, "otlp"}: {"line 1 is not JSON", "the file does not end with a newline",
+		"does not start with a byte order mark", "does not open with the line"},
 	{damage.Truncate, "otlp"}:   {"the file does not end with a newline"},
 	{damage.AppendJunk, "otlp"}: {"not valid UTF-8"},
 	{damage.AppendJunk, "ico"}:  {},

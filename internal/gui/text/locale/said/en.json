@@ -2466,10 +2466,25 @@
     "hash": "sha256-8bd4f63f9cb2",
     "other": "a file holds whole records, and the longest one these settings can write needs that much"
   },
+  "otlp.AFileThisLargeAddsUpMore": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Metric}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-f2957a096ca2",
+    "other": "a file of this size would add up more time in one series of {{.Metric}} than can be written to the microsecond. Choose a smaller file, or temporality delta where the kind has it"
+  },
+  "otlp.AFileThisLargeCollectsAfter": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Interval}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-a57bf3d8c73f",
+    "other": "a file of this size collected every {{.Interval}} s would date its last collections after the year 2262. Choose an earlier start, a longer interval or a smaller file"
+  },
   "otlp.AFileThisLargeEndsAfter": {
     "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Rate}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-511e89a36bd2",
     "other": "a file of this size at a rate of {{.Rate}} would date its last records after the year 2262. Choose an earlier start, a higher rate or a smaller file"
+  },
+  "otlp.ALineOfMetricsIsOneCollection": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Signal}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-3a22a0f2e186",
+    "other": "a line of {{.Signal}} holds one collection, so there is no batch to choose"
   },
   "otlp.ChooseAStartInThoseYears": {
     "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run.",
@@ -2491,6 +2506,11 @@
     "hash": "sha256-bcb9bc6dcb7b",
     "other": "it shapes log records, and signal {{.Signal}} writes none"
   },
+  "otlp.ItShapesMetricsAndSignal": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Signal}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-2d43e342e97e",
+    "other": "it shapes metrics, and signal {{.Signal}} writes none"
+  },
   "otlp.ItShapesSpansAndSignal": {
     "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Signal}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-0d5289829281",
@@ -2501,10 +2521,50 @@
     "hash": "sha256-3cebaa0f99ae",
     "other": "it takes a moment in UTC written as 2026-08-01T12:00:00Z"
   },
+  "otlp.MetricsComeEveryInterval": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Signal}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-d4b5e492f847",
+    "other": "it sets how often a trace or a log record begins, and {{.Signal}} collects once every interval"
+  },
   "otlp.OnlyOneLayoutHasBatches": {
     "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Lines}}, {{.Layout}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-b25305f5d3ab",
     "other": "only {{.Lines}} cuts the file into batches, and {{.Layout}} writes one request"
+  },
+  "otlp.OnlyOneLayoutHasLinesToAdd": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Lines}}, {{.Layout}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-13c1d68296f9",
+    "other": "only {{.Lines}} has a line to spare for an empty batch, and {{.Layout}} writes one request"
+  },
+  "otlp.OnlyRequestDurationsHaveExemplars": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Kind}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-3805f6437863",
+    "other": "only the durations of requests, a histogram, name the traces they were measured in, and {{.Kind}} writes none"
+  },
+  "otlp.OnlySumsAndHistogramsAddUp": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Kind}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-e975019ba3d5",
+    "other": "only a sum or a histogram adds up over time, and {{.Kind}} writes neither"
+  },
+  "otlp.OnlyTheUtilizationGoesNaN": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Kind}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-704c5a52cd74",
+    "other": "only jvm.cpu.recent_utilization, a gauge, reports a value that is not a number, and {{.Kind}} writes no gauge"
+  },
+  "otlp.TheseLogRecordsNameNoTrace": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Off}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-0220eeb2fa28",
+    "other": "it spells the ids of traces and spans, and {{.Off}} writes none"
+  },
+  "otlp.TheseMetricsHaveNoEnum": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Kind}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-1991963263ab",
+    "other": "the one enum of metrics is the temporality of a sum or a histogram, and {{.Kind}} writes neither"
+  },
+  "otlp.TheseMetricsNameNoTrace": {
+    "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.On}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-866b74c6b8df",
+    "other": "it spells the ids of traces and spans, and metrics name them only with {{.On}}"
   },
   "otlp.WriteTheMomentThatWay": {
     "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run.",

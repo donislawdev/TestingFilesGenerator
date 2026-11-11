@@ -27,15 +27,23 @@ because it turns other people's test suites red.
 
 ### Added
 
-- **A new format: `otlp`, OpenTelemetry traces and logs as OTLP JSON.**
-  `tfg generate --format otlp` writes spans or log records to an exact size,
-  one batch on each line as the OTLP file exporter writes them (`.jsonl`), or
-  one request for an OTLP endpoint (`.json`), chosen by `formatting`. Settings
-  choose `signal`, batch, start time, rate, trace depth, response codes and
-  severities. A file of lines comes back from the OpenTelemetry Collector byte
-  for byte, and no line passes 1 MiB, where the Collector's file receiver
-  silently drops it. `tfg formats --json` names each ending. Metrics are not
-  written yet.
+- **A new format: `otlp`, OpenTelemetry traces, logs and metrics as OTLP
+  JSON.** `tfg generate --format otlp` writes spans, log records or metrics to
+  an exact size, one batch on each line as the OTLP file exporter writes them
+  (`.jsonl`), or one request for an OTLP endpoint (`.json`), chosen by
+  `formatting`. Metrics are what a Java service reports every `interval`:
+  gauges, sums, histograms, exponential histograms and summaries, cumulative
+  or delta. A file comes back from the OpenTelemetry Collector byte for byte,
+  and no line passes 1 MiB, where the Collector's file receiver silently drops
+  it.
+
+- **`otlp` can write the mistakes OTLP readers disagree about.** Ten
+  settings, each off unless chosen: ids in capitals or base64, enums by
+  name, keys in snake case, 64-bit numbers without quotes, a byte order mark,
+  times out of order, spans ending before they start, an empty batch, every
+  kind of log body, and NaN in a metric. Each description says what the
+  OpenTelemetry Collector does with it, measured: ids in base64 and an empty
+  batch vanish without a word, and a byte order mark costs the first batch.
 
 - **A file can be sent under a name no disk stores.** `send-as` in a recipe,
   `--send-as` on the command line and Send as in the window take a name such
