@@ -145,6 +145,11 @@ var provenByProbe = map[string]string{
 	"TestADamagedFileStatesItsSizeOnDiskAndItsDamage": "its own canary - the label it was written against, naming the size before the damage and no damage, rejected by its check - and broken on 2026-11-12 " +
 		"twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times.",
 	"TestATruncatedTextSaysHowMuchWasCut": "broken on 2026-11-12 twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times.",
+	"TestALongDamageLabelLeavesEveryFormatWhole": "broken on 2026-11-12 by letting damage.Chain.Label return the whole chain past LabelLimit: red, " +
+		"its own reach check says forty damages no longer fit the limit (docs/REVIEW-234-2026-11-12.md).",
+	"TestADamageLabelIsBoundedAndSaysHowManyItLeftOut": "its own canary - no chain up to 200 damages shortened is a failure - and broken on 2026-11-12 by letting damage.Chain.Label return the whole chain: red.",
+	"TestADamagedMailCarriesItsLabelWholeInEveryTextEncoding": "broken on 2026-11-12 twice: eml writing the label raw in quoted-printable (red, the one damage label read back as bytesd), " +
+		"and eml leaving a long label on one line (red, a line of 92 characters).",
 	"TestEveryCharacterOfADamagedLabelCanBeDrawn": "its own canary - a character the font never had must not count as drawn - and broken on 2026-11-12 by taking = out of the picture font: red.",
 	// What breaks it lives in a module, not in a file of this repository, so
 	// no mutation of this tree reaches it - the dependency it was written

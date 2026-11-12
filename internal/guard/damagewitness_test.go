@@ -89,7 +89,12 @@ var policyRefusals = map[[2]string][]string{
 		"after its closing boundary", "is not a line of base64",
 		// A rule the junk breaks only when its random bytes hold a CR or an
 		// LF on its own - about four seeds in ten, so not every file.
-		"a carriage return or a line feed on its own"},
+		"a carriage return or a line feed on its own",
+		// In quoted-printable the junk lengthens the last line past the 76
+		// RFC 2045 allows. Python's email reads that text whole with no
+		// defect (measured 2026-11-12). It came first once the label's =
+		// was spelled =3D, which moved the text two bytes.
+		"a quoted-printable line is 79 characters or ends in white space"},
 	// UTF-16 in the next two: the junk breaks the encoding only when its
 	// random bytes form a lone surrogate, which is a matter of the seed.
 	{damage.AppendJunk, "txt"}: {"that are not printable ASCII", "does not decode as utf-16"},

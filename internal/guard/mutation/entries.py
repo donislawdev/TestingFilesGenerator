@@ -395,7 +395,7 @@ MUTATIONS = [
     (
         "the smallest Office file is worked out for one label state instead of both",
         "internal/format/xlsx/xlsx.go",
-        'for _, label := range []string{"", core.Label("xlsx", 0, 0)} {',
+        'for _, label := range []string{"", format.Request{}.LabelText("xlsx")} {',
         'for _, label := range []string{""} {',
         "TestSizeBelowTheMinimumIsRefused",
     ),
@@ -1175,8 +1175,8 @@ MUTATIONS = [
         # in, and the size stays exact because the filler absorbs it.
         "a toml document opens with a byte order mark, which no reader accepts",
         "internal/format/tomlfile/toml.go",
-        'line := "# " + core.Label("toml", r.Bytes, r.Seed) + "\\n"',
-        'line := "\\ufeff# " + core.Label("toml", r.Bytes, r.Seed) + "\\n"',
+        'line := "# " + r.LabelText("toml") + "\\n"',
+        'line := "\\ufeff# " + r.LabelText("toml") + "\\n"',
         "TestEveryFormatSurvivesItsReferenceTool",
     ),
     (
@@ -1255,7 +1255,7 @@ MUTATIONS = [
         # bytes. The guard pins txt with the label and without it, and only
         # the first of the two may notice this.
         "the self describing label is reworded",
-        "internal/core/label.go",
+        "internal/format/label.go",
         '"tfg - %s - %d B - seed %s"',
         '"tfg %s %d B seed %s"',
         "TestOurOwnGeneratorsHaveNotDrifted",
@@ -6274,8 +6274,8 @@ MUTATIONS = [
     (
         "the engine calls a generator directly again, so a crash while planning ends the process",
         "internal/engine/plantarget.go",
-        "planWithoutCrashing(ctx, desc, format.Request{",
-        "desc.Generator.Plan(format.Request{",
+        "p, err := planWithoutCrashing(ctx, desc, r)",
+        "p, err := desc.Generator.Plan(r)",
         "TestEveryCallIntoAGeneratorGoesThroughTheCrashWrapper",
     ),
     (
@@ -17321,8 +17321,8 @@ MUTATIONS = [
     (
         "a refusal of a damaged size names the size the generator needed",
         "internal/engine/damagedformat.go",
-        "\t\tleast := g.smallestReaching(first)",
-        "\t\tleast := first",
+        "\t\tleast = g.smallestReaching(first)",
+        "\t\tleast = first",
         "TestTheSmallestDamagedFileIsTakenAndOneByteLessIsNot",
     ),
     (

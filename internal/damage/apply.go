@@ -367,6 +367,17 @@ func (c Chain) String() string {
 	return fmt.Sprint(out)
 }
 
+// LabelLimit is the most bytes the damage takes up in a label.
+//
+// The label lands in fields with limits of their own, and the tightest one
+// measured is a gzip comment, which Go's reader refuses from 512 bytes
+// (compress/gzip, a 512 byte buffer). A chain has no length limit of its own,
+// so without this a long one would break a format before any damage was
+// applied - an archive Go cannot open, a ZIP comment past its padding. Bounded
+// here, once, so a format has one length to be ready for rather than every
+// length a recipe can write (TestALongDamageLabelLeavesEveryFormatWhole).
+const LabelLimit = 160
+
 // Label is the chain as the label of a damaged file states it: every entry in
 // order, its settings resolved the way the manifest records them, joined by
 // " then " - "truncate:missing=50 then append-junk:bytes=1024". Empty for an
@@ -378,6 +389,10 @@ func (c Chain) String() string {
 // the label goes into encodings where nothing else is sure to survive
 // (format/label.go): a value with anything else in it, or with a space or one
 // of the separators, is written quoted with escapes.
+//
+// At most LabelLimit bytes. A chain longer than that names the entries that
+// fit and how many more there are - "... and 12 more" - and the manifest lists
+// every one. An entry too long to fit on its own is named by its damage alone.
 func (c Chain) Label() string {
 	out := make([]string, 0, len(c))
 	for _, s := range c {
@@ -387,7 +402,38 @@ func (c Chain) Label() string {
 		}
 		out = append(out, Spec{ID: s.ID, Values: values}.String())
 	}
-	return strings.Join(out, " then ")
+	if whole := strings.Join(out, " then "); len(whole) <= LabelLimit {
+		return whole
+	}
+	return shortened(c, out)
+}
+
+// shortened is the entries of a chain that fit in LabelLimit with room left
+// for saying how many did not.
+func shortened(c Chain, entries []string) string {
+	kept := ""
+	for i, entry := range entries {
+		if i == 0 && len(entry) > LabelLimit/2 {
+			entry = c[0].ID
+		}
+		next := entry
+		if kept != "" {
+			next = kept + " then " + entry
+		}
+		if len(next)+len(moreThan(len(entries)-i-1)) > LabelLimit {
+			return kept + moreThan(len(entries)-i)
+		}
+		kept = next
+	}
+	return kept
+}
+
+// moreThan is what a shortened label says about the entries it leaves out.
+func moreThan(n int) string {
+	if n == 0 {
+		return ""
+	}
+	return " and " + strconv.Itoa(n) + " more"
 }
 
 // plainOrQuoted is v as it is when every byte of it is printable ASCII other

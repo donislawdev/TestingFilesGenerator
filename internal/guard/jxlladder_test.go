@@ -104,8 +104,11 @@ func TestEveryJxlRungStillFitsInsideItsDeclaredCeiling(t *testing.T) {
 	}
 
 	// The label carries the byte count, so its length moves with the size
-	// asked for, and a longer label is more ink in the picture.
+	// asked for, and a longer label is more ink in the picture. A damaged
+	// file's label names its damage as well, up to damage.LabelLimit, which is
+	// the most ink a label can put down (found in review, 2026-11-12).
 	requested := []int64{int64(jxl.MinimumBytes), 1 << 14, 1 << 30}
+	damaged := longestDamageLabel(t)
 
 	seeds := uint64(8)
 	if raceEnabled {
@@ -119,10 +122,10 @@ func TestEveryJxlRungStillFitsInsideItsDeclaredCeiling(t *testing.T) {
 		var worstSeed uint64
 		for seed := uint64(0); seed < seeds; seed++ {
 			for _, want := range requested {
-				for _, withLabel := range []bool{true, false} {
+				for _, damage := range []string{"", damaged, "none"} {
 					label := ""
-					if withLabel {
-						label = format.Request{Bytes: want, Seed: seed}.LabelText("jxl")
+					if damage != "none" {
+						label = format.Request{Bytes: want, Seed: seed, Damage: damage}.LabelText("jxl")
 					}
 					n, err := jxl.FileSizeFor(w, h, jxl.DefaultQuality, seed, label)
 					if err != nil {

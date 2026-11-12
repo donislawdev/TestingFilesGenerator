@@ -3,6 +3,7 @@ package eml
 import (
 	"context"
 	"io"
+	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
@@ -177,7 +178,7 @@ func (m *message) textPart(o *out, contentType string, write func(*out), last bo
 func (m *message) plain(o *out) {
 	o.put(m.frame.plainOpen)
 	if m.label != "" {
-		o.put(m.label, o.eol)
+		o.put(m.labelText("", "", o.eol))
 	}
 	o.put(m.plainLine)
 	fill(o, m.text, m.seed)
@@ -195,11 +196,50 @@ func (m *message) html(o *out) {
 	}
 	o.put(m.frame.htmlOpen)
 	if m.label != "" {
-		o.put("<p>", m.label, "</p>", eol)
+		o.put(m.labelText("<p>", "</p>", eol))
 	}
 	o.put(m.htmlLine, m.images, "<p>", eol)
 	fill(o, m.text, m.seed)
 	o.put(eol, "</p>", eol, m.frame.htmlClose)
+}
+
+// labelText is the label as a part of the text writes it, between open and
+// close and with its line endings: one line, as it always was where it fits.
+//
+// A damaged file's label names its damage, so it holds an = and can be longer
+// than a line of the text. quoted-printable spells the = as =3D and breaks a
+// long line softly (frameLine), so the text still reads as one line - written
+// raw, append-junk:bytes=64 was read back as bytesd. The other encodings have
+// no soft break, so there the label is broken at its spaces into lines of at
+// most lineWidth, under the 78 characters RFC 5322 asks a line to keep to.
+func (m *message) labelText(open, close, eol string) string {
+	line := open + m.label + close
+	if m.s.encoding == QuotedPrintable {
+		return frameLine(m.s, line) + eol
+	}
+	return strings.Join(atSpaces(line, lineWidth), eol) + eol
+}
+
+// atSpaces breaks text at its spaces into lines of at most width, or as near
+// as a word longer than width allows. Text that fits is one line.
+func atSpaces(text string, width int) []string {
+	if len(text) <= width {
+		return []string{text}
+	}
+	var lines []string
+	line := ""
+	for _, word := range strings.Split(text, " ") {
+		switch {
+		case line == "":
+			line = word
+		case len(line)+1+len(word) > width:
+			lines = append(lines, line)
+			line = word
+		default:
+			line += " " + word
+		}
+	}
+	return append(lines, line)
 }
 
 // out is where a message goes - a file, or nowhere while it is being counted.

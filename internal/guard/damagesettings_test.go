@@ -43,8 +43,12 @@ func TestEveryDamageSettingItsDeclarationForbidsIsRefusedWithoutARecipe(t *testi
 		t.Fatal("the check took a plan that went through, or a refusal about the wrong entry, for the refusal it asks for")
 	}
 
+	all := damage.All()
+	if len(all) == 0 {
+		t.Fatal("the damage registry is empty, so this guard would pass without asking anything")
+	}
 	asked := 0
-	for _, d := range damage.All() {
+	for _, d := range all {
 		type stated struct{ name, value string }
 		cases := []stated{{"no-such-setting", "1"}}
 		for _, p := range d.Parameters {
@@ -71,8 +75,8 @@ func TestEveryDamageSettingItsDeclarationForbidsIsRefusedWithoutARecipe(t *testi
 			}
 		}
 	}
-	if asked < len(damage.All())*2 {
-		t.Fatalf("only %d value(s) were asked across %d damage(s) - the registry was not read", asked, len(damage.All()))
+	if asked < len(all)*2 {
+		t.Fatalf("only %d value(s) were asked across %d damage(s) - the registry was not read", asked, len(all))
 	}
 }
 
@@ -87,10 +91,12 @@ func valuesTheDeclarationForbids(p format.Property) []string {
 			out = append(out, strconv.FormatInt(p.Min-1, 10), strconv.FormatInt(p.Max+1, 10))
 		}
 		return out
+	case format.PropertyChoice, format.PropertyBool, format.PropertySize, format.PropertyDuration:
+		return []string{"no-such-value"}
 	case format.PropertyText:
 		return nil
 	}
-	return []string{"no-such-value"}
+	return nil
 }
 
 // planSecondInAChain plans a txt file damaged by zero-head and then spec.
