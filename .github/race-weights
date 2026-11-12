@@ -12,6 +12,12 @@
 #
 # A test that is not here and takes 60 s or more fails its part with the line
 # to add. A test that is here and no longer exists fails every part.
+#
+# Two lines are estimates of 2026-11-12, until a CI run times them: the time
+# under the race detector on the machine the change was made on, times 2.55 -
+# the map guard as it stood before took 26.8 s there and 68.4 s in CI. The map
+# guard, grown by files laid out for a cut, took 33.7 s there, and the cut
+# share guard 16.2 s.
 unlisted 0.58
 348.3 TestAFormatRefusesASizeItCannotDescribe
 343.3 TestAFilmStoppedHalfWayLeavesNoHelperRunning
@@ -23,8 +29,8 @@ unlisted 0.58
 117.9 TestFreeBoxesCarryPaddingOfAnyLength
 99.9 TestEveryBase64TextSizeIsExact
 93.8 TestAFilmPictureLargerThanAnyAV1LevelIsRefusedNotBroken
+85.9 TestEveryFormatsMapIsTheOneItsStructureReadsBack
 73.6 TestEveryAvifRungStillFitsInsideItsDeclaredCeilings
-68.4 TestEveryFormatsMapIsTheOneItsStructureReadsBack
 67.9 TestADeclaredDefaultIsTheOneTheFormatUses
 65.6 TestADamagedFileIsExactlyTheSizeAskedFor
 64.3 TestNoTrackedFileCarriesPrivateContent
@@ -33,6 +39,7 @@ unlisted 0.58
 57.3 TestAFilmSaysItCarriesItsLabelOnlyWhenAPictureShowsItWhole
 55.3 TestAFilmOfANamedSizeKeepsEveryPictureInsideItsReserve
 53.4 TestTheArchiveScanLooksIntoTheArchivesInside
+41.2 TestACutTakesTheShareOfTheContentItIsAskedFor
 38.5 TestAContainerStopsBetweenTheFilesItPlans
 37.5 TestEveryPictureNamedAfterARefusalShowsOne
 36.7 TestTheArchiveScanReadsTheListArchiveZipReads

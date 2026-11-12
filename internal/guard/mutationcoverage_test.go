@@ -151,9 +151,12 @@ var provenByProbe = map[string]string{
 		"the heaviest seeds: the first ceiling of 640x480 set back to 16389 (red, 17314 B) and the second to 18722 (red, 20024 B). " +
 		"Without those seeds both stayed green (docs/REVIEW-234-2026-11-12.md).",
 	"TestEveryFormatsMapIsTheOneItsStructureReadsBack": "its own canaries - the first boundary moved by a byte must not pass, a mark for bytes already written must be " +
-		"reported, a sweep with no padding is a failure - and broken on 2026-11-12 by marking the png padding a byte late: red.",
+		"reported, a sweep with no padding or with no padding on both sides of a content is a failure - and broken on 2026-11-12 by marking the png " +
+		"padding a byte late: red, and by marking the picture of a png laid out for a cut a byte late: red at 8 KiB and at 64 KiB.",
 	"TestACutFileSaysWhereTheCutFellAndWhatIsLeft": "its own canary - a cut named in the wrong role, and content claimed gone that is there, must not pass - " +
 		"and broken on 2026-11-12 by reporting every cut in the content: red for the picture and the icon.",
+	"TestACutTakesTheShareOfTheContentItIsAskedFor": "its own canaries - a cut that kept all its content must not pass for one that took half, and txt listed as " +
+		"not cutting at the share must be reported - and broken on 2026-11-12 by never telling png where its cut falls: red in all six of its files.",
 	"TestTheRecordOfACutRunIsNeverLongerThanItsForecast": "its own reach check - a run with no cut in the padding is a failure - and broken on 2026-11-12 " +
 		"by leaving the cut out of the forecast: red, a record of 9638 B told 8130 B.",
 	"TestADamageLabelIsBoundedAndSaysHowManyItLeftOut": "its own canary - no chain up to 200 damages shortened is a failure - and broken on 2026-11-12 by letting damage.Chain.Label return the whole chain: red.",

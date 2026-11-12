@@ -100,9 +100,15 @@ func (g *damagedGenerator) PlanContext(ctx context.Context, r format.Request) (f
 // size bytes on disk, and answers the request it asked with.
 //
 // The label inside it states the file on disk, which is size - not the size
-// the generator writes, nor one stretch moves it to.
+// the generator writes, nor one stretch moves it to. Where a damage cuts the
+// tail, the request says where, so a format can lay its content out for the
+// cut. A size stretch moves up keeps the same cut, and so a smaller share of
+// the content, which is the "at least" missing promises.
 func (g *damagedGenerator) whole(ctx context.Context, r format.Request, want, size int64) (format.Plan, format.Request, error) {
 	r.Bytes, r.OnDisk = want, size
+	if _, kept, ok := g.chain.Cut(size); ok {
+		r.CutAt = kept
+	}
 	p, err := g.plan(ctx, r)
 	if err != nil && g.chain.Stretches() {
 		p, err = g.stretch(ctx, r, err)
