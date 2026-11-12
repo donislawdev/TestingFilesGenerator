@@ -317,9 +317,9 @@ func TestTheRowTheKeyboardIsOnIsAlwaysInSight(t *testing.T) {
 // leaving widget.List, and red on widget.List as well. A box holding no value
 // is real: a chooser starts that way (the catalogue has one of the formats).
 func TestEmptyingTheFilterOfAListWithNothingChosenDrawsEveryRowAgain(t *testing.T) {
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	t.Cleanup(func() { test.NewApp() })
+	t.Cleanup(func() { newTestApp() })
 
 	list := parts.NewOpenList(format.IDs(), "", func(string, bool) {}, func(bool) {})
 	list.KindOf = parts.KindOfFile

@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/theme"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
@@ -20,8 +19,8 @@ func TestTheWindowIsSetInInter(t *testing.T) {
 	const sentence = "Files of one format and one size, as many as you need."
 	size := parts.Theme().Size(theme.SizeNameText)
 
-	app := test.NewApp()
-	defer test.NewApp()
+	app := newTestApp()
+	defer newTestApp()
 	app.Settings().SetTheme(theme.DefaultTheme())
 	toolkit := fyne.MeasureText(sentence, size, fyne.TextStyle{})
 	toolkitBold := fyne.MeasureText(sentence, size, fyne.TextStyle{Bold: true})

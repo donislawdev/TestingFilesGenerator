@@ -132,6 +132,10 @@ type memo struct {
 	// exactly on the requested size.
 	padData int64
 	withPad bool
+	// cutAt is where a damage will cut the file, zero when nothing does
+	// (format.Request.CutAt). writeForACut splits the padding around the
+	// picture for it.
+	cutAt int64
 }
 
 // checkJointLimits asks the registry's own declaration about a pair of
@@ -170,6 +174,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	if err != nil {
 		return format.Plan{}, err
 	}
+	m.cutAt = r.CutAt
 	w, h := m.width, m.height
 	body := m.body
 
@@ -278,6 +283,9 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
+	}
+	if m.withPad && m.cutAt > 0 && m.cutAt < p.Bytes {
+		return writeForACut(ctx, w, m, p.Bytes)
 	}
 
 	// The map, before the bytes wherever planning measured the picture. The

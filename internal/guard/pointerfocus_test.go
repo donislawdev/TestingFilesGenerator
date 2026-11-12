@@ -113,9 +113,9 @@ func TestAPressMovesTheKeyboardWithoutDrawingItsMark(t *testing.T) {
 // aimed at one segment needs a position, and the segment widths are the
 // control's own to know.
 func TestAPressOnASegmentedSwitchPutsTheKeyboardOnItQuietly(t *testing.T) {
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	t.Cleanup(func() { test.NewApp() })
+	t.Cleanup(func() { newTestApp() })
 
 	s := parts.NewSegments([]string{"one", "two", "three"}, nil)
 	w := test.NewWindow(s)
@@ -268,9 +268,9 @@ func screenOnACanvasOfHeight(t *testing.T, height float32) (fyne.Canvas, fyne.Ca
 	// opens with. Without them the sizes are the test driver's rather than the
 	// window's, and a press aimed with one set of numbers at a screen laid out
 	// with the other lands beside the control.
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	t.Cleanup(func() { test.NewApp() })
+	t.Cleanup(func() { newTestApp() })
 
 	host := newFakeHost(t)
 	window.Open(host)

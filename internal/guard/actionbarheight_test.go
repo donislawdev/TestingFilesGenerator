@@ -258,9 +258,9 @@ func screenInAWindow(t *testing.T, tab string) (fyne.CanvasObject, fyne.Window) 
 func screenInAWindowWithHost(t *testing.T, tab string) (fyne.CanvasObject, fyne.Window, *fakeHost) {
 	t.Helper()
 
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	t.Cleanup(func() { test.NewApp() })
+	t.Cleanup(func() { newTestApp() })
 
 	host := newFakeHost(t)
 	window.Open(host)

@@ -149,8 +149,9 @@ func RequestKey(id string, r Request) (string, bool) {
 	var b strings.Builder
 	fmt.Fprintf(&b, "%q %d %t %t %d", id, r.Bytes, r.SizeFromContents, r.Label, r.Seed)
 	// The damage and the size on disk are words of the label, so they change
-	// its length and with it the smallest file that carries it.
-	fmt.Fprintf(&b, " %d %q", r.OnDisk, r.Damage)
+	// its length and with it the smallest file that carries it. Where the cut
+	// falls changes how a format lays the file out.
+	fmt.Fprintf(&b, " %d %q %d", r.OnDisk, r.Damage, r.CutAt)
 	for _, name := range names {
 		fmt.Fprintf(&b, " %q=%q", name, r.Properties[name])
 	}

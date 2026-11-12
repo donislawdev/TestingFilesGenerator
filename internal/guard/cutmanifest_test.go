@@ -3,6 +3,7 @@ package guard
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -19,7 +20,8 @@ type cutCase struct {
 	missing string
 	// in is the role of the first byte cut away.
 	in string
-	// kept says how much of the content is left: "all", "none" or "some".
+	// kept says how much of the content is left: "all", "none", "some" (a
+	// text, all of it on disk) or "share" (the share missing leaves).
 	kept string
 	// note is the word that tells the two notes of a cut in the padding
 	// apart, empty when the cut gets none.
@@ -32,18 +34,20 @@ type cutCase struct {
 // A file cut short says in its manifest where the cut fell and how much of
 // the content is left, and gets a note when the cut missed the content.
 //
-// The three shapes a cut takes (docs/TRUNCATE-2026-11-11.md section 2). A PNG
-// of 1 MiB is nearly all padding after its picture, so 90% missing still
-// leaves the whole picture. An icon keeps its padding BEFORE its picture, so a
-// cut there takes all of it. A text is its words, so the cut falls in them.
-// Two cuts in a row end the file where the second one does, and the cut is
-// said of that one. A damage that cuts nothing has no cut to report.
+// The shapes a cut takes (docs/TRUNCATE-2026-11-11.md sections 2 and 7). A
+// GIF of 1 MiB is nearly all padding after its picture, so 90% missing still
+// leaves the whole picture. A PNG splits its padding around the picture for a
+// cut, so the cut takes the share asked for. An icon keeps its padding BEFORE
+// its picture, so a cut there takes all of it. A text is its words, so the cut
+// falls in them. Two cuts in a row end the file where the second one does, and
+// the cut is said of that one. A damage that cuts nothing has no cut to report.
 //
 // Canary: the check below must refuse a cut that names the wrong role, and
 // one that claims content it does not have.
 func TestACutFileSaysWhereTheCutFellAndWhatIsLeft(t *testing.T) {
 	cases := []cutCase{
-		{name: "picture", format: "png", size: 1 << 20, missing: "90", in: "padding", kept: "all", note: "after the content"},
+		{name: "behind", format: "gif", size: 1 << 20, missing: "90", in: "padding", kept: "all", note: "after the content"},
+		{name: "picture", format: "png", size: 1 << 20, missing: "90", in: "content", kept: "share"},
 		// At half: the picture of 256x256 takes about 260 KB at the end of the
 		// file, and a tenth of a megabyte cut away falls inside it.
 		{name: "icon", format: "ico", size: 1 << 20, missing: "50", in: "padding", kept: "none", note: "before the content"},
@@ -88,17 +92,17 @@ func TestACutFileSaysWhereTheCutFellAndWhatIsLeft(t *testing.T) {
 		}
 	}
 
-	// Canary: the picture's entry, told the cut fell in its content, and the
+	// Canary: the GIF's entry, told the cut fell in its content, and the
 	// text's, told none of its content is left.
-	picture := byTarget["picture"]
-	if len(picture.Damage) == 1 && picture.Damage[0].Cut != nil {
+	behind := byTarget["behind"]
+	if len(behind.Damage) == 1 && behind.Damage[0].Cut != nil {
 		wrong := cases[0]
 		wrong.in = "content"
-		if len(cutProblems(wrong, picture)) == 0 {
+		if len(cutProblems(wrong, behind)) == 0 {
 			t.Errorf("canary: a cut in the padding passed for a cut in the content")
 		}
 	}
-	text := cases[2]
+	text := cases[3]
 	text.kept = "none"
 	if len(cutProblems(text, byTarget["text"])) == 0 {
 		t.Errorf("canary: a text that kept half its words passed for one that kept none")
@@ -134,6 +138,11 @@ func cutProblems(c cutCase, f manifest.File) []string {
 		out = append(out, fmt.Sprintf("%d B of content kept, not none", kept))
 	case c.kept == "some" && (kept != f.Bytes || whole <= kept):
 		out = append(out, fmt.Sprintf("%d B of %d B of content kept, where a %d B file of nothing but content keeps all of it and loses the rest", kept, whole, f.Bytes))
+	case c.kept == "share":
+		missing, _ := strconv.ParseInt(c.missing, 10, 64)
+		if problem := shareProblem(missing, f); problem != "" {
+			out = append(out, problem)
+		}
 	}
 	var said []string
 	for _, n := range f.Notes {

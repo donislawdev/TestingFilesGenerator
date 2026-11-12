@@ -193,17 +193,19 @@ func checkLength(t *testing.T, tg engine.Target, m manifest.File, path string, w
 // TestATruncatedFileIsTheStartOfTheWholeOne holds D11 for truncate, and the
 // early stop with it.
 //
-// A truncated file is the first bytes of the whole file the same recipe would
-// write at the size the cut starts from - byte for byte, in every format. That
-// is what makes the damage reproducible from its recipe, and it is also what
-// proves stopping the generator early changes nothing: a generator writes from
-// the front, so the bytes before the stop are the bytes it would have written
-// anyway. A generator that wrote differently once stopped would turn this red.
+// A truncated file is the first bytes of the whole file its plan writes, byte
+// for byte, in every format, and that whole is as long as the cut asks for.
+// That is what proves stopping the generator early changes nothing: a
+// generator writes from the front, so the bytes before the stop are the bytes
+// it would have written anyway. A generator that wrote differently once
+// stopped would turn this red.
 //
-// The whole file comes from a second run with the same seed and target id, so
-// both files are drawn from the same seed. A size the cut would have to move
-// up to - a band the format cannot write - is skipped, and the guard asserts
-// that most formats were compared.
+// The whole of its OWN plan, not the file the recipe writes without the
+// damage: a format may lay a file out for the cut it is told of, padding in
+// front of its content as well as behind it (format.Request.CutAt,
+// docs/TRUNCATE-2026-11-11.md section 7.2). The file nothing damages is held
+// to its bytes by the golden guards. The cut is written by a run and the whole
+// by a second plan of the same target, so the two also have to plan alike.
 func TestATruncatedFileIsTheStartOfTheWholeOne(t *testing.T) {
 	dir := t.TempDir()
 	chain := damage.Chain{{ID: damage.Truncate}}
@@ -212,37 +214,71 @@ func TestATruncatedFileIsTheStartOfTheWholeOne(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	compared := 0
 	for _, f := range format.All() {
-		// Without the label, because a cut file's label states the size it
-		// keeps and the damage, and the whole file's states neither - the
-		// two differ on purpose (TestADamagedFileStatesItsSizeOnDiskAndItsDamage),
-		// and what this guard holds is every byte under them.
+		// Without the label, so the bytes under it are compared rather than a
+		// line every damaged file words differently.
 		cut := engine.Target{ID: "same", Format: f.ID, Sizes: engine.Uniform(1, size), Damage: chain}
-		full := engine.Target{ID: "same", Format: f.ID, Sizes: engine.Uniform(1, whole)}
-		if _, err := engine.Plan([]engine.Target{full}, engine.Options{OutDir: t.TempDir(), Seed: lengthSeed}); err != nil {
-			// A size this format cannot write exactly: the cut started from
-			// the next one it can, which is a different whole file.
-			continue
-		}
-		_, cutPath := lengthRun(t, filepath.Join(dir, f.ID, "cut"), []engine.Target{cut})
-		_, fullPath := lengthRun(t, filepath.Join(dir, f.ID, "whole"), []engine.Target{full})
+		_, cutPath := lengthRun(t, filepath.Join(dir, f.ID), []engine.Target{cut})
 		got, err := os.ReadFile(cutPath["same"])
 		if err != nil {
 			t.Fatal(err)
 		}
-		all, err := os.ReadFile(fullPath["same"])
-		if err != nil {
-			t.Fatal(err)
+		if problem := startOfTheWhole(got, wholeOfItsPlan(t, cut), size, whole); problem != "" {
+			t.Errorf("%s: %s", f.ID, problem)
 		}
-		if int64(len(all)) != whole || !bytes.Equal(got, all[:size]) {
-			t.Errorf("%s: the truncated file is not the first %d B of the %d B file the same recipe writes", f.ID, size, whole)
+	}
+
+	// The check on files it has to refuse, and on the one it has to take. A
+	// cut that left nothing is a prefix of any file.
+	sample := []byte("whole whole whole whole ")
+	for _, c := range []struct {
+		name  string
+		got   []byte
+		whole int64
+	}{
+		{"a cut that left nothing", nil, 24},
+		{"a byte changed under the cut", []byte("whole whxle "), 24},
+		{"a whole shorter than the cut asks for", sample[:12], 25},
+	} {
+		if startOfTheWhole(c.got, sample, 12, c.whole) == "" {
+			t.Errorf("canary: %s passed as the start of the whole file", c.name)
 		}
-		compared++
 	}
-	if compared < len(format.All())*3/4 {
-		t.Errorf("only %d of %d formats were compared, so this guard says little", compared, len(format.All()))
+	if problem := startOfTheWhole(sample[:12], sample, 12, 24); problem != "" {
+		t.Errorf("canary: the start of the whole file was refused: %s", problem)
 	}
+}
+
+// startOfTheWhole is what is wrong with got as a file cut to its first size
+// bytes from all, a whole the cut asks to be at least whole bytes long, or ""
+// when nothing is.
+func startOfTheWhole(got, all []byte, size, whole int64) string {
+	switch {
+	case int64(len(got)) != size:
+		return fmt.Sprintf("the truncated file is %d B where the cut keeps %d B", len(got), size)
+	case !bytes.HasPrefix(all, got):
+		return fmt.Sprintf("the truncated file is not the first %d B of the %d B file its plan writes", size, len(all))
+	case int64(len(all)) < whole:
+		// A format that cannot write the whole the cut asks for starts from
+		// the next size it can, so the whole is never shorter.
+		return fmt.Sprintf("its plan writes %d B where the cut asks for at least %d B", len(all), whole)
+	}
+	return ""
+}
+
+// wholeOfItsPlan is the whole file a damaged target's plan writes, with no
+// damage on it - what the engine hands the chain before the chain cuts it.
+func wholeOfItsPlan(t *testing.T, tg engine.Target) []byte {
+	t.Helper()
+	planned, err := engine.Plan([]engine.Target{tg}, engine.Options{OutDir: t.TempDir(), Seed: lengthSeed})
+	if err != nil || len(planned) != 1 {
+		t.Fatalf("%s: planning: %v", tg.Format, err)
+	}
+	var all bytes.Buffer
+	if err := planned[0].Desc.Generator.Write(t.Context(), &all, planned[0].Plan); err != nil {
+		t.Fatalf("%s: writing the whole: %v", tg.Format, err)
+	}
+	return all.Bytes()
 }
 
 // TestAppendedJunkIsTheWholeFileAndThenTheSameBytesEveryTime holds D11 and

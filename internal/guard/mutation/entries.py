@@ -360,8 +360,8 @@ MUTATIONS = [
     (
         "an Office package goes back to writing its sizes after the data instead of in the header",
         "internal/format/opc/opc.go",
-        "entry, err := zw.CreateRaw(head)\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\t\tif withPadding {",
-        "entry, err := zw.CreateHeader(head)\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\t\tif withPadding {",
+        "entry, err := zw.CreateRaw(head)\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\t\tif err := zm.MarkEntry(",
+        "entry, err := zw.CreateHeader(head)\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\t\tif err := zm.MarkEntry(",
         "TestEveryFormatSurvivesItsReferenceTool",
     ),
     (
@@ -3048,8 +3048,8 @@ MUTATIONS = [
         # rests on, mutated.
         "the archive starts compressing, so its planned size stops being real",
         "internal/format/targz/size.go",
-        "gzip.NewWriterLevel(w, m.squeeze.Level)",
-        "gzip.NewWriterLevel(w, gzip.BestSpeed)",
+        "gzip.NewWriterLevel(sm, m.squeeze.Level)",
+        "gzip.NewWriterLevel(sm, gzip.BestSpeed)",
         "TestTarGzSizeArithmeticSurvivesEveryShape",
     ),
     (
@@ -7518,8 +7518,8 @@ MUTATIONS = [
     (
         "a JPEG XL rung declares a ceiling below what that rung actually codes to",
         "internal/format/jxl/jxl.go",
-        "	{80, 60, 1267}, {40, 30, 731}, {20, 15, 452}, {8, 6, 222},",
-        "	{80, 60, 100}, {40, 30, 731}, {20, 15, 452}, {8, 6, 222},",
+        "	{80, 60, 1267, 1267}, {40, 30, 731, 731}, {20, 15, 452, 452}, {8, 6, 222, 222},",
+        "	{80, 60, 100, 1267}, {40, 30, 731, 731}, {20, 15, 452, 452}, {8, 6, 222, 222},",
         "TestEveryJxlRungStillFitsInsideItsDeclaredCeiling",
     ),
     (
@@ -7609,8 +7609,8 @@ MUTATIONS = [
     (
         "asking for compression quietly stores everything and only grows the padding",
         "internal/format/targz/size.go",
-        "gzip.NewWriterLevel(w, m.squeeze.Level)",
-        "gzip.NewWriterLevel(w, m.squeeze.Level*0)",
+        "gzip.NewWriterLevel(sm, m.squeeze.Level)",
+        "gzip.NewWriterLevel(sm, m.squeeze.Level*0)",
         "TestAskingForCompressionActuallyCompresses",
     ),
     (

@@ -73,13 +73,19 @@ because it turns other people's test suites red.
   outcome is `unspecified`, offers both answers in the new `policy_options`
   field and says why. `tfg damage <id>` lists those formats.
 - **A file cut short says where the cut fell and how much of its content is
-  left.** In many formats a large file is mostly padding after its content,
-  so `--damage truncate:missing=90` on a 1 MB PNG still leaves the whole
-  picture. The `truncate` entry in the manifest's `damage` now carries `cut`:
-  `in` (`content`, `padding`, `structure` or `end`), `content_bytes` and
-  `content_kept_bytes`. A cut in the padding also gets the note
-  `cut_in_padding`. In a compressed tar.gz a cut in the padding is reported as
-  a cut in the content.
+  left.** In some formats a large file is mostly padding beside its content,
+  so a cut can take all of the content or none of it. The `truncate` entry in
+  the manifest's `damage` now carries `cut`: `in` (`content`, `padding`,
+  `structure` or `end`) and `content_kept_bytes`, and `content_bytes` where
+  the length of the content is known. A cut in the padding also gets the
+  note `cut_in_padding`. In a compressed tar.gz a cut in the padding is
+  reported as a cut in the content.
+- **`truncate` cuts a PNG's picture by the percentage you set.**
+  `--damage truncate:missing=90` on a 1 MB PNG used to cut only padding and
+  leave the whole picture. Now it removes 90% of the picture's content as
+  well, so a viewer that shows what is left shows only the top of the
+  picture, the way an interrupted upload leaves it. Files nothing cuts are
+  unchanged.
 
 - **tfg is on npm, for tests in Node.**
   `npm install --save-dev testing-files-generator` gives Playwright, Vitest

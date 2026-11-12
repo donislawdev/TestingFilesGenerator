@@ -680,6 +680,18 @@ type Request struct {
 	// asks the generator for more than it keeps. Zero means Bytes is the size
 	// on disk. Read for the label alone, like Damage.
 	OnDisk int64
+	// CutAt is where a damage will cut the file this request writes, as the
+	// number of its first bytes that stay, or zero when nothing cuts it.
+	//
+	// A format whose padding can stand on both sides of its content splits
+	// the padding so that the cut keeps the same share of the content as of
+	// the whole file, CutAt of Bytes. Otherwise a large file is mostly padding
+	// after its content, and a cut of any share leaves the content whole.
+	// Bytes is still the whole file and the plan still writes all of it, so
+	// the bytes after the cut are the ones the generator never gets to. A
+	// format that leaves this alone writes as it always did, and the cut the
+	// manifest reports says so (docs/TRUNCATE-2026-11-11.md section 7.2).
+	CutAt int64
 	// Properties are format specific settings, straight from the recipe.
 	Properties map[string]string
 }

@@ -36,8 +36,8 @@ import (
 // well. Through the canvas both questions are asked at once, because a hover
 // aimed at a button that is not where the canvas draws it opens nothing.
 func TestTheLongerExplanationOpensWhenAsked(t *testing.T) {
-	app := test.NewApp()
-	defer test.NewApp()
+	app := newTestApp()
+	defer newTestApp()
 	app.Settings().SetTheme(parts.Theme())
 
 	content, c := laidOutWindow(t)
@@ -148,8 +148,8 @@ func drawnCentre(t *testing.T, o fyne.CanvasObject, label string) fyne.Position 
 // it stayed green through both versions, and both were reported by somebody
 // moving a mouse.
 func TestTheExplanationNeverUsesTheOverlayLayer(t *testing.T) {
-	app := test.NewApp()
-	defer test.NewApp()
+	app := newTestApp()
+	defer newTestApp()
 	app.Settings().SetTheme(parts.Theme())
 
 	content, c := laidOutWindow(t)
@@ -245,8 +245,8 @@ func namedOnScreen(o fyne.CanvasObject) string {
 // on, and since 2026-09-24 that is the card the owner chose from three drawn
 // side by side (floatsAsACard) - both had been reported as a plain grey block.
 func TestTheExplanationFloatsOnTheSurfaceAnOpenListDoes(t *testing.T) {
-	app := test.NewApp()
-	defer test.NewApp()
+	app := newTestApp()
+	defer newTestApp()
 	app.Settings().SetTheme(parts.Theme())
 
 	content, c := laidOutWindow(t)

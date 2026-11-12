@@ -21,6 +21,19 @@ import (
 // line for png, and avif, jxl and the films take it at every size.
 const mapSize = 1 << 20
 
+// cutMapSize and cutMapSmall are the sizes a file laid out for a cut is
+// written at. 64 KiB, for every setting, is above the 16 KiB line and mostly
+// padding already - a megabyte cost the race job of CI about 16 s more for
+// nothing new. 8 KiB, with the settings at their defaults, is under the line,
+// so png lays out a picture it measured while planning, and has room for
+// padding, which the smallest file has none of. The race job is at the edge of
+// its timeout (TestTheRacePartsWeighAboutTheSame), which is why not both sizes
+// for every setting.
+const (
+	cutMapSize  = 64 << 10
+	cutMapSmall = 8 << 10
+)
+
 // mappedFile is one file written through a map recorder, with the map its
 // generator marked.
 type mappedFile struct {
@@ -34,7 +47,9 @@ type mappedFile struct {
 
 // The map a generator marks while it writes is the map its file's structure
 // reads back, for every format, every value of every setting that picks a
-// shape, at the smallest size and a large one.
+// shape, at the smallest size and a large one as a file nothing cuts, and laid
+// out for a cut half way and written whole (format.Request.CutAt), where a
+// format may put padding on both sides of its content.
 //
 // The map is what the manifest's damage[].cut is worked out from, and the
 // offsets in it are the generator's own word (internal/format/layout.go). The
@@ -66,7 +81,16 @@ func TestEveryFormatsMapIsTheOneItsStructureReadsBack(t *testing.T) {
 			for _, from := range []int64{smallest, max(smallest, mapSize)} {
 				size := healthySizeFrom(t, f, setting, from)
 				name := fmt.Sprintf("%s-%d-%d", f.ID, n, size)
-				files = append(files, writeMapped(t, dir, f, name, setting, size))
+				files = append(files, writeMapped(t, dir, f, name, setting, size, 0))
+			}
+			cuts := []int64{cutMapSize}
+			if n == 0 {
+				cuts = append(cuts, cutMapSmall)
+			}
+			for _, from := range cuts {
+				cut := healthySizeFrom(t, f, setting, max(smallest, from))
+				name := fmt.Sprintf("%s-%d-%d-cut", f.ID, n, cut)
+				files = append(files, writeMapped(t, dir, f, name, setting, cut, cut/2))
 			}
 		}
 		if len(files) == before {
@@ -86,7 +110,7 @@ func TestEveryFormatsMapIsTheOneItsStructureReadsBack(t *testing.T) {
 		t.Fatalf("reading the maps back: %v", err)
 	}
 
-	padded, canaried := 0, false
+	padded, split, canaried := 0, 0, false
 	for i, m := range files {
 		if got[i].Error != "" {
 			t.Errorf("%s: the structure gives no map: %s", m.name, got[i].Error)
@@ -102,6 +126,9 @@ func TestEveryFormatsMapIsTheOneItsStructureReadsBack(t *testing.T) {
 		}
 		if countRole(m.marked, format.RolePadding) > 0 {
 			padded++
+		}
+		if paddingOnBothSides(m.marked) {
+			split++
 		}
 		if !canaried && len(m.marked) >= 2 {
 			canaried = true
@@ -128,13 +155,17 @@ func TestEveryFormatsMapIsTheOneItsStructureReadsBack(t *testing.T) {
 	if padded == 0 {
 		t.Errorf("no file of %d had padding in its map, so the role a cut misses most was never asked", len(files))
 	}
-	t.Logf("%d files, %d with padding", len(files), padded)
+	if split == 0 {
+		t.Errorf("no file of %d had padding on both sides of its content, so a layout for a cut was never read back", len(files))
+	}
+	t.Logf("%d files, %d with padding, %d of them on both sides of the content", len(files), padded, split)
 }
 
-// writeMapped writes one healthy file of f through a map recorder.
-func writeMapped(t *testing.T, dir string, f format.Descriptor, name string, setting map[string]string, size int64) mappedFile {
+// writeMapped writes one healthy file of f through a map recorder, laid out
+// for a cut at cutAt when that is not zero.
+func writeMapped(t *testing.T, dir string, f format.Descriptor, name string, setting map[string]string, size, cutAt int64) mappedFile {
 	t.Helper()
-	p, err := f.Generator.Plan(format.Request{Bytes: size, Label: true, Seed: 7, Properties: setting})
+	p, err := f.Generator.Plan(format.Request{Bytes: size, Label: true, Seed: 7, CutAt: cutAt, Properties: setting})
 	if err != nil {
 		t.Fatalf("%s: planning: %v", name, err)
 	}
@@ -234,4 +265,12 @@ func mapNames(m [][3]any) string {
 		parts = append(parts, fmt.Sprintf("%s@%d+%d", r[0], r[1], r[2]))
 	}
 	return strings.Join(parts, " ")
+}
+
+// paddingOnBothSides says whether a map has padding before its content and
+// after it, the layout a format writes for a cut (format.Request.CutAt).
+func paddingOnBothSides(m [][3]any) bool {
+	at := slices.IndexFunc(m, func(r [3]any) bool { return r[0] == string(format.RoleContent) })
+	isPadding := func(r [3]any) bool { return r[0] == string(format.RolePadding) }
+	return at > 0 && slices.ContainsFunc(m[:at], isPadding) && slices.ContainsFunc(m[at+1:], isPadding)
 }

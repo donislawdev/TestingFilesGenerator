@@ -1116,14 +1116,16 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       needs.touched.outputs.concurrency == 'true'
     runs-on: ubuntu-latest
-    # Four parts since 2026-09-24, the owner's decision. The whole package under
+    # Five parts, the owner's decision. In one process the whole package under
     # the detector took 32 to 42 minutes, and six of the twelve runs on
     # 2026-09-23 and 2026-09-24 were killed at the ceiling with no data race in
     # their logs. Both ceilings had been raised once already, on 2026-08-31 -
     # the job's from 30 to 45 minutes and Go's from 25 to 40 - for the same
     # reason, and a problem that keeps coming back is the wrong shape rather
-    # than a missing notch. The guards run one after another - none calls
-    # t.Parallel - so four processes share the time between them, and every
+    # than a missing notch. Four parts weighed 1074 s each by the weights of
+    # 2026-11-12, past 85% of their twenty minutes, and two of them took 1055
+    # and 1067 s that day. The guards run one after another - none calls
+    # t.Parallel - so the processes share the time between them, and every
     # test still runs under the detector once, in one of them.
     #
     # Every part reports. One red part does not cancel the others, whose tests
@@ -1139,7 +1141,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [0, 1, 2, 3]
+        part: [0, 1, 2, 3, 4]
     timeout-minutes: 35
     env:
       # The one thing in this project that needs a C toolchain. Linux runners
@@ -1227,8 +1229,8 @@ jobs:
         # and stays below the job's ceiling, so a slow part fails as a test with
         # a name rather than as a killed job with no output. Go's ten minutes
         # killed this job on 2026-08-25, before a timeout was stated here.
-        # By the weights the heaviest part is 961 s on the slowest processor
-        # measured, and twenty minutes is 1.25 times that.
+        # By the weights the heaviest part is 861 s on the slowest processor
+        # measured, and twenty minutes is 1.39 times that.
         #
         # The processor's counters and the clock are read just before the
         # tests, for the step after this one (O298).

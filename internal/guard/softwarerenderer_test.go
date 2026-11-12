@@ -10,8 +10,6 @@ import (
 	"strings"
 	"testing"
 
-	"fyne.io/fyne/v2/test"
-
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
@@ -271,8 +269,8 @@ func TestTheRendererIsLoadedRendererFirstFromBesideTheProgram(t *testing.T) {
 // slower, and the person should be able to read why in the place they go to
 // read what this program is. Untouchable rule 6, both halves.
 func TestTheAboutScreenSaysWhenTheWindowIsDrawnInSoftware(t *testing.T) {
-	test.NewApp()
-	t.Cleanup(func() { test.NewApp() })
+	newTestApp()
+	t.Cleanup(func() { newTestApp() })
 
 	host := newFakeHost(t)
 	if shown := textIn(window.About(host)); strings.Contains(shown, text.DrawingWithSoftwareRenderer()) {

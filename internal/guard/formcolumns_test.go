@@ -266,7 +266,7 @@ func TestARefusalStandsUnderItsRowAcrossIt(t *testing.T) {
 // pixel. Disabled, the menu keeps the toolkit's disabled arrow, so a menu
 // frozen for a run does not look live.
 func TestAMenuShowsItsArrowInTheAccent(t *testing.T) {
-	test.NewTempApp(t)
+	newTempTestApp(t)
 	menu := parts.NewChooser([]string{"avif", "png"}, nil)
 	if got := arrowColourOf(t, menu); got != theme.ColorNamePrimary {
 		t.Errorf("a menu draws its arrow in %q, not in the accent", got)

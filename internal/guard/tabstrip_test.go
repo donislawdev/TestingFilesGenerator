@@ -38,9 +38,9 @@ import (
 // reason - or, worse, caught half of the chosen word in both bands and gone
 // green for no reason, which is what it did that morning.
 func TestTheTabSomebodyIsOnIsTheOneThatStandsOut(t *testing.T) {
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	t.Cleanup(func() { test.NewApp() })
+	t.Cleanup(func() { newTestApp() })
 
 	host := newFakeHost(t)
 	window.Open(host)

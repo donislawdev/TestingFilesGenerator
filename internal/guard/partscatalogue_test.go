@@ -95,9 +95,9 @@ func TestTheCatalogueCoversEveryPartAndNothingElse(t *testing.T) {
 // while showing nothing. Measured on the rendered tree rather than asserted
 // from the flag the builder set, which is GUI rule 10.
 func TestEveryCatalogueStateDrawsDifferently(t *testing.T) {
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	defer test.NewApp()
+	defer newTestApp()
 
 	drawn := 0
 	for _, e := range catalogue.Entries() {

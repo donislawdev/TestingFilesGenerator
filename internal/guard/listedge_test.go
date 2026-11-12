@@ -26,9 +26,9 @@ import (
 // is. A screen where everything happens to fit proves nothing about a screen
 // where it does not.
 func TestAnOpenListStaysInsideTheWindow(t *testing.T) {
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	t.Cleanup(func() { test.NewApp() })
+	t.Cleanup(func() { newTestApp() })
 
 	values := format.IDs()
 	if len(values) < 8 {
@@ -94,9 +94,9 @@ func TestAnOpenListStaysInsideTheWindow(t *testing.T) {
 // resizing it alone left the list its full height and did nothing at all
 // (O113).
 func TestAnOpenListIsCutToTheRoomThereIs(t *testing.T) {
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	t.Cleanup(func() { test.NewApp() })
+	t.Cleanup(func() { newTestApp() })
 
 	values := format.IDs()
 	if len(values) < 8 {
@@ -158,9 +158,9 @@ func popUpIn(o fyne.CanvasObject) *widget.PopUp {
 // The two guards above open real lists and hold the emergency half - a box at
 // the foot still goes upward, and a cramped window still cuts the list.
 func TestAListOpensDownwardWheneverAFewRowsFitUnderTheBox(t *testing.T) {
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	t.Cleanup(func() { test.NewApp() })
+	t.Cleanup(func() { newTestApp() })
 
 	row := parts.ListRowHeight()
 	const box = 31

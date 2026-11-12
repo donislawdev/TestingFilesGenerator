@@ -86,8 +86,8 @@ func allTabs() []string {
 func TestEveryButtonAPersonCanSeeIsReallyPressable(t *testing.T) {
 	for _, tab := range allTabs() {
 		t.Run(tab, func(t *testing.T) {
-			test.NewApp()
-			defer test.NewApp()
+			newTestApp()
+			defer newTestApp()
 
 			content, canvas := laidOutWindow(t)
 			screen := selectTab(t, content, tab)
@@ -147,8 +147,8 @@ func TestEveryButtonAPersonCanSeeIsReallyPressable(t *testing.T) {
 func TestTabbingReachesTheControlsAndSaysInWhatOrder(t *testing.T) {
 	for _, tab := range allTabs() {
 		t.Run(tab, func(t *testing.T) {
-			test.NewApp()
-			defer test.NewApp()
+			newTestApp()
+			defer newTestApp()
 
 			content, canvas := laidOutWindow(t)
 			screen := selectTab(t, content, tab)
