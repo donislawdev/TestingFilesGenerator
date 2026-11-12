@@ -522,6 +522,13 @@ how many more there are, and the manifest lists every one. The label is still
 written before the damage, so the damage can overwrite it, and the manifest does
 not promise it is there.
 
+A cut falls on whatever the file holds at that point. A large picture, sound,
+document or archive is mostly padding after its content, so `truncate` can leave
+the content whole. The manifest says where each cut fell: the `truncate` entry
+carries `cut`, with `in` (`content`, `padding`, `structure` or `end`),
+`content_bytes` and `content_kept_bytes`. A cut in the padding also gets the note
+`cut_in_padding`.
+
 The smallest file a damage can be given follows its settings, so the column is
 measured with the defaults. Ask for less and the run is refused before anything is
 written, naming a size that would work. A setting outside what the damage takes,
@@ -988,7 +995,7 @@ Yes. Add `--damage zero-head` and the file comes out at exactly the size you
 asked for with its first bytes overwritten by zeros, so a reader turns it away,
 and the manifest says your system should reject it. `--damage truncate` cuts the
 end off and `--damage append-junk` writes bytes after it, still at the size you
-asked for. [`tfg damage`](#tfg-damage) lists what this build can do, what each
+asked for, and the manifest says where a cut fell. [`tfg damage`](#tfg-damage) lists what this build can do, what each
 damage takes, and where the outcome depends on your system.
 
 ```

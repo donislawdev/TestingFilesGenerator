@@ -299,6 +299,11 @@ func (c Chain) Stretches() bool {
 // for a file of size bytes on disk: its place in the list, and how many of the
 // generator's bytes it keeps, which is the offset of the first byte it drops.
 //
+// The LAST of the damages that cut before anything changes the length in
+// another way: each keeps the start of what the one before it kept, so the
+// last keeps the least, and that is where the file ends (two truncates of half
+// a 1000 B text keep 1000 B, not the 2000 B the first one passes on).
+//
 // False when no damage cuts the tail, and when one before it changes the
 // length - the bytes it keeps would then not be the generator's, and an offset
 // in them says nothing about the map of the file the generator wrote. The same
@@ -312,15 +317,16 @@ func (c Chain) Cut(size int64) (int, int64, bool) {
 	if !ok {
 		return 0, 0, false
 	}
+	at, kept, found := 0, int64(0), false
 	for i, s := range steps {
-		if s.d.CutsTail {
-			return i, outs[i], true
-		}
-		if s.d.Length != nil {
-			return 0, 0, false
+		switch {
+		case s.d.CutsTail:
+			at, kept, found = i, outs[i], true
+		case s.d.Length != nil:
+			return at, kept, found
 		}
 	}
-	return 0, 0, false
+	return at, kept, found
 }
 
 // Open builds the chain as one writer for a file of size bytes on disk, with

@@ -63,6 +63,8 @@ def layout_png(data):
             raise NoMap(f"a chunk header runs past the end at {pos}")
         length = struct.unpack(">I", data[pos:pos + 4])[0]
         kind = data[pos + 4:pos + 8]
+        if pos + 12 + length > len(data):
+            raise NoMap(f"chunk {kind!r} at {pos} declares {length} B and runs past the end")
         out.append([PNG_ROLES.get(kind, STRUCTURE), pos, 12 + length])
         pos += 12 + length
     return out

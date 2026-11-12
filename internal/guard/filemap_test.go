@@ -49,6 +49,9 @@ func TestEveryFormatsMapIsTheOneItsStructureReadsBack(t *testing.T) {
 	dir := t.TempDir()
 	var files []mappedFile
 	for _, f := range format.All() {
+		// A format all of whose settings were skipped would leave the sweep
+		// without it and the guard green, so each one has to reach a file.
+		before := len(files)
 		variants := append([]map[string]string{{}}, settingVariants(f)...)
 		for n, setting := range variants {
 			// A setting the format refuses without another beside it is
@@ -65,6 +68,9 @@ func TestEveryFormatsMapIsTheOneItsStructureReadsBack(t *testing.T) {
 				name := fmt.Sprintf("%s-%d-%d", f.ID, n, size)
 				files = append(files, writeMapped(t, dir, f, name, setting, size))
 			}
+		}
+		if len(files) == before {
+			t.Errorf("%s: no setting of it was written, so its map was never read back", f.ID)
 		}
 	}
 

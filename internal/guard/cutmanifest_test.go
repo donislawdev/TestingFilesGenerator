@@ -24,6 +24,9 @@ type cutCase struct {
 	// note is the word that tells the two notes of a cut in the padding
 	// apart, empty when the cut gets none.
 	note string
+	// cuts is how many truncates the chain holds, one when not said. The
+	// last of them keeps the least and carries the cut.
+	cuts int
 }
 
 // A file cut short says in its manifest where the cut fell and how much of
@@ -32,8 +35,9 @@ type cutCase struct {
 // The three shapes a cut takes (docs/TRUNCATE-2026-11-11.md section 2). A PNG
 // of 1 MiB is nearly all padding after its picture, so 90% missing still
 // leaves the whole picture. An icon keeps its padding BEFORE its picture, so a
-// cut there takes all of it. A text is its words, so the cut falls in them. A
-// damage that cuts nothing has no cut to report.
+// cut there takes all of it. A text is its words, so the cut falls in them.
+// Two cuts in a row end the file where the second one does, and the cut is
+// said of that one. A damage that cuts nothing has no cut to report.
 //
 // Canary: the check below must refuse a cut that names the wrong role, and
 // one that claims content it does not have.
@@ -44,12 +48,17 @@ func TestACutFileSaysWhereTheCutFellAndWhatIsLeft(t *testing.T) {
 		// file, and a tenth of a megabyte cut away falls inside it.
 		{name: "icon", format: "ico", size: 1 << 20, missing: "50", in: "padding", kept: "none", note: "before the content"},
 		{name: "text", format: "txt", size: 1000, missing: "50", in: "content", kept: "some"},
+		{name: "twice", format: "txt", size: 1000, missing: "50", in: "content", kept: "some", cuts: 2},
 	}
 	targets := []engine.Target{{ID: "untouched", Format: "txt", Sizes: engine.Uniform(1, 1000), Label: true,
 		Damage: damage.Chain{{ID: "zero-head"}}}}
 	for _, c := range cases {
+		var chain damage.Chain
+		for range max(1, c.cuts) {
+			chain = append(chain, damage.Spec{ID: damage.Truncate, Values: damage.Values{damage.SettingMissing: c.missing}})
+		}
 		targets = append(targets, engine.Target{ID: c.name, Format: c.format, Sizes: engine.Uniform(1, c.size), Label: true,
-			Damage: damage.Chain{{ID: damage.Truncate, Values: damage.Values{damage.SettingMissing: c.missing}}}})
+			Damage: chain})
 	}
 	opt := engine.Options{OutDir: t.TempDir(), Seed: 7, ManifestName: engine.DefaultManifestName}
 	planned, err := engine.Plan(targets, opt)
@@ -82,7 +91,7 @@ func TestACutFileSaysWhereTheCutFellAndWhatIsLeft(t *testing.T) {
 	// Canary: the picture's entry, told the cut fell in its content, and the
 	// text's, told none of its content is left.
 	picture := byTarget["picture"]
-	if picture.Damage[0].Cut != nil {
+	if len(picture.Damage) == 1 && picture.Damage[0].Cut != nil {
 		wrong := cases[0]
 		wrong.in = "content"
 		if len(cutProblems(wrong, picture)) == 0 {
@@ -98,10 +107,16 @@ func TestACutFileSaysWhereTheCutFellAndWhatIsLeft(t *testing.T) {
 
 // cutProblems is everything about f's cut that is not what c says it is.
 func cutProblems(c cutCase, f manifest.File) []string {
-	if len(f.Damage) != 1 || f.Damage[0].Cut == nil {
-		return []string{fmt.Sprintf("the damage entry has no cut: %+v", f.Damage)}
+	last := max(1, c.cuts) - 1
+	if len(f.Damage) != last+1 || f.Damage[last].Cut == nil {
+		return []string{fmt.Sprintf("the last damage entry has no cut: %+v", f.Damage)}
 	}
-	cut := f.Damage[0].Cut
+	for _, d := range f.Damage[:last] {
+		if d.Cut != nil {
+			return []string{fmt.Sprintf("a cut that does not end the file reported one: %+v", f.Damage)}
+		}
+	}
+	cut := f.Damage[last].Cut
 	var out []string
 	if cut.In != c.in {
 		out = append(out, fmt.Sprintf("the cut fell in %q, not in %q", cut.In, c.in))
@@ -111,6 +126,8 @@ func cutProblems(c cutCase, f manifest.File) []string {
 	}
 	whole, kept := *cut.ContentBytes, cut.ContentKeptBytes
 	switch {
+	case whole <= 0:
+		out = append(out, fmt.Sprintf("the content is said to be %d B long, and every case here cuts beside content", whole))
 	case c.kept == "all" && kept != whole:
 		out = append(out, fmt.Sprintf("%d B of %d B of content kept, not all of it", kept, whole))
 	case c.kept == "none" && kept != 0:

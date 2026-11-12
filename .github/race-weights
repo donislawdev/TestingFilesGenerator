@@ -24,7 +24,9 @@ unlisted 0.58
 99.9 TestEveryBase64TextSizeIsExact
 93.8 TestAFilmPictureLargerThanAnyAV1LevelIsRefusedNotBroken
 73.6 TestEveryAvifRungStillFitsInsideItsDeclaredCeilings
+68.4 TestEveryFormatsMapIsTheOneItsStructureReadsBack
 67.9 TestADeclaredDefaultIsTheOneTheFormatUses
+65.6 TestADamagedFileIsExactlyTheSizeAskedFor
 64.3 TestNoTrackedFileCarriesPrivateContent
 63.8 TestNoGeneratorHoldsTheWholeFileInMemory
 60.8 TestEveryDamageIsRefusedByTheStructuralCheckInEveryFormat
