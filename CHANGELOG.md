@@ -80,10 +80,10 @@ because it turns other people's test suites red.
   the length of the content is known. A cut in the padding also gets the
   note `cut_in_padding`. In a compressed tar.gz a cut in the padding is
   reported as a cut in the content.
-- **`truncate` cuts the picture of a PNG, a JPEG or an icon by the
-  percentage you set.** `--damage truncate:missing=90` on a 1 MB PNG used to
-  cut only padding and leave the whole picture, and on a JPEG or a large
-  icon it removed the whole picture whatever percentage you set. Now it
+- **`truncate` cuts the picture of a PNG, a GIF, a JPEG or an icon by the
+  percentage you set.** `--damage truncate:missing=90` on a 1 MB PNG or GIF
+  used to cut only padding and leave the whole picture, and on a JPEG or a
+  large icon it removed the whole picture whatever percentage you set. Now it
   removes 90% of the picture's content, so a viewer that shows what is left
   shows the part of the picture that arrived, the way an interrupted upload
   leaves it. Files nothing cuts are unchanged.

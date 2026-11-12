@@ -392,17 +392,19 @@ def sub_blocks_end(data, pos):
 
 
 def layout_gif(data):
-    """The signature and the screen descriptor, then everything up to the
-    trailer - the palette, the frames and their extensions - as content, a
-    comment as padding, and the trailer as the end."""
+    """The signature, the screen descriptor, the global colour table and any
+    application extension in front of the first frame (the loop count) as
+    structure, the frames and their extensions as content, a comment anywhere
+    as padding, and the trailer as the end."""
     if data[:6] not in (b"GIF87a", b"GIF89a"):
         raise NoMap("no GIF signature")
     out, pos = [[STRUCTURE, 0, 13]], 13
     packed = data[10]
     if packed & 0x80:
         table = 3 * (1 << ((packed & 0x07) + 1))
-        out.append([CONTENT, pos, table])
+        out.append([STRUCTURE, pos, table])
         pos += table
+    framed = False
     while pos < len(data):
         start, marker = pos, data[pos]
         if marker == 0x3B:
@@ -412,9 +414,16 @@ def layout_gif(data):
         if marker == 0x21:
             label = data[pos + 1]
             pos = sub_blocks_end(data, pos + 2)
-            out.append([PADDING if label == 0xFE else CONTENT, start, pos - start])
+            if label == 0xFE:
+                role = PADDING
+            elif label == 0xFF and not framed:
+                role = STRUCTURE
+            else:
+                role, framed = CONTENT, True
+            out.append([role, start, pos - start])
             continue
         if marker == 0x2C:
+            framed = True
             local = data[pos + 9]
             pos += 10
             if local & 0x80:
