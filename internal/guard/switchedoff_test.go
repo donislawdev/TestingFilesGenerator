@@ -31,9 +31,9 @@ import (
 // thing in it on or off, and a comparison of the whole box would be decided by
 // the words and blind to the edge.
 func TestAControlSwitchedOffIsNeverBrighterThanAtRest(t *testing.T) {
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	t.Cleanup(func() { test.NewApp() })
+	t.Cleanup(func() { newTestApp() })
 
 	type control struct {
 		name  string
@@ -78,9 +78,9 @@ func TestAControlSwitchedOffIsNeverBrighterThanAtRest(t *testing.T) {
 // its tick whatever it held, so "Label in each file" ticked read as unticked
 // for the length of every run.
 func TestASwitchThatIsOffStillShowsItsValue(t *testing.T) {
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	t.Cleanup(func() { test.NewApp() })
+	t.Cleanup(func() { newTestApp() })
 
 	picture := func(on bool) image.Image {
 		s := parts.NewToggle(nil)

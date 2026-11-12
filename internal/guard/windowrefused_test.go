@@ -56,8 +56,8 @@ type nativeWindow struct {
 func (w *nativeWindow) RunNative(f func(any)) { f(w.context) }
 
 func TestAWindowTheToolkitGaveNoWindowIsRefusedAndNeverRun(t *testing.T) {
-	test.NewApp()
-	t.Cleanup(func() { test.NewApp() })
+	newTestApp()
+	t.Cleanup(func() { newTestApp() })
 
 	// Every platform context the driver hands out, empty and filled. The
 	// filled ones use 1 rather than a real handle: the question is zero or

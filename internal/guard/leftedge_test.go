@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/test"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
@@ -18,9 +17,9 @@ import (
 // same sentence parts.Theme carries about pictures. See observation O121.
 func ourTheme(t *testing.T) {
 	t.Helper()
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	t.Cleanup(func() { test.NewApp() })
+	t.Cleanup(func() { newTestApp() })
 }
 
 // Everything a person reads on a screen starts on one left edge.

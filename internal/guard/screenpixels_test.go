@@ -872,12 +872,12 @@ func renderScene(t *testing.T, sc screenScene) (image.Image, string) {
 func drawScene(t *testing.T, sc screenScene) (image.Image, string) {
 	t.Helper()
 
-	app := test.NewApp()
+	app := newTestApp()
 	// The test driver ships a deliberately garish theme so colour changes show
 	// up. That is the wrong theme for a picture meant to be what somebody sees,
 	// and getting it wrong produces a reference that looks like a defect.
 	app.Settings().SetTheme(parts.Theme())
-	defer test.NewApp()
+	defer newTestApp()
 
 	host := newFakeHost(t)
 	var tab fyne.CanvasObject

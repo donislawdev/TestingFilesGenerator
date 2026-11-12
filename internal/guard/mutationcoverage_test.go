@@ -157,6 +157,10 @@ var provenByProbe = map[string]string{
 		"and broken on 2026-11-12 by reporting every cut in the content: red for the picture and the icon.",
 	"TestACutTakesTheShareOfTheContentItIsAskedFor": "its own canaries - a cut that kept all its content must not pass for one that took half, and txt listed as " +
 		"not cutting at the share must be reported - and broken on 2026-11-12 by never telling png where its cut falls: red in all six of its files.",
+	"TestAGuardThatDrawsAfterALongPauseStillDraws": "its own canary - the box drawn after test.NewApp alone has to come out blank, or the pause " +
+		"does not reach the state - and broken on 2026-11-12 by making readFyneClock do nothing: red, the box drawn after newTestApp was blank too.",
+	"TestEveryGuardTakesItsApplicationWithTheClockRead": "its own canary - a source with test.NewApp and test.NewTempApp has to give both calls - and " +
+		"a reach check on the number of guard files it read.",
 	"TestTheRecordOfACutRunIsNeverLongerThanItsForecast": "its own reach check - a run with no cut in the padding is a failure - and broken on 2026-11-12 " +
 		"by leaving the cut out of the forecast: red, a record of 9638 B told 8130 B.",
 	"TestADamageLabelIsBoundedAndSaysHowManyItLeftOut": "its own canary - no chain up to 200 damages shortened is a failure - and broken on 2026-11-12 by letting damage.Chain.Label return the whole chain: red.",

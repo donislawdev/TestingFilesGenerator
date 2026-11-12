@@ -54,8 +54,8 @@ func TestAnOpenListIsToldFromTheFormBehindIt(t *testing.T) {
 // rather than asking the widget what it would build. A menu built correctly and
 // never shown looks identical from the widget's side.
 func TestTheOpenListMarksTheValueThatIsChosen(t *testing.T) {
-	app := test.NewApp()
-	defer test.NewApp()
+	app := newTestApp()
+	defer newTestApp()
 	app.Settings().SetTheme(parts.Theme())
 
 	host := newFakeHost(t)

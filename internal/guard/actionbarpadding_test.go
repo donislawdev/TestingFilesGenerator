@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
@@ -25,9 +24,9 @@ import (
 // Asserted as arithmetic on the part rather than as a number: what has to hold
 // is that the bar costs its content plus one inset, whatever the inset is.
 func TestTheActionBarCostsItsContentPlusOneInset(t *testing.T) {
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	t.Cleanup(func() { test.NewApp() })
+	t.Cleanup(func() { newTestApp() })
 
 	inside := widget.NewLabel("what a run has to say")
 	bar := parts.ActionBar(nil, inside)
@@ -50,9 +49,9 @@ func TestTheActionBarCostsItsContentPlusOneInset(t *testing.T) {
 // why the form does not jump when Generate is pressed, and taking it out is
 // the cheapest way to make a bar shorter - see O101 and O118.
 func TestTheActionBarStillReservesRoomForARun(t *testing.T) {
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	t.Cleanup(func() { test.NewApp() })
+	t.Cleanup(func() { newTestApp() })
 
 	// A HIDDEN child, which is the whole point: a hidden widget costs no height
 	// in this toolkit, so the bar shrinks the moment a run stops talking and

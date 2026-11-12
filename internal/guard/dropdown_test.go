@@ -86,9 +86,9 @@ func TestALetterTypedAtTheOpenListMovesTheKeyboard(t *testing.T) {
 // exactly a menu without one, which this asserts rather than assumes.
 func aMenuWithoutAFilter(t *testing.T) (*parts.Chooser, fyne.Window) {
 	t.Helper()
-	app := test.NewApp()
+	app := newTestApp()
 	app.Settings().SetTheme(parts.Theme())
-	t.Cleanup(func() { test.NewApp() })
+	t.Cleanup(func() { newTestApp() })
 
 	menu := parts.NewChooser([]string{"csv", "pdf", "png", "txt", "wav"}, nil)
 	if menu.Filtered {

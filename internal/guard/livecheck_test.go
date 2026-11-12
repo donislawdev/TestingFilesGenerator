@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/widget"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
@@ -270,8 +269,8 @@ func TestTypingIsStillCheckedAfterARunHasFinished(t *testing.T) {
 // preset switch took 0.7 s at the first press and 6.1 s at the twentieth,
 // docs/GUI-MEMORY-2026-09-23.md section 2.2.
 func TestAControlRegisteredAgainReportsOnceUnderItsLatestAddress(t *testing.T) {
-	test.NewApp()
-	t.Cleanup(func() { test.NewApp() })
+	newTestApp()
+	t.Cleanup(func() { newTestApp() })
 
 	box := parts.NewEntry()
 	menu := parts.NewChooser([]string{"one", "two"}, nil)
