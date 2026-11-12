@@ -43,8 +43,6 @@ var notYetCutAtTheShare = map[string]notYet{
 	"xlsx":  {paddingBehind, 64 << 10, 50},
 	"pptx":  {paddingBehind, 64 << 10, 50},
 	"targz": {paddingBehind, 64 << 10, 50},
-	"jpg":   {paddingInFront, 64 << 10, 50},
-	"ico":   {paddingInFront, 64 << 10, 50},
 	// Both take the share at 64 KiB and above. At 4 KiB what stands behind the
 	// picture is more than a small share, so a cut of 1% keeps all of it.
 	"webp": {smallBehind, 4 << 10, 1},
@@ -52,9 +50,8 @@ var notYetCutAtTheShare = map[string]notYet{
 }
 
 const (
-	paddingBehind  = "its padding stands only behind its content, so a large file cut at any share keeps all of it"
-	paddingInFront = "its padding stands only in front of its content, so a large file cut at any share keeps none of it"
-	smallBehind    = "in a small file the padding or directory behind its content is more than a small share"
+	paddingBehind = "its padding stands only behind its content, so a large file cut at any share keeps all of it"
+	smallBehind   = "in a small file the padding or directory behind its content is more than a small share"
 )
 
 // shareSlack is how far, in points of a percent, the share of the content a

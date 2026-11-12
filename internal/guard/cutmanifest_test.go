@@ -34,12 +34,12 @@ type cutCase struct {
 // A file cut short says in its manifest where the cut fell and how much of
 // the content is left, and gets a note when the cut missed the content.
 //
-// The shapes a cut takes (docs/TRUNCATE-2026-11-11.md sections 2 and 7). A
-// GIF of 1 MiB is nearly all padding after its picture, so 90% missing still
-// leaves the whole picture. A PNG splits its padding around the picture for a
-// cut, so the cut takes the share asked for. An icon keeps its padding BEFORE
-// its picture, so a cut there takes all of it. A text is its words, so the cut
-// falls in them. Two cuts in a row end the file where the second one does, and
+// The shapes a cut takes (docs/TRUNCATE-2026-11-11.md sections 2, 7 and 8).
+// A GIF of 1 MiB is nearly all padding after its picture, so 90% missing
+// still leaves the whole picture. A PNG splits its padding around the picture
+// for a cut, so the cut takes the share asked for. A small tar.gz keeps its
+// padding BEFORE its archive, so a cut there takes all of it. A text is its
+// words, so the cut falls in them. Two cuts in a row end the file where the second one does, and
 // the cut is said of that one. A damage that cuts nothing has no cut to report.
 //
 // Canary: the check below must refuse a cut that names the wrong role, and
@@ -48,9 +48,10 @@ func TestACutFileSaysWhereTheCutFellAndWhatIsLeft(t *testing.T) {
 	cases := []cutCase{
 		{name: "behind", format: "gif", size: 1 << 20, missing: "90", in: "padding", kept: "all", note: "after the content"},
 		{name: "picture", format: "png", size: 1 << 20, missing: "90", in: "content", kept: "share"},
-		// At half: the picture of 256x256 takes about 260 KB at the end of the
-		// file, and a tenth of a megabyte cut away falls inside it.
-		{name: "icon", format: "ico", size: 1 << 20, missing: "50", in: "padding", kept: "none", note: "before the content"},
+		// 4 KiB on disk is 40 KiB whole, and up to 64 KiB the padding is the
+		// comment in the gzip header, in front of the archive. An icon or a JPEG
+		// was this case until it split its padding for the cut.
+		{name: "front", format: "targz", size: 4 << 10, missing: "90", in: "padding", kept: "none", note: "before the content"},
 		{name: "text", format: "txt", size: 1000, missing: "50", in: "content", kept: "some"},
 		{name: "twice", format: "txt", size: 1000, missing: "50", in: "content", kept: "some", cuts: 2},
 	}
@@ -176,7 +177,7 @@ func TestTheRecordOfACutRunIsNeverLongerThanItsForecast(t *testing.T) {
 	}
 	opt := engine.Options{OutDir: t.TempDir(), Seed: 7, Command: "test"}
 	planned, err := engine.Plan([]engine.Target{
-		cut("picture", "png", 1<<20, "90"), cut("icon", "ico", 1<<20, "50"), cut("text", "txt", 1000, "50"),
+		cut("picture", "png", 1<<20, "90"), cut("behind", "gif", 1<<20, "90"), cut("text", "txt", 1000, "50"),
 	}, opt)
 	if err != nil {
 		t.Fatalf("planning: %v", err)

@@ -3,7 +3,9 @@
 // An ICO is a directory of images rather than an image, so it carries an
 // explicit offset saying where each one starts. That offset is the padding
 // channel: anything between the directory and the picture is space the file
-// describes.
+// describes. A file a damage will cut has part of that space behind the
+// picture instead, where no entry points either, so the cut takes the share
+// of the picture asked for (frontGap).
 //
 // The picture inside can be a device independent bitmap or a whole PNG, and
 // both are in use. This generator writes either, because which one a system
@@ -105,8 +107,12 @@ type memo struct {
 	// image is the picture as it will sit inside the file. Small by
 	// construction, because an icon side is at most 256 pixels.
 	image []byte
-	// gap is how many bytes stand between the directory and that picture.
+	// gap is how many bytes of padding the file carries: all of them between
+	// the directory and the picture, unless a damage will cut the file.
 	gap int64
+	// cutAt is where a damage will cut the file, zero when nothing does
+	// (format.Request.CutAt).
+	cutAt int64
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
@@ -137,7 +143,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 
 	m := memo{
 		width: w, height: h, seed: r.Seed, label: label, embed: embed,
-		image: blob, gap: r.Bytes - bare,
+		image: blob, gap: r.Bytes - bare, cutAt: r.CutAt,
 	}
 
 	p := format.Plan{
@@ -250,25 +256,54 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	default:
 	}
 
-	// The map, all of it known from the plan: the directory, the gap that
-	// makes up the size, and the picture. The gap stands BEFORE the picture,
-	// so a cut takes the whole picture whatever share is asked for
-	// (docs/TRUNCATE-2026-11-11.md section 2).
+	// The map, all of it known from the plan: the directory, the gap in front
+	// of the picture, the picture, and the rest of the gap behind it when a
+	// damage will cut the file.
+	front := frontGap(m, p.Bytes)
+	picture := int64(len(m.image))
 	format.Mark(w, format.RoleStructure, 0, preamble)
-	format.Mark(w, format.RolePadding, preamble, m.gap)
-	format.Mark(w, format.RoleContent, preamble+m.gap, int64(len(m.image)))
+	format.Mark(w, format.RolePadding, preamble, front)
+	format.Mark(w, format.RoleContent, preamble+front, picture)
+	if back := m.gap - front; back > 0 {
+		format.Mark(w, format.RolePadding, preamble+front+picture, back)
+	}
 
-	if err := writeDirectory(w, m); err != nil {
+	if err := writeDirectory(w, m, front); err != nil {
 		return err
 	}
-	if err := writeGap(ctx, w, m.seed, m.gap); err != nil {
+	if err := writeGap(ctx, w, m.seed, front); err != nil {
 		return err
 	}
-	_, err := w.Write(m.image)
-	return err
+	if _, err := w.Write(m.image); err != nil {
+		return err
+	}
+	return writeGap(ctx, w, m.seed, m.gap-front)
 }
 
-func writeDirectory(w io.Writer, m memo) error {
+// frontGap is how much of the gap stands between the directory and the
+// picture: all of it, unless a damage will cut the file
+// (format.Request.CutAt). Then as much as puts the cut where it keeps the
+// share of the picture it keeps of the whole file, and the rest goes behind
+// the picture.
+//
+// With all of the gap in front, a large icon cut at any share lost the whole
+// picture. Bytes behind the picture are space no entry points at, as the gap
+// is, and Pillow, FFmpeg, ImageMagick, the Windows Imaging Component and
+// GDI+ return the same pixels either way (docs/TRUNCATE-2026-11-11.md
+// section 8.3). The gap has no header, so the cut lands on the byte - except
+// with too small a gap, where none of it goes in front and the cut takes more
+// of the picture, the "at least" missing promises. It never needs more than
+// the whole gap in front (section 8.5).
+func frontGap(m memo, whole int64) int64 {
+	if m.cutAt <= 0 || m.cutAt >= whole {
+		return m.gap
+	}
+	return max(0, format.PaddingInFront(preamble, int64(len(m.image)), m.cutAt, whole))
+}
+
+// writeDirectory writes the directory of one entry, whose picture starts
+// front bytes after it.
+func writeDirectory(w io.Writer, m memo, front int64) error {
 	var head [preamble]byte
 	// Two reserved bytes stay zero, then the type: 1 means icon.
 	binary.LittleEndian.PutUint16(head[2:4], 1)
@@ -281,7 +316,7 @@ func writeDirectory(w io.Writer, m memo) error {
 	binary.LittleEndian.PutUint16(e[4:6], 1)
 	binary.LittleEndian.PutUint16(e[6:8], 32)
 	binary.LittleEndian.PutUint32(e[8:12], uint32(len(m.image)))
-	binary.LittleEndian.PutUint32(e[12:16], uint32(int64(preamble)+m.gap))
+	binary.LittleEndian.PutUint32(e[12:16], uint32(int64(preamble)+front))
 
 	_, err := w.Write(head[:])
 	return err

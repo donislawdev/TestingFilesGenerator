@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"math/bits"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -45,14 +44,14 @@ func writeForACut(ctx context.Context, w io.Writer, m memo, whole int64) error {
 	// Both padding chunks draw from the file's seed. Nobody reads padding, and
 	// the one behind the picture lies past any cut.
 	split := &afterTheHead{ctx: ctx, w: w, seed: m.seed, head: headSize, front: front}
-	holder := &tailHolder{w: split, keep: iendSize}
+	holder := &format.TailHolder{W: split, Keep: iendSize}
 	if err := encode(holder, m); err != nil {
 		return err
 	}
-	if holder.written != m.body {
-		return core.Defect(fmt.Errorf("png: the picture encoded to %d B where planning said %d B", holder.written, m.body))
+	if holder.Written != m.body {
+		return core.Defect(fmt.Errorf("png: the picture encoded to %d B where planning said %d B", holder.Written, m.body))
 	}
-	if string(holder.tail[4:8]) != "IEND" {
+	if string(holder.Tail[4:8]) != "IEND" {
 		return core.Defect(fmt.Errorf("png: the encoded stream does not end with IEND"))
 	}
 	if back := pad - front; back > 0 {
@@ -60,7 +59,7 @@ func writeForACut(ctx context.Context, w io.Writer, m memo, whole int64) error {
 			return err
 		}
 	}
-	_, err := w.Write(holder.tail)
+	_, err := w.Write(holder.Tail)
 	return err
 }
 
@@ -118,12 +117,7 @@ func frontPadding(pad, content, cutAt, whole int64) int64 {
 	if pad == 0 || cutAt <= 0 || cutAt >= whole {
 		return 0
 	}
-	// content*cutAt in 128 bits, because a file near the top of what one chunk
-	// carries times a cut near it passes an int64. The quotient fits, because
-	// cutAt is less than whole.
-	hi, lo := bits.Mul64(uint64(content), uint64(cutAt))
-	kept, _ := bits.Div64(hi, lo, uint64(whole))
-	front := cutAt - headSize - int64(kept)
+	front := format.PaddingInFront(headSize, content, cutAt, whole)
 	switch {
 	case front <= 0:
 		return 0
