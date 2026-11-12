@@ -9,7 +9,9 @@
 //
 // Like PNG, the encoded size does not follow from the content, so the exact
 // size comes from padding. Unlike PNG, the padding goes at the FRONT and may
-// need several segments, because one comment carries 65533 bytes at most.
+// need several segments, because one comment carries 65533 bytes at most. A
+// file a damage will cut has part of it behind the picture as well, so the cut
+// takes the share of the picture asked for (cut.go).
 package jpg
 
 import (
@@ -104,6 +106,9 @@ func init() {
 			//
 			// Tk 9.0.4 is not on that list of readers and that is measured
 			// too: it has no JPEG decoder at all.
+			//
+			// A file a damage will cut also has fill bytes in front of the
+			// end of image marker, measured against seven readers (cut.go).
 			Name:  "comment segment after the start of image marker",
 			Where: format.PlacementStart,
 			// No limit of its own. One segment carries 65533 B and this
@@ -151,6 +156,10 @@ type memo struct {
 	// this generator always writes at least one, which is what removes the
 	// unreachable band every other format has above its floor.
 	segments int
+	// cutAt is where a damage will cut the file, zero when nothing does
+	// (format.Request.CutAt). writeForACut splits the padding around the
+	// picture for it.
+	cutAt int64
 }
 
 // checkJointLimits asks the registry's own declaration about a pair of
@@ -206,6 +215,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	if err != nil {
 		return format.Plan{}, err
 	}
+	m.cutAt = r.CutAt
 	w, h := m.width, m.height
 	bare := m.body
 
@@ -286,6 +296,9 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
+	}
+	if m.cutAt > 0 && m.cutAt < p.Bytes {
+		return writeForACut(ctx, w, m, p.Bytes)
 	}
 
 	// The map, all of it known from the plan: the start marker, the comments

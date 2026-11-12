@@ -58,11 +58,19 @@ type mappedFile struct {
 // content from start to end, which a text is and a picture is not, so a new
 // binary format that forgets its marks is red here.
 //
+// A format that splits its padding for a cut is also cut at the two ends:
+// after the first byte, where the content cannot keep its share with any
+// padding in front, and before the last byte, where it keeps it only with all
+// of the padding in front. Those are the branches that round the front to
+// nothing and to everything (docs/TRUNCATE-2026-11-11.md section 8.9), and
+// each has to give the layout it promises as well as read back.
+//
 // Canary: the first map with two regions, with the boundary between them moved
 // by a byte, must not be taken for the map read back.
 func TestEveryFormatsMapIsTheOneItsStructureReadsBack(t *testing.T) {
 	dir := t.TempDir()
 	var files []mappedFile
+	ends := 0
 	for _, f := range format.All() {
 		// A format all of whose settings were skipped would leave the sweep
 		// without it and the guard green, so each one has to reach a file.
@@ -90,7 +98,13 @@ func TestEveryFormatsMapIsTheOneItsStructureReadsBack(t *testing.T) {
 			for _, from := range cuts {
 				cut := healthySizeFrom(t, f, setting, max(smallest, from))
 				name := fmt.Sprintf("%s-%d-%d-cut", f.ID, n, cut)
-				files = append(files, writeMapped(t, dir, f, name, setting, cut, cut/2))
+				half := writeMapped(t, dir, f, name, setting, cut, cut/2)
+				files = append(files, half)
+				if n == 0 && from == cutMapSize && paddingOnBothSides(half.marked) {
+					at := writeTheEnds(t, dir, f, name, setting, cut)
+					files = append(files, at...)
+					ends += len(at)
+				}
 			}
 		}
 		if len(files) == before {
@@ -158,7 +172,36 @@ func TestEveryFormatsMapIsTheOneItsStructureReadsBack(t *testing.T) {
 	if split == 0 {
 		t.Errorf("no file of %d had padding on both sides of its content, so a layout for a cut was never read back", len(files))
 	}
-	t.Logf("%d files, %d with padding, %d of them on both sides of the content", len(files), padded, split)
+	if ends == 0 {
+		t.Errorf("no format split its padding at %d B, so the ends of the split were never cut", cutMapSize)
+	}
+	// Canary of the sides: a map with padding behind its content alone.
+	if front, back := paddingSides([][3]any{{string(format.RoleStructure), int64(0), int64(2)},
+		{string(format.RoleContent), int64(2), int64(5)}, {string(format.RolePadding), int64(7), int64(3)}}); front || !back {
+		t.Errorf("canary: padding behind the content alone read as front %v, back %v", front, back)
+	}
+	t.Logf("%d files, %d with padding, %d of them on both sides of the content, %d cut at the ends of a split", len(files), padded, split, ends)
+}
+
+// writeTheEnds writes a file of f that splits its padding for a cut, cut
+// after its first byte and before its last, and reports each that does not
+// put all of its padding behind the content and in front of it.
+func writeTheEnds(t *testing.T, dir string, f format.Descriptor, name string, setting map[string]string, size int64) []mappedFile {
+	t.Helper()
+	var out []mappedFile
+	for _, end := range []struct {
+		name        string
+		at          int64
+		front, back bool
+	}{{"first", 1, false, true}, {"last", size - 1, true, false}} {
+		m := writeMapped(t, dir, f, name+"-"+end.name, setting, size, end.at)
+		if front, back := paddingSides(m.marked); front != end.front || back != end.back {
+			t.Errorf("%s: cut after %d B of %d B it marked %s - padding in front %v and behind %v, where %v and %v were due",
+				m.name, end.at, size, mapNames(m.marked), front, back, end.front, end.back)
+		}
+		out = append(out, m)
+	}
+	return out
 }
 
 // writeMapped writes one healthy file of f through a map recorder, laid out
@@ -270,7 +313,17 @@ func mapNames(m [][3]any) string {
 // paddingOnBothSides says whether a map has padding before its content and
 // after it, the layout a format writes for a cut (format.Request.CutAt).
 func paddingOnBothSides(m [][3]any) bool {
+	front, back := paddingSides(m)
+	return front && back
+}
+
+// paddingSides says whether a map has padding in front of its content, and
+// whether it has padding behind it.
+func paddingSides(m [][3]any) (front, back bool) {
 	at := slices.IndexFunc(m, func(r [3]any) bool { return r[0] == string(format.RoleContent) })
+	if at < 0 {
+		return false, false
+	}
 	isPadding := func(r [3]any) bool { return r[0] == string(format.RolePadding) }
-	return at > 0 && slices.ContainsFunc(m[:at], isPadding) && slices.ContainsFunc(m[at+1:], isPadding)
+	return slices.ContainsFunc(m[:at], isPadding), slices.ContainsFunc(m[at+1:], isPadding)
 }

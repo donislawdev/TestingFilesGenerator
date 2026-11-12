@@ -43,18 +43,37 @@ var notYetCutAtTheShare = map[string]notYet{
 	"xlsx":  {paddingBehind, 64 << 10, 50},
 	"pptx":  {paddingBehind, 64 << 10, 50},
 	"targz": {paddingBehind, 64 << 10, 50},
-	"jpg":   {paddingInFront, 64 << 10, 50},
-	"ico":   {paddingInFront, 64 << 10, 50},
 	// Both take the share at 64 KiB and above. At 4 KiB what stands behind the
 	// picture is more than a small share, so a cut of 1% keeps all of it.
 	"webp": {smallBehind, 4 << 10, 1},
 	"tiff": {smallBehind, 4 << 10, 1},
 }
 
+// listedBeforeTheRule is every format notYetCutAtTheShare may name: the ones
+// that missed the share on 2026-11-12, when the owner decided that every format
+// cuts at the share before the next release and that a format added later does
+// from its first commit (docs/TRUNCATE-2026-11-11.md section 3a). It never
+// grows, so a new format cannot wait on the ratchet - tools/doctor.py runs this
+// guard for it, and it stays red until the format splits its padding for
+// format.Request.CutAt.
+var listedBeforeTheRule = []string{"gif", "avif", "jxl", "mp4", "webm", "pdf", "zip", "docx", "xlsx", "pptx", "targz", "webp", "tiff"}
+
+// listedAfterTheRule is a problem for every format notYetAt names that
+// listedBeforeTheRule does not.
+func listedAfterTheRule(notYetAt map[string]notYet) []string {
+	var out []string
+	for id := range notYetAt {
+		if !slices.Contains(listedBeforeTheRule, id) {
+			out = append(out, id+": listed in notYetCutAtTheShare after 2026-11-12 - a format added since cuts at the share from its first commit, so split its padding for format.Request.CutAt instead (docs/TRUNCATE-2026-11-11.md section 3a)")
+		}
+	}
+	slices.Sort(out)
+	return out
+}
+
 const (
-	paddingBehind  = "its padding stands only behind its content, so a large file cut at any share keeps all of it"
-	paddingInFront = "its padding stands only in front of its content, so a large file cut at any share keeps none of it"
-	smallBehind    = "in a small file the padding or directory behind its content is more than a small share"
+	paddingBehind = "its padding stands only behind its content, so a large file cut at any share keeps all of it"
+	smallBehind   = "in a small file the padding or directory behind its content is more than a small share"
 )
 
 // shareSlack is how far, in points of a percent, the share of the content a
@@ -125,6 +144,12 @@ func TestACutTakesTheShareOfTheContentItIsAskedFor(t *testing.T) {
 	}
 	for _, problem := range shareVerdicts(problems, notYetCutAtTheShare) {
 		t.Error(problem)
+	}
+	for _, problem := range listedAfterTheRule(notYetCutAtTheShare) {
+		t.Error(problem)
+	}
+	if len(listedAfterTheRule(map[string]notYet{"newformat": {paddingBehind, 64 << 10, 50}})) != 1 {
+		t.Errorf("canary: a format listed that was not listed on 2026-11-12 passed")
 	}
 
 	// Canaries.

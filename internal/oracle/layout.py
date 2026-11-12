@@ -428,13 +428,25 @@ def layout_gif(data):
 
 def layout_jpg(data):
     """The start marker, the comment segments, then every segment and the scan
-    up to the end marker as content, and the end marker."""
+    up to the end marker as content, fill bytes in front of a marker as
+    padding, and the end marker.
+
+    Fill bytes are X'FF' bytes, any number of which may stand in front of any
+    marker (ITU T.81 B.1.1.2): every FF of a run but the last, which starts the
+    marker itself."""
     if data[:2] != b"\xff\xd8":
         raise NoMap("no start of image marker")
     out, pos = [[STRUCTURE, 0, 2]], 2
     while pos < len(data):
         if data[pos] != 0xFF:
             raise NoMap(f"no marker at {pos}")
+        run = pos
+        while run + 1 < len(data) and data[run + 1] == 0xFF:
+            run += 1
+        if run > pos:
+            out.append([PADDING, pos, run - pos])
+            pos = run
+            continue
         kind = data[pos + 1]
         if kind == 0xD9:
             out.append([END, pos, 2])
@@ -454,14 +466,18 @@ def layout_jpg(data):
 
 def layout_ico(data):
     """The directory, then whatever lies before the offset its one entry gives,
-    then the picture it counts."""
+    then the picture it counts, then whatever lies behind it - space no entry
+    points at, as the space in front is."""
     if data[:4] != b"\x00\x00\x01\x00" or struct.unpack("<H", data[4:6])[0] != 1:
         raise NoMap("not an icon directory of one entry")
     head = 6 + 16
     size, at = struct.unpack("<II", data[14:22])
-    if at + size != len(data):
+    if at < head or at + size > len(data):
         raise NoMap(f"the picture runs from {at} for {size} B and the file is {len(data)} B")
-    return [[STRUCTURE, 0, head], [PADDING, head, at - head], [CONTENT, at, size]]
+    out = [[STRUCTURE, 0, head], [PADDING, head, at - head], [CONTENT, at, size]]
+    if at + size < len(data):
+        out.append([PADDING, at + size, len(data) - at - size])
+    return out
 
 
 def tiff_values(data, kind, count, value_at):

@@ -300,7 +300,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	// The closing chunk is always the final twelve bytes, so hold those back
 	// and let everything before them stream straight out. Nothing is buffered
 	// beyond that, which matters because a picture can be very large.
-	holder := &tailHolder{w: w, keep: iendSize}
+	holder := &format.TailHolder{W: w, Keep: iendSize}
 	if err := encode(holder, m); err != nil {
 		return err
 	}
@@ -310,7 +310,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		// largest rung, so this is where the exact size arrives. The padding is
 		// whatever is left, which is the same arithmetic planning would have
 		// done with the same number.
-		m.body = holder.written
+		m.body = holder.Written
 		m.padData = p.Bytes - m.body - iendSize - chunkOverhead
 		if m.padData < 0 || m.padData > maxChunkData {
 			// Unreachable unless ladderCeiling is wrong, and then it is better
@@ -320,10 +320,10 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 				m.body, m.padData, p.Bytes))
 		}
 		markAfterThePicture(w, m, false)
-	} else if holder.written != m.body {
-		return core.Defect(fmt.Errorf("png: the picture encoded to %d B where planning said %d B", holder.written, m.body))
+	} else if holder.Written != m.body {
+		return core.Defect(fmt.Errorf("png: the picture encoded to %d B where planning said %d B", holder.Written, m.body))
 	}
-	if string(holder.tail[4:8]) != "IEND" {
+	if string(holder.Tail[4:8]) != "IEND" {
 		return core.Defect(fmt.Errorf("png: the encoded stream does not end with IEND"))
 	}
 
@@ -333,7 +333,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		}
 	}
 
-	_, err := w.Write(holder.tail)
+	_, err := w.Write(holder.Tail)
 	return err
 }
 
@@ -501,11 +501,11 @@ func encode(w io.Writer, m memo) error {
 // couple of milliseconds. Nothing is held in memory - the bytes are counted
 // and dropped.
 func encodedBodySize(m memo) (int64, error) {
-	holder := &tailHolder{w: io.Discard, keep: iendSize}
+	holder := &format.TailHolder{W: io.Discard, Keep: iendSize}
 	if err := encode(holder, m); err != nil {
 		return 0, err
 	}
-	return holder.written, nil
+	return holder.Written, nil
 }
 
 // minimumBytes is the smallest file this generator can produce: a one pixel
@@ -580,28 +580,4 @@ func writePaddingChunk(ctx context.Context, w io.Writer, kind string, seed uint6
 	binary.BigEndian.PutUint32(tail[:], crc.Sum32())
 	_, err := w.Write(tail[:])
 	return err
-}
-
-// tailHolder passes bytes through while keeping the last keep bytes back, so
-// the caller can insert something in front of them.
-type tailHolder struct {
-	w       io.Writer
-	keep    int
-	tail    []byte
-	written int64
-}
-
-func (t *tailHolder) Write(p []byte) (int, error) {
-	n := len(p)
-	buf := append(t.tail, p...)
-	if len(buf) > t.keep {
-		emit := buf[:len(buf)-t.keep]
-		if _, err := t.w.Write(emit); err != nil {
-			return 0, err
-		}
-		t.written += int64(len(emit))
-		buf = buf[len(buf)-t.keep:]
-	}
-	t.tail = append([]byte(nil), buf...)
-	return n, nil
 }

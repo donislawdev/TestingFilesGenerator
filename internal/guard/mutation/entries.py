@@ -465,7 +465,7 @@ MUTATIONS = [
     (
         "an icon points at its picture without counting the padding in front of it",
         "internal/format/ico/ico.go",
-        'binary.LittleEndian.PutUint32(e[12:16], uint32(int64(preamble)+m.gap))',
+        'binary.LittleEndian.PutUint32(e[12:16], uint32(int64(preamble)+front))',
         'binary.LittleEndian.PutUint32(e[12:16], uint32(preamble))',
         "TestEveryFormatSurvivesItsReferenceTool",
     ),

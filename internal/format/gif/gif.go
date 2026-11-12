@@ -337,7 +337,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 
 	// The trailer is always the final byte, so hold it back and let the rest
 	// stream out. Nothing else is buffered.
-	holder := &tailHolder{w: w, keep: trailerSize}
+	holder := &format.TailHolder{W: w, Keep: trailerSize}
 	if err := encode(holder, m); err != nil {
 		return err
 	}
@@ -345,17 +345,17 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		// Planning skipped the encoding, so this is where the exact size
 		// arrives and the padding gets settled - the same arithmetic planning
 		// would have done with the same number.
-		m.body = holder.written
+		m.body = holder.Written
 		if err := settlePadding(&m, p.Bytes, m.body+trailerSize); err != nil {
 			// Unreachable unless ladderCeiling is wrong, and then saying so
 			// beats writing a file of the wrong length.
 			return core.Defect(fmt.Errorf("gif: %w - ladderCeiling is wrong", err))
 		}
 		markAfterThePicture(w, m, p.Bytes, false)
-	} else if holder.written != m.body {
-		return core.Defect(fmt.Errorf("gif: the picture encoded to %d B where planning said %d B", holder.written, m.body))
+	} else if holder.Written != m.body {
+		return core.Defect(fmt.Errorf("gif: the picture encoded to %d B where planning said %d B", holder.Written, m.body))
 	}
-	if holder.tail[0] != 0x3B {
+	if holder.Tail[0] != 0x3B {
 		return core.Defect(fmt.Errorf("gif: the encoded stream does not end with the trailer"))
 	}
 
@@ -365,7 +365,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		}
 	}
 
-	_, err := w.Write(holder.tail)
+	_, err := w.Write(holder.Tail)
 	return err
 }
 
@@ -512,11 +512,11 @@ func chooseSize(r format.Request, label string) (memo, error) {
 }
 
 func encodedBodySize(m memo) (int64, error) {
-	holder := &tailHolder{w: io.Discard, keep: trailerSize}
+	holder := &format.TailHolder{W: io.Discard, Keep: trailerSize}
 	if err := encode(holder, m); err != nil {
 		return 0, err
 	}
-	return holder.written, nil
+	return holder.Written, nil
 }
 
 // minimumBytes is the smallest file this generator can produce: a one pixel
@@ -532,28 +532,4 @@ func minimumBytes() int64 {
 		return 1 << 62
 	}
 	return body + trailerSize
-}
-
-// tailHolder passes bytes through while keeping the last keep bytes back, so
-// the caller can insert something in front of them.
-type tailHolder struct {
-	w       io.Writer
-	keep    int
-	tail    []byte
-	written int64
-}
-
-func (t *tailHolder) Write(p []byte) (int, error) {
-	n := len(p)
-	buf := append(t.tail, p...)
-	if len(buf) > t.keep {
-		emit := buf[:len(buf)-t.keep]
-		if _, err := t.w.Write(emit); err != nil {
-			return 0, err
-		}
-		t.written += int64(len(emit))
-		buf = buf[len(buf)-t.keep:]
-	}
-	t.tail = append([]byte(nil), buf...)
-	return n, nil
 }
