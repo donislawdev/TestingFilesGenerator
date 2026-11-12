@@ -25,7 +25,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/textenc"
 	"github.com/donislawdev/TestingFilesGenerator/internal/oracle"
@@ -58,7 +57,7 @@ func (c encodingCase) refusedBy(id string) bool {
 // rather than silently measuring an empty wrapper.
 func labelLine(t *testing.T, id string, size int64, seed uint64) string {
 	t.Helper()
-	body := core.Label(id, size, seed)
+	body := format.Request{Bytes: size, Seed: seed}.LabelText(id)
 	switch id {
 	case "txt":
 		return body + "\n"

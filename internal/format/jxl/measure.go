@@ -28,13 +28,13 @@ func FileSizeFor(width, height, quality int, seed uint64, label string) (int, er
 	return len(coded) + containerOverhead + boxHeader, nil
 }
 
-// Rungs reports the ladder as pairs of dimensions with the ceiling each one
-// carries, so a probe and a guard can walk exactly the table planning walks
-// rather than a second copy of it.
-func Rungs() [][3]int64 {
-	out := make([][3]int64, 0, len(sizeLadder))
+// Rungs reports the ladder as the dimensions of each rung with its two
+// ceilings - for a file nothing damages and for a damaged one - so a probe and
+// a guard walk exactly the table planning walks rather than a second copy.
+func Rungs() [][4]int64 {
+	out := make([][4]int64, 0, len(sizeLadder))
 	for _, r := range sizeLadder {
-		out = append(out, [3]int64{int64(r.width), int64(r.height), r.ceiling})
+		out = append(out, [4]int64{int64(r.width), int64(r.height), r.ceiling, r.damaged})
 	}
 	return out
 }

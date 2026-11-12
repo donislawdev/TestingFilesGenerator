@@ -10,8 +10,8 @@ import (
 
 	"github.com/gen2brain/gav1d/av1"
 
-	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/video"
 )
 
@@ -333,7 +333,7 @@ func tilesOfFilmHold(t *testing.T, props map[string]string, size int64, changes 
 	if err != nil {
 		t.Fatal(err)
 	}
-	label := core.Label("webm", size, seed)
+	label := format.Request{Bytes: size, Seed: seed}.LabelText("webm")
 	var dec av1.Decoder
 	if _, err := dec.DecodeOBUs(append([]byte{0x12, 0x00}, f.blocks[0].data...)); err != nil {
 		t.Fatalf("%v: gav1d does not decode the film's first frame: %v", props, err)

@@ -112,7 +112,7 @@ type memo struct {
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = core.Label("ico", r.Bytes, r.Seed)
+		label = r.LabelText("ico")
 	}
 
 	embed, err := embedding(r.Properties)

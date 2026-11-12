@@ -244,7 +244,7 @@ func withinZip32(total int64) error {
 // comment, then settle the label, then measure again.
 func settleSize(m *memo, r format.Request) (target, bare int64, label string, err error) {
 	if r.Label && !r.SizeFromContents {
-		label = core.Label("zip", r.Bytes, r.Seed)
+		label = r.LabelText("zip")
 	}
 	m.comment = label
 
@@ -270,7 +270,7 @@ func settleSize(m *memo, r format.Request) (target, bare int64, label string, er
 		size := bare
 		settled := false
 		for i := 0; i < 4 && !settled; i++ {
-			m.comment = core.Label("zip", size, r.Seed)
+			m.comment = r.LabelSized("zip", size)
 			measured, err := archiveSize(*m)
 			if err != nil {
 				return 0, 0, "", err

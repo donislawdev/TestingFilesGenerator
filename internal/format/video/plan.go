@@ -30,7 +30,7 @@ func (f Film) Stream() Stream {
 func Plan(formatID string, r format.Request, need func(Stream) int64, refuse func(requested, need int64, c Choice, s Settings) error) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = core.Label(formatID, r.Bytes, r.Seed)
+		label = r.LabelText(formatID)
 	}
 	s, err := Read(formatID, r.Properties)
 	if err != nil {

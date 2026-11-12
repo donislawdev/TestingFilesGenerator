@@ -112,7 +112,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 
 	m := memo{seed: r.Seed, codec: codec, source: codec.Source(r.Bytes)}
 	if r.Label {
-		line := core.Label("txt", r.Bytes, r.Seed) + "\n"
+		line := r.LabelText("txt") + "\n"
 		if int64(len(line)) <= m.source {
 			m.labelLine = line
 		} else {

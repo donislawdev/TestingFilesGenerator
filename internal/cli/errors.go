@@ -248,6 +248,21 @@ func classifyRequest(err error) (int, bool) {
 	if errors.As(err, &unknownPreset) {
 		return ExitUsage, true
 	}
+	if code, ok := classifyDamage(err); ok {
+		return code, true
+	}
+	if code, ok := classifyFormat(err); ok {
+		return code, true
+	}
+	return 0, false
+}
+
+// classifyDamage covers what was asked to be broken.
+//
+// Its own function rather than more of classifyRequest, which crossed the
+// line the crowding guard draws at sixty lines when the setting refusal
+// arrived. Asked before classifyFormat, for the reason the last branch gives.
+func classifyDamage(err error) (int, bool) {
 	// A damage this build does not know is a typo in the invocation, the same
 	// class as an unknown preset - a recipe naming one is refused while the
 	// recipe is read, so anything reaching here came off the command line.
@@ -288,8 +303,14 @@ func classifyRequest(err error) (int, bool) {
 	if errors.As(err, &unsized) {
 		return ExitUsage, true
 	}
-	if code, ok := classifyFormat(err); ok {
-		return code, true
+	// The same class once more: a setting a damage does not take, or a value
+	// it does not allow, is wrong for every format and size. Asked before
+	// classifyFormat on purpose, because the refusal it wraps is the one a
+	// format setting out of range ends with FORMAT for - and that one is a fact
+	// about the format, which this is not.
+	var setting *damage.SettingError
+	if errors.As(err, &setting) {
+		return ExitUsage, true
 	}
 	return 0, false
 }

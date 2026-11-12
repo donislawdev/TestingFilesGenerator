@@ -514,9 +514,19 @@ tfg generate --format png --size 20kb --count 10 --damage zero-head:bytes=16
 tfg generate --format zip --size 5mb --damage truncate:missing=30
 ```
 
+A damaged file names its damage in its label, beside the size it has on disk:
+`tfg - txt - 10485760 B - damage truncate:missing=50 - seed c2a547b2`. So two
+texts cut by different shares can be told apart from their first line, although
+the text after it is the same. A long list of damages names the first few and
+how many more there are, and the manifest lists every one. The label is still
+written before the damage, so the damage can overwrite it, and the manifest does
+not promise it is there.
+
 The smallest file a damage can be given follows its settings, so the column is
 measured with the defaults. Ask for less and the run is refused before anything is
-written, naming a size that would work.
+written, naming a size that would work. A setting outside what the damage takes,
+such as `truncate:missing=95`, is refused before anything is written as well, and
+the run ends with code 2.
 
 Asking for `--expected accept` beside a damage that breaks the rules of the
 format is refused too, because nothing that follows them accepts the file. Where

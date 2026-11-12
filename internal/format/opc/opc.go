@@ -453,10 +453,21 @@ func Line(rng *rand.Rand, _ int) string {
 	return Fixed(b.String(), LineWidth)
 }
 
-// LabelWidth is the room a label gets. Wider than any label core.Label can
-// produce, so the text is never cut, and constant so the floor does not move
-// with the number of digits in the size.
+// LabelWidth is the room a label gets. Wider than the label of any file
+// nothing damages, so that text is never cut, and constant so the floor does
+// not move with the number of digits in the size.
 const LabelWidth = 64
+
+// FixedLabel is label padded to LabelWidth, or whole where it is longer.
+//
+// Longer is the label of a damaged file, which names its damage. It keeps its
+// own length rather than being cut to the width, because a label missing the
+// end of its seed points at a file nobody can make again - and the floor that
+// then moves with the digits is the floor of a damaged file, whose generator
+// is asked with the same label it writes, so it names that floor itself.
+func FixedLabel(label string) string {
+	return Fixed(label, max(LabelWidth, len(label)))
+}
 
 // Fixed cuts or pads text to exactly n bytes.
 //

@@ -301,7 +301,7 @@ func planChildren(ctx context.Context, r format.Request, groups []format.Content
 // label. The two settle against each other the same way they do in ZIP.
 func settleSize(m *memo, r format.Request) (target int64, label string, err error) {
 	if r.Label && !r.SizeFromContents {
-		label = core.Label("targz", r.Bytes, r.Seed)
+		label = r.LabelText("targz")
 	}
 	m.comment = label
 
@@ -320,7 +320,7 @@ func settleSize(m *memo, r format.Request) (target int64, label string, err erro
 	// the wrong size is worse than the work of finding out.
 	size := bare
 	for i := 0; i < 4; i++ {
-		m.comment = core.Label("targz", size, r.Seed)
+		m.comment = r.LabelSized("targz", size)
 		measured := archiveSize(*m)
 		if measured == size {
 			return size, m.comment, nil

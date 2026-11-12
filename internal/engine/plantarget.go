@@ -38,17 +38,13 @@ func (pl *planning) files(ctx context.Context, t *Target, desc format.Descriptor
 	// One ending for every file of the target, because it follows the
 	// target's settings and every file shares them.
 	ext := desc.ExtensionFor(t.Properties)
+	damaged := t.Damage.Label()
 	for idx, size := range t.Sizes {
 		fileSeed := core.FileSeed(targetSeed, idx)
 
-		p, err := planWithoutCrashing(ctx, desc, format.Request{
-			Bytes:            size,
-			SizeFromContents: t.SizeFromContents,
-			Contains:         t.Contains,
-			Seed:             fileSeed,
-			Label:            t.Label,
-			Properties:       t.Properties,
-		})
+		r := requestFor(t, fileSeed, damaged)
+		r.Bytes = size
+		p, err := planWithoutCrashing(ctx, desc, r)
 		if err != nil {
 			return atTarget(position, t, err)
 		}
@@ -175,4 +171,25 @@ func (pl *planning) startList(ctx context.Context) error {
 	}
 	pl.out = make([]PlannedFile, 0, max(1, pl.reserve))
 	return nil
+}
+
+// requestFor is what one file of t asks its generator for, all but the size.
+//
+// One place for the three that ask - planning each file, and the floor and
+// each draw of a size from a range - because a field one of them leaves out is
+// a file drawn as one thing and planned as another. The label is where that
+// shows first: it names the damage, and a label is part of the size a
+// generator settles.
+//
+// damaged is t.Damage.Label(), asked once a target by the caller rather than
+// once a file, because it resolves every entry against the registry.
+func requestFor(t *Target, seed uint64, damaged string) format.Request {
+	return format.Request{
+		SizeFromContents: t.SizeFromContents,
+		Contains:         t.Contains,
+		Seed:             seed,
+		Label:            t.Label,
+		Damage:           damaged,
+		Properties:       t.Properties,
+	}
 }

@@ -119,7 +119,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	if r.Label {
 		// A plain line followed by a blank one is a paragraph, which renders
 		// visibly and cannot break the document wherever it sits.
-		line := core.Label("md", r.Bytes, r.Seed) + "\n\n"
+		line := r.LabelText("md") + "\n\n"
 		if int64(len(line)) <= m.source {
 			m.labelLine = line
 		} else {

@@ -88,7 +88,7 @@ type memo struct {
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = core.Label("docx", r.Bytes, r.Seed)
+		label = r.LabelText("docx")
 	}
 
 	paragraphs, err := intProperty(r.Properties, "paragraphs", 1)
@@ -197,7 +197,7 @@ func document(paragraphs int, seed uint64, label string) []byte {
 	b.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`)
 	b.WriteString(`<w:document xmlns:w="` + nsWord + `"><w:body>`)
 	if label != "" {
-		b.WriteString(paragraph(opc.Text(opc.Fixed(label, opc.LabelWidth))))
+		b.WriteString(paragraph(opc.Text(opc.FixedLabel(label))))
 	}
 	for i := 0; i < paragraphs; i++ {
 		b.WriteString(paragraph(opc.Line(rng, wordsPerParagraph)))
@@ -233,7 +233,7 @@ func intProperty(props map[string]string, key string, fallback int) (int, error)
 // text of the first cell or slide, so there the labelled file is smaller.
 func minimumBytes() int64 {
 	smallest := int64(1) << 62
-	for _, label := range []string{"", core.Label("docx", 0, 0)} {
+	for _, label := range []string{"", format.Request{}.LabelText("docx")} {
 		shape, err := opc.Measure(parts(1, 0, label))
 		if err != nil {
 			continue

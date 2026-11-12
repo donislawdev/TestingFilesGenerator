@@ -62,7 +62,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 
 	label := ""
 	if r.Label {
-		label = core.Label("pdf", r.Bytes, r.Seed)
+		label = r.LabelText("pdf")
 	}
 
 	m := memo{opts: opts, seed: r.Seed, label: label}

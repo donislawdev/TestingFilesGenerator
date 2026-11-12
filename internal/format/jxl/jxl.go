@@ -211,7 +211,7 @@ type memo struct {
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = core.Label("jxl", r.Bytes, r.Seed)
+		label = r.LabelText("jxl")
 	}
 
 	q, err := quality(r.Properties)
@@ -337,15 +337,38 @@ func checkFits(want int64, m memo) error {
 // costs a smaller picture than the file had room for and nothing else. Set too
 // low, it would let planning pick a picture that does not fit, so writing
 // checks and says so rather than trusting this table.
+//
+// The second number is the ceiling for a damaged file, whose label names its
+// damage. Measured on 2026-11-12 by tools/probes/jxlladder over 768 seeds, with
+// the label at the longest length each scale still draws: 640x480 coded to
+// 21424 B, 320x240 to 8049 and 256x256 to 6942, the last two above the first
+// number. It is a tenth above what was measured and never below the first
+// number, the margin the video ladder keeps, because the damage text is
+// whatever the chain names. A rung too narrow to draw a damaged label keeps the
+// first number.
 var sizeLadder = []rung{
-	{640, 480, 22762}, {320, 240, 7949}, {256, 256, 6485}, {160, 120, 3542},
-	{80, 60, 1267}, {40, 30, 731}, {20, 15, 452}, {8, 6, 222},
-	{4, 3, 212}, {2, 2, 206}, {1, 1, minimumBytes},
+	{640, 480, 22762, 23567}, {320, 240, 7949, 8854}, {256, 256, 6485, 7637}, {160, 120, 3542, 3542},
+	{80, 60, 1267, 1267}, {40, 30, 731, 731}, {20, 15, 452, 452}, {8, 6, 222, 222},
+	{4, 3, 212, 212}, {2, 2, 206, 206}, {1, 1, minimumBytes, minimumBytes},
 }
 
 type rung struct {
 	width, height int
 	ceiling       int64
+	// damaged is the ceiling for the label of a damaged file, which names its
+	// damage as well. A longer label can put more ink into the picture than
+	// any the ceiling was measured with, until it is too long to draw at all.
+	damaged int64
+}
+
+// bound is the ceiling that speaks for the label r carries. A file nothing
+// damages keeps the ceiling it always had, so its picture and its bytes do not
+// move (D11).
+func (s rung) bound(r format.Request) int64 {
+	if r.Damage != "" {
+		return s.damaged
+	}
+	return s.ceiling
 }
 
 // chooseSize settles the picture size, and codes it only when it has to.
@@ -370,7 +393,7 @@ func chooseSize(r format.Request, label string, q int) (memo, error) {
 	// is for every other format.
 	pick := sizeLadder[len(sizeLadder)-1]
 	for _, step := range sizeLadder {
-		if r.Bytes >= step.ceiling {
+		if r.Bytes >= step.bound(r) {
 			pick = step
 			break
 		}

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/video"
 )
@@ -66,7 +65,7 @@ func TestEveryFilmLayoutIsOneTheAV1SpecificationAllows(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	labels := [2]string{core.Label("webm", 268435456, 7741), ""}
+	labels := [2]string{format.Request{Bytes: 268435456, Seed: 7741}.LabelText("webm"), ""}
 	seen := layoutsSeen{}
 	n := 0
 	for _, w := range sides {

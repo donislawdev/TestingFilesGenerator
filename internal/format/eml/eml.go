@@ -155,7 +155,7 @@ func fit(m *message, r format.Request) ([]format.Note, error) {
 	if !r.Label {
 		return nil, nil
 	}
-	m.label = core.Label("eml", r.Bytes, r.Seed)
+	m.label = r.LabelText("eml")
 	if m.size() <= r.Bytes {
 		return nil, nil
 	}
@@ -177,7 +177,7 @@ func fit(m *message, r format.Request) ([]format.Note, error) {
 func settle(m *message, r format.Request) int64 {
 	size := m.size()
 	for round := 0; r.Label && round < 8; round++ {
-		m.label = core.Label("eml", size, r.Seed)
+		m.label = r.LabelSized("eml", size)
 		next := m.size()
 		if next == size {
 			break

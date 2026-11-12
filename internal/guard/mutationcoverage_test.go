@@ -136,6 +136,24 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	// Broken once each on 2026-11-12 while they were written, one change at a
+	// time and restored (docs/DAMAGE-SETTINGS-LABEL-2026-11-12.md). The first
+	// also carries a canary of its own check.
+	"TestEveryDamageSettingItsDeclarationForbidsIsRefusedWithoutARecipe": "its own canary - a plan that went through and a refusal about the first entry of the chain, both rejected by its check - and broken on 2026-11-12 " +
+		"by taking damage.Chain.Check out of engine.prepareDamage: red, every value went through.",
+	"TestADamageSettingOutsideItsRangeIsRefusedUnderItsBox": "broken on 2026-11-12 by taking damage.Chain.Check out of engine.prepareDamage: red, the window wrote the file and the box said nothing.",
+	"TestADamagedFileStatesItsSizeOnDiskAndItsDamage": "its own canary - the label it was written against, naming the size before the damage and no damage, rejected by its check - and broken on 2026-11-12 " +
+		"twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times.",
+	"TestATruncatedTextSaysHowMuchWasCut": "broken on 2026-11-12 twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times.",
+	"TestALongDamageLabelLeavesEveryFormatWhole": "broken on 2026-11-12 by letting damage.Chain.Label return the whole chain past LabelLimit: red, " +
+		"its own reach check says forty damages no longer fit the limit (docs/REVIEW-234-2026-11-12.md).",
+	"TestEveryAvifRungStillFitsInsideItsDeclaredCeilings": "its own reach check - no damaged label drawn is a failure - and broken on 2026-11-12 twice, with " +
+		"the heaviest seeds: the first ceiling of 640x480 set back to 16389 (red, 17314 B) and the second to 18722 (red, 20024 B). " +
+		"Without those seeds both stayed green (docs/REVIEW-234-2026-11-12.md).",
+	"TestADamageLabelIsBoundedAndSaysHowManyItLeftOut": "its own canary - no chain up to 200 damages shortened is a failure - and broken on 2026-11-12 by letting damage.Chain.Label return the whole chain: red.",
+	"TestADamagedMailCarriesItsLabelWholeInEveryTextEncoding": "broken on 2026-11-12 twice: eml writing the label raw in quoted-printable (red, the one damage label read back as bytesd), " +
+		"and eml leaving a long label on one line (red, a line of 92 characters).",
+	"TestEveryCharacterOfADamagedLabelCanBeDrawn": "its own canary - a character the font never had must not count as drawn - and broken on 2026-11-12 by taking = out of the picture font: red.",
 	// What breaks it lives in a module, not in a file of this repository, so
 	// no mutation of this tree reaches it - the dependency it was written
 	// against is the break.

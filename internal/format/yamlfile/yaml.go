@@ -179,7 +179,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		// sits in front of the document where a person opening the file reads
 		// it first. Nothing in the label needs escaping: it is plain ASCII and
 		// a comment runs to the end of the line.
-		line := "# " + core.Label("yaml", r.Bytes, r.Seed) + "\n"
+		line := "# " + r.LabelText("yaml") + "\n"
 		// It has to leave room for a whole document beside it, or the file
 		// would be a comment and a root key with nothing under it.
 		if int64(len(line))+min <= r.Bytes {

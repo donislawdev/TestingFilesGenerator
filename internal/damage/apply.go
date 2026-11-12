@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -92,12 +94,30 @@ func (d Descriptor) checkOne(p format.Property, raw string) error {
 	}
 }
 
-// Check is the first problem with the values stated, for the one-target path
-// from the command line flags where there is no form to lay four of them out
-// on.
-func (d Descriptor) Check(v Values) error {
-	if bad := d.CheckEach(v); len(bad) > 0 {
-		return bad[0]
+// Check is the first problem with what this chain states: a damage this build
+// does not know, or a setting its declaration does not take or does not allow.
+//
+// The engine asks it, for the command line and the window, which hand it a
+// chain without reading a recipe. The recipe reader asks CheckEach of every
+// entry and reports each problem with its address, so this is a second caller
+// of the same rule rather than a copy of it - the shape O199 gave the
+// expectation. The first problem only, as format.Descriptor.CheckProperties
+// gives it beside this: a window draws one damage at a time, and the engine
+// addresses one refusal per target.
+//
+// Asked before a byte is written, because a value past the declaration does
+// not fail later. The settings are read with a fallback to the default
+// (missingShare, junkBytes, headBytes), so without this the file would be cut
+// by the default and the manifest would record the value as written.
+func (c Chain) Check() error {
+	for i, s := range c {
+		d, err := Get(s.ID)
+		if err != nil {
+			return err
+		}
+		if bad := d.CheckEach(s.Values); len(bad) > 0 {
+			return &SettingError{Position: i + 1, Err: bad[0]}
+		}
 	}
 	return nil
 }
@@ -345,6 +365,86 @@ func (c Chain) String() string {
 		out = append(out, s.String())
 	}
 	return fmt.Sprint(out)
+}
+
+// LabelLimit is the most bytes the damage takes up in a label.
+//
+// The label lands in fields with limits of their own, and the tightest one
+// measured is a gzip comment, which Go's reader refuses from 512 bytes
+// (compress/gzip, a 512 byte buffer). A chain has no length limit of its own,
+// so without this a long one would break a format before any damage was
+// applied - an archive Go cannot open, a ZIP comment past its padding. Bounded
+// here, once, so a format has one length to be ready for rather than every
+// length a recipe can write (TestALongDamageLabelLeavesEveryFormatWhole).
+const LabelLimit = 160
+
+// Label is the chain as the label of a damaged file states it: every entry in
+// order, its settings resolved the way the manifest records them, joined by
+// " then " - "truncate:missing=50 then append-junk:bytes=1024". Empty for an
+// empty chain, which is a file whose label does not change.
+//
+// Resolved rather than as written, for the reason Resolved gives: the label
+// answers what was done to this file, and its reader should not need the
+// defaults of the build that wrote it. ASCII whatever a setting holds, because
+// the label goes into encodings where nothing else is sure to survive
+// (format/label.go): a value with anything else in it, or with a space or one
+// of the separators, is written quoted with escapes.
+//
+// At most LabelLimit bytes. A chain longer than that names the entries that
+// fit and how many more there are - "... and 12 more" - and the manifest lists
+// every one. An entry too long to fit on its own is named by its damage alone.
+func (c Chain) Label() string {
+	out := make([]string, 0, len(c))
+	for _, s := range c {
+		values := Values{}
+		for name, value := range s.Resolved() {
+			values[name] = plainOrQuoted(value)
+		}
+		out = append(out, Spec{ID: s.ID, Values: values}.String())
+	}
+	if whole := strings.Join(out, " then "); len(whole) <= LabelLimit {
+		return whole
+	}
+	return shortened(c, out)
+}
+
+// shortened is the entries of a chain that fit in LabelLimit with room left
+// for saying how many did not.
+func shortened(c Chain, entries []string) string {
+	kept := ""
+	for i, entry := range entries {
+		if i == 0 && len(entry) > LabelLimit/2 {
+			entry = c[0].ID
+		}
+		next := entry
+		if kept != "" {
+			next = kept + " then " + entry
+		}
+		if len(next)+len(moreThan(len(entries)-i-1)) > LabelLimit {
+			return kept + moreThan(len(entries)-i)
+		}
+		kept = next
+	}
+	return kept
+}
+
+// moreThan is what a shortened label says about the entries it leaves out.
+func moreThan(n int) string {
+	if n == 0 {
+		return ""
+	}
+	return " and " + strconv.Itoa(n) + " more"
+}
+
+// plainOrQuoted is v as it is when every byte of it is printable ASCII other
+// than the separators a label entry is written with, and quoted otherwise.
+func plainOrQuoted(v string) string {
+	for i := 0; i < len(v); i++ {
+		if b := v[i]; b <= ' ' || b > '~' || b == ',' || b == '=' || b == ':' || b == '"' {
+			return strconv.QuoteToASCII(v)
+		}
+	}
+	return v
 }
 
 // Resolved is the settings this entry was applied with, defaults filled in.

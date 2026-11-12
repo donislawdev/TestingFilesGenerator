@@ -14,6 +14,19 @@ import (
 type Rung struct {
 	Width, Height int
 	Ceiling       int
+	// Damaged is the ceiling for a film whose label names its damage. A
+	// longer label can put more ink into a picture than any the first ceiling
+	// was measured with, until it is too long to draw at all.
+	Damaged int
+}
+
+// bound is the ceiling that speaks for the label r carries. A film nothing
+// damages keeps the ceiling it always had, so its bytes do not move (D11).
+func (g Rung) bound(r format.Request) int {
+	if r.Damage != "" {
+		return g.Damaged
+	}
+	return g.Ceiling
 }
 
 // Ladder is tried from the largest down when the request names no picture
@@ -47,10 +60,18 @@ type Rung struct {
 // room for and nothing else. One too low would let planning promise a size
 // writing cannot keep, so writing checks every picture and says so rather
 // than trusting this table.
+//
+// The second number is the ceiling for a damaged film, whose label names its
+// damage, by the same rule: a tenth above the largest picture measured with
+// the label at the longest length each scale still draws, never below the
+// first number. Measured on 2026-11-12 by tools/probes/videoladder, the same
+// three passes: on 640x360 a damaged label coded to 16946 B, which left less
+// than a fiftieth of the first number above it, and on every other rung it
+// coded smaller than the label of a film nothing damages.
 var Ladder = []Rung{
-	{640, 360, 17277}, {426, 240, 11156}, {320, 180, 8322}, {256, 144, 6754},
-	{160, 90, 3951}, {80, 45, 1454}, {40, 23, 825}, {16, 9, 149},
-	{4, 3, 46}, {2, 2, 31}, {1, 1, 6},
+	{640, 360, 17277, 18641}, {426, 240, 11156, 11156}, {320, 180, 8322, 8322}, {256, 144, 6754, 6754},
+	{160, 90, 3951, 3951}, {80, 45, 1454, 1454}, {40, 23, 825, 825}, {16, 9, 149, 149},
+	{4, 3, 46, 46}, {2, 2, 31, 31}, {1, 1, 6, 6},
 }
 
 // Choice is the picture a film shows.
@@ -216,7 +237,7 @@ func Choose(formatID string, r format.Request, s Settings, label string, fits fu
 	var last Choice
 	var lastStream Stream
 	for _, rung := range Ladder {
-		c, st, err := onRung(base, rung, s)
+		c, st, err := onRung(base, rung, rung.bound(r), s)
 		if err != nil {
 			return Choice{}, Stream{}, err
 		}
@@ -229,15 +250,15 @@ func Choose(formatID string, r format.Request, s Settings, label string, fits fu
 }
 
 // onRung is the picture of one rung and the stream planning sizes it by: the
-// rung's ceiling for every picture, or - when the request named a quality the
-// ceilings were not measured at - a reserve from a sample of the film's
-// pictures, coded (sampleReserve). That is the slow road AVIF takes for the
-// same reason, and only runs that asked for it pay.
-func onRung(base Choice, rung Rung, s Settings) (Choice, Stream, error) {
+// rung's ceiling for the label the film carries, for every picture, or - when
+// the request named a quality the ceilings were not measured at - a reserve
+// from a sample of the film's pictures, coded (sampleReserve). That is the slow
+// road AVIF takes for the same reason, and only runs that asked for it pay.
+func onRung(base Choice, rung Rung, ceiling int, s Settings) (Choice, Stream, error) {
 	c := base
-	c.Width, c.Height, c.Ceiling = rung.Width, rung.Height, rung.Ceiling
+	c.Width, c.Height, c.Ceiling = rung.Width, rung.Height, ceiling
 	if !s.QualityNamed {
-		return c, NewStream(s.Timeline, rung.Ceiling, rung.Width, rung.Height, c.Label), nil
+		return c, NewStream(s.Timeline, ceiling, rung.Width, rung.Height, c.Label), nil
 	}
 	tiles, reserve, err := sampleReserve(c.Width, c.Height, c.Seed, c.Label, s.Timeline, c.QIndex)
 	if err != nil {

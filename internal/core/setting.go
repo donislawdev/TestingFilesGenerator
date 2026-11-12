@@ -116,6 +116,11 @@ const (
 	// that is where the box is, and a bare width would collide with a recipe
 	// key of the same name the day one arrives.
 	KeyProperties = "properties"
+	// KeyDamage is the list of damages a target applies. A refusal about one
+	// setting of one entry is addressed under it - targets[1].damage[2].bytes
+	// - by the recipe reader and the engine alike, so a report names the same
+	// box whichever of them refused it.
+	KeyDamage = "damage"
 )
 
 // TargetAddress is where one setting of one target lives.
@@ -150,6 +155,13 @@ func TargetPrefix(position int) string {
 // positions count from one, for the reason above.
 func ContentAddress(target, entry int, setting string) string {
 	return fmt.Sprintf("%s.%s[%d].%s", TargetPrefix(target), KeyContains, entry, setting)
+}
+
+// DamageAddress is where one setting of one damage lives inside a target,
+// without the target: the engine puts that in front when it knows which
+// target it is (atTarget). The position counts from one, for the reason above.
+func DamageAddress(entry int, setting string) string {
+	return fmt.Sprintf("%s[%d].%s", KeyDamage, entry, setting)
 }
 
 // AddressNamesATarget says whether an address carries the position of the

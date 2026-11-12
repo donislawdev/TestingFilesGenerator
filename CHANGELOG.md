@@ -24,6 +24,18 @@ because it turns other people's test suites red.
   was meant. Only pixels along those edges change, and many files do not
   change at all. A test that compares a file with one 0.5.0 generated from the
   same request can fail.
+- **A damaged file names its damage in its label.** The label now reads
+  `tfg - txt - 10485760 B - damage truncate:missing=50 - seed c2a547b2`: the
+  size the file has on disk, then every damage with its settings, in the order
+  they were applied. A long list of damages names the first few and how many
+  more there are, and the manifest lists every one. A file damaged with
+  `zero-head` and carrying a label is therefore not byte for byte what 0.5.0
+  wrote. Files with no damage, and files made with `--clean`, are unchanged.
+- **An AVIF file just above the size where its picture grows gets the smaller
+  picture.** The picture now steps up to 160x120 at 3865 B, to 256x256 at
+  5493 B, to 320x240 at 7732 B and to 640x480 at 18722 B, about a tenth above
+  where it did. A file between the old step and the new one is not byte for
+  byte what 0.5.0 wrote.
 
 ### Added
 
@@ -164,6 +176,18 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **An AVIF file asked for just above the size where its picture grows is
+  written.** In 0.5.0 about a quarter of the files asked for at 16389 or
+  16439 B were not written at all, and the run ended with "1 file could not be
+  produced" although a preview had accepted them. The same happened, less
+  often, at the smaller steps.
+- **A damage setting outside its range is refused on the command line and in
+  the window.** `--damage truncate:missing=95` cut the default half, wrote the
+  file, ended with code 0 and recorded `missing: 95` in the manifest, and
+  `--damage zero-head:bytes=99999999999` zeroed 8 bytes. A setting the damage
+  does not take, such as `truncate:foo=1`, went through as well. Now the run
+  ends with code 2 before anything is written and says what the setting takes,
+  and the window shows that under the field. A recipe was already refused.
 - **An AVIF picture wider than 4096 px, or larger than 4096 x 2304 px, opens
   now.** Every release since AVIF arrived in 0.3.0 wrote such a picture as a
   file no viewer reads: Pillow, ImageMagick and libaom all refused it as
