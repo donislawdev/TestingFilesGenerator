@@ -223,16 +223,47 @@ func TestATruncatedFileIsTheStartOfTheWholeOne(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		all := wholeOfItsPlan(t, cut)
-		if !bytes.HasPrefix(all, got) {
-			t.Errorf("%s: the truncated file is not the first %d B of the %d B file its plan writes", f.ID, size, len(all))
-		}
-		// A format that cannot write the whole the cut asks for starts from
-		// the next size it can, so the whole is never shorter.
-		if int64(len(all)) < whole {
-			t.Errorf("%s: its plan writes %d B where the cut asks for at least %d B", f.ID, len(all), whole)
+		if problem := startOfTheWhole(got, wholeOfItsPlan(t, cut), size, whole); problem != "" {
+			t.Errorf("%s: %s", f.ID, problem)
 		}
 	}
+
+	// The check on files it has to refuse, and on the one it has to take. A
+	// cut that left nothing is a prefix of any file.
+	sample := []byte("whole whole whole whole ")
+	for _, c := range []struct {
+		name  string
+		got   []byte
+		whole int64
+	}{
+		{"a cut that left nothing", nil, 24},
+		{"a byte changed under the cut", []byte("whole whxle "), 24},
+		{"a whole shorter than the cut asks for", sample[:12], 25},
+	} {
+		if startOfTheWhole(c.got, sample, 12, c.whole) == "" {
+			t.Errorf("canary: %s passed as the start of the whole file", c.name)
+		}
+	}
+	if problem := startOfTheWhole(sample[:12], sample, 12, 24); problem != "" {
+		t.Errorf("canary: the start of the whole file was refused: %s", problem)
+	}
+}
+
+// startOfTheWhole is what is wrong with got as a file cut to its first size
+// bytes from all, a whole the cut asks to be at least whole bytes long, or ""
+// when nothing is.
+func startOfTheWhole(got, all []byte, size, whole int64) string {
+	switch {
+	case int64(len(got)) != size:
+		return fmt.Sprintf("the truncated file is %d B where the cut keeps %d B", len(got), size)
+	case !bytes.HasPrefix(all, got):
+		return fmt.Sprintf("the truncated file is not the first %d B of the %d B file its plan writes", size, len(all))
+	case int64(len(all)) < whole:
+		// A format that cannot write the whole the cut asks for starts from
+		// the next size it can, so the whole is never shorter.
+		return fmt.Sprintf("its plan writes %d B where the cut asks for at least %d B", len(all), whole)
+	}
+	return ""
 }
 
 // wholeOfItsPlan is the whole file a damaged target's plan writes, with no

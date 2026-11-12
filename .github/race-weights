@@ -3,70 +3,73 @@
 # heaviest first, and sends every test not named here by the checksum of its
 # name, counted at the "unlisted" weight.
 #
-# Taken on 2026-11-03 from eight parts of two runs, each test at the longest
-# time any of them took. The race job runs on whatever processor the runner
-# is given, and the same part took 689 s on one and 1202 s on another, every
-# test of it slower by the same factor. The longest time is the slowest
-# processor's, so the parts are even where they are closest to the timeout.
+# Taken on 2026-11-03 from eight parts of two runs, and on 2026-11-12 from the
+# four parts of one more, each test at the longest time any of them took. The
+# race job runs on whatever processor the runner is given, and the same part
+# took 689 s on one and 1202 s on another, every test of it slower by the same
+# factor. The longest time is the slowest processor's, so the parts are even
+# where they are closest to the timeout. A time from a faster processor is
+# scaled up by its part: on 2026-11-12 the listed tests of two parts on an AMD
+# EPYC 9V74 took 1/1.20 and 1/1.15 of their weights.
 # Listed: every test that took 10 s or more. "unlisted" is the mean of the rest.
 #
 # A test that is not here and takes 60 s or more fails its part with the line
 # to add. A test that is here and no longer exists fails every part.
-#
-# Two lines are estimates of 2026-11-12, until a CI run times them: the time
-# under the race detector on the machine the change was made on, times 2.55 -
-# the map guard as it stood before took 26.8 s there and 68.4 s in CI. The map
-# guard, grown by files laid out for a cut, took 33.7 s there, and the cut
-# share guard 16.2 s.
 unlisted 0.58
 348.3 TestAFormatRefusesASizeItCannotDescribe
 343.3 TestAFilmStoppedHalfWayLeavesNoHelperRunning
 329.9 TestEveryFormatHitsTheOrderedSizeExactly
+167.5 TestACompressedZipIsEitherWrittenAtItsSizeOrRefusedInWords
 162.6 TestEveryScreenStillDrawsItsStoredPicture
-155.5 TestACompressedZipIsEitherWrittenAtItsSizeOrRefusedInWords
 142.2 TestEveryTileOfAFilmIsGav1dsCodingOfItsPixelsAndDecodesAsItDoesAlone
+134.0 TestEveryAvifRungStillFitsInsideItsDeclaredCeilings
 130.0 TestTheMinimumThisToolPrintsStandsWhateverTheSeedIs
-117.9 TestFreeBoxesCarryPaddingOfAnyLength
+124.3 TestFreeBoxesCarryPaddingOfAnyLength
 99.9 TestEveryBase64TextSizeIsExact
 93.8 TestAFilmPictureLargerThanAnyAV1LevelIsRefusedNotBroken
-85.9 TestEveryFormatsMapIsTheOneItsStructureReadsBack
-73.6 TestEveryAvifRungStillFitsInsideItsDeclaredCeilings
-67.9 TestADeclaredDefaultIsTheOneTheFormatUses
+84.3 TestEveryFormatsMapIsTheOneItsStructureReadsBack
+68.2 TestADeclaredDefaultIsTheOneTheFormatUses
+65.9 TestNoGeneratorHoldsTheWholeFileInMemory
 65.6 TestADamagedFileIsExactlyTheSizeAskedFor
-64.3 TestNoTrackedFileCarriesPrivateContent
-63.8 TestNoGeneratorHoldsTheWholeFileInMemory
-60.8 TestEveryDamageIsRefusedByTheStructuralCheckInEveryFormat
+64.6 TestNoTrackedFileCarriesPrivateContent
+62.2 TestEveryDamageIsRefusedByTheStructuralCheckInEveryFormat
 57.3 TestAFilmSaysItCarriesItsLabelOnlyWhenAPictureShowsItWhole
+55.6 TestEveryJxlRungStillFitsInsideItsDeclaredCeiling
+55.6 TestTheArchiveScanLooksIntoTheArchivesInside
 55.3 TestAFilmOfANamedSizeKeepsEveryPictureInsideItsReserve
-53.4 TestTheArchiveScanLooksIntoTheArchivesInside
-41.2 TestACutTakesTheShareOfTheContentItIsAskedFor
-38.5 TestAContainerStopsBetweenTheFilesItPlans
+52.2 TestChoosingAToolLaysTheScreenOutAsIfItOpenedWithIt
+38.6 TestAContainerStopsBetweenTheFilesItPlans
 37.5 TestEveryPictureNamedAfterARefusalShowsOne
+36.7 TestJxlStillFitsWhenTheQualityIsNotTheOneTheCeilingsWereMeasuredAt
 36.7 TestTheArchiveScanReadsTheListArchiveZipReads
 35.9 TestTheArchiveScanFindsEveryTrapItNames
-35.5 TestJxlStillFitsWhenTheQualityIsNotTheOneTheCeilingsWereMeasuredAt
-30.8 TestOurOwnGeneratorsHaveNotDrifted
+34.0 TestOurOwnGeneratorsHaveNotDrifted
 29.9 TestTheSameSeedGivesTheSameBytes
-26.8 TestEveryJxlRungStillFitsInsideItsDeclaredCeiling
-26.6 TestTheMinimumStandsWhateverTheSeedIsUnderEveryDeclaredChoice
+27.9 TestTheMinimumStandsWhateverTheSeedIsUnderEveryDeclaredChoice
+25.9 TestEveryLinkOnTheSiteLeadsSomewhere
 24.9 TestEveryEMLSettingSurvivesItsReferenceTool
-24.2 TestEveryLinkOnTheSiteLeadsSomewhere
 24.2 TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole
+23.2 TestAnAVIFLargerThanOneAV1TileSurvivesItsReferenceTool
+23.1 TestACutTakesTheShareOfTheContentItIsAskedFor
+22.4 TestTheLadderCeilingIsAboveEveryPictureTheTopRungMakes
+22.2 TestTheSiteSaysWhatTheToolSays
 20.9 TestAFilmsProgressMovesWithItsPicturesNotItsPadding
 20.7 TestAFilmHoldsTheFramesTheManifestDeclares
 20.7 TestTheWindowBinaryStartsWithoutAConsole
-19.9 TestAFilmWhoseSquareCoversItsLabelSaysSoInItsPlan
-19.9 TestTheSiteSaysWhatTheToolSays
-19.8 TestChoosingAToolLaysTheScreenOutAsIfItOpenedWithIt
+20.3 TestAFilmWhoseSquareCoversItsLabelSaysSoInItsPlan
 19.8 TestTheArchiveScanHoldsNoMoreOfANameThanTheName
+17.4 TestThePresetScreenKeepsTheNameAFileIsSentUnder
+17.0 TestTheSmallestDamagedFileIsTakenAndOneByteLessIsNot
+16.9 TestEveryFormatSurvivesItsReferenceTool
+16.7 TestEveryLanguageDescribesEverythingTheProgramCanProduce
 16.6 TestEveryLanguageDescribesEveryDamage
 16.3 TestTheSameWorkDoneAgainLeavesTheWindowAsItWas
 16.2 TestABuildWithNoWindowInItSaysSoAndKeepsStandardOutputEmpty
-16.0 TestEveryLanguageDescribesEverythingTheProgramCanProduce
 15.4 TestAvifStillFitsWhenTheQualityIsNotTheOneTheCeilingsWereMeasuredAt
 15.1 TestABuildWithoutTheBuildTagsRefusesAndSaysWhy
 14.9 TestAShortcutCannotStartASecondRunDuringTheFirst
 14.6 TestTheLicenceCommandListsWhatTheBinaryLinks
-14.4 TestEveryFormatSurvivesItsReferenceTool
 12.2 TestTheMemoryFlagReachesThePlanOnEveryCommandThatPlans
+12.1 TestTheManifestOfARunPastTheOldCeilingIsVerifiedAndCleanedUp
+12.0 TestTheUploadSetSendsFourFilesUnderNamesThatLeaveTheDirectory
 11.2 TestTheCommandLineHoldsTheWholeRunToItsMemorySetting

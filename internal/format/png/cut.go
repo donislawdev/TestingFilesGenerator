@@ -1,7 +1,6 @@
 package png
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -22,62 +21,86 @@ import (
 // Imaging Component return the same pixels either way, and Tk and GDI+ read
 // the picture (docs/TRUNCATE-2026-11-11.md section 7.3).
 //
-// The picture is encoded into memory first, because the padding in front of it
-// is sized from its length, and the fast path in chooseSize does not know that
-// while planning. It is the encoded picture, a gradient that compresses about
-// 210 to 1, so it is small next to the picture the encoder reads (holdsPerPixel).
+// The picture streams out as the encoder writes it, as in Write, so the cut
+// stops the encoder where it falls instead of after the whole picture. The
+// padding in front of it is sized from its length, so a plan that did not
+// measure the picture measures it here first. That is the fast path in
+// chooseSize, which only ever takes the top rung of the ladder, a couple of
+// milliseconds to encode.
 func writeForACut(ctx context.Context, w io.Writer, m memo, whole int64) error {
-	var buf bytes.Buffer
-	if err := encode(&buf, m); err != nil {
-		return err
-	}
-	data := buf.Bytes()
-	body := int64(len(data)) - iendSize
-	if err := checkEncoded(data, body, m); err != nil {
-		return err
-	}
-	pad := whole - body - iendSize
-	if pad != 0 && (pad < chunkOverhead || pad-chunkOverhead > maxChunkData) {
-		return core.Defect(fmt.Errorf("png: the picture encoded to %d B, which leaves %d B of padding for a %d B file", body, pad, whole))
-	}
-	front := frontPadding(pad, body-headSize, m.cutAt, whole)
-	markAroundThePicture(w, body, front, pad-front)
-
-	pieces := []struct {
-		bytes   []byte
-		padding int64
-	}{
-		{bytes: data[:headSize], padding: front},
-		{bytes: data[headSize:body], padding: pad - front},
-		{bytes: data[body:]},
-	}
-	for _, p := range pieces {
-		if _, err := w.Write(p.bytes); err != nil {
+	if !m.bodyKnown {
+		body, err := encodedBodySize(m)
+		if err != nil {
 			return err
 		}
-		if p.padding == 0 {
-			continue
-		}
-		// Both chunks draw from the file's seed. Nobody reads padding, and the
-		// one behind the picture lies past any cut.
-		if err := writePaddingChunk(ctx, w, paddingChunk, m.seed, p.padding-chunkOverhead); err != nil {
-			return err
-		}
+		m.body, m.bodyKnown = body, true
 	}
-	return nil
-}
+	pad := whole - m.body - iendSize
+	if pad < chunkOverhead || pad-chunkOverhead > maxChunkData {
+		return core.Defect(fmt.Errorf("png: the picture encodes to %d B, which leaves %d B of padding for a %d B file", m.body, pad, whole))
+	}
+	front := frontPadding(pad, m.body-headSize, m.cutAt, whole)
+	markAroundThePicture(w, m.body, front, pad-front)
 
-// checkEncoded asks the encoded picture what the writer that streams it asks:
-// that it is the length planning measured, where planning measured one, and
-// that it ends with the closing chunk.
-func checkEncoded(data []byte, body int64, m memo) error {
-	if m.bodyKnown && body != m.body {
-		return core.Defect(fmt.Errorf("png: the picture encoded to %d B where planning said %d B", body, m.body))
+	// Both padding chunks draw from the file's seed. Nobody reads padding, and
+	// the one behind the picture lies past any cut.
+	split := &afterTheHead{ctx: ctx, w: w, seed: m.seed, head: headSize, front: front}
+	holder := &tailHolder{w: split, keep: iendSize}
+	if err := encode(holder, m); err != nil {
+		return err
 	}
-	if body < headSize || string(data[body+4:body+8]) != "IEND" {
+	if holder.written != m.body {
+		return core.Defect(fmt.Errorf("png: the picture encoded to %d B where planning said %d B", holder.written, m.body))
+	}
+	if string(holder.tail[4:8]) != "IEND" {
 		return core.Defect(fmt.Errorf("png: the encoded stream does not end with IEND"))
 	}
-	return nil
+	if back := pad - front; back > 0 {
+		if err := writePaddingChunk(ctx, w, paddingChunk, m.seed, back-chunkOverhead); err != nil {
+			return err
+		}
+	}
+	_, err := w.Write(holder.tail)
+	return err
+}
+
+// afterTheHead passes the encoded picture on, and writes the padding that goes
+// in front of the picture's data once the first head bytes - the signature and
+// the header chunk - are out.
+type afterTheHead struct {
+	ctx  context.Context
+	w    io.Writer
+	seed uint64
+	// head is how many bytes are still to pass before the padding.
+	head int64
+	// front is the padding, its chunk's header and checksum included, and 0
+	// once it is written or when there is none.
+	front int64
+}
+
+func (a *afterTheHead) Write(p []byte) (int, error) {
+	n := 0
+	if a.head > 0 {
+		k := min(a.head, int64(len(p)))
+		written, err := a.w.Write(p[:k])
+		n, a.head = written, a.head-int64(written)
+		if err != nil || a.head > 0 {
+			return n, err
+		}
+		p = p[k:]
+	}
+	if a.front > 0 {
+		front := a.front
+		a.front = 0
+		if err := writePaddingChunk(a.ctx, a.w, paddingChunk, a.seed, front-chunkOverhead); err != nil {
+			return n, err
+		}
+	}
+	if len(p) == 0 {
+		return n, nil
+	}
+	written, err := a.w.Write(p)
+	return n + written, err
 }
 
 // frontPadding is how much of the padding, chunk headers included, goes in

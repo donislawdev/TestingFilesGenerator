@@ -522,13 +522,15 @@ how many more there are, and the manifest lists every one. The label is still
 written before the damage, so the damage can overwrite it, and the manifest does
 not promise it is there.
 
-In most formats `truncate` takes the same share of the content as of the file:
-`missing=50` leaves about the top half of a PNG's picture, half of a WAV's sound or half
-of a text's lines, the way an interrupted upload does. In some formats a large file
-is mostly padding beside its content, so a cut there can take all of the content
-or none of it. The manifest says where each cut fell: the `truncate` entry carries
-`cut`, with `in` (`content`, `padding`, `structure` or `end`), `content_bytes` and
-`content_kept_bytes`. A cut in the padding also gets the note `cut_in_padding`.
+In most formats `truncate` removes the same percentage of the content as of the
+file: `missing=50` leaves about the top half of a PNG's picture, half of a WAV's sound
+or half of a text's lines, the way an interrupted upload does. In some formats a
+large file is mostly padding beside its content, so a cut there can take all of the
+content or none of it. The manifest says where each cut fell: the `truncate` entry
+carries `cut`, with `in` (`content`, `padding`, `structure` or `end`) and
+`content_kept_bytes`, and with `content_bytes`, how long the content of the whole
+file is, where that is known. A cut in the padding also gets the note
+`cut_in_padding`.
 
 The smallest file a damage can be given follows its settings, so the column is
 measured with the defaults. Ask for less and the run is refused before anything is
