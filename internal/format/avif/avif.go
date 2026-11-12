@@ -285,11 +285,21 @@ func checkFits(want int64, m memo) error {
 // who does want them says so - width and height are settings, and 40 megapixels
 // is the ceiling, which covers 4K and 8K.
 //
-// Ceiling is the LARGEST file that rung has ever been seen to produce, the free
-// box included, and it is what lets planning choose a picture without coding
-// one. Measured on 2026-08-29 across all 256 seeds, four orders of magnitude of
-// requested size - the label carries the byte count, so its length moves with
-// it - and with the label on and off.
+// Ceiling is a tenth above the LARGEST file that rung was seen to produce, the
+// free box included, and it is what lets planning choose a picture without
+// coding one. Measured on 2026-11-12 by tools/probes/avifladder over 256 seeds
+// from zero and 512 far from it, because the label's text moves with the whole
+// seed, with the label off and with the label of a file at the edge of the
+// rung - a size with the digits of the ceiling, the lightest and the heaviest.
+// 640x480 coded to 17020 B, 320x240 to 7029, 256x256 to 4993 and 160x120 to
+// 3513. The rungs below draw no label and their picture moves only with the
+// low byte of the seed, so their ceiling is the largest of all 256 and no more.
+//
+// The tenth is the margin the video ladder keeps, and it is not caution for its
+// own sake. The ceilings measured on 2026-08-29 over 256 seeds kept none, and
+// by 2026-11-12 a file asked for at the ceiling of 640x480, or 50 B above it,
+// was not written in 45 of 512 tries on the 256 seeds near zero and in 332 of
+// 1024 on 512 seeds far from it (O273).
 //
 // A ceiling rather than a floor, and the difference is the whole point.
 // Planning promises an exact size, so the rung it picks has to be one whose
@@ -297,15 +307,46 @@ func checkFits(want int64, m memo) error {
 // costs a smaller picture than the file had room for and nothing else. Set too
 // low, it would let planning pick a picture that does not fit, so writing
 // checks and says so rather than trusting this table.
+//
+// The second number is the ceiling for a damaged file, whose label names its
+// damage, by the same rule with the label at the longest length each scale
+// still draws: 640x480 coded to 20024 B, 320x240 to 7556 and 256x256 to 6043,
+// each above the first number. A rung too narrow to draw a damaged label keeps
+// the first number.
 var sizeLadder = []rung{
-	{640, 480, 16389}, {320, 240, 6792}, {256, 256, 4890}, {160, 120, 3392},
-	{80, 60, 832}, {40, 30, 549}, {20, 15, 448}, {8, 6, 348},
-	{4, 3, 344}, {2, 2, 327}, {1, 1, minimumBytes},
+	{640, 480, 18722, 22027}, {320, 240, 7732, 8312}, {256, 256, 5493, 6648}, {160, 120, 3865, 3865},
+	{80, 60, 832, 832}, {40, 30, 549, 549}, {20, 15, 448, 448}, {8, 6, 348, 348},
+	{4, 3, 344, 344}, {2, 2, 327, 327}, {1, 1, minimumBytes, minimumBytes},
 }
 
 type rung struct {
 	width, height int
 	ceiling       int64
+	// damaged is the ceiling for the label of a damaged file, which names its
+	// damage as well. A longer label can put more ink into the picture than
+	// any the ceiling was measured with, until it is too long to draw at all.
+	damaged int64
+}
+
+// bound is the ceiling that speaks for the label r carries. A file nothing
+// damages keeps the ceiling it always had, so its picture and its bytes do not
+// move (D11).
+func (s rung) bound(r format.Request) int64 {
+	if r.Damage != "" {
+		return s.damaged
+	}
+	return s.ceiling
+}
+
+// Rungs reports the ladder as the dimensions of each rung with its two
+// ceilings - for a file nothing damages and for a damaged one - so a guard and
+// a probe walk exactly the table planning walks rather than a second copy.
+func Rungs() [][4]int64 {
+	out := make([][4]int64, 0, len(sizeLadder))
+	for _, r := range sizeLadder {
+		out = append(out, [4]int64{int64(r.width), int64(r.height), r.ceiling, r.damaged})
+	}
+	return out
 }
 
 // chooseSize settles the picture size and encodes it.
@@ -330,7 +371,7 @@ func chooseSize(r format.Request, label string, q int) (memo, error) {
 	// is for every other format.
 	pick := sizeLadder[len(sizeLadder)-1]
 	for _, step := range sizeLadder {
-		if r.Bytes >= step.ceiling {
+		if r.Bytes >= step.bound(r) {
 			pick = step
 			break
 		}

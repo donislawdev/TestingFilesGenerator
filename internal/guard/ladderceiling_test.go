@@ -71,24 +71,35 @@ func TestTheLadderCeilingIsAboveEveryPictureTheTopRungMakes(t *testing.T) {
 
 		worst := int64(0)
 		var worstAt string
+		drawn := 0
 		for _, extra := range c.extra {
 			for _, seed := range seeds {
-				for _, label := range []bool{true, false} {
-					props := map[string]string{
-						"width":  strconv.Itoa(c.topWidth),
-						"height": strconv.Itoa(c.topHigh),
-					}
-					for k, v := range extra {
-						props[k] = v
-					}
+				props := map[string]string{
+					"width":  strconv.Itoa(c.topWidth),
+					"height": strconv.Itoa(c.topHigh),
+				}
+				for k, v := range extra {
+					props[k] = v
+				}
 
+				// Without a label, with one, and with the label of a damaged
+				// file at every scale the picture can draw it at - a longer
+				// label is more ink until it no longer fits its scale.
+				plain := format.Request{Bytes: 1, Seed: seed, Label: true, Properties: props}
+				asks := []format.Request{plain, {Bytes: 1, Seed: seed, Properties: props}}
+				for _, damage := range damagesDrawnAtEveryScale(t, plain, c.id, c.topWidth) {
+					damaged := plain
+					damaged.Damage = damage
+					asks = append(asks, damaged)
+					drawn++
+				}
+
+				for _, r := range asks {
 					// Asking for one byte at the top rung makes the format
 					// state its own floor, and that floor is the encoded
 					// picture plus whatever it always carries. Nothing else
 					// reports the encoded size from outside the package.
-					_, err := d.Generator.Plan(format.Request{
-						Bytes: 1, Seed: seed, Label: label, Properties: props,
-					})
+					_, err := d.Generator.Plan(r)
 					var below *format.BelowMinimumError
 					if !errors.As(err, &below) {
 						t.Fatalf("%s at %dx%d refused one byte with %T rather than a BelowMinimumError: %v",
@@ -96,10 +107,13 @@ func TestTheLadderCeilingIsAboveEveryPictureTheTopRungMakes(t *testing.T) {
 					}
 					if below.Minimum > worst {
 						worst = below.Minimum
-						worstAt = fmt.Sprintf("seed %d, label %v, %v", seed, label, extra)
+						worstAt = fmt.Sprintf("seed %d, label %v, damage %q, %v", seed, r.Label, r.Damage, extra)
 					}
 				}
 			}
+		}
+		if drawn == 0 {
+			t.Fatalf("%s at %d wide draws no damaged label, so this guard asked nothing about one", c.id, c.topWidth)
 		}
 
 		if worst > ceiling {

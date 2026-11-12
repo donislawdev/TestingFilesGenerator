@@ -7413,8 +7413,8 @@ MUTATIONS = [
     (
         "the AVIF ladder claims a picture fits a file far too small to hold it, so the size it promised cannot be met",
         "internal/format/avif/avif.go",
-        "\t{640, 480, 16389}, {320, 240, 6792}, {256, 256, 4890}, {160, 120, 3392},",
-        "\t{640, 480, 311}, {320, 240, 6792}, {256, 256, 4890}, {160, 120, 3392},",
+        "\t{640, 480, 18722, 22027}, {320, 240, 7732, 8312}, {256, 256, 5493, 6648}, {160, 120, 3865, 3865},",
+        "\t{640, 480, 311, 22027}, {320, 240, 7732, 8312}, {256, 256, 5493, 6648}, {160, 120, 3865, 3865},",
         "TestAvifDrawsAPictureThatGrowsWithTheFileAndAlwaysFits",
     ),
     (
@@ -7511,8 +7511,8 @@ MUTATIONS = [
     (
         "the JPEG XL ladder claims a picture fits a file far too small to hold it, so the size it promised cannot be met",
         "internal/format/jxl/jxl.go",
-        "	{640, 480, 22762}, {320, 240, 7949}, {256, 256, 6485}, {160, 120, 3542},",
-        "	{640, 480, 147}, {320, 240, 7949}, {256, 256, 6485}, {160, 120, 3542},",
+        "	{640, 480, 22762, 23567}, {320, 240, 7949, 8854}, {256, 256, 6485, 7637}, {160, 120, 3542, 3542},",
+        "	{640, 480, 147, 23567}, {320, 240, 7949, 8854}, {256, 256, 6485, 7637}, {160, 120, 3542, 3542},",
         "TestJxlDrawsAPictureThatGrowsWithTheFileAndAlwaysFits",
     ),
     (

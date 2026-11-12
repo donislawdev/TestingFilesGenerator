@@ -246,6 +246,38 @@ func longestDamageLabel(t *testing.T) string {
 	return long
 }
 
+// damagesDrawnAtEveryScale is, for a picture width wide, the damage that makes
+// the label of r the longest one still drawn at each scale the picture can draw
+// a damaged label at, the largest scale first.
+//
+// The longest label is not the heaviest. A label too long for the picture is
+// not drawn at all, and a shorter one is drawn larger, so the most a damaged
+// label can put into a picture is the longest that still fits at some scale.
+// The longest damage label puts no ink at all into a picture 640 wide (found in
+// review, 2026-11-12). The lengths come from imagelabel, so the scales live in
+// one place.
+//
+// Empty for a picture too narrow to draw any damaged label.
+func damagesDrawnAtEveryScale(t *testing.T, r format.Request, id string, width int) []string {
+	t.Helper()
+	long := longestDamageLabel(t)
+	r.Damage = "x"
+	fixed := len(r.LabelText(id)) - len(r.Damage)
+	var out []string
+	for _, n := range imagelabel.LongestAtEachScale(width) {
+		if n <= fixed {
+			continue // no damaged label is this short
+		}
+		r.Damage = long[:min(n-fixed, len(long))]
+		if got, want := imagelabel.BandHeight(width, len(r.LabelText(id))), imagelabel.BandHeight(width, n); got != want || got == 0 {
+			t.Fatalf("a %s label of %d characters across %d pixels draws a band %d high where %d was worked out - the guard does not reach the scale it measures",
+				id, len(r.LabelText(id)), width, got, want)
+		}
+		out = append(out, r.Damage)
+	}
+	return out
+}
+
 // isGzip says whether the file at path starts as a gzip stream.
 func isGzip(path string) bool {
 	head := make([]byte, 2)

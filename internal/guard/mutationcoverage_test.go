@@ -147,6 +147,9 @@ var provenByProbe = map[string]string{
 	"TestATruncatedTextSaysHowMuchWasCut": "broken on 2026-11-12 twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times.",
 	"TestALongDamageLabelLeavesEveryFormatWhole": "broken on 2026-11-12 by letting damage.Chain.Label return the whole chain past LabelLimit: red, " +
 		"its own reach check says forty damages no longer fit the limit (docs/REVIEW-234-2026-11-12.md).",
+	"TestEveryAvifRungStillFitsInsideItsDeclaredCeilings": "its own reach check - no damaged label drawn is a failure - and broken on 2026-11-12 twice, with " +
+		"the heaviest seeds: the first ceiling of 640x480 set back to 16389 (red, 17314 B) and the second to 18722 (red, 20024 B). " +
+		"Without those seeds both stayed green (docs/REVIEW-234-2026-11-12.md).",
 	"TestADamageLabelIsBoundedAndSaysHowManyItLeftOut": "its own canary - no chain up to 200 damages shortened is a failure - and broken on 2026-11-12 by letting damage.Chain.Label return the whole chain: red.",
 	"TestADamagedMailCarriesItsLabelWholeInEveryTextEncoding": "broken on 2026-11-12 twice: eml writing the label raw in quoted-printable (red, the one damage label read back as bytesd), " +
 		"and eml leaving a long label on one line (red, a line of 92 characters).",

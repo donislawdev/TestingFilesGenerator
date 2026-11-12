@@ -203,6 +203,24 @@ func (t laidText) ink(x, y int) bool {
 	return off < t.Width && glyph(t.runes[k])[(y-pad)/t.scale*glyphWidth+off/t.scale] == '#'
 }
 
+// LongestAtEachScale is the most characters a label can have and still be
+// drawn at each scale a picture width wide draws one at, the largest scale
+// first - empty for a picture too narrow to draw any.
+//
+// That, and not the longest label, is the most a label can put into a picture:
+// a longer one is drawn smaller, and one too long for the smallest scale is not
+// drawn at all. A size ladder whose ceilings stand for every label is measured
+// at these lengths.
+func LongestAtEachScale(width int) []int {
+	var out []int
+	for n := 1; scaleFor(width, n) > 0; n++ {
+		if scaleFor(width, n+1) != scaleFor(width, n) {
+			out = append(out, n)
+		}
+	}
+	return out
+}
+
 // BandHeight is how tall the band Draw paints for a label of chars characters
 // across width is, before it is cut to the picture - 0 when the label does not
 // fit. A film draws a second line under the first and asks this before it

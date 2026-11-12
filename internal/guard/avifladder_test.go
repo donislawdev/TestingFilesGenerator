@@ -2,11 +2,15 @@ package guard
 
 import (
 	"context"
+	"errors"
 	"runtime"
+	"slices"
+	"strconv"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/avif"
 )
 
 // AVIF is the one format here whose file size is decided by a compressor rather
@@ -75,6 +79,103 @@ func TestAvifDrawsAPictureThatGrowsWithTheFileAndAlwaysFits(t *testing.T) {
 		t.Fatalf("the largest picture over the whole sweep was %d pixels, so no step of the ladder is reachable and this guard measured nothing", biggest)
 	}
 	t.Logf("largest picture reached over the sweep: %d pixels", biggest)
+}
+
+// heaviestAvifSeeds are the seeds the thorough sweep (tools/probes/avifladder,
+// 768 seeds) found heaviest on 2026-11-12, asked beside the first few from
+// zero. The first few alone stayed green with both ceilings set back to the
+// numbers that were too low, so they could not see what the sweep found. A
+// codec raised underneath moves every rung at once, so the heaviest seeds of
+// today are a fair sample of tomorrow's.
+var heaviestAvifSeeds = []uint64{
+	0x65a47abe4364edd2, 0xfb0ac60c4be71cd6, 0x949ac3a5a267fad4, 0xf3fc5ddbb41fd92,
+	0xd2, 0xea, 0xf4, 0xfb, 0xfe, 0xff,
+}
+
+// Every rung's two ceilings still cover what that rung codes to: the first
+// with the label of a file at the edge of the rung, the second with the label
+// of a damaged file.
+//
+// A file at the edge of a rung - asked for at its ceiling, where the picture
+// leaves the least room - states a size with the digits of the ceiling, so the
+// first ceiling is asked with those. A damaged file's label names its damage,
+// and a longer label is more ink until it is too long for its scale, so the
+// second is asked with the longest damaged label every scale still draws.
+// Asking one byte of a named picture size makes the format state the file
+// that picture needs, which is what a ceiling is a bound on (2026-11-12, when
+// both were found too low - O273 and the review of #234).
+//
+// A handful of seeds from zero, as the JPEG XL guard takes, and the heaviest
+// the thorough sweep found (heaviestAvifSeeds).
+func TestEveryAvifRungStillFitsInsideItsDeclaredCeilings(t *testing.T) {
+	d, err := format.Get("avif")
+	if err != nil {
+		t.Fatal(err)
+	}
+	rungs := avif.Rungs()
+	if len(rungs) == 0 {
+		t.Fatal("the ladder is empty, so this guard measured nothing")
+	}
+	first := uint64(8)
+	if raceEnabled {
+		first = 2
+	}
+	seeds := slices.Clone(heaviestAvifSeeds)
+	for seed := range first {
+		seeds = append(seeds, seed)
+	}
+
+	type ask struct {
+		r       format.Request
+		ceiling int64
+	}
+	drawn := 0
+	for _, rung := range rungs {
+		w, h := int(rung[0]), int(rung[1])
+		named := map[string]string{"width": strconv.Itoa(w), "height": strconv.Itoa(h)}
+		over, needs, worst := int64(0), int64(0), ask{}
+		for _, seed := range seeds {
+			asks := []ask{{format.Request{Bytes: 1, Seed: seed, Properties: named}, rung[2]}}
+			// The size on disk is what the label states: the ceiling itself,
+			// a tenth above it, and the lightest and the heaviest number with
+			// as many digits.
+			eights, lightest := int64(0), int64(1)
+			for n := rung[2]; n > 0; n /= 10 {
+				eights, lightest = eights*10+8, lightest*10
+			}
+			lightest /= 10
+			for _, size := range []int64{rung[2], rung[2] + rung[2]/10, lightest, eights} {
+				asks = append(asks, ask{format.Request{Bytes: 1, Seed: seed, Label: true, OnDisk: size, Properties: named}, rung[2]})
+			}
+			// A damaged file states a size of any length the damage leaves it.
+			plain := format.Request{Bytes: 1, Seed: seed, Label: true, OnDisk: 1e12, Properties: named}
+			for _, damage := range damagesDrawnAtEveryScale(t, plain, "avif", w) {
+				r := plain
+				r.Damage = damage
+				asks = append(asks, ask{r, rung[3]})
+				drawn++
+			}
+			for _, a := range asks {
+				_, err := d.Generator.Plan(a.r)
+				var below *format.BelowMinimumError
+				if !errors.As(err, &below) {
+					t.Fatalf("a %dx%d picture refused one byte with %T rather than a BelowMinimumError: %v", w, h, err, err)
+				}
+				if below.Minimum-a.ceiling > over {
+					over, needs, worst = below.Minimum-a.ceiling, below.Minimum, a
+				}
+			}
+		}
+		if over > 0 {
+			t.Errorf("the %dx%d rung declares a ceiling of %d B and its picture needs %d B (seed %d, label %t, size %d, damage %q).\n"+
+				"A ceiling below what its rung produces lets planning pick a picture the file cannot hold, and writing then refuses a size planning accepted.\n"+
+				"What to do: run tools/probes/avifladder and record what it measures.",
+				w, h, worst.ceiling, needs, worst.r.Seed, worst.r.Label, worst.r.OnDisk, worst.r.Damage)
+		}
+	}
+	if drawn == 0 {
+		t.Fatal("no rung is wide enough to draw a damaged label, so this guard asked nothing about one")
+	}
 }
 
 // Planning must not code the picture.

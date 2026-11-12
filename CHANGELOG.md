@@ -31,6 +31,11 @@ because it turns other people's test suites red.
   more there are, and the manifest lists every one. A file damaged with
   `zero-head` and carrying a label is therefore not byte for byte what 0.5.0
   wrote. Files with no damage, and files made with `--clean`, are unchanged.
+- **An AVIF file just above the size where its picture grows gets the smaller
+  picture.** The picture now steps up to 160x120 at 3865 B, to 256x256 at
+  5493 B, to 320x240 at 7732 B and to 640x480 at 18722 B, about a tenth above
+  where it did. A file between the old step and the new one is not byte for
+  byte what 0.5.0 wrote.
 
 ### Added
 
@@ -171,6 +176,11 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **An AVIF file asked for just above the size where its picture grows is
+  written.** In 0.5.0 about a quarter of the files asked for at 16389 or
+  16439 B were not written at all, and the run ended with "1 file could not be
+  produced" although a preview had accepted them. The same happened, less
+  often, at the smaller steps.
 - **A damage setting outside its range is refused on the command line and in
   the window.** `--damage truncate:missing=95` cut the default half, wrote the
   file, ended with code 0 and recorded `missing: 95` in the manifest, and

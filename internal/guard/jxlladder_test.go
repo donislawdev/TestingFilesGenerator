@@ -3,6 +3,7 @@ package guard
 import (
 	"context"
 	"runtime"
+	"slices"
 	"testing"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -78,16 +79,38 @@ func TestJxlDrawsAPictureThatGrowsWithTheFileAndAlwaysFits(t *testing.T) {
 	t.Logf("largest picture reached over the sweep: %d pixels", biggest)
 }
 
-// Every rung's declared ceiling still covers what that rung produces.
+// heaviestJxlSeeds are, for each rung that draws a label, the seeds the
+// thorough sweep (tools/probes/jxlladder, 768 seeds) found heaviest on
+// 2026-11-12 - for the label of a file at the edge of the rung and for the
+// label of a damaged one. The first few seeds alone stayed green with the
+// ceiling for a damaged file set back to the number that was too low, so they
+// could not see what the sweep found.
+var heaviestJxlSeeds = map[int][]uint64{
+	640: {0xc76d0104c41a71bd, 0x8f27bfdd1384288d},
+	320: {0x29b351201f9ae4c5, 0xe162c2724da869d3},
+	256: {0x3d, 0x80e38da90dd80935},
+	160: {0xb9f4567924888695},
+}
+
+// Every rung's two ceilings still cover what that rung produces: the first
+// with the label of a file at the edge of the rung, the second with the label
+// of a damaged file.
 //
 // The guard above walks the ladder the way a run does, so it only ever sees
 // the rung each size happens to select, at one seed. This one asks each rung
 // directly, across seeds, which is the question the ceiling is an answer to.
 //
-// A handful of seeds rather than all 256: the thorough sweep is
-// tools/probes/jxlladder, which takes minutes. This is the version that runs
-// on every push and would still catch a codec raised underneath us, because a
-// new encoder moves every rung at once rather than one seed of one rung.
+// A file at the edge of a rung - asked for at its ceiling, where the picture
+// leaves the least room - states a size with the digits of the ceiling, so the
+// first ceiling is asked with those. A label with more digits is a file with
+// far more room than its picture needs. A damaged file's label names its
+// damage, and a longer label is more ink until it is too long for its scale, so
+// the second is asked with the longest damaged label every scale still draws.
+//
+// A handful of seeds from zero and the heaviest the thorough sweep found
+// (heaviestJxlSeeds): this is the version that runs on every push and would
+// still catch a codec raised underneath us, because a new encoder moves every
+// rung at once rather than one seed of one rung.
 //
 // Fewer seeds again under the race detector, and that needs saying rather than
 // hiding. This encoder is slow and the detector makes it slower: measured on
@@ -103,46 +126,64 @@ func TestEveryJxlRungStillFitsInsideItsDeclaredCeiling(t *testing.T) {
 		t.Fatal("the ladder is empty, so this guard measured nothing")
 	}
 
-	// The label carries the byte count, so its length moves with the size
-	// asked for, and a longer label is more ink in the picture. A damaged
-	// file's label names its damage as well, up to damage.LabelLimit, which is
-	// the most ink a label can put down (found in review, 2026-11-12).
-	requested := []int64{int64(jxl.MinimumBytes), 1 << 14, 1 << 30}
-	damaged := longestDamageLabel(t)
-
-	seeds := uint64(8)
+	first := uint64(8)
 	if raceEnabled {
-		seeds = 2
-		t.Logf("the race detector is on, so this sweeps %d seeds rather than 8 - it costs minutes here and finds no races either way", seeds)
+		first = 2
+		t.Logf("the race detector is on, so this sweeps %d seeds from zero rather than 8 - it costs minutes here and finds no races either way", first)
 	}
 
+	type ask struct {
+		label   string
+		ceiling int64
+	}
+	drawn := 0
 	for _, r := range rungs {
-		w, h, ceiling := int(r[0]), int(r[1]), r[2]
-		worst := int64(0)
-		var worstSeed uint64
-		for seed := uint64(0); seed < seeds; seed++ {
-			for _, want := range requested {
-				for _, damage := range []string{"", damaged, "none"} {
-					label := ""
-					if damage != "none" {
-						label = format.Request{Bytes: want, Seed: seed, Damage: damage}.LabelText("jxl")
-					}
-					n, err := jxl.FileSizeFor(w, h, jxl.DefaultQuality, seed, label)
-					if err != nil {
-						t.Fatalf("%dx%d seed %d: %v", w, h, seed, err)
-					}
-					if int64(n) > worst {
-						worst, worstSeed = int64(n), seed
-					}
+		w, h := int(r[0]), int(r[1])
+		seeds := slices.Clone(heaviestJxlSeeds[w])
+		for seed := range first {
+			seeds = append(seeds, seed)
+		}
+		// The size the label states: the ceiling itself, a tenth above it,
+		// and the lightest and the heaviest number with as many digits.
+		eights, lightest := int64(0), int64(1)
+		for n := r[2]; n > 0; n /= 10 {
+			eights, lightest = eights*10+8, lightest*10
+		}
+		lightest /= 10
+		var worst ask
+		over, size, worstSeed := int64(0), int64(0), uint64(0)
+		for _, seed := range seeds {
+			asks := []ask{{"", r[2]}}
+			for _, want := range []int64{r[2], r[2] + r[2]/10, lightest, eights} {
+				asks = append(asks, ask{format.Request{Bytes: want, Seed: seed}.LabelText("jxl"), r[2]})
+			}
+			// A damaged file states a size of any length the damage leaves it.
+			plain := format.Request{Bytes: 1e12, Seed: seed}
+			for _, damage := range damagesDrawnAtEveryScale(t, plain, "jxl", w) {
+				damaged := plain
+				damaged.Damage = damage
+				asks = append(asks, ask{damaged.LabelText("jxl"), r[3]})
+				drawn++
+			}
+			for _, a := range asks {
+				n, err := jxl.FileSizeFor(w, h, jxl.DefaultQuality, seed, a.label)
+				if err != nil {
+					t.Fatalf("%dx%d seed %d: %v", w, h, seed, err)
+				}
+				if int64(n)-a.ceiling > over {
+					over, size, worst, worstSeed = int64(n)-a.ceiling, int64(n), a, seed
 				}
 			}
 		}
-		if worst > ceiling {
-			t.Errorf("the %dx%d rung declares a ceiling of %d B and produced %d B at seed %d.\n"+
+		if over > 0 {
+			t.Errorf("the %dx%d rung declares a ceiling of %d B and produced %d B at seed %#x, with the label %q.\n"+
 				"A ceiling below what its rung produces lets planning pick a picture the file cannot hold.\n"+
 				"What to do: run tools/probes/jxlladder and record what it measures.",
-				w, h, ceiling, worst, worstSeed)
+				w, h, worst.ceiling, size, worstSeed, worst.label)
 		}
+	}
+	if drawn == 0 {
+		t.Fatal("no rung is wide enough to draw a damaged label, so this guard asked nothing about one")
 	}
 }
 

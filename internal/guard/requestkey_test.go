@@ -36,6 +36,8 @@ func TestEveryFieldOfARequestIsInItsKey(t *testing.T) {
 			v.SetUint(1)
 		case reflect.Bool:
 			v.SetBool(true)
+		case reflect.String:
+			v.SetString("truncate:missing=90")
 		case reflect.Map:
 			v.Set(reflect.ValueOf(map[string]string{"delimiter": ";"}))
 		case reflect.Slice:
