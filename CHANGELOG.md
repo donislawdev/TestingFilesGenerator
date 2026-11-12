@@ -27,10 +27,10 @@ because it turns other people's test suites red.
 - **A damaged file names its damage in its label.** The label now reads
   `tfg - txt - 10485760 B - damage truncate:missing=50 - seed c2a547b2`: the
   size the file has on disk, then every damage with its settings, in the order
-  they were applied. A text cut by half and one cut by nine tenths used to begin
-  with the same line. A file damaged with `zero-head` and carrying a label is
-  therefore not byte for byte what 0.5.0 wrote. Files with no damage, and files
-  made with `--clean`, are unchanged.
+  they were applied. A long list of damages names the first few and how many
+  more there are, and the manifest lists every one. A file damaged with
+  `zero-head` and carrying a label is therefore not byte for byte what 0.5.0
+  wrote. Files with no damage, and files made with `--clean`, are unchanged.
 
 ### Added
 
