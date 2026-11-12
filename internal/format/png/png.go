@@ -32,6 +32,10 @@ const (
 	// always empty.
 	iendSize = 12
 
+	// headSize is the signature and the header chunk, which are always first
+	// and always this long: eight bytes, and a chunk of thirteen.
+	headSize = 8 + chunkOverhead + 13
+
 	// paddingChunk is a private ancillary chunk.
 	//
 	// The naming rules carry meaning. Lower case first letter means ancillary,
@@ -276,6 +280,15 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	default:
 	}
 
+	// The map, before the bytes wherever planning measured the picture. The
+	// picture's chunks are the content, their headers and checksums with them.
+	format.Mark(w, format.RoleStructure, 0, headSize)
+	if m.bodyKnown {
+		markAfterThePicture(w, m, true)
+	} else {
+		format.Mark(w, format.RoleContent, headSize, -1)
+	}
+
 	// The closing chunk is always the final twelve bytes, so hold those back
 	// and let everything before them stream straight out. Nothing is buffered
 	// beyond that, which matters because a picture can be very large.
@@ -298,6 +311,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 				"png: the picture encoded to %d B, which leaves %d B of padding for a %d B file - ladderCeiling is wrong",
 				m.body, m.padData, p.Bytes))
 		}
+		markAfterThePicture(w, m, false)
 	} else if holder.written != m.body {
 		return core.Defect(fmt.Errorf("png: the picture encoded to %d B where planning said %d B", holder.written, m.body))
 	}
@@ -313,6 +327,20 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 
 	_, err := w.Write(holder.tail)
 	return err
+}
+
+// markAfterThePicture marks the picture when its length is known, and what
+// follows it: the padding chunk, if there is one, and the closing chunk.
+func markAfterThePicture(w io.Writer, m memo, withPicture bool) {
+	if withPicture {
+		format.Mark(w, format.RoleContent, headSize, m.body-headSize)
+	}
+	at := m.body
+	if m.withPad {
+		format.Mark(w, format.RolePadding, at, chunkOverhead+m.padData)
+		at += chunkOverhead + m.padData
+	}
+	format.Mark(w, format.RoleEnd, at, iendSize)
 }
 
 // ladderCeiling is the most the largest rung has ever been seen to encode to,

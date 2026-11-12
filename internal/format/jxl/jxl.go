@@ -513,6 +513,14 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 			m.width, m.height, len(coded), containerOverhead, m.total))
 	}
 
+	// The map, all of it known once the picture is coded: the signature and
+	// file type boxes, the box of the code stream, and the free boxes that
+	// make up the size.
+	head := int64(len(signature) + len(fileType))
+	format.Mark(w, format.RoleStructure, 0, head)
+	format.Mark(w, format.RoleContent, head, boxHeader+int64(len(coded)))
+	format.Mark(w, format.RolePadding, head+boxHeader+int64(len(coded)), pad)
+
 	if _, err := w.Write(signature[:]); err != nil {
 		return err
 	}

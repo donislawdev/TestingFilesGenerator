@@ -283,10 +283,15 @@ func solveFiller(base, target int64, label string) (size int64, header headerPad
 // the stream measured before the comment can be sized, so it is two passes and
 // a separate decision.
 func build(ctx context.Context, w io.Writer, m memo) error {
-	zw, err := gzip.NewWriterLevel(w, m.squeeze.Level)
+	// The map goes before the first byte, and the trailer of a compressed
+	// stream - whose start only its last byte tells - is held back while it is
+	// marked (filemap.go).
+	sm := archive.NewStreamMap(w)
+	zw, err := gzip.NewWriterLevel(sm, m.squeeze.Level)
 	if err != nil {
 		return core.Defect(fmt.Errorf("targz: the archive could not be started: %w", err))
 	}
+	markArchive(w, m)
 	zw.Comment = m.comment
 	// The extra field is where padding rides. It precedes everything, like
 	// the comment, so how long it is has to be settled before the first byte
@@ -334,7 +339,18 @@ func build(ctx context.Context, w io.Writer, m memo) error {
 	if err := tw.Close(); err != nil {
 		return err
 	}
-	return zw.Close()
+	if m.squeeze.On() {
+		if err := sm.Hold(); err != nil {
+			return err
+		}
+	}
+	if err := zw.Close(); err != nil {
+		return err
+	}
+	if err := sm.MarkLast(format.RoleEnd, gzipTrailer); err != nil {
+		return err
+	}
+	return sm.Release()
 }
 
 // writeEntry emits one tar entry.

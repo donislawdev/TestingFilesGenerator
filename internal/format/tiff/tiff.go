@@ -328,6 +328,14 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	default:
 	}
 
+	// The map, all of it known from the plan: the header, the gap that makes
+	// up the size, the pixels, and the directory last, which says where they
+	// are - the end, as a ZIP's central directory is.
+	format.Mark(w, format.RoleStructure, 0, header)
+	format.Mark(w, format.RolePadding, header, m.gap)
+	format.Mark(w, format.RoleContent, pixelsAt(m), pixelBytes(m.width, m.height))
+	format.Mark(w, format.RoleEnd, directoryAt(m), p.Bytes-directoryAt(m))
+
 	if err := writeHeader(w, m); err != nil {
 		return err
 	}

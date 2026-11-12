@@ -51,6 +51,8 @@ type memo struct {
 	// not depend on the padding, because the offset it carries points at the
 	// cross reference table, which sits before the padding.
 	suffix []byte
+	// at is where the objects and the cross reference table start.
+	at     places
 	padLen int64
 }
 
@@ -66,7 +68,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	}
 
 	m := memo{opts: opts, seed: r.Seed, label: label}
-	m.prefix, m.suffix = document(m)
+	m.prefix, m.suffix, m.at = document(m)
 
 	// One number answers both questions: how much padding this file needs, and
 	// what is too small to make. Every line of body text is the same width
@@ -167,6 +169,17 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return ctx.Err()
 	default:
 	}
+
+	// The map, all of it known from the plan: the header lines, the objects -
+	// the pages and what they draw with - the cross reference table and the
+	// trailer, the comment that makes up the size, and startxref with the
+	// closing marker. The padding stands between two parts of the end.
+	head, end := int64(len(m.prefix)), int64(len(m.prefix))+m.padLen
+	format.Mark(w, format.RoleStructure, 0, m.at.objects)
+	format.Mark(w, format.RoleContent, m.at.objects, m.at.xref-m.at.objects)
+	format.Mark(w, format.RoleEnd, m.at.xref, head-m.at.xref)
+	format.Mark(w, format.RolePadding, head, m.padLen)
+	format.Mark(w, format.RoleEnd, end, int64(len(m.suffix)))
 
 	if _, err := w.Write(m.prefix); err != nil {
 		return err

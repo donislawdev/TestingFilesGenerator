@@ -148,6 +148,13 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	body := uint64(p.Bytes - l.outside())
 	cuesAt := body - l.cuesLen()
 
+	// The map: the headers, the seek head, the info and the tracks, then the
+	// clusters - coded as they go, so their end is marked when they reach it -
+	// then the Void that makes up the size and the Cues at the end.
+	seg := l.outside()
+	format.Mark(w, format.RoleStructure, 0, seg+int64(l.front()))
+	format.Mark(w, format.RoleContent, seg+int64(l.front()), -1)
+
 	out := &sticky{w: w}
 	out.write(l.head)
 	out.write(idBytes(idSegment))
@@ -166,6 +173,8 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return core.Defect(fmt.Errorf("webm: the clusters came to %d B and the Cues are to start at %d B, which leaves no room for the Void every one of these carries",
 			end, cuesAt))
 	}
+	format.Mark(w, format.RolePadding, seg+int64(end), void)
+	format.Mark(w, format.RoleEnd, seg+int64(cuesAt), int64(l.cuesLen()))
 	if err := writeVoid(ctx, w, void, f.Choice.Seed); err != nil {
 		return err
 	}

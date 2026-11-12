@@ -182,7 +182,7 @@ var sameLayerAllowed = map[string][]string{
 	"internal/format/htmlfile":   {"internal/format", "internal/format/picture", "internal/format/textenc"},
 	"internal/format/svgfile":    {"internal/format", "internal/format/imagedim"},
 	"internal/format/bmp":        {"internal/format", "internal/format/imagelabel", "internal/format/imagedim"},
-	"internal/format/opc":        {"internal/format"},
+	"internal/format/opc":        {"internal/format", "internal/format/archive"},
 	"internal/format/docx":       {"internal/format", "internal/format/opc"},
 	"internal/format/xlsx":       {"internal/format", "internal/format/opc"},
 	"internal/format/pptx":       {"internal/format", "internal/format/opc"},

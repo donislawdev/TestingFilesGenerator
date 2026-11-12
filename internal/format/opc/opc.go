@@ -35,6 +35,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/archive"
+
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
@@ -234,7 +237,12 @@ func Write(ctx context.Context, w io.Writer, p Package) error {
 }
 
 func write(ctx context.Context, w io.Writer, p Package, withPadding bool) error {
-	zw := zip.NewWriter(w)
+	zm := archive.NewStreamMap(w)
+	zw := zip.NewWriter(zm.Buffer)
+	// The map: every part is content, from the first byte. Then the filler
+	// part, the central directory and the comment, each marked as
+	// archive/zip writes it (archive.StreamMap).
+	format.Mark(w, format.RoleContent, 0, -1)
 	if p.Comment > 0 {
 		if p.Comment > CommentLimit {
 			return core.Defect(fmt.Errorf("opc: a comment of %d B is past the %d B a reader accepts", p.Comment, CommentLimit))
@@ -276,8 +284,17 @@ func write(ctx context.Context, w io.Writer, p Package, withPadding bool) error 
 		head.CRC32 = sum
 		head.UncompressedSize64 = uint64(p.Filler)
 		head.CompressedSize64 = uint64(p.Filler)
+		if err := zm.Hold(); err != nil {
+			return err
+		}
 		entry, err := zw.CreateRaw(head)
 		if err != nil {
+			return err
+		}
+		if err := zm.MarkEntry(format.RolePadding, FillerName); err != nil {
+			return err
+		}
+		if err := zm.Release(); err != nil {
 			return err
 		}
 		if withPadding {
@@ -287,7 +304,7 @@ func write(ctx context.Context, w io.Writer, p Package, withPadding bool) error 
 		}
 	}
 
-	return zw.Close()
+	return zm.Close(zw)
 }
 
 // writePart writes one part with its sizes and checksum in the header.

@@ -36,6 +36,17 @@ func (r RecordSize) Bytes() int64 { return r.Manifest + r.Instructions }
 // records is this long, so the document is as long as the one the run writes.
 var hashPlaceholder = strings.Repeat("0", 64)
 
+// forecastOf is what writing f is counted to find out before it is written:
+// a hash as long as every hash, and the longest cut a file cut short can be
+// given (forecastCut).
+func forecastOf(f PlannedFile) wrote {
+	w := wrote{sha: hashPlaceholder}
+	if _, _, ok := f.Target.Damage.Cut(f.Plan.Bytes); ok && f.Damaged() {
+		w.cut = forecastCut(f)
+	}
+	return w
+}
+
 // PredictRecord is the record a run of these files writes when every file is
 // produced. A file that fails gains a note in its entry, so a run with
 // failures writes a little more than this says.
@@ -60,7 +71,7 @@ func PredictRecord(ctx context.Context, files []PlannedFile, opt Options) (Recor
 		if err := askedToStop(ctx, i); err != nil {
 			return RecordSize{}, err
 		}
-		e := scratch.entryFor(f, hashPlaceholder, true, nil)
+		e := scratch.entryFor(f, forecastOf(f), true, nil)
 		explains = explains || e.Purpose != ""
 		counted.Add(e)
 	}
@@ -84,7 +95,7 @@ func predictInstructions(ctx context.Context, files []PlannedFile, opt Options, 
 		if err := askedToStop(ctx, i); err != nil {
 			return 0, err
 		}
-		whole.Add(scratch.entryFor(f, hashPlaceholder, true, nil))
+		whole.Add(scratch.entryFor(f, forecastOf(f), true, nil))
 	}
 	return int64(len(whole.Instructions(filepath.Base(ManifestPath(opt))))), nil
 }

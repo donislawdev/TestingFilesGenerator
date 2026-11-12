@@ -325,6 +325,16 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	default:
 	}
 
+	// The map, before the bytes wherever planning measured the picture. The
+	// palette counts to the content, with the frames it colours: the encoder
+	// writes it, and a reader needs it to hand back a single pixel.
+	format.Mark(w, format.RoleStructure, 0, screenHeader)
+	if m.bodyKnown {
+		markAfterThePicture(w, m, p.Bytes, true)
+	} else {
+		format.Mark(w, format.RoleContent, screenHeader, -1)
+	}
+
 	// The trailer is always the final byte, so hold it back and let the rest
 	// stream out. Nothing else is buffered.
 	holder := &tailHolder{w: w, keep: trailerSize}
@@ -341,6 +351,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 			// beats writing a file of the wrong length.
 			return core.Defect(fmt.Errorf("gif: %w - ladderCeiling is wrong", err))
 		}
+		markAfterThePicture(w, m, p.Bytes, false)
 	} else if holder.written != m.body {
 		return core.Defect(fmt.Errorf("gif: the picture encoded to %d B where planning said %d B", holder.written, m.body))
 	}
@@ -356,6 +367,23 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 
 	_, err := w.Write(holder.tail)
 	return err
+}
+
+// screenHeader is the signature and the logical screen descriptor, which open
+// every GIF and are always this long.
+const screenHeader = 6 + 7
+
+// markAfterThePicture marks the picture when its length is known, and what
+// follows it: the comment that makes up the size, if there is one, and the
+// trailer.
+func markAfterThePicture(w io.Writer, m memo, total int64, withPicture bool) {
+	if withPicture {
+		format.Mark(w, format.RoleContent, screenHeader, m.body-screenHeader)
+	}
+	if m.comment {
+		format.Mark(w, format.RolePadding, m.body, total-trailerSize-m.body)
+	}
+	format.Mark(w, format.RoleEnd, total-trailerSize, trailerSize)
 }
 
 // writeComment emits the comment extension without ever holding it in memory.
