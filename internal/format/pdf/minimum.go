@@ -63,6 +63,6 @@ func minimumBytes() int64 {
 	if err != nil {
 		panic("pdf: the default settings are refused: " + err.Error())
 	}
-	prefix, suffix := document(memo{opts: opts})
+	prefix, suffix, _ := document(memo{opts: opts})
 	return int64(len(prefix) + len(suffix))
 }

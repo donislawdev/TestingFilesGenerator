@@ -138,8 +138,17 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	}
 	defer pics.Close()
 
+	// The map: the file type and the movie box, then the media data box with
+	// the pictures, then the free boxes that make up the size. The movie box
+	// is the same length whatever the pictures come to, so it is marked before
+	// a byte of it goes out, and the rest once the first pass has the length.
+	mdatAt := int64(len(l.ftyp)) + l.moovLen()
+	format.Mark(w, format.RoleStructure, 0, mdatAt)
+
 	o := &out{w: w, buf: make([]byte, 0, 64<<10)}
 	content := l.writeMovie(o, z)
+	format.Mark(w, format.RoleContent, mdatAt, l.front()-mdatAt+content)
+	format.Mark(w, format.RolePadding, l.front()+content, p.Bytes-l.front()-content)
 	o.mediaHeader(l.bigData, content)
 	if err := writeSamples(ctx, o, l, pics); err != nil {
 		return err

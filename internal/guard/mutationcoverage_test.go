@@ -150,6 +150,12 @@ var provenByProbe = map[string]string{
 	"TestEveryAvifRungStillFitsInsideItsDeclaredCeilings": "its own reach check - no damaged label drawn is a failure - and broken on 2026-11-12 twice, with " +
 		"the heaviest seeds: the first ceiling of 640x480 set back to 16389 (red, 17314 B) and the second to 18722 (red, 20024 B). " +
 		"Without those seeds both stayed green (docs/REVIEW-234-2026-11-12.md).",
+	"TestEveryFormatsMapIsTheOneItsStructureReadsBack": "its own canaries - the first boundary moved by a byte must not pass, a mark for bytes already written must be " +
+		"reported, a sweep with no padding is a failure - and broken on 2026-11-12 by marking the png padding a byte late: red.",
+	"TestACutFileSaysWhereTheCutFellAndWhatIsLeft": "its own canary - a cut named in the wrong role, and content claimed gone that is there, must not pass - " +
+		"and broken on 2026-11-12 by reporting every cut in the content: red for the picture and the icon.",
+	"TestTheRecordOfACutRunIsNeverLongerThanItsForecast": "its own reach check - a run with no cut in the padding is a failure - and broken on 2026-11-12 " +
+		"by leaving the cut out of the forecast: red, a record of 9638 B told 8130 B.",
 	"TestADamageLabelIsBoundedAndSaysHowManyItLeftOut": "its own canary - no chain up to 200 damages shortened is a failure - and broken on 2026-11-12 by letting damage.Chain.Label return the whole chain: red.",
 	"TestADamagedMailCarriesItsLabelWholeInEveryTextEncoding": "broken on 2026-11-12 twice: eml writing the label raw in quoted-printable (red, the one damage label read back as bytesd), " +
 		"and eml leaving a long label on one line (red, a line of 92 characters).",

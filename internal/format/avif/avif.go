@@ -491,6 +491,11 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 			m.width, m.height, len(coded), m.total))
 	}
 
+	// The map: the coder's boxes, its media data the content, and the free
+	// boxes after them that make up the size.
+	markBoxes(w, coded)
+	format.Mark(w, format.RolePadding, int64(len(coded)), pad)
+
 	if _, err := w.Write(coded); err != nil {
 		return err
 	}

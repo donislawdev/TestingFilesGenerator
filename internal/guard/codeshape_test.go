@@ -72,7 +72,11 @@ const (
 	// moved out of oracle/oracle.go into strict.go when the format it
 	// learned took the file past the ceiling. The longest file is
 	// engine/engine.go now.
-	longestFile = 392
+	// Lowered from 392 on 2026-11-12: the notes of an entry moved out of
+	// engine/engine.go, the label out of format/wav/wav.go and the filler
+	// writer out of format/zip/zip.go, when the map of a file took all three
+	// past the ceiling. The longest file is recipe/target.go now.
+	longestFile = 390
 
 	// Depth answers a different question than length, and it is the better
 	// question of the two. A hundred line function that is flat reads top to

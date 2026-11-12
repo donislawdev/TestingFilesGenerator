@@ -295,6 +295,34 @@ func (c Chain) Stretches() bool {
 	return false
 }
 
+// Cut is where the damage that cuts the tail cuts what the generator writes,
+// for a file of size bytes on disk: its place in the list, and how many of the
+// generator's bytes it keeps, which is the offset of the first byte it drops.
+//
+// False when no damage cuts the tail, and when one before it changes the
+// length - the bytes it keeps would then not be the generator's, and an offset
+// in them says nothing about the map of the file the generator wrote. The same
+// condition as Stretches, for the same reason.
+func (c Chain) Cut(size int64) (int, int64, bool) {
+	steps, err := c.steps()
+	if err != nil {
+		return 0, 0, false
+	}
+	outs, _, ok := lengths(steps, size)
+	if !ok {
+		return 0, 0, false
+	}
+	for i, s := range steps {
+		if s.d.CutsTail {
+			return i, outs[i], true
+		}
+		if s.d.Length != nil {
+			return 0, 0, false
+		}
+	}
+	return 0, 0, false
+}
+
 // Open builds the chain as one writer for a file of size bytes on disk, with
 // the first damage of the list outermost so that the bytes meet them in the
 // order written. seed is the file's own seed, and each damage is handed one

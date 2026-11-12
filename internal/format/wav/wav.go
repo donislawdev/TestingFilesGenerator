@@ -293,6 +293,8 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	}
 
 	total := p.Bytes
+	m.mark(w)
+
 	// The RIFF size field counts everything after itself.
 	if err := writeAll(w, []byte("RIFF")); err != nil {
 		return err
@@ -423,29 +425,6 @@ func appendSample(buf []byte, v float64, width int) []byte {
 		n := int32(v * 2147483647)
 		return append(buf, byte(n), byte(n>>8), byte(n>>16), byte(n>>24))
 	}
-}
-
-// infoChunk builds a LIST INFO chunk carrying the label in the software
-// field, which is where a player looks for it.
-func infoChunk(label string) []byte {
-	text := append([]byte(label), 0)
-	if len(text)%2 == 1 {
-		text = append(text, 0)
-	}
-	inner := make([]byte, 0, 4+chunkHeader+len(text))
-	inner = append(inner, []byte("INFO")...)
-	inner = append(inner, []byte("ISFT")...)
-	var n [4]byte
-	binary.LittleEndian.PutUint32(n[:], uint32(len(text)))
-	inner = append(inner, n[:]...)
-	inner = append(inner, text...)
-
-	out := make([]byte, 0, chunkHeader+len(inner))
-	out = append(out, []byte("LIST")...)
-	binary.LittleEndian.PutUint32(n[:], uint32(len(inner)))
-	out = append(out, n[:]...)
-	out = append(out, inner...)
-	return out
 }
 
 func fill(ctx context.Context, w io.Writer, seed uint64, n int64) error {

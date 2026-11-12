@@ -68,11 +68,38 @@ func StrictBatch(ctx context.Context, reqs []StrictRequest) ([]StrictJudgement, 
 		return nil, false, nil
 	}
 
+	lines, err := batchLines(ctx, python, script, "the structural checker", reqs)
+	if err != nil {
+		return nil, true, err
+	}
+	got := make([]StrictJudgement, 0, len(lines))
+	for _, line := range lines {
+		var j StrictJudgement
+		if err := json.Unmarshal([]byte(line), &j); err != nil {
+			return nil, true, fmt.Errorf("the structural checker answered %q, which is not an answer: %w", line, err)
+		}
+		got = append(got, j)
+	}
+	for i := range got {
+		if got[i].Path != reqs[i].Path {
+			return nil, true, fmt.Errorf("answer %d is about %q and the question was about %q", i+1, got[i].Path, reqs[i].Path)
+		}
+	}
+	return got, true, nil
+}
+
+// batchLines hands every request to one run of script --batch, a JSON line
+// each, and reads one answer line back for each, in the order asked.
+//
+// Shared by the structural checker and the reader of maps, which speak the
+// same protocol. An error means the run itself went wrong - the process
+// failed, or the answers do not match the questions one to one.
+func batchLines[T any](ctx context.Context, python, script, who string, reqs []T) ([]string, error) {
 	var in strings.Builder
 	for _, r := range reqs {
 		line, err := json.Marshal(r)
 		if err != nil {
-			return nil, true, fmt.Errorf("writing the request for %s: %w", r.Path, err)
+			return nil, fmt.Errorf("writing a request for %s: %w", who, err)
 		}
 		in.Write(line)
 		in.WriteByte('\n')
@@ -91,33 +118,22 @@ func StrictBatch(ctx context.Context, reqs []StrictRequest) ([]StrictJudgement, 
 	cmd.Stdout = &out
 	cmd.Stderr = &errOut
 	if err := cmd.Run(); err != nil {
-		return nil, true, fmt.Errorf("the structural checker stopped: %w: %s", err, strings.TrimSpace(errOut.String()))
+		return nil, fmt.Errorf("%s stopped: %w: %s", who, err, strings.TrimSpace(errOut.String()))
 	}
 
-	got := make([]StrictJudgement, 0, len(reqs))
+	var lines []string
 	scan := bufio.NewScanner(strings.NewReader(out.String()))
 	scan.Buffer(make([]byte, 64*1024), 1024*1024)
 	for scan.Scan() {
-		line := strings.TrimSpace(scan.Text())
-		if line == "" {
-			continue
+		if line := strings.TrimSpace(scan.Text()); line != "" {
+			lines = append(lines, line)
 		}
-		var j StrictJudgement
-		if err := json.Unmarshal([]byte(line), &j); err != nil {
-			return nil, true, fmt.Errorf("the structural checker answered %q, which is not an answer: %w", line, err)
-		}
-		got = append(got, j)
 	}
 	if err := scan.Err(); err != nil {
-		return nil, true, fmt.Errorf("reading the structural checker's answers: %w", err)
+		return nil, fmt.Errorf("reading the answers of %s: %w", who, err)
 	}
-	if len(got) != len(reqs) {
-		return nil, true, fmt.Errorf("the structural checker's answers do not match its questions: asked %d, answered %d", len(reqs), len(got))
+	if len(lines) != len(reqs) {
+		return nil, fmt.Errorf("the answers of %s do not match its questions: asked %d, answered %d", who, len(reqs), len(lines))
 	}
-	for i := range got {
-		if got[i].Path != reqs[i].Path {
-			return nil, true, fmt.Errorf("answer %d is about %q and the question was about %q", i+1, got[i].Path, reqs[i].Path)
-		}
-	}
-	return got, true, nil
+	return lines, nil
 }

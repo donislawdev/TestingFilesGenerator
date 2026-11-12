@@ -330,6 +330,14 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		body += chunkHeader + 4 + m.chunk
 	}
 
+	// The map, all of it known from the plan: the container's header, the
+	// picture's chunk, and what makes up the size after it - the private
+	// chunk and the bytes past the container's end.
+	picture := chunkHeader + 4 + stream + stream%2
+	format.Mark(w, format.RoleStructure, 0, riffHeader)
+	format.Mark(w, format.RoleContent, riffHeader, picture)
+	format.Mark(w, format.RolePadding, riffHeader+picture, p.Bytes-riffHeader-picture)
+
 	if err := writeContainer(w, body, stream); err != nil {
 		return err
 	}

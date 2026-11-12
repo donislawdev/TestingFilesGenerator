@@ -530,7 +530,13 @@ func plaintextCRC(ctx context.Context, m memo, withContents bool, write func(io.
 }
 
 func build(ctx context.Context, w io.Writer, m memo, withContents bool) error {
-	zw := stdzip.NewWriter(w)
+	zm := archive.NewStreamMap(w)
+	zw := stdzip.NewWriter(zm.Buffer)
+	// The map: the directories' entries, the files' entries as the content,
+	// the filler entry, the central directory, and the comment. What only the
+	// writing tells - where the filler and the directory start - is marked as
+	// archive/zip writes it (archive.StreamMap).
+	format.Mark(w, format.RoleStructure, 0, -1)
 	if err := zw.SetComment(m.comment); err != nil {
 		return core.Defect(fmt.Errorf("zip: the archive comment was refused: %w", err))
 	}
@@ -552,6 +558,7 @@ func build(ctx context.Context, w io.Writer, m memo, withContents bool) error {
 	if err := writeDirectories(ctx, zw, m.layout); err != nil {
 		return err
 	}
+	format.Mark(w, format.RoleContent, zm.Pos(), -1)
 
 	for i, c := range m.children {
 		select {
@@ -598,35 +605,11 @@ func build(ctx context.Context, w io.Writer, m memo, withContents bool) error {
 		}
 		return plain - squeezed
 	}
-	if err := writeFillerEntry(ctx, zw, m, withContents, freed); err != nil {
+	if err := writeFillerEntry(ctx, zw, zm, m, withContents, freed); err != nil {
 		return err
 	}
 
-	return zw.Close()
-}
-
-// writeFiller emits the padding entry without holding it in memory.
-func writeFiller(ctx context.Context, w io.Writer, seed uint64, n int64) error {
-	rng := core.NewRand(seed)
-	buf := make([]byte, writeChunk)
-	for remaining := n; remaining > 0; {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-		}
-		size := int64(len(buf))
-		if remaining < size {
-			size = remaining
-		}
-		chunk := buf[:size]
-		core.FillRandomBE(chunk, rng)
-		if _, err := w.Write(chunk); err != nil {
-			return err
-		}
-		remaining -= size
-	}
-	return nil
+	return zm.Close(zw)
 }
 
 // archiveSize measures the archive without generating anything it holds.

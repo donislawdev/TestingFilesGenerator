@@ -34,6 +34,9 @@ const (
 	// bytes and is what the padding is inserted after.
 	soiSize = 2
 
+	// eoiSize is the end of image marker, which the encoder writes last.
+	eoiSize = 2
+
 	// comOverhead is what one comment segment costs beyond its payload: the
 	// marker FF FE and a two byte length. The length field counts itself,
 	// which is why the payload stops four bytes short of 65535 rather than
@@ -284,6 +287,15 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return ctx.Err()
 	default:
 	}
+
+	// The map, all of it known from the plan: the start marker, the comments
+	// that make up the size, the picture - its tables, frame and scan as one -
+	// and the end marker.
+	pad := p.Bytes - m.body
+	format.Mark(w, format.RoleStructure, 0, soiSize)
+	format.Mark(w, format.RolePadding, soiSize, pad)
+	format.Mark(w, format.RoleContent, soiSize+pad, m.body-soiSize-eoiSize)
+	format.Mark(w, format.RoleEnd, p.Bytes-eoiSize, eoiSize)
 
 	// The start marker goes out first, then the padding, then the rest of the
 	// encoded picture. Nothing is buffered: the encoder streams straight

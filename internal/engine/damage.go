@@ -184,13 +184,21 @@ func damagedExpectation(f PlannedFile) manifest.Expected {
 //
 // Nil for a file nothing damaged, so the key is absent rather than empty and
 // every manifest written before this existed is unchanged.
-func damageFor(f PlannedFile) []manifest.Damage {
+//
+// cut is where the damage that cut the file fell, and goes to that damage's
+// entry alone.
+func damageFor(f PlannedFile, cut *manifest.Cut) []manifest.Damage {
 	if !f.Damaged() {
 		return nil
 	}
+	at, _, cuts := f.Target.Damage.Cut(f.Plan.Bytes)
 	out := make([]manifest.Damage, 0, len(f.Target.Damage))
-	for _, s := range f.Target.Damage {
-		out = append(out, manifest.Damage{Type: s.ID, Settings: s.Resolved()})
+	for i, s := range f.Target.Damage {
+		d := manifest.Damage{Type: s.ID, Settings: s.Resolved()}
+		if cuts && i == at {
+			d.Cut = cut
+		}
+		out = append(out, d)
 	}
 	return out
 }

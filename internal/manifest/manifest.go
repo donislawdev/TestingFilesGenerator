@@ -275,6 +275,29 @@ type Failure struct {
 type Damage struct {
 	Type     string            `json:"type"`
 	Settings map[string]string `json:"settings,omitempty"`
+	// Cut is where a damage that cuts the end off the file fell. Left out for
+	// every other damage, so the entries written before it existed keep their
+	// bytes, and manifest_version stays for the reason File.Damage gives.
+	Cut *Cut `json:"cut,omitempty"`
+}
+
+// Cut is where a cut fell in the file it was made in, and how much of the
+// content it left.
+//
+// Asked because the cut does not always fall where the setting suggests. In a
+// format that keeps its padding after the content, a large file is nearly all
+// padding, so the cut falls there and the content stays whole whatever share
+// was asked for (docs/TRUNCATE-2026-11-11.md). A test that means "half of the
+// picture is gone" can read here whether it is.
+type Cut struct {
+	// In is what the first byte cut away was for: structure, content,
+	// padding or end.
+	In string `json:"in"`
+	// ContentBytes is how long the content of the whole file was. Absent when
+	// the generator did not know when it stopped, rather than a guess.
+	ContentBytes *int64 `json:"content_bytes,omitempty"`
+	// ContentKeptBytes is how much of the content is still in the file.
+	ContentKeptBytes int64 `json:"content_kept_bytes"`
 }
 
 // Hashes identify the bytes.

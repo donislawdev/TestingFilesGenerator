@@ -530,7 +530,7 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 		// separate one that can drift away from it.
 		res.Started = true
 		for _, f := range files {
-			m.Add(res.entryFor(f, "", false, nil))
+			m.Add(res.entryFor(f, wrote{}, false, nil))
 		}
 		m.Run.Complete = true
 		return res, nil
@@ -610,7 +610,7 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	for i, r := range written {
 		switch {
 		case r.ok:
-			m.Add(res.entryFor(files[i], r.sha, true, nil))
+			m.Add(res.entryFor(files[i], r.wrote, true, nil))
 		case r.err == nil:
 			// Never started. A cancelled run leaves these behind and they are
 			// neither a success nor a failure, so they get no entry - which is
@@ -625,7 +625,7 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 			// One file failing does not end the run. Nine thousand good
 			// files are worth keeping, and the entry says what went wrong.
 			res.Failures++
-			m.Add(res.entryFor(files[i], "", false, r.err))
+			m.Add(res.entryFor(files[i], wrote{}, false, r.err))
 		}
 	}
 
@@ -723,7 +723,7 @@ func releaseRunLock(path string, own os.FileInfo) {
 	_ = core.RemoveOwn(path, own)
 }
 
-func (res *Result) entryFor(f PlannedFile, sha string, materialized bool, failure error) manifest.File {
+func (res *Result) entryFor(f PlannedFile, w wrote, materialized bool, failure error) manifest.File {
 	var notes []manifest.Note
 	for _, n := range f.Plan.Notes {
 		notes = append(notes, res.note(n.Code, n.Detail))
@@ -745,6 +745,7 @@ func (res *Result) entryFor(f PlannedFile, sha string, materialized bool, failur
 		notes = append(notes, res.note("label_not_guaranteed",
 			core.Says("engine.LabelNotGuaranteed", "The label was written before the file was damaged, so the damage may have overwritten it.")))
 	}
+	notes = res.withCutNote(notes, w.cut)
 
 	e := manifest.File{
 		ID:            f.ID,
@@ -755,13 +756,13 @@ func (res *Result) entryFor(f PlannedFile, sha string, materialized bool, failur
 		Bytes:         f.Plan.Bytes,
 		Format:        f.Desc.ID,
 		Fidelity:      string(f.Desc.Fidelity),
-		Hashes:        manifest.Hashes{SHA256: sha},
+		Hashes:        manifest.Hashes{SHA256: w.sha},
 		Seed:          core.SeedLabel(f.Seed),
 		Generator:     manifest.GeneratorRef{Name: f.Desc.ID, Version: f.Desc.GeneratorVersion},
 		Determinism:   string(f.Plan.Determinism),
 		Properties:    props,
 		LabelEmbedded: label,
-		Damage:        damageFor(f),
+		Damage:        damageFor(f, w.cut),
 		Notes:         notes,
 		Expected:      expectationFor(f),
 		Group:         f.Target.Group,
@@ -777,19 +778,6 @@ func (res *Result) entryFor(f PlannedFile, sha string, materialized bool, failur
 			core.Says("engine.NotProduced", "This file was not produced. The run carried on and ended with the partial exit code.")))
 	}
 	return e
-}
-
-// note is one note for the manifest, remembered as a sentence once for each
-// different thing it says.
-func (res *Result) note(code string, said core.Said) manifest.Note {
-	detail := said.String()
-	if res.NotesSaid == nil {
-		res.NotesSaid = map[string]core.Said{}
-	}
-	if _, have := res.NotesSaid[detail]; !have {
-		res.NotesSaid[detail] = said
-	}
-	return manifest.Note{Code: code, Detail: detail}
 }
 
 func expectationFor(f PlannedFile) manifest.Expected {

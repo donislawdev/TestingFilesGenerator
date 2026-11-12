@@ -289,6 +289,12 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	default:
 	}
 
+	// The map, all of it known from the plan: the two headers, the gap that
+	// makes up the size, and the pixels. The gap stands BEFORE the pixels.
+	format.Mark(w, format.RoleStructure, 0, headers)
+	format.Mark(w, format.RolePadding, headers, m.gap)
+	format.Mark(w, format.RoleContent, headers+m.gap, pixelBytes(m.width, m.height))
+
 	if err := writeHeaders(w, m, p.Bytes); err != nil {
 		return err
 	}

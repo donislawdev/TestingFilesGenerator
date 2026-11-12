@@ -250,6 +250,14 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	default:
 	}
 
+	// The map, all of it known from the plan: the directory, the gap that
+	// makes up the size, and the picture. The gap stands BEFORE the picture,
+	// so a cut takes the whole picture whatever share is asked for
+	// (docs/TRUNCATE-2026-11-11.md section 2).
+	format.Mark(w, format.RoleStructure, 0, preamble)
+	format.Mark(w, format.RolePadding, preamble, m.gap)
+	format.Mark(w, format.RoleContent, preamble+m.gap, int64(len(m.image)))
+
 	if err := writeDirectory(w, m); err != nil {
 		return err
 	}

@@ -90,7 +90,7 @@ func widthFor(n int) int {
 // started, which a cancelled run leaves behind and which is neither a success
 // nor a failure - it gets no manifest entry, exactly as it gets none today.
 type fileResult struct {
-	sha string
+	wrote
 	ok  bool
 	err error
 }
@@ -179,9 +179,9 @@ func (w *writers) drain(ctx context.Context) {
 		if !w.queue.take(ctx, i) {
 			return
 		}
-		sum, err := writeOne(ctx, w.files[i], w.outDir, &p)
+		got, err := writeOne(ctx, w.files[i], w.outDir, &p)
 		w.queue.give(i)
-		w.out[i] = fileResult{sha: sum, ok: err == nil, err: err}
+		w.out[i] = fileResult{wrote: got, ok: err == nil, err: err}
 		p.finished(w.files[i].Plan, err == nil)
 	}
 }
@@ -504,7 +504,7 @@ func (p *fileProgress) finished(plan format.Plan, ok bool) {
 //
 // It lives here rather than in engine.go because it is what a worker does, and
 // this file is meant to be the whole answer to "what runs beside what".
-func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress) (string, error) {
+func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress) (wrote, error) {
 	final := filepath.Join(outDir, f.Name)
 	// The process id is in the name because two runs writing into one directory
 	// used to meet on it. Measured on 2026-08-03: two runs of the same target
@@ -549,9 +549,9 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress
 		if errors.Is(err, fs.ErrExist) {
 			// In our own words. The fault is the one preflight names, arriving
 			// later than preflight can look.
-			return "", &CollisionError{Path: tmp}
+			return wrote{}, &CollisionError{Path: tmp}
 		}
-		return "", err
+		return wrote{}, err
 	}
 
 	h := sha256.New()
@@ -577,10 +577,13 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress
 		if err != nil {
 			_ = fh.Close()
 			_ = os.Remove(tmp)
-			return "", err
+			return wrote{}, err
 		}
 		sink, streams = damaged, opened
 	}
+	// Outermost, so the generator marks its map on the writer it is handed
+	// and the offsets are those of the file it writes, before the cut.
+	sink, mapped := cutMapper(f, sink)
 
 	writeErr := writeDamaged(ctx, f, sink, streams)
 	if writeErr == nil {
@@ -599,11 +602,11 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress
 
 	if writeErr != nil {
 		_ = os.Remove(tmp)
-		return "", writeErr
+		return wrote{}, writeErr
 	}
 	if closeErr != nil {
 		_ = os.Remove(tmp)
-		return "", closeErr
+		return wrote{}, closeErr
 	}
 
 	// The size is the promise. A generator that missed it by a byte is a bug
@@ -611,7 +614,7 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress
 	// never reaches its final name.
 	if counter.n != f.Plan.Bytes {
 		_ = os.Remove(tmp)
-		return "", core.Defect(fmt.Errorf("generator for %s produced %d B where the plan said %d B",
+		return wrote{}, core.Defect(fmt.Errorf("generator for %s produced %d B where the plan said %d B",
 			f.Desc.ID, counter.n, f.Plan.Bytes))
 	}
 
@@ -624,11 +627,11 @@ func writeOne(ctx context.Context, f PlannedFile, outDir string, p *fileProgress
 	if err := core.Publish(tmp, final); err != nil {
 		_ = os.Remove(tmp)
 		if errors.Is(err, fs.ErrExist) {
-			return "", &CollisionError{Path: final}
+			return wrote{}, &CollisionError{Path: final}
 		}
-		return "", err
+		return wrote{}, err
 	}
-	return hex.EncodeToString(h.Sum(nil)), nil
+	return wrote{sha: hex.EncodeToString(h.Sum(nil)), cut: mapped.cut(f)}, nil
 }
 
 type countingWriter struct {

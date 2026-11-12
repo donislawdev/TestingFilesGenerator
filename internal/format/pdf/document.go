@@ -8,12 +8,18 @@ import (
 	"strings"
 )
 
+// places is where the parts of a document start, for its map: the first
+// object, and the cross reference table the trailer follows.
+type places struct {
+	objects, xref int64
+}
+
 // document builds everything up to the trailer, and the closing lines.
 //
 // The two are returned apart because the padding goes between them. The
 // closing lines carry the offset of the cross reference table, which sits in
 // the first part and therefore does not move.
-func document(m memo) (prefix, suffix []byte) {
+func document(m memo) (prefix, suffix []byte, at places) {
 	var body bytes.Buffer
 	// The version is the one asked for and nothing else follows from it: the
 	// file uses nothing newer than 1.4, so every version offered here is true
@@ -63,6 +69,7 @@ func document(m memo) (prefix, suffix []byte) {
 	}
 
 	xrefPos := body.Len()
+	at = places{objects: int64(offsets[0]), xref: int64(xrefPos)}
 	fmt.Fprintf(&body, "xref\n0 %d\n", len(objects)+1)
 	body.WriteString("0000000000 65535 f \n")
 	for _, off := range offsets {
@@ -71,5 +78,5 @@ func document(m memo) (prefix, suffix []byte) {
 	fmt.Fprintf(&body, "trailer\n<</Size %d/Root 1 0 R/Info 4 0 R>>\n", len(objects)+1)
 
 	suffix = []byte(fmt.Sprintf("startxref\n%d\n%%%%EOF\n", xrefPos))
-	return body.Bytes(), suffix
+	return body.Bytes(), suffix, at
 }

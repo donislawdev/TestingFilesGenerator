@@ -1018,6 +1018,16 @@
     "hash": "sha256-1e90995301d1",
     "other": "writing {{.File}}"
   },
+  "engine.CutAfterContent": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-34a36096782c",
+    "other": "The cut fell in the padding after the content, so the content is whole and only the end of the file is missing."
+  },
+  "engine.CutBeforeContent": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-ce3c81abf2d2",
+    "other": "The cut fell in the padding before the content, so none of the content is left."
+  },
   "engine.DamagedAboveWhy": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Damage}}, {{.Format}}, {{.Maximum}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-59fb1ae064c2",

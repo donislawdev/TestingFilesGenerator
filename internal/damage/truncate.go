@@ -48,8 +48,15 @@ func init() {
 				// anyone says it, and the sentence below names the percent.
 				Min: fewestMissing, Max: mostMissing,
 				Default: strconv.Itoa(defaultMissing),
+				// The last sentence is the limit a person cannot see from the
+				// outside: in 13 formats of 32 the padding stands after the
+				// content, so a large file cut at any share keeps its whole
+				// picture or sound (docs/TRUNCATE-2026-11-11.md). The manifest
+				// says per file where the cut fell.
 				Detail: "How much of the whole file is gone, as a percentage. " +
-					"At least this much is cut - a few bytes more where the format cannot end exactly there.",
+					"At least this much is cut - a few bytes more where the format cannot end exactly there. " +
+					"A large file is often mostly padding after its content, so the content can stay whole - " +
+					"the manifest says what each cut left.",
 			},
 		},
 		Floor:    func(v Values) int64 { return smallestKept(missingShare(v)) },

@@ -72,6 +72,14 @@ because it turns other people's test suites red.
   readers differ - a text cut short is still text - the manifest says the
   outcome is `unspecified`, offers both answers in the new `policy_options`
   field and says why. `tfg damage <id>` lists those formats.
+- **A file cut short says where the cut fell and how much of its content is
+  left.** In many formats a large file is mostly padding after its content,
+  so `--damage truncate:missing=90` on a 1 MB PNG still leaves the whole
+  picture. The `truncate` entry in the manifest's `damage` now carries `cut`:
+  `in` (`content`, `padding`, `structure` or `end`), `content_bytes` and
+  `content_kept_bytes`. A cut in the padding also gets the note
+  `cut_in_padding`. In a compressed tar.gz a cut in the padding is reported as
+  a cut in the content.
 
 - **tfg is on npm, for tests in Node.**
   `npm install --save-dev testing-files-generator` gives Playwright, Vitest

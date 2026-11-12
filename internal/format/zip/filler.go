@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/archive"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
@@ -27,12 +28,18 @@ import (
 // header - Flush does not. Measured while writing this: reading the total
 // before the filler's header went down gave nought, and the archive overshot
 // by exactly the compressed length of its entries.
-func writeFillerEntry(ctx context.Context, zw *stdzip.Writer, m memo, withContents bool, freed func() int64) error {
+//
+// zm marks where the entry starts, which is known only once its header is
+// written: the entry before it ends as this one opens.
+func writeFillerEntry(ctx context.Context, zw *stdzip.Writer, zm *archive.StreamMap, m memo, withContents bool, freed func() int64) error {
 	if !m.withFiller {
 		return nil
 	}
+	if err := zm.Hold(); err != nil {
+		return err
+	}
 	if m.squeeze.On() {
-		return writeCompressedFiller(ctx, zw, m, withContents, freed)
+		return writeCompressedFiller(ctx, zw, zm, m, withContents, freed)
 	}
 
 	// The stored path, unchanged. It settles the size before the header
@@ -55,6 +62,9 @@ func writeFillerEntry(ctx context.Context, zw *stdzip.Writer, m memo, withConten
 	if err != nil {
 		return err
 	}
+	if err := markFiller(zm); err != nil {
+		return err
+	}
 	if !withContents {
 		return nil
 	}
@@ -64,18 +74,30 @@ func writeFillerEntry(ctx context.Context, zw *stdzip.Writer, m memo, withConten
 	return shut()
 }
 
+// markFiller marks the filler entry as padding and sends on what was held
+// while its header was written.
+func markFiller(zm *archive.StreamMap) error {
+	if err := zm.MarkEntry(format.RolePadding, fillerName); err != nil {
+		return err
+	}
+	return zm.Release()
+}
+
 // writeCompressedFiller is the same entry for an archive whose others are
 // squeezed, with the header written before the length is known.
 //
 // It carries no checksum and takes no lock, and neither is an omission:
 // ReadCompression refuses compression together with a password, so a squeezed
 // archive is never a locked one.
-func writeCompressedFiller(ctx context.Context, zw *stdzip.Writer, m memo, withContents bool, freed func() int64) error {
+func writeCompressedFiller(ctx context.Context, zw *stdzip.Writer, zm *archive.StreamMap, m memo, withContents bool, freed func() int64) error {
 	entry, shut, err := openEntry(zw, m, entryPlan{
 		name: fillerName, index: len(m.children), stored: true,
 		withContents: withContents,
 	})
 	if err != nil {
+		return err
+	}
+	if err := markFiller(zm); err != nil {
 		return err
 	}
 	if !withContents {
@@ -115,4 +137,28 @@ func writeCompressedFiller(ctx context.Context, zw *stdzip.Writer, m memo, withC
 		return err
 	}
 	return shut()
+}
+
+// writeFiller emits the padding entry without holding it in memory.
+func writeFiller(ctx context.Context, w io.Writer, seed uint64, n int64) error {
+	rng := core.NewRand(seed)
+	buf := make([]byte, writeChunk)
+	for remaining := n; remaining > 0; {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+		}
+		size := int64(len(buf))
+		if remaining < size {
+			size = remaining
+		}
+		chunk := buf[:size]
+		core.FillRandomBE(chunk, rng)
+		if _, err := w.Write(chunk); err != nil {
+			return err
+		}
+		remaining -= size
+	}
+	return nil
 }
