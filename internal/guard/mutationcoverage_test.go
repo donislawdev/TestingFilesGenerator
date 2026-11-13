@@ -155,6 +155,10 @@ var provenByProbe = map[string]string{
 		"padding a byte late: red, and by marking the picture of a png laid out for a cut a byte late: red at 8 KiB and at 64 KiB.",
 	"TestACutFileSaysWhereTheCutFellAndWhatIsLeft": "its own canary - a cut named in the wrong role, and content claimed gone that is there, must not pass - " +
 		"and broken on 2026-11-12 by reporting every cut in the content: red for the picture and the icon.",
+	"TestACutAtTheSmallestSizeSaysHowLongTheContentWas": "its own canaries - a cut that does not state the content's length, and one stating a " +
+		"byte less than the map runs, must not pass - its reach check - the ZIP packages at their smallest have no padding in front and are cut " +
+		"in the content - and red on 2026-11-13 before the Office packages marked their parts with a length without a padding part in front: " +
+		"docx at 610 B, xlsx at 863 B, pptx at 2405 B.",
 	"TestACutTakesTheShareOfTheContentItIsAskedFor": "its own canaries - a cut that kept all its content must not pass for one that took half, and txt listed as " +
 		"not cutting at the share must be reported - and broken on 2026-11-12 by never telling png where its cut falls: red in all six of its files.",
 	"TestAGuardThatDrawsAfterALongPauseStillDraws": "its own canary - the box drawn after test.NewApp alone has to come out blank, or the pause " +

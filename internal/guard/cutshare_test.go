@@ -142,11 +142,16 @@ func TestACutTakesTheShareOfTheContentItIsAskedFor(t *testing.T) {
 		}
 		problem := shareProblem(missing, m)
 		f := plannedOf[m.TargetID]
-		if _, closes := endClosesTheFile[f.Desc.ID]; closes && problem == cutInTheEnd && onlyTheEndBehind(wholeMap(t, f)) {
+		if _, closes := endClosesTheFile[f.Desc.ID]; closes && problem == cutInTheEnd {
 			// The end the format has to close with is longer than what the
 			// cut takes, and nothing else stands behind the content that the
-			// format could have put in front of it.
-			problem = ""
+			// format could have put in front of it. Both read off the whole
+			// file's map, not the manifest the cut file's map wrote.
+			whole := wholeMap(t, f)
+			_, at, cuts := f.Target.Damage.Cut(f.Plan.Bytes)
+			if cuts && cutFallsInTheEnd(whole, at) && onlyTheEndBehind(whole) {
+				problem = ""
+			}
 		}
 		problems[m.TargetID] = problem
 	}
@@ -174,6 +179,16 @@ func TestACutTakesTheShareOfTheContentItIsAskedFor(t *testing.T) {
 	}
 	if !onlyTheEndBehind([]format.Region{region(format.RolePadding, 0, 5), region(format.RoleContent, 5, 10), region(format.RoleEnd, 15, 5)}) {
 		t.Errorf("canary: a file with all of its padding in front was refused for padding behind")
+	}
+	ends := []format.Region{region(format.RoleContent, 0, 10), region(format.RoleEnd, 10, 0), region(format.RoleEnd, 10, 5)}
+	if cutFallsInTheEnd(ends, 5) {
+		t.Errorf("canary: a cut in the content, reported as one in the end, passed for a cut in the end")
+	}
+	if !cutFallsInTheEnd(ends, 12) {
+		t.Errorf("canary: a cut in the end was refused for one outside it")
+	}
+	if cutFallsInTheEnd(ends[:2], 10) {
+		t.Errorf("canary: a cut at an end of no bytes passed for a cut in the end")
 	}
 	listed := maps.Clone(notYetCutAtTheShare)
 	listed["txt"] = notYet{paddingBehind, 64 << 10, 50}
@@ -224,6 +239,16 @@ func onlyTheEndBehind(regions []format.Region) bool {
 		}
 	}
 	return true
+}
+
+// cutFallsInTheEnd is whether the byte at, the first a cut drops, lies in an
+// end of a file's whole map - asked of the map, because the manifest says
+// where the cut fell from the map the cut file wrote, which is what the
+// exception for a cut in the end must not take on trust.
+func cutFallsInTheEnd(regions []format.Region, at int64) bool {
+	return slices.ContainsFunc(regions, func(r format.Region) bool {
+		return r.Role == format.RoleEnd && r.At <= at && at < r.At+r.Length
+	})
 }
 
 // wholeMap is the map of the whole file f is cut from: its generator written

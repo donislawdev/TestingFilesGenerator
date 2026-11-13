@@ -38,6 +38,10 @@ func SettleForACut(parts []Part, shape Shape, want, cutAt int64) (Package, error
 	}
 	pad := want - shape.Bare
 	front := format.PaddingInFront(0, c.content, cutAt, want)
+	// The parts are marked with their length whether or not a part goes in
+	// front: the cut stops the writing before the mark behind them, so a cut
+	// inside them says how much of them there was only from this.
+	p.Content = c.content
 	if front <= 0 || pad < c.frontOverhead {
 		return p, nil
 	}
