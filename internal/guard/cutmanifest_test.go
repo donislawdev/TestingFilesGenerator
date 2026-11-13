@@ -35,8 +35,8 @@ type cutCase struct {
 // the content is left, and gets a note when the cut missed the content.
 //
 // The shapes a cut takes (docs/TRUNCATE-2026-11-11.md sections 2, 7 and 8).
-// A GIF of 1 MiB is nearly all padding after its picture, so 90% missing
-// still leaves the whole picture. A PNG splits its padding around the picture
+// A PDF of 1 MiB is nearly all padding after its pages, so 90% missing still
+// leaves every page. A PNG splits its padding around the picture
 // for a cut, so the cut takes the share asked for. A small tar.gz keeps its
 // padding BEFORE its archive, so a cut there takes all of it. A text is its
 // words, so the cut falls in them. Two cuts in a row end the file where the second one does, and
@@ -46,7 +46,8 @@ type cutCase struct {
 // one that claims content it does not have.
 func TestACutFileSaysWhereTheCutFellAndWhatIsLeft(t *testing.T) {
 	cases := []cutCase{
-		{name: "behind", format: "gif", size: 1 << 20, missing: "90", in: "padding", kept: "all", note: "after the content"},
+		// A GIF was this case until it split its padding for the cut.
+		{name: "behind", format: "pdf", size: 1 << 20, missing: "90", in: "padding", kept: "all", note: "after the content"},
 		{name: "picture", format: "png", size: 1 << 20, missing: "90", in: "content", kept: "share"},
 		// 4 KiB on disk is 40 KiB whole, and up to 64 KiB the padding is the
 		// comment in the gzip header, in front of the archive. An icon or a JPEG
@@ -177,7 +178,7 @@ func TestTheRecordOfACutRunIsNeverLongerThanItsForecast(t *testing.T) {
 	}
 	opt := engine.Options{OutDir: t.TempDir(), Seed: 7, Command: "test"}
 	planned, err := engine.Plan([]engine.Target{
-		cut("picture", "png", 1<<20, "90"), cut("behind", "gif", 1<<20, "90"), cut("text", "txt", 1000, "50"),
+		cut("picture", "png", 1<<20, "90"), cut("behind", "pdf", 1<<20, "90"), cut("text", "txt", 1000, "50"),
 	}, opt)
 	if err != nil {
 		t.Fatalf("planning: %v", err)

@@ -3,7 +3,9 @@
 // A compressed format, so the size of the picture is whatever LZW decides and
 // the last bytes come from a padding channel - the same shape as PNG. The
 // channel here is the comment extension, a block the format sets aside for
-// arbitrary content.
+// arbitrary content. A file a damage will cut short has its padding split
+// into a comment in front of the frames and one behind them, so the cut takes
+// the share of the picture asked for (cut.go).
 //
 // It has one awkward property PNG does not, and it is measured rather than
 // guessed: an empty comment costs three bytes and a comment carrying a single
@@ -166,6 +168,10 @@ type memo struct {
 	payload int64
 	blocks  int64
 	comment bool
+	// cutAt is where a damage will cut the file, zero when nothing does
+	// (format.Request.CutAt). writeForACut splits the padding around the
+	// frames for it.
+	cutAt int64
 }
 
 func checkJointLimits(w, h int) error {
@@ -196,6 +202,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	if err != nil {
 		return format.Plan{}, err
 	}
+	m.cutAt = r.CutAt
 	w, h := m.width, m.height
 	bare := m.body + trailerSize
 
@@ -324,15 +331,19 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		return ctx.Err()
 	default:
 	}
+	if m.cutAt > 0 && m.cutAt < p.Bytes {
+		return writeForACut(ctx, w, m, p.Bytes)
+	}
 
 	// The map, before the bytes wherever planning measured the picture. The
-	// palette counts to the content, with the frames it colours: the encoder
-	// writes it, and a reader needs it to hand back a single pixel.
-	format.Mark(w, format.RoleStructure, 0, screenHeader)
+	// head the encoder writes in front of the first frame - the colour table
+	// and the loop extension with it - is structure, and the frames are the
+	// content (headBytes).
+	format.Mark(w, format.RoleStructure, 0, headBytes(m))
 	if m.bodyKnown {
 		markAfterThePicture(w, m, p.Bytes, true)
 	} else {
-		format.Mark(w, format.RoleContent, screenHeader, -1)
+		format.Mark(w, format.RoleContent, headBytes(m), -1)
 	}
 
 	// The trailer is always the final byte, so hold it back and let the rest
@@ -373,12 +384,13 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 // every GIF and are always this long.
 const screenHeader = 6 + 7
 
-// markAfterThePicture marks the picture when its length is known, and what
-// follows it: the comment that makes up the size, if there is one, and the
+// markAfterThePicture marks the frames when their length is known, and what
+// follows them: the comment that makes up the size, if there is one, and the
 // trailer.
 func markAfterThePicture(w io.Writer, m memo, total int64, withPicture bool) {
 	if withPicture {
-		format.Mark(w, format.RoleContent, screenHeader, m.body-screenHeader)
+		head := headBytes(m)
+		format.Mark(w, format.RoleContent, head, m.body-head)
 	}
 	if m.comment {
 		format.Mark(w, format.RolePadding, m.body, total-trailerSize-m.body)

@@ -42,8 +42,14 @@ func writeForACut(ctx context.Context, w io.Writer, m memo, whole int64) error {
 	markAroundThePicture(w, m.body, front, pad-front)
 
 	// Both padding chunks draw from the file's seed. Nobody reads padding, and
-	// the one behind the picture lies past any cut.
-	split := &afterTheHead{ctx: ctx, w: w, seed: m.seed, head: headSize, front: front}
+	// the one behind the picture lies past any cut. The padding in front goes
+	// after the signature and the header chunk.
+	split := &format.AfterTheHead{W: w, Head: headSize, Insert: func(w io.Writer, _ []byte) error {
+		if front == 0 {
+			return nil
+		}
+		return writePaddingChunk(ctx, w, paddingChunk, m.seed, front-chunkOverhead)
+	}}
 	holder := &format.TailHolder{W: split, Keep: iendSize}
 	if err := encode(holder, m); err != nil {
 		return err
@@ -61,45 +67,6 @@ func writeForACut(ctx context.Context, w io.Writer, m memo, whole int64) error {
 	}
 	_, err := w.Write(holder.Tail)
 	return err
-}
-
-// afterTheHead passes the encoded picture on, and writes the padding that goes
-// in front of the picture's data once the first head bytes - the signature and
-// the header chunk - are out.
-type afterTheHead struct {
-	ctx  context.Context
-	w    io.Writer
-	seed uint64
-	// head is how many bytes are still to pass before the padding.
-	head int64
-	// front is the padding, its chunk's header and checksum included, and 0
-	// once it is written or when there is none.
-	front int64
-}
-
-func (a *afterTheHead) Write(p []byte) (int, error) {
-	n := 0
-	if a.head > 0 {
-		k := min(a.head, int64(len(p)))
-		written, err := a.w.Write(p[:k])
-		n, a.head = written, a.head-int64(written)
-		if err != nil || a.head > 0 {
-			return n, err
-		}
-		p = p[k:]
-	}
-	if a.front > 0 {
-		front := a.front
-		a.front = 0
-		if err := writePaddingChunk(a.ctx, a.w, paddingChunk, a.seed, front-chunkOverhead); err != nil {
-			return n, err
-		}
-	}
-	if len(p) == 0 {
-		return n, nil
-	}
-	written, err := a.w.Write(p)
-	return n + written, err
 }
 
 // frontPadding is how much of the padding, chunk headers included, goes in

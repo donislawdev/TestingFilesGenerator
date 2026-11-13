@@ -25,6 +25,45 @@ func PaddingInFront(before, content, cutAt, whole int64) int64 {
 	return cutAt - before - int64(kept)
 }
 
+// AfterTheHead passes a stream on and, once its first Head bytes have gone on,
+// calls Insert before the rest: padding a format puts between the headers an
+// encoder writes first and the content that follows them. Insert gets the head
+// as it went out, so a format can check that the encoder wrote the head it
+// counted before it trusts the length. An Insert that fails stops the stream
+// with its error.
+type AfterTheHead struct {
+	W      io.Writer
+	Head   int64
+	Insert func(w io.Writer, head []byte) error
+	// head is what has gone on of the first Head bytes, and done says Insert
+	// has been called.
+	head []byte
+	done bool
+}
+
+func (a *AfterTheHead) Write(p []byte) (int, error) {
+	n := 0
+	if !a.done {
+		k := min(a.Head-int64(len(a.head)), int64(len(p)))
+		written, err := a.W.Write(p[:k])
+		a.head = append(a.head, p[:written]...)
+		n = written
+		if err != nil || int64(len(a.head)) < a.Head {
+			return n, err
+		}
+		a.done = true
+		if err := a.Insert(a.W, a.head); err != nil {
+			return n, err
+		}
+		p = p[k:]
+	}
+	if len(p) == 0 {
+		return n, nil
+	}
+	written, err := a.W.Write(p)
+	return n + written, err
+}
+
 // TailHolder passes a stream on while keeping its last Keep bytes back, so a
 // format can write something in front of them once the stream ends - padding
 // in front of the end marker an encoder writes last.

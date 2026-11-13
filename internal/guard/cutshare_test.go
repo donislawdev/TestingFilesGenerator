@@ -32,7 +32,6 @@ type notYet struct {
 // that leaves is held to every size and share, and so is a new format unless
 // it is added here with its reason.
 var notYetCutAtTheShare = map[string]notYet{
-	"gif":   {paddingBehind, 64 << 10, 50},
 	"avif":  {paddingBehind, 64 << 10, 50},
 	"jxl":   {paddingBehind, 64 << 10, 50},
 	"mp4":   {paddingBehind, 64 << 10, 50},
@@ -55,8 +54,9 @@ var notYetCutAtTheShare = map[string]notYet{
 // from its first commit (docs/TRUNCATE-2026-11-11.md section 3a). It never
 // grows, so a new format cannot wait on the ratchet - tools/doctor.py runs this
 // guard for it, and it stays red until the format splits its padding for
-// format.Request.CutAt.
-var listedBeforeTheRule = []string{"gif", "avif", "jxl", "mp4", "webm", "pdf", "zip", "docx", "xlsx", "pptx", "targz", "webp", "tiff"}
+// format.Request.CutAt. A format that leaves the ratchet leaves this list too,
+// so it cannot go back.
+var listedBeforeTheRule = []string{"avif", "jxl", "mp4", "webm", "pdf", "zip", "docx", "xlsx", "pptx", "targz", "webp", "tiff"}
 
 // listedAfterTheRule is a problem for every format notYetAt names that
 // listedBeforeTheRule does not.
