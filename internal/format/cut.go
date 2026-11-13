@@ -25,6 +25,38 @@ func PaddingInFront(before, content, cutAt, whole int64) int64 {
 	return cutAt - before - int64(kept)
 }
 
+// SplitFront is how much of a file's padding goes in front of its content for
+// a cut after its first cutAt bytes, where the padding comes in pieces that
+// cost least bytes before they carry anything - a PNG chunk, an ISO base media
+// free box - so each side is nothing or at least that. before is what stands
+// in front of the padding and pad all of it, both sides.
+//
+// The share is PaddingInFront. Where the pieces cannot land on it, the front
+// grows, which moves the content later and cuts more of it - the "at least"
+// missing promises - and a side too short for a piece goes to the front. The
+// one way the cut keeps more is padding too short for the front the share
+// wants: all of it goes in front then, and the cut keeps more than the share
+// (docs/TRUNCATE-2026-11-11.md section 7.4). The manifest's cut reports what
+// was kept either way.
+func SplitFront(pad, before, content, cutAt, whole, least int64) int64 {
+	if pad == 0 || cutAt <= 0 || cutAt >= whole {
+		return 0
+	}
+	front := PaddingInFront(before, content, cutAt, whole)
+	switch {
+	case front <= 0:
+		return 0
+	case front < least:
+		front = least
+	}
+	if pad-front < least {
+		// Behind the content there is room for nothing or for less than a
+		// piece, so the whole padding goes in front.
+		return pad
+	}
+	return front
+}
+
 // AfterTheHead passes a stream on and, once its first Head bytes have gone on,
 // calls Insert before the rest: padding a format puts between the headers an
 // encoder writes first and the content that follows them. Insert gets the head

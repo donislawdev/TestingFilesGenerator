@@ -341,13 +341,13 @@
   },
   "avif.MinimumReason": {
     "description": "Said by internal/format/avif - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Coded}}, {{.Box}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-97b2a4a72e3a",
-    "other": "the smallest picture this format draws codes to {{.Coded}} B at worst, and the file always carries a free box, which costs {{.Box}} B even when it holds nothing"
+    "hash": "sha256-0ce5a98f055a",
+    "other": "the smallest picture this format draws codes to {{.Coded}} B at worst, and the file always carries a padding box, which costs {{.Box}} B even when it holds nothing"
   },
   "avif.MinimumReasonOwn": {
     "description": "Said by internal/format/avif - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Width}}, {{.Height}}, {{.Quality}}, {{.Coded}}, {{.Box}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-ff69f6fa9b64",
-    "other": "a {{.Width}}x{{.Height}} picture at quality {{.Quality}} codes to {{.Coded}} B, and the file always carries a free box, which costs {{.Box}} B even when it holds nothing"
+    "hash": "sha256-bed39f5c0c28",
+    "other": "a {{.Width}}x{{.Height}} picture at quality {{.Quality}} codes to {{.Coded}} B, and the file always carries a padding box, which costs {{.Box}} B even when it holds nothing"
   },
   "checksum.AChecksumDigitsLongIsNot": {
     "description": "Said by internal/tool/checksum - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Digits}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -2322,13 +2322,13 @@
   },
   "jxl.MinimumReason": {
     "description": "Said by internal/format/jxl - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Coded}}, {{.Container}}, {{.Box}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-8031f7cf3cc6",
-    "other": "the smallest picture this format draws codes to {{.Coded}} B at worst, the container around it costs {{.Container}} B, and the file always carries a free box, which costs {{.Box}} B even when it holds nothing"
+    "hash": "sha256-0c3cd13e8d89",
+    "other": "the smallest picture this format draws codes to {{.Coded}} B at worst, the container around it costs {{.Container}} B, and the file always carries a padding box, which costs {{.Box}} B even when it holds nothing"
   },
   "jxl.MinimumReasonOwn": {
     "description": "Said by internal/format/jxl - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Width}}, {{.Height}}, {{.Quality}}, {{.Coded}}, {{.Container}}, {{.Box}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-08ce5283cdaa",
-    "other": "a {{.Width}}x{{.Height}} picture at quality {{.Quality}} codes to {{.Coded}} B, the container around it costs {{.Container}} B, and the file always carries a free box, which costs {{.Box}} B even when it holds nothing"
+    "hash": "sha256-1d657fb59674",
+    "other": "a {{.Width}}x{{.Height}} picture at quality {{.Quality}} codes to {{.Coded}} B, the container around it costs {{.Container}} B, and the file always carries a padding box, which costs {{.Box}} B even when it holds nothing"
   },
   "log.ClientAddress": {
     "description": "Said by internal/format/logfile - a refusal under the box it is about or at the foot of the form, or a note after a run.",
@@ -2468,8 +2468,8 @@
   },
   "mp4.MinimumReasonPictures": {
     "description": "Said by internal/format/mp4 - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Duration}}, {{.FPS}}, {{.Interval}}, {{.Width}}, {{.Height}}, {{.Change}}, {{.Bytes}}, {{.Free}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-2d553380ec9d",
-    "other": "a film of {{.Duration}} at {{.FPS}} frames a second with a key frame every {{.Interval}} and a new {{.Width}}x{{.Height}} picture every {{.Change}} takes {{.Bytes}} B, and the file always carries a free box, which costs {{.Free}} B even when it holds nothing"
+    "hash": "sha256-0c2a2c450da2",
+    "other": "a film of {{.Duration}} at {{.FPS}} frames a second with a key frame every {{.Interval}} and a new {{.Width}}x{{.Height}} picture every {{.Change}} takes {{.Bytes}} B, and the file always carries a padding box, which costs {{.Free}} B even when it holds nothing"
   },
   "otlp.AFileHoldsWholeRecords": {
     "description": "Said by internal/format/otlp - a refusal under the box it is about or at the foot of the form, or a note after a run.",

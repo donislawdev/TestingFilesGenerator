@@ -43,6 +43,13 @@ because it turns other people's test suites red.
   padding, which busybox reads, and the padding file inside the archive takes
   the rest, as it did for larger archives. Those archives are not byte for
   byte what 0.5.0 wrote. Every other tar.gz is unchanged.
+- **A JPEG XL now opens in ffmpeg.** ffmpeg 7.1 never finished one, and
+  ffmpeg 9 took one below about 3.8 KB for a video and refused it, because of
+  the padding box behind the picture. The padding now stands in front of the
+  picture, in a box of the kind ffmpeg passes over, and nothing follows the
+  picture. Pillow, ImageMagick, Windows, Chrome and libjxl show the same
+  picture as before. Sizes are unchanged, but no JPEG XL is byte for byte what
+  0.5.0 wrote.
 
 ### Added
 
@@ -116,6 +123,14 @@ because it turns other people's test suites red.
   manifest says so: a few percent of a small PDF, falling in the index, and
   one keeping 10 billion bytes or more, which the index cannot reach. Files
   nothing cuts are unchanged.
+- **`truncate` cuts the picture of an AVIF or a JPEG XL by the percentage you
+  set.** A cut used to take only padding, leaving the whole picture. Now
+  `--damage truncate:missing=50` removes half of the coded picture, as an
+  interrupted download does. Chrome, Firefox, Windows, libavif and Pillow
+  refuse the cut AVIF. Half of a JPEG XL still shows the whole picture at
+  lower detail in Chrome and in libjxl with partial files allowed, because the
+  format sends a coarse picture first. A cut of 90% shows nothing. An AVIF
+  nothing cuts is unchanged. Every JPEG XL changes (see Breaking).
 
 - **tfg is on npm, for tests in Node.**
   `npm install --save-dev testing-files-generator` gives Playwright, Vitest

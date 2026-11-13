@@ -2065,18 +2065,64 @@ def check_avif(data):
         if needed not in inner:
             fail(f"the meta box has no {needed} box, so it does not say {AVIF_MEANING[needed]}")
 
-    # Padding belongs after the picture and nowhere else.
+    # Padding stands after the picture data, and a file laid out for a cut puts
+    # part of it right in front of the picture data too
+    # (docs/TRUNCATE-2026-11-11.md section 13) - nowhere else.
     free_bytes = 0
-    seen_mdat = False
-    for name, start, stop in top:
-        if name == b"mdat":
-            seen_mdat = True
-        elif name == b"free":
+    mdat_at = names.index("mdat")
+    for i, (name, start, stop) in enumerate(top):
+        if name == b"free":
             free_bytes += stop - start + 8
-            if not seen_mdat:
-                fail("a free box sits before the picture data, and this generator puts padding after it")
+            if i < mdat_at and any(n != b"free" for n, _, _ in top[i + 1:mdat_at]):
+                fail("a free box sits in front of the picture data with other boxes between them, and this generator "
+                     "puts padding right in front of the picture data or after it")
+
+    # The item locations give the picture's place in bytes from the start of
+    # the file, so padding in front of it moves them. Each has to land inside
+    # the media data.
+    iloc = next((s, e) for n, s, e in iso_boxes(data, meta_start + 4, meta_end) if n == b"iloc")
+    media = [(s, e) for n, s, e in top if n == b"mdat"]
+    for at, length in iloc_extents(data, *iloc):
+        if not any(s <= at and at + length <= e for s, e in media):
+            fail(f"an item location gives {length} B at {at}, which is not inside the media data at {media}")
 
     ok(f"boxes {names}, brands {[b.decode('latin1') for b in brands]}, {free_bytes} B of free")
+
+
+def iloc_extents(data, start, stop):
+    """The places in this file an item location box's payload between start and
+    stop gives, as (offset, length) - ISO 14496-12 section 8.11.3, versions 0
+    to 2. Places in other files or in idat are left out."""
+    b = data[start:stop]
+    if len(b) < 8 or b[0] > 2:
+        fail("the item location box is too short or in a version this does not read")
+    version = b[0]
+    off_size, len_size, base_size = b[4] >> 4, b[4] & 15, b[5] >> 4
+    index_size = b[5] & 15 if version in (1, 2) else 0
+    at = 6
+
+    def field(n):
+        nonlocal at
+        if at + n > len(b):
+            fail("the item location box ends inside a field")
+        v = int.from_bytes(b[at:at + n], "big")
+        at += n
+        return v
+
+    places = []
+    for _ in range(field(4 if version == 2 else 2)):
+        field(4 if version == 2 else 2)
+        method = field(2) & 15 if version in (1, 2) else 0
+        field(2)
+        base = field(base_size)
+        for _ in range(field(2)):
+            field(index_size)
+            offset, length = field(off_size), field(len_size)
+            if method == 0:
+                places.append((base + offset, length))
+    if at != len(b):
+        fail("the item location box carries bytes its fields do not account for")
+    return places
 
 
 JXL_SIGNATURE = b"\x00\x00\x00\x0cJXL \x0d\x0a\x87\x0a"
@@ -2126,16 +2172,22 @@ def check_jxl(data):
     if data[code_start:code_start + 2] != b"\xff\x0a":
         fail("the jxlc box does not start with the codestream signature FF 0A")
 
-    # Padding belongs after the picture and nowhere else.
+    # Padding stands in skip boxes right in front of the codestream, and a file
+    # laid out for a cut puts part of it behind the codestream, past the cut
+    # (docs/TRUNCATE-2026-11-11.md section 13) - nowhere else. Never a free
+    # box: ffmpeg takes a JPEG XL with one in its first two kilobytes for a
+    # movie (O341).
     free_bytes = 0
-    seen_code = False
-    for name, start, stop in top:
-        if name == b"jxlc":
-            seen_code = True
-        elif name == b"free":
+    code_at = names.index("jxlc")
+    for i, (name, start, stop) in enumerate(top):
+        if name == b"free":
+            fail("the file carries a free box, and this generator pads a JPEG XL with skip boxes, which ffmpeg "
+                 "does not take for a movie")
+        if name == b"skip":
             free_bytes += stop - start + 8
-            if not seen_code:
-                fail("a free box sits before the picture data, and this generator puts padding after it")
+            if i < code_at and any(n != b"skip" for n, _, _ in top[i + 1:code_at]):
+                fail("a skip box sits in front of the codestream with other boxes between them, and this generator "
+                     "puts padding right in front of the codestream or after it")
 
     tail = len(data) - top[-1][2]
     if tail:

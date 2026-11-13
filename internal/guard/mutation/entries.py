@@ -7545,7 +7545,7 @@ MUTATIONS = [
     ),
     (
         "the JPEG XL codestream goes into a partial codestream box without the index one needs, so no reader finds a picture",
-        "internal/format/jxl/jxl.go",
+        "internal/format/jxl/cut.go",
         "	if err := isobmff.WriteBoxHeader(w, \"jxlc\", int64(len(coded))); err != nil {",
         "	if err := isobmff.WriteBoxHeader(w, \"jxlp\", int64(len(coded))); err != nil {",
         "TestEveryFormatSurvivesItsReferenceTool",
@@ -14001,8 +14001,8 @@ MUTATIONS = [
     (
         "an MP4 carries its padding in a box that is not free",
         "internal/format/isobmff/isobmff.go",
-        "		if err := WriteBoxHeader(w, \"free\", payload); err != nil {",
-        "		if err := WriteBoxHeader(w, \"skip\", payload); err != nil {",
+        "	return WriteFreeSpace(ctx, w, \"free\", seed, total)",
+        "	return WriteFreeSpace(ctx, w, \"skip\", seed, total)",
         "TestAFilmHoldsTheFramesTheManifestDeclares",
     ),
     (

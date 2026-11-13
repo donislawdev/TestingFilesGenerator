@@ -116,7 +116,7 @@ func belowMinimum(requested, need int64, c video.Choice, s video.Settings) error
 		Requested: requested,
 		Minimum:   need,
 		Reason: core.Says("mp4.MinimumReasonPictures",
-			"a film of %s at %d frames a second with a key frame every %s and a new %dx%d picture every %s takes %d B, and the file always carries a free box, which costs %d B even when it holds nothing",
+			"a film of %s at %d frames a second with a key frame every %s and a new %dx%d picture every %s takes %d B, and the file always carries a padding box, which costs %d B even when it holds nothing",
 			core.A("Duration", core.FormatDuration(s.DurationMs)), core.A("FPS", s.FPS),
 			core.A("Interval", core.FormatDuration(s.KeyEvery*1000/int64(s.FPS))),
 			core.A("Width", c.Width), core.A("Height", c.Height), core.A("Change", core.FormatDuration(s.ChangeMs())),

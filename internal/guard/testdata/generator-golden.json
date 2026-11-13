@@ -146,18 +146,18 @@
     },
     "jxl_64kib": {
       "bytes": 65536,
-      "sha256": "1f7946aacc7f6a90c3b2cc9713dca2a9113d1b76d7ec61691b52935d74b26437",
-      "measured_on": "2026-08-31"
+      "sha256": "eef78830e117ca9bfca4a06e09f84f3da2fffe2f7237b4a96dca7eb77bf93f99",
+      "measured_on": "2026-11-13"
     },
     "jxl_odd_size": {
       "bytes": 65537,
-      "sha256": "768e0af192480e02607d4fa6f0f343f1cb0dd8ab49d373c92245f3aa68caa017",
-      "measured_on": "2026-08-31"
+      "sha256": "5f55ef75b2e4a56d24d03b493e82561beb34260e136dca626e7f3d4cca76716c",
+      "measured_on": "2026-11-13"
     },
     "jxl_quality": {
       "bytes": 65536,
-      "sha256": "c5c522aed0d2051a20f8eb52bfecd49bb13f41cf86b30170eaf3c05998323a9a",
-      "measured_on": "2026-08-31"
+      "sha256": "405418822737987df23e31d0e5927fa9472438eb5a9a10915031c1d8631b9e27",
+      "measured_on": "2026-11-13"
     },
     "log_8kib": {
       "bytes": 8192,
@@ -653,8 +653,8 @@
     },
     "jxl_label_cut": {
       "bytes": 16384,
-      "sha256": "47e864c31b44ecc262d3b2f9cc9cca6f404daba0bb0dbc0f252cb8d470aa3311",
-      "measured_on": "2026-10-27"
+      "sha256": "04c4b0ffa9b8f631f800f60f0436ae8b2a206266ded04bccab340b6cba75e3dc",
+      "measured_on": "2026-11-13"
     },
     "mp4_label_cut": {
       "bytes": 65536,
@@ -773,6 +773,16 @@
     }
   },
   "remeasured": [
+    {
+      "on": "2026-11-13",
+      "why": "A JPEG XL carries its padding in skip boxes in front of its codestream now, where it carried a free box behind it, and nothing stands behind the codestream. ffmpeg 7.1.5 with libjxl never finishes a JPEG XL with any box behind its codestream - free, skip or private, eight bytes or a thousand - so it could not read a single file this tool wrote, and ffmpeg 9.0.1 tells a JPEG XL by its first two kilobytes and took one with a free box there for a movie, so it refused every one below about 3.8 KB (O341). With skip boxes in front, Pillow, ImageMagick, the Windows Imaging Component, Chrome, djxl and both ffmpeg read the same pixels at every size from 2 KB to 10 MB (docs/TRUNCATE-2026-11-11.md section 13.4). Sizes are unchanged, and the box costs the same eight bytes. This is a breaking change by the owner's decision of 2026-11-13. Guarded from now on by TestAJPEGXLKeepsNothingBehindItsCodestream.",
+      "files": [
+        "jxl_64kib",
+        "jxl_odd_size",
+        "jxl_quality",
+        "jxl_label_cut"
+      ]
+    },
     {
       "on": "2026-10-15",
       "why": "A page with no label to fill its title carries Page there now, where it carried an empty title - the smallest document and every page under --clean, in every size. The Nu HTML Checker calls an empty title an error, so every such page was invalid HTML since 2026-08-01 (O277). Page rather than the tool's name, because --clean is there to keep the tool's description out of the file. The smallest html page goes from 118 B to 122 B. The catalogue of every element names its forms article tfg-forms, and its two links to it, because DOMPurify takes out an id that shadows document.forms and the links then led nowhere (O282) - the reason the links list is tfg-links. Its hidden field is named tfg-hidden, because a name hidden shadows document.hidden and DOMPurify took that out too, leaving the field out of a submitted form. The page of a newsletter says its language, <html lang=\"en\">, as the html format's pages always did, written in the frame so quoted-printable gives its = as =3D. Inside it, the line in Polish and Japanese marks each half with its own lang in a span, on two lines where the Japanese half comes, so the page saying English does not make a screen reader read them as English (review of #190). A message laid out simple is unchanged. This is a breaking change by the owner's decision of 2026-10-15, docs/HTML-6-2026-10-15.md. The two placeholder pages had no golden case and have one from today. Guarded from now on by the structural checker, which refuses a document without a title with text in it and a newsletter page without its language.",
