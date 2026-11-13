@@ -190,6 +190,7 @@ func TestEveryFormatsMapIsTheOneItsStructureReadsBack(t *testing.T) {
 	if firstEndLayout([][3]any{region(format.RolePadding, 0, 4), region(format.RoleContent, 4, 5), region(format.RoleEnd, 9, 3)}) {
 		t.Errorf("canary: a file with no padding behind its content passed for the layout due at the first byte")
 	}
+	askTheLastEndCanaries(t, dir)
 	t.Logf("%d files, %d with padding, %d of them on both sides of the content, %d cut at the ends of a split", len(files), padded, split, ends)
 }
 
@@ -199,17 +200,18 @@ func TestEveryFormatsMapIsTheOneItsStructureReadsBack(t *testing.T) {
 func writeTheEnds(t *testing.T, dir string, f format.Descriptor, name string, setting map[string]string, size int64) []mappedFile {
 	t.Helper()
 	var out []mappedFile
+	label := format.Request{Bytes: size, Label: true, Seed: 7}.LabelText(f.ID)
 	for _, end := range []struct {
 		name string
 		at   int64
-		due  func(m [][3]any) bool
+		due  func(m mappedFile) bool
 		says string
 	}{
-		{"first", 1, firstEndLayout, "padding behind the content, and in front of it none - or, where the content would start the file, one padding region that does instead"},
-		{"last", size - 1, func(m [][3]any) bool { front, back := paddingSides(m); return front && !back }, "padding in front of the content only"},
+		{"first", 1, func(m mappedFile) bool { return firstEndLayout(m.marked) }, "padding behind the content, and in front of it none - or, where the content would start the file, one padding region that does instead"},
+		{"last", size - 1, func(m mappedFile) bool { return lastEndLayout(t, m, label) }, "padding in front of the content only - or, behind it, the label alone where the format keeps it in a field that closes the file"},
 	} {
 		m := writeMapped(t, dir, f, name+"-"+end.name, setting, size, end.at)
-		if !end.due(m.marked) {
+		if !end.due(m) {
 			t.Errorf("%s: cut after %d B of %d B it marked %s, where %s was due", m.name, end.at, size, mapNames(m.marked), end.says)
 		}
 		out = append(out, m)
@@ -230,6 +232,65 @@ func firstEndLayout(m [][3]any) bool {
 	}
 	return !front || (len(m) > 1 && m[0][0] == string(format.RolePadding) && m[0][1] == int64(0) &&
 		m[1][0] == string(format.RoleContent))
+}
+
+// lastEndLayout is the layout due for a cut before a file's last byte: all of
+// its padding in front of the content. Behind the content it allows one padding
+// region, and only when that holds the file's label and nothing else. A ZIP
+// keeps its label in the archive comment, which closes the file, so no layout
+// can move it in front (docs/TRUNCATE-2026-11-11.md section 10.4).
+func lastEndLayout(t *testing.T, m mappedFile, label string) bool {
+	t.Helper()
+	front, back := paddingSides(m.marked)
+	return front && (!back || onlyTheLabelBehind(t, m, label))
+}
+
+// onlyTheLabelBehind says the padding behind the content of m is one region,
+// and its bytes are label.
+func onlyTheLabelBehind(t *testing.T, m mappedFile, label string) bool {
+	t.Helper()
+	at := slices.IndexFunc(m.marked, func(r [3]any) bool { return r[0] == string(format.RoleContent) })
+	var behind [][3]any
+	for _, r := range m.marked[at+1:] {
+		if r[0] == string(format.RolePadding) {
+			behind = append(behind, r)
+		}
+	}
+	if len(behind) != 1 {
+		return false
+	}
+	data, err := os.ReadFile(m.path)
+	if err != nil {
+		t.Fatalf("%s: %v", m.name, err)
+	}
+	start, n := behind[0][1].(int64), behind[0][2].(int64)
+	return start+n <= int64(len(data)) && string(data[start:start+n]) == label
+}
+
+// askTheLastEndCanaries asks lastEndLayout about files made for it: the label
+// alone behind the content passes, and padding of its length that is not it,
+// or the label with padding beside it, does not.
+func askTheLastEndCanaries(t *testing.T, dir string) {
+	t.Helper()
+	file := func(tail string) mappedFile {
+		path := filepath.Join(dir, "canary-last-end")
+		if err := os.WriteFile(path, []byte("ppccccc"+tail), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		return mappedFile{name: "canary", path: path, marked: [][3]any{
+			{string(format.RolePadding), int64(0), int64(2)}, {string(format.RoleContent), int64(2), int64(5)},
+			{string(format.RolePadding), int64(7), int64(len(tail))},
+		}}
+	}
+	if !lastEndLayout(t, file("tfg"), "tfg") {
+		t.Errorf("canary: the label alone behind the content failed the layout due at the last byte")
+	}
+	if lastEndLayout(t, file("tfx"), "tfg") {
+		t.Errorf("canary: padding of the label's length that is not the label passed for the layout due at the last byte")
+	}
+	if lastEndLayout(t, file("tfg "), "tfg") {
+		t.Errorf("canary: the label with padding beside it passed for the layout due at the last byte")
+	}
 }
 
 // writeMapped writes one healthy file of f through a map recorder, laid out

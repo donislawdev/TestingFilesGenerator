@@ -350,7 +350,7 @@ func writePaddingPart(ctx context.Context, zw *zip.Writer, zm *archive.StreamMap
 	if err != nil {
 		return err
 	}
-	if err := zm.MarkEntry(format.RolePadding, part.name); err != nil {
+	if err := zm.MarkEntry(format.RolePadding, part.name, -1); err != nil {
 		return err
 	}
 	if err := zm.Release(); err != nil {

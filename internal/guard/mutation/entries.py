@@ -360,8 +360,8 @@ MUTATIONS = [
     (
         "an Office package goes back to writing its sizes after the data instead of in the header",
         "internal/format/opc/opc.go",
-        "entry, err := zw.CreateRaw(head)\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\t\tif err := zm.MarkEntry(",
-        "entry, err := zw.CreateHeader(head)\n\t\tif err != nil {\n\t\t\treturn err\n\t\t}\n\t\tif err := zm.MarkEntry(",
+        "entry, err := zw.CreateRaw(head)\n\tif err != nil {\n\t\treturn err\n\t}\n\tif err := zm.MarkEntry(",
+        "entry, err := zw.CreateHeader(head)\n\tif err != nil {\n\t\treturn err\n\t}\n\tif err := zm.MarkEntry(",
         "TestEveryFormatSurvivesItsReferenceTool",
     ),
     (
@@ -6752,8 +6752,8 @@ MUTATIONS = [
         "that matters most here - a function sits one level under a ceiling "
         "that was already exact, and no guard could see it",
         "internal/guard/branching_test.go",
+        "\tcrowdedDepthFunctions = 48\n",
         "\tcrowdedDepthFunctions = 49\n",
-        "\tcrowdedDepthFunctions = 50\n",
         "TestTheBranchingCeilingsAreTodaysMeasurementAndNotALooserNumber",
     ),
     (
@@ -7602,8 +7602,8 @@ MUTATIONS = [
     (
         "a compressed archive stops giving back what the compressor freed, so it comes out short",
         "internal/format/zip/filler.go",
-        "size := m.fillerSize + freed()",
-        "size := m.fillerSize + freed()*0",
+        "size := m.fillerSize + got",
+        "size := m.fillerSize + got*0",
         "TestACompressedArchiveStillHitsTheSizeToTheByte",
     ),
     (
@@ -15870,8 +15870,8 @@ MUTATIONS = [
         # stop during it waits for four gigabytes of padding to be hashed.
         "an Office package checksums its padding without looking at the stop",
         "internal/format/opc/opc.go",
-        "sum, err := fillerChecksum(ctx, p.Seed, p.Filler)",
-        "sum, err := fillerChecksum(context.Background(), p.Seed, p.Filler)",
+        "sum, err := fillerChecksum(ctx, part.seed, part.n)",
+        "sum, err := fillerChecksum(context.Background(), part.seed, part.n)",
         "TestAnOfficePackageStopsWhileItChecksumsItsPadding",
     ),
     (

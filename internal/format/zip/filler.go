@@ -3,6 +3,7 @@ package zip
 import (
 	stdzip "archive/zip"
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -41,46 +42,68 @@ func writeFillerEntry(ctx context.Context, zw *stdzip.Writer, zm *archive.Stream
 	if m.squeeze.On() {
 		return writeCompressedFiller(ctx, zw, zm, m, withContents, freed)
 	}
+	return writeStoredFiller(ctx, zw, zm, m, withContents, storedFiller{
+		name: m.fillerEntryName(), size: m.fillerSize, index: len(m.children),
+	})
+}
 
-	// The stored path, unchanged. It settles the size before the header
-	// because a locked entry states its length there, and a locked archive
-	// takes this path.
-	size := m.fillerSize
+// storedFiller is one entry of padding whose length is settled before its
+// header: the one behind the files of a stored archive, and the one in front of
+// them in an archive laid out for a cut (writeFrontEntry).
+type storedFiller struct {
+	name  string
+	size  int64
+	index int
+}
+
+// writeStoredFiller writes f, with what follows its header held (zm.Hold)
+// until it is marked. It settles the size before the header because a locked
+// entry states its length there, and a locked archive takes this path.
+func writeStoredFiller(ctx context.Context, zw *stdzip.Writer, zm *archive.StreamMap, m memo, withContents bool, f storedFiller) error {
 	// The filler is locked with everything else. An archive where one entry
 	// opens without the password and the rest do not is a file nobody
 	// asked for, and the arithmetic is the same either way.
 	crc, err := plaintextCRC(ctx, m, withContents, func(w io.Writer) error {
-		return writeFiller(ctx, w, m.seed, size)
+		return writeFiller(ctx, w, m.seed, f.size)
 	})
 	if err != nil {
 		return err
 	}
 	entry, shut, err := openEntry(zw, m, entryPlan{
-		name: fillerName, plain: size, index: len(m.children), stored: true,
+		name: f.name, plain: f.size, index: f.index, stored: true,
 		withContents: withContents, crc: crc,
 	})
 	if err != nil {
 		return err
 	}
-	if err := markFiller(zm); err != nil {
+	if err := markFiller(zm, f.name); err != nil {
 		return err
 	}
 	if !withContents {
 		return nil
 	}
-	if err := writeFiller(ctx, entry, m.seed, size); err != nil {
+	if err := writeFiller(ctx, entry, m.seed, f.size); err != nil {
 		return err
 	}
 	return shut()
 }
 
-// markFiller marks the filler entry as padding and sends on what was held
-// while its header was written.
-func markFiller(zm *archive.StreamMap) error {
-	if err := zm.MarkEntry(format.RolePadding, fillerName); err != nil {
+// markFiller marks the filler entry named name as padding and sends on what
+// was held while its header was written.
+func markFiller(zm *archive.StreamMap, name string) error {
+	if err := zm.MarkEntry(format.RolePadding, name, -1); err != nil {
 		return err
 	}
 	return zm.Release()
+}
+
+// fillerEntryName is the name of the entry of padding behind the files:
+// fillerName, unless an entry in front of them has it (split).
+func (m memo) fillerEntryName() string {
+	if m.split.front {
+		return fillerEndName
+	}
+	return fillerName
 }
 
 // writeCompressedFiller is the same entry for an archive whose others are
@@ -91,19 +114,26 @@ func markFiller(zm *archive.StreamMap) error {
 // archive is never a locked one.
 func writeCompressedFiller(ctx context.Context, zw *stdzip.Writer, zm *archive.StreamMap, m memo, withContents bool, freed func() int64) error {
 	entry, shut, err := openEntry(zw, m, entryPlan{
-		name: fillerName, index: len(m.children), stored: true,
+		name: m.fillerEntryName(), index: len(m.children), stored: true,
 		withContents: withContents,
 	})
 	if err != nil {
 		return err
 	}
-	if err := markFiller(zm); err != nil {
+	if err := markFiller(zm, m.fillerEntryName()); err != nil {
 		return err
 	}
 	if !withContents {
 		// The counting pass adds the filler's length arithmetically, so
 		// writing its bytes here would count them twice.
 		return nil
+	}
+	// An archive laid out for a cut was settled on what a pass that only
+	// measured found the compressor frees, and its files were marked with the
+	// length that gave. Squeezing the same files again has to free the same.
+	got := freed()
+	if m.split.sized && got != m.split.freed {
+		return core.Defect(fmt.Errorf("zip: the files inside came to %d B less once squeezed while measuring and %d B less while writing", m.split.freed, got))
 	}
 	// What the compressor freed can be NEGATIVE, and that is the case this
 	// arithmetic was written without. Deflate grows data it cannot shrink -
@@ -122,7 +152,7 @@ func writeCompressedFiller(ctx context.Context, zw *stdzip.Writer, zm *archive.S
 	// knowable without squeezing them, and planning is not allowed to. The
 	// floor reported is measured rather than derived - it is what this
 	// archive came to with no padding at all.
-	size := m.fillerSize + freed()
+	size := m.fillerSize + got
 	if size < 0 {
 		return &format.BelowMinimumError{
 			Format:    "ZIP",
