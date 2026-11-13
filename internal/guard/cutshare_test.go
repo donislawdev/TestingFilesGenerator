@@ -36,7 +36,6 @@ var notYetCutAtTheShare = map[string]notYet{
 	"jxl":  {paddingBehind, 64 << 10, 50},
 	"mp4":  {paddingBehind, 64 << 10, 50},
 	"webm": {paddingBehind, 64 << 10, 50},
-	"pdf":  {paddingBehind, 64 << 10, 50},
 	// Both take the share at 64 KiB and above. At 4 KiB what stands behind the
 	// picture is more than a small share, so a cut of 1% keeps all of it.
 	"webp": {smallBehind, 4 << 10, 1},
@@ -51,7 +50,7 @@ var notYetCutAtTheShare = map[string]notYet{
 // guard for it, and it stays red until the format splits its padding for
 // format.Request.CutAt. A format that leaves the ratchet leaves this list too,
 // so it cannot go back.
-var listedBeforeTheRule = []string{"avif", "jxl", "mp4", "webm", "pdf", "webp", "tiff"}
+var listedBeforeTheRule = []string{"avif", "jxl", "mp4", "webm", "webp", "tiff"}
 
 // listedAfterTheRule is a problem for every format notYetAt names that
 // listedBeforeTheRule does not.
@@ -211,6 +210,7 @@ var endClosesTheFile = map[string]string{
 	"xlsx":  "a ZIP package, laid out as APPNOTE 4.3.6 lays out a ZIP: the central directory after every part",
 	"pptx":  "a ZIP package, laid out as APPNOTE 4.3.6 lays out a ZIP: the central directory after every part",
 	"targz": "POSIX tar puts the end of archive marker after every entry, and RFC 1952 closes a gzip member with its trailer",
+	"pdf":   "ISO 32000-1 section 7.5 puts the cross reference table and the trailer after the body, and the end of file marker last",
 }
 
 // onlyTheEndBehind is whether nothing but the end stands behind the content of

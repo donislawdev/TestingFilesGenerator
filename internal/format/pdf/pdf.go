@@ -51,9 +51,12 @@ type memo struct {
 	// not depend on the padding, because the offset it carries points at the
 	// cross reference table, which sits before the padding.
 	suffix []byte
-	// at is where the objects and the cross reference table start.
-	at     places
-	padLen int64
+	// at is where the objects and the cross reference table start in prefix.
+	at places
+	// front is the padding between the header lines and the first object,
+	// which only a document a damage will cut has (splitForACut), and padLen
+	// the padding behind the trailer.
+	front, padLen int64
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
@@ -68,7 +71,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	}
 
 	m := memo{opts: opts, seed: r.Seed, label: label}
-	m.prefix, m.suffix, m.at = document(m)
+	m.prefix, m.suffix, m.at = document(m, 0)
 
 	// One number answers both questions: how much padding this file needs, and
 	// what is too small to make. Every line of body text is the same width
@@ -107,6 +110,9 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		}
 	default:
 		m.padLen = r.Bytes - bare
+	}
+	if m.front, m.padLen = splitForACut(m, r.Bytes, r.CutAt); m.front > 0 {
+		m.prefix, m.suffix, _ = document(m, m.front)
 	}
 
 	p.Memo = m
@@ -170,18 +176,28 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	default:
 	}
 
-	// The map, all of it known from the plan: the header lines, the objects -
-	// the pages and what they draw with - the cross reference table and the
+	// The map, all of it known from the plan: the header lines, the comment
+	// in front of the objects a document a damage cuts has, the objects - the
+	// pages and what they draw with - the cross reference table and the
 	// trailer, the comment that makes up the size, and startxref with the
-	// closing marker. The padding stands between two parts of the end.
-	head, end := int64(len(m.prefix)), int64(len(m.prefix))+m.padLen
+	// closing marker. The padding behind stands between two parts of the end.
+	objects := m.at.objects + m.front
+	table := m.at.xref + m.front
+	behind := int64(len(m.prefix)) + m.front
 	format.Mark(w, format.RoleStructure, 0, m.at.objects)
-	format.Mark(w, format.RoleContent, m.at.objects, m.at.xref-m.at.objects)
-	format.Mark(w, format.RoleEnd, m.at.xref, head-m.at.xref)
-	format.Mark(w, format.RolePadding, head, m.padLen)
-	format.Mark(w, format.RoleEnd, end, int64(len(m.suffix)))
+	format.Mark(w, format.RolePadding, m.at.objects, m.front)
+	format.Mark(w, format.RoleContent, objects, table-objects)
+	format.Mark(w, format.RoleEnd, table, behind-table)
+	format.Mark(w, format.RolePadding, behind, m.padLen)
+	format.Mark(w, format.RoleEnd, behind+m.padLen, int64(len(m.suffix)))
 
-	if _, err := w.Write(m.prefix); err != nil {
+	if _, err := w.Write(m.prefix[:m.at.objects]); err != nil {
+		return err
+	}
+	if err := writeComment(ctx, w, m.seed, m.front); err != nil {
+		return err
+	}
+	if _, err := w.Write(m.prefix[m.at.objects:]); err != nil {
 		return err
 	}
 	if err := writeComment(ctx, w, m.seed, m.padLen); err != nil {

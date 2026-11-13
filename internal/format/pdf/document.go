@@ -14,12 +14,17 @@ type places struct {
 	objects, xref int64
 }
 
-// document builds everything up to the trailer, and the closing lines.
+// document builds everything up to the trailer, and the closing lines, of a
+// document with front bytes of padding between its header lines and its first
+// object (splitForACut).
 //
 // The two are returned apart because the padding goes between them. The
 // closing lines carry the offset of the cross reference table, which sits in
-// the first part and therefore does not move.
-func document(m memo) (prefix, suffix []byte, at places) {
+// the first part and therefore does not move. The front padding is not in the
+// first part - the writer puts it in at at.objects - but every offset counts
+// it. The cross reference table writes each offset in ten digits, so the first
+// part is the same length whatever front is.
+func document(m memo, front int64) (prefix, suffix []byte, at places) {
 	var body bytes.Buffer
 	// The version is the one asked for and nothing else follows from it: the
 	// file uses nothing newer than 1.4, so every version offered here is true
@@ -73,10 +78,15 @@ func document(m memo) (prefix, suffix []byte, at places) {
 	fmt.Fprintf(&body, "xref\n0 %d\n", len(objects)+1)
 	body.WriteString("0000000000 65535 f \n")
 	for _, off := range offsets {
-		fmt.Fprintf(&body, "%010d 00000 n \n", off)
+		fmt.Fprintf(&body, "%010d 00000 n \n", int64(off)+front)
 	}
 	fmt.Fprintf(&body, "trailer\n<</Size %d/Root 1 0 R/Info 4 0 R>>\n", len(objects)+1)
 
-	suffix = []byte(fmt.Sprintf("startxref\n%d\n%%%%EOF\n", xrefPos))
-	return body.Bytes(), suffix, at
+	return body.Bytes(), closing(at.xref + front), at
+}
+
+// closing is startxref, the offset of the cross reference table it points at,
+// and the end of file marker.
+func closing(xref int64) []byte {
+	return []byte(fmt.Sprintf("startxref\n%d\n%%%%EOF\n", xref))
 }

@@ -21,7 +21,8 @@ const (
 )
 
 // The padding channel is a comment block placed after the trailer and before
-// startxref.
+// startxref. A document a damage will cut has part of it in front of the
+// objects instead (splitForACut).
 //
 // The obvious place, and the one this project's own notes assumed, is between
 // startxref and %%EOF. Measured, that is wrong twice over.

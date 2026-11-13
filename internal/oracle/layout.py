@@ -199,21 +199,34 @@ def layout_mp4(data):
 
 
 def layout_pdf(data):
-    """The header lines, the objects up to the cross reference table startxref
-    points at, the table with the trailer, any comment after the trailer as
-    padding, and startxref with the closing marker - the end in two parts."""
+    """The header lines, any comment between them and the first object as
+    padding, the objects up to the cross reference table startxref points at,
+    the table with the trailer, any comment after the trailer as padding, and
+    startxref with the closing marker - the end in two parts.
+
+    The header is the %PDF- line and the comment of bytes above 127 that marks
+    the file as binary (ISO 32000-1 section 7.5.2). A comment line after them
+    is padding only when it is ASCII, so the binary line is never read as it."""
     if not data.startswith(b"%PDF-"):
         raise NoMap("no PDF header")
+    head = data.index(b"\n") + 1
+    line = data[head:data.index(b"\n", head) + 1]
+    if line.startswith(b"%") and any(b > 127 for b in line):
+        head += len(line)
     first = re.search(rb"\d+ 0 obj\n", data)
     sx = data.rfind(b"startxref\n")
     if first is None or sx < 0:
         raise NoMap("no object or no startxref")
+    front = data[head:first.start()]
+    if front and not re.fullmatch(rb"(%[\x20-\x7e]*\n)+", front):
+        raise NoMap(f"between the header and the first object at {first.start()} stands something other than comments")
     xref = int(data[sx + 10:data.index(b"\n", sx + 10)])
     trailer = data.find(b"trailer\n", xref)
     if data[xref:xref + 5] != b"xref\n" or trailer < 0:
         raise NoMap(f"startxref points at {xref}, where no cross reference table starts")
     closed = data.index(b">>\n", trailer) + 3
-    return [[STRUCTURE, 0, first.start()], [CONTENT, first.start(), xref - first.start()],
+    return [[STRUCTURE, 0, head], [PADDING, head, first.start() - head],
+            [CONTENT, first.start(), xref - first.start()],
             [END, xref, closed - xref], [PADDING, closed, sx - closed], [END, sx, len(data) - sx]]
 
 

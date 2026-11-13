@@ -107,6 +107,14 @@ because it turns other people's test suites red.
   the unexpected end. When the cut is shorter than the end of the archive -
   1% of 64 KiB - it falls there and every file is kept, and the manifest says
   `in: end`. Files nothing cuts are unchanged.
+- **`truncate` cuts the pages of a PDF by the percentage you set.**
+  `--damage truncate:missing=50` on a 1 MB PDF used to cut only padding, and
+  viewers showed every page. Now it removes half of the document and the
+  index at its end, as an interrupted download does. pdf.js (Firefox),
+  PDFium (Chrome, Edge), Poppler and the Windows PDF viewer refuse it, and
+  MuPDF and Ghostscript show the part that arrived. A cut of a few percent of
+  a small PDF can fall in the index, keeping every page - the manifest says
+  `in: end`. Files nothing cuts are unchanged.
 
 - **tfg is on npm, for tests in Node.**
   `npm install --save-dev testing-files-generator` gives Playwright, Vitest
