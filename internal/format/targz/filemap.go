@@ -19,7 +19,11 @@ import (
 // A compressed stream is content from its first byte to the trailer, filler
 // entry included. Where the filler's bytes land inside deflate's blocks is
 // not knowable without decoding them, so the map cannot part it from the
-// files, and a cut there reads as a cut in the content (O336).
+// files (O336). An archive a damage cuts is laid out with every part in blocks
+// of its own and marked by markForACut (cut.go), unless it is too small for
+// that frame. The frame costs a few bytes more than the smallest stored
+// archive, and a compressed one is never smaller than that, so an archive
+// written this way and cut has no room for a filler entry to stand in.
 
 const (
 	// gzipHead is the fixed part of a gzip header. This writer gives no name

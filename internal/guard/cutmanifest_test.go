@@ -38,9 +38,8 @@ type cutCase struct {
 // The shapes a cut takes (docs/TRUNCATE-2026-11-11.md sections 2, 7 and 8).
 // A PDF of 1 MiB is nearly all padding after its pages, so 90% missing still
 // leaves every page. A PNG splits its padding around the picture
-// for a cut, so the cut takes the share asked for. A small tar.gz keeps its
-// padding BEFORE its archive, so a cut there takes all of it. A text is its
-// words, so the cut falls in them. Two cuts in a row end the file where the second one does, and
+// for a cut, so the cut takes the share asked for, and so does a tar.gz. A
+// text is its words, so the cut falls in them. Two cuts in a row end the file where the second one does, and
 // the cut is said of that one. A damage that cuts nothing has no cut to report.
 //
 // Canary: the check below must refuse a cut that names the wrong role, and
@@ -50,10 +49,10 @@ func TestACutFileSaysWhereTheCutFellAndWhatIsLeft(t *testing.T) {
 		// A GIF was this case until it split its padding for the cut.
 		{name: "behind", format: "pdf", size: 1 << 20, missing: "90", in: "padding", kept: "all", note: "after the content"},
 		{name: "picture", format: "png", size: 1 << 20, missing: "90", in: "content", kept: "share"},
-		// 4 KiB on disk is 40 KiB whole, and up to 64 KiB the padding is the
-		// comment in the gzip header, in front of the archive. An icon or a JPEG
-		// was this case until it split its padding for the cut.
-		{name: "front", format: "targz", size: 4 << 10, missing: "90", in: "padding", kept: "none", note: "before the content"},
+		// 4 KiB on disk is 40 KiB whole. It was the case of a cut in the padding
+		// in front of the content, with an icon and a JPEG before it, until it
+		// split its padding for the cut.
+		{name: "front", format: "targz", size: 4 << 10, missing: "90", in: "content", kept: "share"},
 		{name: "text", format: "txt", size: 1000, missing: "50", in: "content", kept: "some"},
 		{name: "twice", format: "txt", size: 1000, missing: "50", in: "content", kept: "some", cuts: 2},
 	}

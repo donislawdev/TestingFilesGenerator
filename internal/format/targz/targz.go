@@ -189,6 +189,11 @@ type memo struct {
 	// thing minimumBytes met on the first try.
 	withExtra bool
 	extraLen  int64
+	// cutAt is where a damage will cut the archive (format.Request.CutAt), 0
+	// when nothing does, and frame is how the archive is laid out for that cut
+	// (cut.go). The zero value of frame is the archive nothing cuts.
+	cutAt int64
+	frame frame
 }
 
 func (g generator) Plan(r format.Request) (format.Plan, error) {
@@ -224,7 +229,7 @@ func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan
 		return format.Plan{}, err
 	}
 
-	m := memo{seed: r.Seed, own: own, layout: layout, squeeze: squeeze}
+	m := memo{seed: r.Seed, own: own, layout: layout, squeeze: squeeze, cutAt: r.CutAt}
 	if m.children, err = planChildren(ctx, r, groups, layout); err != nil {
 		return format.Plan{}, err
 	}
@@ -246,6 +251,9 @@ func (generator) PlanContext(ctx context.Context, r format.Request) (format.Plan
 			return format.Plan{}, err
 		}
 	} else if err := pad(&m, &p, target, label, groups); err != nil {
+		return format.Plan{}, err
+	}
+	if err := m.settleForACut(&p, target, label); err != nil {
 		return format.Plan{}, err
 	}
 
@@ -387,6 +395,12 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
 		return core.Defect(fmt.Errorf("targz: the plan was not produced by this generator"))
+	}
+	if err := m.squeezeForACut(ctx); err != nil {
+		return err
+	}
+	if m.frame.on {
+		return writeForACut(ctx, w, m)
 	}
 	if m.squeeze.On() {
 		return writeCompressed(ctx, w, m)

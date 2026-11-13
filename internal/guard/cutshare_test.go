@@ -32,12 +32,11 @@ type notYet struct {
 // that leaves is held to every size and share, and so is a new format unless
 // it is added here with its reason.
 var notYetCutAtTheShare = map[string]notYet{
-	"avif":  {paddingBehind, 64 << 10, 50},
-	"jxl":   {paddingBehind, 64 << 10, 50},
-	"mp4":   {paddingBehind, 64 << 10, 50},
-	"webm":  {paddingBehind, 64 << 10, 50},
-	"pdf":   {paddingBehind, 64 << 10, 50},
-	"targz": {paddingBehind, 64 << 10, 50},
+	"avif": {paddingBehind, 64 << 10, 50},
+	"jxl":  {paddingBehind, 64 << 10, 50},
+	"mp4":  {paddingBehind, 64 << 10, 50},
+	"webm": {paddingBehind, 64 << 10, 50},
+	"pdf":  {paddingBehind, 64 << 10, 50},
 	// Both take the share at 64 KiB and above. At 4 KiB what stands behind the
 	// picture is more than a small share, so a cut of 1% keeps all of it.
 	"webp": {smallBehind, 4 << 10, 1},
@@ -52,7 +51,7 @@ var notYetCutAtTheShare = map[string]notYet{
 // guard for it, and it stays red until the format splits its padding for
 // format.Request.CutAt. A format that leaves the ratchet leaves this list too,
 // so it cannot go back.
-var listedBeforeTheRule = []string{"avif", "jxl", "mp4", "webm", "pdf", "targz", "webp", "tiff"}
+var listedBeforeTheRule = []string{"avif", "jxl", "mp4", "webm", "pdf", "webp", "tiff"}
 
 // listedAfterTheRule is a problem for every format notYetAt names that
 // listedBeforeTheRule does not.
@@ -207,10 +206,11 @@ const cutInTheEnd = "the cut fell in the end"
 // directory, which the specification lets stand before the pictures - is not
 // here: it could put its end in front of the content instead.
 var endClosesTheFile = map[string]string{
-	"zip":  "APPNOTE 4.3.6 lays a ZIP out with the central directory and its end record after every entry",
-	"docx": "a ZIP package, laid out as APPNOTE 4.3.6 lays out a ZIP: the central directory after every part",
-	"xlsx": "a ZIP package, laid out as APPNOTE 4.3.6 lays out a ZIP: the central directory after every part",
-	"pptx": "a ZIP package, laid out as APPNOTE 4.3.6 lays out a ZIP: the central directory after every part",
+	"zip":   "APPNOTE 4.3.6 lays a ZIP out with the central directory and its end record after every entry",
+	"docx":  "a ZIP package, laid out as APPNOTE 4.3.6 lays out a ZIP: the central directory after every part",
+	"xlsx":  "a ZIP package, laid out as APPNOTE 4.3.6 lays out a ZIP: the central directory after every part",
+	"pptx":  "a ZIP package, laid out as APPNOTE 4.3.6 lays out a ZIP: the central directory after every part",
+	"targz": "POSIX tar puts the end of archive marker after every entry, and RFC 1952 closes a gzip member with its trailer",
 }
 
 // onlyTheEndBehind is whether nothing but the end stands behind the content of

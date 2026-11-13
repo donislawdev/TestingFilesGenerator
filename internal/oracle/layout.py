@@ -24,6 +24,7 @@ import json
 import re
 import struct
 import sys
+import zlib
 
 STRUCTURE, CONTENT, PADDING, END = "structure", "content", "padding", "end"
 
@@ -305,65 +306,214 @@ def gzip_header_length(data):
     return out, pos
 
 
-def stored_blocks(data, pos):
-    """The stored deflate blocks from pos, as (file offset of the block,
-    offset of its data in the stream, length), and where they end."""
-    blocks, t = [], 0
+# DEFLATE's lengths and distances (RFC 1951 section 3.2.5): the base of each
+# length code from 257 and how many extra bits it reads, how many each distance
+# code reads, and the order the lengths of the code length code come in.
+LENGTH_BASE = (3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115,
+               131, 163, 195, 227, 258)
+LENGTH_EXTRA = (0,) * 8 + (1,) * 4 + (2,) * 4 + (3,) * 4 + (4,) * 4 + (5,) * 4 + (0,)
+DISTANCE_EXTRA = (0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13)
+CODE_LENGTH_ORDER = (16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15)
+
+
+class Bits:
+    """A deflate stream read bit by bit, the least significant bit of each
+    byte first (RFC 1951 section 3.1.1)."""
+
+    def __init__(self, data, pos):
+        self.data, self.at = data, pos * 8
+
+    def peek(self, n):
+        i = self.at >> 3
+        return (int.from_bytes(self.data[i:i + 4], "little") >> (self.at & 7)) & ((1 << n) - 1)
+
+    def take(self, n):
+        value = self.peek(n)
+        self.at += n
+        return value
+
+
+def huffman(lengths):
+    """The decoding table of the canonical Huffman code these lengths give
+    (RFC 1951 section 3.2.2): for every value of the next maxbits bits, the
+    symbol they open with and its length, or None for a value no code opens."""
+    maxbits = max(lengths, default=0)
+    table = [(None, 0)] * (1 << maxbits)
+    count = [0] * (maxbits + 2)
+    for n in lengths:
+        count[n] += 1
+    count[0] = 0
+    code, first = 0, [0] * (maxbits + 1)
+    for bits in range(1, maxbits + 1):
+        code = (code + count[bits - 1]) << 1
+        first[bits] = code
+    for symbol, n in enumerate(lengths):
+        if n:
+            reversed_code = int(format(first[n], f"0{n}b")[::-1], 2)
+            first[n] += 1
+            for value in range(reversed_code, 1 << maxbits, 1 << n):
+                table[value] = (symbol, n)
+    return table, maxbits
+
+
+def decode(bits, code):
+    table, maxbits = code
+    symbol, n = table[bits.peek(maxbits)]
+    if symbol is None:
+        raise NoMap(f"no Huffman code opens the bits at {bits.at}")
+    bits.at += n
+    return symbol
+
+
+FIXED = (huffman([8] * 144 + [9] * 112 + [7] * 24 + [8] * 8), huffman([5] * 32))
+
+
+def dynamic_codes(bits):
+    """The two codes a block of dynamic Huffman codes opens with (RFC 1951
+    section 3.2.7)."""
+    literals, distances, lengths = bits.take(5) + 257, bits.take(5) + 1, bits.take(4) + 4
+    order = [0] * 19
+    for i in range(lengths):
+        order[CODE_LENGTH_ORDER[i]] = bits.take(3)
+    code = huffman(order)
+    out = []
+    while len(out) < literals + distances:
+        symbol = decode(bits, code)
+        if symbol < 16:
+            out.append(symbol)
+        elif symbol == 16 and out:
+            out += [out[-1]] * (3 + bits.take(2))
+        elif symbol == 17:
+            out += [0] * (3 + bits.take(3))
+        elif symbol == 18:
+            out += [0] * (11 + bits.take(7))
+        else:
+            raise NoMap(f"a repeat with nothing to repeat at {bits.at}")
+    if len(out) != literals + distances:
+        raise NoMap(f"the code lengths run past the {literals + distances} the block declares")
+    return huffman(out[:literals]), huffman(out[literals:])
+
+
+def inflated_length(bits, literals, distances):
+    """How many bytes a block of Huffman codes carries, read up to its end of
+    block code. Nothing of the bytes is kept: a match's length counts, and its
+    distance is read past."""
+    n = 0
     while True:
-        header = data[pos]
-        if data[pos:pos + 2] == b"\x03\x00":
-            # An empty last block of fixed codes - BFINAL, BTYPE 01 and the
-            # end of block code - which is how compress/flate closes a stream.
-            return blocks, pos + 2
-        if header & 0b110:
-            raise NoMap(f"the block at {pos} is not stored")
-        n = struct.unpack("<H", data[pos + 1:pos + 3])[0]
-        blocks.append((pos, t, n))
+        symbol = decode(bits, literals)
+        if symbol < 256:
+            n += 1
+            continue
+        if symbol == 256:
+            return n
+        if symbol > 285:
+            raise NoMap(f"the length code {symbol} at {bits.at} is not one")
+        n += LENGTH_BASE[symbol - 257] + bits.take(LENGTH_EXTRA[symbol - 257])
+        distance = decode(bits, distances)
+        if distance > 29:
+            raise NoMap(f"the distance code {distance} at {bits.at} is not one")
+        bits.at += DISTANCE_EXTRA[distance]
+
+
+def deflate_blocks(data, pos):
+    """Every block of the deflate stream from pos (RFC 1951 section 3.2.3), as
+    (the bit its header starts at, the byte its data starts at - a stored
+    block's, None for the rest -, where its bytes start in what the stream
+    inflates to, how many there are, whether it is stored), and the byte after
+    the stream."""
+    bits, t, blocks = Bits(data, pos), 0, []
+    while True:
+        start = bits.at
+        final, kind = bits.take(1), bits.take(2)
+        if kind == 0:
+            i = (bits.at + 7) >> 3
+            n, check = struct.unpack("<HH", data[i:i + 4])
+            if n ^ check != 0xFFFF:
+                raise NoMap(f"the stored block at {i} gives its length as {n} and its check as {check}")
+            blocks.append((start, i + 4, t, n, True))
+            bits.at = (i + 4 + n) * 8
+        elif kind == 1 or kind == 2:
+            n = inflated_length(bits, *(FIXED if kind == 1 else dynamic_codes(bits)))
+            blocks.append((start, None, t, n, False))
+        else:
+            raise NoMap(f"the block at bit {start} is of the reserved type")
         t += n
-        pos += 5 + n
-        if header & 1:
-            return blocks, pos
+        if bits.at > len(data) * 8:
+            raise NoMap("the deflate stream runs off the end of the file")
+        if final:
+            return blocks, (bits.at + 7) >> 3
 
 
-def layout_targz(data, settings):
-    """The gzip header, then - in a stored stream - the tar's directories,
-    files, filler entry and end of archive marker where their bytes land in the
-    file, and the end marker with the closing block and the trailer as the end.
-    A compressed stream is content from its first byte to the trailer."""
-    out, pos = gzip_header_length(data)
-    if settings.get("compression", "none") != "none":
-        return out + [[CONTENT, pos, len(data) - 8 - pos], [END, len(data) - 8, 8]]
-    blocks, stop = stored_blocks(data, pos)
-    tar = b"".join(data[at + 5:at + 5 + n] for at, _, n in blocks)
+def stream_at(blocks, t):
+    """Where the stream holds the tar's byte t: at the header of the block it
+    opens, when that block starts on a byte, or in its place in a stored block.
+    None when it lies in a compressed block, which has no byte for it."""
+    for start, data_at, first, n, stored in blocks:
+        if n == 0:
+            continue
+        if t == first:
+            return start >> 3 if start % 8 == 0 else None
+        if first < t < first + n:
+            return data_at + t - first if stored else None
+    return None
 
-    def where(t):
-        for at, start, n in blocks:
-            if t == start:
-                return at
-            if start < t < start + n:
-                return at + 5 + t - start
-        raise NoMap(f"the tar's byte {t} is in no block")
 
-    t, files_seen, regions = 0, False, []
+def tar_parts(tar):
+    """The tar's parts, as (role, where it starts): directories in front of the
+    files as structure, the files as content, the entries tfg-padding.bin and
+    tfg-padding-end.bin as padding, and the end of archive marker as the end.
+    Neighbours of one role are one."""
+    t, files_seen, parts = 0, False, []
+
+    def add(role, at):
+        if not parts or parts[-1][0] != role:
+            parts.append((role, at))
+
     while t + 512 <= len(tar):
         head = tar[t:t + 512]
         if head == bytes(512):
-            regions.append((END, t))
-            break
+            add(END, t)
+            return parts
         name = head[:100].rstrip(b"\x00")
         size = int(head[124:136].rstrip(b"\x00 ") or b"0", 8)
         kind = head[156:157]
-        if name == b"tfg-padding.bin":
+        if name in (b"tfg-padding.bin", b"tfg-padding-end.bin"):
             role = PADDING
         elif kind == b"5" and not files_seen:
             role = STRUCTURE
         else:
             role, files_seen = CONTENT, True
-        regions.append((role, t))
+        add(role, t)
         t += 512 + (size + 511) // 512 * 512
-    for i, (role, start) in enumerate(regions):
-        end = where(regions[i + 1][1]) if i + 1 < len(regions) else len(data)
-        out.append([role, where(start), end - where(start)])
+    raise NoMap("the tar has no end of archive marker")
+
+
+def layout_targz(data, settings):
+    """The gzip header, then the tar's parts (tar_parts) from where the deflate
+    stream holds their first bytes, the end of archive marker to the end of the
+    file with whatever closes the stream and the trailer.
+
+    A part starts inside a stored block, or at the header of the block it opens
+    when that block starts on a byte - as each part of an archive laid out for a
+    cut does, in blocks of its own. A part that starts inside a compressed block
+    has no byte to start at. A squeezed archive nothing cuts is one compressed
+    stream, so its parts do, and then the stream from its first byte to the
+    trailer is content."""
+    out, pos = gzip_header_length(data)
+    blocks, stop = deflate_blocks(data, pos)
+    if stop != len(data) - 8:
+        raise NoMap(f"the deflate stream ends at {stop}, where the trailer starts at {len(data) - 8}")
+    squeezed = settings.get("compression", "none") != "none"
+    if not squeezed and not all(stored for _, _, _, n, stored in blocks if n):
+        raise NoMap("a block of a stored archive is compressed")
+    parts = tar_parts(zlib.decompress(data[pos:stop], -15))
+    starts = [stream_at(blocks, t) for _, t in parts]
+    if None in starts:
+        if not squeezed:
+            raise NoMap(f"a part of the tar starts on no byte of the stream: {starts}")
+        return out + [[CONTENT, pos, len(data) - 8 - pos], [END, len(data) - 8, 8]]
+    for (role, _), start, end in zip(parts, starts, starts[1:] + [len(data)]):
+        out.append([role, start, end - start])
     return out
 
 

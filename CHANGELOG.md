@@ -78,8 +78,7 @@ because it turns other people's test suites red.
   the manifest's `damage` now carries `cut`: `in` (`content`, `padding`,
   `structure` or `end`) and `content_kept_bytes`, and `content_bytes` where
   the length of the content is known. A cut in the padding also gets the
-  note `cut_in_padding`. In a compressed tar.gz a cut in the padding is
-  reported as a cut in the content.
+  note `cut_in_padding`.
 - **`truncate` cuts the picture of a PNG, a GIF, a JPEG or an icon by the
   percentage you set.** `--damage truncate:missing=90` on a 1 MB PNG or GIF
   used to cut only padding and leave the whole picture, and on a JPEG or a
@@ -94,6 +93,13 @@ because it turns other people's test suites red.
   file inside. In a small file a cut of a few percent can fall in the index at
   its end, and then every file inside is kept - the manifest says `in: end`.
   Files nothing cuts are unchanged.
+- **`truncate` cuts the files inside a tar.gz by the percentage you set,
+  compressed or not.** `--damage truncate:missing=50` on a 1 MB tar.gz used
+  to cut only padding. Now it removes half of the files' content, so
+  `tar -xzf` gets back the first part of the file inside and then stops at
+  the unexpected end. When the cut is shorter than the end of the archive -
+  1% of 64 KiB - it falls there and every file is kept, and the manifest says
+  `in: end`. Files nothing cuts are unchanged.
 
 - **tfg is on npm, for tests in Node.**
   `npm install --save-dev testing-files-generator` gives Playwright, Vitest
