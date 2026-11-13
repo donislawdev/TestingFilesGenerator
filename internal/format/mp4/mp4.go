@@ -21,7 +21,9 @@
 // with the probe at 8, 9, 15, 16 and 1 048 576 bytes and with none. A free box
 // is always written, at least its eight bytes, which leaves no size above the
 // minimum that cannot be reached, and one larger than a box length can say is
-// several (internal/format/isobmff).
+// several (internal/format/isobmff). A film a damage will cut splits them
+// around the media data, so the cut keeps the share of the pictures asked for
+// (cut.go).
 package mp4
 
 import (
@@ -138,17 +140,46 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	}
 	defer pics.Close()
 
-	// The map: the file type and the movie box, then the media data box with
-	// the pictures, then the free boxes that make up the size. The movie box
-	// is the same length whatever the pictures come to, so it is marked before
-	// a byte of it goes out, and the rest once the first pass has the length.
-	mdatAt := int64(len(l.ftyp)) + l.moovLen()
-	format.Mark(w, format.RoleStructure, 0, mdatAt)
+	// The padding behind the media data is what the first pass's lengths
+	// leave, not what the second pass wrote, so a second pass that came out
+	// different leaves the file a different size from the plan - which the
+	// engine refuses - rather than a movie box that describes samples it does
+	// not carry. A film a damage will cut has part of its padding in front of
+	// the media data (cut.go).
+	content := z.mediaData(l)
+	back := splitForACut(&l, content, p.Bytes, f.CutAt)
+	if back < 0 || back > 0 && back < minFree || l.gap+back < minFree {
+		return core.Defect(fmt.Errorf("mp4: the pictures came to %d B of media data and the file is %d B, which leaves no room for the free box every one of these carries",
+			content, p.Bytes))
+	}
 
-	o := &out{w: w, buf: make([]byte, 0, 64<<10)}
-	content := l.writeMovie(o, z)
+	// The map: the file type and the movie box, the free boxes in front of the
+	// media data when a damage will cut the film, then the media data box with
+	// the pictures, then the free boxes that make up the size. The first pass
+	// has every length, so all of it is marked before a byte goes out.
+	movie := int64(len(l.ftyp)) + l.moovLen()
+	mdatAt := movie + l.gap
+	format.Mark(w, format.RoleStructure, 0, movie)
+	if l.gap > 0 {
+		format.Mark(w, format.RolePadding, movie, l.gap)
+	}
 	format.Mark(w, format.RoleContent, mdatAt, l.front()-mdatAt+content)
-	format.Mark(w, format.RolePadding, l.front()+content, p.Bytes-l.front()-content)
+	if back > 0 {
+		format.Mark(w, format.RolePadding, l.front()+content, back)
+	}
+
+	// Both sides of the padding draw their filler from the film's seed. Nobody
+	// reads padding, and the side behind the media data lies past any cut.
+	o := &out{w: w, buf: make([]byte, 0, 64<<10)}
+	l.writeMovie(o, z)
+	if l.gap > 0 {
+		if o.flush(); o.err != nil {
+			return o.err
+		}
+		if err := isobmff.WritePadding(ctx, w, f.Choice.Seed, l.gap); err != nil {
+			return err
+		}
+	}
 	o.mediaHeader(l.bigData, content)
 	if err := writeSamples(ctx, o, l, pics); err != nil {
 		return err
@@ -156,16 +187,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	if o.flush(); o.err != nil {
 		return o.err
 	}
-	// The padding is what the first pass's lengths leave, not what the second
-	// pass wrote, so a second pass that came out different leaves the file a
-	// different size from the plan - which the engine refuses - rather than a
-	// movie box that describes samples it does not carry.
-	pad := p.Bytes - l.front() - content
-	if pad < minFree {
-		return core.Defect(fmt.Errorf("mp4: the pictures came to %d B of media data and the file is %d B, which leaves no room for the free box every one of these carries",
-			content, p.Bytes))
-	}
-	return isobmff.WritePadding(ctx, w, f.Choice.Seed, pad)
+	return isobmff.WritePadding(ctx, w, f.Choice.Seed, back)
 }
 
 // sizes is how long each picture's two samples came out in the first pass, by
@@ -232,8 +254,8 @@ func measure(ctx context.Context, f video.Film, st video.Stream) (sizes, *video.
 }
 
 // writeMovie writes the file type and the movie box, with the sample tables
-// from the first pass's lengths, and gives back how long the media data is.
-func (l layout) writeMovie(o *out, z sizes) int64 {
+// from the first pass's lengths.
+func (l layout) writeMovie(o *out, z sizes) {
 	o.write(l.ftyp)
 	o.header("moov", l.moovLen())
 	o.write(l.mvhd)
@@ -252,7 +274,7 @@ func (l layout) writeMovie(o *out, z sizes) int64 {
 	l.writeDependencies(o)
 	l.writeChunkRuns(o)
 	l.writeSizes(o, z)
-	return l.writeChunkPlaces(o, z)
+	l.writeChunkPlaces(o, z)
 }
 
 // writeSyncs is stss: every key frame, numbered from one. Each is a sample a
@@ -315,9 +337,10 @@ func (l layout) writeSizes(o *out, z sizes) {
 	}
 }
 
-// writeChunkPlaces is stco, or co64 when the layout asked for eight bytes, and
-// gives back where the last chunk ends, counted from the media data's start.
-func (l layout) writeChunkPlaces(o *out, z sizes) int64 {
+// writeChunkPlaces is stco, or co64 when the layout asked for eight bytes:
+// each chunk's place in bytes from the start of the file, which front - and so
+// any padding in front of the media data - is counted in.
+func (l layout) writeChunkPlaces(o *out, z sizes) {
 	kind := "stco"
 	if l.wide {
 		kind = "co64"
@@ -333,7 +356,6 @@ func (l layout) writeChunkPlaces(o *out, z sizes) int64 {
 		}
 		content += z.chunk(first, samples)
 	})
-	return content
 }
 
 // writeSamples is the second pass: every frame's sample, chunk by chunk, the

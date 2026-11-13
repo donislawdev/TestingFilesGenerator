@@ -16,7 +16,9 @@
 // depend on the pictures. The Void at the end was measured on 2026-10-06
 // (section 9.6) at 2, 3, 128, 129, 16 385, 16 386 and 1 048 576 bytes and with
 // none. A Void is always written, at least its two bytes, which leaves no size
-// above the minimum that cannot be reached.
+// above the minimum that cannot be reached. A film a damage will cut splits
+// the padding around the clusters, so the cut keeps the share of the pictures
+// asked for, and is coded twice for it (cut.go).
 package webm
 
 import (
@@ -147,39 +149,116 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	l := newLayout(st)
 	body := uint64(p.Bytes - l.outside())
 	cuesAt := body - l.cuesLen()
+	pics := f.Choice.Pictures(st)
+	defer func() { pics.Close() }()
 
-	// The map: the headers, the seek head, the info and the tracks, then the
-	// clusters - coded as they go, so their end is marked when they reach it -
-	// then the Void that makes up the size and the Cues at the end.
-	seg := l.outside()
-	format.Mark(w, format.RoleStructure, 0, seg+int64(l.front()))
-	format.Mark(w, format.RoleContent, seg+int64(l.front()), -1)
+	// A film a damage will cut is measured first, so part of its padding can
+	// stand in front of the clusters (cut.go). One nothing cuts is coded once,
+	// as it is written, and content stays unknown until the writing is done.
+	content, gap := int64(-1), int64(0)
+	if f.CutAt > 0 {
+		n, again, err := measure(ctx, l, pics)
+		if err != nil {
+			return err
+		}
+		content, pics = n, again
+		gap = splitForACut(int64(cuesAt-l.front())-content, l.outside()+int64(l.front()), content, f.CutAt, p.Bytes)
+	}
+	m := filmMap{w: w, l: l, cuesAt: cuesAt}
+	m.head(gap, content)
 
 	out := &sticky{w: w}
+	writeHead(out, l, body, cuesAt)
+	// Both Voids draw their filler from the film's seed. Nobody reads padding.
+	if gap > 0 {
+		if out.err != nil {
+			return out.err
+		}
+		if err := writeVoid(ctx, w, gap, f.Choice.Seed); err != nil {
+			return err
+		}
+	}
+	keys, end, err := writeClusters(ctx, out, l, pics, l.front()+uint64(gap), content < 0)
+	if err != nil {
+		return err
+	}
+	void, err := voidBehind(l, cuesAt, end, gap, content)
+	if err != nil {
+		return err
+	}
+	if content < 0 {
+		m.tail(end)
+	}
+	if void > 0 {
+		if err := writeVoid(ctx, w, void, f.Choice.Seed); err != nil {
+			return err
+		}
+	}
+	writeCues(out, l, keys)
+	return out.err
+}
+
+// writeHead writes everything in front of the clusters: the EBML header, the
+// segment's ID and size, the seek head, the info and the tracks.
+func writeHead(out *sticky, l layout, body, cuesAt uint64) {
 	out.write(l.head)
 	out.write(idBytes(idSegment))
 	out.write(sizeField(body, segmentSizeField))
 	out.write(seekHead(l.seekHeadLen, l.seekHeadLen+uint64(len(l.info)), cuesAt))
 	out.write(l.info)
 	out.write(l.tracks)
-	pics := f.Choice.Pictures(st)
-	defer pics.Close()
-	keys, end, err := writeClusters(ctx, out, l, pics)
-	if err != nil {
-		return err
+}
+
+// voidBehind is the Void between the last cluster, which ends at end, and the
+// Cues at cuesAt, both from the start of the segment's content. It is refused
+// when it cannot be a Void, or when the clusters of a film measured first
+// came to other than the first pass measured.
+func voidBehind(l layout, cuesAt, end uint64, gap, content int64) (int64, error) {
+	if wrote := int64(end-l.front()) - gap; content >= 0 && wrote != content {
+		return 0, core.Defect(fmt.Errorf("webm: the clusters came to %d B in the first pass and %d B in the second", content, wrote))
 	}
 	void := int64(cuesAt) - int64(end)
-	if void < minVoid {
-		return core.Defect(fmt.Errorf("webm: the clusters came to %d B and the Cues are to start at %d B, which leaves no room for the Void every one of these carries",
+	if void < 0 || void > 0 && void < minVoid || gap+void < minVoid {
+		return 0, core.Defect(fmt.Errorf("webm: the clusters came to %d B and the Cues are to start at %d B, which leaves no room for the Void every one of these carries",
 			end, cuesAt))
 	}
-	format.Mark(w, format.RolePadding, seg+int64(end), void)
-	format.Mark(w, format.RoleEnd, seg+int64(cuesAt), int64(l.cuesLen()))
-	if err := writeVoid(ctx, w, void, f.Choice.Seed); err != nil {
-		return err
+	return void, nil
+}
+
+// filmMap marks a film's map (format.Mark): the headers, the seek head, the
+// info and the tracks, the Void in front of the clusters when a damage will
+// cut the film, the clusters, then the Void that makes up the size and the
+// Cues at the end. A film measured first is marked whole before its first
+// byte. One coded as it goes has the clusters' end marked when the writing
+// reaches it, and a cut stops it before then.
+type filmMap struct {
+	w      io.Writer
+	l      layout
+	cuesAt uint64
+}
+
+// head marks what goes in front of the clusters, the clusters - content
+// bytes, -1 while unknown - and, when they are known, what follows them.
+func (m filmMap) head(gap, content int64) {
+	start := m.l.outside() + int64(m.l.front())
+	format.Mark(m.w, format.RoleStructure, 0, start)
+	if gap > 0 {
+		format.Mark(m.w, format.RolePadding, start, gap)
 	}
-	writeCues(out, l, keys)
-	return out.err
+	format.Mark(m.w, format.RoleContent, start+gap, content)
+	if content >= 0 {
+		m.tail(m.l.front() + uint64(gap+content))
+	}
+}
+
+// tail marks what follows the clusters, which end at end from the start of
+// the segment's content: the Void, when there is one, and the Cues.
+func (m filmMap) tail(end uint64) {
+	seg := m.l.outside()
+	if void := int64(m.cuesAt) - int64(end); void > 0 {
+		format.Mark(m.w, format.RolePadding, seg+int64(end), void)
+	}
+	format.Mark(m.w, format.RoleEnd, seg+int64(m.cuesAt), int64(m.l.cuesLen()))
 }
 
 // sticky keeps the first error, so a long run of small writes checks once,
@@ -208,40 +287,56 @@ func (s *sticky) uint(id uint32, v uint64) {
 }
 
 // writeClusters codes the pictures one change at a time and writes the
-// clusters as it goes, giving back where each key frame's cluster starts, for
-// the Cues, and where the last one ends. Every change opens a cluster, so each
-// is reported as worked once - what its new tiles were worth - which adds up
-// to the Work the plan counted.
-func writeClusters(ctx context.Context, out *sticky, l layout, pics *video.Pictures) ([]uint64, uint64, error) {
+// clusters as it goes, the first at pos from the start of the segment's
+// content, giving back where each key frame's cluster starts, for the Cues,
+// and where the last one ends. report says whether this pass reports the work
+// - the only pass of a film nothing cuts does, the second of one a damage
+// cuts does not (cut.go).
+func writeClusters(ctx context.Context, out *sticky, l layout, pics *video.Pictures, pos uint64, report bool) ([]uint64, uint64, error) {
 	s := l.stream
 	keys := make([]uint64, 0, s.Keys())
-	pos := l.front()
+	err := eachCluster(ctx, l, pics, report, func(first, last int64) error {
+		if s.IsKey(first) {
+			keys = append(keys, pos)
+		}
+		pos += writeCluster(out, l, pics, first, last)
+		return out.err
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	return keys, pos, nil
+}
+
+// eachCluster walks the film's clusters in order, by their frames [first,
+// last), with the picture each carries made the current one first, and stops
+// at the first error cluster gives back. Every change opens a cluster, so when
+// report says so each picture is reported as worked once - what its new tiles
+// were worth - which adds up to the Work the plan counted.
+func eachCluster(ctx context.Context, l layout, pics *video.Pictures, report bool, cluster func(first, last int64) error) error {
+	s := l.stream
 	worked := int64(-1)
 	for first := int64(0); first < s.Frames; {
 		if err := ctx.Err(); err != nil {
-			return nil, 0, err
+			return err
 		}
 		// A cluster thirty seconds into a picture asks for the picture it
 		// already has, which At answers without coding anything.
 		change := s.ChangeOf(first)
 		if err := pics.At(change); err != nil {
-			return nil, 0, err
+			return err
 		}
-		if change != worked {
+		if report && change != worked {
 			format.Worked(ctx, pics.Work())
 			worked = change
 		}
-		if s.IsKey(first) {
-			keys = append(keys, pos)
-		}
 		last := l.next(first)
-		pos += writeCluster(out, l, pics, first, last)
-		if out.err != nil {
-			return nil, 0, out.err
+		if err := cluster(first, last); err != nil {
+			return err
 		}
 		first = last
 	}
-	return keys, pos, nil
+	return nil
 }
 
 // writeCluster writes the cluster of frames [first, last) and returns its

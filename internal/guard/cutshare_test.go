@@ -32,8 +32,6 @@ type notYet struct {
 // that leaves is held to every size and share, and so is a new format unless
 // it is added here with its reason.
 var notYetCutAtTheShare = map[string]notYet{
-	"mp4":  {paddingBehind, 64 << 10, 50},
-	"webm": {paddingBehind, 64 << 10, 50},
 	// Both take the share at 64 KiB and above. At 4 KiB what stands behind the
 	// picture is more than a small share, so a cut of 1% keeps all of it.
 	"webp": {smallBehind, 4 << 10, 1},
@@ -48,7 +46,7 @@ var notYetCutAtTheShare = map[string]notYet{
 // guard for it, and it stays red until the format splits its padding for
 // format.Request.CutAt. A format that leaves the ratchet leaves this list too,
 // so it cannot go back.
-var listedBeforeTheRule = []string{"mp4", "webm", "webp", "tiff"}
+var listedBeforeTheRule = []string{"webp", "tiff"}
 
 // listedAfterTheRule is a problem for every format notYetAt names that
 // listedBeforeTheRule does not.
@@ -100,7 +98,8 @@ var (
 // structure by TestEveryFormatsMapIsTheOneItsStructureReadsBack.
 //
 // Canaries: a cut that kept all its content must be reported, and so must a
-// format listed as not yet cutting at the share that does.
+// format listed as not yet cutting at the share that does, and a file planned
+// for the sweep that the manifest leaves out.
 func TestACutTakesTheShareOfTheContentItIsAskedFor(t *testing.T) {
 	missingOf := map[string]int64{}
 	var targets []engine.Target
@@ -130,7 +129,9 @@ func TestACutTakesTheShareOfTheContentItIsAskedFor(t *testing.T) {
 		plannedOf[f.Target.ID] = f
 	}
 	problems := map[string]string{}
+	inManifest := map[string]bool{}
 	for _, m := range res.Manifest.Files {
+		inManifest[m.TargetID] = true
 		missing, ok := missingOf[m.TargetID]
 		if !ok || m.Failed {
 			t.Errorf("%s: no file was written (%s)", m.TargetID, m.Error)
@@ -153,6 +154,12 @@ func TestACutTakesTheShareOfTheContentItIsAskedFor(t *testing.T) {
 	}
 	for _, problem := range shareVerdicts(problems, notYetCutAtTheShare) {
 		t.Error(problem)
+	}
+	for _, problem := range absentFromTheManifest(missingOf, inManifest) {
+		t.Error(problem)
+	}
+	if len(absentFromTheManifest(map[string]int64{"webp-4096-1": 1}, map[string]bool{})) != 1 {
+		t.Errorf("canary: a planned file the manifest left out passed")
 	}
 	for _, problem := range listedAfterTheRule(notYetCutAtTheShare) {
 		t.Error(problem)
@@ -191,6 +198,21 @@ func TestACutTakesTheShareOfTheContentItIsAskedFor(t *testing.T) {
 	if !slices.ContainsFunc(shareVerdicts(problems, listed), func(s string) bool { return strings.HasPrefix(s, "txt:") }) {
 		t.Errorf("canary: txt listed as not cutting at the share, which it does, was not reported")
 	}
+}
+
+// absentFromTheManifest is every file planned for the sweep that the manifest
+// has no entry for. shareVerdicts asks only the cases a file was written for,
+// so without this a format that loses one of its files to the run still
+// passes on the others.
+func absentFromTheManifest(missingOf map[string]int64, inManifest map[string]bool) []string {
+	var out []string
+	for id := range missingOf {
+		if !inManifest[id] {
+			out = append(out, id+": planned for the sweep and not in the manifest, so its cut was never asked")
+		}
+	}
+	slices.Sort(out)
+	return out
 }
 
 // cutInTheEnd is what shareProblem says of a cut that fell in the end a file
