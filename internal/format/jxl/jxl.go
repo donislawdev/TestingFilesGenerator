@@ -50,6 +50,8 @@
 // something two readers tolerate, and this project's fourth untouchable rule
 // says fidelity does not drop for the implementer's convenience. The free box
 // says "nothing here" in the format's own words, and it is what AVIF writes.
+// A file a damage will cut has part of its padding in front of the codestream
+// instead, in skip boxes (cut.go).
 package jxl
 
 import (
@@ -206,6 +208,9 @@ type memo struct {
 	// which is what makes every size above the minimum reachable a byte at a
 	// time.
 	total int64
+	// cutAt is where a damage will cut the file, zero when nothing does
+	// (format.Request.CutAt).
+	cutAt int64
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
@@ -227,7 +232,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	if err := checkFits(r.Bytes, m); err != nil {
 		return format.Plan{}, err
 	}
-	m.total = r.Bytes
+	m.total, m.cutAt = r.Bytes, r.CutAt
 
 	p := format.Plan{
 		Bytes:       r.Bytes,
@@ -513,25 +518,11 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 			m.width, m.height, len(coded), containerOverhead, m.total))
 	}
 
-	// The map, all of it known once the picture is coded: the signature and
-	// file type boxes, the box of the code stream, and the free boxes that
-	// make up the size.
-	head := int64(len(signature) + len(fileType))
-	format.Mark(w, format.RoleStructure, 0, head)
-	format.Mark(w, format.RoleContent, head, boxHeader+int64(len(coded)))
-	format.Mark(w, format.RolePadding, head+boxHeader+int64(len(coded)), pad)
-
-	if _, err := w.Write(signature[:]); err != nil {
-		return err
+	// The map is all known once the picture is coded, and a file nothing cuts
+	// has all of its padding behind the codestream.
+	front := int64(0)
+	if m.cutAt > 0 {
+		front = splitForACut(pad, boxHeader+int64(len(coded)), m.cutAt, m.total)
 	}
-	if _, err := w.Write(fileType[:]); err != nil {
-		return err
-	}
-	if err := isobmff.WriteBoxHeader(w, "jxlc", int64(len(coded))); err != nil {
-		return err
-	}
-	if _, err := w.Write(coded); err != nil {
-		return err
-	}
-	return isobmff.WritePadding(ctx, w, m.seed, pad)
+	return writeAround(ctx, w, m, coded, front, pad-front)
 }

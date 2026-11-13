@@ -116,6 +116,14 @@ because it turns other people's test suites red.
   manifest says so: a few percent of a small PDF, falling in the index, and
   one keeping 10 billion bytes or more, which the index cannot reach. Files
   nothing cuts are unchanged.
+- **`truncate` cuts the picture of an AVIF or a JPEG XL by the percentage you
+  set.** A cut used to take only padding, leaving the whole picture. Now
+  `--damage truncate:missing=50` removes half of the coded picture, as an
+  interrupted download does. Chrome, Firefox, Windows, libavif and Pillow
+  refuse the cut AVIF. Half of a JPEG XL still shows the whole picture at
+  lower detail in Chrome and in libjxl with partial files allowed, because the
+  format sends a coarse picture first. A cut of 90% shows nothing. Files
+  nothing cuts are unchanged.
 
 - **tfg is on npm, for tests in Node.**
   `npm install --save-dev testing-files-generator` gives Playwright, Vitest

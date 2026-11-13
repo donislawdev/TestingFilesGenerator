@@ -35,7 +35,8 @@
 // sixty four bit box length that files above four gigabytes need. There is no
 // dead zone above the minimum. Pillow reads every one of them and refuses a
 // truncated or corrupted file, which is what makes it a witness. ffprobe reads
-// the broken ones too, so it is not.
+// the broken ones too, so it is not. A file a damage will cut has part of its
+// free boxes in front of the media data instead (cut.go).
 package avif
 
 import (
@@ -166,6 +167,9 @@ type memo struct {
 	// which is what makes every size above the minimum reachable a byte at a
 	// time.
 	total int64
+	// cutAt is where a damage will cut the file, zero when nothing does
+	// (format.Request.CutAt).
+	cutAt int64
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
@@ -187,7 +191,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	if err := checkFits(r.Bytes, m); err != nil {
 		return format.Plan{}, err
 	}
-	m.total = r.Bytes
+	m.total, m.cutAt = r.Bytes, r.CutAt
 
 	p := format.Plan{
 		Bytes:       r.Bytes,
@@ -489,6 +493,12 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 		// rather than written short, because a short file is a wrong file.
 		return core.Defect(fmt.Errorf("avif: a %dx%d picture coded to %d B and the file was to be %d B, which leaves no room for the free box every one of these carries",
 			m.width, m.height, len(coded), m.total))
+	}
+
+	if m.cutAt > 0 {
+		if done, err := writeForACut(ctx, w, m, coded); done || err != nil {
+			return err
+		}
 	}
 
 	// The map: the coder's boxes, its media data the content, and the free

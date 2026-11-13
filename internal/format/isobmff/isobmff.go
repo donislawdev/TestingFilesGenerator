@@ -40,12 +40,21 @@ func WriteBoxHeader(w io.Writer, kind string, payload int64) error {
 // can say. The step below keeps the leftover from landing between one and
 // seven bytes, which no box could then carry.
 func WritePadding(ctx context.Context, w io.Writer, seed uint64, total int64) error {
+	return WriteFreeSpace(ctx, w, "free", seed, total)
+}
+
+// WriteFreeSpace is WritePadding in boxes of kind, free or skip - the two
+// names ISO 14496-12 section 8.1.2 gives a box whose content means nothing.
+// They are the same to the format, and not to every reader: ffmpeg takes a
+// JPEG XL container with a free box near its start for a movie, and one with
+// a skip box for a picture (docs/TRUNCATE-2026-11-11.md section 13).
+func WriteFreeSpace(ctx context.Context, w io.Writer, kind string, seed uint64, total int64) error {
 	rng := core.NewRand(seed)
 	buf := make([]byte, 32*1024)
 
 	for total > 0 {
 		payload := nextPayload(total)
-		if err := WriteBoxHeader(w, "free", payload); err != nil {
+		if err := WriteBoxHeader(w, kind, payload); err != nil {
 			return err
 		}
 		if err := writeFiller(ctx, w, buf, rng, payload); err != nil {

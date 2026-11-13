@@ -38,7 +38,7 @@ func writeForACut(ctx context.Context, w io.Writer, m memo, whole int64) error {
 	if pad < chunkOverhead || pad-chunkOverhead > maxChunkData {
 		return core.Defect(fmt.Errorf("png: the picture encodes to %d B, which leaves %d B of padding for a %d B file", m.body, pad, whole))
 	}
-	front := frontPadding(pad, m.body-headSize, m.cutAt, whole)
+	front := format.SplitFront(pad, headSize, m.body-headSize, m.cutAt, whole, chunkOverhead)
 	markAroundThePicture(w, m.body, front, pad-front)
 
 	// Both padding chunks draw from the file's seed. Nobody reads padding, and
@@ -67,36 +67,6 @@ func writeForACut(ctx context.Context, w io.Writer, m memo, whole int64) error {
 	}
 	_, err := w.Write(holder.Tail)
 	return err
-}
-
-// frontPadding is how much of the padding, chunk headers included, goes in
-// front of the picture, so that a cut after the first cutAt bytes of a whole
-// file keeps content*cutAt/whole bytes of the picture's content.
-//
-// A chunk costs twelve bytes before any padding, so each side is nothing or at
-// least that. Where the chunks cannot land exactly, the front grows, which
-// moves the picture later and cuts more of it - the "at least" missing
-// promises. The one way it can keep more is a tail too short for the content
-// the cut should take: there all of the padding is in front, and the cut keeps
-// up to a chunk's worth more than the share (docs/TRUNCATE-2026-11-11.md
-// section 7.4). The manifest's cut reports what was kept either way.
-func frontPadding(pad, content, cutAt, whole int64) int64 {
-	if pad == 0 || cutAt <= 0 || cutAt >= whole {
-		return 0
-	}
-	front := format.PaddingInFront(headSize, content, cutAt, whole)
-	switch {
-	case front <= 0:
-		return 0
-	case front < chunkOverhead:
-		front = chunkOverhead
-	}
-	if back := pad - front; back < chunkOverhead {
-		// Behind the picture there is room for nothing or for less than a
-		// chunk, so the whole padding goes in front.
-		return pad
-	}
-	return front
 }
 
 // markAroundThePicture marks the map of a file whose padding is split around

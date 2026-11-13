@@ -159,6 +159,11 @@ var provenByProbe = map[string]string{
 		"fixed codes, must inflate to its bytes and read as those runs - its reach check, every frame of the marker met - and red on " +
 		"2026-11-13 for a frame a byte short (the plan refuses at 65541 B) and for an empty block's BTYPE bit one place off " +
 		"(compress/flate refuses at 65537 B), where the first passed the share and the map guards.",
+	"TestAnAVIFOrAJPEGXLLaidOutForACutComesToEverySizeAndReads": "its own canary - an item location a byte off must be " +
+		"refused - its reach check, every layout of the split met, and red on 2026-11-13 with the item locations not moved " +
+		"(50 cuts), with the widening's four bytes left out of the move (5 GiB: 4831825054 where the media data starts at " +
+		"4831825058), with a side of padding allowed below a box (4000 B came to 4007 B) and with a free box rather than a " +
+		"skip box in front of a JPEG XL's codestream (81 cuts).",
 	"TestAPDFLaidOutForACutComesToEverySizeAndItsOffsetsLand": "its own canaries - a table that sends one object a byte off " +
 		"must be refused, and the layout of a document nothing cuts must fail a cut at its half - its reach check, every " +
 		"layout of the split met, red on 2026-11-13 with nothing in front of a document under 400 B of padding (398 sizes, " +
