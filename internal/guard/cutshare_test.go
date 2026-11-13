@@ -37,10 +37,6 @@ var notYetCutAtTheShare = map[string]notYet{
 	"mp4":   {paddingBehind, 64 << 10, 50},
 	"webm":  {paddingBehind, 64 << 10, 50},
 	"pdf":   {paddingBehind, 64 << 10, 50},
-	"zip":   {paddingBehind, 64 << 10, 50},
-	"docx":  {paddingBehind, 64 << 10, 50},
-	"xlsx":  {paddingBehind, 64 << 10, 50},
-	"pptx":  {paddingBehind, 64 << 10, 50},
 	"targz": {paddingBehind, 64 << 10, 50},
 	// Both take the share at 64 KiB and above. At 4 KiB what stands behind the
 	// picture is more than a small share, so a cut of 1% keeps all of it.
@@ -56,7 +52,7 @@ var notYetCutAtTheShare = map[string]notYet{
 // guard for it, and it stays red until the format splits its padding for
 // format.Request.CutAt. A format that leaves the ratchet leaves this list too,
 // so it cannot go back.
-var listedBeforeTheRule = []string{"avif", "jxl", "mp4", "webm", "pdf", "zip", "docx", "xlsx", "pptx", "targz", "webp", "tiff"}
+var listedBeforeTheRule = []string{"avif", "jxl", "mp4", "webm", "pdf", "targz", "webp", "tiff"}
 
 // listedAfterTheRule is a problem for every format notYetAt names that
 // listedBeforeTheRule does not.
@@ -133,6 +129,10 @@ func TestACutTakesTheShareOfTheContentItIsAskedFor(t *testing.T) {
 		t.Fatalf("running: %v", err)
 	}
 
+	plannedOf := map[string]engine.PlannedFile{}
+	for _, f := range planned {
+		plannedOf[f.Target.ID] = f
+	}
 	problems := map[string]string{}
 	for _, m := range res.Manifest.Files {
 		missing, ok := missingOf[m.TargetID]
@@ -140,7 +140,15 @@ func TestACutTakesTheShareOfTheContentItIsAskedFor(t *testing.T) {
 			t.Errorf("%s: no file was written (%s)", m.TargetID, m.Error)
 			continue
 		}
-		problems[m.TargetID] = shareProblem(missing, m)
+		problem := shareProblem(missing, m)
+		f := plannedOf[m.TargetID]
+		if _, closes := endClosesTheFile[f.Desc.ID]; closes && problem == cutInTheEnd && onlyTheEndBehind(wholeMap(t, f)) {
+			// The end the format has to close with is longer than what the
+			// cut takes, and nothing else stands behind the content that the
+			// format could have put in front of it.
+			problem = ""
+		}
+		problems[m.TargetID] = problem
 	}
 	for _, problem := range shareVerdicts(problems, notYetCutAtTheShare) {
 		t.Error(problem)
@@ -158,11 +166,78 @@ func TestACutTakesTheShareOfTheContentItIsAskedFor(t *testing.T) {
 	if shareProblem(50, kept) == "" {
 		t.Errorf("canary: a cut that kept all its content passed for one that took half")
 	}
+	region := func(role format.Role, at, length int64) format.Region {
+		return format.Region{Role: role, At: at, Length: length}
+	}
+	if onlyTheEndBehind([]format.Region{region(format.RoleContent, 0, 10), region(format.RolePadding, 10, 5), region(format.RoleEnd, 15, 5)}) {
+		t.Errorf("canary: padding behind the content passed for a file with nothing but its end behind it")
+	}
+	if !onlyTheEndBehind([]format.Region{region(format.RolePadding, 0, 5), region(format.RoleContent, 5, 10), region(format.RoleEnd, 15, 5)}) {
+		t.Errorf("canary: a file with all of its padding in front was refused for padding behind")
+	}
 	listed := maps.Clone(notYetCutAtTheShare)
 	listed["txt"] = notYet{paddingBehind, 64 << 10, 50}
 	if !slices.ContainsFunc(shareVerdicts(problems, listed), func(s string) bool { return strings.HasPrefix(s, "txt:") }) {
 		t.Errorf("canary: txt listed as not cutting at the share, which it does, was not reported")
 	}
+}
+
+// cutInTheEnd is what shareProblem says of a cut that fell in the end a file
+// closes with: a central directory, a trailer.
+const cutInTheEnd = "the cut fell in the end"
+
+// endClosesTheFile is every format whose specification puts its end after all
+// of its content, so a cut shorter than the end can only fall in it
+// (onlyTheEndBehind). A format whose end may stand anywhere - a TIFF's image
+// directory, which the specification lets stand before the pictures - is not
+// here: it could put its end in front of the content instead.
+var endClosesTheFile = map[string]string{
+	"zip":  "APPNOTE 4.3.6 lays a ZIP out with the central directory and its end record after every entry",
+	"docx": "a ZIP package, laid out as APPNOTE 4.3.6 lays out a ZIP: the central directory after every part",
+	"xlsx": "a ZIP package, laid out as APPNOTE 4.3.6 lays out a ZIP: the central directory after every part",
+	"pptx": "a ZIP package, laid out as APPNOTE 4.3.6 lays out a ZIP: the central directory after every part",
+}
+
+// onlyTheEndBehind is whether nothing but the end stands behind the content of
+// a file's whole map - no padding there that the format could have put in
+// front of the content instead.
+//
+// A cut that falls in the end of such a file falls there because the end is
+// longer than the part the cut takes: a ZIP's central directory with a record
+// for every part, cut by 1% of a few kilobytes (docs/TRUNCATE-2026-11-11.md
+// section 10). No layout reaches the content then, so the share cannot be
+// asked of that file. With padding behind the content the format could have
+// moved it, and the cut is a miss like any other.
+func onlyTheEndBehind(regions []format.Region) bool {
+	last := -1
+	for i, r := range regions {
+		if r.Role == format.RoleContent {
+			last = i
+		}
+	}
+	if last < 0 {
+		return false
+	}
+	for _, r := range regions[last+1:] {
+		if r.Role != format.RoleEnd && r.Length != 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// wholeMap is the map of the whole file f is cut from: its generator written
+// out through its own plan to nowhere, the damage left to the engine's
+// streams, which are not here.
+func wholeMap(t *testing.T, f engine.PlannedFile) []format.Region {
+	t.Helper()
+	c := &countingSink{}
+	rec := &format.MapRecorder{W: c}
+	if err := f.Desc.Generator.Write(t.Context(), rec, f.Plan); err != nil {
+		t.Errorf("%s: writing the whole file again: %v", f.Target.ID, err)
+		return nil
+	}
+	return rec.Map(c.n, true)
 }
 
 // shareCases is the files the sweep cuts of a format, each as its size and the
@@ -231,6 +306,9 @@ func shareProblem(missing int64, f manifest.File) string {
 	}
 	cut := f.Damage[0].Cut
 	if cut.In != "content" {
+		if cut.In == string(format.RoleEnd) {
+			return cutInTheEnd
+		}
 		return fmt.Sprintf("the cut fell in the %s", cut.In)
 	}
 	if cut.ContentBytes == nil || *cut.ContentBytes <= 0 {

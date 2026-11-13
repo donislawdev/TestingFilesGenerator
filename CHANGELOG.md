@@ -87,6 +87,13 @@ because it turns other people's test suites red.
   removes 90% of the picture's content, so a viewer that shows what is left
   shows the part of the picture that arrived, the way an interrupted upload
   leaves it. Files nothing cuts are unchanged.
+- **`truncate` cuts the files inside a ZIP, and the parts of a Word, Excel or
+  PowerPoint document, by the percentage you set.** `--damage
+  truncate:missing=50` on a 1 MB ZIP used to cut only padding. Now it removes
+  half of the files' content, so `tar -xf` gets back the first half of the
+  file inside. In a small file a cut of a few percent can fall in the index at
+  its end, and then every file inside is kept - the manifest says `in: end`.
+  Files nothing cuts are unchanged.
 
 - **tfg is on npm, for tests in Node.**
   `npm install --save-dev testing-files-generator` gives Playwright, Vitest

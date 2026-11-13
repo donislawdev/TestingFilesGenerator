@@ -59,6 +59,12 @@ func (m *StreamMap) Pos() int64 {
 	return m.out + int64(len(m.held)) + int64(m.Buffer.Buffered())
 }
 
+// MarkNext marks the region of role, length bytes long or -1 for up to the
+// next mark, that starts with the next byte archive/zip writes.
+func (m *StreamMap) MarkNext(role format.Role, length int64) {
+	format.Mark(m.w, role, m.Pos(), length)
+}
+
 func (m *StreamMap) mapped() bool {
 	_, ok := m.w.(format.Mapper)
 	return ok
@@ -121,11 +127,13 @@ func (m *StreamMap) MarkLast(role format.Role, n int64) error {
 	return nil
 }
 
-// MarkEntry marks the region of role that starts with the local header of the
-// entry named name, which archive/zip has just written: the last thing held.
-// The header is found by its own fields rather than worked out, because
-// archive/zip adds an extra field of its own to a header that names a time.
-func (m *StreamMap) MarkEntry(role format.Role, name string) error {
+// MarkEntry marks the region of role, length bytes long or -1 for up to the
+// next mark, that starts with the local header of the entry named name, which
+// archive/zip has just written: the last thing held. The header is found by its
+// own fields rather than worked out, because archive/zip adds an extra field of
+// its own to a header that names a time, and finishes the entry before it with
+// a data descriptor only as this one opens.
+func (m *StreamMap) MarkEntry(role format.Role, name string, length int64) error {
 	if !m.holding {
 		return nil
 	}
@@ -138,7 +146,7 @@ func (m *StreamMap) MarkEntry(role format.Role, name string) error {
 		// the guard of the map reads back as a defect.
 		return nil
 	}
-	format.Mark(m.w, role, m.out+int64(at), -1)
+	format.Mark(m.w, role, m.out+int64(at), length)
 	return nil
 }
 

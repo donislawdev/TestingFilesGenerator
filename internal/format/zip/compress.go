@@ -32,10 +32,11 @@ import (
 // to predict.
 func padCompressed(m *memo, p *format.Plan, r format.Request, groups []format.Content) error {
 	m.withFiller, m.target = true, r.Bytes
-	withFiller, err := archiveSize(*m)
+	measured, err := archiveSize(*m)
 	if err != nil {
 		return err
 	}
+	withFiller := measured.size
 	m.fillerSize = r.Bytes - withFiller
 	if m.fillerSize < 0 {
 		return &format.BelowMinimumError{
@@ -85,6 +86,29 @@ func (m memo) methodFor(e entryPlan) uint16 {
 		return stdzip.Deflate
 	}
 	return stdzip.Store
+}
+
+// freedBy is what the compressor freed of the files, given back through the
+// filler so the archive still lands on the ordered size: their stored length
+// less squeezed, what the compressor wrote of them. Nought on the counting
+// pass, where no contents are written and the plan's own arithmetic is the
+// answer.
+//
+// Asked as a question rather than worked out where the files are written,
+// because the answer does not exist yet: the last entry's compressed bytes
+// only reach the writer when its entry closes, and what closes it is the
+// filler's own header.
+func (m memo) freedBy(withContents bool, squeezed *int64) func() int64 {
+	return func() int64 {
+		if !withContents || !m.squeeze.On() {
+			return 0
+		}
+		var plain int64
+		for _, c := range m.children {
+			plain += c.plan.Bytes
+		}
+		return plain - *squeezed
+	}
 }
 
 // tally counts the bytes a compressor emits, so the writer can learn exactly

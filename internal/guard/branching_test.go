@@ -64,7 +64,9 @@ const (
 	// of control in its own closure and went one deeper when it learnt to wrap
 	// only once - the three became one function, chainOnce, and listen came
 	// out of the band.
-	crowdedDepthFunctions = 49
+	// Lowered from 49 on 2026-11-13: the office package writer's padding part
+	// moved out of write into writePaddingPart, so write came out of the band.
+	crowdedDepthFunctions = 48
 
 	// An axis this set does not watch. crowding() asks n >= band, so nothing
 	// reaches it.

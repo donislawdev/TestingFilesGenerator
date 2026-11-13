@@ -216,7 +216,7 @@ def layout_pdf(data):
             [END, xref, closed - xref], [PADDING, closed, sx - closed], [END, sx, len(data) - sx]]
 
 
-ZIP_FILLERS = (b"tfg-padding.bin", b"tfg/padding.bin")
+ZIP_FILLERS = (b"tfg-padding.bin", b"tfg/padding.bin", b"tfg-padding-end.bin", b"tfg/padding-end.bin")
 
 
 def zip_entries(data):

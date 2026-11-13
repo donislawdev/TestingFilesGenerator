@@ -40,7 +40,7 @@ var contextRoots = map[string]string{
 	"internal/format/zip/zip.go generator.Plan":              "the Generator interface's Plan for callers without a context - the engine asks PlanContext",
 	"internal/engine/damagedformat.go damagedGenerator.Plan": "the Generator interface's Plan for callers without a context, such as SmallestAccepted - the engine asks PlanContext",
 	"internal/format/opc/opc.go size":                        "measures a package with the padding left out, so there is nothing long to stop",
-	"internal/format/zip/zip.go archiveSize":                 "measures an archive with the contents left out, so there is nothing long to stop",
+	"internal/format/zip/size.go archiveSize":                "measures an archive with the contents left out, so there is nothing long to stop",
 }
 
 func TestAContextIsMadeFromNothingOnlyWhereItIsMeantToStart(t *testing.T) {
