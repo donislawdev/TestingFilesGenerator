@@ -11,6 +11,10 @@ import (
 type Film struct {
 	Choice   Choice
 	Settings Settings
+	// CutAt is where a damage will cut the file, zero when nothing does
+	// (format.Request.CutAt). Each container splits its padding around the
+	// pictures for it.
+	CutAt int64
 }
 
 // Stream is the stream the film is written in, the one planning sized it by.
@@ -50,7 +54,7 @@ func Plan(formatID string, r format.Request, need func(Stream) int64, refuse fun
 		Exact:       true,
 		Determinism: format.DeterminismByte,
 		Properties:  Facts(c, s),
-		Memo:        Film{Choice: c, Settings: s},
+		Memo:        Film{Choice: c, Settings: s, CutAt: r.CutAt},
 		Work:        st.Work(),
 		Holds:       Holds(c.Width, c.Height),
 	}

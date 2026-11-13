@@ -2517,11 +2517,13 @@ def check_webm(data):
     """A WebM film as this generator writes it, read without its code.
 
     The questions are the ones a film can get wrong while every frame still
-    plays: the segment ends where the file does, with its padding just before
-    the Cues and the Cues last (docs/WIDEO-2026-10-06.md section 15), the
-    SeekHead points at what it names, every block is whole AV1 with no
-    temporal delimiter, nothing shows a picture that may not be shown again
-    (section 9.2), and the Cues point at the key frames and nothing else.
+    plays: the segment ends where the file does, with the Cues last and its
+    padding in a Void right before them (docs/WIDEO-2026-10-06.md section
+    15), right before the first cluster - a film laid out for a cut
+    (docs/TRUNCATE-2026-11-11.md section 14) - or in both, the SeekHead points
+    at what it names, every block is whole AV1 with no temporal delimiter,
+    nothing shows a picture that may not be shown again (section 9.2), and the
+    Cues point at the key frames and nothing else.
     """
     top = list(ebml_elements(data, 0, len(data)))
     if len(top) != 2 or top[0][0] != 0x1A45DFA3 or top[1][0] != 0x18538067:
@@ -2532,8 +2534,13 @@ def check_webm(data):
 
     seg_start, seg_end = top[1][2], top[1][3]
     children = list(ebml_elements(data, seg_start, seg_end))
-    if len(children) < 2 or children[-1][0] != 0x1C53BB6B or children[-2][0] != 0xEC:
-        fail("the segment does not end in a Void and then the Cues, which is where this generator pads")
+    ids = [c[0] for c in children]
+    first_cluster = ids.index(0x1F43B675) if 0x1F43B675 in ids else len(ids)
+    padded = [i for i, ident in enumerate(ids) if ident == 0xEC]
+    if not ids or ids[-1] != 0x1C53BB6B or not padded or \
+            any(i != first_cluster - 1 and i != len(ids) - 2 for i in padded):
+        fail("the segment does not end in the Cues with a Void right before them, right before the first cluster "
+             "or both, which is where this generator pads")
     at_offset = {at - seg_start: ident for ident, at, _, _ in children}
 
     blocks, cues, seeks = [], [], 0
@@ -2591,7 +2598,7 @@ def check_webm(data):
     keys = [(ts, cluster) for ts, key, _, cluster in blocks if key]
     if [ts for ts, _ in keys] != [ts for ts, _ in cues] or [c for _, c in keys] != [p for _, p in cues]:
         fail(f"the Cues name {len(cues)} points and the film has {len(keys)} key frames, not at the same places")
-    ok(f"{len(blocks)} frames, {len(keys)} key frames, every one in the Cues, Void before them")
+    ok(f"{len(blocks)} frames, {len(keys)} key frames, every one in the Cues, padding in {len(padded)} Void")
 
 
 def iso_child(data, start, end, name, depth="the movie box"):
@@ -2673,7 +2680,9 @@ def check_mp4(data):
 
     The questions a film can get wrong while every frame still plays
     (docs/MP4-2026-10-07.md): the boxes cover the file with the free boxes
-    last, the sample tables agree with the media data byte for byte - the
+    last, right in front of the media data - a film laid out for a cut
+    (docs/TRUNCATE-2026-11-11.md section 14) - or both, and with at least
+    one, the sample tables agree with the media data byte for byte - the
     samples follow one another from its first byte to its last - every sync
     sample opens with the sequence header and a shown key frame and every key
     frame is a sync sample (AV1 binding section 2.4), sdtp says which samples
@@ -2682,13 +2691,16 @@ def check_mp4(data):
     """
     top = list(iso_boxes(data, 0, len(data)))
     names = [n for n, _, _ in top]
-    if names[:3] != [b"ftyp", b"moov", b"mdat"] or any(n != b"free" for n in names[3:]) or len(names) < 4:
-        fail(f"the file is {[n.decode('latin1') for n in names]} and this generator writes ftyp, moov, mdat, then free boxes")
+    media = names.index(b"mdat") if b"mdat" in names else -1
+    if names[:2] != [b"ftyp", b"moov"] or media < 2 or b"free" not in names or \
+            any(n != b"free" for i, n in enumerate(names[2:], 2) if i != media):
+        fail(f"the file is {[n.decode('latin1') for n in names]} and this generator writes ftyp, moov and mdat with "
+             "free boxes in front of mdat, behind it or both")
     _, fb, fe = top[0]
     brands = [data[at:at + 4] for at in range(fb + 8, fe, 4)]
     if b"av01" not in brands:
         fail("av01 is not among the compatible brands, which the AV1 binding requires (section 2.1)")
-    _, mb, me = top[2]
+    _, mb, me = top[media]
 
     trak = iso_child(data, top[1][1], top[1][2], b"trak")
     mdia = iso_child(data, *trak, b"mdia", "the track")

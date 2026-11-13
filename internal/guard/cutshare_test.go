@@ -32,8 +32,6 @@ type notYet struct {
 // that leaves is held to every size and share, and so is a new format unless
 // it is added here with its reason.
 var notYetCutAtTheShare = map[string]notYet{
-	"mp4":  {paddingBehind, 64 << 10, 50},
-	"webm": {paddingBehind, 64 << 10, 50},
 	// Both take the share at 64 KiB and above. At 4 KiB what stands behind the
 	// picture is more than a small share, so a cut of 1% keeps all of it.
 	"webp": {smallBehind, 4 << 10, 1},
@@ -48,7 +46,7 @@ var notYetCutAtTheShare = map[string]notYet{
 // guard for it, and it stays red until the format splits its padding for
 // format.Request.CutAt. A format that leaves the ratchet leaves this list too,
 // so it cannot go back.
-var listedBeforeTheRule = []string{"mp4", "webm", "webp", "tiff"}
+var listedBeforeTheRule = []string{"webp", "tiff"}
 
 // listedAfterTheRule is a problem for every format notYetAt names that
 // listedBeforeTheRule does not.

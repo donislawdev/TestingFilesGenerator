@@ -43,8 +43,12 @@ type layout struct {
 	// wide is whether the chunks' places take eight bytes each (co64), and
 	// bigData whether the media data's length does - each only when a film
 	// whose pictures take their whole reserve would need it, so a smaller film
-	// never has a field it could not fill.
+	// never has a field it could not fill. A film a damage will cut may widen
+	// its places for the padding in front of the media data (cut.go).
 	wide, bigData bool
+	// gap is the padding between the movie box and the media data, nothing
+	// but in a film a damage will cut (cut.go). Planning counts none.
+	gap int64
 
 	ftyp, mvhd, tkhd, mdhd, hdlr, vmhd, dinf, stsd, stts []byte
 }
@@ -92,13 +96,13 @@ func (l layout) boundContent() int64 {
 }
 
 // front is where the media data's content starts: the file type, the movie
-// box and the media data's header.
+// box, the padding in front of the media data and the media data's header.
 func (l layout) front() int64 {
 	head := int64(isobmff.BoxHeader)
 	if l.bigData {
 		head += 8
 	}
-	return int64(len(l.ftyp)) + l.moovLen() + head
+	return int64(len(l.ftyp)) + l.moovLen() + l.gap + head
 }
 
 // need is the file without its padding when every picture takes its whole

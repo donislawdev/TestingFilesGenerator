@@ -131,6 +131,13 @@ because it turns other people's test suites red.
   lower detail in Chrome and in libjxl with partial files allowed, because the
   format sends a coarse picture first. A cut of 90% shows nothing. An AVIF
   nothing cuts is unchanged. Every JPEG XL changes (see Breaking).
+- **`truncate` cuts the pictures of an MP4 or a WebM film by the percentage
+  you set.** A cut used to take only padding, leaving every frame. Now
+  `--damage truncate:missing=50` removes half of the coded pictures, as an
+  interrupted download does, and ffmpeg gives back the frames in front of the
+  cut. Chrome and Firefox stop a cut MP4 with an error and end a cut WebM
+  without one. The manifest of a cut WebM now says how long its pictures are,
+  where it said nothing. Films nothing cuts are unchanged.
 
 - **tfg is on npm, for tests in Node.**
   `npm install --save-dev testing-files-generator` gives Playwright, Vitest

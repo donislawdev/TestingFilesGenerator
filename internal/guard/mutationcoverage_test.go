@@ -167,6 +167,12 @@ var provenByProbe = map[string]string{
 		"(50 cuts), with the widening's four bytes left out of the move (5 GiB: 4831825054 where the media data starts at " +
 		"4831825058), with a side of padding allowed below a box (4000 B came to 4007 B) and with a free box rather than a " +
 		"skip box in front of a JPEG XL's codestream (81 cuts).",
+	"TestAnMP4OrAWebMLaidOutForACutComesToEverySizeAndPlays": "its own canary - a chunk place a byte off must be refused " +
+		"- its reach check, every layout of the split met, and red on 2026-11-13 with stco not counting the free boxes in " +
+		"front of the media data (sample 1 not the bytes of the film nothing cuts), with the Cues not moved by the Void in " +
+		"front of the clusters (a cue giving 226 where no cluster starts), with a side of a WebM's padding allowed below a " +
+		"Void (16000 B came to 16008 B), with an MP4 that never widens to co64 (5 GiB: no co64 in the head) and with the " +
+		"widening's growth left out of the head the share is counted from (40 B more in front than the share).",
 	"TestAPDFLaidOutForACutComesToEverySizeAndItsOffsetsLand": "its own canaries - a table that sends one object a byte off " +
 		"must be refused, and the layout of a document nothing cuts must fail a cut at its half - its reach check, every " +
 		"layout of the split met, red on 2026-11-13 with nothing in front of a document under 400 B of padding (398 sizes, " +
