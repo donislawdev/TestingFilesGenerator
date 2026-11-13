@@ -155,6 +155,10 @@ var provenByProbe = map[string]string{
 		"padding a byte late: red, and by marking the picture of a png laid out for a cut a byte late: red at 8 KiB and at 64 KiB.",
 	"TestACutFileSaysWhereTheCutFellAndWhatIsLeft": "its own canary - a cut named in the wrong role, and content claimed gone that is there, must not pass - " +
 		"and broken on 2026-11-12 by reporting every cut in the content: red for the picture and the icon.",
+	"TestATarGzLaidOutForACutComesToEverySizeAndReads": "its own canary - a stream built by hand, one and then two empty blocks of " +
+		"fixed codes, must inflate to its bytes and read as those runs - its reach check, every frame of the marker met - and red on " +
+		"2026-11-13 for a frame a byte short (the plan refuses at 65541 B) and for an empty block's BTYPE bit one place off " +
+		"(compress/flate refuses at 65537 B), where the first passed the share and the map guards.",
 	"TestACutAtTheSmallestSizeSaysHowLongTheContentWas": "its own canaries - a cut that does not state the content's length, and one stating a " +
 		"byte less than the map runs, must not pass - its reach check - the ZIP packages at their smallest have no padding in front and are cut " +
 		"in the content - and red on 2026-11-13 before the Office packages marked their parts with a length without a padding part in front: " +
