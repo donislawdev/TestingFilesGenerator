@@ -23,15 +23,19 @@ import (
 // where that happens. So this writes consecutive sizes cut at their last byte
 // across the size where startxref gains its fifth digit, and at 1% and 50%
 // where the padding behind runs out, holds each to its size, its offsets and
-// the share, and asserts that it met the layouts that follow: all of the
-// padding in front with four digits and with five, a few bytes left behind
-// where the digit is gained, the share to the byte, and a byte more in front.
+// the share, and asserts that it met the layouts that follow: no padding to
+// move at the smallest size, all of the padding in front with four digits and
+// with five, a few bytes left behind where the digit is gained, the share to
+// the byte, and a byte more in front. Nothing in front passes only where
+// there is no padding or the share wants none - on 2026-11-13 the smallest
+// size was the one size of the sweep with nothing in front.
 //
 // A document of more than ten gigabytes is planned and not written: its
 // objects stop where the cross reference table's ten digits do.
 //
-// Canary: the reader of offsets refuses a document whose table sends one
-// object a byte off.
+// Canaries: the reader of offsets refuses a document whose table sends one
+// object a byte off, and the layout of a document nothing cuts, all of its
+// padding behind, fails a cut at its half.
 func TestAPDFLaidOutForACutComesToEverySizeAndItsOffsetsLand(t *testing.T) {
 	desc, err := format.Get("pdf")
 	if err != nil {
@@ -58,7 +62,7 @@ func TestAPDFLaidOutForACutComesToEverySizeAndItsOffsetsLand(t *testing.T) {
 	sweep(22_000, 24_600, func(size int64) int64 { return size - (size+99)/100 })
 	smallest := desc.SmallestAccepted(format.Request{Label: true})
 	sweep(smallest, smallest+600, func(size int64) int64 { return size / 2 })
-	for _, layout := range []string{"all in front, startxref of 4 digits", "all in front, startxref of 5 digits",
+	for _, layout := range []string{"no padding to move", "all in front, startxref of 4 digits", "all in front, startxref of 5 digits",
 		"a few bytes behind where startxref gains a digit", "the share", "a byte more in front"} {
 		if !met[layout] {
 			t.Errorf("no size met the layout %q - met %v", layout, met)
@@ -74,6 +78,13 @@ func TestAPDFLaidOutForACutComesToEverySizeAndItsOffsetsLand(t *testing.T) {
 	broken[at]++
 	if err := pdfOffsetsLand(broken); err == nil {
 		t.Errorf("canary: a table that sends an object a byte off passed")
+	}
+
+	// Canary: a document nothing cuts has all of its padding behind, so held to
+	// a cut at its half it keeps every object.
+	whole, regions := writePDF(t, desc, 64<<10, 0)
+	if layout, err := pdfLayoutOf(whole, regions, 64<<10, 32<<10); err == nil {
+		t.Errorf("canary: the padding all behind passed a cut at the half as %q", layout)
 	}
 }
 
@@ -118,8 +129,12 @@ func pdfLayoutOf(data []byte, regions []format.Region, size, cutAt int64) (strin
 	want := format.PaddingInFront(head, content, cutAt, size)
 	kept, share := cutAt-head-front, content*cutAt/size
 	switch {
+	case front == 0 && back == 0:
+		return "no padding to move", nil
+	case front == 0 && want <= 0:
+		return "the share wants nothing in front", nil
 	case front == 0:
-		return "nothing in front", nil
+		return "", fmt.Errorf("nothing in front and %d B behind, where the share wants %d B in front", back, want)
 	case front == want && kept == share:
 		return "the share", nil
 	case front == want+1 && kept == share-1:
