@@ -3,6 +3,7 @@ package guard
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -36,8 +37,8 @@ type cutCase struct {
 // the content is left, and gets a note when the cut missed the content.
 //
 // The shapes a cut takes (docs/TRUNCATE-2026-11-11.md sections 2, 7 and 8).
-// A PDF of 1 MiB is nearly all padding after its pages, so 90% missing still
-// leaves every page. A PNG splits its padding around the picture
+// An MP4 of 1 MiB is nearly all padding after its video, so 90% missing still
+// leaves all of it. A PNG splits its padding around the picture
 // for a cut, so the cut takes the share asked for, and so does a tar.gz. A
 // text is its words, so the cut falls in them. Two cuts in a row end the file where the second one does, and
 // the cut is said of that one. A damage that cuts nothing has no cut to report.
@@ -46,8 +47,9 @@ type cutCase struct {
 // one that claims content it does not have.
 func TestACutFileSaysWhereTheCutFellAndWhatIsLeft(t *testing.T) {
 	cases := []cutCase{
-		// A GIF was this case until it split its padding for the cut.
-		{name: "behind", format: "pdf", size: 1 << 20, missing: "90", in: "padding", kept: "all", note: "after the content"},
+		// A GIF and then a PDF were this case until each split its padding
+		// for the cut.
+		{name: "behind", format: "mp4", size: 1 << 20, missing: "90", in: "padding", kept: "all", note: "after the content"},
 		{name: "picture", format: "png", size: 1 << 20, missing: "90", in: "content", kept: "share"},
 		// 4 KiB on disk is 40 KiB whole. It was the case of a cut in the padding
 		// in front of the content, with an icon and a JPEG before it, until it
@@ -178,7 +180,7 @@ func TestTheRecordOfACutRunIsNeverLongerThanItsForecast(t *testing.T) {
 	}
 	opt := engine.Options{OutDir: t.TempDir(), Seed: 7, Command: "test"}
 	planned, err := engine.Plan([]engine.Target{
-		cut("picture", "png", 1<<20, "90"), cut("behind", "pdf", 1<<20, "90"), cut("text", "txt", 1000, "50"),
+		cut("picture", "png", 1<<20, "90"), cut("behind", "mp4", 1<<20, "90"), cut("text", "txt", 1000, "50"),
 	}, opt)
 	if err != nil {
 		t.Fatalf("planning: %v", err)
@@ -262,7 +264,11 @@ func TestACutAtTheSmallestSizeSaysHowLongTheContentWas(t *testing.T) {
 		}
 		cut := *m.Damage[0].Cut
 		whole := wholeMap(t, plannedOf[m.TargetID])
-		if _, zipped := endClosesTheFile[m.TargetID]; zipped && (paddingInFront(whole) || cut.In != string(format.RoleContent)) {
+		// Named rather than read off endClosesTheFile, which a PDF and a
+		// tar.gz joined: a PDF at its smallest has room for its comment in
+		// front, as it should.
+		zipped := slices.Contains([]string{"zip", "docx", "xlsx", "pptx"}, m.TargetID)
+		if zipped && (paddingInFront(whole) || cut.In != string(format.RoleContent)) {
 			t.Errorf("%s: at %d B the cut fell in the %s with padding in front of the content: %v - the layout too short for a padding part in front is not reached",
 				m.TargetID, m.Bytes, cut.In, paddingInFront(whole))
 		}

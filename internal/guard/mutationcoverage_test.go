@@ -159,6 +159,12 @@ var provenByProbe = map[string]string{
 		"fixed codes, must inflate to its bytes and read as those runs - its reach check, every frame of the marker met - and red on " +
 		"2026-11-13 for a frame a byte short (the plan refuses at 65541 B) and for an empty block's BTYPE bit one place off " +
 		"(compress/flate refuses at 65537 B), where the first passed the share and the map guards.",
+	"TestAPDFLaidOutForACutComesToEverySizeAndItsOffsetsLand": "its own canaries - a table that sends one object a byte off " +
+		"must be refused, and the layout of a document nothing cuts must fail a cut at its half - its reach check, every " +
+		"layout of the split met, red on 2026-11-13 with nothing in front of a document under 400 B of padding (398 sizes, " +
+		"where the guard before the review passed), and red without the candidate of a " +
+		"byte more in front (that layout never met), with the length of startxref taken before the padding moved it (10212 B " +
+		"came to 10213 B) and without the stop at ten digits (20 GiB, objects ending at 19327353153).",
 	"TestATarGzCutNearItsSmallestComesToEverySize": "its reach check - the frame met, and without a label the size after its floor " +
 		"that keeps the layout of an archive nothing cuts, which with a label is due never - and red on 2026-11-13 without the " +
 		"case of one byte over the floor (an internal defect at 9757 B) and with that case taken for a label too (label true).",
