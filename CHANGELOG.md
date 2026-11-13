@@ -129,8 +129,8 @@ because it turns other people's test suites red.
   interrupted download does. Chrome, Firefox, Windows, libavif and Pillow
   refuse the cut AVIF. Half of a JPEG XL still shows the whole picture at
   lower detail in Chrome and in libjxl with partial files allowed, because the
-  format sends a coarse picture first. A cut of 90% shows nothing. Files
-  nothing cuts are unchanged.
+  format sends a coarse picture first. A cut of 90% shows nothing. An AVIF
+  nothing cuts is unchanged. Every JPEG XL changes (see Breaking).
 
 - **tfg is on npm, for tests in Node.**
   `npm install --save-dev testing-files-generator` gives Playwright, Vitest

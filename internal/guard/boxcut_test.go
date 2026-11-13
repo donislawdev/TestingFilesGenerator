@@ -74,7 +74,7 @@ func TestAnAVIFOrAJPEGXLLaidOutForACutComesToEverySizeAndReads(t *testing.T) {
 		// runs out: j bytes from the end it leaves the padding's part of j.
 		const size = 4_000
 		_, regions := writeBoxes(t, desc, size, 0)
-		head, pic, pad := boxParts(regions)
+		head, pic, pad := boxParts(t, regions)
 		rest := size - pic.Length
 		start := (head - 3) * size / rest
 		for cutAt := start; cutAt < start+12*size/rest; cutAt++ {
@@ -134,10 +134,15 @@ func pictureRegion(regions []format.Region) format.Region {
 }
 
 // boxParts reads a file's map as what stands in front of all of its padding,
-// its picture and all of its padding, wherever the padding stands.
-func boxParts(regions []format.Region) (head int64, pic format.Region, pad int64) {
+// its picture and all of its padding, wherever the padding stands. Neither
+// format closes with an end region, and one would stand behind the padding,
+// where head does not count it, so meeting one fails.
+func boxParts(t *testing.T, regions []format.Region) (head int64, pic format.Region, pad int64) {
+	t.Helper()
 	for _, r := range regions {
 		switch r.Role {
+		case format.RoleEnd:
+			t.Fatalf("an end region at %d, which neither format writes", r.At)
 		case format.RoleStructure:
 			head += r.Length
 		case format.RolePadding:
@@ -266,11 +271,11 @@ func samePicture(id string, laid, whole []byte) error {
 	}
 	a, err := decode(bytes.NewReader(laid))
 	if err != nil {
-		return fmt.Errorf("the decoder refused it: %v", err)
+		return fmt.Errorf("the decoder refused it: %w", err)
 	}
 	b, err := decode(bytes.NewReader(whole))
 	if err != nil {
-		return fmt.Errorf("the decoder refused the file nothing cuts: %v", err)
+		return fmt.Errorf("the decoder refused the file nothing cuts: %w", err)
 	}
 	if a.Bounds() != b.Bounds() {
 		return fmt.Errorf("a %v picture where nothing cut gives %v", a.Bounds(), b.Bounds())

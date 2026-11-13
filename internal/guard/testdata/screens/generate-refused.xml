@@ -160,8 +160,8 @@
 															<widget pos="-6,-6" size="800x62" type="*widget.Label">
 																<widget size="800x62" type="*widget.RichText">
 																	<text color="error" pos="6,6" size="778x16">AVIF cannot be smaller than 311 B - the smallest picture this format draws codes to 303 B at worst, and the file always</text>
-																	<text color="error" pos="6,22" size="774x16">carries a free box, which costs 8 B even when it holds nothing. Requested: 1 B. Ask for 311 B or more, or set a smaller</text>
-																	<text color="error" pos="6,39" size="232x16">width and height, or a lower quality</text>
+																	<text color="error" pos="6,22" size="749x16">carries a padding box, which costs 8 B even when it holds nothing. Requested: 1 B. Ask for 311 B or more, or set a</text>
+																	<text color="error" pos="6,39" size="283x16">smaller width and height, or a lower quality</text>
 																</widget>
 															</widget>
 														</container>

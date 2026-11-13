@@ -300,7 +300,7 @@ const holdsPerPixel = 34
 func checkFits(want int64, m memo) error {
 	floor := int64(minimumBytes)
 	reason := core.Says("jxl.MinimumReason",
-		"the smallest picture this format draws codes to %d B at worst, the container around it costs %d B, and the file always carries a box of free space, which costs %d B even when it holds nothing",
+		"the smallest picture this format draws codes to %d B at worst, the container around it costs %d B, and the file always carries a padding box, which costs %d B even when it holds nothing",
 		core.A("Coded", minimumBytes-containerOverhead-boxHeader), core.A("Container", containerOverhead), core.A("Box", boxHeader))
 
 	// A picture named by hand can be larger than the smallest one, and then its
@@ -310,7 +310,7 @@ func checkFits(want int64, m memo) error {
 		if own := int64(len(m.coded) + containerOverhead + boxHeader); own > floor {
 			floor = own
 			reason = core.Says("jxl.MinimumReasonOwn",
-				"a %dx%d picture at quality %d codes to %d B, the container around it costs %d B, and the file always carries a box of free space, which costs %d B even when it holds nothing",
+				"a %dx%d picture at quality %d codes to %d B, the container around it costs %d B, and the file always carries a padding box, which costs %d B even when it holds nothing",
 				core.A("Width", m.width), core.A("Height", m.height), core.A("Quality", m.quality), core.A("Coded", len(m.coded)),
 				core.A("Container", containerOverhead), core.A("Box", boxHeader))
 		}

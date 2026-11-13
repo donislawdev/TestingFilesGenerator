@@ -248,7 +248,7 @@ const holdsPerPixel = 8
 func checkFits(want int64, m memo) error {
 	floor := int64(minimumBytes)
 	reason := core.Says("avif.MinimumReason",
-		"the smallest picture this format draws codes to %d B at worst, and the file always carries a free box, which costs %d B even when it holds nothing",
+		"the smallest picture this format draws codes to %d B at worst, and the file always carries a padding box, which costs %d B even when it holds nothing",
 		core.A("Coded", minimumBytes-boxHeader), core.A("Box", boxHeader))
 
 	// A picture named by hand can be larger than the smallest one, and then its
@@ -258,7 +258,7 @@ func checkFits(want int64, m memo) error {
 		if own := int64(len(m.coded)) + boxHeader; own > floor {
 			floor = own
 			reason = core.Says("avif.MinimumReasonOwn",
-				"a %dx%d picture at quality %d codes to %d B, and the file always carries a free box, which costs %d B even when it holds nothing",
+				"a %dx%d picture at quality %d codes to %d B, and the file always carries a padding box, which costs %d B even when it holds nothing",
 				core.A("Width", m.width), core.A("Height", m.height), core.A("Quality", m.quality), core.A("Coded", len(m.coded)), core.A("Box", boxHeader))
 		}
 	}
