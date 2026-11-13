@@ -31,8 +31,8 @@ import (
 //
 // Measured 2026-09-01 across levels 1, 6 and 9 and targets from 64 KB to
 // 10 MB: every one landed on the ordered size, and the remainder left for the
-// extra field came out between 567 and 3759 bytes - far inside the 65 531 the
-// field holds (O163).
+// extra field came out between 567 and 3759 bytes - far inside the 16 384 the
+// field holds (extraPaddingLimit).
 //
 // This costs passes, and the cost is real: one pass over a 10 MB archive is
 // 25 ms at level 1 and 140 ms at level 6, against 8 ms stored. It buys the one
@@ -143,7 +143,7 @@ func nextFiller(target, got, filler int64) (next, extra int64, useExtra, done bo
 		// compiler broke it. Probe: tools/probes/targzsettle.
 		//
 		// Undershooting is safe and overshooting is not: the extra field adds
-		// exactly what it is given, up to 65 531 B, so a round that lands under
+		// exactly what it is given, up to extraPaddingLimit, so a round that lands under
 		// the target finishes on the next pass. A whole block is well inside
 		// that.
 		next := filler - (2 - deficit) - tarBlock

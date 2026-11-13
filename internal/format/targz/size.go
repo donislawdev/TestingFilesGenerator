@@ -68,12 +68,24 @@ func tarLength(m memo) int64 {
 	// splits a path across a 155 byte prefix and a 100 byte name, so a header
 	// is the same 512 bytes at every depth it accepts - flat all the way to
 	// the refusal, with no step. maxDepth is what keeps it on the near side.
-	total += int64(len(m.layout.Directories())) * tarBlock
-	for _, c := range m.children {
-		total += tarBlock + roundUpBlock(c.plan.Bytes)
-	}
+	total += dirsLength(m) + filesLength(m)
 	if m.withFiller {
 		total += tarBlock + roundUpBlock(m.fillerSize)
+	}
+	return total
+}
+
+// dirsLength is how many bytes of the tar the directories take, a block each.
+func dirsLength(m memo) int64 {
+	return int64(len(m.layout.Directories())) * tarBlock
+}
+
+// filesLength is how many bytes of the tar the files inside take, a header and
+// their data in whole blocks each.
+func filesLength(m memo) int64 {
+	var total int64
+	for _, c := range m.children {
+		total += tarBlock + roundUpBlock(c.plan.Bytes)
 	}
 	return total
 }
@@ -137,8 +149,8 @@ func maxCost() int64 { return commentPaddingLimit + extraPaddingLimit + 2 }
 // place works out where a given number of padding bytes goes.
 //
 // Two channels, and which one is used is decided by size rather than by
-// preference. The extra field is where bulk goes: it holds 65 531 bytes, it
-// is byte granular, and Go reads all of it - which the comment does not, and
+// preference. The extra field is where bulk goes: it holds extraPaddingLimit
+// bytes, it is byte granular, and Go reads all of it - which the comment does not, and
 // that is O163. But it cannot cost one byte, because its own length field
 // costs two, so a single byte of padding has nowhere to go there.
 //
@@ -301,37 +313,14 @@ func build(ctx context.Context, w io.Writer, m memo) error {
 	}
 	tw := tar.NewWriter(zw)
 
-	// Directories first, outermost first, and only when asked for. They are
-	// not in m.children on purpose: a child's seed is FileSeed(seed, index)
-	// over a running index, so a directory in that list would shift the seed
-	// of every file after it and rewrite its contents. That is untouchable
-	// rule 2 - an edit in one place moving the bytes in another.
-	for _, dir := range m.layout.Directories() {
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-		if err := writeDirectory(tw, dir, m.own); err != nil {
-			return core.Defect(fmt.Errorf("targz: the directory %q could not be named: %w", dir, err))
-		}
+	if err := writeDirectories(ctx, tw, m); err != nil {
+		return err
 	}
-
-	for _, c := range m.children {
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-		if err := writeEntry(ctx, tw, tarEntry{name: c.name, size: c.plan.Bytes, own: m.own},
-			func(dst io.Writer) error {
-				return c.desc.Generator.Write(ctx, dst, c.plan)
-			}); err != nil {
-			return core.Defect(fmt.Errorf("targz: the %s file inside could not be written: %w", c.desc.ID, err))
-		}
+	if err := writeFileEntries(ctx, tw, m); err != nil {
+		return err
 	}
-
 	if m.withFiller {
-		if err := writeEntry(ctx, tw, tarEntry{name: fillerName, size: m.fillerSize, own: m.own},
-			func(dst io.Writer) error {
-				return writeFiller(ctx, dst, m.seed, m.fillerSize)
-			}); err != nil {
+		if err := writeFillerEntry(ctx, tw, m, fillerName, m.fillerSize, m.seed); err != nil {
 			return err
 		}
 	}
@@ -351,6 +340,49 @@ func build(ctx context.Context, w io.Writer, m memo) error {
 		return err
 	}
 	return sm.Release()
+}
+
+// writeDirectories names the directories the files sit in: first, outermost
+// first, and only when asked for. They are not in m.children on purpose: a
+// child's seed is FileSeed(seed, index) over a running index, so a directory
+// in that list would shift the seed of every file after it and rewrite its
+// contents. That is untouchable rule 2 - an edit in one place moving the bytes
+// in another.
+func writeDirectories(ctx context.Context, tw *tar.Writer, m memo) error {
+	for _, dir := range m.layout.Directories() {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		if err := writeDirectory(tw, dir, m.own); err != nil {
+			return core.Defect(fmt.Errorf("targz: the directory %q could not be named: %w", dir, err))
+		}
+	}
+	return nil
+}
+
+// writeFileEntries writes an entry for every file inside, each generated as
+// it goes in.
+func writeFileEntries(ctx context.Context, tw *tar.Writer, m memo) error {
+	for _, c := range m.children {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		if err := writeEntry(ctx, tw, tarEntry{name: c.name, size: c.plan.Bytes, own: m.own},
+			func(dst io.Writer) error {
+				return c.desc.Generator.Write(ctx, dst, c.plan)
+			}); err != nil {
+			return core.Defect(fmt.Errorf("targz: the %s file inside could not be written: %w", c.desc.ID, err))
+		}
+	}
+	return nil
+}
+
+// writeFillerEntry writes an entry of padding, size bytes of random data drawn
+// from seed.
+func writeFillerEntry(ctx context.Context, tw *tar.Writer, m memo, name string, size int64, seed uint64) error {
+	return writeEntry(ctx, tw, tarEntry{name: name, size: size, own: m.own}, func(dst io.Writer) error {
+		return writeFiller(ctx, dst, seed, size)
+	})
 }
 
 // writeEntry emits one tar entry.

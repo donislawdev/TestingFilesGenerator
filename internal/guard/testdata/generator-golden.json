@@ -233,8 +233,8 @@
     },
     "targz_with_three_pdfs": {
       "bytes": 65536,
-      "sha256": "e13105e912e3ebef8f5a41bb30be6160e6afd8611cec245aa781fc26d21d0d9c",
-      "measured_on": "2026-09-01"
+      "sha256": "328332cd43f3d1854fd78ac461ad74b2ba8454721f1206158463d084c30d03e1",
+      "measured_on": "2026-11-13"
     },
     "tiff_100kib_sized_to_fit": {
       "bytes": 102400,
@@ -875,6 +875,13 @@
       "files": [
         "mp4_wide",
         "webm_wide"
+      ]
+    },
+    {
+      "on": "2026-11-13",
+      "why": "The gzip extra field of a tar.gz carries at most 16 384 B of padding, where it carried 65 531. busybox 1.37 (Alpine 3.22) refuses a longer field as corrupted data - bisected to the byte, 16 384 opens and 16 385 does not - so every tar.gz whose header carried 16 385 to 65 533 B of padding, the default 64 KiB one among them, could not be opened in an Alpine container (O339). Padding past the limit goes to the filler entry behind the files, as it did above the old limit. Only those archives change, and the archive of three PDFs at 64 KiB is one of them. This is a breaking change by the owner's decision of 2026-11-13, docs/TRUNCATE-2026-11-11.md section 11.3.",
+      "files": [
+        "targz_with_three_pdfs"
       ]
     }
   ]

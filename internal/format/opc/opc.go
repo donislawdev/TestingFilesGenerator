@@ -267,15 +267,15 @@ func write(ctx context.Context, w io.Writer, p Package, withPadding bool) error 
 	// archive/zip writes it (archive.StreamMap). A package laid out for a cut
 	// opens with a padding part, and the content starts behind it.
 	behind := FillerName
+	content := p.Content
+	if content <= 0 {
+		content = -1
+	}
 	if p.Front == NoFiller {
-		format.Mark(w, format.RoleContent, 0, -1)
+		format.Mark(w, format.RoleContent, 0, content)
 	} else {
 		if err := writePaddingPart(ctx, zw, zm, paddingPart{FillerName, p.Seed, p.Front, withPadding}); err != nil {
 			return err
-		}
-		content := p.Content
-		if content <= 0 {
-			content = -1
 		}
 		format.Mark(w, format.RoleContent, zm.Pos(), content)
 		behind = FillerEndName

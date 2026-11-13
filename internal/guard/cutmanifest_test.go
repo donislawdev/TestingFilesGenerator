@@ -9,6 +9,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/manifest"
 )
 
@@ -37,9 +38,8 @@ type cutCase struct {
 // The shapes a cut takes (docs/TRUNCATE-2026-11-11.md sections 2, 7 and 8).
 // A PDF of 1 MiB is nearly all padding after its pages, so 90% missing still
 // leaves every page. A PNG splits its padding around the picture
-// for a cut, so the cut takes the share asked for. A small tar.gz keeps its
-// padding BEFORE its archive, so a cut there takes all of it. A text is its
-// words, so the cut falls in them. Two cuts in a row end the file where the second one does, and
+// for a cut, so the cut takes the share asked for, and so does a tar.gz. A
+// text is its words, so the cut falls in them. Two cuts in a row end the file where the second one does, and
 // the cut is said of that one. A damage that cuts nothing has no cut to report.
 //
 // Canary: the check below must refuse a cut that names the wrong role, and
@@ -49,10 +49,10 @@ func TestACutFileSaysWhereTheCutFellAndWhatIsLeft(t *testing.T) {
 		// A GIF was this case until it split its padding for the cut.
 		{name: "behind", format: "pdf", size: 1 << 20, missing: "90", in: "padding", kept: "all", note: "after the content"},
 		{name: "picture", format: "png", size: 1 << 20, missing: "90", in: "content", kept: "share"},
-		// 4 KiB on disk is 40 KiB whole, and up to 64 KiB the padding is the
-		// comment in the gzip header, in front of the archive. An icon or a JPEG
-		// was this case until it split its padding for the cut.
-		{name: "front", format: "targz", size: 4 << 10, missing: "90", in: "padding", kept: "none", note: "before the content"},
+		// 4 KiB on disk is 40 KiB whole. It was the case of a cut in the padding
+		// in front of the content, with an icon and a JPEG before it, until it
+		// split its padding for the cut.
+		{name: "front", format: "targz", size: 4 << 10, missing: "90", in: "content", kept: "share"},
 		{name: "text", format: "txt", size: 1000, missing: "50", in: "content", kept: "some"},
 		{name: "twice", format: "txt", size: 1000, missing: "50", in: "content", kept: "some", cuts: 2},
 	}
@@ -211,4 +211,119 @@ func TestTheRecordOfACutRunIsNeverLongerThanItsForecast(t *testing.T) {
 	if slack := forecast.Manifest - written; slack > 6*256 {
 		t.Errorf("the forecast is %d B over a record of %d B", slack, written)
 	}
+}
+
+// A file cut at the smallest size it is cut at says how long its content was,
+// as a larger one does: the share a cut took is measured against that length.
+//
+// At its smallest a file has the least padding, too little for the layout a
+// cut gets in a larger one. A Word document's padding part in front of the
+// others costs more than the padding there is, so the package is written as
+// one nothing cuts, and its content is marked in a branch the share guard's
+// larger files never reach (docs/REVIEW-239-2026-11-13.md). What it reaches,
+// asserted rather than assumed: the ZIP packages, cut at their smallest, have
+// no padding in front of their content and are cut inside it.
+//
+// Every format that takes the share (notYetCutAtTheShare lists the rest) is cut
+// by half at its smallest. Where the cut falls in the content, its length has
+// to be stated and to be how far the whole file's map lets the content run -
+// up to the region behind it, not the length the generator marked it with.
+//
+// Canary: a cut whose content length is missing, and one whose length is a
+// byte short, must not pass.
+func TestACutAtTheSmallestSizeSaysHowLongTheContentWas(t *testing.T) {
+	chain := damage.Chain{{ID: damage.Truncate, Values: damage.Values{damage.SettingMissing: "50"}}}
+	var targets []engine.Target
+	for _, f := range format.All() {
+		if _, listed := notYetCutAtTheShare[f.ID]; listed {
+			continue
+		}
+		size := engine.SmallestDamaged(f, chain, format.Request{Label: true})
+		targets = append(targets, engine.Target{ID: f.ID, Format: f.ID, Sizes: engine.Uniform(1, size), Label: true, Damage: chain})
+	}
+	opt := engine.Options{OutDir: t.TempDir(), Seed: 7, ManifestName: engine.DefaultManifestName}
+	planned, err := engine.Plan(targets, opt)
+	if err != nil {
+		t.Fatalf("planning: %v", err)
+	}
+	res, err := engine.Run(t.Context(), planned, opt)
+	if err != nil {
+		t.Fatalf("running: %v", err)
+	}
+	plannedOf := map[string]engine.PlannedFile{}
+	for _, f := range planned {
+		plannedOf[f.Target.ID] = f
+	}
+	inContent := 0
+	for _, m := range res.Manifest.Files {
+		if m.Failed || len(m.Damage) != 1 || m.Damage[0].Cut == nil {
+			t.Errorf("%s: no file with one cut was written (%s, %+v)", m.TargetID, m.Error, m.Damage)
+			continue
+		}
+		cut := *m.Damage[0].Cut
+		whole := wholeMap(t, plannedOf[m.TargetID])
+		if _, zipped := endClosesTheFile[m.TargetID]; zipped && (paddingInFront(whole) || cut.In != string(format.RoleContent)) {
+			t.Errorf("%s: at %d B the cut fell in the %s with padding in front of the content: %v - the layout too short for a padding part in front is not reached",
+				m.TargetID, m.Bytes, cut.In, paddingInFront(whole))
+		}
+		if cut.In != string(format.RoleContent) {
+			continue
+		}
+		inContent++
+		if problem := contentLengthProblem(cut, whole); problem != "" {
+			t.Errorf("%s: cut at %d B: %s", m.TargetID, m.Bytes, problem)
+		}
+	}
+	if inContent == 0 {
+		t.Errorf("no cut fell in the content, so no length was asked for")
+	}
+
+	// Canaries.
+	regions := []format.Region{{Role: format.RoleContent, At: 0, Length: 10}, {Role: format.RolePadding, At: 10, Length: 5}}
+	if contentLengthProblem(manifest.Cut{In: "content"}, regions) == "" {
+		t.Errorf("canary: a cut that does not state the content's length passed")
+	}
+	short := int64(9)
+	if contentLengthProblem(manifest.Cut{In: "content", ContentBytes: &short}, regions) == "" {
+		t.Errorf("canary: content said to be a byte shorter than the map runs passed")
+	}
+}
+
+// contentLengthProblem says how the content length cut states is not how far
+// the content runs in the whole file's map, or nothing when it is. Each
+// content region runs to the start of the region behind it, or to the end of
+// the file - the length it was marked with is the claim being checked.
+func contentLengthProblem(cut manifest.Cut, whole []format.Region) string {
+	if cut.ContentBytes == nil {
+		return "the length of the content is not stated"
+	}
+	var runs int64
+	for i, r := range whole {
+		if r.Role != format.RoleContent {
+			continue
+		}
+		end := r.At + r.Length
+		if i+1 < len(whole) {
+			end = whole[i+1].At
+		}
+		runs += end - r.At
+	}
+	if *cut.ContentBytes != runs {
+		return fmt.Sprintf("the content is said to be %d B long, where the whole file's map runs it for %d B", *cut.ContentBytes, runs)
+	}
+	return ""
+}
+
+// paddingInFront is whether padding of any length stands in front of the
+// first content region of a map.
+func paddingInFront(regions []format.Region) bool {
+	for _, r := range regions {
+		switch {
+		case r.Role == format.RoleContent:
+			return false
+		case r.Role == format.RolePadding && r.Length > 0:
+			return true
+		}
+	}
+	return false
 }
