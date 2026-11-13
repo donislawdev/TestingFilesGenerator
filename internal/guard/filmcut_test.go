@@ -131,6 +131,9 @@ func filmParts(t *testing.T, regions []format.Region) (head int64, pics format.R
 			end += r.Length
 		case format.RoleContent:
 			pics, seen = r, true
+		case format.RolePadding:
+			// What the parts around it leave of the file - filmLayoutOf
+			// reads the two sides of it.
 		}
 	}
 	if !seen || pics.Length < 0 {
