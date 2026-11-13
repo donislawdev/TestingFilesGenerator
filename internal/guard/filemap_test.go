@@ -180,6 +180,16 @@ func TestEveryFormatsMapIsTheOneItsStructureReadsBack(t *testing.T) {
 		{string(format.RoleContent), int64(2), int64(5)}, {string(format.RolePadding), int64(7), int64(3)}}); front || !back {
 		t.Errorf("canary: padding behind the content alone read as front %v, back %v", front, back)
 	}
+	// Canaries of the first end: padding behind a head in front of the
+	// content is a miss, and so is a file with no padding behind.
+	region := func(role format.Role, at, length int64) [3]any { return [3]any{string(role), at, length} }
+	if firstEndLayout([][3]any{region(format.RoleStructure, 0, 2), region(format.RolePadding, 2, 4),
+		region(format.RoleContent, 6, 5), region(format.RolePadding, 11, 3)}) {
+		t.Errorf("canary: padding between a head and the content passed for the layout due at the first byte")
+	}
+	if firstEndLayout([][3]any{region(format.RolePadding, 0, 4), region(format.RoleContent, 4, 5), region(format.RoleEnd, 9, 3)}) {
+		t.Errorf("canary: a file with no padding behind its content passed for the layout due at the first byte")
+	}
 	t.Logf("%d files, %d with padding, %d of them on both sides of the content, %d cut at the ends of a split", len(files), padded, split, ends)
 }
 
@@ -190,18 +200,36 @@ func writeTheEnds(t *testing.T, dir string, f format.Descriptor, name string, se
 	t.Helper()
 	var out []mappedFile
 	for _, end := range []struct {
-		name        string
-		at          int64
-		front, back bool
-	}{{"first", 1, false, true}, {"last", size - 1, true, false}} {
+		name string
+		at   int64
+		due  func(m [][3]any) bool
+		says string
+	}{
+		{"first", 1, firstEndLayout, "padding behind the content, and in front of it none - or, where the content would start the file, one padding region that does instead"},
+		{"last", size - 1, func(m [][3]any) bool { front, back := paddingSides(m); return front && !back }, "padding in front of the content only"},
+	} {
 		m := writeMapped(t, dir, f, name+"-"+end.name, setting, size, end.at)
-		if front, back := paddingSides(m.marked); front != end.front || back != end.back {
-			t.Errorf("%s: cut after %d B of %d B it marked %s - padding in front %v and behind %v, where %v and %v were due",
-				m.name, end.at, size, mapNames(m.marked), front, back, end.front, end.back)
+		if !end.due(m.marked) {
+			t.Errorf("%s: cut after %d B of %d B it marked %s, where %s was due", m.name, end.at, size, mapNames(m.marked), end.says)
 		}
 		out = append(out, m)
 	}
 	return out
+}
+
+// firstEndLayout is the layout due for a cut after a file's first byte: its
+// padding behind the content, and nothing in front of it. Unless the content
+// would start the file, as a package's first part does: then a cut after one
+// byte would keep a byte of it where the share is none, so the smallest
+// padding region the format writes starts the file and the content follows
+// it (docs/TRUNCATE-2026-11-11.md section 10).
+func firstEndLayout(m [][3]any) bool {
+	front, back := paddingSides(m)
+	if !back {
+		return false
+	}
+	return !front || (len(m) > 1 && m[0][0] == string(format.RolePadding) && m[0][1] == int64(0) &&
+		m[1][0] == string(format.RoleContent))
 }
 
 // writeMapped writes one healthy file of f through a map recorder, laid out

@@ -56,6 +56,13 @@ const (
 	FillerName      = "tfg/padding.bin"
 	fillerExtension = "bin"
 
+	// FillerEndName is the padding part behind the others in a package laid
+	// out for a cut, whose first padding part, FillerName, stands in front of
+	// them (SettleForACut). A package may not hold two parts of one name
+	// (ECMA-376 part 2, M1.12), and the content types table declares the
+	// extension, so both are covered.
+	FillerEndName = "tfg/padding-end.bin"
+
 	// NoFiller means the package carries no padding part at all.
 	NoFiller = -1
 
@@ -88,7 +95,15 @@ type Package struct {
 	Comment int
 	// Filler is how many bytes the padding part carries, or NoFiller.
 	Filler int64
-	Seed   uint64
+	// Front is how many bytes the padding part in front of every other part
+	// carries, or NoFiller - which is every package nothing cuts. With a front
+	// part, the one behind is FillerEndName.
+	Front int64
+	// Content is how long the parts come to in the archive, their headers
+	// with them, when it is known (SettleForACut), and 0 otherwise. A cut
+	// that falls in them reports how much of them it kept.
+	Content int64
+	Seed    uint64
 }
 
 // ContentTypes builds [Content_Types].xml.
@@ -140,15 +155,15 @@ type Shape struct {
 
 // Measure works out the shape of a set of parts.
 func Measure(parts []Part) (Shape, error) {
-	bare, err := size(Package{Parts: parts, Filler: NoFiller})
+	bare, err := size(Package{Parts: parts, Filler: NoFiller, Front: NoFiller})
 	if err != nil {
 		return Shape{}, err
 	}
-	empty, err := size(Package{Parts: parts, Filler: 0})
+	empty, err := size(Package{Parts: parts, Filler: 0, Front: NoFiller})
 	if err != nil {
 		return Shape{}, err
 	}
-	return Shape{Bare: bare, FillerOverhead: empty - bare}, nil
+	return Shape{Bare: bare.size, FillerOverhead: empty.size - bare.size}, nil
 }
 
 // Unreachable says a size cannot be produced, and names the two that can.
@@ -203,7 +218,7 @@ func Settle(parts []Part, shape Shape, want int64) (Package, error) {
 	if want > Zip32Ceiling {
 		return Package{}, &TooLarge{Want: want, Ceiling: Zip32Ceiling}
 	}
-	p := Package{Parts: parts, Filler: NoFiller}
+	p := Package{Parts: parts, Filler: NoFiller, Front: NoFiller}
 	delta := want - shape.Bare
 	switch {
 	case delta == 0:
@@ -223,12 +238,20 @@ func Settle(parts []Part, shape Shape, want int64) (Package, error) {
 	}
 }
 
-func size(p Package) (int64, error) {
+// size is a package's length and the region its parts take, read off the map
+// it marks as it is written - SettleForACut asks for the region.
+func size(p Package) (mapped, error) {
 	c := &counter{}
-	if err := write(context.Background(), c, p, false); err != nil {
-		return 0, err
+	rec := &format.MapRecorder{W: c}
+	if err := write(context.Background(), rec, p, false); err != nil {
+		return mapped{}, err
 	}
-	return c.n, nil
+	for _, r := range rec.Map(c.n, true) {
+		if r.Role == format.RoleContent {
+			return mapped{size: c.n, content: r}, nil
+		}
+	}
+	return mapped{}, core.Defect(fmt.Errorf("opc: a package of %d parts marked no content", len(p.Parts)))
 }
 
 // Write emits the package.
@@ -241,8 +264,22 @@ func write(ctx context.Context, w io.Writer, p Package, withPadding bool) error 
 	zw := zip.NewWriter(zm.Buffer)
 	// The map: every part is content, from the first byte. Then the filler
 	// part, the central directory and the comment, each marked as
-	// archive/zip writes it (archive.StreamMap).
-	format.Mark(w, format.RoleContent, 0, -1)
+	// archive/zip writes it (archive.StreamMap). A package laid out for a cut
+	// opens with a padding part, and the content starts behind it.
+	behind := FillerName
+	if p.Front == NoFiller {
+		format.Mark(w, format.RoleContent, 0, -1)
+	} else {
+		if err := writePaddingPart(ctx, zw, zm, paddingPart{FillerName, p.Seed, p.Front, withPadding}); err != nil {
+			return err
+		}
+		content := p.Content
+		if content <= 0 {
+			content = -1
+		}
+		format.Mark(w, format.RoleContent, zm.Pos(), content)
+		behind = FillerEndName
+	}
 	if p.Comment > 0 {
 		if p.Comment > CommentLimit {
 			return core.Defect(fmt.Errorf("opc: a comment of %d B is past the %d B a reader accepts", p.Comment, CommentLimit))
@@ -268,43 +305,61 @@ func write(ctx context.Context, w io.Writer, p Package, withPadding bool) error 
 	}
 
 	if p.Filler != NoFiller {
-		// Stored rather than compressed, so a byte of padding is a byte of
-		// file. Deflating it would make the size depend on how well random
-		// bytes happen to compress, which is not a thing to promise.
-		//
-		// The checksum has to be known before the header is written, and the
-		// padding is never held in memory, so it is generated twice: once to
-		// check it and once to write it. Both passes are the same arithmetic
-		// from the same seed, which is what makes them agree.
-		head := &zip.FileHeader{Name: FillerName, Method: zip.Store, Modified: fixedTime}
-		sum, err := fillerChecksum(ctx, p.Seed, p.Filler)
-		if err != nil {
+		if err := writePaddingPart(ctx, zw, zm, paddingPart{behind, p.Seed, p.Filler, withPadding}); err != nil {
 			return err
-		}
-		head.CRC32 = sum
-		head.UncompressedSize64 = uint64(p.Filler)
-		head.CompressedSize64 = uint64(p.Filler)
-		if err := zm.Hold(); err != nil {
-			return err
-		}
-		entry, err := zw.CreateRaw(head)
-		if err != nil {
-			return err
-		}
-		if err := zm.MarkEntry(format.RolePadding, FillerName); err != nil {
-			return err
-		}
-		if err := zm.Release(); err != nil {
-			return err
-		}
-		if withPadding {
-			if err := writeFiller(ctx, entry, p.Seed, p.Filler); err != nil {
-				return err
-			}
 		}
 	}
 
 	return zm.Close(zw)
+}
+
+// paddingPart is one padding part: its name, the seed its bytes come from,
+// how many it carries, and whether they are written - not while a package is
+// only being measured.
+type paddingPart struct {
+	name        string
+	seed        uint64
+	n           int64
+	withPadding bool
+}
+
+// writePaddingPart writes a padding part, marked as padding where its header
+// starts.
+//
+// Stored rather than compressed, so a byte of padding is a byte of file.
+// Deflating it would make the size depend on how well random bytes happen to
+// compress, which is not a thing to promise.
+//
+// The checksum has to be known before the header is written, and the padding
+// is never held in memory, so it is generated twice: once to check it and once
+// to write it. Both passes are the same arithmetic from the same seed, which is
+// what makes them agree.
+func writePaddingPart(ctx context.Context, zw *zip.Writer, zm *archive.StreamMap, part paddingPart) error {
+	head := &zip.FileHeader{Name: part.name, Method: zip.Store, Modified: fixedTime}
+	sum, err := fillerChecksum(ctx, part.seed, part.n)
+	if err != nil {
+		return err
+	}
+	head.CRC32 = sum
+	head.UncompressedSize64 = uint64(part.n)
+	head.CompressedSize64 = uint64(part.n)
+	if err := zm.Hold(); err != nil {
+		return err
+	}
+	entry, err := zw.CreateRaw(head)
+	if err != nil {
+		return err
+	}
+	if err := zm.MarkEntry(format.RolePadding, part.name); err != nil {
+		return err
+	}
+	if err := zm.Release(); err != nil {
+		return err
+	}
+	if !part.withPadding {
+		return nil
+	}
+	return writeFiller(ctx, entry, part.seed, part.n)
 }
 
 // writePart writes one part with its sizes and checksum in the header.

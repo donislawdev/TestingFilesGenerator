@@ -102,7 +102,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
-	pkg, err := opc.Settle(parts, shape, r.Bytes)
+	pkg, err := opc.SettleForACut(parts, shape, r.Bytes, r.CutAt)
 	if err != nil {
 		return format.Plan{}, refusal(err, r.Bytes, shape, paragraphs)
 	}
