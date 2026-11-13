@@ -324,12 +324,22 @@ class Bits:
         self.data, self.at = data, pos * 8
 
     def peek(self, n):
+        """The next n bits, as zeros past the end of the data, so a short code
+        at the very end still decodes."""
         i = self.at >> 3
         return (int.from_bytes(self.data[i:i + 4], "little") >> (self.at & 7)) & ((1 << n) - 1)
 
+    def skip(self, n):
+        """Moves past n bits, and stops a stream that runs off the end of the
+        data: there peek reads zeros, and a code of zeros for a byte would
+        otherwise decode for ever."""
+        self.at += n
+        if self.at > len(self.data) * 8:
+            raise NoMap(f"the deflate stream runs off the end of the file at bit {self.at - n}")
+
     def take(self, n):
         value = self.peek(n)
-        self.at += n
+        self.skip(n)
         return value
 
 
@@ -361,7 +371,7 @@ def decode(bits, code):
     symbol, n = table[bits.peek(maxbits)]
     if symbol is None:
         raise NoMap(f"no Huffman code opens the bits at {bits.at}")
-    bits.at += n
+    bits.skip(n)
     return symbol
 
 
@@ -412,7 +422,7 @@ def inflated_length(bits, literals, distances):
         distance = decode(bits, distances)
         if distance > 29:
             raise NoMap(f"the distance code {distance} at {bits.at} is not one")
-        bits.at += DISTANCE_EXTRA[distance]
+        bits.skip(DISTANCE_EXTRA[distance])
 
 
 def deflate_blocks(data, pos):
@@ -476,6 +486,9 @@ def tar_parts(tar):
             return parts
         name = head[:100].rstrip(b"\x00")
         size = int(head[124:136].rstrip(b"\x00 ") or b"0", 8)
+        if size < 0:
+            # int() takes a sign, and a size below zero would hold t in place.
+            raise NoMap(f"the tar header at {t} gives a size below zero")
         kind = head[156:157]
         if name in (b"tfg-padding.bin", b"tfg-padding-end.bin"):
             role = PADDING

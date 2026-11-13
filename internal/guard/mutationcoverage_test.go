@@ -159,6 +159,9 @@ var provenByProbe = map[string]string{
 		"fixed codes, must inflate to its bytes and read as those runs - its reach check, every frame of the marker met - and red on " +
 		"2026-11-13 for a frame a byte short (the plan refuses at 65541 B) and for an empty block's BTYPE bit one place off " +
 		"(compress/flate refuses at 65537 B), where the first passed the share and the map guards.",
+	"TestATarGzCutNearItsSmallestComesToEverySize": "its reach check - the frame met, and without a label the size after its floor " +
+		"that keeps the layout of an archive nothing cuts, which with a label is due never - and red on 2026-11-13 without the " +
+		"case of one byte over the floor (an internal defect at 9757 B) and with that case taken for a label too (label true).",
 	"TestACutAtTheSmallestSizeSaysHowLongTheContentWas": "its own canaries - a cut that does not state the content's length, and one stating a " +
 		"byte less than the map runs, must not pass - its reach check - the ZIP packages at their smallest have no padding in front and are cut " +
 		"in the content - and red on 2026-11-13 before the Office packages marked their parts with a length without a padding part in front: " +

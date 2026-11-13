@@ -1,6 +1,8 @@
 package guard
 
 import (
+	"bytes"
+	"compress/gzip"
 	"errors"
 	"fmt"
 	"io"
@@ -191,6 +193,7 @@ func TestEveryFormatsMapIsTheOneItsStructureReadsBack(t *testing.T) {
 		t.Errorf("canary: a file with no padding behind its content passed for the layout due at the first byte")
 	}
 	askTheLastEndCanaries(t, dir)
+	askTheReaderOfMapsToStop(t, dir)
 	t.Logf("%d files, %d with padding, %d of them on both sides of the content, %d cut at the ends of a split", len(files), padded, split, ends)
 }
 
@@ -291,6 +294,71 @@ func askTheLastEndCanaries(t *testing.T, dir string) {
 	if lastEndLayout(t, file("tfg "), "tfg") {
 		t.Errorf("canary: the label with padding beside it passed for the layout due at the last byte")
 	}
+}
+
+// askTheReaderOfMapsToStop hands the reader of maps two tar.gz files it must
+// refuse rather than read for ever: a squeezed one cut half way, whose last
+// Huffman code runs off the end, where the bits read as zeros and a code of
+// zeros for a byte decoded again and again, and one whose tar header gives a
+// size below zero, which held the walk through the tar in place
+// (docs/REVIEW-240-2026-11-13.md). A loop comes back as the guard's time
+// running out, a refusal of another kind as the words it gives.
+func askTheReaderOfMapsToStop(t *testing.T, dir string) {
+	t.Helper()
+	// Letters drawn unevenly and without a period, so the stream codes mostly
+	// single bytes in a block of its own codes.
+	var text bytes.Buffer
+	x := uint32(1)
+	for range 4000 {
+		x = x*1103515245 + 12345
+		text.WriteByte("aaaaaaaabbbcd"[x>>16%13])
+	}
+	squeezed := gzipped(t, text.Bytes(), gzip.BestCompression)
+	header := make([]byte, 512)
+	copy(header, "a.txt")
+	copy(header[124:], "-0000001000")
+	cases := []struct {
+		name, says string
+		data       []byte
+		setting    map[string]string
+	}{
+		{"cut", "runs off the end of the file at bit", squeezed[:len(squeezed)/2], map[string]string{"compression": "best"}},
+		{"below-zero", "gives a size below zero", gzipped(t, append(header, make([]byte, 1024)...), gzip.NoCompression), nil},
+	}
+	reqs := make([]oracle.LayoutRequest, len(cases))
+	for i, c := range cases {
+		path := filepath.Join(dir, "canary-"+c.name+".targz")
+		if err := os.WriteFile(path, c.data, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		reqs[i] = oracle.LayoutRequest{Format: "targz", Path: path, Settings: c.setting}
+	}
+	got, _, err := oracle.LayoutBatch(t.Context(), reqs)
+	if err != nil {
+		t.Fatalf("canary: reading the maps back: %v", err)
+	}
+	for i, c := range cases {
+		if !strings.Contains(got[i].Error, c.says) {
+			t.Errorf("canary: the reader of maps answered a tar.gz %s with %q, where %q was due", c.name, got[i].Error, c.says)
+		}
+	}
+}
+
+// gzipped is data in one gzip member, at level.
+func gzipped(t *testing.T, data []byte, level int) []byte {
+	t.Helper()
+	var out bytes.Buffer
+	zw, err := gzip.NewWriterLevel(&out, level)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := zw.Write(data); err != nil {
+		t.Fatal(err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return out.Bytes()
 }
 
 // writeMapped writes one healthy file of f through a map recorder, laid out

@@ -162,7 +162,9 @@ func layOut(m memo, label string, content, target int64) (frame, bool, error) {
 	head := gzipHead + commentCost(label)
 	dirs := fewestBlocks(dirsLength(m)).length()
 	spare := target - (head + dirs + content + tailFloor + gzipTrailer)
-	if spare < 0 {
+	if spare < 0 || spare == 1 && label == "" {
+		// One byte over the frame's floor can go only to the comment, as a
+		// space behind the label, so without a label it does not fit either.
 		return frame{}, false, nil
 	}
 	want := min(max(format.PaddingInFront(head+dirs, content, m.cutAt, target), 0), spare)
@@ -345,6 +347,8 @@ func writeForACut(ctx context.Context, w io.Writer, m memo) error {
 	}
 	var trailer [gzipTrailer]byte
 	binary.LittleEndian.PutUint32(trailer[:4], sum.crc.Sum32())
+	// ISIZE is the length modulo 2^32 (RFC 1952 section 2.3.1), so the
+	// conversion drops what it should.
 	binary.LittleEndian.PutUint32(trailer[4:], uint32(sum.n))
 	_, err := w.Write(trailer[:])
 	return err

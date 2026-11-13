@@ -72,26 +72,91 @@ func TestATarGzLaidOutForACutComesToEverySizeAndReads(t *testing.T) {
 	}
 }
 
+// A tar.gz a damage cuts comes to every size from its smallest, with a label
+// and without.
+//
+// The frame for a cut costs a few bytes more than the smallest archive, so
+// near the smallest size an archive keeps the layout of one nothing cuts until
+// the frame fits. One byte over the frame's floor goes to the comment, as a
+// space behind the label. Without a label no field takes it, and that size
+// stopped the run with an internal defect (docs/REVIEW-240-2026-11-13.md). So
+// this writes the first sizes from the smallest, cut half way and not, holds
+// each to its size and to compress/gzip and archive/tar, and asserts that it
+// met the frame - and, only without a label, the size after its floor that
+// keeps the layout of an archive nothing cuts.
+func TestATarGzCutNearItsSmallestComesToEverySize(t *testing.T) {
+	desc, err := format.Get("targz")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, label := range []bool{false, true} {
+		smallest := desc.SmallestAccepted(format.Request{Label: label})
+		framed, plainAfter := false, false
+		for size := smallest; size < smallest+16; size++ {
+			req := format.Request{Bytes: size, Label: label, Seed: 7}
+			if _, err := desc.Generator.Plan(req); err != nil {
+				// The one size in the gap just above the smallest archive.
+				continue
+			}
+			plain := writeRequest(t, desc, req)
+			req.CutAt = size / 2
+			cut := writeRequest(t, desc, req)
+			if int64(len(cut)) != size {
+				t.Errorf("label %v, %d B: a cut half way came to %d B", label, size, len(cut))
+				continue
+			}
+			if _, err := entriesRead(cut); err != nil {
+				t.Errorf("label %v, %d B: %v", label, size, err)
+			}
+			laid := !bytes.Equal(cut, plain)
+			plainAfter = plainAfter || framed && !laid
+			framed = framed || laid
+		}
+		if !framed {
+			t.Errorf("label %v: none of the 16 sizes from %d B was laid out for a cut", label, smallest)
+		}
+		if plainAfter != !label {
+			t.Errorf("label %v: a size after the frame's floor kept the layout of an archive nothing cuts: %v - due only without a label", label, plainAfter)
+		}
+	}
+}
+
 // writeWhole writes a tar.gz of size bytes laid out for a cut half way, whole.
 func writeWhole(t *testing.T, desc format.Descriptor, size int64) []byte {
 	t.Helper()
-	p, err := desc.Generator.Plan(format.Request{Bytes: size, Label: true, Seed: 7, CutAt: size / 2})
+	return writeRequest(t, desc, format.Request{Bytes: size, Label: true, Seed: 7, CutAt: size / 2})
+}
+
+// writeRequest plans and writes req, whole.
+func writeRequest(t *testing.T, desc format.Descriptor, req format.Request) []byte {
+	t.Helper()
+	p, err := desc.Generator.Plan(req)
 	if err != nil {
-		t.Fatalf("%d B: planning: %v", size, err)
+		t.Fatalf("%d B: planning: %v", req.Bytes, err)
 	}
 	var out bytes.Buffer
 	if err := desc.Generator.Write(t.Context(), &out, p); err != nil {
-		t.Fatalf("%d B: writing: %v", size, err)
+		t.Fatalf("%d B: writing: %v", req.Bytes, err)
 	}
 	return out.Bytes()
 }
 
-// readsEveryEntry reads every entry of a tar.gz to its end, through
-// compress/gzip, which checks the trailer, and archive/tar.
+// readsEveryEntry reads every entry of a tar.gz laid out for a cut to its end,
+// and holds it to a file and padding beside it.
 func readsEveryEntry(data []byte) error {
+	files, err := entriesRead(data)
+	if err == nil && files < 2 {
+		err = fmt.Errorf("%d entries, where a file and padding beside it were due", files)
+	}
+	return err
+}
+
+// entriesRead reads every entry of a tar.gz to its end, through
+// compress/gzip, which checks the trailer, and archive/tar, and counts them.
+func entriesRead(data []byte) (int, error) {
 	zr, err := gzip.NewReader(bytes.NewReader(data))
 	if err != nil {
-		return err
+		return 0, err
 	}
 	tr := tar.NewReader(zr)
 	files := 0
@@ -101,20 +166,17 @@ func readsEveryEntry(data []byte) error {
 			break
 		}
 		if err != nil {
-			return err
+			return files, err
 		}
 		if _, err := io.Copy(io.Discard, tr); err != nil {
-			return fmt.Errorf("%s: %w", h.Name, err)
+			return files, fmt.Errorf("%s: %w", h.Name, err)
 		}
 		files++
 	}
 	if _, err := io.Copy(io.Discard, zr); err != nil {
-		return fmt.Errorf("after the tar: %w", err)
+		return files, fmt.Errorf("after the tar: %w", err)
 	}
-	if files < 2 {
-		return fmt.Errorf("%d entries, where a file and padding beside it were due", files)
-	}
-	return nil
+	return files, nil
 }
 
 // gzipStreamStart is where the deflate stream of a gzip member starts: after
