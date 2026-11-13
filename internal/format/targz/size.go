@@ -149,8 +149,8 @@ func maxCost() int64 { return commentPaddingLimit + extraPaddingLimit + 2 }
 // place works out where a given number of padding bytes goes.
 //
 // Two channels, and which one is used is decided by size rather than by
-// preference. The extra field is where bulk goes: it holds 65 531 bytes, it
-// is byte granular, and Go reads all of it - which the comment does not, and
+// preference. The extra field is where bulk goes: it holds extraPaddingLimit
+// bytes, it is byte granular, and Go reads all of it - which the comment does not, and
 // that is O163. But it cannot cost one byte, because its own length field
 // costs two, so a single byte of padding has nowhere to go there.
 //

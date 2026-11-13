@@ -44,20 +44,25 @@ const (
 
 	// extraPaddingLimit is how many bytes the gzip extra field may carry.
 	//
-	// The field's own limit is 65 535, since XLEN is two bytes wide. This build
-	// stops at 65 531, which is the number measured across every reader on
-	// 2026-08-04 and re-measured against Go on 2026-09-01 - accepted to the
-	// last byte, beside a comment, with the cost exactly two bytes more than
-	// what is carried.
+	// The field's own limit is 65 535, since XLEN is two bytes wide, and 7-Zip,
+	// GNU gzip and tar, bsdtar, Python, node and Go take 65 531 to the last
+	// byte (measured 2026-08-04 and 2026-09-01). busybox does not. Its gzip
+	// reads the header into a buffer of 16 KiB and refuses a longer field as
+	// corrupted data - measured 2026-11-13 on busybox 1.37 in Alpine 3.22, by
+	// bisection to the byte: 16 384 opens and 16 385 does not
+	// (tools/probes/damagecheck/gzmembers.py, O339). Alpine is the base of a
+	// great many CI containers, so the limit is busybox's. Padding past it
+	// goes to a filler entry, as it always has above the limit.
 	//
-	// That cost is what makes this the right channel rather than a bigger one:
+	// n bytes carried cost n+2 in the file, and that cost is what makes this
+	// the right channel rather than a bigger one:
 	// it is byte granular. The comment was too, but it had to hold the label as
 	// well, and a tar filler entry is aligned to 512 bytes so it delivers bulk
 	// and never the last few. Capping the comment at what Go reads and leaving
 	// the rest to the filler was measured and rejected: 831 sizes in the same
 	// sweep stopped being reachable at all, because nothing could bridge the
 	// gap under one block.
-	extraPaddingLimit = 65531
+	extraPaddingLimit = 16384
 
 	// fillerName is the entry that carries padding the comment cannot hold.
 	// Named plainly, because somebody opening the archive should see what it

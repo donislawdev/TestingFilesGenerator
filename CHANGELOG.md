@@ -36,6 +36,13 @@ because it turns other people's test suites red.
   5493 B, to 320x240 at 7732 B and to 640x480 at 18722 B, about a tenth above
   where it did. A file between the old step and the new one is not byte for
   byte what 0.5.0 wrote.
+- **A tar.gz 16 KiB to 64 KiB larger than the files inside it now opens in
+  Alpine Linux.** busybox, the `gzip` and `tar` of Alpine and many small
+  container images, refused these archives as corrupted data - the default
+  64 KiB one among them. The gzip header now carries at most 16 KiB of the
+  padding, which busybox reads, and the padding file inside the archive takes
+  the rest, as it did for larger archives. Those archives are not byte for
+  byte what 0.5.0 wrote. Every other tar.gz is unchanged.
 
 ### Added
 
