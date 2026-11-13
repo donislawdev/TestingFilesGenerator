@@ -74,9 +74,9 @@ func TestAnAVIFOrAJPEGXLLaidOutForACutComesToEverySizeAndReads(t *testing.T) {
 		// runs out: j bytes from the end it leaves the padding's part of j.
 		const size = 4_000
 		_, regions := writeBoxes(t, desc, size, 0)
-		pic := pictureRegion(regions)
-		rest, pad := size-pic.Length, size-pic.At-pic.Length
-		start := (pic.At - 3) * size / rest
+		head, pic, pad := boxParts(regions)
+		rest := size - pic.Length
+		start := (head - 3) * size / rest
 		for cutAt := start; cutAt < start+12*size/rest; cutAt++ {
 			check(size, cutAt)
 		}
@@ -131,6 +131,73 @@ func pictureRegion(regions []format.Region) format.Region {
 		}
 	}
 	return format.Region{}
+}
+
+// boxParts reads a file's map as what stands in front of all of its padding,
+// its picture and all of its padding, wherever the padding stands.
+func boxParts(regions []format.Region) (head int64, pic format.Region, pad int64) {
+	for _, r := range regions {
+		switch r.Role {
+		case format.RoleStructure:
+			head += r.Length
+		case format.RolePadding:
+			pad += r.Length
+		case format.RoleContent:
+			pic = r
+		}
+	}
+	return head, pic, pad
+}
+
+// A JPEG XL nothing cuts has nothing behind its codestream and no free box
+// anywhere. ffmpeg 7.1.5 with libjxl never finishes a JPEG XL with any box
+// behind its codestream, and ffmpeg 9.0.1 takes one with a free box in its
+// first two kilobytes for a movie (O341, docs/TRUNCATE-2026-11-11.md section
+// 13.4). So this writes the smallest sizes, where the padding is one box that
+// carries nothing or a few bytes, and larger ones, and requires the codestream
+// box to be the last box and no box to be a free one.
+//
+// Canary: the same file with an empty box behind its codestream is refused.
+func TestAJPEGXLKeepsNothingBehindItsCodestream(t *testing.T) {
+	desc, err := format.Get("jxl")
+	if err != nil {
+		t.Fatal(err)
+	}
+	smallest := desc.SmallestAccepted(format.Request{Label: true})
+	for _, size := range []int64{smallest, smallest + 1, smallest + 7, smallest + 8, smallest + 9, 2 << 10, 64 << 10, 1 << 20} {
+		data, _ := writeBoxes(t, desc, size, 0)
+		if err := jxlNothingBehind(data); err != nil {
+			t.Errorf("%d B: %v", size, err)
+		}
+	}
+
+	data, _ := writeBoxes(t, desc, 2<<10, 0)
+	broken := append(bytes.Clone(data), 0, 0, 0, 8, 's', 'k', 'i', 'p')
+	if err := jxlNothingBehind(broken); err == nil {
+		t.Errorf("canary: a JPEG XL with an empty box behind its codestream passed")
+	}
+}
+
+// jxlNothingBehind requires a JPEG XL's codestream box to be its last box, and
+// none of its boxes to be a free one.
+func jxlNothingBehind(data []byte) error {
+	last := ""
+	for pos := 0; pos+8 <= len(data); {
+		size := int(binary.BigEndian.Uint32(data[pos:]))
+		kind := string(data[pos+4 : pos+8])
+		if size < 8 || pos+size > len(data) {
+			return fmt.Errorf("a %q box of %d B at %d", kind, size, pos)
+		}
+		if kind == "free" {
+			return fmt.Errorf("a free box at %d", pos)
+		}
+		last = kind
+		pos += size
+	}
+	if last != "jxlc" {
+		return fmt.Errorf("the last box is %q, where the codestream should end the file", last)
+	}
+	return nil
 }
 
 // boxLayoutOf holds a file laid out for a cut to its size, its picture's place

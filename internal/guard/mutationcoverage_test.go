@@ -159,6 +159,9 @@ var provenByProbe = map[string]string{
 		"fixed codes, must inflate to its bytes and read as those runs - its reach check, every frame of the marker met - and red on " +
 		"2026-11-13 for a frame a byte short (the plan refuses at 65541 B) and for an empty block's BTYPE bit one place off " +
 		"(compress/flate refuses at 65537 B), where the first passed the share and the map guards.",
+	"TestAJPEGXLKeepsNothingBehindItsCodestream": "its own canary - the same file with an empty box behind its " +
+		"codestream must be refused - and red on 2026-11-13 with the padding of a file nothing cuts put back behind the " +
+		"codestream (all 8 sizes).",
 	"TestAnAVIFOrAJPEGXLLaidOutForACutComesToEverySizeAndReads": "its own canary - an item location a byte off must be " +
 		"refused - its reach check, every layout of the split met, and red on 2026-11-13 with the item locations not moved " +
 		"(50 cuts), with the widening's four bytes left out of the move (5 GiB: 4831825054 where the media data starts at " +

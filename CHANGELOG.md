@@ -43,6 +43,13 @@ because it turns other people's test suites red.
   padding, which busybox reads, and the padding file inside the archive takes
   the rest, as it did for larger archives. Those archives are not byte for
   byte what 0.5.0 wrote. Every other tar.gz is unchanged.
+- **A JPEG XL now opens in ffmpeg.** ffmpeg 7.1 never finished one, and
+  ffmpeg 9 took one below about 3.8 KB for a video and refused it, because of
+  the padding box behind the picture. The padding now stands in front of the
+  picture, in a box of the kind ffmpeg passes over, and nothing follows the
+  picture. Pillow, ImageMagick, Windows, Chrome and libjxl show the same
+  picture as before. Sizes are unchanged, but no JPEG XL is byte for byte what
+  0.5.0 wrote.
 
 ### Added
 

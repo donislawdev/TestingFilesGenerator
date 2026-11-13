@@ -36,22 +36,33 @@
 // of the file asked for - still applies here unchanged, and this format passes
 // it. Owner's decision, 2026-08-31.
 //
-// The padding channel is a free box, which is the box the container defines
-// for space that means nothing. Measured on 2026-08-31 at 0, 1, 7, 64, 100,
-// 101, 4096, 100 000 and 1 048 576 bytes, and again with two boxes, four
-// boxes, a private box type, a skip box and the sixty four bit box length.
-// libjxl through pillow-jxl-plugin reads every one of them, and refuses a
-// truncated file and a corrupted one, which is what makes it a witness. The
-// pure Go decoder in the encoder's own module agrees on all of it.
+// The padding channel is skip boxes between the file type box and the
+// codestream box, with nothing behind the codestream. A skip box is one of
+// the two names the container gives a box for space that means nothing, and
+// free is the other. Measured on 2026-08-31 at 0, 1, 7, 64, 100, 101, 4096,
+// 100 000 and 1 048 576 bytes, and again with two boxes, four boxes, a
+// private box type, a skip box and the sixty four bit box length: libjxl
+// through pillow-jxl-plugin reads every one of them, and refuses a truncated
+// file and a corrupted one, which is what makes it a witness. The pure Go
+// decoder in the encoder's own module agrees on all of it.
+//
+// The place and the name are ffmpeg's, measured on 2026-11-13
+// (docs/TRUNCATE-2026-11-11.md section 13.4, O341). ffmpeg 7.1.5 with libjxl
+// never finishes a JPEG XL with any box behind its codestream - free, skip or
+// private, eight bytes or a thousand - and reads one with nothing behind it in
+// a fifth of a second. ffmpeg 9.0.1 tells a JPEG XL by its first two
+// kilobytes and takes one with a free box there for a movie, and one with a
+// skip box there for a picture. With skip boxes in front, Pillow, ImageMagick,
+// the Windows Imaging Component, Chrome, djxl and both ffmpeg read the same
+// pixels at every size from 2 KB to 10 MB.
 //
 // Trailing bytes after a bare codestream were measured too, and they work -
 // both readers take them, down to a single byte, with no dead zone at all.
 // They are not used. They are not a structure the format defines, only
 // something two readers tolerate, and this project's fourth untouchable rule
-// says fidelity does not drop for the implementer's convenience. The free box
-// says "nothing here" in the format's own words, and it is what AVIF writes.
-// A file a damage will cut has part of its padding in front of the codestream
-// instead, in skip boxes (cut.go).
+// says fidelity does not drop for the implementer's convenience. A file a
+// damage will cut keeps part of its padding behind the codestream instead,
+// where the cut never reaches (cut.go).
 package jxl
 
 import (
@@ -76,7 +87,7 @@ const (
 
 	// containerOverhead is everything the container costs around the
 	// codestream: the signature box, the file type box, and the header of the
-	// box the codestream sits in. The free box header is counted separately,
+	// box the codestream sits in. The skip box header is counted separately,
 	// because it is what makes every size above the minimum reachable.
 	containerOverhead = len(signature) + len(fileType) + boxHeader
 
@@ -99,7 +110,7 @@ const (
 	// for every seed there is. Measured across all of them by
 	// tools/probes/jxlladder on 2026-08-31.
 	//
-	// The container and the free box header are included, because this
+	// The container and the skip box header are included, because this
 	// generator always writes both even when the box carries nothing. That is
 	// what removes the unreachable band above the floor that PNG and GIF have.
 	//
@@ -151,8 +162,8 @@ func init() {
 			// half that matters: both refuse a truncated file and a corrupted
 			// payload, so both can say no. exiftool reads JPEG XL too and
 			// accepts the truncated file, so it witnesses nothing.
-			Name:     "a free box after the picture",
-			Where:    format.PlacementEnd,
+			Name:     "skip boxes in front of the picture",
+			Where:    format.PlacementStart,
 			Capacity: 0,
 		},
 		Label:  format.LabelVisible,
@@ -204,7 +215,7 @@ type memo struct {
 	// from the ladder without coding it and the work happens while writing.
 	coded []byte
 	// total is the size the file has to come to, so writing can work out how
-	// much free box follows the picture. There is always at least one, empty,
+	// much skip box goes in front of the picture. There is always at least one, empty,
 	// which is what makes every size above the minimum reachable a byte at a
 	// time.
 	total int64
@@ -289,7 +300,7 @@ const holdsPerPixel = 34
 func checkFits(want int64, m memo) error {
 	floor := int64(minimumBytes)
 	reason := core.Says("jxl.MinimumReason",
-		"the smallest picture this format draws codes to %d B at worst, the container around it costs %d B, and the file always carries a free box, which costs %d B even when it holds nothing",
+		"the smallest picture this format draws codes to %d B at worst, the container around it costs %d B, and the file always carries a box of free space, which costs %d B even when it holds nothing",
 		core.A("Coded", minimumBytes-containerOverhead-boxHeader), core.A("Container", containerOverhead), core.A("Box", boxHeader))
 
 	// A picture named by hand can be larger than the smallest one, and then its
@@ -299,7 +310,7 @@ func checkFits(want int64, m memo) error {
 		if own := int64(len(m.coded) + containerOverhead + boxHeader); own > floor {
 			floor = own
 			reason = core.Says("jxl.MinimumReasonOwn",
-				"a %dx%d picture at quality %d codes to %d B, the container around it costs %d B, and the file always carries a free box, which costs %d B even when it holds nothing",
+				"a %dx%d picture at quality %d codes to %d B, the container around it costs %d B, and the file always carries a box of free space, which costs %d B even when it holds nothing",
 				core.A("Width", m.width), core.A("Height", m.height), core.A("Quality", m.quality), core.A("Coded", len(m.coded)),
 				core.A("Container", containerOverhead), core.A("Box", boxHeader))
 		}
@@ -330,7 +341,7 @@ func checkFits(want int64, m memo) error {
 // width and height are settings, and 40 megapixels is the ceiling.
 //
 // Ceiling is the LARGEST file that rung has ever been seen to produce, the
-// container and the free box header included, and it is what lets planning
+// container and the skip box header included, and it is what lets planning
 // choose a picture without coding one. Measured by tools/probes/jxlladder on
 // 2026-08-31 across all 256 seeds, four orders of magnitude of requested size -
 // the label carries the byte count, so its length moves with it - and with the
@@ -514,13 +525,13 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	if pad < boxHeader {
 		// The ladder's ceiling for this picture was too low. Said out loud
 		// rather than written short, because a short file is a wrong file.
-		return core.Defect(fmt.Errorf("jxl: a %dx%d picture coded to %d B, the container costs %d B and the file was to be %d B, which leaves no room for the free box every one of these carries",
+		return core.Defect(fmt.Errorf("jxl: a %dx%d picture coded to %d B, the container costs %d B and the file was to be %d B, which leaves no room for the skip box every one of these carries",
 			m.width, m.height, len(coded), containerOverhead, m.total))
 	}
 
 	// The map is all known once the picture is coded, and a file nothing cuts
-	// has all of its padding behind the codestream.
-	front := int64(0)
+	// has all of its padding in front of the codestream and nothing behind it.
+	front := pad
 	if m.cutAt > 0 {
 		front = splitForACut(pad, boxHeader+int64(len(coded)), m.cutAt, m.total)
 	}

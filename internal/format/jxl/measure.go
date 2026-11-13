@@ -13,7 +13,7 @@
 package jxl
 
 // FileSizeFor reports how many bytes this generator produces for one picture:
-// the coded picture, the container around it, and the empty free box every
+// the coded picture, the container around it, and the empty skip box every
 // file carries. It is the number a rung's ceiling has to be at least as large
 // as.
 //

@@ -2172,16 +2172,21 @@ def check_jxl(data):
     if data[code_start:code_start + 2] != b"\xff\x0a":
         fail("the jxlc box does not start with the codestream signature FF 0A")
 
-    # Padding stands after the codestream, and a file laid out for a cut puts
-    # part of it right in front of the codestream too, in skip boxes
-    # (docs/TRUNCATE-2026-11-11.md section 13) - nowhere else.
+    # Padding stands in skip boxes right in front of the codestream, and a file
+    # laid out for a cut puts part of it behind the codestream, past the cut
+    # (docs/TRUNCATE-2026-11-11.md section 13) - nowhere else. Never a free
+    # box: ffmpeg takes a JPEG XL with one in its first two kilobytes for a
+    # movie (O341).
     free_bytes = 0
     code_at = names.index("jxlc")
     for i, (name, start, stop) in enumerate(top):
-        if name in (b"free", b"skip"):
+        if name == b"free":
+            fail("the file carries a free box, and this generator pads a JPEG XL with skip boxes, which ffmpeg "
+                 "does not take for a movie")
+        if name == b"skip":
             free_bytes += stop - start + 8
-            if i < code_at and any(n not in (b"free", b"skip") for n, _, _ in top[i + 1:code_at]):
-                fail("a free box sits in front of the codestream with other boxes between them, and this generator "
+            if i < code_at and any(n != b"skip" for n, _, _ in top[i + 1:code_at]):
+                fail("a skip box sits in front of the codestream with other boxes between them, and this generator "
                      "puts padding right in front of the codestream or after it")
 
     tail = len(data) - top[-1][2]
