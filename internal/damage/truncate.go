@@ -53,14 +53,19 @@ func init() {
 				// cut removes the same percentage of the content
 				// (docs/TRUNCATE-2026-11-11.md sections 7 to 15, and
 				// TestACutTakesTheShareOfTheContentItIsAskedFor). In a file of
-				// a few kilobytes the end a format closes with - the central
-				// directory of a ZIP or an Office document - is longer than a
-				// cut of 1% or 2%, which then falls in it and leaves the content
-				// whole. The manifest says per file where the cut fell.
+				// a few kilobytes it can take less: a WebP with less than 26 B
+				// of padding cannot put any in front of its picture and keeps up
+				// to that much more of it, and where what a format puts after
+				// its content - the central directory of a ZIP or an Office
+				// document, that WebP's padding - is longer than a cut of 1% or
+				// 2%, the cut falls in it and leaves the content whole
+				// (docs/TRUNCATE-2026-11-11.md section 15.4, measured in
+				// docs/REVIEW-244-2026-11-14.md). The manifest says per file
+				// where the cut fell.
 				Detail: "How much of the whole file is gone, as a percentage. " +
 					"At least this much is cut - a few bytes more where the format cannot end exactly there. " +
 					"The cut removes the same percentage of the content - of the picture, the sound, the pages or the text. " +
-					"In a file of a few kilobytes cut by 1% or 2%, the cut can fall in what closes the file, such as a ZIP's list of its files, and leave the content whole - " +
+					"A file of a few kilobytes cut by 1% or 2% can lose less of its content than that, or none of it when the cut falls in what the format puts after the content, such as a ZIP's list of its files - " +
 					"the manifest says what each cut left.",
 			},
 		},

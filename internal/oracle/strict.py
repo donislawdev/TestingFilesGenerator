@@ -2017,7 +2017,12 @@ def check_webp(data):
     if tags.count(b"VP8L") != 1 or b"VP8 " in tags:
         fail(f"the file carries the chunks {seen}, and a still lossless WebP has one VP8L chunk")
     picture = tags.index(b"VP8L")
-    _, at, _ = chunks[picture]
+    _, at, size = chunks[picture]
+    # The signature byte and the four that carry the picture's size come
+    # first. A chunk shorter than that has no header to read, and reading it
+    # anyway would take the next chunk's bytes, or none, for it.
+    if size < 5:
+        fail(f"the VP8L chunk carries {size} B and its header alone is 5 B")
     if data[at] != 0x2F:
         fail("the lossless stream does not start with its signature byte")
     bits = struct.unpack("<I", data[at + 1:at + 5])[0]

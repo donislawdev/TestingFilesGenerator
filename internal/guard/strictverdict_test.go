@@ -78,6 +78,11 @@ func TestTheStructuralCheckerRefusesBrokenBytesInsteadOfStopping(t *testing.T) {
 		// one row table with its head zeroed came back OK, because the only
 		// thing asked of it was whether its rows agreed with each other.
 		{"csv with a NUL inside a field", "csv", nulInField(t, csv), oracle.StrictFail, "control character"},
+		// The header of a lossless picture is five bytes. A shorter VP8L
+		// chunk stopped the check with an exception, the last one with no
+		// bytes after it (review of #244).
+		{"webp with an empty picture chunk", "webp", shortPicture(0), oracle.StrictFail, "its header alone is 5 B"},
+		{"webp with four bytes of picture chunk", "webp", shortPicture(4), oracle.StrictFail, "its header alone is 5 B"},
 	}
 
 	dir := t.TempDir()
@@ -106,6 +111,18 @@ func TestTheStructuralCheckerRefusesBrokenBytesInsteadOfStopping(t *testing.T) {
 				"checker, never a refusal of the file.", c.name, j.Verdict, j.Reason, c.verdict, c.reason)
 		}
 	}
+}
+
+// shortPicture is a WebP whose only chunk is a VP8L chunk of n bytes, each the
+// signature byte - shorter than its own header when n is under five.
+func shortPicture(n int) []byte {
+	chunk := append([]byte("VP8L"), binary.LittleEndian.AppendUint32(nil, uint32(n))...)
+	chunk = append(chunk, bytes.Repeat([]byte{0x2F}, n)...)
+	if n%2 == 1 {
+		chunk = append(chunk, 0)
+	}
+	out := append([]byte("RIFF"), binary.LittleEndian.AppendUint32(nil, uint32(4+len(chunk)))...)
+	return append(append(out, "WEBP"...), chunk...)
 }
 
 // strictPlant is run by the guard below. It loads the checker, puts checks that

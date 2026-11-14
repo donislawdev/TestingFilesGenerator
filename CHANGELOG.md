@@ -93,8 +93,8 @@ because it turns other people's test suites red.
   outcome is `unspecified`, offers both answers in the new `policy_options`
   field and says why. `tfg damage <id>` lists those formats.
 - **A file cut short says where the cut fell and how much of its content is
-  left.** In a file of a few kilobytes cut by 1% or 2%, the cut can fall in
-  what closes the file instead of its content. The `truncate` entry in
+  left.** A file of a few kilobytes cut by 1% or 2% can lose less of its
+  content than that, or none of it. The `truncate` entry in
   the manifest's `damage` now carries `cut`: `in` (`content`, `padding`,
   `structure` or `end`) and `content_kept_bytes`, and `content_bytes` where
   the length of the content is known. A cut in the padding also gets the

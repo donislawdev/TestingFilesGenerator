@@ -707,6 +707,8 @@ def layout_tiff(data):
     if ifd_at == 8:
         if first < head:
             raise NoMap(f"the strips start at {first}, inside the directory and its values, which run to {head}")
+        if last > len(data):
+            raise NoMap(f"the strips run to {last} and the file is {len(data)} B")
         return [[STRUCTURE, 0, head], [PADDING, head, first - head], [CONTENT, first, last - first],
                 [PADDING, last, len(data) - last]]
     if last != ifd_at:
