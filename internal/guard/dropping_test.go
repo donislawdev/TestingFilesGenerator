@@ -18,10 +18,41 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/tool/checksum"
 )
 
+// droppedOnto is what a guard needs to drop onto the window: the function
+// the window gave for a drop, and the disk's answers about one, kept until
+// runAnswers when keepAnswers is set.
+type droppedOnto struct {
+	onDropped   func(fyne.Position, []fyne.URI)
+	keepAnswers bool
+	answers     []func()
+}
+
 // SetOnDropped keeps the function the window gives for a drop. The toolkit's
 // own test window throws it away (fyne v2.8.2, test/window.go), so without
 // this no guard could drop anything onto a screen.
-func (h *fakeHost) SetOnDropped(fn func(fyne.Position, []fyne.URI)) { h.onDropped = fn }
+func (h *fakeHost) SetOnDropped(fn func(fyne.Position, []fyne.URI)) { h.drops.onDropped = fn }
+
+// AnswerDropLater is how the window brings the disk's answer about a drop back
+// to its thread. At once, as fyne.Do does under the test driver, unless a guard
+// asked to keep the answers - then they wait until runAnswers.
+func (h *fakeHost) AnswerDropLater(answer func()) {
+	if !h.drops.keepAnswers {
+		answer()
+		return
+	}
+	h.drops.answers = append(h.drops.answers, answer)
+}
+
+// runAnswers runs the answers kept so far, on the guard's goroutine, and says
+// how many there were.
+func (h *fakeHost) runAnswers() int {
+	kept := h.drops.answers
+	h.drops.answers = nil
+	for _, answer := range kept {
+		answer()
+	}
+	return len(kept)
+}
 
 // drop drops paths onto the window the way the toolkit's driver hands them
 // over - each one through storage.NewFileURI - and waits for the window to
@@ -37,14 +68,14 @@ func (h *fakeHost) drop(t *testing.T, paths ...string) {
 // because only that one is refused without asking the disk.
 func (h *fakeHost) dropNow(t *testing.T, paths ...string) {
 	t.Helper()
-	if h.onDropped == nil {
+	if h.drops.onDropped == nil {
 		t.Fatal("the window gave the host no function for a drop, so nothing dropped onto it can arrive")
 	}
 	uris := make([]fyne.URI, len(paths))
 	for i, p := range paths {
 		uris[i] = storage.NewFileURI(p)
 	}
-	h.onDropped(fyne.NewPos(10, 10), uris)
+	h.drops.onDropped(fyne.NewPos(10, 10), uris)
 }
 
 // dropAim is the shape of window.AimDrop, so the planted defects below can
@@ -335,5 +366,68 @@ func TestADropWhileWorkOwnsTheScreenChangesNothing(t *testing.T) {
 	host.drop(t, folder, folder)
 	if said := sayingUnder(t, content, text.FieldOutputDir()); said == "" {
 		t.Error("the same drop with the screen idle said nothing, so the silence during the preview proves nothing")
+	}
+}
+
+// A drop made while work owns the screen stays out even when the disk answers
+// after the work has ended.
+//
+// The answer is kept until the preview is over and then run, which is the
+// order a slow disk gives - a network path took 21 s on Windows. Asked of the
+// answer after the work rather than during it, because during it the screen
+// refuses anyway and a guard there cannot tell the two checks apart. The same
+// drop on an idle screen, answered the same way, is the positive control.
+func TestADropMadeDuringWorkStaysOutWhenTheDiskAnswersAfterIt(t *testing.T) {
+	host, content, hold := heldScreen(t)
+	host.drops.keepAnswers = true
+	fill(t, content, text.FieldOutputDir(), t.TempDir())
+	fill(t, content, text.FieldCount(), "20000")
+	before := entryUnder(t, content, text.FieldOutputDir()).Text
+	folder := awkwardFolder(t)
+	press(t, content, text.ButtonPreview())
+	hold.look(func() { host.dropNow(t, folder) })
+	join(host)
+	host.runAnswers()
+	if got := entryUnder(t, content, text.FieldOutputDir()).Text; got != before {
+		t.Errorf("a folder dropped during a preview went into the output directory as %q once the disk answered after the preview", got)
+	}
+
+	host.dropNow(t, folder)
+	join(host)
+	if host.runAnswers() != 1 {
+		t.Fatal("a drop on the idle screen was never answered, so the silence above proves nothing")
+	}
+	if got := entryUnder(t, content, text.FieldOutputDir()).Text; got != folder {
+		t.Errorf("the same drop on the idle screen left the output directory as %q, so the guard above saw no drop at all", got)
+	}
+}
+
+// A path typed into the box while the disk is asked about a drop is not
+// written over when the answer comes.
+//
+// What was typed last is what the person means. The answer is kept, the box
+// is filled the way a person types, and then the answer is run. Without the
+// typing the same answer lands, which is the positive control.
+func TestAPathTypedWhileTheDiskIsAskedIsNotWrittenOver(t *testing.T) {
+	host, content := screen(t)
+	host.drops.keepAnswers = true
+	folder := awkwardFolder(t)
+	typed := t.TempDir()
+
+	host.dropNow(t, folder)
+	join(host)
+	fill(t, content, text.FieldOutputDir(), typed)
+	if host.runAnswers() != 1 {
+		t.Fatal("the drop was never answered, so nothing here was asked")
+	}
+	if got := entryUnder(t, content, text.FieldOutputDir()).Text; got != typed {
+		t.Errorf("the box was typed into while the disk was asked, and the drop's answer wrote %q over it", got)
+	}
+
+	host.dropNow(t, folder)
+	join(host)
+	host.runAnswers()
+	if got := entryUnder(t, content, text.FieldOutputDir()).Text; got != folder {
+		t.Errorf("with nothing typed the drop left the box as %q, so the guard above saw no drop at all", got)
 	}
 }

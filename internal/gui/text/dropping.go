@@ -44,9 +44,10 @@ func DropNeither(name string) string {
 
 // DropNotText is a dropped path whose name is not text the box can hold. A
 // file system on Linux can hold such names, and a box that showed it would
-// show a path that is not the one dropped.
+// show a path that is not the one dropped. Typing it is no way out either -
+// a keyboard writes text - so what is left is a name that is text.
 func DropNotText() string {
-	return say("DropNotText", "The name of what was dropped is not text this box can hold. Type the path instead.")
+	return say("DropNotText", "The name of what was dropped is not text this box can hold. Rename it, then drop it again.")
 }
 
 // DropAimless is a drop onto a screen with more than one box that takes it,

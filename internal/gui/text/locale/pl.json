@@ -64,7 +64,7 @@
   "DirectoryWithFreeSpace": { "hash": "sha256-3e96ff18edeb", "other": "{{.Directory}} (wolne {{.Free}})" },
   "DropAimless": { "hash": "sha256-18e4e580f745", "other": "Upuść to na pole, do którego należy." },
   "DropNeither": { "hash": "sha256-f61888808983", "other": "{{.Name}} nie jest ani plikiem, ani folderem." },
-  "DropNotText": { "hash": "sha256-d91246c377d9", "other": "Nazwa upuszczonego elementu nie jest tekstem, który to pole może pomieścić. Wpisz ścieżkę ręcznie." },
+  "DropNotText": { "hash": "sha256-4f9d6aa5f35b", "other": "Nazwa upuszczonego elementu nie jest tekstem, który to pole może pomieścić. Zmień jej nazwę i upuść ponownie." },
   "DropOneAtATime": { "hash": "sha256-d5a5966cef2a", "one": "Upuszczaj po jednym. Upuszczono {{.Count}} element.", "few": "Upuszczaj po jednym. Upuszczono {{.Count}} elementy.", "many": "Upuszczaj po jednym. Upuszczono {{.Count}} elementów.", "other": "Upuszczaj po jednym. Upuszczono {{.Count}} elementu." },
   "DropTakesFile": { "hash": "sha256-cdb72cf7cc14", "other": "{{.Box}} przyjmuje plik. {{.Name}} to folder." },
   "DropTakesFolder": { "hash": "sha256-826478495ba2", "other": "{{.Box}} przyjmuje folder. {{.Name}} to plik." },

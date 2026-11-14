@@ -124,13 +124,19 @@ var notProvenByMutation = map[string]bool{
 // provenByProbe are the guards the mutation runner cannot express, broken on
 // purpose by hand instead. Each entry says what was broken and what happened.
 //
-// Two reasons a guard lands here, and they are different:
+// Three reasons a guard lands here, and they are different:
 //
 //   - there is no product code underneath it. It reads documents and compares
 //     lists, so a substitution in a .go file never reaches it.
 //   - the substitution that would break it is not a literal. Entries in
 //     entries.py are read with ast.literal_eval, so a break that needs ninety
 //     generated lines cannot be written as one.
+//   - untouchable rule 26, mutation sparingly, the owner's: a guard's
+//     proof by default is a canary inside it, or a break made by hand once
+//     while it was written, and a lasting entry is kept for a guard reading
+//     the project's own files or guarding a user's data, network, secrets or
+//     permissions - at most three to a piece of work. Every entry in that
+//     state names its canary or its break, so the proof can be made again.
 //
 // A separate list rather than a note in the one above, because "unproven" and
 // "proven another way" are different states and lumping them together would
@@ -151,6 +157,10 @@ var provenByProbe = map[string]string{
 		"with no sentence. Red both times.",
 	"TestADropWhileWorkOwnsTheScreenChangesNothing": "its own positive control - the same drop on an idle screen must say something - " +
 		"and broken on 2026-11-14 by handing the decision false for busy: red.",
+	"TestADropMadeDuringWorkStaysOutWhenTheDiskAnswersAfterIt": "its own positive control - the same drop on an idle screen must land - " +
+		"and broken on 2026-11-14 by taking out the busy check before the disk is asked: red (docs/REVIEW-245-2026-11-14.md).",
+	"TestAPathTypedWhileTheDiskIsAskedIsNotWrittenOver": "its own positive control - with nothing typed the drop must land - " +
+		"and broken on 2026-11-14 by no longer asking whether a path box was typed into: red (docs/REVIEW-245-2026-11-14.md).",
 	// Broken once each on 2026-11-12 while they were written, one change at a
 	// time and restored (docs/DAMAGE-SETTINGS-LABEL-2026-11-12.md). The first
 	// also carries a canary of its own check.

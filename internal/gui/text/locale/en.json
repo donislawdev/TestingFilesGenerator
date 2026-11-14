@@ -326,8 +326,8 @@
   },
   "DropNotText": {
     "description": "Shown in the window.",
-    "hash": "sha256-d91246c377d9",
-    "other": "The name of what was dropped is not text this box can hold. Type the path instead."
+    "hash": "sha256-4f9d6aa5f35b",
+    "other": "The name of what was dropped is not text this box can hold. Rename it, then drop it again."
   },
   "DropOneAtATime": {
     "description": "Shown in the window. One form per number, and a language may need more than the two English has - add them beside these. Carries one value, {{.Count}}, which has to stay spelled exactly that way.",

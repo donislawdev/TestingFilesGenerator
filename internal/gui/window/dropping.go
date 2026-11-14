@@ -68,7 +68,17 @@ type dropping struct {
 	latest int
 	// reading is the disk being asked about a drop, waited for by a guard.
 	reading sync.WaitGroup
+	// answer runs what the disk said, already on the interface thread: at
+	// once, or in the stand in of a guard that keeps it to run at a moment the
+	// guard chooses (AnswerDropLater) - an optional interface, checked rather
+	// than required, that nothing in the shipped program implements, the
+	// shape of offerHolding. It is what lets a guard put work or typing
+	// between a drop and its answer without racing a goroutine.
+	answer func(func())
 }
+
+// atOnce is how the shipped program runs an answer.
+func atOnce(answer func()) { answer() }
 
 // wireDropping puts the window's drop callback on the host. looking is the tab
 // on show, read when the drop arrives - the same pointer the keyboard reads.
@@ -78,7 +88,10 @@ type dropping struct {
 // the first: a screen added to the keyboard's map with path boxes on it takes
 // drops the day it is added.
 func wireDropping(h Host, keyed map[string]keyboardScreen, looking *string) *dropping {
-	d := &dropping{screens: map[string]dropScreen{}, looking: looking}
+	d := &dropping{screens: map[string]dropScreen{}, looking: looking, answer: atOnce}
+	if later, ok := h.(interface{ AnswerDropLater(func()) }); ok {
+		d.answer = later.AnswerDropLater
+	}
 	for id, screen := range keyed {
 		if takes, ok := screen.(takesDrops); ok {
 			d.screens[id] = takes.dropScreen()
@@ -104,11 +117,19 @@ func (d *dropping) dropped(at fyne.Position, uris []fyne.URI) {
 		return
 	}
 	d.latest++
+	// Work owns the screen: nothing, which is AimDrop's answer too. Asked here
+	// as well, before the disk, because a read slower than the work would
+	// otherwise answer on a screen that is idle again and put the path in -
+	// a drop made while the form was frozen would land after all.
+	if screen.busy.occupied {
+		return
+	}
 	if len(uris) > 1 {
 		d.land(screen, make([]DroppedItem, len(uris)), at)
 		return
 	}
-	d.read(dropWaiting{mine: d.latest, aimed: *d.looking, screen: screen, at: at}, PathOf(uris[0]))
+	d.read(dropWaiting{mine: d.latest, aimed: *d.looking, screen: screen, at: at,
+		typed: pathTexts(screen.fields)}, PathOf(uris[0]))
 }
 
 // PathOf is the path a toolkit address names, written the way the system
@@ -122,12 +143,14 @@ func (d *dropping) dropped(at fyne.Position, uris []fyne.URI) {
 func PathOf(u fyne.URI) string { return filepath.FromSlash(u.Path()) }
 
 // dropWaiting is one drop the disk is being asked about: which drop it was,
-// the screen it was aimed at, and where it landed.
+// the screen it was aimed at, where it landed, and what the screen's path
+// boxes held at that moment.
 type dropWaiting struct {
 	mine   int
 	aimed  string
 	screen dropScreen
 	at     fyne.Position
+	typed  map[*parts.Entry]string
 }
 
 // read asks the disk on a worker and answers on the interface thread.
@@ -136,18 +159,43 @@ func (d *dropping) read(drop dropWaiting, path string) {
 	go func() {
 		defer d.reading.Done()
 		item := readDropped(path)
-		fyne.Do(func() { d.arrived(drop, item) })
+		fyne.Do(func() { d.answered(drop, item) })
 	}()
 }
 
-// arrived lands a drop the disk has answered about, unless a newer drop or
-// another tab has made it an answer about a screen nobody is dropping onto
-// any more.
+// answered hands what the disk said to answer, on the interface thread.
+func (d *dropping) answered(drop dropWaiting, item DroppedItem) {
+	d.answer(func() { d.arrived(drop, item) })
+}
+
+// arrived lands a drop the disk has answered about, unless something since
+// has made it an answer nobody is waiting for: a newer drop, another tab, or
+// a path box typed into while the disk was asked - what was typed last is
+// what the person means, and the drop does not get to write over it.
 func (d *dropping) arrived(drop dropWaiting, item DroppedItem) {
-	if drop.mine != d.latest || *d.looking != drop.aimed {
+	if drop.mine != d.latest || *d.looking != drop.aimed || retyped(drop.typed) {
 		return
 	}
 	d.land(drop.screen, []DroppedItem{item}, drop.at)
+}
+
+// pathTexts is what every path box of a screen holds now.
+func pathTexts(fields *parts.Fields) map[*parts.Entry]string {
+	typed := map[*parts.Entry]string{}
+	for _, t := range parts.PathTargets(fields) {
+		typed[t.Box] = t.Box.Text
+	}
+	return typed
+}
+
+// retyped says whether any of the boxes holds something else now.
+func retyped(typed map[*parts.Entry]string) bool {
+	for box, text := range typed {
+		if box.Text != text {
+			return true
+		}
+	}
+	return false
 }
 
 // readDropped asks the disk what a dropped path is. Followed through a link,
@@ -242,15 +290,21 @@ func dropSentence(why DropRefusal, target parts.PathTarget, items []DroppedItem)
 		return text.DropAimless()
 	case RefusedUnread:
 		return text.Refusal(items[0].Unread, target.Field.Label)
+	case RefusedNeither:
+		return text.DropNeither(droppedName(items[0].Path))
+	case RefusedKind:
+		return wrongKind(target, items[0])
 	}
-	name := droppedName(items[0].Path)
-	switch {
-	case why == RefusedNeither:
-		return text.DropNeither(name)
-	case target.Takes == parts.TakesFolder:
-		return text.DropTakesFolder(target.Field.Label, name)
+	return ""
+}
+
+// wrongKind is a folder where a file goes, or a file where a folder goes,
+// named by the box it was refused under.
+func wrongKind(target parts.PathTarget, item DroppedItem) string {
+	if target.Takes == parts.TakesFolder {
+		return text.DropTakesFolder(target.Field.Label, droppedName(item.Path))
 	}
-	return text.DropTakesFile(target.Field.Label, name)
+	return text.DropTakesFile(target.Field.Label, droppedName(item.Path))
 }
 
 // droppedName is the name a sentence calls a dropped path by: the last part of
