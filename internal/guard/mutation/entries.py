@@ -3387,7 +3387,10 @@ MUTATIONS = [
         # asks - does anything get drawn - and it survives the layout moving
         # again, because it does not name a layout.
         "return NewGenerate(h).Object()",
-        "return container.NewVBox()",
+        # An empty container written with the package open.go already has:
+        # container.NewVBox stopped compiling there on 2026-11-14, when the
+        # path box moved to parts and took the last use of the import with it.
+        "return &fyne.Container{}",
         "TestTheWindowActuallyDrawsSomething",
     ),
     (
@@ -4243,7 +4246,7 @@ MUTATIONS = [
         # works. The picker itself needs a real window, so what is provable is
         # the wiring - and the wiring is the part that goes wrong.
         "the chosen directory never reaches the field",
-        "internal/gui/window/open.go",
+        "internal/gui/parts/pathbox.go",
         "				box.SetText(path)",
         "				_ = path",
         "TestBrowsingForADirectoryPutsItInTheField",
@@ -4252,7 +4255,7 @@ MUTATIONS = [
         # Cancelling a picker answers with nothing, and a field emptied by
         # cancelling sends the run at a directory nobody named.
         "cancelling the picker empties the directory field",
-        "internal/gui/window/open.go",
+        "internal/gui/parts/pathbox.go",
         "			if path != \"\" {",
         "			if path == path {",
         "TestCancellingTheDirectoryPickerLeavesTheFieldAlone",
