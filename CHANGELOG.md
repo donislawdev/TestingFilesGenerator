@@ -16,6 +16,12 @@ because it turns other people's test suites red.
 
 ### Breaking
 
+- **A TIFF of an odd size is not byte for byte what 0.5.0 wrote.** Its
+  directory, which says where the pixels are, came last and so started on an
+  odd byte, where the TIFF specification has it start on an even one. Every
+  reader tried took it, but a strict one may not. It now stands right after
+  the eight byte header, and the pixels are the same. A TIFF of an even size is
+  unchanged.
 - **Some AVIF pictures and WebM and MP4 films are not byte for byte what
   0.5.0 wrote.** The AV1 encoder underneath, gav1d, is now 0.2.6. Where the
   right or bottom edge of a picture cuts through a block, the encoder now

@@ -7,6 +7,22 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 )
 
+// layOut says where a TIFF's directory and padding go. A TIFF a damage will cut
+// is laid out for the cut (splitForACut). One of an odd size puts its directory
+// right behind the header, with all of its padding still in front of the
+// pixels: TIFF 6.0 starts a directory on a word boundary, and last, where the
+// 172 B of the directory and its values end the file, it would start on an odd
+// byte (O342). Nine decoders give the same pixels from that layout
+// (docs/TRUNCATE-2026-11-11.md section 15.3). The rest keep the directory last.
+func layOut(m *memo, total, cutAt int64) {
+	switch {
+	case cutAt > 0:
+		splitForACut(m, total, cutAt)
+	case total%2 == 1:
+		m.directoryFirst = true
+	}
+}
+
 // splitForACut lays a TIFF out for a cut after its first cutAt bytes
 // (format.Request.CutAt), so that the cut keeps the share of the pixels it
 // keeps of the whole file.
@@ -30,9 +46,10 @@ func splitForACut(m *memo, total, cutAt int64) {
 	m.back = pad - m.gap
 }
 
-// writeForACut writes the layout splitForACut chose: the header, the directory
-// and its values, the padding in front, the pixels and the padding behind.
-func writeForACut(ctx context.Context, w io.Writer, m memo) error {
+// writeDirectoryFirst writes a TIFF whose directory follows its header - one
+// laid out for a cut, or one of an odd size: the header, the directory and its
+// values, the padding in front, the pixels and the padding behind.
+func writeDirectoryFirst(ctx context.Context, w io.Writer, m memo) error {
 	head := int64(header + directory + heap)
 	pixels := pixelBytes(m.width, m.height)
 	format.Mark(w, format.RoleStructure, 0, head)

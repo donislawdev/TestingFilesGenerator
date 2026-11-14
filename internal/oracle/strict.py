@@ -1854,6 +1854,11 @@ def check_tiff(data):
         fail(f"the magic number is {magic} and a TIFF says 42")
 
     ifd_at = struct.unpack("<I", data[4:8])[0]
+    # TIFF 6.0: the directory "must begin on a word boundary", and a value
+    # outside its entry "is expected to begin on a word boundary". Readers take
+    # an odd one, so only a check written to the specification sees it (O342).
+    if ifd_at % 2:
+        fail(f"the directory starts on byte {ifd_at}, and TIFF 6.0 starts it on a word boundary")
     if ifd_at + 2 > len(data):
         fail(f"the directory is said to start at {ifd_at} and the file ends at {len(data)}")
 
@@ -1881,6 +1886,8 @@ def check_tiff(data):
         total = width * n
         if total > 4:
             off = struct.unpack("<I", raw)[0]
+            if off % 2:
+                fail(f"the value of tag {tag} starts on byte {off}, and TIFF 6.0 starts it on a word boundary")
             if off + total > len(data):
                 fail(f"the value of tag {tag} runs to {off + total} and the file ends at {len(data)}")
             value = data[off:off + total]

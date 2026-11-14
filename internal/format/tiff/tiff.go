@@ -22,7 +22,8 @@
 // bfOffBits in BMP. Measured on five independent readers at every size from
 // 1 B to 10 MiB (docs/MVP-FORMATS.md section 2.11). A TIFF a damage will cut
 // puts its directory first and splits the padding around the pixels instead
-// (cut.go).
+// (cut.go), and one of an odd size puts its directory first, so it starts on
+// a word boundary.
 package tiff
 
 import (
@@ -152,9 +153,10 @@ type memo struct {
 	// between the directory's values and the pixel data when the directory
 	// comes first.
 	gap int64
-	// back is how many bytes of padding follow the pixels, and directoryFirst
-	// says the directory follows the header - both only in a file laid out
-	// for a cut (splitForACut).
+	// back is how many bytes of padding follow the pixels, only in a file
+	// laid out for a cut (splitForACut). directoryFirst says the directory
+	// follows the header, in a file laid out for a cut and in one of an odd
+	// size.
 	back           int64
 	directoryFirst bool
 }
@@ -197,9 +199,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	}
 
 	m := memo{width: w, height: h, seed: r.Seed, label: label, gap: r.Bytes - bare}
-	if r.CutAt > 0 {
-		splitForACut(&m, r.Bytes, r.CutAt)
-	}
+	layOut(&m, r.Bytes, r.CutAt)
 
 	p := format.Plan{
 		Bytes:       r.Bytes,
@@ -338,7 +338,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	default:
 	}
 	if m.directoryFirst {
-		return writeForACut(ctx, w, m)
+		return writeDirectoryFirst(ctx, w, m)
 	}
 
 	// The map, all of it known from the plan: the header, the gap that makes
