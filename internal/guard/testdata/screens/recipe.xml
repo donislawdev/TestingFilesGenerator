@@ -410,11 +410,11 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,655" size="820x222">
-									<container size="820x222">
-										<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x222" strokeColor="button" strokeWidth="1"/>
-										<container size="820x222">
-											<container pos="16,16" size="788x190">
+								<container pos="0,655" size="820x262">
+									<container size="820x262">
+										<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x262" strokeColor="button" strokeWidth="1"/>
+										<container size="820x262">
+											<container pos="16,16" size="788x230">
 												<container size="788x36">
 													<container pos="-8,0" size="796x36">
 														<container size="792x36">
@@ -437,7 +437,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="0,52" size="788x137">
+												<container pos="0,52" size="788x177">
 													<container size="788x60">
 														<container size="788x60">
 															<container size="788x60">
@@ -476,7 +476,30 @@
 															</container>
 														</container>
 													</container>
-													<container pos="0,76" size="185x60">
+													<container pos="0,76" size="386x56">
+														<container pos="0,32" size="386x24">
+															<container size="386x24">
+																<widget size="24x24" type="*parts.Toggle">
+																	<rectangle radius="6" size="24x24"/>
+																	<rectangle radius="4" size="24x24" strokeColor="hyperlink"/>
+																	<rectangle fillColor="hyperlink" pos="2,2" radius="4" size="20x20"/>
+																	<image fillMode="contain" pos="2,2" rsc="confirmIcon" size="iconInlineSize" themed="foregroundOnPrimary"/>
+																</widget>
+																<container pos="32,3" size="153x16">
+																	<text color="rgba(211,211,215,255)" size="153x16">Add beside earlier runs</text>
+																	<widget size="153x16" type="*parts.NameTap">
+																		<rectangle size="153x16"/>
+																	</widget>
+																</container>
+																<widget pos="193,0" size="24x24" type="*parts.DetailButton">
+																	<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
+																	<rectangle radius="6" size="24x24"/>
+																	<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>
+																</widget>
+															</container>
+														</container>
+													</container>
+													<container pos="402,76" size="185x60">
 														<container size="185x60">
 															<container size="185x24">
 																<text color="rgba(211,211,215,255)" pos="0,3" size="122x16">Manifest file name</text>
@@ -507,7 +530,7 @@
 															</container>
 														</container>
 													</container>
-													<container pos="201,76" size="185x60">
+													<container pos="603,76" size="185x60">
 														<container size="185x60">
 															<container size="185x24">
 																<text color="rgba(211,211,215,255)" pos="0,3" size="33x16">Seed</text>
@@ -538,8 +561,8 @@
 															</container>
 														</container>
 													</container>
-													<container pos="402,76" size="185x56">
-														<container pos="0,32" size="185x24">
+													<container pos="0,153" size="185x24">
+														<container size="185x24">
 															<container size="185x24">
 																<widget size="24x24" type="*parts.Toggle">
 																	<rectangle radius="6" size="24x24"/>

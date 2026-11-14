@@ -187,6 +187,9 @@ func TestEveryNameARefusalCanBeGivenTakesTheArticleThisRuleGivesIt(t *testing.T)
 		"depth": "a", "colours": "a", "records": "a", "lines": "a",
 		"damage": "a", "bytes": "a", "formats": "a", "purpose": "a",
 		"send-as": "a",
+		// The switch beside the output directory, named as the command line's
+		// flag for the same answer.
+		"number-if-taken": "a",
 		// The batch screen's base section: the switch, and the two recipe
 		// keys behind it. The parameters under with.<name> arrive as the
 		// preset's own names, which are above.
@@ -202,6 +205,7 @@ func TestEveryNameARefusalCanBeGivenTakesTheArticleThisRuleGivesIt(t *testing.T)
 		"Formats":             "a",
 		"Label in each file":  "a",
 		"Start from a preset": "a", "Preset to build on": "a",
+		"Add beside earlier runs": "an",
 	}
 
 	check := func(name, source string) {

@@ -33,9 +33,9 @@ type Preset struct {
 
 	host Host
 
-	pick   *parts.Chooser
-	outDir *parts.Entry
-	seed   *parts.Entry
+	pick *parts.Chooser
+	outputFolder
+	seed *parts.Entry
 
 	// params are the fields of the chosen preset, and paramBox is where they
 	// go. Rebuilt whenever the preset changes.
@@ -92,7 +92,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	ids := preset.IDs()
 	p.pick = parts.NewChooser(ids, p.onPresetChosen)
 	p.pick.NameOf = presetTitle
-	p.outDir = entry(startingDirectory(), "")
+	p.outputFolder = newOutputFolder()
 	p.seed = entry("0", "")
 
 	// The same shape as the other screen, so the window is one interface rather
@@ -113,6 +113,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 			p.sections.section(sectionOutput, text.SectionOutput(),
 				parts.Wide(p.fields.Add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(),
 					p.tips.Say(text.DetailOutputDir()), pathBox(p.host, p.outDir, parts.TakesFolder))),
+				p.numberField(p.fields, p.tips),
 				p.fields.Add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(),
 					p.tips.Say(text.DetailSeed()), parts.Numeric(p.seed)),
 			),
@@ -155,18 +156,6 @@ func (p *Preset) Object() fyne.CanvasObject { return p.body }
 // FirstField is where the keyboard starts: which preset, because every
 // parameter under it is drawn from that answer.
 func (p *Preset) FirstField() fyne.Focusable { return p.pick }
-
-// OutDir and SetOutDir keep one answer to "where do the files go" across both
-// screens. The window carries it over on the way between them - see Open.
-func (p *Preset) OutDir() string { return p.outDir.Text }
-
-// SetOutDir leaves an empty value alone, for the reason the generate screen
-// gives: an emptied box is somebody about to type, not an answer to copy.
-func (p *Preset) SetOutDir(dir string) {
-	if dir != "" {
-		p.outDir.SetText(dir)
-	}
-}
 
 // onPresetChosen redraws what the chosen preset says and what it takes.
 func (p *Preset) onPresetChosen(id string) {
@@ -316,11 +305,12 @@ func (p *Preset) settle() ([]engine.Target, engine.Options, error) {
 	// we invented, produces a set carrying expectations that read exactly like a
 	// set built around the real one.
 	return targets, engine.Options{
-		OutDir:       p.outDir.Text,
-		Seed:         seed,
-		Command:      "tfg-gui",
-		ManifestName: engine.DefaultManifestName,
-		RecipeHash:   hash,
+		OutDir:        p.outDir.Text,
+		Seed:          seed,
+		Command:       "tfg-gui",
+		ManifestName:  engine.DefaultManifestName,
+		NumberIfTaken: p.numbers.Checked,
+		RecipeHash:    hash,
 		// Copies, because the expansion stays behind for the next reading of
 		// the form while these go to a worker and into a manifest. Nothing
 		// writes to either today - checked 2026-09-23 - and no guard would

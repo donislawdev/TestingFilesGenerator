@@ -368,6 +368,7 @@ tfg generate --format txt --size 1mb    settings come from the flags
 | `--name <template>` | name template, for example `invoice_{index:04}.txt` |
 | `--send-as <name>` | the name to give the file to your system, when it is one no disk stores, such as `../climbed_out.jpg`. The file keeps its own name and the manifest carries this one |
 | `--out <dir>` | directory to write into. Default `.` |
+| `--number-if-taken` | when `--out` already holds an earlier run, add this one beside it: every name of the run, its manifest's too, gets a number such as `-2`, and nothing already there changes. Without it such a run is refused with code `5`. A name the number would make too long for a file name is refused with the same code |
 | `--seed <n>` | run seed. The same seed gives the same bytes |
 | `--set <k>=<v>` | a format setting, repeatable: `--set width=1920 --set height=1080` |
 | `--damage <name>` | break the files on purpose, repeatable and applied in order. Run `tfg damage` for the list |
@@ -829,6 +830,14 @@ Tools screen a file or a folder dropped onto it goes into the box of the chosen
 tool, the same as picking it with Choose... Drop one at a time. Something the
 box cannot take is refused with a sentence under the box, and the box keeps
 what it had.
+
+You can generate into the same output directory again and again. A run into a
+directory that already holds an earlier run is added beside it: every name of
+the run, its manifest's too, gets a number, such as `files-2_0001.pdf` and
+`manifest-2.json`, and nothing already there changes. The switch for this, Add
+beside earlier runs, sits under the output directory and stays on unless you
+turn it off. With it off, such a run is refused, the same as on the command line
+without `--number-if-taken`.
 
 <p>
   <img src=".github/window-presets.png" width="49%" alt="The Presets screen of the window, with the list of presets open">

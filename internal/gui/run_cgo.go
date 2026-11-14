@@ -131,14 +131,18 @@ const (
 	keyHeight    = "windowHeight"
 	keyLanguage  = "language"
 	keyMemory    = "memory"
+	keyNumbers   = "numberIfTaken"
 )
 
 // ours is every key this program writes, which is what Forget removes and all
 // it removes. The folder picker's own keys stay: they are the toolkit's.
-var ours = []string{keyDirectory, keyWidth, keyHeight, keyLanguage, keyMemory}
+var ours = []string{keyDirectory, keyWidth, keyHeight, keyLanguage, keyMemory, keyNumbers}
 
 func (s stored) Directory() string          { return s.prefs.String(keyDirectory) }
 func (s stored) RememberDirectory(d string) { s.prefs.SetString(keyDirectory, d) }
+
+func (s stored) NumbersIfTaken() bool           { return s.prefs.BoolWithFallback(keyNumbers, true) }
+func (s stored) RememberNumbersIfTaken(on bool) { s.prefs.SetBool(keyNumbers, on) }
 
 func (s stored) Language() string { return s.prefs.String(keyLanguage) }
 func (s stored) RememberLanguage(tag string) {

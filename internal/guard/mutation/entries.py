@@ -17724,4 +17724,11 @@ MUTATIONS = [
         'minor, errMinor := strconv.Atoi(m[1])',
         'TestThePandocVersionDecidesWhatALiteralDocumentReadsAs',
     ),
+    (
+        "a manifest lying in the output directory no longer holds its number, so a run may write again the names an earlier record lists",
+        "internal/engine/numbering.go",
+        "for _, h := range held {",
+        "for _, h := range held[:0] {",
+        "TestANameAnEarlierRecordStillListsIsNotWrittenAgain",
+    ),
 ]

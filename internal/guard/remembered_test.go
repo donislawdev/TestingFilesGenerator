@@ -269,3 +269,39 @@ func TestASizeWithANoughtInItIsNotWorthRemembering(t *testing.T) {
 func hasSuffix(whole, end string) bool {
 	return len(whole) >= len(end) && whole[len(whole)-len(end):] == end
 }
+
+// keptInMemory is the fake host's store of what the window keeps between
+// runs - the stand in for the toolkit's preferences, which the guards in
+// this file and in window_test.go read back.
+type keptInMemory struct {
+	dir      string
+	size     fyne.Size
+	dirWrite int
+	language string
+	memory   string
+	forgets  int
+	// numbersOff is the switch beside the folder turned off, so that the
+	// zero value is the store nobody has written to: on.
+	numbersOff bool
+}
+
+func (k *keptInMemory) Directory() string { return k.dir }
+func (k *keptInMemory) RememberDirectory(d string) {
+	k.dir = d
+	k.dirWrite++
+}
+func (k *keptInMemory) Size() fyne.Size                { return k.size }
+func (k *keptInMemory) RememberSize(s fyne.Size)       { k.size = s }
+func (k *keptInMemory) Language() string               { return k.language }
+func (k *keptInMemory) RememberLanguage(tag string)    { k.language = tag }
+func (k *keptInMemory) Memory() string                 { return k.memory }
+func (k *keptInMemory) RememberMemory(m string)        { k.memory = m }
+func (k *keptInMemory) NumbersIfTaken() bool           { return !k.numbersOff }
+func (k *keptInMemory) RememberNumbersIfTaken(on bool) { k.numbersOff = !on }
+
+// Forget removes the values, as the real store does. What it promises for
+// the rest of the run is window.Forgetting's, which Remembered wraps this in.
+func (k *keptInMemory) Forget() {
+	k.dir, k.size, k.language, k.memory, k.numbersOff = "", fyne.Size{}, "", "", false
+	k.forgets++
+}

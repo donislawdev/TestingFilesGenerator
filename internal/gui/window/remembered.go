@@ -62,6 +62,15 @@ type Remembered interface {
 	Memory() string
 	RememberMemory(setting string)
 
+	// NumbersIfTaken is the switch beside the output folder as it was when
+	// the window last closed - whether a run into a folder holding an
+	// earlier one is added beside it under a number. True when nobody has
+	// said, the owner's decision of 2026-11-14 (docs/RUN-FOLDERS-2026-11-14.md
+	// section 9). Written with the folder, because it is the other half of
+	// where the files go, and forgotten with it.
+	NumbersIfTaken() bool
+	RememberNumbersIfTaken(on bool)
+
 	// Forget removes everything above, on the press of the Forget button and
 	// at no other time - untouchable rule 7. For the rest of this run the
 	// folder and the size are not written down again either, or closing the
@@ -94,6 +103,12 @@ func (f *forgetting) RememberDirectory(d string) {
 func (f *forgetting) RememberSize(size fyne.Size) {
 	if !f.forgot {
 		f.Remembered.RememberSize(size)
+	}
+}
+
+func (f *forgetting) RememberNumbersIfTaken(on bool) {
+	if !f.forgot {
+		f.Remembered.RememberNumbersIfTaken(on)
 	}
 }
 

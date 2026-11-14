@@ -194,9 +194,9 @@ type Generate struct {
 	count      *parts.Entry
 	id         *parts.Entry
 	name       *parts.Entry
-	outDir     *parts.Entry
-	seed       *parts.Entry
-	label      *parts.Toggle
+	outputFolder
+	seed  *parts.Entry
+	label *parts.Toggle
 
 	// props are the fields drawn from whatever the chosen format declares, and
 	// propBox is where they are put. Rebuilt on every change of format, because
@@ -318,19 +318,6 @@ func (g *Generate) Unscrolled() float32 { return unscrolledHeight(g.body, g.scro
 // everything else on the form follows from it.
 func (g *Generate) FirstField() fyne.Focusable { return g.formatPick }
 
-// OutDir and SetOutDir are how the screens keep one answer to "where do the
-// files go" between them. The window carries it across on the way from one to
-// the other - see Open.
-func (g *Generate) OutDir() string { return g.outDir.Text }
-
-// SetOutDir leaves an empty value alone. Emptying the box is somebody clearing
-// it to type, and copying that over would wipe the other screen's answer.
-func (g *Generate) SetOutDir(dir string) {
-	if dir != "" {
-		g.outDir.SetText(dir)
-	}
-}
-
 func (g *Generate) buildFields() {
 	// Before the select below, which fills it as soon as a format is chosen.
 	// The order is load bearing rather than tidy: choosing a format redraws the
@@ -371,7 +358,7 @@ func (g *Generate) buildFields() {
 	g.count = entry("1", "")
 	g.id = entry(startingBatchName, "")
 	g.name = entry("", text.PlaceholderNameTemplate)
-	g.outDir = entry(startingDirectory(), "")
+	g.outputFolder = newOutputFolder()
 	g.seed = entry("0", "")
 
 	g.label = parts.NewToggle(nil)
@@ -439,6 +426,7 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 		g.sections.section(sectionOutput, text.SectionOutput(),
 			parts.Wide(add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(), g.tips.Say(text.DetailOutputDir()),
 				pathBox(g.host, g.outDir, parts.TakesFolder))),
+			g.numberField(g.fields, g.tips),
 			add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(), g.tips.Say(text.DetailSeed()),
 				parts.Numeric(g.seed)),
 			g.fields.AddToggle(engine.SettingLabel, text.FieldLabel(), "", g.tips.Say(text.DetailLabel()), g.label),
@@ -727,9 +715,10 @@ func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 		Properties: g.properties(),
 		Damage:     g.chosenDamage(),
 	}}, engine.Options{
-		OutDir:       g.outDir.Text,
-		Seed:         seed,
-		Command:      "tfg-gui",
-		ManifestName: engine.DefaultManifestName,
+		OutDir:        g.outDir.Text,
+		Seed:          seed,
+		Command:       "tfg-gui",
+		ManifestName:  engine.DefaultManifestName,
+		NumberIfTaken: g.numbers.Checked,
 	}, nil
 }

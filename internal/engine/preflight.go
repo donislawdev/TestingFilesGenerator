@@ -28,11 +28,54 @@ import (
 // are two things to keep in step.
 const DefaultManifestName = "manifest.json"
 
+// mayStart settles whether this run may start at all, before anything is
+// written and before a dry run returns, and answers with the options the rest
+// of the run uses.
+//
+// A run that may take a number takes it first, because every question after
+// that one - how big its record is, whether anything is in its way, which name
+// it claims - is about the names it will really write. And all of it comes
+// before a dry run returns: a dry run exists to count and show before the disk
+// is touched, so reporting success for a run that refuses to start on the very
+// next line answers the wrong question.
+//
+// The directory is listed once for both of the steps that ask about names, and
+// only when one of them asks. A directory can hold a million names, and the
+// listing of it is the largest thing either step holds.
+func (res *Result) mayStart(ctx context.Context, files []PlannedFile, opt Options) (Options, error) {
+	names := listOnce(opt.OutDir)
+	opt, err := res.numberIfTaken(ctx, files, opt, names)
+	if err != nil {
+		return opt, err
+	}
+	record, err := PredictRecord(ctx, files, opt)
+	if err != nil {
+		return opt, err
+	}
+	return opt, preflight(ctx, files, opt, record, names)
+}
+
+// listOnce is the listing of dir, read the first time it is asked for and
+// handed back after that - nil included, which namesIn answers for a
+// directory it could not read.
+func listOnce(dir string) func() *listing {
+	var (
+		taken *listing
+		read  bool
+	)
+	return func() *listing {
+		if !read {
+			taken, read = namesIn(dir), true
+		}
+		return taken
+	}
+}
+
 // preflight answers whether this run may start, without writing anything.
 //
 // Both checks used to sit after the dry run had already returned, so
 // --dry-run reported success for runs that would refuse to start.
-func preflight(ctx context.Context, files []PlannedFile, opt Options, record RecordSize) error {
+func preflight(ctx context.Context, files []PlannedFile, opt Options, record RecordSize, names func() *listing) error {
 	// Free space first. Finding out at file five thousand of ten thousand
 	// leaves a half written set and a full disk on a machine somebody works on.
 	//
@@ -141,7 +184,7 @@ func preflight(ctx context.Context, files []PlannedFile, opt Options, record Rec
 	// Names cannot hold a separator - checkFileName refuses both on every
 	// system - so one listing of the output directory covers every planned file
 	// and every temporary name beside it.
-	taken := namesIn(opt.OutDir)
+	taken := names()
 
 	for _, f := range files {
 		// Asked per file rather than once, so a preview of a hundred thousand

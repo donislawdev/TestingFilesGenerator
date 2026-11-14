@@ -259,6 +259,8 @@
   "engine.NoOutDirFix": { "hash": "sha256-c14426ffc389", "other": "Podaj katalog, na przykład ./fixtures" },
   "engine.NoSpace": { "hash": "sha256-064c75842c91", "other": "ten przebieg potrzebuje {{.Needed}} B razem z manifestem, a w {{.Dir}} jest wolne {{.Free}} B - nic nie zostało zapisane. Poproś o mniej plików albo mniejszy rozmiar albo zapisz na inny dysk, zmieniając katalog wyjściowy" },
   "engine.NotProduced": { "hash": "sha256-46fb82f6985b", "other": "Ten plik nie powstał. Przebieg poszedł dalej i skończył się kodem wyjścia oznaczającym częściowy wynik." },
+  "engine.NumberTooLong": { "hash": "sha256-e9c1b1a6b7f2", "other": "{{.Dir}} zawiera już nazwy, które ten przebieg by zapisał, więc jego nazwy dostałyby numer {{.Number}}, a wtedy {{.Name}} ma {{.Length}} bajtów. Nazwa pliku mieści na niektórych systemach najwyżej {{.Most}} bajtów, a ta była blisko tej granicy już w zamówionej postaci. Generuj do pustego katalogu, gdzie każda nazwa zostaje zapisana tak, jak ją zamówiono" },
+  "engine.Numbered": { "hash": "sha256-04038b126ff9", "other": "katalog wyjściowy zawiera już nazwy, które ten przebieg by zapisał, więc każda nazwa tego przebiegu ma numer {{.Number}}, na przykład {{.Example}}. Nic, co tam było, się nie zmieniło" },
   "engine.OutDirIsAFile": { "hash": "sha256-55a340f0b67d", "other": "katalog wyjściowy {{.Dir}} jest plikiem, a nie katalogiem" },
   "engine.OutDirIsAFileFix": { "hash": "sha256-f9e5f71f3822", "other": "Wskaż jako katalog wyjściowy katalog albo taki, którego jeszcze nie ma - zostanie utworzony" },
   "engine.PlanTooLarge": { "hash": "sha256-bc308275bb7d", "other": "plan tego przebiegu doszedł do {{.Used}} po {{.Files}}, a sufit to {{.Ceiling}}" },

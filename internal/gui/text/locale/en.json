@@ -254,6 +254,11 @@
     "hash": "sha256-3e64e80529fb",
     "other": "Left empty, the files are named after the batch and numbered, like invoices_0001.pdf. Fill it in and the name is used exactly as written, extension and all. The one placeholder is {index:04}, which becomes 0001, 0002 and so on, and a batch of more than one file needs it."
   },
+  "DetailNumberIfTaken": {
+    "description": "The longer explanation behind the button beside a field name.",
+    "hash": "sha256-3c46d124a296",
+    "other": "When the output directory already holds an earlier run, this run is added beside it. Its files and its manifest get a number in their names, such as files-2_0001.pdf, and nothing already there changes. Turned off, a run into such a directory is refused, so every run needs a directory of its own."
+  },
   "DetailOutputDir": {
     "description": "The longer explanation behind the button beside a field name.",
     "hash": "sha256-55317cd71eaa",
@@ -414,6 +419,11 @@
     "description": "The name above a box somebody fills in.",
     "hash": "sha256-6d00d6e32977",
     "other": "File names"
+  },
+  "FieldNumberIfTaken": {
+    "description": "The name above a box somebody fills in.",
+    "hash": "sha256-73366758c3b9",
+    "other": "Add beside earlier runs"
   },
   "FieldOutputDir": {
     "description": "The name above a box somebody fills in.",
