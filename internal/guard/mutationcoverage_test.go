@@ -143,6 +143,25 @@ var notProvenByMutation = map[string]bool{
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
 	// Broken once each on 2026-11-14 while they were written, one change at a
+	// time and restored (docs/RUN-FOLDERS-2026-11-14.md section 12). The sixth
+	// guard of the piece, TestANameAnEarlierRecordStillListsIsNotWrittenAgain,
+	// has an entry of its own: it holds the user's files (rule 26 b).
+	"TestARunThatTakesANumberLeavesTheEarlierRunAsItWas": "its own canary - a changed file and a missing one must both be named - " +
+		"and broken on 2026-11-14 by saving the record under the plain name: red.",
+	"TestTheNumberGoesWhereTheOwnerChose":                            "broken on 2026-11-14 by putting the number before the ending in every name: red, other_0001-2.txt.",
+	"TestARunIntoAFreeDirectoryKeepsItsNames":                        "broken on 2026-11-14 by giving an empty directory number 2: red.",
+	"TestANumberAnythingHoldsIsPassedOver":                           "broken on 2026-11-14 by no longer asking about the files of the plan: red, the run was refused on the held name.",
+	"TestTheInstructionsFollowTheNumberedManifest":                   "broken on 2026-11-14 by numbering the manifest alone when the record is saved: red, the instructions kept the plain name.",
+	"TestANameTheNumberMakesTooLongIsRefusedBeforeAnythingIsWritten": "broken on 2026-11-14 by dropping the refusal of the numbered name: red, the run went ahead.",
+	"TestTheCommandLineNumbersOnlyWhenTold": "its own control - the same second run without the flag must be refused - and broken on 2026-11-14 " +
+		"by leaving --number-if-taken unwired: red, the run with it ended 5.",
+	"TestTheSwitchBesideTheFolderDecidesWhatASecondRunDoesOnEveryScreen": "its own control - the same run with the switch off must be refused - " +
+		"and broken on 2026-11-14 by the batch screen not passing the switch to the run: red, no manifest-2.json.",
+	"TestTheSwitchTravelsAndIsRememberedWithTheFolder": "broken on 2026-11-14 three times: not carried to the next screen, not written down " +
+		"at the close, not given back at the start. Red each time.",
+	"TestARunNoteOpensWithACapitalUnlessItOpensWithAName": "broken on 2026-11-14 both ways: text.Line never giving a capital, and always " +
+		"giving one - red, files_0001.txt became Files_0001.txt (docs/REVIEW-246-2026-11-14.md).",
+	// Broken once each on 2026-11-14 while they were written, one change at a
 	// time and restored (docs/DRAG-DROP-2026-11-14.md section 13).
 	"TestEveryControlOfAFieldIsOffWhileARunOwnsTheScreen": "its own canary - a live button must be reported live - and red on 2026-11-14 " +
 		"before Fields.Freeze walked every control of a field: Choose... stood live beside the frozen output directory.",

@@ -140,8 +140,9 @@ func (f *fileOffer) hide() {
 }
 
 // inTheWay is the directory a refusal is about when it is about something
-// already in it - a file or a manifest the run will not write over, or
-// another run still writing there - or nothing.
+// already in it - a file or a manifest the run will not write over, another
+// run still writing there, or an earlier run whose number would make a name
+// too long - or nothing.
 //
 // Reported by the owner from the running window on 2026-09-23: the refusal
 // named the file and the directory, and the only way to go and look was to
@@ -158,11 +159,16 @@ func (f *fileOffer) hide() {
 func inTheWay(err error) string {
 	var collision *engine.CollisionError
 	var busy *engine.RunInProgressError
+	var numbered *engine.NumberTooLongError
 	switch {
 	case errors.As(err, &collision):
 		return filepath.Dir(collision.Path)
 	case errors.As(err, &busy):
 		return busy.Dir
+	case errors.As(err, &numbered):
+		// The names were fine as asked. What an earlier run in the directory
+		// did to them is the thing to go and look at.
+		return numbered.Dir
 	}
 	return ""
 }

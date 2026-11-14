@@ -601,8 +601,8 @@ MUTATIONS = [
     (
         "a run from the recipe screen ignores the manifest name it was given",
         "internal/gui/window/recipe.go",
-        "ManifestName: manifestName(rec.Output.Manifest),",
-        "ManifestName: engine.DefaultManifestName,",
+        "ManifestName:  manifestName(rec.Output.Manifest),",
+        "ManifestName:  engine.DefaultManifestName,",
         "TestWhatIsTypedOnTheRecipeScreenIsWhatGetsWritten",
     ),
     (
@@ -782,9 +782,9 @@ MUTATIONS = [
     ),
     (
         "a dry run skips the checks and promises a run that would be refused",
-        "internal/engine/engine.go",
-        "if err := preflight(ctx, files, opt, record); err != nil {",
-        "if err := preflight(ctx, files, opt, record); err != nil && !opt.DryRun {",
+        "internal/engine/preflight.go",
+        "\treturn opt, preflight(ctx, files, opt, record, names)\n",
+        "\tif opt.DryRun {\n\t\treturn opt, nil\n\t}\n\treturn opt, preflight(ctx, files, opt, record, names)\n",
         "TestADryRunReachesTheSameVerdictAsTheRealRun",
     ),
     (
@@ -3622,9 +3622,9 @@ MUTATIONS = [
         # The generate screen is where it means something: its value is the one
         # that gets carried, so a dot there is a dot on both screens.
         "the window goes back to offering a dot as the output directory",
-        "internal/gui/window/generate.go",
-        "\tg.outDir = entry(startingDirectory(), \"\")",
-        "\tg.outDir = entry(\".\", \"\")",
+        "internal/gui/window/destination.go",
+        "\to.outDir.SetText(startingDirectory())",
+        "\to.outDir.SetText(\".\")",
         "TestBothScreensSayWhereTheFilesWillGo",
     ),
     (
@@ -3678,7 +3678,7 @@ MUTATIONS = [
         # on 2026-08-11: files went to a chosen directory, the preset screen
         # was opened, and its run wrote somewhere else.
         "the chosen directory is carried backwards, to the screen somebody just left",
-        "internal/gui/window/open.go",
+        "internal/gui/window/destination.go",
         "to.SetOutDir(from.OutDir())",
         "from.SetOutDir(to.OutDir())",
         "TestBothScreensAgreeWhereTheFilesGo",
@@ -5329,8 +5329,8 @@ MUTATIONS = [
     (
         "closing the window forgets where the files were going",
         "internal/gui/window/closing.go",
-        "\tif screen, ok := c.working[*c.showing]; ok {\n\t\tc.host.Remembered().RememberDirectory(screen.OutDir())\n\t}",
-        "\tif screen, ok := c.working[*c.showing]; ok && false {\n\t\tc.host.Remembered().RememberDirectory(screen.OutDir())\n\t}",
+        "\tif screen, ok := c.working[*c.showing]; ok {\n\t\tc.host.Remembered().RememberDirectory(screen.OutDir())\n",
+        "\tif screen, ok := c.working[*c.showing]; ok && false {\n\t\tc.host.Remembered().RememberDirectory(screen.OutDir())\n",
         "TestClosingTheWindowRemembersWhereTheFilesWereGoing",
     ),
     (
@@ -6297,9 +6297,9 @@ MUTATIONS = [
     ),
     (
         "the forecast of the record and the preflight both stop noticing that they were asked to stop",
-        "internal/engine/engine.go",
-        "record, err := PredictRecord(ctx, files, opt)\n\tif err != nil {\n\t\treturn res, err\n\t}\n\tif err := preflight(ctx, files, opt, record); err != nil {",
-        "record, err := PredictRecord(context.Background(), files, opt)\n\tif err != nil {\n\t\treturn res, err\n\t}\n\tif err := preflight(context.Background(), files, opt, record); err != nil {",
+        "internal/engine/preflight.go",
+        "record, err := PredictRecord(ctx, files, opt)\n\tif err != nil {\n\t\treturn opt, err\n\t}\n\treturn opt, preflight(ctx, files, opt, record, names)",
+        "record, err := PredictRecord(context.Background(), files, opt)\n\tif err != nil {\n\t\treturn opt, err\n\t}\n\treturn opt, preflight(context.Background(), files, opt, record, names)",
         "TestWorkingOutTheCostCanBeStopped",
     ),
     (
@@ -6739,8 +6739,8 @@ MUTATIONS = [
         "the branching ceiling is left above the most branching function, so a "
         "function can climb toward it without anything saying so",
         "internal/guard/branching_test.go",
+        "\tworstComplexity = 21 ",
         "\tworstComplexity = 22 ",
-        "\tworstComplexity = 23 ",
         "TestTheBranchingCeilingsAreTodaysMeasurementAndNotALooserNumber",
     ),
     (
@@ -16140,8 +16140,8 @@ MUTATIONS = [
         # option this tool can have.
         "generate reads --memory and plans under auto anyway",
         "internal/cli/generate.go",
-        "\t\tMemory:       memory.Memory,",
-        "\t\tMemory:       memoryValue{}.Memory,",
+        "\t\tMemory:        memory.Memory,",
+        "\t\tMemory:        memoryValue{}.Memory,",
         "TestTheMemoryFlagReachesThePlanOnEveryCommandThatPlans",
     ),
     (
@@ -17723,5 +17723,12 @@ MUTATIONS = [
         'minor, errMinor := strconv.Atoi(m[2])',
         'minor, errMinor := strconv.Atoi(m[1])',
         'TestThePandocVersionDecidesWhatALiteralDocumentReadsAs',
+    ),
+    (
+        "a manifest lying in the output directory no longer holds its number, so a run may write again the names an earlier record lists",
+        "internal/engine/numbering.go",
+        "for _, h := range held {",
+        "for _, h := range held[:0] {",
+        "TestANameAnEarlierRecordStillListsIsNotWrittenAgain",
     ),
 ]

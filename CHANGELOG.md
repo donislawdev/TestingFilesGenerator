@@ -59,6 +59,14 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Generate into the same folder again.** A run into an output directory
+  that already holds an earlier run is added beside it: every name of the run,
+  its manifest's too, gets a number, such as `files-2_0001.pdf` and
+  `manifest-2.json`, and nothing already there changes. In the window this is
+  Add beside earlier runs under the output directory, on unless you turn it
+  off. On the command line it is `--number-if-taken`. When the number would
+  make a name too long for a file name, the run is refused with code `5`.
+
 - **Drop a folder or a file onto the window.** A folder dropped onto Single
   batch, Presets or Several batches becomes the output directory. On the Tools
   screen it goes into the box of the chosen tool when the tool takes that

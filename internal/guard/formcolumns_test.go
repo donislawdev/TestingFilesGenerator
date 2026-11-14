@@ -179,6 +179,14 @@ func TestARefusalAboutWhatIsInTheDirectoryStandsUnderItAndOpensIt(t *testing.T) 
 	content := screen.Object()
 	fill(t, content, text.FieldSize(), "1kb")
 	entryUnder(t, content, text.FieldOutputDir()).SetText(dir)
+	// Off, or the run is added beside the manifest under a number and there
+	// is no refusal to look at (docs/RUN-FOLDERS-2026-11-14.md). Asserted on
+	// rather than assumed: the switch is on until somebody turns it off.
+	numbers := toggleUnder(t, content, text.FieldNumberIfTaken())
+	numbers.SetChecked(false)
+	if numbers.Checked {
+		t.Fatal("the switch beside the output directory did not turn off, so the run would take a number rather than be refused")
+	}
 	screen.PressPreview()
 	join(host)
 

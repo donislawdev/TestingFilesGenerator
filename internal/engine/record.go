@@ -52,6 +52,9 @@ func (e *InstructionsError) Unwrap() error { return e.Err }
 // the disk. A manifest that cannot be saved takes the instructions with it:
 // they describe files nothing records, and cleanup would have no way to them.
 func SaveRecord(res *Result, opt Options) (Record, error) {
+	// Under the number the run took, when it took one - the name it claimed
+	// before its first file, which is the only one it may save to.
+	opt = res.numbered(opt)
 	rec := Record{Manifest: ManifestPath(opt)}
 	m := res.Manifest
 	var instructions os.FileInfo

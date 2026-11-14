@@ -174,7 +174,10 @@ func FieldNameTemplate() string { return say("FieldNameTemplate", "File names") 
 func FieldOutputDir() string    { return say("FieldOutputDir", "Output directory") }
 func FieldSeed() string         { return say("FieldSeed", "Seed") }
 func FieldLabel() string        { return say("FieldLabel", "Label in each file") }
-func FieldPreset() string       { return say("FieldPreset", "Preset") }
+func FieldNumberIfTaken() string {
+	return say("FieldNumberIfTaken", "Add beside earlier runs")
+}
+func FieldPreset() string { return say("FieldPreset", "Preset") }
 
 // The line under each field: what it does, in one line, and nothing else.
 //
@@ -229,6 +232,9 @@ func DetailSeed() string {
 }
 func DetailLabel() string {
 	return say("DetailLabel", "Writes into the file what it is and how big it was meant to be. Turn it off for a file that has to hold nothing but its content.")
+}
+func DetailNumberIfTaken() string {
+	return say("DetailNumberIfTaken", "When the output directory already holds an earlier run, this run is added beside it. Its files and its manifest get a number in their names, such as files-2_0001.pdf, and nothing already there changes. Turned off, a run into such a directory is refused, so every run needs a directory of its own.")
 }
 func DetailPreset() string { return say("DetailPreset", "The set is worked out from the answer.") }
 

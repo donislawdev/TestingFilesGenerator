@@ -113,6 +113,12 @@ type Options struct {
 	Preset *manifest.Preset
 	// ManifestName is the file the manifest lands in, relative to OutDir.
 	ManifestName string
+	// NumberIfTaken lets a run into a directory that already holds names it
+	// would write - an earlier run's manifest above all - take a number on
+	// every name, its manifest's too, rather than be refused. Off, the run is
+	// refused as it always was. See numbering.go, and Result.Number for the
+	// number it took.
+	NumberIfTaken bool
 
 	// AvailableBytes reports the free space at a path. It is injected so a
 	// test can describe a small disk without owning one - and so that a test
@@ -197,10 +203,19 @@ type Result struct {
 
 	// RunNotes is what the run says about itself rather than about a file:
 	// the memory of the machine could not be read, a file was written past
-	// the memory setting. Not in the manifest, which describes files - these
-	// describe the machine the run happened on, and a manifest that changed
-	// with the machine would record something other than the files beside it.
+	// the memory setting, the names took a number. Not in the manifest, which
+	// describes files - these describe the machine and the directory the run
+	// happened in, and a manifest that changed with them would record
+	// something other than the files beside it. A numbered name needs no note
+	// there either: the manifest lists the names as they are on the disk.
 	RunNotes []core.Said
+
+	// Number is the number every name of this run carries, its manifest's
+	// among them, when Options.NumberIfTaken found the directory holding names
+	// the run would write - and 0 when the names are the ones planned. The
+	// files of the plan were renamed to carry it, and SaveRecord saves the
+	// manifest under it.
+	Number int
 
 	// Hold is what this run was worked out to hold at its end, against what
 	// its memory setting gives it (PredictHold), before its first byte. A
@@ -509,15 +524,9 @@ func Run(ctx context.Context, files []PlannedFile, opt Options) (*Result, error)
 	m := newManifest(opt)
 	res := &Result{Manifest: m}
 
-	// Whether this run may start at all is settled before anything is written
-	// and before a dry run returns. A dry run exists to count and show before
-	// the disk is touched, so reporting success for a run that refuses to
-	// start on the very next line answers the wrong question.
-	record, err := PredictRecord(ctx, files, opt)
+	// Whether this run may start at all, and under which names - see mayStart.
+	opt, err := res.mayStart(ctx, files, opt)
 	if err != nil {
-		return res, err
-	}
-	if err := preflight(ctx, files, opt, record); err != nil {
 		return res, err
 	}
 	limits := opt.memoryLimits()

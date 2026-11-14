@@ -77,7 +77,7 @@ type Recipe struct {
 	// form scrolls and one batch is taller than the window (O112).
 	addBtn *parts.Button
 
-	outDir   *parts.Entry
+	outputFolder
 	manifest *parts.Entry
 	seed     *parts.Entry
 	label    *parts.Toggle
@@ -167,8 +167,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// the fold is opened first - see runner.unfold.
 	r.runner.unfold = r.openFoldHolding
 
-	r.outDir = parts.NewEntry()
-	r.outDir.SetText(startingDirectory())
+	r.outputFolder = newOutputFolder()
 	r.manifest = parts.NewEntry()
 	r.manifest.SetPlaceHolder(engine.DefaultManifestName)
 	r.seed = parts.NewEntry()
@@ -240,18 +239,6 @@ func (r *Recipe) FirstField() fyne.Focusable {
 		return r.base.on
 	}
 	return r.batches[0].formatPick
-}
-
-// OutDir is where this screen would write, for the screen somebody moves to.
-func (r *Recipe) OutDir() string { return r.outDir.Text }
-
-// SetOutDir points this screen at a directory chosen on another one. The same
-// reasoning as on the other two screens: both used to hold their own box, so
-// they agreed until somebody changed one and then silently disagreed.
-func (r *Recipe) SetOutDir(dir string) {
-	if dir != "" {
-		r.outDir.SetText(dir)
-	}
 }
 
 // newBatch builds the controls of one batch, without placing them.
@@ -564,6 +551,7 @@ func (r *Recipe) outputSection() fyne.CanvasObject {
 	return r.sections.section(sectionOutput, text.SectionOutput(),
 		parts.Wide(r.fields.Add(recipe.KeyOutputDir, text.FieldOutputDir(), text.HintOutputDir(),
 			r.tips.Say(text.DetailOutputDir()), pathBox(r.host, r.outDir, parts.TakesFolder))),
+		r.numberField(r.fields, r.tips),
 		r.fields.Add(recipe.KeyOutputManifest, text.FieldManifest(), text.HintManifest(),
 			r.tips.Say(text.DetailManifest()), parts.Text(r.manifest)),
 		r.fields.Add(recipe.KeySeed, text.FieldSeed(), text.HintSeed(),
@@ -641,11 +629,12 @@ func (r *Recipe) settle() ([]engine.Target, engine.Options, error) {
 		targets = append(targets, engineTarget(t))
 	}
 	opt := engine.Options{
-		OutDir:       statedDirectory(r.outDir.Text, rec.Output.Dir),
-		Seed:         rec.Seed,
-		Command:      "tfg-gui",
-		ManifestName: manifestName(rec.Output.Manifest),
-		RecipeHash:   hash,
+		OutDir:        statedDirectory(r.outDir.Text, rec.Output.Dir),
+		Seed:          rec.Seed,
+		Command:       "tfg-gui",
+		ManifestName:  manifestName(rec.Output.Manifest),
+		NumberIfTaken: r.numbers.Checked,
+		RecipeHash:    hash,
 	}
 	// Which numbers were the preset's own rather than only which preset the
 	// recipe built on - the same record the preset screen writes, because it

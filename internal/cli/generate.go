@@ -39,6 +39,8 @@ type generateOpts struct {
 	clean  bool
 	dryRun bool
 	asJSON bool
+	// numberIfTaken is --number-if-taken, engine.Options.NumberIfTaken.
+	numberIfTaken bool
 	// The flags a person may write more than once, in one piece rather than
 	// two fields. They are one thing on the screen and one thing in a recipe -
 	// what was stated repeatedly - and grouping them is what moving state out
@@ -57,6 +59,9 @@ func generateFlagSet(errOut io.Writer, g *generateOpts) (*flag.FlagSet, func(io.
 	fs.StringVar(&g.boundary, "boundary", "", "three files around a limit: one byte under it, the limit itself, one byte over")
 	fs.IntVar(&g.count, "count", 1, "how many files to produce")
 	fs.StringVar(&g.outDir, "out", ".", "directory to write into")
+	fs.BoolVar(&g.numberIfTaken, "number-if-taken", false, "when --out already holds names this run would write, an earlier run's manifest above all, "+
+		"give every name of this run a number such as -2 rather than stopping. Nothing already there is changed. "+
+		"Without it such a run stops with exit code 5")
 	fs.StringVar(&g.name, "name", "", "name template, for example invoice_{index:04}.txt")
 	fs.StringVar(&g.notes.SendAs, "send-as", "", "the name to give the file to your system under, when it is one no disk stores, for example ../climbed_out.jpg. "+
 		"The file keeps its own name here and the manifest carries this one")
@@ -158,12 +163,13 @@ func generate(ctx context.Context, args []string, out, errOut io.Writer) int {
 	given := flagsGiven(fs)
 
 	opt := engine.Options{
-		OutDir:       g.outDir,
-		Seed:         g.seed,
-		DryRun:       g.dryRun,
-		Command:      "tfg " + strings.Join(args2(args), " "),
-		ManifestName: defaultManifestName,
-		Memory:       memory.Memory,
+		OutDir:        g.outDir,
+		Seed:          g.seed,
+		DryRun:        g.dryRun,
+		Command:       "tfg " + strings.Join(args2(args), " "),
+		ManifestName:  defaultManifestName,
+		Memory:        memory.Memory,
+		NumberIfTaken: g.numberIfTaken,
 	}
 
 	var (

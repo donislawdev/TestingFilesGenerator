@@ -97,6 +97,10 @@ var notWords = map[string]string{
 		"Translating it would lose the choice the day somebody changed language",
 	`"memory"`: "the name the window files the chosen memory setting under, never shown. " +
 		"Translating it would lose the choice the day somebody changed language",
+	`"numberIfTaken"`: "the name the window files the switch beside the output directory under, never shown. " +
+		"Translating it would lose the choice the day somebody changed language",
+	`"number-if-taken"`: "the key the switch beside the output directory is registered under among a screen's fields, never shown - " +
+		"spelt as the command line's flag for the same answer (window/destination.go)",
 	`"--pseudo-language"`: "a flag on the launch line for whoever builds the window, English by D9 like every flag, never translated or shown",
 	// What each screen IS, as opposed to the word on its tab - see parts.Tab.
 	// They carry the output directory and the keyboard between screens, so a

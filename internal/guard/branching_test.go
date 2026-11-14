@@ -23,7 +23,7 @@ const (
 	// names internal/engine/engine.go Run since the run lock went in there.
 	// Written down because a comment naming the wrong function sends the next
 	// reader to flatten something that is not the one at the ceiling.
-	worstComplexity = 22 // internal/engine/engine.go Run
+	worstComplexity = 21 // internal/engine/engine.go Run
 	// 9 until 2026-09-25, when applyCleanup's arguments became one cleanupRun
 	// and the preview took the same value instead of an eighth argument.
 	mostArguments = 7 // internal/cli/verify.go reportVerify

@@ -40,10 +40,7 @@ type closing struct {
 	// the screen somebody was last on. The three carry it between themselves,
 	// so the screen being looked at is the one holding the answer, and showing
 	// is a pointer because it changes as somebody moves.
-	working map[string]interface {
-		OutDir() string
-		SetOutDir(string)
-	}
+	working map[string]destination
 	showing *string
 	// looking is the tab the keyboard acts on - see wireKeyboard.
 	looking *string
@@ -95,6 +92,7 @@ func (c *closing) leave() {
 	c.quiet.Stop()
 	if screen, ok := c.working[*c.showing]; ok {
 		c.host.Remembered().RememberDirectory(screen.OutDir())
+		c.host.Remembered().RememberNumbersIfTaken(screen.NumbersIfTaken())
 	}
 	if !anyBusy(c.busy) {
 		c.host.Close()

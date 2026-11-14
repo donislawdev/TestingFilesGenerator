@@ -435,34 +435,6 @@ func (h *fakeHost) Remembered() window.Remembered {
 	return h.remembered
 }
 
-type keptInMemory struct {
-	dir      string
-	size     fyne.Size
-	dirWrite int
-	language string
-	memory   string
-	forgets  int
-}
-
-func (k *keptInMemory) Directory() string { return k.dir }
-func (k *keptInMemory) RememberDirectory(d string) {
-	k.dir = d
-	k.dirWrite++
-}
-func (k *keptInMemory) Size() fyne.Size             { return k.size }
-func (k *keptInMemory) RememberSize(s fyne.Size)    { k.size = s }
-func (k *keptInMemory) Language() string            { return k.language }
-func (k *keptInMemory) RememberLanguage(tag string) { k.language = tag }
-func (k *keptInMemory) Memory() string              { return k.memory }
-func (k *keptInMemory) RememberMemory(m string)     { k.memory = m }
-
-// Forget removes the values, as the real store does. What it promises for
-// the rest of the run is window.Forgetting's, which Remembered wraps this in.
-func (k *keptInMemory) Forget() {
-	k.dir, k.size, k.language, k.memory = "", fyne.Size{}, "", ""
-	k.forgets++
-}
-
 // SettingsFolder is a made up folder, so a guard can find it on the screen.
 func (h *fakeHost) SettingsFolder() string { return fakeSettingsFolder }
 

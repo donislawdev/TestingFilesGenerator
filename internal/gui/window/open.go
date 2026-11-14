@@ -84,10 +84,7 @@ func Open(h Host) fyne.Size {
 	// to the next one. Two screens could be written as a switch naming the other
 	// one, and a third makes "the other one" ambiguous - the answer is where
 	// somebody has just been, which is a thing to remember rather than derive.
-	working := map[string]interface {
-		OutDir() string
-		SetOutDir(string)
-	}{
+	working := map[string]destination{
 		tabGenerate: gen,
 		tabPresets:  pre,
 		tabRecipe:   rec,
@@ -120,7 +117,7 @@ func Open(h Host) fyne.Size {
 		from, leaving := working[showing]
 		to, arriving := working[item.ID]
 		if leaving && arriving {
-			to.SetOutDir(from.OutDir())
+			carryDestination(from, to)
 		}
 		// Remembered even when the new screen has no directory of its own, so
 		// that About in the middle of two work screens does not strand the
@@ -187,10 +184,13 @@ func Open(h Host) fyne.Size {
 // Split out of Open on 2026-08-25, when that function went past three quarters
 // of the ceiling for the second time in a day. The ceiling is a ratchet, so the
 // answer is a split and never a higher number.
-func offerWhereItLastWrote(h Host, working map[string]interface {
-	OutDir() string
-	SetOutDir(string)
-}) {
+func offerWhereItLastWrote(h Host, working map[string]destination) {
+	// The switch beside the folder comes back whatever the folder does: a
+	// folder nobody remembers is no reason to forget that somebody turned
+	// the switch off.
+	for _, screen := range working {
+		screen.SetNumbersIfTaken(h.Remembered().NumbersIfTaken())
+	}
 	// A remembered folder the window itself once offered from a place it
 	// should not write into counts as nothing remembered - see
 	// LeftByTheOldOffer.

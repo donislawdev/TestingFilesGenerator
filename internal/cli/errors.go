@@ -390,6 +390,13 @@ func classifyReading(err error) (int, bool) {
 	if errors.As(err, &inProgress) {
 		return ExitIO, true
 	}
+	// A directory whose earlier run gives this one a number too long for one
+	// of its names. The same row again: the name was fine, the directory is
+	// what will not have it.
+	var numberTooLong *engine.NumberTooLongError
+	if errors.As(err, &numberTooLong) {
+		return ExitIO, true
+	}
 	// A manifest we cannot read is a reading failure, not a bug in the tool.
 	// Falling through to RUNTIME would tell CI to file a report against us for
 	// a file somebody handed in.
