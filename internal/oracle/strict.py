@@ -1392,8 +1392,12 @@ def check_bmp(data):
     if offbits + stride * rows > len(data):
         fail(f"the pixels run to {offbits + stride * rows} and the file ends at {len(data)}")
 
+    # The padding stands in front of the pixels, in the gap bfOffBits points
+    # past, and in a file laid out for a cut partly behind them, where no field
+    # points (internal/format/bmp/cut.go).
     gap = offbits - 54
-    ok(f"{width}x{rows}, {depth} bit, stride {stride} B, gap {gap} B, size field agrees")
+    behind = len(data) - offbits - stride * rows
+    ok(f"{width}x{rows}, {depth} bit, stride {stride} B, gap {gap} B, {behind} B behind the pixels, size field agrees")
 
 
 def gif_blocks(data, pos):
@@ -1861,7 +1865,7 @@ def check_tiff(data):
         fail(f"a directory of {count} entries runs to {end} and the file ends at {len(data)}")
 
     sizes = {1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 7: 1}
-    tags, previous = {}, -1
+    tags, previous, values_end = {}, -1, end
     for i in range(count):
         at = ifd_at + 2 + 12 * i
         tag, kind, n = struct.unpack("<HHI", data[at:at + 8])
@@ -1880,6 +1884,7 @@ def check_tiff(data):
             if off + total > len(data):
                 fail(f"the value of tag {tag} runs to {off + total} and the file ends at {len(data)}")
             value = data[off:off + total]
+            values_end = max(values_end, off + total)
         else:
             value = raw[:total]
         tags[tag] = (kind, n, value)
@@ -1932,13 +1937,23 @@ def check_tiff(data):
         fail(f"the pixels are said to start at {offset}, inside the header")
     if offset + counts > len(data):
         fail(f"the pixels run to {offset + counts} and the file ends at {len(data)}")
-    # The pixels have to end where the directory begins, because this
-    # generator puts its padding in front of them and nothing between.
-    if offset + counts != ifd_at:
+    # The generator writes one of two layouts. A file nothing cuts has its
+    # padding in front of the pixels and the directory right behind them, so
+    # the pixels end where the directory begins. A file a damage will cut has
+    # the directory and its values right behind the header, and the padding
+    # split around the pixels (internal/format/tiff/cut.go). Anything else is a
+    # file this generator does not write.
+    if ifd_at == 8:
+        if offset < values_end:
+            fail(f"the pixels start at {offset}, inside the directory and its values, which run to {values_end}")
+        layout = (f"the directory first, {offset - values_end} B in front of the pixels and "
+                  f"{len(data) - offset - counts} B behind them")
+    elif offset + counts == ifd_at:
+        layout = f"gap {offset - 8} B"
+    else:
         fail(f"the pixels end at {offset + counts} and the directory begins at {ifd_at}")
 
-    gap = offset - 8
-    ok(f"{width}x{height}, {samples * 8} bit, uncompressed, gap {gap} B, "
+    ok(f"{width}x{height}, {samples * 8} bit, uncompressed, {layout}, "
        f"{count} entries in one directory, byte counts agree with the geometry")
 
 
@@ -1977,7 +1992,7 @@ def check_webp(data):
         fail(f"{trailing} B sit after the RIFF payload, and only the odd byte belongs there - "
              "the bulk of the padding belongs in a chunk")
 
-    pos, image, private, seen = 12, 0, 0, []
+    pos, chunks = 12, []
     while pos + 8 <= payload_end:
         tag = data[pos:pos + 4]
         size = struct.unpack("<I", data[pos + 4:pos + 8])[0]
@@ -1985,21 +2000,47 @@ def check_webp(data):
         if end > payload_end:
             fail(f"the chunk {tag.decode('latin1')!r} says {size} B and only "
                  f"{payload_end - pos - 8} B are left")
-        seen.append(tag.decode("latin1"))
-        if tag in (b"VP8L", b"VP8 ", b"VP8X"):
-            image += 1
-            if tag == b"VP8L" and data[pos + 8] != 0x2F:
-                fail("the lossless stream does not start with its signature byte")
-        else:
-            private += 1
+        chunks.append((tag, pos + 8, size))
         pos = end + (size & 1)
 
     if pos != payload_end:
         fail(f"the chunks end at {pos} and the payload ends at {payload_end}")
-    if image != 1:
-        fail(f"the file carries {image} image chunks and a still WebP has one")
+    tags = [t for t, _, _ in chunks]
+    seen = [t.decode("latin1") for t in tags]
+    if tags.count(b"VP8L") != 1 or b"VP8 " in tags:
+        fail(f"the file carries the chunks {seen}, and a still lossless WebP has one VP8L chunk")
+    picture = tags.index(b"VP8L")
+    _, at, _ = chunks[picture]
+    if data[at] != 0x2F:
+        fail("the lossless stream does not start with its signature byte")
+    bits = struct.unpack("<I", data[at + 1:at + 5])[0]
+    width, height = (bits & 0x3FFF) + 1, ((bits >> 14) & 0x3FFF) + 1
 
-    ok(f"riff {declared} B, chunks {seen}, {private} private, {trailing} B after the payload")
+    # RFC 9649 has the simple format carry the VP8L chunk and nothing in front
+    # of it (section 2.6), and lets unknown chunks of the extended one, which
+    # opens with a VP8X chunk, appear out of order (section 2.7). The generator
+    # writes the extended format only for a file a damage will cut, with
+    # padding in front of the picture (internal/format/webp/cut.go). Eight
+    # decoders of ten refuse a chunk in front of the picture without the VP8X
+    # (docs/TRUNCATE-2026-11-11.md section 15.3).
+    if b"VP8X" in tags:
+        if tags.index(b"VP8X") != 0 or tags.count(b"VP8X") != 1:
+            fail(f"the chunks are {seen}, and the VP8X chunk stands first and once")
+        _, at, size = chunks[0]
+        if size != 10:
+            fail(f"the VP8X chunk is {size} B and it carries 10")
+        if data[at:at + 4] != bytes(4):
+            fail("the VP8X chunk claims a colour profile, alpha, metadata or animation the file does not carry")
+        canvas = (int.from_bytes(data[at + 4:at + 7], "little") + 1, int.from_bytes(data[at + 7:at + 10], "little") + 1)
+        if canvas != (width, height):
+            fail(f"the VP8X canvas is {canvas[0]}x{canvas[1]} and the picture is {width}x{height}")
+        form, private = "extended", len(tags) - 2
+    else:
+        if picture != 0:
+            fail(f"the chunks are {seen}: something stands in front of the picture without a VP8X chunk first")
+        form, private = "simple", len(tags) - 1
+
+    ok(f"riff {declared} B, {form} format, chunks {seen}, {private} private, {trailing} B after the payload")
 
 
 def iso_boxes(data, start, end, depth=0):

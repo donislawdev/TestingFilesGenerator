@@ -37,9 +37,12 @@ type cutCase struct {
 // the content is left, and gets a note when the cut missed the content.
 //
 // The shapes a cut takes (docs/TRUNCATE-2026-11-11.md sections 2, 7 and 8).
-// A WebP grows its picture to fill the file and keeps what is left over
-// behind it, which at 4 KiB is more than the 41 B a cut of 1% takes, so the
-// cut leaves all of the picture. A PNG splits its padding around the picture
+// A WebP of 305 B is 309 B whole when a cut takes 1%, and the 17 B of padding
+// it keeps behind its picture cannot pay for what it would take in front - a
+// VP8X chunk and a chunk, 26 B - so they stay behind it and the 4 B the cut
+// takes are padding: the one shape left of a cut behind the content once
+// every format splits its padding for a cut (docs/TRUNCATE-2026-11-11.md
+// section 15.4). A PNG splits its padding around the picture
 // for a cut, so the cut takes the share asked for, and so does a tar.gz. A
 // text is its words, so the cut falls in them. Two cuts in a row end the file where the second one does, and
 // the cut is said of that one. A damage that cuts nothing has no cut to report.
@@ -48,9 +51,9 @@ type cutCase struct {
 // one that claims content it does not have.
 func TestACutFileSaysWhereTheCutFellAndWhatIsLeft(t *testing.T) {
 	cases := []cutCase{
-		// A GIF, a PDF and an MP4 were this case until each split its
-		// padding for the cut.
-		{name: "behind", format: "webp", size: 4 << 10, missing: "1", in: "padding", kept: "all", note: "after the content"},
+		// A GIF, a PDF, an MP4 and a WebP of 4 KiB were this case until each
+		// split its padding for the cut.
+		{name: "behind", format: "webp", size: 305, missing: "1", in: "padding", kept: "all", note: "after the content"},
 		{name: "picture", format: "png", size: 1 << 20, missing: "90", in: "content", kept: "share"},
 		// 4 KiB on disk is 40 KiB whole. It was the case of a cut in the padding
 		// in front of the content, with an icon and a JPEG before it, until it
@@ -181,7 +184,7 @@ func TestTheRecordOfACutRunIsNeverLongerThanItsForecast(t *testing.T) {
 	}
 	opt := engine.Options{OutDir: t.TempDir(), Seed: 7, Command: "test"}
 	planned, err := engine.Plan([]engine.Target{
-		cut("picture", "png", 1<<20, "90"), cut("behind", "webp", 4<<10, "1"), cut("text", "txt", 1000, "50"),
+		cut("picture", "png", 1<<20, "90"), cut("behind", "webp", 305, "1"), cut("text", "txt", 1000, "50"),
 	}, opt)
 	if err != nil {
 		t.Fatalf("planning: %v", err)

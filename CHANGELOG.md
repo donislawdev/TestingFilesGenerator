@@ -87,8 +87,8 @@ because it turns other people's test suites red.
   outcome is `unspecified`, offers both answers in the new `policy_options`
   field and says why. `tfg damage <id>` lists those formats.
 - **A file cut short says where the cut fell and how much of its content is
-  left.** In some formats a large file is mostly padding beside its content,
-  so a cut can take all of the content or none of it. The `truncate` entry in
+  left.** In a file of a few kilobytes cut by 1% or 2%, the cut can fall in
+  what closes the file instead of its content. The `truncate` entry in
   the manifest's `damage` now carries `cut`: `in` (`content`, `padding`,
   `structure` or `end`) and `content_kept_bytes`, and `content_bytes` where
   the length of the content is known. A cut in the padding also gets the
@@ -138,6 +138,13 @@ because it turns other people's test suites red.
   cut. Chrome and Firefox stop a cut MP4 with an error and end a cut WebM
   without one. The manifest of a cut WebM now says how long its pictures are,
   where it said nothing. Films nothing cuts are unchanged.
+- **`truncate` cuts the picture of a BMP, a TIFF or a WebP by the percentage
+  you set, also when you set its width and height.** With a small picture in a
+  large file, a cut used to take only padding and leave a WebP whole, or take
+  the whole picture of a BMP or a TIFF. Now `--damage truncate:missing=50`
+  removes half of the pixels. Pillow shows the rows left of a cut BMP or TIFF,
+  and Preview on a Mac opens a cut TIFF without a warning. Files nothing cuts
+  are unchanged.
 
 - **tfg is on npm, for tests in Node.**
   `npm install --save-dev testing-files-generator` gives Playwright, Vitest

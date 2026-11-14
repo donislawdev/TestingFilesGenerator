@@ -99,16 +99,17 @@ def layout_wav(data):
 
 
 def layout_webp(data):
-    """The container's header, the picture's chunk, any other chunk as padding,
-    and whatever lies past the length the container declares as padding."""
+    """The container's header and a VP8X chunk, the picture's chunk, any other
+    chunk as padding, and whatever lies past the length the container declares
+    as padding."""
     if data[:4] != b"RIFF" or data[8:12] != b"WEBP":
         raise NoMap("no RIFF WEBP header")
     declared = 8 + struct.unpack("<I", data[4:8])[0]
     if declared > len(data):
         raise NoMap(f"the container declares {declared} B and the file is {len(data)} B")
-    roles = {b"VP8L": CONTENT, b"VP8 ": CONTENT}
+    roles = {b"VP8L": CONTENT, b"VP8 ": CONTENT, b"VP8X": STRUCTURE}
     out = [[STRUCTURE, 0, 12]]
-    out += [[r if r != STRUCTURE else PADDING, at, n] for r, at, n in riff_chunks(data[:declared], 12, roles)]
+    out += [[roles.get(data[at:at + 4], PADDING), at, n] for _, at, n in riff_chunks(data[:declared], 12, roles)]
     out.append([PADDING, declared, len(data) - declared])
     return out
 
@@ -545,15 +546,17 @@ def layout_targz(data, settings):
 
 def layout_bmp(data):
     """The two headers, then whatever lies before the offset the file header
-    gives for the pixels, then the pixels the information header counts."""
+    gives for the pixels, then the pixels the information header counts, then
+    whatever lies behind them."""
     if data[:2] != b"BM":
         raise NoMap("no BM signature")
     pixels_at = struct.unpack("<I", data[10:14])[0]
     head = 14 + struct.unpack("<I", data[14:18])[0]
     pixels = struct.unpack("<I", data[34:38])[0]
-    if pixels_at + pixels != len(data):
+    if pixels_at + pixels > len(data):
         raise NoMap(f"the pixels run from {pixels_at} for {pixels} B and the file is {len(data)} B")
-    return [[STRUCTURE, 0, head], [PADDING, head, pixels_at - head], [CONTENT, pixels_at, pixels]]
+    return [[STRUCTURE, 0, head], [PADDING, head, pixels_at - head], [CONTENT, pixels_at, pixels],
+            [PADDING, pixels_at + pixels, len(data) - pixels_at - pixels]]
 
 
 def sub_blocks_end(data, pos):
@@ -665,6 +668,11 @@ def layout_ico(data):
     return out
 
 
+# TIFF_SIZES is how many bytes a value of each TIFF data type the generator
+# writes takes.
+TIFF_SIZES = {1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 7: 1}
+
+
 def tiff_values(data, kind, count, value_at):
     """The values of one directory entry, inline or where it points."""
     width = {3: 2, 4: 4}[kind]
@@ -676,21 +684,31 @@ def tiff_values(data, kind, count, value_at):
 def layout_tiff(data):
     """The header, the strips the directory points at, and the directory - the
     end, as the generator writes it last. What lies between the header and the
-    first strip is not anything the directory names."""
+    first strip is not anything the directory names. In a file laid out for a
+    cut the directory and its values follow the header, and what lies between
+    them and the first strip, and behind the last, is padding."""
     if data[:4] != b"II*\x00":
         raise NoMap("no little-endian TIFF header")
     ifd_at = struct.unpack("<I", data[4:8])[0]
     count = struct.unpack("<H", data[ifd_at:ifd_at + 2])[0]
-    tags = {}
+    tags, head = {}, ifd_at + 2 + 12 * count + 4
     for i in range(count):
         at = ifd_at + 2 + 12 * i
         tag, kind, n = struct.unpack("<HHI", data[at:at + 8])
         if tag in (273, 279):
             tags[tag] = tiff_values(data, kind, n, at + 8)
+        width = TIFF_SIZES.get(kind, 1) * n
+        if width > 4:
+            head = max(head, struct.unpack("<I", data[at + 8:at + 12])[0] + width)
     if 273 not in tags or 279 not in tags:
         raise NoMap("the directory names no strips")
     first = min(tags[273])
     last = max(o + n for o, n in zip(tags[273], tags[279]))
+    if ifd_at == 8:
+        if first < head:
+            raise NoMap(f"the strips start at {first}, inside the directory and its values, which run to {head}")
+        return [[STRUCTURE, 0, head], [PADDING, head, first - head], [CONTENT, first, last - first],
+                [PADDING, last, len(data) - last]]
     if last != ifd_at:
         raise NoMap(f"the strips end at {last} and the directory starts at {ifd_at}")
     return [[STRUCTURE, 0, 8], [PADDING, 8, first - 8], [CONTENT, first, last - first],

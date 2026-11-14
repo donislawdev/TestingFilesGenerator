@@ -49,17 +49,18 @@ func init() {
 				Min: fewestMissing, Max: mostMissing,
 				Default: strconv.Itoa(defaultMissing),
 				// The last two sentences are what a person cannot see from the
-				// outside. In most formats the cut removes the same percentage
-				// of the picture, sound or text, png among them since it lays
-				// its padding out for the cut. In the rest the padding stands
-				// only on one side of the content, so a large file cut at any
-				// share keeps all of it or none (docs/TRUNCATE-2026-11-11.md
-				// section 7.1, and notYetCutAtTheShare in internal/guard for
-				// which). The manifest says per file where the cut fell.
+				// outside. Every format lays its padding out for the cut, so the
+				// cut removes the same percentage of the content
+				// (docs/TRUNCATE-2026-11-11.md sections 7 to 15, and
+				// TestACutTakesTheShareOfTheContentItIsAskedFor). In a file of
+				// a few kilobytes the end a format closes with - the central
+				// directory of a ZIP or an Office document - is longer than a
+				// cut of 1% or 2%, which then falls in it and leaves the content
+				// whole. The manifest says per file where the cut fell.
 				Detail: "How much of the whole file is gone, as a percentage. " +
 					"At least this much is cut - a few bytes more where the format cannot end exactly there. " +
-					"In most formats the cut removes the same percentage of the content. " +
-					"In some, a large file is mostly padding beside its content, so the cut can take all of the content or none - " +
+					"The cut removes the same percentage of the content - of the picture, the sound, the pages or the text. " +
+					"In a file of a few kilobytes cut by 1% or 2%, the cut can fall in what closes the file, such as a ZIP's list of its files, and leave the content whole - " +
 					"the manifest says what each cut left.",
 			},
 		},
