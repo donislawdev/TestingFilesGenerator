@@ -142,6 +142,13 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	// Written on 2026-11-14 with the placeholder typeface and rasteriser
+	// (docs/PLACEHOLDER-2026-11-14.md section 13).
+	"TestThePlaceholderTypefaceIsInter": "its own canary - a Chinese letter must be reported missing - and red on 2026-11-14 the first " +
+		"time it ran, when it asked for kerning the font library never read (the pairs were taken out, not the check loosened).",
+	"TestARasterCoversWhatItsOutlineEncloses": "its own canary - the same square a pixel to the right must fail the comparison.",
+	"TestAPlaceholderIsTheSamePixelsOnEverySystem": "its own canary - a picture with one digit changed must hash differently - and " +
+		"the CI matrix draws it on three systems against one pinned hash.",
 	// Broken once each on 2026-11-14 while they were written, one change at a
 	// time and restored (docs/RUN-FOLDERS-2026-11-14.md section 12). The sixth
 	// guard of the piece, TestANameAnEarlierRecordStillListsIsNotWrittenAgain,
