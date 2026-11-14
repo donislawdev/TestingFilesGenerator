@@ -70,6 +70,23 @@ func Sentence(s core.Said) string {
 	return s.String()
 }
 
+// Line is a note a run left about itself, as a line of its own on the screen.
+//
+// A line starts a sentence, so one that opens with a word of the program's
+// opens with a capital here - the command line prints the same note after
+// "note:", where it does not. One that opens with a name, the file a run wrote
+// past its memory setting, keeps the name as it is spelt, because a file called
+// files_0001.txt is not Files_0001.txt. Which of the two it is, is read from the
+// English layout, and every translation fills the same names. Found by
+// CodeRabbit on #246: the note about a run that took a number stood in the
+// window starting with a small letter.
+func Line(s core.Said) string {
+	if !strings.HasPrefix(s.Layout(), "%") {
+		s = s.Capitalized()
+	}
+	return Sentence(s)
+}
+
 // translated is the sentence in the window's language, and false when this
 // window says it in English: the language is English, nothing is loaded, or
 // the language has no entry for it.

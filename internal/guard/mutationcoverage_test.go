@@ -159,6 +159,8 @@ var provenByProbe = map[string]string{
 		"and broken on 2026-11-14 by the batch screen not passing the switch to the run: red, no manifest-2.json.",
 	"TestTheSwitchTravelsAndIsRememberedWithTheFolder": "broken on 2026-11-14 three times: not carried to the next screen, not written down " +
 		"at the close, not given back at the start. Red each time.",
+	"TestARunNoteOpensWithACapitalUnlessItOpensWithAName": "broken on 2026-11-14 both ways: text.Line never giving a capital, and always " +
+		"giving one - red, files_0001.txt became Files_0001.txt (docs/REVIEW-246-2026-11-14.md).",
 	// Broken once each on 2026-11-14 while they were written, one change at a
 	// time and restored (docs/DRAG-DROP-2026-11-14.md section 13).
 	"TestEveryControlOfAFieldIsOffWhileARunOwnsTheScreen": "its own canary - a live button must be reported live - and red on 2026-11-14 " +

@@ -3,10 +3,12 @@ package guard
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"fyne.io/fyne/v2"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/window"
@@ -68,17 +70,41 @@ func TestTheSwitchBesideTheFolderDecidesWhatASecondRunDoesOnEveryScreen(t *testi
 			if changed := changedFrom(before, contentsOf(t, dir)); len(changed) > 0 {
 				t.Errorf("the run beside the earlier one changed %v", changed)
 			}
+			// Said in the window as a sentence of its own (rule 6), opening
+			// with a capital - CodeRabbit on #246.
+			if said := statusLine(t, content); !strings.Contains(said, "The output directory already holds names this run would write") {
+				t.Errorf("the run took a number and the window did not say so as a sentence. It said:\n%s", said)
+			}
 
 			numbers.SetChecked(false)
+			// The refused run is held to the whole directory, not only to the
+			// manifest it would have taken - CodeRabbit on #246.
+			beforeRefusal := contentsOf(t, dir)
 			press(t, content, text.ButtonGenerate())
 			join(host)
 			if edgeOf(t, content, text.FieldOutputDir()).StrokeWidth <= 0 {
 				t.Errorf("with the switch off, a run into a directory holding others went unremarked under the output directory")
 			}
-			if _, err := os.Stat(filepath.Join(dir, "manifest-3.json")); err == nil {
-				t.Error("with the switch off, the run still took a number")
+			after := contentsOf(t, dir)
+			if changed := changedFrom(beforeRefusal, after); len(changed) > 0 || len(after) != len(beforeRefusal) {
+				t.Errorf("with the switch off, the refused run left the directory different: %d files before, %d after, changed %v",
+					len(beforeRefusal), len(after), changed)
 			}
 		})
+	}
+}
+
+// A note a run leaves about itself stands in the window as a line of its own,
+// so it opens with a capital - unless it opens with a name, which is shown as
+// it is spelt (text.Line).
+func TestARunNoteOpensWithACapitalUnlessItOpensWithAName(t *testing.T) {
+	word := text.Line(core.Says("guard.NoteOfOurs", "the folder holds %d runs", core.A("Count", 2)))
+	if !strings.HasPrefix(word, "The folder") {
+		t.Errorf("a note opening with a word of ours stands as %q, with a small letter at the start of a line", word)
+	}
+	name := text.Line(core.Says("guard.NoteOnAName", "%s was written past the memory setting", core.A("Name", "files_0001.txt")))
+	if !strings.HasPrefix(name, "files_0001.txt") {
+		t.Errorf("a note opening with a file name stands as %q - the name is no longer the file's", name)
 	}
 }
 

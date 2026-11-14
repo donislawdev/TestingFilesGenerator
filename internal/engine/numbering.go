@@ -117,8 +117,8 @@ func (e *NumberTooLongError) Error() string { return e.Said().String() }
 // Said is the refusal, for a window that says it in its own language.
 func (e *NumberTooLongError) Said() core.Said {
 	return core.Says("engine.NumberTooLong",
-		"%s already holds names this run would write, so its names would carry the number %d, and that makes %s %d bytes long. "+
-			"A file name holds at most %d bytes on some systems, and this one was close to that as it was asked for. "+
+		"%s already holds names this run would write, so its names would carry the number %d, and %s would then be %d bytes long. "+
+			"A file name holds at most %d bytes on some systems. Nothing was written. "+
 			"Generate into an empty directory, where every name is written as asked",
 		core.A("Dir", core.Shown(e.Dir)), core.A("Number", e.Number), core.A("Name", core.Shown(e.Name)),
 		core.A("Length", len(e.Name)), core.A("Most", core.MaxNameBytes))

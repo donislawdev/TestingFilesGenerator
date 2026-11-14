@@ -33,7 +33,7 @@ func runNotesOf(res *engine.Result) []string {
 	}
 	out := make([]string, 0, len(res.RunNotes))
 	for _, s := range res.RunNotes {
-		out = append(out, text.Sentence(s))
+		out = append(out, text.Line(s))
 	}
 	return out
 }

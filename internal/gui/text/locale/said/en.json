@@ -1306,8 +1306,8 @@
   },
   "engine.NumberTooLong": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Dir}}, {{.Number}}, {{.Name}}, {{.Length}}, {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-e9c1b1a6b7f2",
-    "other": "{{.Dir}} already holds names this run would write, so its names would carry the number {{.Number}}, and that makes {{.Name}} {{.Length}} bytes long. A file name holds at most {{.Most}} bytes on some systems, and this one was close to that as it was asked for. Generate into an empty directory, where every name is written as asked"
+    "hash": "sha256-a30769de2531",
+    "other": "{{.Dir}} already holds names this run would write, so its names would carry the number {{.Number}}, and {{.Name}} would then be {{.Length}} bytes long. A file name holds at most {{.Most}} bytes on some systems. Nothing was written. Generate into an empty directory, where every name is written as asked"
   },
   "engine.Numbered": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Number}}, {{.Example}}, written the way the program writes them - keep each spelled exactly that way.",
