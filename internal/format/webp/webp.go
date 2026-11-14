@@ -31,6 +31,8 @@
 // private chunk, and one to seven bytes after the end of the RIFF payload
 // carry whatever is left. Measured on six readers (docs/MVP-FORMATS.md section
 // 2.13): there is no dead zone at all, which is better than PNG or GIF manage.
+// A WebP a damage will cut moves part of the padding in front of the picture,
+// in the extended format (cut.go).
 package webp
 
 import (
@@ -126,6 +128,10 @@ type memo struct {
 	// which is not the same as one carrying nothing.
 	chunk int64
 	tail  int64
+	// front is the private chunk in front of the picture, its header
+	// included, in a file laid out for a cut (splitForACut), and zero in one
+	// nothing cuts.
+	front int64
 }
 
 // bareBytes is the file with no padding of any kind.
@@ -167,6 +173,9 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 
 	m := memo{width: w, height: h, seed: r.Seed, label: label}
 	settlePadding(&m, r.Bytes-bare)
+	if r.CutAt > 0 {
+		splitForACut(&m, bare-riffHeader, r.Bytes, r.CutAt)
+	}
 
 	p := format.Plan{
 		Bytes:       r.Bytes,
@@ -325,20 +334,24 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	// The length of the bitstream is arithmetic, so the headers can go out
 	// before a single pixel is coded and nothing has to be held back.
 	stream := streamBytes(int64(m.width) * int64(m.height))
-	body := chunkHeader + 4 + stream + stream%2
+	picture := chunkHeader + 4 + stream + stream%2
+	vp8x, front := inFront(m)
+	body := vp8x + front + picture
 	if m.chunk >= 0 {
 		body += chunkHeader + 4 + m.chunk
 	}
 
-	// The map, all of it known from the plan: the container's header, the
-	// picture's chunk, and what makes up the size after it - the private
-	// chunk and the bytes past the container's end.
-	picture := chunkHeader + 4 + stream + stream%2
-	format.Mark(w, format.RoleStructure, 0, riffHeader)
-	format.Mark(w, format.RoleContent, riffHeader, picture)
-	format.Mark(w, format.RolePadding, riffHeader+picture, p.Bytes-riffHeader-picture)
+	// The map, all of it known from the plan: the container's header (and
+	// the VP8X chunk of a file laid out for a cut), the private chunk in
+	// front, the picture's chunk, and what makes up the size after it - the
+	// private chunk and the bytes past the container's end.
+	head := riffHeader + vp8x
+	format.Mark(w, format.RoleStructure, 0, head)
+	format.Mark(w, format.RolePadding, head, front)
+	format.Mark(w, format.RoleContent, head+front, picture)
+	format.Mark(w, format.RolePadding, head+front+picture, p.Bytes-head-front-picture)
 
-	if err := writeContainer(w, body, stream); err != nil {
+	if err := writeContainer(ctx, w, m, body, stream); err != nil {
 		return err
 	}
 
@@ -370,26 +383,32 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 }
 
 // writeContainer emits everything before the first coded pixel: the RIFF
-// header, the form name, and the header of the chunk the bitstream goes in.
+// header, the form name, the VP8X chunk and the private chunk in front of a
+// file laid out for a cut, and the header of the chunk the bitstream goes in.
 //
 // It is a function of its own rather than five more error checks inside Write,
 // because this project counts how many functions carry a lot of decisions and
 // Write was the sixth to reach the band.
-func writeContainer(w io.Writer, body, stream int64) error {
+func writeContainer(ctx context.Context, w io.Writer, m memo, body, stream int64) error {
 	for _, part := range []struct {
-		text string
-		num  uint32
+		text  string
+		num   uint32
+		front bool
 	}{
 		{text: "RIFF"},
 		{num: uint32(4 + body)},
 		{text: "WEBP"},
+		{front: true},
 		{text: "VP8L"},
 		{num: uint32(stream)},
 	} {
 		var err error
-		if part.text != "" {
+		switch {
+		case part.front:
+			err = writeFront(ctx, w, m)
+		case part.text != "":
 			err = writeAll(w, []byte(part.text))
-		} else {
+		default:
 			err = writeUint32(w, part.num)
 		}
 		if err != nil {

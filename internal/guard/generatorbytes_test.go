@@ -102,6 +102,12 @@ func goldenCases() map[string]engine.Target {
 		// rather than in the code, and this is what closes it.
 		"tiff_64kib_width_only": {ID: "g", Format: "tiff", Sizes: engine.Uniform(1, 65536), Label: true,
 			Properties: map[string]string{"width": "128"}},
+		// An odd size. TIFF 6.0 starts a directory on a word boundary, and
+		// last in a file of an odd size it would start on an odd byte, so
+		// such a file puts it right behind the header (O342) - a layout the
+		// three cases above, all of an even size, never reach.
+		"tiff_odd_size": {ID: "g", Format: "tiff", Sizes: engine.Uniform(1, 65537), Label: true,
+			Properties: map[string]string{"width": "64", "height": "64"}},
 		// WebP, pinned from three sides. Its size is arithmetic rather than
 		// whatever a compressor decides, so a drift here can be a wrong SIZE and
 		// not only different bytes - the same shape as BMP and TIFF.

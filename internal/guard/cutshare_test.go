@@ -31,12 +31,10 @@ type notYet struct {
 // leaves the list, so the list cannot go stale in either direction. A format
 // that leaves is held to every size and share, and so is a new format unless
 // it is added here with its reason.
-var notYetCutAtTheShare = map[string]notYet{
-	// Both take the share at 64 KiB and above. At 4 KiB what stands behind the
-	// picture is more than a small share, so a cut of 1% keeps all of it.
-	"webp": {smallBehind, 4 << 10, 1},
-	"tiff": {smallBehind, 4 << 10, 1},
-}
+//
+// Empty since webp, tiff and bmp split their padding for a cut
+// (docs/TRUNCATE-2026-11-11.md section 15): every format takes the share.
+var notYetCutAtTheShare = map[string]notYet{}
 
 // listedBeforeTheRule is every format notYetCutAtTheShare may name: the ones
 // that missed the share on 2026-11-12, when the owner decided that every format
@@ -45,8 +43,8 @@ var notYetCutAtTheShare = map[string]notYet{
 // grows, so a new format cannot wait on the ratchet - tools/doctor.py runs this
 // guard for it, and it stays red until the format splits its padding for
 // format.Request.CutAt. A format that leaves the ratchet leaves this list too,
-// so it cannot go back.
-var listedBeforeTheRule = []string{"webp", "tiff"}
+// so it cannot go back - and every one has left it.
+var listedBeforeTheRule []string
 
 // listedAfterTheRule is a problem for every format notYetAt names that
 // listedBeforeTheRule does not.
@@ -61,10 +59,7 @@ func listedAfterTheRule(notYetAt map[string]notYet) []string {
 	return out
 }
 
-const (
-	paddingBehind = "its padding stands only behind its content, so a large file cut at any share keeps all of it"
-	smallBehind   = "in a small file the padding or directory behind its content is more than a small share"
-)
+const paddingBehind = "its padding stands only behind its content, so a large file cut at any share keeps all of it"
 
 // shareSlack is how far, in points of a percent, the share of the content a
 // cut takes may be from the share missing asks for. Rounding to whole chunks,
@@ -114,6 +109,11 @@ func TestACutTakesTheShareOfTheContentItIsAskedFor(t *testing.T) {
 			targets = append(targets, engine.Target{ID: id, Format: f.ID, Sizes: engine.Uniform(1, c[0]), Label: true, Damage: chain})
 		}
 	}
+	sized := sizedTargets(missingOf)
+	if len(sized) == 0 {
+		t.Errorf("no format takes a width and a height, so no picture smaller than its file was cut")
+	}
+	targets = append(targets, sized...)
 	opt := engine.Options{OutDir: t.TempDir(), Seed: 7, ManifestName: engine.DefaultManifestName}
 	planned, err := engine.Plan(targets, opt)
 	if err != nil {
@@ -154,6 +154,11 @@ func TestACutTakesTheShareOfTheContentItIsAskedFor(t *testing.T) {
 	}
 	for _, problem := range shareVerdicts(problems, notYetCutAtTheShare) {
 		t.Error(problem)
+	}
+	for _, target := range sized {
+		if problem := problems[target.ID]; problem != "" {
+			t.Errorf("%s: %s", target.ID, problem)
+		}
 	}
 	for _, problem := range absentFromTheManifest(missingOf, inManifest) {
 		t.Error(problem)
@@ -198,6 +203,45 @@ func TestACutTakesTheShareOfTheContentItIsAskedFor(t *testing.T) {
 	if !slices.ContainsFunc(shareVerdicts(problems, listed), func(s string) bool { return strings.HasPrefix(s, "txt:") }) {
 		t.Errorf("canary: txt listed as not cutting at the share, which it does, was not reported")
 	}
+}
+
+// sizedPicture is the width and height sizedTargets names: 14 KiB of pixels in
+// a BMP, a TIFF or a WebP of 64 KiB. Measured 2026-11-14: at 40x30 an AVIF's
+// picture is 49 B, so the one byte a cut rounds by is two points of a share
+// and more than shareSlack. At 80x60 the smallest is a PNG's 106 B.
+var sizedPicture = map[string]string{"width": "80", "height": "60"}
+
+// sizedTargets is the files the sweep cuts with a width and a height named, of
+// every format that takes both and takes the share, each recorded in
+// missingOf.
+//
+// A picture whose width and height are left out grows to fill its file in
+// bmp, tiff and webp, so there the share of the file is nearly the share of
+// the picture and a format that does not split its padding passes. Named, the
+// picture is small and the rest of the file is padding - the file all three
+// missed the share in while the sweep cut only the defaults
+// (docs/TRUNCATE-2026-11-11.md section 15.1).
+func sizedTargets(missingOf map[string]int64) []engine.Target {
+	var out []engine.Target
+	for _, f := range format.All() {
+		if _, listed := notYetCutAtTheShare[f.ID]; listed || !takesSetting(f, "width") || !takesSetting(f, "height") {
+			continue
+		}
+		for _, missing := range shareMissing {
+			chain := damage.Chain{{ID: damage.Truncate, Values: damage.Values{damage.SettingMissing: strconv.FormatInt(missing, 10)}}}
+			size := max(64<<10, engine.SmallestDamaged(f, chain, format.Request{Label: true, Properties: sizedPicture}))
+			id := fmt.Sprintf("%s-sized-%d", f.ID, missing)
+			missingOf[id] = missing
+			out = append(out, engine.Target{ID: id, Format: f.ID, Sizes: engine.Uniform(1, size), Label: true,
+				Properties: sizedPicture, Damage: chain})
+		}
+	}
+	return out
+}
+
+// takesSetting is whether a format takes the setting named.
+func takesSetting(f format.Descriptor, name string) bool {
+	return slices.ContainsFunc(f.Properties, func(p format.Property) bool { return p.Name == name })
 }
 
 // absentFromTheManifest is every file planned for the sweep that the manifest

@@ -302,7 +302,9 @@ func askTheLastEndCanaries(t *testing.T, dir string) {
 // zeros for a byte decoded again and again, and one whose tar header gives a
 // size below zero, which held the walk through the tar in place
 // (docs/REVIEW-240-2026-11-13.md). A loop comes back as the guard's time
-// running out, a refusal of another kind as the words it gives.
+// running out, a refusal of another kind as the words it gives. And a TIFF
+// with its directory first and its last pixel byte gone, which was mapped
+// with its pixels running past the end of the file (review of #244).
 func askTheReaderOfMapsToStop(t *testing.T, dir string) {
 	t.Helper()
 	// Letters drawn unevenly and without a period, so the stream codes mostly
@@ -317,21 +319,24 @@ func askTheReaderOfMapsToStop(t *testing.T, dir string) {
 	header := make([]byte, 512)
 	copy(header, "a.txt")
 	copy(header[124:], "-0000001000")
+	// A TIFF of an odd size has its directory right behind the header.
+	tiff := writeEncoded(t, "tiff", 4097, nil)
 	cases := []struct {
-		name, says string
-		data       []byte
-		setting    map[string]string
+		format, name, says string
+		data               []byte
+		setting            map[string]string
 	}{
-		{"cut", "runs off the end of the file at bit", squeezed[:len(squeezed)/2], map[string]string{"compression": "best"}},
-		{"below-zero", "gives a size below zero", gzipped(t, append(header, make([]byte, 1024)...), gzip.NoCompression), nil},
+		{"targz", "cut", "runs off the end of the file at bit", squeezed[:len(squeezed)/2], map[string]string{"compression": "best"}},
+		{"targz", "below-zero", "gives a size below zero", gzipped(t, append(header, make([]byte, 1024)...), gzip.NoCompression), nil},
+		{"tiff", "short", "the strips run to 4097 and the file is 4096 B", tiff[:len(tiff)-1], nil},
 	}
 	reqs := make([]oracle.LayoutRequest, len(cases))
 	for i, c := range cases {
-		path := filepath.Join(dir, "canary-"+c.name+".targz")
+		path := filepath.Join(dir, "canary-"+c.name+"."+c.format)
 		if err := os.WriteFile(path, c.data, 0o600); err != nil {
 			t.Fatal(err)
 		}
-		reqs[i] = oracle.LayoutRequest{Format: "targz", Path: path, Settings: c.setting}
+		reqs[i] = oracle.LayoutRequest{Format: c.format, Path: path, Settings: c.setting}
 	}
 	got, _, err := oracle.LayoutBatch(t.Context(), reqs)
 	if err != nil {
@@ -339,7 +344,7 @@ func askTheReaderOfMapsToStop(t *testing.T, dir string) {
 	}
 	for i, c := range cases {
 		if !strings.Contains(got[i].Error, c.says) {
-			t.Errorf("canary: the reader of maps answered a tar.gz %s with %q, where %q was due", c.name, got[i].Error, c.says)
+			t.Errorf("canary: the reader of maps answered a %s %s with %q, where %q was due", c.format, c.name, got[i].Error, c.says)
 		}
 	}
 }

@@ -173,6 +173,12 @@ var provenByProbe = map[string]string{
 		"front of the clusters (a cue giving 226 where no cluster starts), with a side of a WebM's padding allowed below a " +
 		"Void (16000 B came to 16008 B), with an MP4 that never widens to co64 (5 GiB: no co64 in the head) and with the " +
 		"widening's growth left out of the head the share is counted from (40 B more in front than the share).",
+	"TestABMPATIFFOrAWebPLaidOutForACutComesToEverySizeAndKeepsItsPixels": "its own canaries - a TIFF's StripOffsets and " +
+		"a BMP's bfOffBits a byte off must be refused - its reach check, every layout of the split met, and red on " +
+		"2026-11-14 with a WebP that never splits (nothing in front where the share wants 1 B), a TIFF that never splits " +
+		"(the directory at 12, not behind the header), a WebP front not rounded to an even chunk (16000 B came to 16001 B), " +
+		"a TIFF StripOffsets that leaves out the directory's values (the pixels given at 158, written at 180) and a BMP " +
+		"whose padding behind the pixels is not written (59 B came to 58 B).",
 	"TestAPDFLaidOutForACutComesToEverySizeAndItsOffsetsLand": "its own canaries - a table that sends one object a byte off " +
 		"must be refused, and the layout of a document nothing cuts must fail a cut at its half - its reach check, every " +
 		"layout of the split met, red on 2026-11-13 with nothing in front of a document under 400 B of padding (398 sizes, " +

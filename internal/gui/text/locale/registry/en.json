@@ -1296,8 +1296,8 @@
   },
   "Detail.damage/truncate.missing": {
     "description": "The sentence under the missing setting of the truncate damage, after what it takes.",
-    "hash": "sha256-912187dc5311",
-    "other": "How much of the whole file is gone, as a percentage. At least this much is cut - a few bytes more where the format cannot end exactly there. In most formats the cut removes the same percentage of the content. In some, a large file is mostly padding beside its content, so the cut can take all of the content or none - the manifest says what each cut left."
+    "hash": "sha256-e856fe0e9778",
+    "other": "How much of the whole file is gone, as a percentage. At least this much is cut - a few bytes more where the format cannot end exactly there. The cut removes the same percentage of the content - of the picture, the sound, the pages or the text. A file of a few kilobytes cut by 1% or 2% can lose less of its content than that, or none of it when the cut falls in what the format puts after the content, such as a ZIP's list of its files - the manifest says what each cut left."
   },
   "Detail.damage/zero-head.bytes": {
     "description": "The sentence under the bytes setting of the zero-head damage, after what it takes.",

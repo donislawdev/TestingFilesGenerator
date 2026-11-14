@@ -105,6 +105,9 @@ type memo struct {
 	label         string
 	// gap is how many bytes sit between the header and the pixel data.
 	gap int64
+	// back is how many bytes of padding follow the pixels, only in a file
+	// laid out for a cut (splitForACut).
+	back int64
 }
 
 // stride is the length of one row on disk. Every row is rounded up to a
@@ -150,6 +153,9 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	}
 
 	m := memo{width: w, height: h, seed: r.Seed, label: label, gap: r.Bytes - bare}
+	if r.CutAt > 0 {
+		splitForACut(&m, r.Bytes, r.CutAt)
+	}
 
 	p := format.Plan{
 		Bytes:       r.Bytes,
@@ -290,10 +296,13 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	}
 
 	// The map, all of it known from the plan: the two headers, the gap that
-	// makes up the size, and the pixels. The gap stands BEFORE the pixels.
+	// makes up the size, and the pixels. The gap stands BEFORE the pixels,
+	// and in a file laid out for a cut the rest of the padding behind them.
+	pixels := pixelBytes(m.width, m.height)
 	format.Mark(w, format.RoleStructure, 0, headers)
 	format.Mark(w, format.RolePadding, headers, m.gap)
-	format.Mark(w, format.RoleContent, headers+m.gap, pixelBytes(m.width, m.height))
+	format.Mark(w, format.RoleContent, headers+m.gap, pixels)
+	format.Mark(w, format.RolePadding, headers+m.gap+pixels, m.back)
 
 	if err := writeHeaders(w, m, p.Bytes); err != nil {
 		return err
@@ -301,7 +310,10 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	if err := writeGap(ctx, w, m.seed, m.gap); err != nil {
 		return err
 	}
-	return writePixels(ctx, w, m)
+	if err := writePixels(ctx, w, m); err != nil {
+		return err
+	}
+	return writeGap(ctx, w, m.seed+1, m.back)
 }
 
 func writeHeaders(w io.Writer, m memo, total int64) error {

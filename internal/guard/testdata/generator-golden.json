@@ -251,6 +251,11 @@
       "sha256": "c5c38af41809c7e98333fc2a6bdcca36a955f70ab4413dbfde9b9ec4dd3d0b8f",
       "measured_on": "2026-08-29"
     },
+    "tiff_odd_size": {
+      "bytes": 65537,
+      "sha256": "c286f5108925dd9fe9b7b22a38e7cac5e74a8858586634b6662bac473a11ded4",
+      "measured_on": "2026-11-14"
+    },
     "txt_4kib": {
       "bytes": 4096,
       "sha256": "26a697bd184868acaa1da3f474b32a063e1b76e55ced42e38e79fdc63cf66161"
