@@ -240,7 +240,7 @@ func (t *Tools) onChosen(choice string) {
 		box := entry("", "")
 		t.form.inputs[in.Name] = box
 		t.work.Add(parts.Wide(t.fields.Add(in.Name, text.SettingLabel(in.Name), text.ToolInput(d.ID, in.Name, in.Detail),
-			t.tips.Say(text.ToolInputWrittenAs(d.ID)), chooserFor(box, t.pickerFor(in.Kind)))))
+			t.tips.Say(text.ToolInputWrittenAs(d.ID)), pathBox(t.host, box, takesOf(in.Kind)))))
 	}
 	settings, objects := parts.DeclaredFields(text.ToolOwner(d.ID), d.Settings, t.fields, t.tips)
 	t.form.settings = settings
@@ -251,13 +251,14 @@ func (t *Tools) onChosen(choice string) {
 	t.showResult(d, nil)
 }
 
-// pickerFor is the window's picker for what an input names: a folder for a
-// folder, a file for everything else.
-func (t *Tools) pickerFor(kind tool.InputKind) func(func(string)) {
+// takesOf is the kind of path box for what an input names: a folder for a
+// folder, a file for everything else - the engine's declaration, so the box,
+// its picker and what may be dropped on it follow the tool and nothing here.
+func takesOf(kind tool.InputKind) parts.Takes {
 	if kind == tool.Folder {
-		return t.host.ChooseDirectory
+		return parts.TakesFolder
 	}
-	return t.host.ChooseFile
+	return parts.TakesFile
 }
 
 // PressGenerate runs the chosen tool - the name the window's keyboard asks

@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
@@ -149,7 +148,10 @@ func Open(h Host) fyne.Size {
 	for _, b := range busyScreens {
 		b.changed = prefs.BusyChanged
 	}
-	offerSettling(h, []interface{ Settled() }{gen, pre, rec, tools, out})
+	// A folder or a file dropped onto the window goes to the screen being
+	// looked at, as a key does - wired here, among the work a guard waits for,
+	// because the disk is asked about it on a worker. See dropping.go.
+	offerSettling(h, []interface{ Settled() }{gen, pre, rec, tools, out, wireDropping(h, keyed, &looking)})
 	offerHolding(h, []interface{ HoldBeforeFinishing(func()) }{gen, pre, rec, tools})
 
 	wireKeyboard(h, keyed, &looking)
@@ -362,29 +364,15 @@ func gitHub(h Host, look parts.Look) *parts.Button {
 	return parts.NewButton(look, text.ButtonGitHub(), func() { h.OpenLink(text.RepositoryURL) })
 }
 
-// chooserFor is the output directory box with a way to browse to one.
-//
-// Typing a path is fine when you have one to hand and hopeless when you do not,
-// and the box beside it is the only field on either screen whose value is not
-// something a person carries in their head. The button asks the window, which
-// is the only thing that can open a picker.
-//
-// The box stays editable. A picker that replaces typing takes away pasting a
-// path somebody sent you, which is how most of these get filled in.
-//
-// pick is which picker the button opens - Host.ChooseDirectory for where files
-// go, Host.ChooseFile for a file a tool reads. One box and one button for
-// both, so a path field looks and behaves the same whatever it names (GUI
-// rule 2).
-func chooserFor(box *parts.Entry, pick func(func(string))) fyne.CanvasObject {
-	choose := parts.NewButton(parts.Secondary, text.ButtonChoose(), func() {
-		pick(func(path string) {
-			if path != "" {
-				box.SetText(path)
-			}
-		})
-	})
-	return container.NewBorder(nil, nil, nil, choose, box)
+// pathBox is a path box with the window's picker for what it takes - see
+// parts.NewPathBox. The button asks the window, which is the only thing that
+// can open a picker, and what the box takes is the one place that decides
+// which picker that is and what a drop may bring.
+func pathBox(h Host, box *parts.Entry, takes parts.Takes) fyne.CanvasObject {
+	if takes == parts.TakesFolder {
+		return parts.NewPathBox(box, takes, h.ChooseDirectory)
+	}
+	return parts.NewPathBox(box, takes, h.ChooseFile)
 }
 
 // startingDirectory is where the output field points before anybody changes it.

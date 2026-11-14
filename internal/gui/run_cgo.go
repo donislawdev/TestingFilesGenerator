@@ -221,7 +221,9 @@ func (d desktop) ChooseDirectory(chosen func(string)) {
 			chosen("")
 			return
 		}
-		chosen(dir.Path())
+		// The system's spelling, the same text a drop of this folder puts in
+		// the box - see window.PathOf.
+		chosen(window.PathOf(dir))
 	}, d.Window)
 }
 
@@ -252,7 +254,7 @@ func pickedPath(file fyne.URIReadCloser, err error) string {
 	if err != nil {
 		return ""
 	}
-	return file.URI().Path()
+	return window.PathOf(file.URI())
 }
 
 // Copy puts text on the clipboard of the application, which is where the

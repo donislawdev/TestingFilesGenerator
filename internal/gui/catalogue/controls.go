@@ -224,6 +224,35 @@ func entry() Entry {
 	}}
 }
 
+// pathBox is a box for a path with Choose... beside it, in the two kinds a
+// path comes in. Disabled is both halves at once, the way a frozen form draws
+// it (Fields.Freeze walks every control of a field).
+func pathBox() Entry {
+	build := func(takes parts.Takes, path string) *fyne.Container {
+		e := parts.NewEntry()
+		e.SetText(path)
+		return parts.NewPathBox(e, takes, func(func(string)) {})
+	}
+	return Entry{Name: "PathBox", Covers: []string{"Takes"}, States: []State{
+		{"a folder, empty, with its hint", func() fyne.CanvasObject { return build(parts.TakesFolder, "") }},
+		{"a file, empty, with its hint", func() fyne.CanvasObject { return build(parts.TakesFile, "") }},
+		{"holding a path", func() fyne.CanvasObject { return build(parts.TakesFolder, "/home/someone/tfg-out") }},
+		{"long path", func() fyne.CanvasObject { return build(parts.TakesFile, "/home/someone/"+longText+"/"+longText+".zip") }},
+		{"disabled", func() fyne.CanvasObject { return disabledAll(build(parts.TakesFolder, "/home/someone/tfg-out")) }},
+	}}
+}
+
+// disabledAll switches off every control in a row of them, the way a frozen
+// form does.
+func disabledAll(c *fyne.Container) *fyne.Container {
+	for _, o := range c.Objects {
+		if d, ok := o.(fyne.Disableable); ok {
+			d.Disable()
+		}
+	}
+	return c
+}
+
 func toggle() Entry {
 	return Entry{Name: "Toggle", Natural: true, States: []State{
 		{"off", func() fyne.CanvasObject { return parts.NewToggle(func(bool) {}) }},

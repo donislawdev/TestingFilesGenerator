@@ -177,7 +177,7 @@
 																			<widget pos="0,1" size="705x26" type="*widget.Scroll">
 																				<widget size="705x26" type="*widget.entryContent">
 																					<widget size="705x26" type="*widget.RichText">
-																						<text color="placeholder" pos="6,5" size="0x16"></text>
+																						<text color="placeholder" pos="6,5" size="228x16">Drop a folder here, or type its path</text>
 																					</widget>
 																					<widget size="705x26" type="*widget.RichText">
 																						<text pos="6,5" size="0x16"></text>

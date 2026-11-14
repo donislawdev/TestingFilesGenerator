@@ -105,6 +105,9 @@ type fakeHost struct {
 	file      string
 	fileCount int
 
+	// drops is what a guard needs to drop onto the window - see dropping_test.go.
+	drops droppedOnto
+
 	kept       *keptInMemory
 	remembered window.Remembered
 

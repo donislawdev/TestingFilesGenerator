@@ -824,6 +824,12 @@ behind. The window speaks your system's language when it has it (English and
 Polish today) and English otherwise. Preferences lets you choose another, and
 says what the window keeps between runs.
 
+A folder dropped onto the window becomes the output directory, and on the
+Tools screen a file or a folder dropped onto it goes into the box of the chosen
+tool, the same as picking it with Choose... Drop one at a time. Something the
+box cannot take is refused with a sentence under the box, and the box keeps
+what it had.
+
 <p>
   <img src=".github/window-presets.png" width="49%" alt="The Presets screen of the window, with the list of presets open">
   <img src=".github/window-settings.png" width="49%" alt="One batch of log files in the window, with the settings the log format takes">
