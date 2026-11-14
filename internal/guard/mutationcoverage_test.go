@@ -136,6 +136,21 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	// Broken once each on 2026-11-14 while they were written, one change at a
+	// time and restored (docs/DRAG-DROP-2026-11-14.md section 13).
+	"TestEveryControlOfAFieldIsOffWhileARunOwnsTheScreen": "its own canary - a live button must be reported live - and red on 2026-11-14 " +
+		"before Fields.Freeze walked every control of a field: Choose... stood live beside the frozen output directory.",
+	"TestADropGoesWhereItsRulesSay": "its own canaries - three planted decisions (always the first box, busy ignored, the position " +
+		"asked when one box takes the kind) must each fail a row.",
+	"TestAFolderDroppedOnAWorkScreenBecomesItsOutputDirectory": "broken on 2026-11-14 three times: the drop sent to the first screen " +
+		"whatever was on show, the path kept with the toolkit's forward slashes, and SetText left out. Red each time.",
+	"TestADroppedPathComesBackOutOfTheToolkitAsItWent": "its own canary - the escaped address must not come back as the path.",
+	"TestADropOnTheToolsTabFollowsWhatTheChosenToolTakes": "broken on 2026-11-14 five times: the first screen whatever was on show, " +
+		"forward slashes kept, SetText left out, a file put into a folder box, and a refusal with no sentence. Red each time.",
+	"TestADropTheBoxCannotTakeSaysWhyAndChangesNothing": "broken on 2026-11-14 twice: a file put into a folder box, and a refusal " +
+		"with no sentence. Red both times.",
+	"TestADropWhileWorkOwnsTheScreenChangesNothing": "its own positive control - the same drop on an idle screen must say something - " +
+		"and broken on 2026-11-14 by handing the decision false for busy: red.",
 	// Broken once each on 2026-11-12 while they were written, one change at a
 	// time and restored (docs/DAMAGE-SETTINGS-LABEL-2026-11-12.md). The first
 	// also carries a canary of its own check.

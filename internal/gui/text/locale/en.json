@@ -314,6 +314,37 @@
     "hash": "sha256-3e96ff18edeb",
     "other": "{{.Directory}} ({{.Free}} free)"
   },
+  "DropAimless": {
+    "description": "Shown in the window.",
+    "hash": "sha256-18e4e580f745",
+    "other": "Drop it onto the box it is for."
+  },
+  "DropNeither": {
+    "description": "Shown in the window. Carries one value, {{.Name}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-f61888808983",
+    "other": "{{.Name}} is neither a file nor a folder."
+  },
+  "DropNotText": {
+    "description": "Shown in the window.",
+    "hash": "sha256-d91246c377d9",
+    "other": "The name of what was dropped is not text this box can hold. Type the path instead."
+  },
+  "DropOneAtATime": {
+    "description": "Shown in the window. One form per number, and a language may need more than the two English has - add them beside these. Carries one value, {{.Count}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-d5a5966cef2a",
+    "one": "Drop one at a time. {{.Count}} item was dropped.",
+    "other": "Drop one at a time. {{.Count}} items were dropped."
+  },
+  "DropTakesFile": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Box}}, {{.Name}}.",
+    "hash": "sha256-cdb72cf7cc14",
+    "other": "{{.Box}} takes a file. {{.Name}} is a folder."
+  },
+  "DropTakesFolder": {
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Box}}, {{.Name}}.",
+    "hash": "sha256-826478495ba2",
+    "other": "{{.Box}} takes a folder. {{.Name}} is a file."
+  },
   "FieldBasePreset": {
     "description": "The name above a box somebody fills in.",
     "hash": "sha256-6daf826260dd",
@@ -470,6 +501,16 @@
     "description": "The line under a field name, saying what the field does.",
     "hash": "sha256-67e5c4c4940a",
     "other": "Break the files on purpose."
+  },
+  "HintDropFile": {
+    "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-ac840e97cad5",
+    "other": "Drop a file here, or type its path"
+  },
+  "HintDropFolder": {
+    "description": "The line under a field name, saying what the field does.",
+    "hash": "sha256-1b07015c8614",
+    "other": "Drop a folder here, or type its path"
   },
   "HintExpected": {
     "description": "The line under a field name, saying what the field does.",

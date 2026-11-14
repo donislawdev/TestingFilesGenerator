@@ -628,32 +628,35 @@ func (s *Fields) Marked() []string {
 // registry exists: a field added later is covered without anybody remembering.
 // Controls that cannot be disabled are skipped rather than reported, because
 // this is not the place that decides what a control is.
+//
+// EVERY control under a field, walked through the containers round it. A path
+// box is a box with Choose... beside it, and freezing the first control only
+// left the button live, so a folder picked mid run landed in the grey box.
+// Guarded by TestEveryControlOfAFieldIsOffWhileARunOwnsTheScreen.
 func (s *Fields) Freeze(frozen bool) {
 	for _, f := range s.list {
-		// The registered object is sometimes a container fixing the control's
-		// width rather than the control - see inside, which is where asking
-		// the wrapper instead cost this a silent no-op.
-		found := inside(f.Control, func(o fyne.CanvasObject) bool {
-			_, ok := o.(fyne.Disableable)
-			return ok
-		})
-		if found == nil {
-			continue
-		}
-		control := found.(fyne.Disableable)
-		if frozen {
-			control.Disable()
-			continue
-		}
-		control.Enable()
+		freezeUnder(f.Control, frozen)
 	}
 	for _, b := range s.bare {
-		if frozen {
-			b.control.Disable()
-			continue
-		}
-		b.control.Enable()
+		setFrozen(b.control, frozen)
 	}
+}
+
+// freezeUnder freezes or thaws every control under one field's control.
+func freezeUnder(control fyne.CanvasObject, frozen bool) {
+	walkControls(control, func(o fyne.CanvasObject) {
+		if d, ok := o.(fyne.Disableable); ok {
+			setFrozen(d, frozen)
+		}
+	})
+}
+
+func setFrozen(d fyne.Disableable, frozen bool) {
+	if frozen {
+		d.Disable()
+		return
+	}
+	d.Enable()
 }
 
 // Controls is every control a person types into, for a guard comparing the

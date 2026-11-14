@@ -42,6 +42,12 @@ var mayBeConcurrent = map[string]string{
 	// cancels it and waits for it the same way (G7). Added 2026-09-29 with the
 	// Tools tab (docs/NARZEDZIA-SUMY-2026-09-29.md section 12.3).
 	"internal/gui/window/tools.go": "a tool reads beside the window, and closing the window waits for it",
+	// Asking the disk what a dropped path is took 21.0 s for a network path
+	// nobody answers for (measured 2026-11-14, docs/DRAG-DROP-2026-11-14.md
+	// section 12.1), and the window would stand still for all of it. One
+	// os.Stat on a worker, the answer back through fyne.Do, nothing shared but
+	// a count read on the interface thread.
+	"internal/gui/window/dropping.go": "what a dropped path is gets asked beside the window, so a network path that does not answer cannot freeze it",
 	// Signals arrive on a channel by definition, and the handler has to run
 	// beside the work it interrupts.
 	"cmd/tfg/main.go": "the interrupt handler has to run beside the work it stops",

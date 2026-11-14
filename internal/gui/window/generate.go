@@ -57,6 +57,13 @@ type Host interface {
 	// the reason ChooseDirectory gives.
 	ChooseFile(func(string))
 
+	// SetOnDropped takes the one function the toolkit calls when folders or
+	// files are dropped onto the window, with where they landed. fyne.Window
+	// has it, and a stand in keeps the function so a guard can drop onto a
+	// window that has no screen - the toolkit's own test window throws it
+	// away (fyne v2.8.2, test/window.go). See dropping.go.
+	SetOnDropped(func(fyne.Position, []fyne.URI))
+
 	// Copy puts text on the system's clipboard, on a press somebody made - the
 	// checksum a tool worked out, so it can be pasted where it is needed. Only
 	// a real window has a clipboard to put it on, and a stand in records it.
@@ -431,7 +438,7 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 		),
 		g.sections.section(sectionOutput, text.SectionOutput(),
 			parts.Wide(add(engine.SettingOutDir, text.FieldOutputDir(), text.HintOutputDir(), g.tips.Say(text.DetailOutputDir()),
-				chooserFor(g.outDir, g.host.ChooseDirectory))),
+				pathBox(g.host, g.outDir, parts.TakesFolder))),
 			add(engine.SettingSeed, text.FieldSeed(), text.HintSeed(), g.tips.Say(text.DetailSeed()),
 				parts.Numeric(g.seed)),
 			g.fields.AddToggle(engine.SettingLabel, text.FieldLabel(), "", g.tips.Say(text.DetailLabel()), g.label),

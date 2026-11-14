@@ -50,6 +50,10 @@ type Entry struct {
 	// is held to (O207). Nil until a field wires one, which is every field the
 	// box stands in.
 	ring *Ring
+
+	// takes is the kind of path this box holds, set by NewPathBox, and nought
+	// for every box that holds something else. See PathTargets.
+	takes Takes
 }
 
 // NewEntry builds one.

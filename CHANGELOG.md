@@ -59,6 +59,14 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Drop a folder or a file onto the window.** A folder dropped onto Single
+  batch, Presets or Several batches becomes the output directory. On the Tools
+  screen it goes into the box of the chosen tool when the tool takes that
+  kind: a file for `archive-scan`, `checksum` and `checksum-check`, a folder
+  for `checksum-write`. A file where a folder goes, several things at once or
+  a path that is not there is refused under the box, and the box keeps its
+  value. An empty path box says it takes a drop.
+
 - **A new format: `otlp`, OpenTelemetry traces, logs and metrics as OTLP
   JSON.** `tfg generate --format otlp` writes them to an exact size, one batch
   on each line as the OTLP file exporter does (`.jsonl`), or one request for
@@ -201,6 +209,10 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **On Windows, a path picked with Choose... has backslashes.** It is written
+  the way Windows writes paths, the same text a drop of that folder or file
+  puts in the box. It came with forward slashes before.
+
 - **`empty-and-minimal` now includes `otlp`.** The preset builds the smallest
   file of every format this build has, so with `formats` left at `all` it
   gains an `otlp` target of 1266 B, and the recipe `tfg preset eject
@@ -255,6 +267,9 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **Choose... is off while files are being made.** The output directory box
+  was frozen during a run and the button beside it was not, so a folder picked
+  mid run went into the box while the run went on writing into the old one.
 - **An AVIF file asked for just above the size where its picture grows is
   written.** In 0.5.0 about a quarter of the files asked for at 16389 or
   16439 B were not written at all, and the run ended with "1 file could not be

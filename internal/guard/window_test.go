@@ -105,6 +105,10 @@ type fakeHost struct {
 	file      string
 	fileCount int
 
+	// onDropped is the function the window gave for a drop, kept so a guard
+	// can drop onto it - see dropping_test.go.
+	onDropped func(fyne.Position, []fyne.URI)
+
 	kept       *keptInMemory
 	remembered window.Remembered
 

@@ -71,7 +71,7 @@ type Reason struct {
 // form, then what is only read.
 func Entries() []Entry {
 	return []Entry{
-		button(), chooser(), entry(), toggle(), segments(),
+		button(), chooser(), entry(), pathBox(), toggle(), segments(),
 		openList(), tabs(),
 		fields(), propertyField(), byteCount(), tips(), errorArea(), verdict(), progress(), folding(),
 		textRanks(), structure(), swatch(),
@@ -99,6 +99,7 @@ func NotDrawn() []Reason {
 		{"Returnable", "an interface: a control the window can tell it is coming back to the front, nothing of its own to draw"},
 		{"Shortcuts", "a keyboard map: nothing to draw, and saying so is the point of this row"},
 		{"NameTap", "an invisible target over the name beside a box to tick, so pressing the name ticks the box - nothing of its own to draw"},
+		{"PathTarget", "a value: a path box and the field it stands in, read by the window when something is dropped onto it"},
 	}
 }
 
