@@ -233,11 +233,19 @@ func parseColour(v string) (color.RGBA, bool) {
 	if len(v) != 6 {
 		return color.RGBA{}, false
 	}
-	n, err := strconv.ParseUint(v, 16, 32)
-	if err != nil {
-		return color.RGBA{}, false
+	// Each channel on its own and eight bits wide, so every number parsed fits
+	// the byte it goes into and no conversion narrows it. One number of
+	// twenty four bits cut into three was the same colours, and CodeQL could
+	// not see that six digits bound it (go/incorrect-integer-conversion, #250).
+	var rgb [3]uint8
+	for i := range rgb {
+		n, err := strconv.ParseUint(v[2*i:2*i+2], 16, 8)
+		if err != nil {
+			return color.RGBA{}, false
+		}
+		rgb[i] = uint8(n)
 	}
-	return color.RGBA{R: uint8(n >> 16), G: uint8(n >> 8), B: uint8(n), A: 255}, true
+	return color.RGBA{R: rgb[0], G: rgb[1], B: rgb[2], A: 255}, true
 }
 
 // Hex is a colour as the manifest records it: six lower case digits, whatever
@@ -271,19 +279,57 @@ func checkText(owner, v string) error {
 // end. A brace left in would be drawn as written, and somebody would get a
 // picture saying {idx} rather than the number they meant - the same reason a
 // name template refuses one.
+//
+// One pass over the text as written, left to right as Expand reads it. Taking
+// the tokens out one kind after another let the removal of one make another:
+// {width{index}} lost {index}, became {width}, lost that too and was accepted,
+// and Expand then drew {width1}.
 func withoutTokens(v string) (literal, unknown string) {
+	var b strings.Builder
+	for i := 0; i < len(v); {
+		if v[i] != '{' && v[i] != '}' {
+			b.WriteByte(v[i])
+			i++
+			continue
+		}
+		t := tokenAt(v[i:])
+		if t == "" {
+			return b.String(), strayBrace(v[i:])
+		}
+		i += len(t)
+	}
+	return b.String(), ""
+}
+
+// strayBrace is what a refusal quotes of s, which starts with a brace that
+// opens no token: up to the brace closing it, or the start of s when nothing
+// closes it or the brace is itself a closing one.
+func strayBrace(s string) string {
+	if end := strings.IndexByte(s, '}'); s[0] == '{' && end >= 0 {
+		return s[:end+1]
+	}
+	return brief(s)
+}
+
+// tokenAt is the token s starts with, or nothing. Nothing for a closing
+// brace too, since every token opens with one.
+func tokenAt(s string) string {
 	for _, t := range []string{tokenIndexPadded, tokenIndex, tokenWidth, tokenHeight} {
-		v = strings.ReplaceAll(v, t, "")
+		if strings.HasPrefix(s, t) {
+			return t
+		}
 	}
-	open := strings.IndexAny(v, "{}")
-	if open < 0 {
-		return v, ""
+	return ""
+}
+
+// brief is the start of s for a refusal to quote: up to twenty bytes, cut
+// where a character starts so the quote is still text.
+func brief(s string) string {
+	cut := min(len(s), 20)
+	for cut < len(s) && !utf8.RuneStart(s[cut]) {
+		cut--
 	}
-	end := strings.IndexByte(v[open:], '}')
-	if end < 0 || v[open] == '}' {
-		return v, v[open:min(len(v), open+20)]
-	}
-	return v, v[open : open+end+1]
+	return s[:cut]
 }
 
 // runeList names characters for a refusal: each one quoted, with its code
@@ -344,7 +390,7 @@ func Claim(drawn Drawn, label string, width, height int, notes []format.Note) (b
 	if !drawn.Text {
 		notes = append(notes, format.Note{
 			Code: "text_omitted",
-			Detail: core.Says("placeholder.TextOmitted", "The picture is %d by %d px and its text needs more room, so this placeholder carries no text.",
+			Detail: core.Says("placeholder.TextOmitted", "The picture is %d by %d px and its text needs more room, so this placeholder carries no text. A larger picture or a shorter text has room for it.",
 				core.A("Width", width), core.A("Height", height)),
 		})
 	}

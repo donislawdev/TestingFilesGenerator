@@ -214,10 +214,13 @@ func SizeFromContents() string {
 	return say("SizeFromContents", "decided by the files inside, known after Preview")
 }
 
-// SizeSmallest is the total of a form asking for the smallest file a format
-// makes, which planning works out from the picture - so Preview says it.
+// SizeSmallest is the total of a form where at least one batch asks for the
+// smallest file a format makes, which planning works out from the picture -
+// so Preview says it. Worded to stay true beside batches of a stated size:
+// a fixed size JPG next to a smallest PNG is not "the smallest each file can
+// be".
 func SizeSmallest() string {
-	return say("SizeSmallest", "the smallest each file can be, known after Preview")
+	return say("SizeSmallest", "includes pictures at their smallest size, known after Preview")
 }
 
 // DirectoryWithFreeSpace is the output directory with the room left on its

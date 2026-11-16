@@ -60,7 +60,7 @@ func planPlaceholder(r format.Request, w, h int, look placeholder.Settings) (for
 			Format:    "SVG",
 			Requested: r.Bytes,
 			Minimum:   least,
-			Reason:    core.Says("format.APlaceholderDrawingHolds", "a placeholder drawing holds its shapes, its words and its label, and a %dx%d one needs that much", core.A("Width", w), core.A("Height", h)),
+			Reason:    core.Says("format.APlaceholderPictureHolds", "a placeholder picture holds its shapes, its words and its label, and a %dx%d one needs that much", core.A("Width", w), core.A("Height", h)),
 			Hint:      core.Says("format.AskForBOrMore", "Ask for %d B or more.", core.A("Min", least)),
 		}
 	}

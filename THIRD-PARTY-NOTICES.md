@@ -290,7 +290,7 @@ is the module's own MIT, carried unchanged.
 | `github.com/yuin/goldmark` | v1.8.2 | MIT | (c) 2019 Yusuke Inuzuka |
 | `golang.org/x/image` | v0.46.0 | BSD-3-Clause | 2009 The Go Authors. |
 | `golang.org/x/net` | v0.62.0 | BSD-3-Clause | 2009 The Go Authors. |
-| `golang.org/x/sys` | v0.49.0 | BSD-3-Clause | 2009 The Go Authors. |
+| `golang.org/x/sys` | v0.50.0 | BSD-3-Clause | 2009 The Go Authors. |
 
 The five licence texts follow, one copy each. They differ only in the copyright
 line, which is in the table above for every module.
@@ -943,8 +943,9 @@ above.
 
 ## Not used
 
-`tfg`, the command line binary, embeds no fonts, images, sound or other
-third party assets. The window binary does, and they are listed above. The pixel
+`tfg`, the command line binary, embeds no font files, images, sound or other
+third party assets apart from the Inter Bold outlines listed above. The window
+binary does, and they are listed above. The pixel
 font that draws the label on a generated image is drawn in this repository, in
 `internal/format/imagelabel/font.go`, so that a font licence is not a question
 this project has to answer. The filler vocabulary is a short list of ordinary

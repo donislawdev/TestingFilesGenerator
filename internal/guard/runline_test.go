@@ -83,6 +83,29 @@ func TestTheLineFallsBackToTheDestinationWhenTheFormDoesNotSettle(t *testing.T) 
 	}
 }
 
+// A form asking for the smallest picture cannot add its total up before it
+// is planned, and the line says so rather than a number. The state first:
+// the same form at a stated size says its total, so the line is reading this
+// form and the change below is the word in the size box.
+func TestTheLineSaysASmallestPictureIsKnownAfterPreview(t *testing.T) {
+	_, content := screen(t)
+	choose(t, content, text.FieldFormat(), "png")
+	fill(t, content, text.SettingLabel("width"), "64")
+	fill(t, content, text.SettingLabel("height"), "64")
+	fill(t, content, text.FieldCount(), "2")
+	fill(t, content, text.FieldSize(), "4kb")
+	stated := text.SizeAndBytes(core.HumanBytes(8192), core.ExactBytes(8192))
+	if got := statusLine(t, content); !strings.Contains(got, stated) {
+		t.Fatalf("two pngs of 4kb make the line say %q, so this guard is not reading the form it fills", got)
+	}
+
+	fill(t, content, text.FieldSize(), core.SizeSmallest)
+	got := statusLine(t, content)
+	if !strings.Contains(got, text.SizeSmallest()) || strings.Contains(got, stated) {
+		t.Errorf("two pngs at their smallest make the line say %q, and nothing knows their total before Preview", got)
+	}
+}
+
 // A form drawing its sizes from a range says so, with both ends, instead of
 // adding up numbers that have not been drawn yet.
 func TestTheLineSaysBetweenForARange(t *testing.T) {

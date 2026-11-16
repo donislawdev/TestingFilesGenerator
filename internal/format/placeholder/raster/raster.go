@@ -106,17 +106,36 @@ func (p *Path) lineTo(x, y int64) {
 func (p *Path) QuadTo(cx, cy, x, y int64) {
 	p.segs = append(p.segs, Segment{Op: OpQuad, CX: cx, CY: cy, X: x, Y: y})
 	x0, y0 := p.curX, p.curY
-	dev := max(abs(x0-2*cx+x), abs(y0-2*cy+y))
-	// A curve flattened into n lines strays from them by at most dev/(8n^2),
-	// so n = sqrt(dev/(8*tol)) with tol a sixteenth of a pixel, One/16.
-	n := isqrt(dev/(One/2)) + 1
-	n = min(n, 256)
+	n := QuadLines(x0, y0, cx, cy, x, y)
 	nn := n * n
 	for i := int64(1); i <= n; i++ {
 		a, b, c := (n-i)*(n-i), 2*i*(n-i), i*i
 		p.lineTo(divRound(a*x0+b*cx+c*x, nn), divRound(a*y0+b*cy+c*y, nn))
 	}
 	p.grow(cx, cy)
+}
+
+// QuadLines is how many straight lines QuadTo draws a curve from x0, y0
+// through cx, cy to x, y as.
+//
+// The curve's second derivative is 2(P0-2P1+P2), and a curve flattened into n
+// lines of equal parameter strays from each by at most an eighth of that over
+// n squared - dev/(4n^2) with dev the LENGTH of P0-2P1+P2. The length and not
+// its larger coordinate: the two differ by up to the square root of two, and
+// a curve bent along a diagonal strayed 22/256 px with the coordinate,
+// measured 2026-11-16. So n = sqrt(dev/(4*tol)) with tol a sixteenth of a
+// pixel, One/16, and 4*tol is One/4. The length rounded up, so the count is
+// never short.
+//
+// Capped at 256, so a curve hundreds of pixels across costs a bounded number
+// of lines and strays a little further than the tolerance instead. The
+// squares fit: P0-2P1+P2 is at most four coordinates long, and for a side of
+// a million pixels that is about 1.0e9 here, whose square is 1.05e18 against
+// the 9.2e18 an int64 holds.
+func QuadLines(x0, y0, cx, cy, x, y int64) int64 {
+	dx, dy := x0-2*cx+x, y0-2*cy+y
+	dev := isqrt(dx*dx+dy*dy) + 1
+	return min(isqrt(dev/(One/4))+1, 256)
 }
 
 // Close joins the current point back to where its contour started.
@@ -292,13 +311,6 @@ func cover(part, whole []int64, a, b int64) {
 	whole[ia+1] += One
 	whole[ib] -= One
 	part[ib] += b & (One - 1)
-}
-
-func abs(v int64) int64 {
-	if v < 0 {
-		return -v
-	}
-	return v
 }
 
 func cmp64(a, b int64) int {

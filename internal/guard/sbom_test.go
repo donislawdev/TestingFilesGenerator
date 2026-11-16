@@ -74,9 +74,13 @@ func TestTheSBOMNamesEverythingTheBinariesCarry(t *testing.T) {
 	}
 }
 
-// The command line binary has no toolkit in it, so it has no fonts in it. A
-// document saying otherwise would be describing a file nobody ships - and this
-// is the assertion that catches a renderer attaching everything to everything.
+// The command line binary has no toolkit in it, so it has none of the
+// toolkit's fonts, icons or shaders - only the embedded bytes the registry
+// marks CommandLine. A document saying otherwise would be describing a file
+// nobody ships, and this is the assertion that catches a renderer attaching
+// everything to everything. The other way round too: an entry marked for the
+// command line that the document leaves off tfg is a file that ships named
+// nowhere.
 func TestTheSBOMKeepsTheTwoBinariesApart(t *testing.T) {
 	doc := renderedSBOM(t)
 
@@ -84,12 +88,13 @@ func TestTheSBOMKeepsTheTwoBinariesApart(t *testing.T) {
 	for _, p := range doc.Packages {
 		name[p.SPDXID] = p.Name
 	}
-	fonts := map[string]bool{}
+	marked := map[string]bool{}
 	for _, a := range legal.Assets() {
-		fonts[a.Name] = true
+		marked[a.Name] = a.CommandLine
 	}
 
 	described := 0
+	attached := map[string]bool{}
 	for _, r := range doc.Relationships {
 		if r.RelationshipType == "DESCRIBES" {
 			described++
@@ -98,9 +103,18 @@ func TestTheSBOMKeepsTheTwoBinariesApart(t *testing.T) {
 		if name[r.SPDXElementID] != "tfg" {
 			continue
 		}
-		if fonts[name[r.RelatedSPDXElement]] {
-			t.Errorf("the SBOM says the command line binary carries %q, and it carries no toolkit at all",
-				name[r.RelatedSPDXElement])
+		if _, isAsset := marked[name[r.RelatedSPDXElement]]; isAsset {
+			attached[name[r.RelatedSPDXElement]] = true
+		}
+	}
+	for asset, forCommandLine := range marked {
+		switch {
+		case attached[asset] && !forCommandLine:
+			t.Errorf("the SBOM says the command line binary carries %q, and the registry says only the window does",
+				asset)
+		case !attached[asset] && forCommandLine:
+			t.Errorf("the registry says the command line binary carries %q, and the SBOM does not attach it to tfg",
+				asset)
 		}
 	}
 	if described != 2 {

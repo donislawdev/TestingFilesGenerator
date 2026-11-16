@@ -84,19 +84,35 @@ func prepareDamage(t *Target, desc format.Descriptor) (format.Descriptor, error)
 // still applies to the finished archive, and the check that it moved a byte
 // still runs - what is missing is only the early refusal.
 //
+// A target asking for the smallest file is left alone here for the same
+// reason, its Sizes are a count, and asked per file instead (planFile): its
+// size is known once each file is planned, still before the first byte. A
+// 1x1 BMP is 58 B, and zero-head with 4096 B would blank all 58 and leave a
+// manifest promising 4096.
+//
 // A chain that changes the length is left to the format it plans through
 // (damagedformat.go), which knows the format's floor as well as the damage's
 // and names the larger. Asked here, a PNG with junk appended would be told 64
 // B is enough and then refused at 64 B for needing 138.
 func checkDamageFloor(t *Target) error {
-	if len(t.Damage) == 0 || t.SizeFromContents || t.Smallest || t.Damage.ChangesLength() {
+	if t.SizeFromContents || t.Smallest {
+		return nil
+	}
+	return checkFloorOf(t, t.Sizes...)
+}
+
+// checkFloorOf refuses a file smaller than the damage it was given, for a
+// chain that keeps the length. Several sizes in one call, so a target of a
+// million files works its floor out once.
+func checkFloorOf(t *Target, sizes ...int64) error {
+	if len(t.Damage) == 0 || t.Damage.ChangesLength() {
 		return nil
 	}
 	floor, owner, err := t.Damage.Floor()
 	if err != nil {
 		return err
 	}
-	for _, size := range t.Sizes {
+	for _, size := range sizes {
 		if size < floor {
 			return &damage.TooSmallError{Damage: owner, Requested: size, Floor: floor}
 		}

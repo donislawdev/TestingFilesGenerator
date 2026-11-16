@@ -3123,12 +3123,18 @@ MUTATIONS = [
         #
         # The same happened to png on 2026-10-27: a second png case pinning a
         # picture whose label is cut off left png pinned after the mutation, and
-        # CI reported this entry as a HOLE. svg has one case, counted the same
-        # way across goldenCases and the maps it merges in.
+        # CI reported this entry as a HOLE. And to svg on 2026-11-16, when the
+        # placeholder brought two svg cases of its own - by then no format had
+        # one case left, counted by running goldenCases.
+        #
+        # So the mutation is the slip a new table invites instead: written and
+        # never added to the list goldenCases merges. The otlp cases live in
+        # telemetryGoldenCases alone, so dropping that table leaves otlp pinned
+        # nowhere, however many cases the table holds.
         "a format quietly stops having its bytes pinned anywhere",
         "internal/guard/generatorbytes_test.go",
-        "\"svg_8kib\":  {ID: \"g\", Format: \"svg\",",
-        "\"svg_8kib\":  {ID: \"g\", Format: \"txt\",",
+        "telemetryGoldenCases(), placeholderGoldenCases()}",
+        "placeholderGoldenCases()}",
         "TestEveryFormatHasAGoldenValue",
     ),
     (
@@ -7030,8 +7036,8 @@ MUTATIONS = [
     ),
     (
         # Everything is attached to everything: the document says the command
-        # line binary carries fonts, which it does not - it has no toolkit in
-        # it at all. A bill of materials that describes a file nobody ships is
+        # line binary carries the toolkit's fonts, which it does not - it has
+        # no toolkit in it at all. A bill of materials that describes a file nobody ships is
         # worse than none, because a compliance process acts on it.
         "the document says every binary carries every font",
         "internal/legal/carried.go",
@@ -9119,12 +9125,12 @@ MUTATIONS = [
     (
         # The command line binary takes the window's font along. Nothing
         # structural stops an import like this, and tfg license would start
-        # naming a font in a binary the notices say has none.
+        # naming a font the registry and the notices say only the window has.
         "the command line binary links the window's font",
         "cmd/tfg/main.go",
         '\t"github.com/donislawdev/TestingFilesGenerator/internal/cli"',
         '\t"github.com/donislawdev/TestingFilesGenerator/internal/cli"\n\t_ "github.com/donislawdev/TestingFilesGenerator/internal/gui/font"',
-        "TestTheCommandLineLinksNoBytesOfSomebodyElsesThatWeEmbed",
+        "TestTheCommandLineCarriesOnlyTheEmbeddedBytesMarkedForIt",
     ),
     (
         # The registry misspells this project's module, so every entry of our
@@ -9155,7 +9161,7 @@ MUTATIONS = [
     ),
     (
         # An entry of ours is answered by module after all, and both binaries
-        # are one module - so the command line binary carries a font.
+        # are one module - so the command line binary carries the window's font.
         "an entry of ours is attached to every binary",
         "internal/legal/carried.go",
         "\t\treturn ours[asset.Package]\n\t}",
@@ -17261,8 +17267,8 @@ MUTATIONS = [
     (
         "the damage's own floor is named for a chain that changes the length, below the format's",
         "internal/engine/damage.go",
-        "\tif len(t.Damage) == 0 || t.SizeFromContents || t.Smallest || t.Damage.ChangesLength() {",
-        "\tif len(t.Damage) == 0 || t.SizeFromContents || t.Smallest {",
+        "\tif len(t.Damage) == 0 || t.Damage.ChangesLength() {",
+        "\tif len(t.Damage) == 0 {",
         "TestTheSmallestDamagedFileIsTakenAndOneByteLessIsNot",
     ),
     (

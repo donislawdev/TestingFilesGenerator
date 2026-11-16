@@ -49,6 +49,8 @@ func TestAPlaceholderSettingRefusesWhatItCannotDraw(t *testing.T) {
 		{map[string]string{"content": "placeholder", "text": "{idx}"}, "text"},
 		{map[string]string{"content": "placeholder", "text": "open {width"}, "text"},
 		{map[string]string{"content": "placeholder", "text": "a}b"}, "text"},
+		{map[string]string{"content": "placeholder", "text": "{width{index}}"}, "text"},
+		{map[string]string{"content": "placeholder", "text": "{{height}}"}, "text"},
 		{map[string]string{"content": "placeholder", "text": "\xe4\xb8\xad"}, "text"},
 		{map[string]string{"content": "placeholder", "text": "tab\there"}, "text"},
 		{map[string]string{"content": "placeholder", "text": long + "a"}, "text"},
@@ -98,32 +100,61 @@ func TestEachPlaceholderSaysItsOwnNumber(t *testing.T) {
 }
 
 // TestSmallestIsTheSmallestFile asks every picture format for its smallest
-// file at a size it can draw, with no label, and then for one byte less: the
-// first has to be planned and the second refused, or smallest is a size
-// somebody could have beaten by typing a number.
+// file at a size it can draw, with no label, and then for every size below
+// it: the first has to be planned and none of the others, or smallest is a
+// size somebody could have beaten by typing a number.
 //
-// The canary asks the same of a size a hundred bytes larger, which every
-// format plans along with the byte below it - so the check has to call it
-// not the smallest, or it is a check that cannot say no.
+// 8x8 rather than a picture somebody would use, because the check plans every
+// size below the answer and that costs about a millisecond a plan - at 48x32
+// a BMP, a TIFF and a WebP are each near 4.7 KB and the guard took 21 s,
+// measured 2026-11-16. The bands this has to see are a property of the
+// format's padding and not of the picture: a PNG refuses the 11 bytes above
+// its smallest file at both sizes, a GIF the 3.
+//
+// Two canaries. A size a hundred bytes larger is planned along with the
+// sizes below it, so the check has to call it not the smallest. And the far
+// side of the PNG band - planned, with the byte below it refused - has to be
+// called not the smallest too, which a check of the one byte below would not
+// do.
 func TestSmallestIsTheSmallestFile(t *testing.T) {
 	formats := pictures.Formats()
 	if len(formats) < 10 {
 		t.Fatalf("%d picture formats registered, %v - this would stop asking about the ones that left", len(formats), formats)
 	}
 	for _, id := range formats {
-		size, err := smallestOf(t, id, map[string]string{"width": "48", "height": "32"})
+		size, err := smallestOf(t, id, smallestSide())
 		if err != nil {
-			t.Errorf("%s: smallest at 48x32 was refused: %v", id, err)
+			t.Errorf("%s: smallest at 8x8 was refused: %v", id, err)
 			continue
 		}
 		if !isSmallest(t, id, size) {
-			t.Errorf("%s: smallest planned %d B and %d B is planned too", id, size, size-1)
+			t.Errorf("%s: smallest planned %d B and a smaller size is planned too", id, size)
 		}
 		if isSmallest(t, id, size+100) {
 			t.Errorf("%s: canary - %d B is a hundred over the smallest and was called the smallest, so this check cannot fail", id, size+100)
 		}
 	}
+
+	size, err := smallestOf(t, "png", smallestSide())
+	if err != nil {
+		t.Fatalf("png: smallest at 8x8 was refused: %v", err)
+	}
+	dir := t.TempDir()
+	for far := size + 2; far <= size+64; far++ {
+		if planAt(dir, "png", far) == nil && planAt(dir, "png", far-1) != nil {
+			if isSmallest(t, "png", far) {
+				t.Errorf("canary - png plans %d B, refuses %d B, and %d B was called the smallest, so a band above "+
+					"the smallest file would hide a wrong answer", far, far-1, far)
+			}
+			return
+		}
+	}
+	t.Fatalf("png plans every size within 64 B above its smallest file, so the second canary has no band to stand on - " +
+		"find a format that still has one")
 }
+
+// smallestSide is the picture these checks ask about.
+func smallestSide() map[string]string { return map[string]string{"width": "8", "height": "8"} }
 
 // smallestOf is the size the engine plans for one file of id at smallest.
 func smallestOf(t *testing.T, id string, props map[string]string) (int64, error) {
@@ -136,23 +167,44 @@ func smallestOf(t *testing.T, id string, props map[string]string) (int64, error)
 	return planned[0].Plan.Bytes, nil
 }
 
-// isSmallest says whether size is planned for a 48x32 picture of id and the
-// byte below it is not.
+// planAt plans one 8x8 picture of id at n bytes into dir and says why not,
+// if not. One folder for every call: planning writes nothing, and a new
+// folder a plan more than doubled the time this takes.
+func planAt(dir, id string, n int64) error {
+	target := engine.Target{ID: "s", Format: id, Sizes: engine.Uniform(1, n), Properties: smallestSide()}
+	_, err := engine.Plan([]engine.Target{target}, engine.Options{OutDir: dir, Seed: 1})
+	return err
+}
+
+// isSmallest says whether size is planned for an 8x8 picture of id and no
+// size below it is. Every size below, not only the byte below: a format whose
+// padding has a fixed cost refuses a band just above its smallest file - a
+// PNG cannot grow by fewer bytes than one chunk takes - so a wrong answer at
+// the far side of that band would pass a check of one byte.
 func isSmallest(t *testing.T, id string, size int64) bool {
 	t.Helper()
-	at := func(n int64) error {
-		target := engine.Target{ID: "s", Format: id, Sizes: engine.Uniform(1, n),
-			Properties: map[string]string{"width": "48", "height": "32"}}
-		_, err := engine.Plan([]engine.Target{target}, engine.Options{OutDir: t.TempDir(), Seed: 1})
-		return err
+	dir := t.TempDir()
+	if planAt(dir, id, size) != nil {
+		return false
 	}
-	return at(size) == nil && at(size-1) != nil
+	for n := size - 1; n >= 0; n-- {
+		if planAt(dir, id, n) == nil {
+			return false
+		}
+	}
+	return true
 }
 
 // TestSmallestSaysWhyItCannotBeAnswered asks for it where there is no smallest
-// picture: a format that is not a picture, a picture with no size, and a
-// damage that would make the file some other size than the smallest.
+// picture: a format that is not a picture, a picture with no size, a damage
+// that would make the file some other size than the smallest, and a damage
+// larger than the smallest file - a 1x1 BMP is 58 B, and zero-head of 4096 B
+// would blank all of it while the manifest promised 4096.
 func TestSmallestSaysWhyItCannotBeAnswered(t *testing.T) {
+	zeroHead := func(bytes string) damage.Chain {
+		return damage.Chain{{ID: damage.ZeroHead, Values: damage.Values{damage.SettingBytes: bytes}}}
+	}
+	tiny := map[string]string{"width": "1", "height": "1"}
 	cases := []struct {
 		target engine.Target
 		says   string
@@ -162,6 +214,8 @@ func TestSmallestSaysWhyItCannotBeAnswered(t *testing.T) {
 		{engine.Target{ID: "s", Format: "png", Sizes: engine.Uniform(1, 0), Smallest: true,
 			Properties: map[string]string{"width": "8", "height": "8"},
 			Damage:     damage.Chain{{ID: damage.Truncate, Values: damage.Values{damage.SettingMissing: "50"}}}}, "asks for the smallest file"},
+		{engine.Target{ID: "s", Format: "bmp", Sizes: engine.Uniform(3, 0), Smallest: true,
+			Properties: tiny, Damage: zeroHead("4096")}, "needs at least 4"},
 	}
 	for _, c := range cases {
 		_, err := engine.Plan([]engine.Target{c.target}, engine.Options{OutDir: t.TempDir(), Seed: 1})
@@ -173,6 +227,13 @@ func TestSmallestSaysWhyItCannotBeAnswered(t *testing.T) {
 	// above are about smallest and not about the picture.
 	if _, err := smallestOf(t, "png", map[string]string{"width": "8", "height": "8"}); err != nil {
 		t.Errorf("canary - an 8x8 png at smallest was refused: %v", err)
+	}
+	// And a damage the smallest file can hold is planned, so the refusal
+	// above is about the floor and not about damage on smallest.
+	fits := engine.Target{ID: "s", Format: "bmp", Sizes: engine.Uniform(1, 0), Smallest: true,
+		Properties: tiny, Damage: zeroHead("16")}
+	if _, err := engine.Plan([]engine.Target{fits}, engine.Options{OutDir: t.TempDir(), Seed: 1}); err != nil {
+		t.Errorf("canary - a 1x1 bmp at smallest with 16 B zeroed was refused: %v", err)
 	}
 }
 

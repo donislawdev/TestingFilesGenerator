@@ -1509,10 +1509,10 @@
     "hash": "sha256-9dead9140bc0",
     "other": "a password was given and this says the archive is not locked, so one of the two is not what you meant"
   },
-  "format.APlaceholderDrawingHolds": {
+  "format.APlaceholderPictureHolds": {
     "description": "Said by internal/format/svgfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Width}}, {{.Height}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-e3e11ef84887",
-    "other": "a placeholder drawing holds its shapes, its words and its label, and a {{.Width}}x{{.Height}} one needs that much"
+    "hash": "sha256-d9838974daaa",
+    "other": "a placeholder picture holds its shapes, its words and its label, and a {{.Width}}x{{.Height}} one needs that much"
   },
   "format.ARIFFFileStatesItsOwn": {
     "description": "Said by internal/format/wav - a refusal under the box it is about or at the foot of the form, or a note after a run.",
@@ -2743,8 +2743,8 @@
   },
   "placeholder.TextOmitted": {
     "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Width}}, {{.Height}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-5864521e3e68",
-    "other": "The picture is {{.Width}} by {{.Height}} px and its text needs more room, so this placeholder carries no text."
+    "hash": "sha256-219a1de7d5aa",
+    "other": "The picture is {{.Width}} by {{.Height}} px and its text needs more room, so this placeholder carries no text. A larger picture or a shorter text has room for it."
   },
   "placeholder.TextTooLong": {
     "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",

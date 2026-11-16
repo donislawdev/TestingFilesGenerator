@@ -778,18 +778,18 @@
     },
     "jpg_placeholder_32kib": {
       "bytes": 32768,
-      "sha256": "69592ee20e5c2ea9bd74c592207461875e985b14708476e3743c53689584a68a",
-      "measured_on": "2026-11-14"
+      "sha256": "ff0f9e88ef8cf0e0d4a9aef6e2e90124c584ee366618bac90f2c6bc03d4a4aef",
+      "measured_on": "2026-11-16"
     },
     "png_placeholder_64kib": {
       "bytes": 65536,
-      "sha256": "1419ea5167db71202ccc2acec6cdcb5a56fff18444c0164364d8b8ee6e3f0943",
-      "measured_on": "2026-11-14"
+      "sha256": "3256a7d27759a071d614f3e494a946be4800c85158c212108932273e76b43113",
+      "measured_on": "2026-11-16"
     },
     "png_placeholder_smallest": {
-      "bytes": 4763,
-      "sha256": "9e8e26c6e44221331f6b0cedde528237b2598cbf576be083e26735f20e4df730",
-      "measured_on": "2026-11-14"
+      "bytes": 4743,
+      "sha256": "2c84f3ae0dcae732f5c3373e6e3fac755aff7116b72eafa4ea7b137c49e3f4b4",
+      "measured_on": "2026-11-16"
     },
     "png_smallest_test_pattern": {
       "bytes": 131,

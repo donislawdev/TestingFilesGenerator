@@ -205,7 +205,7 @@
   "SizeAndBytes": { "hash": "sha256-7d36ca31e3e6", "other": "{{.Human}} ({{.Exact}})" },
   "SizeBetween": { "hash": "sha256-d5d1a79f10e9", "other": "od {{.Least}} do {{.Most}}" },
   "SizeFromContents": { "hash": "sha256-fc3aa1e2b2c3", "other": "zależy od plików w środku, znany po Podglądzie" },
-  "SizeSmallest": { "hash": "sha256-2a1e172421d6", "other": "najmniejszy, jaki może być każdy plik, znany po Podglądzie" },
+  "SizeSmallest": { "hash": "sha256-e41e71c6f74a", "other": "obejmuje obrazy w najmniejszym rozmiarze, znany po Podglądzie" },
   "SizeWayBoundary": { "hash": "sha256-6cea6d4c9fee", "other": "Wokół limitu" },
   "SizeWayExact": { "hash": "sha256-225cdeb34c4b", "other": "Jeden rozmiar" },
   "SizeWayRange": { "hash": "sha256-8879adb25c7d", "other": "Zakres" },

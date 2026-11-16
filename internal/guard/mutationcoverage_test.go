@@ -156,10 +156,16 @@ var provenByProbe = map[string]string{
 	"TestAPlaceholderSettingRefusesWhatItCannotDraw": "its own canary - the accepted half of the table, which a Read refusing every value fails.",
 	"TestEachPlaceholderSaysItsOwnNumber": "it reads three different numbers off three planned files and the colour as the manifest spells it, " +
 		"so a text that skipped its tokens or a file that took another's number reads wrong.",
-	"TestSmallestIsTheSmallestFile": "its own canary - a size a hundred bytes over the smallest must not pass as the smallest - and " +
-		"red on 2026-11-14 when the walk was broken by hand to step two bytes at a time.",
-	"TestSmallestSaysWhyItCannotBeAnswered": "its own canary - the same picture with a width and height must be planned, so each refusal " +
-		"is about smallest rather than about the picture.",
+	"TestSmallestIsTheSmallestFile": "two canaries of its own - a size a hundred bytes over the smallest, and the far side of the PNG " +
+		"band above it, must not pass as the smallest - red on 2026-11-14 when the walk was broken by hand to step two bytes at a " +
+		"time, and on 2026-11-16 when the check was cut back to the one byte below.",
+	"TestAFlattenedCurveStaysWithinASixteenthOfAPixel": "its own canary - the review's curve with one line fewer than the count " +
+		"must stray past a sixteenth of a pixel - and red on 2026-11-16 against a count taken from the larger coordinate, on a curve " +
+		"bent along a diagonal.",
+	"TestTheLineSaysASmallestPictureIsKnownAfterPreview": "its own canary - the same form at a stated size must say its total, so the " +
+		"line is this form's - and red on 2026-11-16 when the summary's smallest branch was switched off by hand: the line said 0 B.",
+	"TestSmallestSaysWhyItCannotBeAnswered": "its own canaries - the same picture with a width and height must be planned, and so must " +
+		"a damage the smallest file can hold, so each refusal is about smallest rather than about the picture or the damage.",
 	"TestAColourAfterAHashInARecipeIsNotLostInSilence": "its own canary - the same colour without the hash must run - and red on " +
 		"2026-11-14 when an empty colour was taken as left out by hand.",
 	"TestTheSeedSweepMovesEveryNumeralOfTheLabel": "it is the canary of the seed sweep beside it, and that sweep went red on " +

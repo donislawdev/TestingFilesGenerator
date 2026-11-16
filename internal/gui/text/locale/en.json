@@ -1034,8 +1034,8 @@
   },
   "SizeSmallest": {
     "description": "Shown in the window.",
-    "hash": "sha256-2a1e172421d6",
-    "other": "the smallest each file can be, known after Preview"
+    "hash": "sha256-e41e71c6f74a",
+    "other": "includes pictures at their smallest size, known after Preview"
   },
   "SizeWayBoundary": {
     "description": "Shown in the window.",

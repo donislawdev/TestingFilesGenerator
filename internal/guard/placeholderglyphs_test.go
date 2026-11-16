@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"image"
 	"image/color"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -127,6 +128,25 @@ func TestARasterCoversWhatItsOutlineEncloses(t *testing.T) {
 			t.Errorf("reverse=%t: coverage\n%v\nwant\n%v", reverse, g, want)
 		}
 	}
+
+	// One square cannot tell the non-zero rule from even-odd - both fill it.
+	// Two contours travelling the same way, one inside the other, can: the
+	// middle is wound twice, which non-zero fills and even-odd leaves as a
+	// hole. The letters need non-zero wherever a contour of one glyph overlaps
+	// another of the same glyph.
+	nested := raster.NewPath()
+	for _, side := range [][2]int64{{0, 6}, {2, 4}} {
+		lo, hi := side[0]*raster.One, side[1]*raster.One
+		nested.MoveTo(lo, lo)
+		nested.LineTo(hi, lo)
+		nested.LineTo(hi, hi)
+		nested.LineTo(lo, hi)
+		nested.Close()
+	}
+	if g := got(nested); g[2][2] != 255 || g[3][3] != 255 || g[0][0] != 255 {
+		t.Errorf("two contours wound the same way, one inside the other: the middle is %d and %d and the outer ring %d, "+
+			"all should be 255 under the non-zero rule\n%v", g[2][2], g[3][3], g[0][0], g)
+	}
 	// Canary: a square shifted by a pixel must not pass the same comparison.
 	shifted := raster.NewPath()
 	shifted.MoveTo(2*raster.One+half, 1*raster.One+half)
@@ -138,12 +158,79 @@ func TestARasterCoversWhatItsOutlineEncloses(t *testing.T) {
 	}
 }
 
+// TestAFlattenedCurveStaysWithinASixteenthOfAPixel holds the number of lines
+// QuadTo draws a curve as to the promise beside it: no point of the curve is
+// further than a sixteenth of a pixel from the lines. Asked of the exact
+// curve and the exact lines in floating point, so this is the bound itself
+// and not the rounding of the points.
+//
+// The curves are a flat one, the one an outside review gave - 0,0 through
+// 256,240 to 512,0, which the count before 2026-11-16 drew as two lines
+// 30/256 px away from it - and steeper ones up to where the cap of 256 lines
+// takes over. The canary draws the review's curve with one line fewer than
+// the count, which has to stray too far, or this cannot see a count that is
+// short.
+func TestAFlattenedCurveStaysWithinASixteenthOfAPixel(t *testing.T) {
+	const tol = float64(raster.One) / 16
+	stray := func(c [6]int64, n int64) float64 {
+		at := func(s float64) (float64, float64) {
+			u := 1 - s
+			return u*u*float64(c[0]) + 2*s*u*float64(c[2]) + s*s*float64(c[4]),
+				u*u*float64(c[1]) + 2*s*u*float64(c[3]) + s*s*float64(c[5])
+		}
+		worst := 0.0
+		for i := int64(0); i < n; i++ {
+			ax, ay := at(float64(i) / float64(n))
+			bx, by := at(float64(i+1) / float64(n))
+			for k := 1; k < 64; k++ {
+				px, py := at((float64(i) + float64(k)/64) / float64(n))
+				worst = max(worst, toSegment(px, py, ax, ay, bx, by))
+			}
+		}
+		return worst
+	}
+	review := [6]int64{0, 0, 256, 240, 512, 0}
+	curves := [][6]int64{
+		{0, 0, 256, 0, 512, 0},
+		review,
+		{0, 0, 300, 4000, 600, 0},
+		{0, 0, 5000, 90000, 10000, 0},
+		{0, 0, 2000, -6000, 8000, -8000},
+		{0, 0, 40000, -900000, 3000, 70000},
+	}
+	for _, c := range curves {
+		n := raster.QuadLines(c[0], c[1], c[2], c[3], c[4], c[5])
+		if n == 256 {
+			continue
+		}
+		if d := stray(c, n); d > tol {
+			t.Errorf("curve %v as %d lines strays %.2f/256 px, past the promised 16/256", c, n, d)
+		}
+	}
+	n := raster.QuadLines(review[0], review[1], review[2], review[3], review[4], review[5])
+	if n < 2 || stray(review, n-1) <= tol {
+		t.Fatalf("canary: the review's curve as %d lines stays within a sixteenth of a pixel, so this cannot see a short count", n-1)
+	}
+}
+
+// toSegment is how far px, py is from the segment from a to b.
+func toSegment(px, py, ax, ay, bx, by float64) float64 {
+	dx, dy := bx-ax, by-ay
+	s := 0.0
+	if l := dx*dx + dy*dy; l > 0 {
+		s = min(max(((px-ax)*dx+(py-ay)*dy)/l, 0), 1)
+	}
+	return math.Hypot(px-ax-s*dx, py-ay-s*dy)
+}
+
 // placeholderGolden is the hash of one placeholder drawn with every part it
 // has: Polish and Cyrillic letters, the label line and the
-// guides. Taken on Windows amd64 on 2026-11-14. CI draws it on Linux and on
-// macOS arm64, and the same hash there is what says the arithmetic is the
-// same everywhere (D11, docs/PLACEHOLDER-2026-11-14.md section 5).
-const placeholderGolden = "b97f307fae7a7e2b7fe822222c87c9340f6d91fbc72663a308e36aad49005c7f"
+// guides. Taken on Windows amd64 on 2026-11-16, when curves were cut into
+// enough lines to keep the promise of a sixteenth of a pixel. CI draws it on
+// Linux and on macOS arm64, and the same hash there is what says the
+// arithmetic is the same everywhere (D11, docs/PLACEHOLDER-2026-11-14.md
+// section 5).
+const placeholderGolden = "25156d5898e4e18526a161a503b36b247da7435cc506452d15b95f98d00ed0ee"
 
 // TestAPlaceholderIsTheSamePixelsOnEverySystem draws one placeholder and
 // holds its pixels to a hash.

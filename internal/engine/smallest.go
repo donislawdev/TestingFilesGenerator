@@ -55,10 +55,15 @@ func declaredDefault(desc format.Descriptor, name string) string {
 }
 
 // planFile is the plan of one file: at the size asked for, or at the smallest
-// its format makes when the target says smallest.
+// its format makes when the target says smallest - and then held to the floor
+// of its damage, which checkDamageFloor could not ask before the size existed.
 func planFile(ctx context.Context, t *Target, desc format.Descriptor, r format.Request) (format.Plan, error) {
 	if !t.Smallest {
 		return planWithoutCrashing(ctx, desc, r)
 	}
-	return planGuarded(desc, func() (format.Plan, error) { return desc.PlanSmallest(ctx, r) })
+	p, err := planGuarded(desc, func() (format.Plan, error) { return desc.PlanSmallest(ctx, r) })
+	if err != nil {
+		return p, err
+	}
+	return p, checkFloorOf(t, p.Bytes)
 }
