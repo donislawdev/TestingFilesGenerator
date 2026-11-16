@@ -100,6 +100,8 @@ func NotDrawn() []Reason {
 		{"Shortcuts", "a keyboard map: nothing to draw, and saying so is the point of this row"},
 		{"NameTap", "an invisible target over the name beside a box to tick, so pressing the name ticks the box - nothing of its own to draw"},
 		{"PathTarget", "a value: a path box and the field it stands in, read by the window when something is dropped onto it"},
+		{"Fix", "a value: the words on one button under a refusal and what pressing it does, drawn by ErrorArea"},
+		{"Remedy", "a value: what one button under a refusal puts in the box, read by a guard without a window"},
 	}
 }
 

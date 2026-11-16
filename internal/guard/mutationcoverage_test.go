@@ -221,6 +221,16 @@ var provenByProbe = map[string]string{
 	"TestAPictureIsTheSameWhateverSizeItIsAskedFor": "three canaries of its own - the same picture behind different padding, two pictures a byte apart, " +
 		"and two drawings whose labels differ - and red on 2026-11-16 in all fifteen of its cases on the code before the change, " +
 		"where the label drawn into a picture stated the size.",
+	"TestEveryFixUnderASizeRefusalLeadsToARunThatIsAccepted": "a canary of its own - the button as it was, the first file's minimum, " +
+		"has to be refused for a batch of three pictures - a reach check that some case is refused and some offers smallest, and " +
+		"broken by hand on 2026-11-16 three times: the batch walk off (every picture with its size set, pdf and a film red), only " +
+		"the number left at the first file's (batches of gif, jpg, png and mp4, and pdf, targz and wav red), and smallest never " +
+		"offered (every picture with its width and height set red).",
+	"TestSmallestWithTheLabelIsThePictureAlone": "a canary of its own - a hundred bytes over the smallest png has to fail - a " +
+		"reach check that some format drew its label, and broken by hand on 2026-11-16 by giving the picture label its size " +
+		"again: red, avif, gif, jpg and jxl among the first lines (O350).",
+	"TestBothButtonsUnderABatchOfSmallPicturesAreAcceptedInTheWindow": "broken by hand on 2026-11-16 by leaving the number at the " +
+		"first file's minimum: red, the preview refused 1573 B for three PNGs needing 1574 B.",
 	"TestATruncatedTextSaysHowMuchWasCut": "broken on 2026-11-12 twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times.",
 	"TestALongDamageLabelLeavesEveryFormatWhole": "broken on 2026-11-12 by letting damage.Chain.Label return the whole chain past LabelLimit: red, " +
 		"its own reach check says forty damages no longer fit the limit (docs/REVIEW-234-2026-11-12.md).",

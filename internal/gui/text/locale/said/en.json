@@ -968,6 +968,16 @@
     "hash": "sha256-a6669f6abe6b",
     "other": "Use one of: {{.Formats}}."
   },
+  "engine.AskForTheSmallestSize": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Size}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-a5af52762597",
+    "other": "Ask for {{.Size}} B."
+  },
+  "engine.AskForTheSmallestSizeOfAll": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Size}}, {{.Files}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-b69db57c2bf5",
+    "other": "Ask for {{.Size}} B, the smallest size all {{.Files}} files can have."
+  },
   "engine.CannotCreateOutDir": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Dir}}, {{.Cause}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-324037f71709",
@@ -1062,6 +1072,11 @@
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Size}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-2174959715d1",
     "other": "Ask for {{.Size}} or less."
+  },
+  "engine.EveryFileIsDifferent": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Files}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-ce926e40d0f8",
+    "other": "each of the {{.Files}} files is different, so each has a smallest size of its own"
   },
   "engine.FilesSoFar": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",

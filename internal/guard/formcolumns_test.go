@@ -92,10 +92,13 @@ func TestASizeBelowTheMinimumOffersTheSmallestSize(t *testing.T) {
 	if field == nil || field.Saying() == "" {
 		t.Fatal("a size of 1 B was not refused under the size box, so there is nothing to offer a fix for")
 	}
-	offered := field.Offered()
-	if offered == "" {
+	all := field.Offered()
+	if len(all) == 0 {
 		t.Fatalf("the size box says %q and offers no button to put it right", field.Saying())
 	}
+	// The first is the number. A picture with its width and height known
+	// gets a second, smallest, which picturefixes_test.go presses.
+	offered := all[0]
 	press(t, content, offered)
 	join(host)
 
@@ -145,7 +148,7 @@ func TestALimitBelowTheMinimumOffersNoButtonThatLeadsBackToItself(t *testing.T) 
 		t.Fatalf("a limit of %d B builds a file of %d B for a format whose smallest is %d B and was not refused, "+
 			"so there is nothing to offer a fix for.\n%s", minimum, minimum-1, minimum, allSaid(fields))
 	}
-	if offered := field.Offered(); offered != "" {
+	if offered := field.Offered(); len(offered) != 0 {
 		t.Errorf("the limit box offers %q under a refusal about the file one byte below the limit.\n"+
 			"Reason: the button puts the format's smallest size in the box, the box is the LIMIT, and\n"+
 			"the file under it is refused again - measured, the button led back to itself.", offered)
@@ -198,7 +201,7 @@ func TestARefusalAboutWhatIsInTheDirectoryStandsUnderItAndOpensIt(t *testing.T) 
 		t.Fatalf("a manifest already in the directory was not refused under the output directory box - it says %q",
 			field.Saying())
 	}
-	if got := field.Offered(); got != text.ButtonOpenFolder() {
+	if got := field.Offered(); len(got) != 1 || got[0] != text.ButtonOpenFolder() {
 		t.Fatalf("the refusal about the directory offers %q, not the way to the directory", got)
 	}
 	// The one on the screen: the bar keeps a button of the same name, hidden

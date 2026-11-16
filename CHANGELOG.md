@@ -85,10 +85,8 @@ because it turns other people's test suites red.
 - **`smallest` as a size.** `--size smallest`, or `size: smallest` in a
   recipe, makes each picture as small as it can be at the `width` and
   `height` you set, in all ten picture formats, and `--dry-run` still says the
-  size to the byte. With the label on, the label states the file's size and
-  its numerals change how a PNG or a JPG compresses, so it can carry up to
-  about a kilobyte more than its picture needs. With `--clean` the file is the
-  picture alone.
+  size to the byte. The file is the picture alone, with nothing added to reach
+  a size, whether the label is drawn in it or not.
 
 - **Generate into the same folder again.** A run into an output directory
   that already holds an earlier run is added beside it: every name of the run,
@@ -306,6 +304,13 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **The smallest size a refusal names is one every file of the batch takes.**
+  Three 320x240 PNGs asked for at 1 B named the smallest size of the first
+  file, and that size was refused again, because each picture needs its own.
+  The refusal now names the smallest size every file can have, and the button
+  under it in the window puts that size in the box. Refusing a large batch
+  takes about as long as planning it. A picture with its width and height set
+  also gets a second button, which asks for `smallest`.
 - **Choose... is off while files are being made.** The output directory box
   was frozen during a run and the button beside it was not, so a folder picked
   mid run went into the box while the run went on writing into the old one.

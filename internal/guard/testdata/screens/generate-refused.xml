@@ -166,11 +166,13 @@
 															</widget>
 														</container>
 														<container pos="0,58" size="788x28">
-															<widget size="197x28" type="*parts.Button">
-																<rectangle pos="-2,-2" radius="6" size="201x32" strokeColor="hyperlink"/>
-																<rectangle fillColor="button" radius="6" size="195x27" strokeColor="inputBorder" strokeWidth="1"/>
-																<text alignment="center" bold pos="6,6" size="185x16">Use the smallest size, 311 B</text>
-															</widget>
+															<container size="788x28">
+																<widget size="197x28" type="*parts.Button">
+																	<rectangle pos="-2,-2" radius="6" size="201x32" strokeColor="hyperlink"/>
+																	<rectangle fillColor="button" radius="6" size="195x27" strokeColor="inputBorder" strokeWidth="1"/>
+																	<text alignment="center" bold pos="6,6" size="185x16">Use the smallest size, 311 B</text>
+																</widget>
+															</container>
 														</container>
 													</container>
 												</container>

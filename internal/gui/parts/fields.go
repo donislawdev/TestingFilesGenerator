@@ -59,11 +59,11 @@ func (f *Field) Clear() { f.area.Clear() }
 // screen that knows how to put it right - the way to a directory whose
 // contents a run refused. On the field rather than on Fields, which stands at
 // its ceiling of methods.
-func (f *Field) Offer(label string, apply func()) { f.area.Offer(label, apply) }
+func (f *Field) Offer(fixes ...Fix) { f.area.Offer(fixes...) }
 
-// Offered is the words on the button under what this field is complaining
+// Offered is the words on each button under what this field is complaining
 // about, or nothing, for a guard.
-func (f *Field) Offered() string { return f.area.Offered() }
+func (f *Field) Offered() []string { return f.area.Offered() }
 
 // Saying is what this field is currently complaining about, for a guard.
 func (f *Field) Saying() string { return f.area.Text() }
@@ -527,9 +527,7 @@ func (s *Fields) Mark(setting string, err error) bool {
 		return false
 	}
 	f.Say(inTheWordsOnScreen(f, err))
-	if label, apply := fixFor(f, err); apply != nil {
-		f.area.Offer(label, apply)
-	}
+	f.area.Offer(fixesFor(f, err)...)
 	return true
 }
 

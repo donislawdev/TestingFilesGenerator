@@ -542,16 +542,16 @@ func (d Descriptor) PlanSmallest(ctx context.Context, r Request) (Plan, error) {
 	return d.smallest(func(r Request) (Plan, error) { return PlanWith(ctx, d.Generator, r) }, r)
 }
 
-// smallestRounds is far more than any format needs: each round either settles
+// SmallestRounds is far more than any format needs: each round either settles
 // or jumps to a number the format itself named. It is here so that a generator
 // whose refusals ever cycle costs a refusal rather than a run that never ends.
-const smallestRounds = 64
+const SmallestRounds = 64
 
 // smallest walks plan from nought to the first size it accepts.
 func (d Descriptor) smallest(plan func(Request) (Plan, error), r Request) (Plan, error) {
 	r.SizeFromContents = false
 	size := int64(0)
-	for round := 0; round < smallestRounds; round++ {
+	for round := 0; round < SmallestRounds; round++ {
 		r.Bytes = size
 		p, err := plan(r)
 		if err == nil {
@@ -569,7 +569,7 @@ func (d Descriptor) smallest(plan func(Request) (Plan, error), r Request) (Plan,
 		// size inside a band the format cannot reach. Step past it.
 		size++
 	}
-	return Plan{}, core.Defect(fmt.Errorf("%s: the smallest file did not settle in %d rounds, the last at %d B", d.ID, smallestRounds, size))
+	return Plan{}, core.Defect(fmt.Errorf("%s: the smallest file did not settle in %d rounds, the last at %d B", d.ID, SmallestRounds, size))
 }
 
 // PropertyNames is the declared keys, in the order the format listed them.

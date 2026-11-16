@@ -93,7 +93,7 @@ func placed(r *runner, one error) string {
 	// with the way to the directory under the sentence - see inTheWay.
 	if dir := inTheWay(one); dir != "" {
 		if where := r.placeOf(engine.SettingOutDir); r.fields.Mark(where, one) {
-			r.fields.Lookup(where).Offer(text.ButtonOpenFolder(), openIn(r.offer, dir))
+			r.fields.Lookup(where).Offer(parts.Fix{Label: text.ButtonOpenFolder(), Apply: openIn(r.offer, dir)})
 			return where
 		}
 	}

@@ -189,7 +189,14 @@ func errorArea() Entry {
 		{"offering the fix it asks for", func() fyne.CanvasObject {
 			a := parts.NewErrorArea()
 			a.Say("AVIF cannot be smaller than 311 B. Requested: 1 B")
-			a.Offer("Use the smallest size, 311 B", func() {})
+			a.Offer(parts.Fix{Label: "Use the smallest size, 311 B", Apply: func() {}})
+			return a.Object()
+		}},
+		{"offering two ways out", func() fyne.CanvasObject {
+			a := parts.NewErrorArea()
+			a.Say("PNG cannot be smaller than 1596 B - each of the 3 files is different, so each has a smallest size of its own. Requested: 1 B. Ask for 1596 B, the smallest size all 3 files can have.")
+			a.Offer(parts.Fix{Label: "Use the smallest size, 1 596 B", Apply: func() {}},
+				parts.Fix{Label: "Make each picture as small as it can be", Apply: func() {}})
 			return a.Object()
 		}},
 	}}

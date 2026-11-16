@@ -247,6 +247,7 @@
   "ToolReading": { "hash": "sha256-d0e0b4b2b81f", "other": "Przeczytano {{.Done}} z {{.Total}}." },
   "ToolResultLine": { "hash": "sha256-c8b9b00643c2", "other": "{{.Name}}  {{.Value}}" },
   "ToolStopped": { "hash": "sha256-1da20fb189f8", "other": "Zatrzymano przed końcem. Nic nie zostało zapisane ani zmienione." },
+  "UseSmallestForEach": { "hash": "sha256-a09b7491974d", "other": "Zrób każdy obraz tak mały, jak się da" },
   "UseSmallestSize": { "hash": "sha256-c42521834dd8", "other": "Użyj najmniejszego rozmiaru, {{.Size}}" },
   "WillGoTo": { "hash": "sha256-88a5bdf9be0b", "other": "zapis do {{.Directory}}" },
   "WindowRefused": { "hash": "sha256-1b746ceec688", "other": "Nie udało się otworzyć okna. Rysuje ono przez OpenGL 2.1, a biblioteka graficzna nie zdołała uzyskać go od sterownika na tym komputerze. Komunikat biblioteki: {{.Cause}}. Wszystko, co robi okno, jest też dostępne w linii komend - uruchom „tfg --help” - i ona nie potrzebuje sterownika grafiki. Żeby mieć okno, użyj sterownika grafiki obsługującego OpenGL 2.1." },

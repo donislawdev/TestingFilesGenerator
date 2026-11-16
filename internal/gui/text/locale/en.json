@@ -1242,6 +1242,11 @@
     "hash": "sha256-1da20fb189f8",
     "other": "Stopped before it finished. Nothing was written or changed."
   },
+  "UseSmallestForEach": {
+    "description": "Shown in the window.",
+    "hash": "sha256-a09b7491974d",
+    "other": "Make each picture as small as it can be"
+  },
   "UseSmallestSize": {
     "description": "Shown in the window. Carries one value, {{.Size}}, which has to stay spelled exactly that way.",
     "hash": "sha256-c42521834dd8",
