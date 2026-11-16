@@ -775,6 +775,36 @@
       "bytes": 8192,
       "sha256": "09453a63d9e92e5e78fc0bf62352b00bfbcace558584a11a7bf04db54de8e7f0",
       "measured_on": "2026-11-11"
+    },
+    "jpg_placeholder_32kib": {
+      "bytes": 32768,
+      "sha256": "ff0f9e88ef8cf0e0d4a9aef6e2e90124c584ee366618bac90f2c6bc03d4a4aef",
+      "measured_on": "2026-11-16"
+    },
+    "png_placeholder_64kib": {
+      "bytes": 65536,
+      "sha256": "3256a7d27759a071d614f3e494a946be4800c85158c212108932273e76b43113",
+      "measured_on": "2026-11-16"
+    },
+    "png_placeholder_smallest": {
+      "bytes": 4743,
+      "sha256": "2c84f3ae0dcae732f5c3373e6e3fac755aff7116b72eafa4ea7b137c49e3f4b4",
+      "measured_on": "2026-11-16"
+    },
+    "png_smallest_test_pattern": {
+      "bytes": 131,
+      "sha256": "7a43b97d8f38f715adb6893bad47268dad22c27bf1fe5d1f9ad2404e7d61adb1",
+      "measured_on": "2026-11-14"
+    },
+    "svg_placeholder_32kib": {
+      "bytes": 32768,
+      "sha256": "2c4754d41d35f22183ae2c438be58af9d3a9da5757b84273b153819f586b4102",
+      "measured_on": "2026-11-14"
+    },
+    "svg_placeholder_smallest": {
+      "bytes": 4372,
+      "sha256": "c5d6bc718ee3c39f5119c4bef8843dd83e3eeb7e6332aac0bcd39bab668eea06",
+      "measured_on": "2026-11-14"
     }
   },
   "remeasured": [

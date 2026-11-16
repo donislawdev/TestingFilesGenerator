@@ -133,8 +133,8 @@ func linkCard(heading, detail string, button *parts.Button, address string) fyne
 //
 // Two sections rather than one, because a library and a font are different
 // questions to whoever is checking what they may ship. A section with nothing
-// in it is not drawn at all: the command line binary carries no embedded files
-// and a heading over an empty space would be a claim that it does.
+// in it is not drawn at all: a heading over an empty space would be a claim
+// that something is there.
 func carried() []fyne.CanvasObject {
 	items := legal.Reviewed()
 	var out []fyne.CanvasObject

@@ -42,9 +42,9 @@ func (pl *planning) files(ctx context.Context, t *Target, desc format.Descriptor
 	for idx, size := range t.Sizes {
 		fileSeed := core.FileSeed(targetSeed, idx)
 
-		r := requestFor(t, fileSeed, damaged)
+		r := requestFor(t, idx, fileSeed, damaged)
 		r.Bytes = size
-		p, err := planWithoutCrashing(ctx, desc, r)
+		p, err := planFile(ctx, t, desc, r)
 		if err != nil {
 			return atTarget(position, t, err)
 		}
@@ -182,9 +182,11 @@ func (pl *planning) startList(ctx context.Context) error {
 // generator settles.
 //
 // damaged is t.Damage.Label(), asked once a target by the caller rather than
-// once a file, because it resolves every entry against the registry.
-func requestFor(t *Target, seed uint64, damaged string) format.Request {
+// once a file, because it resolves every entry against the registry. idx is
+// the file's place in t from nought, as renderName takes it.
+func requestFor(t *Target, idx int, seed uint64, damaged string) format.Request {
 	return format.Request{
+		Number:           idx + 1,
 		SizeFromContents: t.SizeFromContents,
 		Contains:         t.Contains,
 		Seed:             seed,

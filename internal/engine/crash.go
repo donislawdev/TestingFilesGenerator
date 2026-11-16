@@ -83,7 +83,14 @@ const (
 //
 // The context reaches a container's own planning (format.PlanWith), so a stop
 // lands between two of the files inside it rather than after the last.
-func planWithoutCrashing(ctx context.Context, desc format.Descriptor, r format.Request) (p format.Plan, err error) {
+func planWithoutCrashing(ctx context.Context, desc format.Descriptor, r format.Request) (format.Plan, error) {
+	return planGuarded(desc, func() (format.Plan, error) { return format.PlanWith(ctx, desc.Generator, r) })
+}
+
+// planGuarded runs one way of planning a file of desc, a panic in it becoming
+// an ordinary error - the one plan above, or the walk to the smallest size
+// that plans the file several times on its way (planFile).
+func planGuarded(desc format.Descriptor, plan func() (format.Plan, error)) (p format.Plan, err error) {
 	defer func() {
 		v := recover()
 		if v == nil {
@@ -91,7 +98,7 @@ func planWithoutCrashing(ctx context.Context, desc format.Descriptor, r format.R
 		}
 		err = &GeneratorCrashError{Format: desc.ID, While: crashPlanning, Value: v}
 	}()
-	return format.PlanWith(ctx, desc.Generator, r)
+	return plan()
 }
 
 // writeWithoutCrashing is the same around the write, so a crash costs one file

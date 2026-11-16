@@ -18,6 +18,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagedim"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/placeholder"
 )
 
 // Measured on 2026-08-01, a comment holds arbitrary bytes to 1 MiB both after
@@ -222,7 +223,7 @@ func init() {
 		// Shape counts, gradients, fonts, embedded rasters and SMIL come
 		// later. Declaring none of them makes a recipe asking for one fail
 		// loudly rather than quietly.
-		Properties: []format.Property{
+		Properties: append([]format.Property{
 			imagedim.Width(imagedim.Side{Largest: maxDimension,
 				Default: strconv.Itoa(defaultWidth),
 				Detail: "How wide the drawing says it is. Nothing is drawn into pixels here, " +
@@ -231,7 +232,7 @@ func init() {
 				Default: strconv.Itoa(defaultHeight),
 				Detail: "How tall the drawing says it is. The label sits along the bottom edge, " +
 					"so a drawing shorter than that strip carries no visible label."}),
-		},
+		}, placeholder.Properties()...),
 		GeneratorVersion: generatorVersion,
 		Generator:        generator{},
 	})
@@ -244,16 +245,32 @@ type memo struct {
 	seed      uint64
 	width     int
 	height    int
+	// The rest is a placeholder's: what it shows, its words and label for
+	// this file, and how long its drawing is (planPlaceholder).
+	look        placeholder.Settings
+	text, label string
+	body        int64
+}
+
+// settingsOf is what a request asks of a drawing: how large, and what it shows.
+func settingsOf(props map[string]string) (w, h int, look placeholder.Settings, err error) {
+	if w, err = imagedim.Value("svg", Width, props, maxDimension, defaultWidth); err != nil {
+		return 0, 0, look, err
+	}
+	if h, err = imagedim.Value("svg", Height, props, maxDimension, defaultHeight); err != nil {
+		return 0, 0, look, err
+	}
+	look, err = placeholder.Read("svg", props)
+	return w, h, look, err
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
-	w, err := imagedim.Value("svg", Width, r.Properties, maxDimension, defaultWidth)
+	w, h, look, err := settingsOf(r.Properties)
 	if err != nil {
 		return format.Plan{}, err
 	}
-	h, err := imagedim.Value("svg", Height, r.Properties, maxDimension, defaultHeight)
-	if err != nil {
-		return format.Plan{}, err
+	if look.Placeholder() {
+		return planPlaceholder(r, w, h, look)
 	}
 
 	min := minimumBytes(w, h)
@@ -302,6 +319,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	}
 
 	p.Properties[format.PropertyLabelEmbedded] = m.labelLine != ""
+	look.Describe(p.Properties, "", placeholder.Drawn{})
 	p.Memo = m
 	return p, nil
 }
@@ -310,6 +328,9 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	m, ok := p.Memo.(memo)
 	if !ok {
 		return core.Defect(fmt.Errorf("svg: the plan was not produced by this generator"))
+	}
+	if m.look.Placeholder() {
+		return writePlaceholder(ctx, w, p, m)
 	}
 
 	head := declaration + rootOpen(m.width, m.height) + m.labelLine

@@ -274,6 +274,8 @@
     "extensions separated by commas": "virgülle ayrılmış uzantılar",
     "the id of a format, as tfg formats lists them": "tfg formats'ın listelediği gibi bir biçimin kimliği",
     "the id of a picture format, as tfg formats lists them": "tfg formats'ın listelediği gibi bir görüntü biçiminin kimliği",
+    "one line of up to 100 characters": "en fazla 100 karakterlik tek satır",
+    "a colour such as cccccc or ccc": "cccccc veya ccc gibi bir renk",
     "the password, in plain text": "parola, düz metin olarak",
     "any text": "herhangi bir metin",
     "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "2024-02-29 veya 2024-02-29T13:45:00+02:00 gibi bir tarih, veya none",

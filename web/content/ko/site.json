@@ -274,6 +274,8 @@
     "extensions separated by commas": "쉼표로 구분한 확장자",
     "the id of a format, as tfg formats lists them": "tfg formats가 나열하는 형식의 id",
     "the id of a picture format, as tfg formats lists them": "tfg formats가 나열하는 이미지 형식의 id",
+    "one line of up to 100 characters": "최대 100자의 한 줄",
+    "a colour such as cccccc or ccc": "cccccc 또는 ccc 같은 색",
     "the password, in plain text": "암호(평문)",
     "any text": "임의의 텍스트",
     "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "2024-02-29 또는 2024-02-29T13:45:00+02:00 같은 날짜, 또는 none",

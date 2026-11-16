@@ -416,6 +416,7 @@ func engineTarget(t recipe.Target) engine.Target {
 		Sizes:            t.Sizes,
 		Contains:         contentsOf(t),
 		SizeFromContents: t.SizeFromContents,
+		Smallest:         t.Smallest,
 		Range:            engine.SizeRange(t.Range),
 		BoundaryLimit:    t.BoundaryLimit,
 		NameTmpl:         t.Name,

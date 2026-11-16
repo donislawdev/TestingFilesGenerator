@@ -243,8 +243,13 @@ var reachableFromTheWindow = []string{
 	"property:ico.embed",
 	"property:ico.height",
 	"property:ico.width",
+	"property:jpg.background",
+	"property:jpg.content",
+	"property:jpg.foreground",
+	"property:jpg.guides",
 	"property:jpg.height",
 	"property:jpg.quality",
+	"property:jpg.text",
 	"property:jpg.width",
 	"property:json.formatting",
 	"property:log.entry_format",
@@ -275,14 +280,27 @@ var reachableFromTheWindow = []string{
 	"property:pdf.producer",
 	"property:pdf.created",
 	"property:pdf.modified",
+	// The placeholder is one declaration shared by the picture formats that
+	// draw one (placeholder.Properties), so the window draws its fields from
+	// that declaration under the heading Placeholder, as it draws every other.
+	"property:png.background",
+	"property:png.content",
+	"property:png.foreground",
+	"property:png.guides",
 	"property:png.height",
+	"property:png.text",
 	"property:png.width",
 	// SVG names its dimensions the same way the nine picture formats do, on
 	// purpose - the window draws all eleven with one piece of code, and a
 	// person who has learnt "width" once has learnt it here too. What SVG does
 	// not carry over is their joint megapixel ceiling, because it writes text
 	// rather than holding a raster while it encodes.
+	"property:svg.background",
+	"property:svg.content",
+	"property:svg.foreground",
+	"property:svg.guides",
 	"property:svg.height",
+	"property:svg.text",
 	"property:svg.width",
 	"property:targz.compression",
 	"property:targz.depth",

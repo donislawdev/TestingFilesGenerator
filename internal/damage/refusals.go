@@ -305,9 +305,10 @@ func (e *EatenError) Said() core.Said {
 }
 
 // SizeConflict is the refusal a chain earns by changing the length of a file
-// whose size comes from what it holds, or nil.
-func (c Chain) SizeConflict(sizeFromContents bool) *NeedsSizeError {
-	if !sizeFromContents {
+// whose size comes from what it holds, or that is the smallest its format
+// makes, or nil.
+func (c Chain) SizeConflict(sizeFromContents, smallest bool) *NeedsSizeError {
+	if !sizeFromContents && !smallest {
 		return nil
 	}
 	steps, err := c.steps()
@@ -316,7 +317,7 @@ func (c Chain) SizeConflict(sizeFromContents bool) *NeedsSizeError {
 	}
 	for _, s := range steps {
 		if s.d.Length != nil {
-			return &NeedsSizeError{Damage: s.d.ID}
+			return &NeedsSizeError{Damage: s.d.ID, Smallest: smallest}
 		}
 	}
 	return nil
@@ -331,6 +332,10 @@ func (c Chain) SizeConflict(sizeFromContents bool) *NeedsSizeError {
 // section 4.8).
 type NeedsSizeError struct {
 	Damage string
+	// Smallest says the target asked for the smallest file rather than for
+	// what it holds. The size is known there, so the reason is a different
+	// one: a cut or a tail makes the file something smallest does not say.
+	Smallest bool
 }
 
 // AboutSetting puts this on the size box, because naming a size is the half
@@ -340,6 +345,10 @@ func (e *NeedsSizeError) AboutSetting() string { return "size" }
 func (e *NeedsSizeError) What() string { return e.what().String() }
 
 func (e *NeedsSizeError) what() core.Said {
+	if e.Smallest {
+		return core.Says("damage.NeedsSizeSmallestWhat", "%s changes the length of the file, and this target asks for the smallest file its format makes",
+			core.A("Damage", e.Damage))
+	}
 	return core.Says("damage.NeedsSizeWhat", "%s changes the length of the file, and this target takes its size from what it holds",
 		core.A("Damage", e.Damage))
 }
@@ -347,6 +356,9 @@ func (e *NeedsSizeError) what() core.Said {
 func (e *NeedsSizeError) Why() string { return e.why().String() }
 
 func (e *NeedsSizeError) why() core.Said {
+	if e.Smallest {
+		return core.Says("damage.NeedsSizeSmallestWhy", "a file cut short or carrying more bytes is no longer the smallest one, so the two say different things about its size")
+	}
 	return core.Says("damage.NeedsSizeWhy", "that size is only known once the file is written, so there is no length to work from")
 }
 

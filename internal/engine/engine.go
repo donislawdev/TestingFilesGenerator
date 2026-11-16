@@ -40,6 +40,15 @@ type Target struct {
 	// from Contains. The entries in Sizes then only carry the count, and their
 	// value is not read.
 	SizeFromContents bool
+	// Smallest says no size was named and each file is the smallest its
+	// format makes at its settings (core.SizeSmallest). Sizes then only carry
+	// the count, as for SizeFromContents, and the size comes from planning -
+	// so a dry run still reports it to the byte (AR10).
+	//
+	// Apart from SizeFromContents rather than a second spelling of it, because
+	// a container with an empty list of contents is a legal archive with
+	// nothing in it, and the two must not read as one.
+	Smallest bool
 	// Range says the sizes are drawn rather than stated, and Sizes then arrives
 	// carrying only the count.
 	//
@@ -299,6 +308,9 @@ func settleTarget(ctx context.Context, t *Target, opt Options, seen map[string]b
 	// believes it.
 	if len(t.Contains) > 0 && desc.Container == nil {
 		return format.Descriptor{}, &format.NotAContainerError{Format: t.Format, Containers: format.Containers()}
+	}
+	if err := checkSmallest(t, desc); err != nil {
+		return format.Descriptor{}, err
 	}
 
 	desc, err = prepareDamage(t, desc)

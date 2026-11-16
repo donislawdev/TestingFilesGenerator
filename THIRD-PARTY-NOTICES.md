@@ -290,7 +290,7 @@ is the module's own MIT, carried unchanged.
 | `github.com/yuin/goldmark` | v1.8.2 | MIT | (c) 2019 Yusuke Inuzuka |
 | `golang.org/x/image` | v0.46.0 | BSD-3-Clause | 2009 The Go Authors. |
 | `golang.org/x/net` | v0.62.0 | BSD-3-Clause | 2009 The Go Authors. |
-| `golang.org/x/sys` | v0.49.0 | BSD-3-Clause | 2009 The Go Authors. |
+| `golang.org/x/sys` | v0.50.0 | BSD-3-Clause | 2009 The Go Authors. |
 
 The five licence texts follow, one copy each. They differ only in the copyright
 line, which is in the table above for every module.
@@ -612,7 +612,7 @@ THE SOFTWARE.
 
 ---
 
-## Files the window binary carries that are not code
+## Files the binaries carry that are not code
 
 The toolkit compiles fonts and drawings into the binary. They are not modules,
 so a list of modules never mentions them - which is how they shipped unnamed
@@ -621,7 +621,8 @@ images arrive this way from the toolkit, and their licences ask for their
 notices to travel with them. Two more font files arrive from a package of this
 project itself: Inter, the face the window has been set in since 2026-09-15,
 is embedded by `internal/gui/font` rather than by the toolkit, and is listed
-here under the same rule.
+here under the same rule. So is one file made from one of them, the outlines
+of the letters a placeholder picture is drawn with, which both binaries carry.
 
 What is listed here was measured by asking the compiler which files each
 package embeds, not by reading its source. The copyright lines were read out of
@@ -632,15 +633,20 @@ the font files themselves.
 | Noto Sans, four styles | `fyne.io/fyne/v2/theme` | OFL-1.1 | Copyright 2015 Google Inc. All Rights Reserved. |
 | Inter Symbols, the toolkit's symbol glyphs only | `fyne.io/fyne/v2/theme` | OFL-1.1 | (c) 2020 The Inter Project Authors |
 | Inter, Regular and Bold, the text of the window - static instances from the v4.1 release of github.com/rsms/inter | `internal/gui/font` in this project | OFL-1.1 | Copyright 2016 The Inter Project Authors |
+| Inter Bold outlines, the letters of a placeholder picture - 548 characters of the Inter Bold file above, as whole numbers | `internal/format/placeholder/glyphs` in this project | OFL-1.1 | Copyright 2016 The Inter Project Authors |
 | DejaVu Sans Mono for Powerline | `fyne.io/fyne/v2/theme` | Bitstream-Vera | (c) 2003 Bitstream, Inc. DejaVu changes are in the public domain |
 | EmojiOne Color | `fyne.io/fyne/v2/theme` | MIT, and read the note below | Copyright 2016 Adobe Systems Incorporated |
 | Fyne icon set, 96 drawings and one image | `fyne.io/fyne/v2/theme` | BSD-3-Clause | (C) 2018 Fyne.io developers (see AUTHORS) |
 | Fyne translations, 15 files of toolkit wording | `fyne.io/fyne/v2/lang` | BSD-3-Clause | (C) 2018 Fyne.io developers (see AUTHORS) |
 | Fyne shaders, 14 programs that draw the screen | `fyne.io/fyne/v2/internal/painter/gl` | BSD-3-Clause | (C) 2018 Fyne.io developers (see AUTHORS) |
 
-`tfg`, the command line binary, embeds none of this. It has no toolkit in it.
+`tfg`, the command line binary, has no toolkit in it and carries one file of
+this list: the Inter Bold outlines. They are a Modified Version in the terms
+of the Open Font License - a subset of the font's letters written in another
+format, each shape point for point the font's own - so they travel under that
+licence, reproduced below, with the font's copyright line.
 
-None of the three fonts under the Open Font License declares a Reserved Font
+None of the fonts under the Open Font License declares a Reserved Font
 Name - checked in the licence file of each and in the name table of each font
 file - so the identifier above is OFL-1.1 rather than OFL-1.1-RFN. Inter is a
 trademark of Rasmus Andersson.
@@ -663,7 +669,7 @@ and only those were replaced by their plain equivalents.
 
 ### SIL Open Font License 1.1
 
-Applies to Noto Sans, to Inter Symbols and to Inter.
+Applies to Noto Sans, to Inter Symbols, to Inter and to the Inter Bold outlines.
 
 ```
 ------------------------------
@@ -937,8 +943,9 @@ above.
 
 ## Not used
 
-`tfg`, the command line binary, embeds no fonts, images, sound or other
-third party assets. The window binary does, and they are listed above. The pixel
+`tfg`, the command line binary, embeds no font files, images, sound or other
+third party assets apart from the Inter Bold outlines listed above. The window
+binary does, and they are listed above. The pixel
 font that draws the label on a generated image is drawn in this repository, in
 `internal/format/imagelabel/font.go`, so that a font licence is not a question
 this project has to answer. The filler vocabulary is a short list of ordinary

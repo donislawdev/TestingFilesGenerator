@@ -5,6 +5,7 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
 )
@@ -24,8 +25,16 @@ import (
 // the setting it needs from companions, and a companion that stops being
 // needed is itself a failure, so the list cannot rot into a list of reasons to
 // look away.
+//
+// The seeds are 0 to 255 and then the sixteen whose label is one numeral eight
+// times, 00000000 to ffffffff. The first 256 move only the last two numerals of
+// the label, and a file's own seed is a hash with all eight moving: a drawing
+// whose label was outlines needed 2.5 kB more for some seeds than for others
+// (2026-11-14, docs/PLACEHOLDER-2026-11-14.md), and a length that grows with
+// what a numeral looks like is not swept by moving two of eight. The sixteen
+// are the extremes where the length of one numeral adds up eight times.
 func TestTheMinimumStandsWhateverTheSeedIsUnderEveryDeclaredChoice(t *testing.T) {
-	const seeds = 256
+	seeds := sweptSeeds()
 	checked := 0
 	usedCompanion := map[string]bool{}
 
@@ -40,7 +49,7 @@ func TestTheMinimumStandsWhateverTheSeedIsUnderEveryDeclaredChoice(t *testing.T)
 				}
 				r := format.Request{Label: true, Properties: props}
 				floor := d.SmallestAccepted(r)
-				for seed := uint64(0); seed < seeds; seed++ {
+				for _, seed := range seeds {
 					r.Bytes, r.Seed = floor, seed
 					_, err := d.Generator.Plan(r)
 					if err == nil {
@@ -79,6 +88,41 @@ func TestTheMinimumStandsWhateverTheSeedIsUnderEveryDeclaredChoice(t *testing.T)
 	}
 }
 
+// sweptSeeds is 0 to 255 and the sixteen seeds whose label is one numeral at
+// every place - and it says so, or the sweep would stop reaching the state it
+// is for and stay green (O118).
+func sweptSeeds() []uint64 {
+	out := make([]uint64, 0, 256+16)
+	for seed := uint64(0); seed < 256; seed++ {
+		out = append(out, seed)
+	}
+	for d := uint64(0); d < 16; d++ {
+		out = append(out, d*0x11111111)
+	}
+	return out
+}
+
+// TestTheSeedSweepMovesEveryNumeralOfTheLabel is the canary of the sweep
+// above: across the seeds it takes, every place of the label has to show all
+// sixteen numerals.
+func TestTheSeedSweepMovesEveryNumeralOfTheLabel(t *testing.T) {
+	seen := make([]map[byte]bool, 8)
+	for i := range seen {
+		seen[i] = map[byte]bool{}
+	}
+	for _, seed := range sweptSeeds() {
+		label := core.SeedLabel(seed)
+		for i := 0; i < len(label) && i < 8; i++ {
+			seen[i][label[i]] = true
+		}
+	}
+	for i, numerals := range seen {
+		if len(numerals) != 16 {
+			t.Errorf("place %d of the label shows %d of 16 numerals across the sweep, so a length that moves with that place is not swept", i+1, len(numerals))
+		}
+	}
+}
+
 // nonDefaultValues is every value of a closed set or a switch but the default.
 func nonDefaultValues(p format.Property) []string {
 	var values []string
@@ -101,7 +145,8 @@ func nonDefaultValues(p format.Property) []string {
 }
 
 // choiceCompanions is what a value needs beside it before a file can be made
-// at all, keyed by format.setting=value.
+// at all, keyed by format.setting=value - and, for the placeholder pictures
+// below, the size that reaches the same file without paying for a walk.
 var choiceCompanions = map[string]map[string]string{
 	// Mixed pages need more than one page.
 	"pdf.page_size=mixed":   {"pages": "2"},
@@ -131,6 +176,21 @@ var choiceCompanions = map[string]map[string]string{
 	// A directory entry needs a directory.
 	"zip.directory_entries=true":   {"depth": "1"},
 	"targz.directory_entries=true": {"depth": "1"},
+	// Guides are drawn on a placeholder, and a test picture has none.
+	//
+	// A png or jpg placeholder with no width and height walks the picture
+	// ladder from 640x480 down at every plan, drawing and encoding each rung,
+	// and at the floor it ends on a picture too small for the label - 74 B of
+	// png is one pixel. With the walk this guard took 26 s here and 248 s under
+	// the race detector in CI, and 1.8 s here without it, measured 2026-11-16.
+	// 8x8 is the same picture without a label, planned once. Where the label does fit, the floor of a png or a
+	// jpg moves with the seed, the test pattern's as much as the placeholder's
+	// (O353), so a larger size here would be a red guard about something else.
+	"png.content=placeholder": {"width": "8", "height": "8"},
+	"jpg.content=placeholder": {"width": "8", "height": "8"},
+	"png.guides=true":         {"content": "placeholder", "width": "8", "height": "8"},
+	"jpg.guides=true":         {"content": "placeholder", "width": "8", "height": "8"},
+	"svg.guides=true":         {"content": "placeholder"},
 	// Locking needs something to lock with.
 	"zip.encryption=aes-128":   {"password": "guard"},
 	"zip.encryption=aes-192":   {"password": "guard"},

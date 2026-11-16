@@ -21,9 +21,13 @@
 # request against requirements-semgrep.in, and this entry has nothing left to
 # hide - remove it then. If that has not happened by the date below, the weekly
 # scan goes red again, which is the reminder.
+#
+# The reminder came on 2026-11-16, and semgrep 1.185.0 of 2026-11-10, the
+# newest on PyPI that day, still asks for mcp==1.29.0 and
+# opentelemetry-api~=1.37.0. Every date in this file moved four weeks on.
 [[IgnoredVulns]]
 id = "GHSA-84m7-p3x7-pcfv"
-ignoreUntil = 2026-11-15
+ignoreUntil = 2026-12-14
 reason = "semgrep pins mcp==1.29.0 in every release, and the advisory is about an MCP HTTP server, which semgrep scan never starts"
 
 # opentelemetry-api 1.37.0, in requirements-semgrep.txt for the scanner and
@@ -42,8 +46,19 @@ reason = "semgrep pins mcp==1.29.0 in every release, and the advisory is about a
 # moves its pins, and both come back on one reminder.
 [[IgnoredVulns]]
 id = "GHSA-xcq7-p3pf-p88h"
-ignoreUntil = 2026-11-15
+ignoreUntil = 2026-12-14
 reason = "semgrep pins opentelemetry-api~=1.37.0 in every release, and the advisory is about parsing an inbound tracestate header in a server, which semgrep scan never runs"
+
+# A second advisory against opentelemetry-api 1.37.0, found by the weekly scan
+# of 2026-11-16, fixed in 1.45.2. The same class as the entry above: parsing an
+# inbound traceparent header takes quadratic time, reached through
+# TraceContextTextMapPropagator.extract() in a server receiving requests.
+# semgrep 1.185.0 still asks for ~=1.37.0, and semgrep scan receives no
+# request. The same date as the rest, for the same one reminder.
+[[IgnoredVulns]]
+id = "GHSA-mf5v-w3w3-f6cg"
+ignoreUntil = 2026-12-14
+reason = "semgrep pins opentelemetry-api~=1.37.0 in every release, and the advisory is about parsing an inbound traceparent header in a server, which semgrep scan never runs"
 
 # Three more advisories against mcp 1.29.0, published 2026-11-02, all fixed in
 # the same 1.30.0 as the first entry above.
@@ -65,15 +80,15 @@ reason = "semgrep pins opentelemetry-api~=1.37.0 in every release, and the advis
 # its pin, and all of them come back on one reminder.
 [[IgnoredVulns]]
 id = "GHSA-5h93-6whr-6q8j"
-ignoreUntil = 2026-11-15
+ignoreUntil = 2026-12-14
 reason = "semgrep pins mcp==1.29.0 in every release, and the advisory is about the MCP client following cross-origin redirects, which semgrep scan never starts"
 
 [[IgnoredVulns]]
 id = "GHSA-rwrf-2pqf-9j8j"
-ignoreUntil = 2026-11-15
+ignoreUntil = 2026-12-14
 reason = "semgrep pins mcp==1.29.0 in every release, and the advisory is about the MCP client fetching server-chosen $ref addresses, which semgrep scan never starts"
 
 [[IgnoredVulns]]
 id = "GHSA-w4fh-qvv9-3v23"
-ignoreUntil = 2026-11-15
+ignoreUntil = 2026-12-14
 reason = "semgrep pins mcp==1.29.0 in every release, and the advisory is about an MCP server checking bearer tokens, which semgrep scan never starts"

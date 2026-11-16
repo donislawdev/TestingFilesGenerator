@@ -12,6 +12,8 @@
 # scaled up by its part: on 2026-11-12 the listed tests of two parts on an AMD
 # EPYC 9V74 took 1/1.20 and 1/1.15 of their weights.
 # Listed: every test that took 10 s or more. "unlisted" is the mean of the rest.
+# TestSmallestIsTheSmallestFile came on 2026-11-16: 79.3 s in a part whose
+# listed tests took 0.61 of their weights, so 130.1.
 #
 # A test that is not here and takes 60 s or more fails its part with the line
 # to add. A test that is here and no longer exists fails every part.
@@ -23,6 +25,7 @@ unlisted 0.58
 162.6 TestEveryScreenStillDrawsItsStoredPicture
 142.2 TestEveryTileOfAFilmIsGav1dsCodingOfItsPixelsAndDecodesAsItDoesAlone
 134.0 TestEveryAvifRungStillFitsInsideItsDeclaredCeilings
+130.1 TestSmallestIsTheSmallestFile
 130.0 TestTheMinimumThisToolPrintsStandsWhateverTheSeedIs
 124.3 TestFreeBoxesCarryPaddingOfAnyLength
 99.9 TestEveryBase64TextSizeIsExact

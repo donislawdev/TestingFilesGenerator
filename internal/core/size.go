@@ -7,6 +7,14 @@ import (
 	"strings"
 )
 
+// SizeSmallest is the word a size can be instead of a number: the smallest
+// file the format makes at its settings, with nothing added to reach a size.
+// For a picture with its width and height set, that is the picture alone - a
+// placeholder as a page would get it. It is not a number, so ParseSize refuses
+// it and the two places that read a size ask for it by name first: a recipe
+// (recipe.resolveSize) and the --size flag. docs/PLACEHOLDER-2026-11-14.md.
+const SizeSmallest = "smallest"
+
 // ParseSize turns a human written size into an exact number of bytes.
 //
 //	10mb     -> 10 485 760

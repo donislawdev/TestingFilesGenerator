@@ -30,7 +30,7 @@ func TestEveryFieldOfARequestIsInItsKey(t *testing.T) {
 		var r format.Request
 		v := reflect.ValueOf(&r).Elem().Field(i)
 		switch field.Type.Kind() {
-		case reflect.Int64:
+		case reflect.Int64, reflect.Int:
 			v.SetInt(1)
 		case reflect.Uint64:
 			v.SetUint(1)

@@ -152,6 +152,8 @@ func RequestKey(id string, r Request) (string, bool) {
 	// its length and with it the smallest file that carries it. Where the cut
 	// falls changes how a format lays the file out.
 	fmt.Fprintf(&b, " %d %q %d", r.OnDisk, r.Damage, r.CutAt)
+	// The number is a word of a placeholder's text where {index} asks for it.
+	fmt.Fprintf(&b, " %d", r.Number)
 	for _, name := range names {
 		fmt.Fprintf(&b, " %q=%q", name, r.Properties[name])
 	}

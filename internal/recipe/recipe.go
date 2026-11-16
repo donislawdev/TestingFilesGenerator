@@ -80,6 +80,9 @@ type Target struct {
 	// SizeFromContents is set when contains was given without a size, so the
 	// container works the size out from what it holds.
 	SizeFromContents bool
+	// Smallest is set by size: smallest - each file the smallest its format
+	// makes at its settings, settled by the engine (engine.Target.Smallest).
+	Smallest bool
 	// Range holds what a target asked for when it asked for one. The sizes
 	// themselves are not settled here.
 	//

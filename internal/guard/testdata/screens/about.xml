@@ -40,8 +40,8 @@
 				</container>
 			</container>
 			<widget pos="0,70" size="1092x1221" type="*widget.Scroll">
-				<container size="1092x2240">
-					<container pos="136,0" size="820x2240">
+				<container size="1092x2265">
+					<container pos="136,0" size="820x2265">
 						<container size="820x49">
 							<container pos="16,0" size="788x49">
 								<container size="788x24">
@@ -923,13 +923,13 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,1837" size="820x277">
-							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x277" strokeColor="button" strokeWidth="1"/>
-							<container size="820x277">
-								<container pos="16,16" size="788x245">
+						<container pos="0,1837" size="820x301">
+							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x301" strokeColor="button" strokeWidth="1"/>
+							<container size="820x301">
+								<container pos="16,16" size="788x269">
 									<text bold size="788x20" textSize="17">Files compiled in that are not code</text>
-									<container pos="0,36" size="788x208">
-										<container size="788x208">
+									<container pos="0,36" size="788x233">
+										<container size="788x233">
 											<container size="788x33">
 												<container size="221x16">
 													<widget pos="-6,-6" size="233x28" type="*widget.Label">
@@ -1073,6 +1073,29 @@
 												<container size="221x16">
 													<widget pos="-6,-6" size="233x28" type="*widget.Label">
 														<widget size="233x28" type="*widget.RichText">
+															<text pos="6,6" size="119x16">Inter Bold outlines</text>
+														</widget>
+													</widget>
+												</container>
+												<container pos="237,0" size="104x16">
+													<widget pos="-6,-6" size="116x28" type="*widget.Label">
+														<widget size="116x28" type="*widget.RichText">
+															<text pos="6,6" size="47x16">OFL-1.1</text>
+														</widget>
+													</widget>
+												</container>
+												<container pos="357,0" size="430x16">
+													<widget pos="-6,-6" size="442x28" type="*widget.Label">
+														<widget size="442x28" type="*widget.RichText">
+															<text pos="6,6" size="270x16">Copyright 2016 The Inter Project Authors</text>
+														</widget>
+													</widget>
+												</container>
+											</container>
+											<container pos="0,191" size="788x16">
+												<container size="221x16">
+													<widget pos="-6,-6" size="233x28" type="*widget.Label">
+														<widget size="233x28" type="*widget.RichText">
 															<text pos="6,6" size="90x16">Inter Symbols</text>
 														</widget>
 													</widget>
@@ -1092,7 +1115,7 @@
 													</widget>
 												</container>
 											</container>
-											<container pos="0,191" size="788x16">
+											<container pos="0,216" size="788x16">
 												<container size="221x16">
 													<widget pos="-6,-6" size="233x28" type="*widget.Label">
 														<widget size="233x28" type="*widget.RichText">
@@ -1120,7 +1143,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,2138" size="820x102">
+						<container pos="0,2163" size="820x102">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x102" strokeColor="button" strokeWidth="1"/>
 							<container size="820x102">
 								<container pos="16,16" size="788x70">
@@ -1164,8 +1187,8 @@
 					<linearGradient pos="0,-8" size="1092x8"/>
 				</widget>
 				<widget pos="1086,0" size="6x1221" type="*widget.scrollBarArea">
-					<widget pos="3,0" size="3x665" type="*widget.scrollBar">
-						<rectangle fillColor="scrollbar" radius="3" size="3x665"/>
+					<widget pos="3,0" size="3x658" type="*widget.scrollBar">
+						<rectangle fillColor="scrollbar" radius="3" size="3x658"/>
 					</widget>
 				</widget>
 			</widget>

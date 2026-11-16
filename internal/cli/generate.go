@@ -54,7 +54,7 @@ func generateFlagSet(errOut io.Writer, g *generateOpts) (*flag.FlagSet, func(io.
 
 	fs.StringVar(&g.presetID, "preset", "", "build the set a named test question calls for. Run \"tfg preset list\" to see them")
 	fs.StringVar(&g.formatID, "format", "", "format of the files to produce, for example txt")
-	fs.StringVar(&g.sizeStr, "size", "", "exact size of each file. Units count in 1024s, so 10mb is 10485760 bytes. Also accepts a plain byte count")
+	fs.StringVar(&g.sizeStr, "size", "", "exact size of each file. Units count in 1024s, so 10mb is 10485760 bytes. Also accepts a plain byte count, or smallest for a picture with its width and height set")
 	fs.StringVar(&g.sizeRange, "size-range", "", "a size drawn from a range for each file, as 1kb-8kb. The draw comes from the seed, so the same seed gives the same sizes")
 	fs.StringVar(&g.boundary, "boundary", "", "three files around a limit: one byte under it, the limit itself, one byte over")
 	fs.IntVar(&g.count, "count", 1, "how many files to produce")
@@ -352,6 +352,7 @@ func targetsFromFlags(g *generateOpts, given map[string]bool, errOut io.Writer) 
 		ID:            g.id,
 		Format:        g.formatID,
 		Sizes:         sizes,
+		Smallest:      g.sizeStr == core.SizeSmallest,
 		Range:         engine.SizeRange{Used: g.sizeRange != "", Min: rangeLow, Max: rangeHigh},
 		BoundaryLimit: boundaryLimit,
 		NameTmpl:      g.name,
@@ -403,6 +404,11 @@ func sizesFromFlags(g *generateOpts, errOut io.Writer) (sizes []int64, low, high
 			return nil, 0, 0, 0, ExitRecipe
 		}
 		return sizes, 0, 0, limit, ExitOK
+
+	case g.sizeStr == core.SizeSmallest:
+		// The count alone, as for a range. The engine plans each file at the
+		// smallest its format makes (engine.Target.Smallest).
+		return engine.Uniform(g.count, 0), 0, 0, 0, ExitOK
 
 	default:
 		bytesWanted, err := core.ParseSize(g.sizeStr)
@@ -548,6 +554,7 @@ func engineTarget(t recipe.Target, label bool) engine.Target {
 		Sizes:            t.Sizes,
 		Contains:         contentsOf(t),
 		SizeFromContents: t.SizeFromContents,
+		Smallest:         t.Smallest,
 		Range:            engine.SizeRange(t.Range),
 		BoundaryLimit:    t.BoundaryLimit,
 		NameTmpl:         t.Name,

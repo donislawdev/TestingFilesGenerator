@@ -41,6 +41,15 @@ const generatorGoldenFile = "testdata/generator-golden.json"
 // because a default that moved would move every hash below.
 const goldenSeed = 7741
 
+// placeholderEverySetting is a placeholder with each of its settings away from
+// its default, a map of its own for every case that asks.
+func placeholderEverySetting() map[string]string {
+	return map[string]string{
+		"content": "placeholder", "width": "320", "height": "180",
+		"text": "Hero{index:04}_{width}x{height}", "background": "1e293b", "foreground": "e2e8f0", "guides": "true",
+	}
+}
+
 func goldenCases() map[string]engine.Target {
 	cases := map[string]engine.Target{
 		// Every format at a size comfortably above its minimum.
@@ -401,12 +410,38 @@ func goldenCases() map[string]engine.Target {
 		// have to agree to the byte.
 		"targz_past_the_comment_limit": {ID: "g", Format: "targz", Sizes: engine.Uniform(1, 262144), Label: true},
 	}
-	for _, more := range []map[string]engine.Target{mapGoldenCases(), mailGoldenCases(), pageGoldenCases(), rtfGoldenCases(), cutLabelGoldenCases(), telemetryGoldenCases()} {
+	for _, more := range []map[string]engine.Target{mapGoldenCases(), mailGoldenCases(), pageGoldenCases(), rtfGoldenCases(), cutLabelGoldenCases(), telemetryGoldenCases(), placeholderGoldenCases()} {
 		for name, target := range more {
 			cases[name] = target
 		}
 	}
 	return cases
+}
+
+// placeholderGoldenCases are the golden cases of the placeholder, a table of
+// its own for the reason mailGoldenCases gives.
+//
+// The placeholder of 2026-11-14 (docs/PLACEHOLDER-2026-11-14.md), in
+// the three formats that draw one: every setting at once and padded,
+// and the smallest file with the defaults. The test pattern of the same
+// three is pinned in goldenCases and did not move, which is the promise that
+// content: test costs them nothing. smallest is pinned on the test
+// pattern too, because the walk to it is new and the pattern is not.
+func placeholderGoldenCases() map[string]engine.Target {
+	return map[string]engine.Target{
+		"png_placeholder_64kib": {ID: "g", Format: "png", Sizes: engine.Uniform(1, 65536), Label: true,
+			Properties: placeholderEverySetting()},
+		"png_placeholder_smallest": {ID: "g", Format: "png", Sizes: engine.Uniform(1, 0), Smallest: true, Label: true,
+			Properties: map[string]string{"content": "placeholder", "width": "200", "height": "100"}},
+		"png_smallest_test_pattern": {ID: "g", Format: "png", Sizes: engine.Uniform(1, 0), Smallest: true, Label: true,
+			Properties: map[string]string{"width": "64", "height": "48"}},
+		"jpg_placeholder_32kib": {ID: "g", Format: "jpg", Sizes: engine.Uniform(1, 32768), Label: true,
+			Properties: placeholderEverySetting()},
+		"svg_placeholder_32kib": {ID: "g", Format: "svg", Sizes: engine.Uniform(1, 32768), Label: true,
+			Properties: placeholderEverySetting()},
+		"svg_placeholder_smallest": {ID: "g", Format: "svg", Sizes: engine.Uniform(1, 0), Smallest: true, Label: true,
+			Properties: map[string]string{"content": "placeholder"}},
+	}
 }
 
 // rtfGoldenCases are the golden cases of the rtf format, a table of their own

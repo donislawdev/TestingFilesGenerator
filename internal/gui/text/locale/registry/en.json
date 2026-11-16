@@ -244,6 +244,11 @@
     "hash": "sha256-efe2a5c09e6d",
     "other": "noise"
   },
+  "Choice.content.placeholder": {
+    "description": "One entry of the content list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-4097889236a2",
+    "other": "placeholder"
+  },
   "Choice.content.silence": {
     "description": "One entry of the content list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-e6c18fdbe597",
@@ -253,6 +258,11 @@
     "description": "One entry of the content list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-dfd33796972c",
     "other": "sweep"
+  },
+  "Choice.content.test": {
+    "description": "One entry of the content list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-9f86d081884c",
+    "other": "test"
   },
   "Choice.content.tone": {
     "description": "One entry of the content list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
@@ -1574,6 +1584,26 @@
     "hash": "sha256-1e8b4b7bc765",
     "other": "How wide the icon is. Left out, the largest standard icon size that fits is used."
   },
+  "Detail.format/jpg.background": {
+    "description": "The sentence under the background setting of the jpg format, after what it takes.",
+    "hash": "sha256-f19788fb6882",
+    "other": "The colour of a placeholder, such as cccccc or ccc. In a recipe write it without # or in quotes, because # starts a comment there."
+  },
+  "Detail.format/jpg.content": {
+    "description": "The sentence under the content setting of the jpg format, after what it takes.",
+    "hash": "sha256-3fb6c23165c1",
+    "other": "What the picture shows. test is a pattern for checking how a file is read. placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist."
+  },
+  "Detail.format/jpg.foreground": {
+    "description": "The sentence under the foreground setting of the jpg format, after what it takes.",
+    "hash": "sha256-57ac35f17b3f",
+    "other": "The colour of the words and the guides on a placeholder, written the same way as background."
+  },
+  "Detail.format/jpg.guides": {
+    "description": "The sentence under the guides setting of the jpg format, after what it takes.",
+    "hash": "sha256-7edc1841adb4",
+    "other": "Draws a frame along the edges of a placeholder, both diagonals and a circle touching its shorter sides, so you can see where a page crops or stretches the picture."
+  },
   "Detail.format/jpg.height": {
     "description": "The sentence under the height setting of the jpg format, after what it takes.",
     "hash": "sha256-4b336c279584",
@@ -1583,6 +1613,11 @@
     "description": "The sentence under the quality setting of the jpg format, after what it takes.",
     "hash": "sha256-55a9a664be71",
     "other": "How much detail survives compression, from 1 to 100. JPEG throws detail away by design, so a low number gives a visibly softer picture. It changes how large the picture encodes to, not the size of the file you asked for."
+  },
+  "Detail.format/jpg.text": {
+    "description": "The sentence under the text setting of the jpg format, after what it takes.",
+    "hash": "sha256-7055101b0dd9",
+    "other": "The words in the middle of a placeholder. {width} and {height} become the size of the picture, {index} the number of the file and {index:04} the same number with four digits."
   },
   "Detail.format/jpg.width": {
     "description": "The sentence under the width setting of the jpg format, after what it takes.",
@@ -1874,10 +1909,35 @@
     "hash": "sha256-28f3672d6413",
     "other": "The title a reader shows in its title bar and in the document properties. Left empty, the title is the self describing label, or the name of this tool without one."
   },
+  "Detail.format/png.background": {
+    "description": "The sentence under the background setting of the png format, after what it takes.",
+    "hash": "sha256-f19788fb6882",
+    "other": "The colour of a placeholder, such as cccccc or ccc. In a recipe write it without # or in quotes, because # starts a comment there."
+  },
+  "Detail.format/png.content": {
+    "description": "The sentence under the content setting of the png format, after what it takes.",
+    "hash": "sha256-3fb6c23165c1",
+    "other": "What the picture shows. test is a pattern for checking how a file is read. placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist."
+  },
+  "Detail.format/png.foreground": {
+    "description": "The sentence under the foreground setting of the png format, after what it takes.",
+    "hash": "sha256-57ac35f17b3f",
+    "other": "The colour of the words and the guides on a placeholder, written the same way as background."
+  },
+  "Detail.format/png.guides": {
+    "description": "The sentence under the guides setting of the png format, after what it takes.",
+    "hash": "sha256-7edc1841adb4",
+    "other": "Draws a frame along the edges of a placeholder, both diagonals and a circle touching its shorter sides, so you can see where a page crops or stretches the picture."
+  },
   "Detail.format/png.height": {
     "description": "The sentence under the height setting of the png format, after what it takes.",
     "hash": "sha256-4b336c279584",
     "other": "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for."
+  },
+  "Detail.format/png.text": {
+    "description": "The sentence under the text setting of the png format, after what it takes.",
+    "hash": "sha256-7055101b0dd9",
+    "other": "The words in the middle of a placeholder. {width} and {height} become the size of the picture, {index} the number of the file and {index:04} the same number with four digits."
   },
   "Detail.format/png.width": {
     "description": "The sentence under the width setting of the png format, after what it takes.",
@@ -1934,10 +1994,35 @@
     "hash": "sha256-3766bb620616",
     "other": "How the letters outside ASCII are written, which changes nothing while characters is ascii. unicode writes each one as a number with a question mark after it for a reader that does not know numbers. both puts the letter in the code page of its font after the number, two bytes for Japanese, the way Word writes it. codepage writes only the code page bytes, and the emoji still as numbers, since no code page holds them. literal writes the question mark as a plain character. LibreOffice, Tika and the RichEdit control of Windows read all four. pandoc shows codepage text in the wrong letters. pandoc before 3.13 also drops the character after every letter written literal, and pandoc 3.1 and 3.7 drop the emoji in all four. striprtf returns an emoji as two halves, which Python refuses to write as UTF-8."
   },
+  "Detail.format/svg.background": {
+    "description": "The sentence under the background setting of the svg format, after what it takes.",
+    "hash": "sha256-f19788fb6882",
+    "other": "The colour of a placeholder, such as cccccc or ccc. In a recipe write it without # or in quotes, because # starts a comment there."
+  },
+  "Detail.format/svg.content": {
+    "description": "The sentence under the content setting of the svg format, after what it takes.",
+    "hash": "sha256-3fb6c23165c1",
+    "other": "What the picture shows. test is a pattern for checking how a file is read. placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist."
+  },
+  "Detail.format/svg.foreground": {
+    "description": "The sentence under the foreground setting of the svg format, after what it takes.",
+    "hash": "sha256-57ac35f17b3f",
+    "other": "The colour of the words and the guides on a placeholder, written the same way as background."
+  },
+  "Detail.format/svg.guides": {
+    "description": "The sentence under the guides setting of the svg format, after what it takes.",
+    "hash": "sha256-7edc1841adb4",
+    "other": "Draws a frame along the edges of a placeholder, both diagonals and a circle touching its shorter sides, so you can see where a page crops or stretches the picture."
+  },
   "Detail.format/svg.height": {
     "description": "The sentence under the height setting of the svg format, after what it takes.",
     "hash": "sha256-093ec883d633",
     "other": "How tall the drawing says it is. The label sits along the bottom edge, so a drawing shorter than that strip carries no visible label."
+  },
+  "Detail.format/svg.text": {
+    "description": "The sentence under the text setting of the svg format, after what it takes.",
+    "hash": "sha256-7055101b0dd9",
+    "other": "The words in the middle of a placeholder. {width} and {height} become the size of the picture, {index} the number of the file and {index:04} the same number with four digits."
   },
   "Detail.format/svg.width": {
     "description": "The sentence under the width setting of the svg format, after what it takes.",
@@ -2389,6 +2474,11 @@
     "hash": "sha256-af608b8ed33a",
     "other": "Pictures in the page"
   },
+  "Group.format/jpg.Placeholder": {
+    "description": "The heading over a block of settings of the jpg format.",
+    "hash": "sha256-f4b24fed0274",
+    "other": "Placeholder"
+  },
   "Group.format/otlp.Log records": {
     "description": "The heading over a block of settings of the otlp format.",
     "hash": "sha256-1eb4f5f3f4e1",
@@ -2414,10 +2504,20 @@
     "hash": "sha256-7115a778ab47",
     "other": "Document properties"
   },
+  "Group.format/png.Placeholder": {
+    "description": "The heading over a block of settings of the png format.",
+    "hash": "sha256-f4b24fed0274",
+    "other": "Placeholder"
+  },
   "Group.format/rtf.Pictures in the document": {
     "description": "The heading over a block of settings of the rtf format.",
     "hash": "sha256-1652b4354ef8",
     "other": "Pictures in the document"
+  },
+  "Group.format/svg.Placeholder": {
+    "description": "The heading over a block of settings of the svg format.",
+    "hash": "sha256-f4b24fed0274",
+    "other": "Placeholder"
   },
   "Input.archive-scan.archive": {
     "description": "The sentence under the archive box of the archive-scan tool.",
@@ -2533,6 +2633,11 @@
     "description": "The name beside the box of a setting a recipe writes as author.",
     "hash": "sha256-d95082a2ee57",
     "other": "Author"
+  },
+  "Label.background": {
+    "description": "The name beside the box of a setting a recipe writes as background.",
+    "hash": "sha256-ea2b8a878841",
+    "other": "Background"
   },
   "Label.batch": {
     "description": "The name beside the box of a setting a recipe writes as batch.",
@@ -2734,6 +2839,11 @@
     "hash": "sha256-74ccd4330384",
     "other": "Folder"
   },
+  "Label.foreground": {
+    "description": "The name beside the box of a setting a recipe writes as foreground.",
+    "hash": "sha256-ad4e241834ec",
+    "other": "Foreground"
+  },
   "Label.format": {
     "description": "The name beside the box of a setting a recipe writes as format.",
     "hash": "sha256-2f343666aaa8",
@@ -2763,6 +2873,11 @@
     "description": "The name beside the box of a setting a recipe writes as geometry.",
     "hash": "sha256-fa9da5754ccf",
     "other": "Geometry"
+  },
+  "Label.guides": {
+    "description": "The name beside the box of a setting a recipe writes as guides.",
+    "hash": "sha256-572cd72feb9a",
+    "other": "Guides"
   },
   "Label.header": {
     "description": "The name beside the box of a setting a recipe writes as header.",
@@ -3034,6 +3149,11 @@
     "hash": "sha256-ea2c5cea729a",
     "other": "Temporality"
   },
+  "Label.text": {
+    "description": "The name beside the box of a setting a recipe writes as text.",
+    "hash": "sha256-71988c4d8e08",
+    "other": "Text"
+  },
   "Label.text_encoding": {
     "description": "The name beside the box of a setting a recipe writes as text_encoding.",
     "hash": "sha256-f6726ca0b9fe",
@@ -3154,6 +3274,11 @@
     "hash": "sha256-62cb052ebc94",
     "other": "a checksum in hexadecimal"
   },
+  "Shape.a colour such as cccccc or ccc": {
+    "description": "What the text in a box has to look like, in the sentence under it.",
+    "hash": "sha256-dacfc70e2e23",
+    "other": "a colour such as cccccc or ccc"
+  },
   "Shape.a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": {
     "description": "What the text in a box has to look like, in the sentence under it.",
     "hash": "sha256-a40bd1decdc9",
@@ -3188,6 +3313,11 @@
     "description": "What the text in a box has to look like, in the sentence under it.",
     "hash": "sha256-48e97c935e5d",
     "other": "format ids separated by commas, or all"
+  },
+  "Shape.one line of up to 100 characters": {
+    "description": "What the text in a box has to look like, in the sentence under it.",
+    "hash": "sha256-4a7c0c62ca18",
+    "other": "one line of up to 100 characters"
   },
   "Shape.sizes separated by commas": {
     "description": "What the text in a box has to look like, in the sentence under it.",

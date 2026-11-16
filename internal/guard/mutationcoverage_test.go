@@ -142,6 +142,34 @@ var notProvenByMutation = map[string]bool{
 // "proven another way" are different states and lumping them together would
 // send a later session to re-prove what is already proven.
 var provenByProbe = map[string]string{
+	// Written on 2026-11-14 with the placeholder typeface and rasteriser
+	// (docs/PLACEHOLDER-2026-11-14.md section 13).
+	"TestThePlaceholderTypefaceIsInter": "its own canary - a Chinese letter must be reported missing - and red on 2026-11-14 the first " +
+		"time it ran, when it asked for kerning the font library never read (the pairs were taken out, not the check loosened).",
+	"TestARasterCoversWhatItsOutlineEncloses": "its own canary - the same square a pixel to the right must fail the comparison.",
+	"TestAPlaceholderIsTheSamePixelsOnEverySystem": "its own canary - a picture with one digit changed must hash differently - and " +
+		"the CI matrix draws it on three systems against one pinned hash.",
+	// The settings and smallest, the same day. Each carries its canary, and
+	// two were also broken once by hand and restored: an empty colour taken as
+	// left out turned the recipe guard red, and the walk to the smallest size
+	// stepping two bytes at a time turned the smallest guard red.
+	"TestAPlaceholderSettingRefusesWhatItCannotDraw": "its own canary - the accepted half of the table, which a Read refusing every value fails.",
+	"TestEachPlaceholderSaysItsOwnNumber": "it reads three different numbers off three planned files and the colour as the manifest spells it, " +
+		"so a text that skipped its tokens or a file that took another's number reads wrong.",
+	"TestSmallestIsTheSmallestFile": "two canaries of its own - a size a hundred bytes over the smallest, and the far side of the PNG " +
+		"band above it, must not pass as the smallest - red on 2026-11-14 when the walk was broken by hand to step two bytes at a " +
+		"time, and on 2026-11-16 when the check was cut back to the one byte below.",
+	"TestAFlattenedCurveStaysWithinASixteenthOfAPixel": "its own canary - the review's curve with one line fewer than the count " +
+		"must stray past a sixteenth of a pixel - and red on 2026-11-16 against a count taken from the larger coordinate, on a curve " +
+		"bent along a diagonal.",
+	"TestTheLineSaysASmallestPictureIsKnownAfterPreview": "its own canary - the same form at a stated size must say its total, so the " +
+		"line is this form's - and red on 2026-11-16 when the summary's smallest branch was switched off by hand: the line said 0 B.",
+	"TestSmallestSaysWhyItCannotBeAnswered": "its own canaries - the same picture with a width and height must be planned, and so must " +
+		"a damage the smallest file can hold, so each refusal is about smallest rather than about the picture or the damage.",
+	"TestAColourAfterAHashInARecipeIsNotLostInSilence": "its own canary - the same colour without the hash must run - and red on " +
+		"2026-11-14 when an empty colour was taken as left out by hand.",
+	"TestTheSeedSweepMovesEveryNumeralOfTheLabel": "it is the canary of the seed sweep beside it, and that sweep went red on " +
+		"2026-11-14 when the label of a placeholder drawing was put back as outlines by hand.",
 	// Broken once each on 2026-11-14 while they were written, one change at a
 	// time and restored (docs/RUN-FOLDERS-2026-11-14.md section 12). The sixth
 	// guard of the piece, TestANameAnEarlierRecordStillListsIsNotWrittenAgain,

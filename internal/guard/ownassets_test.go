@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -17,14 +18,14 @@ import (
 // own record names the modules it links. That day the window was set in Inter
 // (internal/gui/font), and the question stopped having an answer for that
 // entry - both binaries are one module, so "is the module linked" is yes for
-// the command line binary too, and it carries no font at all.
+// the command line binary too, and it does not carry the window's font.
 //
 // So an entry of ours is answered by PACKAGE instead: go list when a document
 // is rendered, and the package's own init (legal.Carrying) when a running
 // binary is asked. The guards here hold the three halves of that to the build:
 // the spelling the registry uses is the spelling go list uses, the command
-// line links none of these packages, and every such package does announce
-// itself.
+// line links exactly the packages the registry marks CommandLine, and every
+// such package does announce itself.
 
 // The registry spells our module and our packages by hand, and the whole
 // mechanism compares those spellings with what go list reports. A typo would
@@ -50,20 +51,26 @@ func TestEveryAssetOfOurOwnIsSpelledAsGoListSpellsIt(t *testing.T) {
 	}
 }
 
-// The command line binary has no toolkit and no font, and the notices say so
-// in as many words. Nothing structural keeps it that way: a package of ours
-// that embeds a font is a package any other package may import, and the day
-// one on the command line's side does, "tfg license" would go on saying
-// nothing about it - the runtime answer comes from the package's own init,
-// which would then run there too, but the sentence in the notices would be
-// wrong and this is the guard that would say so first.
-func TestTheCommandLineLinksNoBytesOfSomebodyElsesThatWeEmbed(t *testing.T) {
+// The command line binary has no toolkit and carries only the embedded bytes
+// the registry marks CommandLine - today the outlines a placeholder picture's
+// letters are drawn with - and the notices say so in as many words. Nothing
+// structural keeps it that way: a package of ours that embeds a font is a
+// package any other package may import, and the day one on the command line's
+// side does, the sentence in the notices would be wrong and this is the guard
+// that would say so first. The other direction matters as much: an entry
+// marked for the command line that stops reaching it leaves the notices
+// naming bytes tfg does not ship.
+//
+// Asked twice, of the compiler and of the built binary, and both answers are
+// compared with the marks. A canary first: the same comparison against a
+// registry with one mark flipped has to object, once for each entry, so a
+// comparison that stopped comparing cannot pass on reality.
+func TestTheCommandLineCarriesOnlyTheEmbeddedBytesMarkedForIt(t *testing.T) {
+	entries := ours(t)
 	linked := ourPackagesLinkedBy(t, "../../cmd/tfg", false)
-	for _, asset := range ours(t) {
-		if linked[asset.Package] {
-			t.Errorf("the command line binary links %s, which embeds %s - the notices say tfg carries "+
-				"none of this, and tfg license would have to start saying otherwise", asset.Package, asset.Name)
-		}
+	carried := map[string]bool{}
+	for _, asset := range entries {
+		carried[asset.Package] = linked[asset.Package]
 	}
 
 	// And the built binary, asked the way a user asks it. The line for an
@@ -73,13 +80,45 @@ func TestTheCommandLineLinksNoBytesOfSomebodyElsesThatWeEmbed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("running the licence command: %v", err)
 	}
+	named := map[string]bool{}
 	for _, line := range strings.Split(string(out), "\n") {
-		for _, asset := range ours(t) {
+		for _, asset := range entries {
 			if strings.HasPrefix(strings.TrimSpace(line), asset.Name+"  ") {
-				t.Errorf("tfg license names %q, and the command line binary carries no such bytes", asset.Name)
+				named[asset.Name] = true
 			}
 		}
 	}
+
+	for i := range entries {
+		flipped := append([]legal.Asset(nil), entries...)
+		flipped[i].CommandLine = !flipped[i].CommandLine
+		if len(commandLineMismatches(flipped, carried, named)) == 0 {
+			t.Fatalf("canary: %s marked the other way round and nothing objected, so the comparison "+
+				"below proves nothing", entries[i].Name)
+		}
+	}
+	for _, problem := range commandLineMismatches(entries, carried, named) {
+		t.Error(problem)
+	}
+}
+
+// commandLineMismatches compares the registry's CommandLine marks with what
+// the compiler links into tfg (by package) and what tfg license prints (by
+// name).
+func commandLineMismatches(entries []legal.Asset, linked, named map[string]bool) []string {
+	var out []string
+	for _, asset := range entries {
+		if linked[asset.Package] != asset.CommandLine {
+			out = append(out, fmt.Sprintf("the registry marks %s CommandLine=%v and the command line binary "+
+				"links %s: %v - fix the mark and the sentence in THIRD-PARTY-NOTICES.md, or the import",
+				asset.Name, asset.CommandLine, asset.Package, linked[asset.Package]))
+		}
+		if named[asset.Name] != asset.CommandLine {
+			out = append(out, fmt.Sprintf("the registry marks %s CommandLine=%v and tfg license names it: %v",
+				asset.Name, asset.CommandLine, named[asset.Name]))
+		}
+	}
+	return out
 }
 
 // A running binary learns which of our packages it holds from the packages

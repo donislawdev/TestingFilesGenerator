@@ -100,6 +100,14 @@ type Asset struct {
 	// ninety-seven.
 	Files []string
 
+	// CommandLine says the command line binary carries these bytes too, not
+	// only the window. A decision written down rather than a measurement:
+	// guards hold it to the packages the compiler links into tfg, to what
+	// tfg license prints and to what the SBOM attaches to tfg, so a package
+	// that starts or stops reaching the command line is a red guard, not a
+	// sentence in the notices quietly going wrong.
+	CommandLine bool
+
 	// SPDX, Copyright and Note carry the same meaning as on Module. Note is
 	// where a disagreement goes: one font here says one thing in the module
 	// and another in its own metadata, and both belong in the notices.
@@ -122,7 +130,8 @@ func Assets() []Asset { return assets }
 // Ours reports whether the bytes are embedded by a package of this project
 // rather than by somebody else's module. Such an entry is answered by package
 // rather than by module wherever a build is asked what it carries - see
-// embeddedItems - and a guard holds the command line binary to linking none.
+// embeddedItems - and a guard holds the command line binary to linking only
+// the entries marked CommandLine.
 func (a Asset) Ours() bool { return a.Module == ourModule }
 
 // OurModule is this project's module path as the registry spells it, for the
