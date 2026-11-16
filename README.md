@@ -528,8 +528,11 @@ tfg generate --format zip --size 5mb --damage truncate:missing=30
 A damaged file names its damage in its label, beside the size it has on disk:
 `tfg - txt - 10485760 B - damage truncate:missing=50 - seed c2a547b2`. So two
 texts cut by different shares can be told apart from their first line, although
-the text after it is the same. A long list of damages names the first few and
-how many more there are, and the manifest lists every one. The label is still
+the text after it is the same. A picture or a film draws its label without the
+size, `tfg - png - damage zero-head:bytes=16 - seed c2a547b2`, so a picture of a
+given width and height is the same picture at every size you ask for. A long
+list of damages names the first few and how many more there are, and the
+manifest lists every one. The label is still
 written before the damage, so the damage can overwrite it, and the manifest does
 not promise it is there.
 

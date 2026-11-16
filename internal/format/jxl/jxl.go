@@ -227,7 +227,7 @@ type memo struct {
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = r.LabelText("jxl")
+		label = r.PictureLabel("jxl")
 	}
 
 	q, err := quality(r.Properties)
@@ -340,12 +340,19 @@ func checkFits(want int64, m memo) error {
 // pictures nobody asked to be that big. Anybody who does want them says so -
 // width and height are settings, and 40 megapixels is the ceiling.
 //
-// Ceiling is the LARGEST file that rung has ever been seen to produce, the
-// container and the skip box header included, and it is what lets planning
-// choose a picture without coding one. Measured by tools/probes/jxlladder on
-// 2026-08-31 across all 256 seeds, four orders of magnitude of requested size -
-// the label carries the byte count, so its length moves with it - and with the
-// label on and off.
+// Ceiling is at least a tenth above the LARGEST file that rung has been seen
+// to produce, the container and the skip box header included, and it is what
+// lets planning choose a picture without coding one. Measured on 2026-11-16 by
+// tools/probes/jxlladder over 256 seeds from zero and 512 far from it, with the
+// label on and off: 640x480 coded to 17875 B, 320x240 to 9284, 256x256 to 6826
+// and 160x120 to 3190. The label a picture draws names no size
+// (format.Request.PictureLabel), and that shorter label is drawn larger across
+// 256 and 320 px, so those two rungs needed more than their ceilings held and
+// were raised to a tenth above it - the margin the AVIF and video ladders keep,
+// because a ceiling with none was passed by seeds nobody had tried (O273). The
+// others stand more than a tenth above and were left where they were: a ceiling
+// moved down moves the picture of every file near it, with no label too, and
+// buys nothing anybody asked for (D11).
 //
 // A ceiling rather than a floor, and the difference is the whole point.
 // Planning promises an exact size, so the rung it picks has to be one whose
@@ -355,15 +362,14 @@ func checkFits(want int64, m memo) error {
 // checks and says so rather than trusting this table.
 //
 // The second number is the ceiling for a damaged file, whose label names its
-// damage. Measured on 2026-11-12 by tools/probes/jxlladder over 768 seeds, with
-// the label at the longest length each scale still draws: 640x480 coded to
-// 21424 B, 320x240 to 8049 and 256x256 to 6942, the last two above the first
-// number. It is a tenth above what was measured and never below the first
-// number, the margin the video ladder keeps, because the damage text is
+// damage. Measured the same day over the same seeds, with the label at the
+// longest length each scale still draws: 640x480 coded to 23973 B, 320x240 to
+// 8052, 256x256 to 6933 and 160x120 to 3537. It is at least a tenth above what
+// was measured and never below the first number, because the damage text is
 // whatever the chain names. A rung too narrow to draw a damaged label keeps the
 // first number.
 var sizeLadder = []rung{
-	{640, 480, 22762, 23567}, {320, 240, 7949, 8854}, {256, 256, 6485, 7637}, {160, 120, 3542, 3542},
+	{640, 480, 22762, 26371}, {320, 240, 10213, 10213}, {256, 256, 7509, 7637}, {160, 120, 3542, 3891},
 	{80, 60, 1267, 1267}, {40, 30, 731, 731}, {20, 15, 452, 452}, {8, 6, 222, 222},
 	{4, 3, 212, 212}, {2, 2, 206, 206}, {1, 1, minimumBytes, minimumBytes},
 }

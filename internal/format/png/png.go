@@ -176,7 +176,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	}
 	label := ""
 	if r.Label {
-		label = r.LabelText("png")
+		label = r.PictureLabel("png")
 	}
 
 	m, err := chooseSize(r, label, look)

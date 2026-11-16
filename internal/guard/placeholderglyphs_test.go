@@ -224,13 +224,13 @@ func toSegment(px, py, ax, ay, bx, by float64) float64 {
 }
 
 // placeholderGolden is the hash of one placeholder drawn with every part it
-// has: Polish and Cyrillic letters, the label line and the
-// guides. Taken on Windows amd64 on 2026-11-16, when curves were cut into
-// enough lines to keep the promise of a sixteenth of a pixel. CI draws it on
-// Linux and on macOS arm64, and the same hash there is what says the
+// has: Polish and Cyrillic letters, the label line in the shape a picture
+// draws it, and the guides. Taken on Windows amd64 on 2026-11-16, with curves
+// cut into enough lines to keep the promise of a sixteenth of a pixel. CI draws
+// it on Linux and on macOS arm64, and the same hash there is what says the
 // arithmetic is the same everywhere (D11, docs/PLACEHOLDER-2026-11-14.md
 // section 5).
-const placeholderGolden = "25156d5898e4e18526a161a503b36b247da7435cc506452d15b95f98d00ed0ee"
+const placeholderGolden = "9c6fd0062fec85d3832de4c9f4da60f0e7f4e2741ee6b92027b6b35c6fc52ad8"
 
 // TestAPlaceholderIsTheSamePixelsOnEverySystem draws one placeholder and
 // holds its pixels to a hash.
@@ -239,7 +239,7 @@ func TestAPlaceholderIsTheSamePixelsOnEverySystem(t *testing.T) {
 		img := image.NewRGBA(image.Rect(0, 0, 1200, 630))
 		d := placeholder.Draw(img, placeholder.Look{
 			Text:       text,
-			Label:      "tfg - png - 41891 B - seed 8dc2d18c",
+			Label:      "tfg - png - seed 8dc2d18c",
 			Background: color.RGBA{0xcc, 0xcc, 0xcc, 255},
 			Foreground: color.RGBA{0x55, 0x55, 0x55, 255},
 			Guides:     true,

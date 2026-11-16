@@ -50,7 +50,7 @@ const (
 func planPlaceholder(r format.Request, w, h int, look placeholder.Settings) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = r.LabelText("svg")
+		label = r.PictureLabel("svg")
 	}
 	text := look.Expand(r.Number, w, h)
 	body, drawn := drawing(w, h, look.Look(text, label))

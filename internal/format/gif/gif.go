@@ -195,7 +195,7 @@ func checkJointLimits(w, h int) error {
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = r.LabelText("gif")
+		label = r.PictureLabel("gif")
 	}
 
 	m, err := chooseSize(r, label)

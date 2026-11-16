@@ -20,8 +20,8 @@
     },
     "bmp_100kib_sized_to_fit": {
       "bytes": 102400,
-      "sha256": "07fb4045fd8ec4225f2ada3b93a5c93e7122612db35334cdf5f446dde0775310",
-      "measured_on": "2026-08-19"
+      "sha256": "6cd9648eafaa1a8fbef301236899845a3bc3455cfa2c35d8b1978b87c4c80199",
+      "measured_on": "2026-11-16"
     },
     "bmp_64kib": {
       "bytes": 65536,
@@ -67,7 +67,8 @@
     },
     "html_32kib_pictures": {
       "bytes": 32768,
-      "sha256": "e96131166dc62c8f00bfef915533400d88dfb4891795b4e2673048bd4aae6a50"
+      "sha256": "113d93b987b8681d1acc5c0b7d069a3a28350ac29ac86d4a4bc5c97c3e20231f",
+      "measured_on": "2026-11-16"
     },
     "html_64kib_everything": {
       "bytes": 65536,
@@ -105,11 +106,13 @@
     },
     "html_odd_fragment_inline_international_pictures": {
       "bytes": 8193,
-      "sha256": "b142e1fcd7c31e9f66150a274962462ee0782817ffacec47a7dd345bf54f4b54"
+      "sha256": "0b8772e75ba72200b3ff986b28612d358750e3395430715f8509395a340c5bb9",
+      "measured_on": "2026-11-16"
     },
     "html_odd_fragment_pictures_svg": {
       "bytes": 16385,
-      "sha256": "c654ffeef0bd8f07115f647620c47ca12849d7a26614bf389682fe1e7e3ad5fd"
+      "sha256": "474aefdf7488df23e23f6198bd407e52eb70515b64c221d5617ce85c3211fdae",
+      "measured_on": "2026-11-16"
     },
     "html_odd_minified_nested_embedded_international": {
       "bytes": 8193,
@@ -219,7 +222,8 @@
     },
     "svg_8kib": {
       "bytes": 8192,
-      "sha256": "1cfeca2a6632e55c7575115b14e75aa7fff2ad42543f76d46e2199842910e84a"
+      "sha256": "9f5fc7d95a11d0575ffc9a2ec886b542e01ee1be57d249e8274dcfb829329214",
+      "measured_on": "2026-11-16"
     },
     "targz_16kib": {
       "bytes": 16384,
@@ -238,8 +242,8 @@
     },
     "tiff_100kib_sized_to_fit": {
       "bytes": 102400,
-      "sha256": "172e2e47dda124de9cdbc122b55d25c2fc20de4c78ab963bbf6c7645da247bbd",
-      "measured_on": "2026-08-29"
+      "sha256": "7b79e14e51b6ce587ef91ae7d9f3c7acf174685e9a31bd4d5fac44f74414e7e2",
+      "measured_on": "2026-11-16"
     },
     "tiff_64kib": {
       "bytes": 65536,
@@ -248,8 +252,8 @@
     },
     "tiff_64kib_width_only": {
       "bytes": 65536,
-      "sha256": "c5c38af41809c7e98333fc2a6bdcca36a955f70ab4413dbfde9b9ec4dd3d0b8f",
-      "measured_on": "2026-08-29"
+      "sha256": "7e18f6a4d4696c798d07527d22c06eca147dd99a3e879e859f794119097b45eb",
+      "measured_on": "2026-11-16"
     },
     "tiff_odd_size": {
       "bytes": 65537,
@@ -393,8 +397,8 @@
     },
     "webm_64kib": {
       "bytes": 65536,
-      "sha256": "9c1ee9c40292c2df4148fb580f8d9cc0c2430b760d390e6d011639542c43820d",
-      "measured_on": "2026-10-06"
+      "sha256": "42bd2c0eb75fafdc75c4e59b8efdf5df328e9ee97fe0440b3c0f4bc068e9cb7d",
+      "measured_on": "2026-11-16"
     },
     "webm_named": {
       "bytes": 65536,
@@ -408,18 +412,18 @@
     },
     "webm_tiles": {
       "bytes": 65536,
-      "sha256": "8ff27de05a089745a6510703c5c593651fc604cf0e3bd30c336adfad484f79b3",
-      "measured_on": "2026-10-07"
+      "sha256": "740d67ffd8f17a9be8b3f95c1754467372bfb8bac92751c52d7a3e530698afc7",
+      "measured_on": "2026-11-16"
     },
     "webm_wide": {
       "bytes": 524288,
-      "sha256": "a7b10a755815dfc0082c70318ca72fc890b6b04c3212e67bfab1d691cc36f932",
-      "measured_on": "2026-11-11"
+      "sha256": "59b2e9424c2f00c3c2e54a64ac519ad9da5e50758af00fb27f31a5171d80af75",
+      "measured_on": "2026-11-16"
     },
     "mp4_64kib": {
       "bytes": 65536,
-      "sha256": "5b20b432d9e2287ef0f861331d0ddecea22d8e519351794d95d24abbca13ba65",
-      "measured_on": "2026-10-07"
+      "sha256": "941e2ee10bd041f35868c5aec5f6fd2675c284897f4c8e1113ce20474306517c",
+      "measured_on": "2026-11-16"
     },
     "mp4_named": {
       "bytes": 65536,
@@ -433,13 +437,13 @@
     },
     "mp4_tiles": {
       "bytes": 65536,
-      "sha256": "4ca1c1c7d2d018d527da7d6d067573b65d15629dce931b20e1d95402b868a587",
-      "measured_on": "2026-10-07"
+      "sha256": "38e1cf1d4e59e048e923b92860afa3331f71cc025f654ad04098d0d2410edda1",
+      "measured_on": "2026-11-16"
     },
     "mp4_wide": {
       "bytes": 524288,
-      "sha256": "f2a09c9a2dacccdb778a8e828b3afa2fdf0b98e4d91f79f41b6488c4a67112bb",
-      "measured_on": "2026-11-11"
+      "sha256": "cbe5615e1d335ff71bfacd12d4572b22b079c163db9f5911d13d773ecae8e13f",
+      "measured_on": "2026-11-16"
     },
     "geojson_8kib": {
       "bytes": 8192,
@@ -518,8 +522,8 @@
     },
     "eml_64kib_attached_content_type": {
       "bytes": 65536,
-      "sha256": "425f762165582768bafa0c687a33f030cc8fc88d3ecd1631716819ebce65c546",
-      "measured_on": "2026-10-07"
+      "sha256": "69a7420aa9c329e65a3f118ffc0afbb1d74fdc57f4c0bcea0ea7da2360447111",
+      "measured_on": "2026-11-16"
     },
     "eml_odd_base64_long_id": {
       "bytes": 8193,
@@ -543,8 +547,8 @@
     },
     "eml_64kib_pictures_alternative_no_names": {
       "bytes": 65536,
-      "sha256": "8b1ad7a9369f7973ae74397eac8a738a6eb470d3ea0b9d30c0a21ae981a7eb78",
-      "measured_on": "2026-10-13"
+      "sha256": "ac83a9d64b4bcbc3a1d528e3ffe491226120af105441d07a186001a45b299968",
+      "measured_on": "2026-11-16"
     },
     "eml_64kib_pictures_beside_plain_lf": {
       "bytes": 65536,
@@ -613,8 +617,8 @@
     },
     "rtf_16kib_pictures": {
       "bytes": 16384,
-      "sha256": "4bc01c58e221c868c20060390f853574b268d34de43509e38a3fd0e616e0bc6d",
-      "measured_on": "2026-10-15"
+      "sha256": "0e9e1a51db433e42749bf58f91d9f7771c407ee4edbec84b45ed2c4b36b047ca",
+      "measured_on": "2026-11-16"
     },
     "rtf_16kib_binary_jpg": {
       "bytes": 16384,
@@ -628,63 +632,63 @@
     },
     "rtf_64kib_all": {
       "bytes": 65536,
-      "sha256": "872b64b301062ec7a49840ecac682f8e5e5c99ba40328bb24a2c0a792b6ca6b1",
-      "measured_on": "2026-10-15"
+      "sha256": "ba2cc5ed9b893cf28182b47f29702d318a9eb7af2382cba30a2b8005ef8578cb",
+      "measured_on": "2026-11-16"
     },
     "avif_label_cut": {
       "bytes": 16384,
-      "sha256": "e29cfa93d85aa78adb86b9aa903de4a4f8d6a7704237d50dc12027baf935cbbb",
-      "measured_on": "2026-10-27"
+      "sha256": "393f3a08eb44c4c498b880cc94a6eaf76b64fbc69a43158333c79b5405a67da3",
+      "measured_on": "2026-11-16"
     },
     "bmp_label_cut": {
       "bytes": 16384,
-      "sha256": "337c75928b1d9d0afc9ef6d9b5e6c9e4c6f672310f721f4101650d3fd5ce1986",
-      "measured_on": "2026-10-27"
+      "sha256": "ed7ca1b829ee0960d80b52c045ac23bd1e5c9d2801e025b2eeed6c0d17c46e8c",
+      "measured_on": "2026-11-16"
     },
     "gif_label_cut": {
       "bytes": 16384,
-      "sha256": "2182f97d89f17befc2978e0c48f02b3b7f69e6ffa1e37c98c7ba7bd02fbfebbb",
-      "measured_on": "2026-10-27"
+      "sha256": "1feb6368d5519ff53255545c38ce60c7b3441af03aaa8b876aaca4378669391e",
+      "measured_on": "2026-11-16"
     },
     "ico_label_cut": {
       "bytes": 16384,
-      "sha256": "ee7c50502fadbbac2ce84161775196c69395ee077da2754b832994b772484fab",
-      "measured_on": "2026-10-27"
+      "sha256": "65581e6287468b04af31c362c2f1f527340e6bcce7cb6c59966e154a0438d6a9",
+      "measured_on": "2026-11-16"
     },
     "jpg_label_cut": {
       "bytes": 16384,
-      "sha256": "c5c26da34982e5b8a84b62b7367121f796519fac2b3d4aee97df65d77f18a3c1",
-      "measured_on": "2026-10-27"
+      "sha256": "35f59cc1f74b70933d5503878e5d4dd93d80e9d6615c12188c1d2cb19175e628",
+      "measured_on": "2026-11-16"
     },
     "jxl_label_cut": {
       "bytes": 16384,
-      "sha256": "04c4b0ffa9b8f631f800f60f0436ae8b2a206266ded04bccab340b6cba75e3dc",
-      "measured_on": "2026-11-13"
+      "sha256": "dbb5a216ccfc4b9c5fd24d5180480d47b625b908e2cd9a9e0a465b6235a98db4",
+      "measured_on": "2026-11-16"
     },
     "mp4_label_cut": {
       "bytes": 65536,
-      "sha256": "cacdde2fa7c816644ba26b9421d403a234995c5374530c7e8e8babde7d2770b7",
-      "measured_on": "2026-10-27"
+      "sha256": "60737bfbd398e6de3ddaaac849601aa68926597cde828bd450388877a73db305",
+      "measured_on": "2026-11-16"
     },
     "png_label_cut": {
       "bytes": 16384,
-      "sha256": "9efacf3eebe006977a09aa6c0a4c9dcc163fd2dd976c67a9329a1f992521a667",
-      "measured_on": "2026-10-27"
+      "sha256": "27f1754a75d916048f081bdc28796ea771c65491935a556bcd332d02cc934400",
+      "measured_on": "2026-11-16"
     },
     "tiff_label_cut": {
       "bytes": 16384,
-      "sha256": "f1087d636104449e15e8f3acace2e8f4bdeb64f78f6906d5b2bc9be340380e69",
-      "measured_on": "2026-10-27"
+      "sha256": "88ad645b72de822885c8356903a033ee1ee95fd649d65473547cf72cb59f38fe",
+      "measured_on": "2026-11-16"
     },
     "webm_label_cut": {
       "bytes": 65536,
-      "sha256": "b21ac8d701f5b37bac3cb4f9aa75bc970bed1fe3ae970c69372b854f87fb6c8d",
-      "measured_on": "2026-10-27"
+      "sha256": "2cff393a968bf3a5b8215cb5a959c41d8cfb039c82d3b82cdf4f9304d1511860",
+      "measured_on": "2026-11-16"
     },
     "webp_label_cut": {
       "bytes": 16384,
-      "sha256": "aafebff3937203366d88a1af0a14d555176e683ded8cffa67ac05bddafc13733",
-      "measured_on": "2026-10-27"
+      "sha256": "ee9954c5c7a526ca1469b4fb53b83c2bf081230183f8b7b63c1d6bb70eb3a0b5",
+      "measured_on": "2026-11-16"
     },
     "otlp_8kib": {
       "bytes": 8192,
@@ -778,17 +782,17 @@
     },
     "jpg_placeholder_32kib": {
       "bytes": 32768,
-      "sha256": "ff0f9e88ef8cf0e0d4a9aef6e2e90124c584ee366618bac90f2c6bc03d4a4aef",
+      "sha256": "ab0f443498ce2344b1b1ea11bcbc08ddc5377724485a2e1042852411d01a33d1",
       "measured_on": "2026-11-16"
     },
     "png_placeholder_64kib": {
       "bytes": 65536,
-      "sha256": "3256a7d27759a071d614f3e494a946be4800c85158c212108932273e76b43113",
+      "sha256": "86e03c19cbe8e64695b4cbe4fdd5482cce3222edc2f51672c847b911ce1d2996",
       "measured_on": "2026-11-16"
     },
     "png_placeholder_smallest": {
-      "bytes": 4743,
-      "sha256": "2c84f3ae0dcae732f5c3373e6e3fac755aff7116b72eafa4ea7b137c49e3f4b4",
+      "bytes": 4472,
+      "sha256": "e5211dce218593571954dd21a63c4b289988de35fba6ab02823b158c7a11abe4",
       "measured_on": "2026-11-16"
     },
     "png_smallest_test_pattern": {
@@ -798,13 +802,13 @@
     },
     "svg_placeholder_32kib": {
       "bytes": 32768,
-      "sha256": "2c4754d41d35f22183ae2c438be58af9d3a9da5757b84273b153819f586b4102",
-      "measured_on": "2026-11-14"
+      "sha256": "6b4db2cdaca8bdbf45b61243277bad176f806b9ea92a05604d5e82f43508c12f",
+      "measured_on": "2026-11-16"
     },
     "svg_placeholder_smallest": {
-      "bytes": 4372,
-      "sha256": "c5d6bc718ee3c39f5119c4bef8843dd83e3eeb7e6332aac0bcd39bab668eea06",
-      "measured_on": "2026-11-14"
+      "bytes": 4363,
+      "sha256": "dbbb44ad3feae17ed93de8beb9a41dcd0e555d74d0cb57f9bba4e8a5b171db25",
+      "measured_on": "2026-11-16"
     }
   },
   "remeasured": [

@@ -16,6 +16,19 @@ because it turns other people's test suites red.
 
 ### Breaking
 
+- **The label drawn in a picture no longer states the size of the file.** It
+  reads `tfg - png - seed c2a547b2`, with any damage before the seed. A picture
+  of a given width and height is then the same at every size you ask for, so
+  the smallest size a refusal names is accepted next time. Before, it could be
+  refused again. The label also fits narrower pictures than before.
+  Labelled pictures and films, and mails, HTML pages and RTF documents with
+  pictures, are not byte for byte what 0.5.0 wrote. Text formats still state
+  the size.
+- **A JPEG XL or a film just above the size where its picture grows gets the
+  smaller picture.** A JPEG XL now steps up to 256x256 at 7509 B and to
+  320x240 at 10213 B, and a WebM or MP4 film to 320x180 at 8697 B, because
+  the label is drawn larger there. A file between the old step and the new one
+  is not byte for byte what 0.5.0 wrote.
 - **A TIFF of an odd size is not byte for byte what 0.5.0 wrote.** Its
   directory, which says where the pixels are, came last and so started on an
   odd byte, where the TIFF specification has it start on an even one. Every
@@ -39,7 +52,7 @@ because it turns other people's test suites red.
   wrote. Files with no damage, and files made with `--clean`, are unchanged.
 - **An AVIF file just above the size where its picture grows gets the smaller
   picture.** The picture now steps up to 160x120 at 3865 B, to 256x256 at
-  5493 B, to 320x240 at 7732 B and to 640x480 at 18722 B, about a tenth above
+  6140 B, to 320x240 at 7732 B and to 640x480 at 18722 B, a tenth or more above
   where it did. A file between the old step and the new one is not byte for
   byte what 0.5.0 wrote.
 - **A tar.gz 16 KiB to 64 KiB larger than the files inside it now opens in

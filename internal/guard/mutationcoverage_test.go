@@ -215,7 +215,12 @@ var provenByProbe = map[string]string{
 		"by taking damage.Chain.Check out of engine.prepareDamage: red, every value went through.",
 	"TestADamageSettingOutsideItsRangeIsRefusedUnderItsBox": "broken on 2026-11-12 by taking damage.Chain.Check out of engine.prepareDamage: red, the window wrote the file and the box said nothing.",
 	"TestADamagedFileStatesItsSizeOnDiskAndItsDamage": "its own canary - the label it was written against, naming the size before the damage and no damage, rejected by its check - and broken on 2026-11-12 " +
-		"twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times.",
+		"twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times. A second canary for the label of a drawing, " +
+		"and broken on 2026-11-16 by leaving the damage out of Request.PictureLabel: red, the SVG did not carry it.",
+	// The label of a picture without its size (docs/SIZE-FIXES-2026-11-16.md section 3.1).
+	"TestAPictureIsTheSameWhateverSizeItIsAskedFor": "three canaries of its own - the same picture behind different padding, two pictures a byte apart, " +
+		"and two drawings whose labels differ - and red on 2026-11-16 in all fifteen of its cases on the code before the change, " +
+		"where the label drawn into a picture stated the size.",
 	"TestATruncatedTextSaysHowMuchWasCut": "broken on 2026-11-12 twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times.",
 	"TestALongDamageLabelLeavesEveryFormatWhole": "broken on 2026-11-12 by letting damage.Chain.Label return the whole chain past LabelLimit: red, " +
 		"its own reach check says forty damages no longer fit the limit (docs/REVIEW-234-2026-11-12.md).",

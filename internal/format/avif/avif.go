@@ -175,7 +175,7 @@ type memo struct {
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = r.LabelText("avif")
+		label = r.PictureLabel("avif")
 	}
 
 	q, err := quality(r.Properties)
@@ -289,15 +289,19 @@ func checkFits(want int64, m memo) error {
 // who does want them says so - width and height are settings, and 40 megapixels
 // is the ceiling, which covers 4K and 8K.
 //
-// Ceiling is a tenth above the LARGEST file that rung was seen to produce, the
-// free box included, and it is what lets planning choose a picture without
-// coding one. Measured on 2026-11-12 by tools/probes/avifladder over 256 seeds
-// from zero and 512 far from it, because the label's text moves with the whole
-// seed, with the label off and with the label of a file at the edge of the
-// rung - a size with the digits of the ceiling, the lightest and the heaviest.
-// 640x480 coded to 17020 B, 320x240 to 7029, 256x256 to 4993 and 160x120 to
-// 3513. The rungs below draw no label and their picture moves only with the
-// low byte of the seed, so their ceiling is the largest of all 256 and no more.
+// Ceiling is at least a tenth above the LARGEST file that rung was seen to
+// produce, the free box included, and it is what lets planning choose a picture
+// without coding one. Measured on 2026-11-16 by tools/probes/avifladder over
+// 256 seeds from zero and 512 far from it, because the label's text moves with
+// the whole seed, with the label off and on: 640x480 coded to 15896 B, 320x240
+// to 6326, 256x256 to 5581 and 160x120 to 3066. The label a picture draws names
+// no size (format.Request.PictureLabel), and that shorter label is drawn twice
+// as large across 256 px, so 256x256 needed more than its ceiling held and that
+// one was raised. The others stand more than a tenth above and were left where
+// they were: a ceiling moved down moves the picture of every file near it, with
+// no label too, and buys nothing anybody asked for (D11). The rungs below draw
+// no label and their picture moves only with the low byte of the seed, so their
+// ceiling is the largest of all 256 and no more.
 //
 // The tenth is the margin the video ladder keeps, and it is not caution for its
 // own sake. The ceilings measured on 2026-08-29 over 256 seeds kept none, and
@@ -314,11 +318,11 @@ func checkFits(want int64, m memo) error {
 //
 // The second number is the ceiling for a damaged file, whose label names its
 // damage, by the same rule with the label at the longest length each scale
-// still draws: 640x480 coded to 20024 B, 320x240 to 7556 and 256x256 to 6043,
-// each above the first number. A rung too narrow to draw a damaged label keeps
-// the first number.
+// still draws, measured the same day: 640x480 coded to 20280 B, 320x240 to
+// 7814, 256x256 to 6311 and 160x120 to 3581, each above the first number. A
+// rung too narrow to draw a damaged label keeps the first number.
 var sizeLadder = []rung{
-	{640, 480, 18722, 22027}, {320, 240, 7732, 8312}, {256, 256, 5493, 6648}, {160, 120, 3865, 3865},
+	{640, 480, 18722, 22308}, {320, 240, 7732, 8596}, {256, 256, 6140, 6943}, {160, 120, 3865, 3940},
 	{80, 60, 832, 832}, {40, 30, 549, 549}, {20, 15, 448, 448}, {8, 6, 348, 348},
 	{4, 3, 344, 344}, {2, 2, 327, 327}, {1, 1, minimumBytes, minimumBytes},
 }

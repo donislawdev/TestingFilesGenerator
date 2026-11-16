@@ -39,7 +39,7 @@ func TestAFilmPaintsOnlyWhatChangesAndGetsTheWholePicture(t *testing.T) {
 		}
 		timelines[name] = tl
 	}
-	labels := map[string]string{"labelled": format.Request{Bytes: 1 << 20, Seed: 7}.LabelText("webm"), "unlabelled": ""}
+	labels := map[string]string{"labelled": format.Request{Bytes: 1 << 20, Seed: 7}.PictureLabel("webm"), "unlabelled": ""}
 
 	compared, clocked, moved := 0, 0, 0
 	for _, size := range sizes {
