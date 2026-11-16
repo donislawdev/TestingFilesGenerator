@@ -145,7 +145,8 @@ func nonDefaultValues(p format.Property) []string {
 }
 
 // choiceCompanions is what a value needs beside it before a file can be made
-// at all, keyed by format.setting=value.
+// at all, keyed by format.setting=value - and, for the placeholder pictures
+// below, the size that reaches the same file without paying for a walk.
 var choiceCompanions = map[string]map[string]string{
 	// Mixed pages need more than one page.
 	"pdf.page_size=mixed":   {"pages": "2"},
@@ -176,9 +177,20 @@ var choiceCompanions = map[string]map[string]string{
 	"zip.directory_entries=true":   {"depth": "1"},
 	"targz.directory_entries=true": {"depth": "1"},
 	// Guides are drawn on a placeholder, and a test picture has none.
-	"png.guides=true": {"content": "placeholder"},
-	"jpg.guides=true": {"content": "placeholder"},
-	"svg.guides=true": {"content": "placeholder"},
+	//
+	// A png or jpg placeholder with no width and height walks the picture
+	// ladder from 640x480 down at every plan, drawing and encoding each rung,
+	// and at the floor it ends on a picture too small for the label - 74 B of
+	// png is one pixel. With the walk this guard took 26 s here and 248 s under
+	// the race detector in CI, and 1.8 s here without it, measured 2026-11-16.
+	// 8x8 is the same picture without a label, planned once. Where the label does fit, the floor of a png or a
+	// jpg moves with the seed, the test pattern's as much as the placeholder's
+	// (O353), so a larger size here would be a red guard about something else.
+	"png.content=placeholder": {"width": "8", "height": "8"},
+	"jpg.content=placeholder": {"width": "8", "height": "8"},
+	"png.guides=true":         {"content": "placeholder", "width": "8", "height": "8"},
+	"jpg.guides=true":         {"content": "placeholder", "width": "8", "height": "8"},
+	"svg.guides=true":         {"content": "placeholder"},
 	// Locking needs something to lock with.
 	"zip.encryption=aes-128":   {"password": "guard"},
 	"zip.encryption=aes-192":   {"password": "guard"},

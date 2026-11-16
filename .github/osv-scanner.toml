@@ -50,8 +50,8 @@ ignoreUntil = 2026-12-14
 reason = "semgrep pins opentelemetry-api~=1.37.0 in every release, and the advisory is about parsing an inbound tracestate header in a server, which semgrep scan never runs"
 
 # A second advisory against opentelemetry-api 1.37.0, found by the weekly scan
-# of 2026-11-16, fixed in 1.45.2. The same class as the entry above: a regular
-# expression taking too long on an inbound traceparent header, reached through
+# of 2026-11-16, fixed in 1.45.2. The same class as the entry above: parsing an
+# inbound traceparent header takes quadratic time, reached through
 # TraceContextTextMapPropagator.extract() in a server receiving requests.
 # semgrep 1.185.0 still asks for ~=1.37.0, and semgrep scan receives no
 # request. The same date as the rest, for the same one reminder.
