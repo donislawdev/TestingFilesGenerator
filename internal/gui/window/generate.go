@@ -667,9 +667,15 @@ func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 	// a rule of its own.
 	var bad []error
 
-	bytesWanted, err := core.ParseSize(g.size.Text)
-	if err != nil {
-		bad = append(bad, saying(format.SettingSize, err))
+	// smallest is a word rather than a number, read by name before the
+	// number is asked for - the same order the flag and the recipe use.
+	smallest := g.size.Text == core.SizeSmallest
+	var bytesWanted int64
+	if !smallest {
+		var err error
+		if bytesWanted, err = core.ParseSize(g.size.Text); err != nil {
+			bad = append(bad, saying(format.SettingSize, err))
+		}
 	}
 	count, err := wholeNumber(engine.SettingCount, text.FieldCount(), g.count.Text)
 	// files is what the engine is handed, and it is only ever set on the branch
@@ -710,6 +716,7 @@ func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 		ID:         g.id.Text,
 		Format:     g.formatPick.Selected,
 		Sizes:      engine.Uniform(files, bytesWanted),
+		Smallest:   smallest,
 		NameTmpl:   g.name.Text,
 		Label:      g.label.Checked,
 		Properties: g.properties(),

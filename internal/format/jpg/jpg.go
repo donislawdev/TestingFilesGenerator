@@ -27,6 +27,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagedim"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagelabel"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/placeholder"
 )
 
 const (
@@ -117,7 +118,7 @@ func init() {
 		},
 		Label:  format.LabelVisible,
 		Oracle: "pillow",
-		Properties: []format.Property{
+		Properties: append([]format.Property{
 			imagedim.Width(imagedim.Side{Largest: maxDimension,
 				Detail: "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."}),
 			imagedim.Height(imagedim.Side{Largest: maxDimension,
@@ -127,7 +128,7 @@ func init() {
 				Min: minQuality, Max: maxQuality, Default: strconv.Itoa(defaultQuality),
 				Detail: "How much detail survives compression, from 1 to 100. JPEG throws detail away by design, so a low number gives a visibly softer picture. It changes how large the picture encodes to, not the size of the file you asked for.",
 			},
-		},
+		}, placeholder.Properties()...),
 		JointLimits: []format.JointLimit{{
 			Of: "width", By: "height", Max: maxPixels,
 			Unit: "megapixels", Per: 1_000_000, Base: "pixels",
@@ -145,6 +146,10 @@ type memo struct {
 	quality       int
 	seed          uint64
 	label         string
+	// look is what the picture shows, and text the words of a placeholder
+	// with this file's numbers in them. A test picture has neither.
+	look placeholder.Settings
+	text string
 	// body is the exact number of bytes the encoded picture takes, start
 	// marker included. Worked out during planning so that a size this format
 	// cannot reach is refused before any file exists.
@@ -201,6 +206,10 @@ func segmentsFor(extra int64) (segments int, payload int64) {
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
+	look, err := placeholder.Read("jpg", r.Properties)
+	if err != nil {
+		return format.Plan{}, err
+	}
 	label := ""
 	if r.Label {
 		label = r.LabelText("jpg")
@@ -211,7 +220,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
-	m, err := chooseSize(r, label, quality)
+	m, err := chooseSize(r, label, quality, look)
 	if err != nil {
 		return format.Plan{}, err
 	}
@@ -258,19 +267,34 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		}
 	}
 	m.segments, m.padPayload = segmentsFor(r.Bytes - bare)
+	p.Holds = holdsPerPixel * int64(w) * int64(h)
 
-	if r.Label && !imagelabel.Fits(w, len(label)) {
+	m.claim(&p, label)
+	p.Memo = m
+	return p, nil
+}
+
+// claim says in the plan whether the picture carries its label, and for a
+// placeholder what it shows, each in the words of the package that draws it.
+// label is empty when the request asked for none.
+func (m memo) claim(p *format.Plan, label string) {
+	w, h := m.width, m.height
+	if m.look.Placeholder() {
+		drawn := placeholder.Measure(w, h, m.look.Look(m.text, label))
+		p.Properties[format.PropertyLabelEmbedded], p.Notes = placeholder.Claim(drawn, label, w, h, p.Notes)
+		m.look.Describe(p.Properties, m.text, drawn)
+		return
+	}
+	if label != "" && !imagelabel.Fits(w, len(label)) {
 		p.Notes = append(p.Notes, format.Note{
 			Code:   "label_omitted",
 			Detail: core.Says("format.ThePictureIsPxWideAnd", "The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("Width", w)),
 		})
 	}
-	labelled := r.Label && imagelabel.Fits(w, len(label))
+	labelled := label != "" && imagelabel.Fits(w, len(label))
 	labelled, p.Notes = imagelabel.Claim(labelled, w, h, len(label), p.Notes)
 	p.Properties[format.PropertyLabelEmbedded] = labelled
-	p.Memo = m
-	p.Holds = holdsPerPixel * int64(w) * int64(h)
-	return p, nil
+	m.look.Describe(p.Properties, "", placeholder.Drawn{})
 }
 
 // holdsPerPixel is what writing one of these holds at once for each pixel of
@@ -343,7 +367,10 @@ var sizeLadder = [][2]int{
 }
 
 // chooseSize settles the picture size and measures what it encodes to.
-func chooseSize(r format.Request, label string, q int) (memo, error) {
+func chooseSize(r format.Request, label string, q int, look placeholder.Settings) (memo, error) {
+	at := func(w, h int) memo {
+		return memo{width: w, height: h, quality: q, seed: r.Seed, label: label, look: look, text: look.Expand(r.Number, w, h)}
+	}
 	_, wSet := r.Properties["width"]
 	_, hSet := r.Properties["height"]
 
@@ -359,7 +386,7 @@ func chooseSize(r format.Request, label string, q int) (memo, error) {
 		if err := checkJointLimits(w, h); err != nil {
 			return memo{}, err
 		}
-		m := memo{width: w, height: h, quality: q, seed: r.Seed, label: label}
+		m := at(w, h)
 		body, err := encodedSize(m)
 		if err != nil {
 			return memo{}, err
@@ -370,7 +397,7 @@ func chooseSize(r format.Request, label string, q int) (memo, error) {
 
 	var smallest memo
 	for _, rung := range sizeLadder {
-		m := memo{width: rung[0], height: rung[1], quality: q, seed: r.Seed, label: label}
+		m := at(rung[0], rung[1])
 		body, err := encodedSize(m)
 		if err != nil {
 			return memo{}, err
@@ -407,6 +434,10 @@ func qualityOf(props map[string]string) (int, error) {
 // requested size.
 func picture(m memo) image.Image {
 	img := image.NewRGBA(image.Rect(0, 0, m.width, m.height))
+	if m.look.Placeholder() {
+		placeholder.Draw(img, m.look.Look(m.text, m.label))
+		return img
+	}
 	// The seed shifts the gradient, so two seeds give visibly different
 	// pictures rather than the same picture with different padding.
 	off := int(m.seed % 256)
@@ -569,52 +600,6 @@ func writeComments(ctx context.Context, w io.Writer, seed uint64, segments int, 
 			}
 			remaining -= size
 		}
-	}
-	return nil
-}
-
-// counter counts bytes and keeps none.
-type counter struct{ n int64 }
-
-func (c *counter) Write(p []byte) (int, error) {
-	c.n += int64(len(p))
-	return len(p), nil
-}
-
-// headSkipper drops the first keep bytes and passes the rest through, so the
-// encoder's own start marker does not follow the padding we already wrote.
-//
-// It also holds on to what it dropped, because a stream that does not begin
-// with the start marker means the encoder changed under us, and writing the
-// rest of it after our own marker would produce a file nobody could read.
-type headSkipper struct {
-	w       io.Writer
-	keep    int
-	head    []byte
-	written int64
-}
-
-func (h *headSkipper) Write(p []byte) (int, error) {
-	n := len(p)
-	if len(h.head) < h.keep {
-		take := h.keep - len(h.head)
-		if take > len(p) {
-			take = len(p)
-		}
-		h.head = append(h.head, p[:take]...)
-		p = p[take:]
-	}
-	if len(p) == 0 {
-		return n, nil
-	}
-	written, err := h.w.Write(p)
-	h.written += int64(written)
-	return n, err
-}
-
-func (h *headSkipper) check() error {
-	if len(h.head) != soiSize || h.head[0] != 0xFF || h.head[1] != 0xD8 {
-		return core.Defect(fmt.Errorf("jpg: the encoder did not begin with the start of image marker, got % x", h.head))
 	}
 	return nil
 }

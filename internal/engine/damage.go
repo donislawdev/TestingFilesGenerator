@@ -57,7 +57,7 @@ func prepareDamage(t *Target, desc format.Descriptor) (format.Descriptor, error)
 	if eaten := t.Damage.Eaten(); eaten != nil {
 		return desc, eaten
 	}
-	if sized := t.Damage.SizeConflict(t.SizeFromContents); sized != nil {
+	if sized := t.Damage.SizeConflict(t.SizeFromContents, t.Smallest); sized != nil {
 		return desc, sized
 	}
 	if !t.Damage.ChangesLength() {
@@ -89,7 +89,7 @@ func prepareDamage(t *Target, desc format.Descriptor) (format.Descriptor, error)
 // and names the larger. Asked here, a PNG with junk appended would be told 64
 // B is enough and then refused at 64 B for needing 138.
 func checkDamageFloor(t *Target) error {
-	if len(t.Damage) == 0 || t.SizeFromContents || t.Damage.ChangesLength() {
+	if len(t.Damage) == 0 || t.SizeFromContents || t.Smallest || t.Damage.ChangesLength() {
 		return nil
 	}
 	floor, owner, err := t.Damage.Floor()

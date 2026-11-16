@@ -5,7 +5,8 @@
 //
 // Measured 2026-08-27 on the pinned modules: fyne.io/fyne/v2/theme embeds 104
 // files, fyne.io/fyne/v2/lang 15 and fyne.io/fyne/v2/internal/painter/gl 14.
-// The command line binary embeds nothing from anybody.
+// The command line binary embeds one file made from somebody else's work: the
+// outlines a placeholder picture's letters are drawn with.
 
 package legal
 
@@ -42,6 +43,15 @@ var assets = []Asset{
 		SPDX:      "OFL-1.1",
 		Copyright: "Copyright 2016 The Inter Project Authors",
 		Note:      "The text of the window, in two weights: the static Regular and Bold instances from the v4.1 release of github.com/rsms/inter, whose files call themselves version 4.001. The first entry for bytes a package of this project embeds itself rather than through the toolkit, since 2026-09-15. The copyright line is read from the files (name table, record 0) and the licence from record 13 and from LICENSE.txt in the release. No Reserved Font Name is declared in either.",
+	},
+	{
+		Name:      "Inter Bold outlines",
+		Package:   ourModule + "/internal/format/placeholder/glyphs",
+		Module:    ourModule,
+		Files:     []string{"inter.outlines"},
+		SPDX:      "OFL-1.1",
+		Copyright: "Copyright 2016 The Inter Project Authors",
+		Note:      "The letters of a placeholder picture, in both binaries: 548 characters of the Inter Bold file above, written as whole numbers by internal/format/placeholder/glyphs/fromttf, and held equal to that file by a guard. A Modified Version in the licence's own terms - a subset in another format, each shape the font's own point for point - so it travels under the same licence and copyright line. The only file from somebody else in the command line binary.",
 	},
 	{
 		Name:      "DejaVu Sans Mono for Powerline",

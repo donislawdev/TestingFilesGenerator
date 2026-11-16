@@ -19,6 +19,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagedim"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/imagelabel"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/placeholder"
 )
 
 const (
@@ -95,12 +96,12 @@ func init() {
 		},
 		Label:  format.LabelVisible,
 		Oracle: "pillow",
-		Properties: []format.Property{
+		Properties: append([]format.Property{
 			imagedim.Width(imagedim.Side{Largest: maxDimension,
 				Detail: "How wide the picture is. Left out, a size is chosen that fits the bytes you asked for."}),
 			imagedim.Height(imagedim.Side{Largest: maxDimension,
 				Detail: "How tall the picture is. Left out, a size is chosen that fits the bytes you asked for."}),
-		},
+		}, placeholder.Properties()...),
 		JointLimits: []format.JointLimit{{
 			Of: "width", By: "height", Max: maxPixels,
 			Unit: "megapixels", Per: 1_000_000, Base: "pixels",
@@ -117,6 +118,10 @@ type memo struct {
 	width, height int
 	seed          uint64
 	label         string
+	// look is what the picture shows, and text the words of a placeholder
+	// with this file's numbers in them. A test picture has neither.
+	look placeholder.Settings
+	text string
 	// body is the number of bytes the encoded picture takes before the closing
 	// chunk. Worked out during planning so that a size this format cannot
 	// reach is refused before any file exists.
@@ -165,18 +170,24 @@ func checkJointLimits(w, h int) error {
 }
 
 func (generator) Plan(r format.Request) (format.Plan, error) {
+	look, err := placeholder.Read("png", r.Properties)
+	if err != nil {
+		return format.Plan{}, err
+	}
 	label := ""
 	if r.Label {
 		label = r.LabelText("png")
 	}
 
-	m, err := chooseSize(r, label)
+	m, err := chooseSize(r, label, look)
 	if err != nil {
 		return format.Plan{}, err
 	}
 	m.cutAt = r.CutAt
 	w, h := m.width, m.height
-	body := m.body
+	if err := m.settle(r); err != nil {
+		return format.Plan{}, err
+	}
 
 	p := format.Plan{
 		Bytes:       r.Bytes,
@@ -191,8 +202,18 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		},
 	}
 
+	m.claim(&p, label)
+	p.Memo = m
+	p.Holds = holdsPerPixel * int64(w) * int64(h)
+	return p, nil
+}
+
+// settle decides whether the file carries a padding chunk and how much, or
+// refuses a size this picture cannot reach.
+func (m *memo) settle(r format.Request) error {
+	w, h := m.width, m.height
 	// What the picture takes on its own, closing chunk included.
-	bare := body + iendSize
+	bare := m.body + iendSize
 
 	switch {
 	case !m.bodyKnown:
@@ -208,7 +229,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		m.withPad = false
 
 	case r.Bytes < bare:
-		return format.Plan{}, &format.BelowMinimumError{
+		return &format.BelowMinimumError{
 			Format:    "PNG",
 			Requested: r.Bytes,
 			Minimum:   bare,
@@ -220,7 +241,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		// Between the two lies a gap of eleven byte counts that no
 		// combination of chunks can hit, because the smallest chunk that
 		// exists is an empty one and it costs twelve bytes.
-		return format.Plan{}, &format.BelowMinimumError{
+		return &format.BelowMinimumError{
 			Format:    "PNG",
 			Requested: r.Bytes,
 			Minimum:   bare + chunkOverhead,
@@ -232,7 +253,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		m.withPad = true
 		m.padData = r.Bytes - bare - chunkOverhead
 		if m.padData > maxChunkData {
-			return format.Plan{}, &format.AboveMaximumError{
+			return &format.AboveMaximumError{
 				Format:    "PNG",
 				Requested: r.Bytes,
 				// The ceiling is what this generator can reach at these
@@ -246,19 +267,30 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 			}
 		}
 	}
+	return nil
+}
 
-	if r.Label && !imagelabel.Fits(w, len(label)) {
+// claim says in the plan whether the picture carries its label, and for a
+// placeholder what it shows, each in the words of the package that draws it.
+// label is empty when the request asked for none.
+func (m memo) claim(p *format.Plan, label string) {
+	w, h := m.width, m.height
+	if m.look.Placeholder() {
+		drawn := placeholder.Measure(w, h, m.look.Look(m.text, label))
+		p.Properties[format.PropertyLabelEmbedded], p.Notes = placeholder.Claim(drawn, label, w, h, p.Notes)
+		m.look.Describe(p.Properties, m.text, drawn)
+		return
+	}
+	if label != "" && !imagelabel.Fits(w, len(label)) {
 		p.Notes = append(p.Notes, format.Note{
 			Code:   "label_omitted",
 			Detail: core.Says("format.ThePictureIsPxWideAnd", "The picture is %d px wide and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it.", core.A("Width", w)),
 		})
 	}
-	labelled := r.Label && imagelabel.Fits(w, len(label))
+	labelled := label != "" && imagelabel.Fits(w, len(label))
 	labelled, p.Notes = imagelabel.Claim(labelled, w, h, len(label), p.Notes)
 	p.Properties[format.PropertyLabelEmbedded] = labelled
-	p.Memo = m
-	p.Holds = holdsPerPixel * int64(w) * int64(h)
-	return p, nil
+	m.look.Describe(p.Properties, "", placeholder.Drawn{})
 }
 
 // holdsPerPixel is what writing one of these holds at once for each pixel of
@@ -382,7 +414,10 @@ var sizeLadder = [][2]int{
 // the largest rung down until one fits, which is what lets a request for a
 // few hundred bytes succeed rather than being told the default picture is too
 // big for it.
-func chooseSize(r format.Request, label string) (memo, error) {
+func chooseSize(r format.Request, label string, look placeholder.Settings) (memo, error) {
+	at := func(w, h int) memo {
+		return memo{width: w, height: h, seed: r.Seed, label: label, look: look, text: look.Expand(r.Number, w, h)}
+	}
 	_, wSet := r.Properties["width"]
 	_, hSet := r.Properties["height"]
 
@@ -403,7 +438,7 @@ func chooseSize(r format.Request, label string) (memo, error) {
 		if err := checkJointLimits(w, h); err != nil {
 			return memo{}, err
 		}
-		m := memo{width: w, height: h, seed: r.Seed, label: label}
+		m := at(w, h)
 		body, err := encodedBodySize(m)
 		if err != nil {
 			return memo{}, err
@@ -431,15 +466,18 @@ func chooseSize(r format.Request, label string) (memo, error) {
 	// when the picture is smallest, and a picture is never smaller than
 	// nothing. Bounding it that way costs a fallback to the slow path for a
 	// sliver of sizes just under two gigabytes and keeps the refusal honest.
-	if r.Bytes >= ladderCeiling+iendSize+chunkOverhead &&
+	//
+	// A placeholder takes the slow path. ladderCeiling was measured on the
+	// test pattern, and a placeholder's text and guides are not that picture.
+	if !look.Placeholder() && r.Bytes >= ladderCeiling+iendSize+chunkOverhead &&
 		r.Bytes-iendSize-chunkOverhead <= maxChunkData {
 		rung := sizeLadder[0]
-		return memo{width: rung[0], height: rung[1], seed: r.Seed, label: label}, nil
+		return at(rung[0], rung[1]), nil
 	}
 
 	var smallest memo
 	for _, rung := range sizeLadder {
-		m := memo{width: rung[0], height: rung[1], seed: r.Seed, label: label}
+		m := at(rung[0], rung[1])
 		body, err := encodedBodySize(m)
 		if err != nil {
 			return memo{}, err
@@ -462,6 +500,10 @@ func chooseSize(r format.Request, label string) (memo, error) {
 // the padding chunk carries the difference.
 func picture(m memo) image.Image {
 	img := image.NewRGBA(image.Rect(0, 0, m.width, m.height))
+	if m.look.Placeholder() {
+		placeholder.Draw(img, m.look.Look(m.text, m.label))
+		return img
+	}
 	// The seed shifts the gradient, so two seeds give visibly different
 	// pictures rather than the same picture with different padding.
 	off := int(m.seed % 256)

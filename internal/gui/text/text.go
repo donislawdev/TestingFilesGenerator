@@ -214,6 +214,12 @@ func SizeFromContents() string {
 	return say("SizeFromContents", "decided by the files inside, known after Preview")
 }
 
+// SizeSmallest is the total of a form asking for the smallest file a format
+// makes, which planning works out from the picture - so Preview says it.
+func SizeSmallest() string {
+	return say("SizeSmallest", "the smallest each file can be, known after Preview")
+}
+
 // DirectoryWithFreeSpace is the output directory with the room left on its
 // disk after it, once a preview has measured that room.
 func DirectoryWithFreeSpace(dir, free string) string {

@@ -291,8 +291,8 @@
   },
   "DetailSize": {
     "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-794528f6abe6",
-    "other": "Units count in 1024s, so 10mb is 10485760 bytes. A plain number is a count of bytes."
+    "hash": "sha256-df450f130c7f",
+    "other": "Units count in 1024s, so 10mb is 10485760 bytes. A plain number is a count of bytes. smallest makes a picture with its width and height set as small as it can be."
   },
   "DetailSizeRange": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -1031,6 +1031,11 @@
     "description": "Shown in the window.",
     "hash": "sha256-fc3aa1e2b2c3",
     "other": "decided by the files inside, known after Preview"
+  },
+  "SizeSmallest": {
+    "description": "Shown in the window.",
+    "hash": "sha256-2a1e172421d6",
+    "other": "the smallest each file can be, known after Preview"
   },
   "SizeWayBoundary": {
     "description": "Shown in the window.",

@@ -62,7 +62,10 @@ const (
 	// when writing a file moved into parallel.go.
 	// Lowered from 1 on 2026-09-09: preset.go split in two, so no file sits
 	// in the band under the file ceiling any more.
-	crowdedFunctions = 9
+	// Lowered from 9 on 2026-11-14: the plan of a png gave its padding and
+	// its label to two methods when the placeholder took it past the ceiling,
+	// and the plan of a jpg its label, which left both under sixty lines.
+	crowdedFunctions = 8
 	crowdedFiles     = 0
 )
 

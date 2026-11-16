@@ -3,6 +3,7 @@ package placeholder
 import (
 	"image"
 	"image/color"
+	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/placeholder/glyphs"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format/placeholder/raster"
@@ -46,6 +47,9 @@ type line struct {
 	size     int64 // pixels to the em, 0 when the line is not drawn
 	x        int64 // left end of the pen, in coordinates
 	baseline int64 // in coordinates
+	// span is how wide the line is taken to be, in units of the font: its
+	// advance, or for the label the bound labelAdvance gives.
+	span int64
 }
 
 type layout struct {
@@ -64,11 +68,11 @@ func arrange(f *glyphs.Face, w, h int64, l Look) layout {
 	upm := int64(f.UnitsPerEm)
 	var lay layout
 	if adv := f.Advance(l.Text); adv > 0 {
-		lay.main = line{text: l.Text, size: readable(min(textWidthNum*w*upm/(textWidthDen*adv),
+		lay.main = line{text: l.Text, span: adv, size: readable(min(textWidthNum*w*upm/(textWidthDen*adv),
 			h*upm/(lineHeightDen*int64(f.Ascent+f.Descent))))}
 	}
-	if adv := f.Advance(l.Label); adv > 0 {
-		lay.label = line{text: l.Label, size: readable(min(max(lay.main.size/labelShareDen, MinType),
+	if adv := labelAdvance(f, l.Label); adv > 0 {
+		lay.label = line{text: l.Label, span: adv, size: readable(min(max(lay.main.size/labelShareDen, MinType),
 			labelWidthNum*w*upm/(labelWidthDen*adv)))}
 	}
 	top, bottom := block(f, lay, h)
@@ -118,6 +122,40 @@ func block(f *glyphs.Face, lay layout, h int64) (top, bottom int64) {
 	return top, top + height + descOf(f, last)
 }
 
+// numerals are the characters a label's numbers are written in: the size in
+// decimal and the seed in hexadecimal.
+const numerals = "0123456789abcdef"
+
+// labelAdvance is how wide the label is taken to be wherever its width decides
+// something - its size and the plate behind it: every numeral counted as the
+// widest of them.
+//
+// The label states a seed in eight numerals, and which ones came up changes
+// how wide they are - measured on 2026-11-14, a drawing's smallest size moved
+// by 2.5 kB between ten seeds while its picture stayed the same. A layout
+// taken from the real width would make what a file of these settings needs
+// depend on its seed, and the smallest size the tool announces has to hold
+// for every seed. The cost is a label a hair smaller where the width is what
+// limits it. The letters of words that happen to be numerals, such as the a of
+// damage, are counted the same way, which only widens the bound.
+func labelAdvance(f *glyphs.Face, label string) int64 {
+	widest := int64(0)
+	for _, r := range numerals {
+		if g, ok := f.Glyph(r); ok {
+			widest = max(widest, int64(g.Advance))
+		}
+	}
+	var adv int64
+	for _, r := range label {
+		if strings.ContainsRune(numerals, r) {
+			adv += widest
+		} else if g, ok := f.Glyph(r); ok {
+			adv += int64(g.Advance)
+		}
+	}
+	return adv
+}
+
 // centred is where the pen starts for ln to stand in the middle of the width.
 func centred(f *glyphs.Face, ln line, w int64) int64 {
 	return (w*raster.One - f.Advance(ln.text)*ln.size*raster.One/int64(f.UnitsPerEm)) / 2
@@ -133,7 +171,8 @@ func plateOf(lay layout, w, h, top, bottom int64) image.Rectangle {
 	x0, x1 := w*raster.One, int64(0)
 	for _, ln := range []line{lay.main, lay.label} {
 		if ln.size > 0 {
-			x0, x1 = min(x0, ln.x), max(x1, w*raster.One-ln.x)
+			left := (w*raster.One - ln.span*ln.size*raster.One/int64(glyphs.Inter().UnitsPerEm)) / 2
+			x0, x1 = min(x0, left), max(x1, w*raster.One-left)
 		}
 	}
 	return image.Rect(int((x0-pad)>>raster.Frac), int((top-pad)>>raster.Frac),
@@ -141,30 +180,71 @@ func plateOf(lay layout, w, h, top, bottom int64) image.Rectangle {
 		Intersect(image.Rect(0, 0, int(w), int(h)))
 }
 
-// Draw paints l over the whole of img: the background, the guides, and the
-// text and the label centred on a plate of the background so a guide never
-// runs through a letter.
-func Draw(img *image.RGBA, l Look) Drawn {
-	b := img.Bounds()
-	w, h := b.Dx(), b.Dy()
-	fillRect(img, image.Rect(0, 0, w, h), l.Background)
-	plot := func(x, y int, a uint8) { blend(img, x, y, l.Foreground, a) }
+// Scene is a placeholder of w by h as shapes rather than pixels. Draw fills
+// these and a format that draws in vectors writes them, so a drawing and a
+// picture of one look are the same shapes to the 256th of a pixel.
+//
+// Laid out in order: the background over the whole picture, the guides in the
+// foreground colour, the plate in the background colour, then the text and the
+// label in the foreground colour.
+type Scene struct {
+	// Guides are the frame, the two diagonals and the circle, each filled on
+	// its own - see guides. Nil without guides.
+	Guides []*raster.Path
+	// Plate is the background the lines stand on, so a guide never runs
+	// through a letter. Empty without guides, where nothing runs there.
+	Plate image.Rectangle
+	// Text is the outline of the words, nil when they did not fit.
+	Text *raster.Path
+	// Label is the outline of the label, nil when it did not fit or there is
+	// none. LabelSize and LabelBaseline are where it stands - pixels to the em
+	// and 256ths of a pixel down - for a format that writes it as words rather
+	// than as shapes. It stands in the middle of the width.
+	Label         *raster.Path
+	LabelSize     int64
+	LabelBaseline int64
+	Drawn         Drawn
+}
+
+// Shapes is the scene of l on a picture of w by h.
+func Shapes(w, h int, l Look) Scene {
+	var s Scene
 	if l.Guides {
-		for _, g := range guides(int64(w), int64(h)) {
-			raster.Fill(g, w, h, plot)
-		}
+		s.Guides = guides(int64(w), int64(h))
 	}
 	f := glyphs.Inter()
 	lay := arrange(f, int64(w), int64(h), l)
 	if l.Guides {
-		fillRect(img, lay.plate, l.Background)
+		s.Plate = lay.plate
 	}
-	for _, ln := range []line{lay.main, lay.label} {
-		if ln.size > 0 {
-			raster.Fill(textPath(f, ln), w, h, plot)
+	if lay.main.size > 0 {
+		s.Text = textPath(f, lay.main)
+	}
+	if lay.label.size > 0 {
+		s.Label = textPath(f, lay.label)
+		s.LabelSize, s.LabelBaseline = lay.label.size, lay.label.baseline
+	}
+	s.Drawn = Drawn{Text: s.Text != nil, Label: s.Label != nil}
+	return s
+}
+
+// Draw paints l over the whole of img: the scene of its size, filled.
+func Draw(img *image.RGBA, l Look) Drawn {
+	b := img.Bounds()
+	w, h := b.Dx(), b.Dy()
+	s := Shapes(w, h, l)
+	fillRect(img, image.Rect(0, 0, w, h), l.Background)
+	plot := func(x, y int, a uint8) { blend(img, x, y, l.Foreground, a) }
+	for _, g := range s.Guides {
+		raster.Fill(g, w, h, plot)
+	}
+	fillRect(img, s.Plate, l.Background)
+	for _, ln := range []*raster.Path{s.Text, s.Label} {
+		if ln != nil {
+			raster.Fill(ln, w, h, plot)
 		}
 	}
-	return Drawn{Text: lay.main.size > 0, Label: lay.label.size > 0}
+	return s.Drawn
 }
 
 // fillRect sets every pixel of r to c, opaque.

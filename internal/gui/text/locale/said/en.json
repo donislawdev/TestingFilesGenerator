@@ -827,6 +827,16 @@
     "hash": "sha256-bb7ddab6d307",
     "other": "Give the target a size, or use a damage that keeps the length, such as zero-head."
   },
+  "damage.NeedsSizeSmallestWhat": {
+    "description": "Said by internal/damage - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Damage}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-3fa0faddb50a",
+    "other": "{{.Damage}} changes the length of the file, and this target asks for the smallest file its format makes"
+  },
+  "damage.NeedsSizeSmallestWhy": {
+    "description": "Said by internal/damage - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-c87ce8ddfc8c",
+    "other": "a file cut short or carrying more bytes is no longer the smallest one, so the two say different things about its size"
+  },
   "damage.NeedsSizeWhat": {
     "description": "Said by internal/damage - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Damage}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-68ac855601a4",
@@ -1389,6 +1399,36 @@
     "hash": "sha256-e0c05c6f958b",
     "other": "A size drawn from the range is not one this format can write, so the nearest size it can write was used instead. The file is still inside the range that was asked for."
   },
+  "engine.SmallestNeedsASize": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Target}}, {{.Format}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-d07762129c17",
+    "other": "target {{.Target}} asks for the smallest {{.Format}} and does not say how large the picture is"
+  },
+  "engine.SmallestNeedsASizeFix": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-c1fda5940898",
+    "other": "Set width and height, such as width 1920 and height 1080, or give the target a size"
+  },
+  "engine.SmallestNeedsASizeWhy": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-6c559ecedb0c",
+    "other": "without a width and a height the picture is chosen to fit the bytes asked for, so there is no picture to be the smallest of"
+  },
+  "engine.SmallestNotAPicture": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Target}}, {{.Format}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-f9efc2fb3a71",
+    "other": "target {{.Target}} asks for the smallest {{.Format}} file, and smallest is for pictures"
+  },
+  "engine.SmallestNotAPictureFix": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-4a668cea0953",
+    "other": "Give the target a size such as 2mb, or choose a picture format"
+  },
+  "engine.SmallestNotAPictureWhy": {
+    "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-57d4d0831255",
+    "other": "a picture with its width and height set has one smallest file, the picture with nothing added to reach a size"
+  },
   "engine.Target": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Target}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-f4062d7dbd6c",
@@ -1468,6 +1508,11 @@
     "description": "Said by internal/format/archive - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-9dead9140bc0",
     "other": "a password was given and this says the archive is not locked, so one of the two is not what you meant"
+  },
+  "format.APlaceholderDrawingHolds": {
+    "description": "Said by internal/format/svgfile - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Width}}, {{.Height}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-e3e11ef84887",
+    "other": "a placeholder drawing holds its shapes, its words and its label, and a {{.Width}}x{{.Height}} one needs that much"
   },
   "format.ARIFFFileStatesItsOwn": {
     "description": "Said by internal/format/wav - a refusal under the box it is about or at the foot of the form, or a note after a run.",
@@ -2660,6 +2705,76 @@
     "description": "Said by internal/format/pdf - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-a566d1539507",
     "other": "the document properties that were set"
+  },
+  "placeholder.ColourIsEmpty": {
+    "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-0b898348eb71",
+    "other": "it is empty, and in a recipe # starts a comment, so a colour written after it is not read"
+  },
+  "placeholder.LabelOmitted": {
+    "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Width}}, {{.Height}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-b4119aa85256",
+    "other": "The picture is {{.Width}} by {{.Height}} px and the label needs more room, so this file carries no visible label. Its name and the manifest still identify it."
+  },
+  "placeholder.NoLetterFor": {
+    "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Characters}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-52142b5ef1e4",
+    "other": "the typeface has no letter for {{.Characters}}"
+  },
+  "placeholder.NotAColour": {
+    "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-a2f402e52f75",
+    "other": "it has to be a colour written as six hex digits such as cccccc, or three such as ccc"
+  },
+  "placeholder.OnlyOnAPlaceholder": {
+    "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-40b0219a40f7",
+    "other": "it only changes a placeholder, and content is test"
+  },
+  "placeholder.SetContentPlaceholder": {
+    "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-4961835418b9",
+    "other": "Set content to placeholder, or leave the line out"
+  },
+  "placeholder.ShortenTheText": {
+    "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-8c77fbf41b8c",
+    "other": "Write a shorter text, one line that fits across the picture"
+  },
+  "placeholder.TextOmitted": {
+    "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Width}}, {{.Height}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-5864521e3e68",
+    "other": "The picture is {{.Width}} by {{.Height}} px and its text needs more room, so this placeholder carries no text."
+  },
+  "placeholder.TextTooLong": {
+    "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-0bc80f951bf0",
+    "other": "it has {{.Count}} characters and a placeholder takes up to {{.Most}}"
+  },
+  "placeholder.TheTokensAre": {
+    "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-4435e73488fd",
+    "other": "The tokens are {width}, {height}, {index} and {index:04}"
+  },
+  "placeholder.UnknownToken": {
+    "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Token}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-ef5c1327f845",
+    "other": "it has {{.Token}}, which is not a token this build understands"
+  },
+  "placeholder.UseLettersItHas": {
+    "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-bf6d0b4dce15",
+    "other": "Use the Latin, Greek or Cyrillic alphabet, digits and common punctuation, all on one line"
+  },
+  "placeholder.WriteAColourSuchAs": {
+    "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Default}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-fdd543975b43",
+    "other": "Write a colour such as {{.Default}}, with or without a # in front"
+  },
+  "placeholder.WriteTheColourWithoutHash": {
+    "description": "Said by internal/format/placeholder - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Name}}, {{.Name2}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-45ad679f6078",
+    "other": "Write the colour without the # or in quotes, such as {{.Name}}: ff0000 or {{.Name2}}: \"#ff0000\""
   },
   "pptx.Slides": {
     "description": "Said by internal/format/pptx - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",

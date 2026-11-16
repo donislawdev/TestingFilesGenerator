@@ -274,6 +274,8 @@
     "extensions separated by commas": "přípony oddělené čárkami",
     "the id of a format, as tfg formats lists them": "id formátu tak, jak je vypisuje tfg formats",
     "the id of a picture format, as tfg formats lists them": "id obrázkového formátu tak, jak je vypisuje tfg formats",
+    "one line of up to 100 characters": "jeden řádek o nejvýše 100 znacích",
+    "a colour such as cccccc or ccc": "barva, například cccccc nebo ccc",
     "the password, in plain text": "heslo ve formě prostého textu",
     "any text": "libovolný text",
     "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "datum, například 2024-02-29 nebo 2024-02-29T13:45:00+02:00, nebo none",

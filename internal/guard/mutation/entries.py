@@ -1588,8 +1588,8 @@ MUTATIONS = [
         # they can have.
         "the minimum on screen sits above the smallest size that works",
         "internal/format/format.go",
-        "\t\tif _, err := d.Generator.Plan(r); err == nil {\n\t\t\treturn size\n\t\t}",
-        "\t\tif _, err := d.Generator.Plan(r); err == nil {\n\t\t\treturn size + 1\n\t\t}",
+        "\t\treturn d.MinBytes\n\t}\n\treturn p.Bytes\n}",
+        "\t\treturn d.MinBytes\n\t}\n\treturn p.Bytes + 1\n}",
         "TestTheMinimumThisToolPrintsIsTheSmallestItAccepts",
     ),
     (
@@ -3494,11 +3494,11 @@ MUTATIONS = [
         # compares the two.
         "the window words a size refusal itself instead of asking the engine",
         "internal/gui/window/generate.go",
-        "\tbytesWanted, err := core.ParseSize(g.size.Text)\n\tif err != nil {\n\t\tbad = append(bad, saying(format.SettingSize, err))\n\t}",
+        "\t\tif bytesWanted, err = core.ParseSize(g.size.Text); err != nil {\n\t\t\tbad = append(bad, saying(format.SettingSize, err))\n\t\t}",
         # errors.New rather than fmt.Errorf, because this file does not import
         # fmt and the mutation reported BROKEN for two runs - a mutation that
         # does not compile proves nothing about the guard it names.
-        '\tbytesWanted, err := core.ParseSize(g.size.Text)\n\tif err != nil {\n\t\tbad = append(bad, errors.New("that is not a size this window accepts"))\n\t}',
+        '\t\tif bytesWanted, err = core.ParseSize(g.size.Text); err != nil {\n\t\t\tbad = append(bad, errors.New("that is not a size this window accepts"))\n\t\t}',
         "TestTheWindowAsksTheEngineWhetherASizeIsGood",
     ),
     (
@@ -6276,9 +6276,9 @@ MUTATIONS = [
     ),
     (
         "the engine calls a generator directly again, so a crash while planning ends the process",
-        "internal/engine/plantarget.go",
-        "p, err := planWithoutCrashing(ctx, desc, r)",
-        "p, err := desc.Generator.Plan(r)",
+        "internal/engine/smallest.go",
+        "\t\treturn planWithoutCrashing(ctx, desc, r)\n",
+        "\t\treturn desc.Generator.Plan(r)\n",
         "TestEveryCallIntoAGeneratorGoesThroughTheCrashWrapper",
     ),
     (
@@ -6592,8 +6592,8 @@ MUTATIONS = [
         "the crowd cap is left one above the count, so the next function to "
         "reach the band arrives without a word",
         "internal/guard/crowding_test.go",
+        "\tcrowdedFunctions = 8\n",
         "\tcrowdedFunctions = 9\n",
-        "\tcrowdedFunctions = 10\n",
         "TestTheCeilingsAreTodaysMeasurementAndNotALooserNumber",
     ),
     (
@@ -8375,8 +8375,8 @@ MUTATIONS = [
     (
         "planning goes back to coding the picture it throws away, so a preview of a large run costs what the run costs",
         "internal/format/png/png.go",
-        "\tif r.Bytes >= ladderCeiling+iendSize+chunkOverhead &&\n",
-        "\tif false && r.Bytes >= ladderCeiling+iendSize+chunkOverhead &&\n",
+        "\tif !look.Placeholder() && r.Bytes >= ladderCeiling+iendSize+chunkOverhead &&\n",
+        "\tif false && !look.Placeholder() && r.Bytes >= ladderCeiling+iendSize+chunkOverhead &&\n",
         "TestPlanningAPictureDoesNotCodeIt",
     ),
     (
@@ -17254,15 +17254,15 @@ MUTATIONS = [
     (
         "the engine plans a cut on an archive sized by what it holds",
         "internal/engine/damage.go",
-        "\tif sized := t.Damage.SizeConflict(t.SizeFromContents); sized != nil {",
-        "\tif sized := t.Damage.SizeConflict(t.SizeFromContents); false && sized != nil {",
+        "\tif sized := t.Damage.SizeConflict(t.SizeFromContents, t.Smallest); sized != nil {",
+        "\tif sized := t.Damage.SizeConflict(t.SizeFromContents, t.Smallest); false && sized != nil {",
         "TestAnArchiveSizedByItsContentsRefusesADamageThatChangesTheLength",
     ),
     (
         "the damage's own floor is named for a chain that changes the length, below the format's",
         "internal/engine/damage.go",
-        "\tif len(t.Damage) == 0 || t.SizeFromContents || t.Damage.ChangesLength() {",
-        "\tif len(t.Damage) == 0 || t.SizeFromContents {",
+        "\tif len(t.Damage) == 0 || t.SizeFromContents || t.Smallest || t.Damage.ChangesLength() {",
+        "\tif len(t.Damage) == 0 || t.SizeFromContents || t.Smallest {",
         "TestTheSmallestDamagedFileIsTakenAndOneByteLessIsNot",
     ),
     (

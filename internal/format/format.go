@@ -521,35 +521,55 @@ func (p Property) Allowed() string {
 // difference costs twelve on its own - so this steps by one when a refusal
 // names nothing higher, rather than assuming the answer only ever grows.
 func (d Descriptor) SmallestAccepted(r Request) int64 {
-	r.SizeFromContents = false
-
-	// Sixty four rounds is far more than any format needs: each round either
-	// settles or jumps to a number the format itself named. It is here so that
-	// a generator whose refusals ever cycle costs a wrong number rather than a
-	// run that never ends.
-	size := int64(0)
-	for round := 0; round < 64; round++ {
-		r.Bytes = size
-		if _, err := d.Generator.Plan(r); err == nil {
-			return size
-		} else {
-			var below *BelowMinimumError
-			if !errors.As(err, &below) {
-				// Refused for a reason that is not about size - a property this
-				// request cannot have, say. The structural floor is the honest
-				// answer left.
-				return d.MinBytes
-			}
-			if below.Minimum > size {
-				size = below.Minimum
-				continue
-			}
-			// The refusal names nothing above where we already are, so this is
-			// a size inside a band the format cannot reach. Step past it.
-			size++
-		}
+	p, err := d.smallest(d.Generator.Plan, r)
+	if err != nil {
+		// Refused for a reason that is not about size - a property this
+		// request cannot have, say - or never settled. The structural floor is
+		// the honest answer left.
+		return d.MinBytes
 	}
-	return d.MinBytes
+	return p.Bytes
+}
+
+// PlanSmallest is the plan of the smallest file this format makes for a
+// request shaped like r, which is what a size of core.SizeSmallest asks for.
+//
+// The same walk as SmallestAccepted, and the plan it ends on rather than the
+// number, so the file is planned once rather than walked to and planned again.
+// A refusal that is not about the size is handed back as it is - a colour the
+// format cannot read is the answer somebody needs, not a floor.
+func (d Descriptor) PlanSmallest(ctx context.Context, r Request) (Plan, error) {
+	return d.smallest(func(r Request) (Plan, error) { return PlanWith(ctx, d.Generator, r) }, r)
+}
+
+// smallestRounds is far more than any format needs: each round either settles
+// or jumps to a number the format itself named. It is here so that a generator
+// whose refusals ever cycle costs a refusal rather than a run that never ends.
+const smallestRounds = 64
+
+// smallest walks plan from nought to the first size it accepts.
+func (d Descriptor) smallest(plan func(Request) (Plan, error), r Request) (Plan, error) {
+	r.SizeFromContents = false
+	size := int64(0)
+	for round := 0; round < smallestRounds; round++ {
+		r.Bytes = size
+		p, err := plan(r)
+		if err == nil {
+			return p, nil
+		}
+		var below *BelowMinimumError
+		if !errors.As(err, &below) {
+			return Plan{}, err
+		}
+		if below.Minimum > size {
+			size = below.Minimum
+			continue
+		}
+		// The refusal names nothing above where we already are, so this is a
+		// size inside a band the format cannot reach. Step past it.
+		size++
+	}
+	return Plan{}, core.Defect(fmt.Errorf("%s: the smallest file did not settle in %d rounds, the last at %d B", d.ID, smallestRounds, size))
 }
 
 // PropertyNames is the declared keys, in the order the format listed them.
@@ -692,6 +712,11 @@ type Request struct {
 	// format that leaves this alone writes as it always did, and the cut the
 	// manifest reports says so (docs/TRUNCATE-2026-11-11.md section 7.2).
 	CutAt int64
+	// Number is the file's place in its target, counted from one as its name
+	// counts it - hero_0007.png is number 7. Zero for a file that is not one
+	// of a target's own, such as a picture inside an archive. Read by a
+	// placeholder that writes {index} into its picture, and by nothing else.
+	Number int
 	// Properties are format specific settings, straight from the recipe.
 	Properties map[string]string
 }

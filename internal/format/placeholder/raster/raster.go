@@ -38,7 +38,10 @@ type edge struct {
 // Contours close themselves - a MoveTo or the end of the path joins the last
 // point back to the first.
 type Path struct {
-	edges          []edge
+	edges []edge
+	// segs is the outline as it was drawn, curves and all, for a format that
+	// writes shapes rather than pixels (Segments).
+	segs           []Segment
 	startX, startY int64
 	curX, curY     int64
 	open           bool
@@ -50,9 +53,36 @@ type Path struct {
 // NewPath is an empty outline.
 func NewPath() *Path { return &Path{empty: true} }
 
+// Op is what one segment of an outline does.
+type Op uint8
+
+// The four things an outline does, as an SVG path names them.
+const (
+	OpMove Op = iota
+	OpLine
+	OpQuad
+	OpClose
+)
+
+// Segment is one step of an outline as it was drawn: to X, Y, through CX, CY
+// for a curve.
+type Segment struct {
+	Op           Op
+	CX, CY, X, Y int64
+}
+
+// Segments is the outline as it was drawn, every contour ending in OpClose. The
+// curves are the curves rather than the lines Fill covers, so a drawing in
+// vectors keeps them smooth at any scale.
+func (p *Path) Segments() []Segment {
+	p.Close()
+	return p.segs
+}
+
 // MoveTo starts a contour at x, y.
 func (p *Path) MoveTo(x, y int64) {
 	p.Close()
+	p.segs = append(p.segs, Segment{Op: OpMove, X: x, Y: y})
 	p.startX, p.startY, p.curX, p.curY = x, y, x, y
 	p.open = true
 	p.grow(x, y)
@@ -60,6 +90,11 @@ func (p *Path) MoveTo(x, y int64) {
 
 // LineTo draws a straight line from the current point to x, y.
 func (p *Path) LineTo(x, y int64) {
+	p.segs = append(p.segs, Segment{Op: OpLine, X: x, Y: y})
+	p.lineTo(x, y)
+}
+
+func (p *Path) lineTo(x, y int64) {
 	p.addEdge(p.curX, p.curY, x, y)
 	p.curX, p.curY = x, y
 	p.grow(x, y)
@@ -69,6 +104,7 @@ func (p *Path) LineTo(x, y int64) {
 // point cx, cy to x, y, as straight lines short enough that no point of the
 // curve is further than a sixteenth of a pixel from them.
 func (p *Path) QuadTo(cx, cy, x, y int64) {
+	p.segs = append(p.segs, Segment{Op: OpQuad, CX: cx, CY: cy, X: x, Y: y})
 	x0, y0 := p.curX, p.curY
 	dev := max(abs(x0-2*cx+x), abs(y0-2*cy+y))
 	// A curve flattened into n lines strays from them by at most dev/(8n^2),
@@ -78,13 +114,16 @@ func (p *Path) QuadTo(cx, cy, x, y int64) {
 	nn := n * n
 	for i := int64(1); i <= n; i++ {
 		a, b, c := (n-i)*(n-i), 2*i*(n-i), i*i
-		p.LineTo(divRound(a*x0+b*cx+c*x, nn), divRound(a*y0+b*cy+c*y, nn))
+		p.lineTo(divRound(a*x0+b*cx+c*x, nn), divRound(a*y0+b*cy+c*y, nn))
 	}
 	p.grow(cx, cy)
 }
 
 // Close joins the current point back to where its contour started.
 func (p *Path) Close() {
+	if p.open {
+		p.segs = append(p.segs, Segment{Op: OpClose})
+	}
 	if p.open && (p.curX != p.startX || p.curY != p.startY) {
 		p.addEdge(p.curX, p.curY, p.startX, p.startY)
 	}

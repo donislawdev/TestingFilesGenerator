@@ -218,7 +218,7 @@ func HintPreset() string    { return say("HintPreset", "What you are testing.") 
 // the field cannot show. The button is still there, carrying the line that says
 // what the setting does.
 func DetailSize() string {
-	return say("DetailSize", "Units count in 1024s, so 10mb is 10485760 bytes. A plain number is a count of bytes.")
+	return say("DetailSize", "Units count in 1024s, so 10mb is 10485760 bytes. A plain number is a count of bytes. smallest makes a picture with its width and height set as small as it can be.")
 }
 func DetailTargetID() string {
 	return say("DetailTargetID", "It reaches the manifest and the file names, so a test can tell these files from the rest of the run. The seeds are derived from it, so changing it changes the bytes.")

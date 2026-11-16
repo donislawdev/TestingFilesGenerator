@@ -9,6 +9,7 @@ import (
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
+	"github.com/donislawdev/TestingFilesGenerator/internal/format/placeholder"
 )
 
 // A declared default has to be the one the format actually uses.
@@ -48,15 +49,21 @@ func TestADeclaredDefaultIsTheOneTheFormatUses(t *testing.T) {
 				continue
 			}
 
+			// Left out and written out, both beside what the setting needs to
+			// do anything at all.
+			left := companionOf(p)
 			stated := map[string]string{p.Name: p.Default}
-			size := sizeBothWaysAccept(d, stated)
+			for k, v := range left {
+				stated[k] = v
+			}
+			size := sizeBothWaysAccept(d, left, stated)
 			if size < 0 {
 				t.Errorf("%s: cannot find a size that works both with and without %s=%s",
 					d.ID, p.Name, p.Default)
 				continue
 			}
 
-			silent, err := produceBytes(d, size, nil)
+			silent, err := produceBytes(d, size, left)
 			if err != nil {
 				t.Errorf("%s: generating with %s left out failed: %v", d.ID, p.Name, err)
 				continue
@@ -91,15 +98,17 @@ func TestADeclaredDefaultIsTheOneTheFormatUses(t *testing.T) {
 
 // sizeBothWaysAccept finds a size both shapes will produce, so a difference in
 // the bytes is a difference in the content rather than in what was refused.
-func sizeBothWaysAccept(d format.Descriptor, stated map[string]string) int64 {
+func sizeBothWaysAccept(d format.Descriptor, left, stated map[string]string) int64 {
 	base := format.Request{Seed: 909, Label: true}
-	withOut := d.SmallestAccepted(base)
+	withOut := base
+	withOut.Properties = left
+	without := d.SmallestAccepted(withOut)
 
 	withIt := base
 	withIt.Properties = stated
 	withThem := d.SmallestAccepted(withIt)
 
-	size := withOut
+	size := without
 	if withThem > size {
 		size = withThem
 	}
@@ -107,7 +116,7 @@ func sizeBothWaysAccept(d format.Descriptor, stated map[string]string) int64 {
 	// cannot reach.
 	size += 300 * 1024
 
-	for _, props := range []map[string]string{nil, stated} {
+	for _, props := range []map[string]string{left, stated} {
 		r := base
 		r.Bytes = size
 		r.Properties = props
@@ -116,6 +125,17 @@ func sizeBothWaysAccept(d format.Descriptor, stated map[string]string) int64 {
 		}
 	}
 	return size
+}
+
+// companionOf is what a setting needs beside it to do anything at all: the
+// settings of a placeholder need a placeholder, and placeholder.Read refuses
+// them on a test picture. Read off the declaration's group rather than kept
+// as a list here, so a setting added to the group is compared where it works.
+func companionOf(p format.Property) map[string]string {
+	if p.Group == placeholder.Group && p.Name != placeholder.SettingContent {
+		return map[string]string{placeholder.SettingContent: placeholder.ContentPlaceholder}
+	}
+	return nil
 }
 
 func produceBytes(d format.Descriptor, size int64, props map[string]string) (string, error) {

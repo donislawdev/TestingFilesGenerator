@@ -50,6 +50,9 @@ needs it finds out it exists.
   the right extension.
 - **Take settings per format** - image dimensions, JPEG quality, PDF pages,
   spreadsheet rows and columns.
+- **Draw placeholder pictures** - a flat colour with its size written in the
+  middle, for laying out a page before the real pictures exist, as PNG, JPG or
+  SVG and as small as the picture allows.
 - **Fit into CI** - an exit code for every ending, machine readable output, and
   nothing on standard output when a run fails.
 - **Clean up after itself** - `verify` tells you nothing moved, `cleanup`
@@ -207,6 +210,13 @@ tfg cleanup ./logs/manifest.json --yes
 logs matches ./logs/manifest.json: 10000 files checked
 ```
 
+**4. Make placeholders for a page.** Six pictures of 1200 by 630 that say
+`Hero 1` to `Hero 6`, each as small as it can be:
+
+```
+tfg generate --format png --size smallest --count 6 --set content=placeholder --set width=1200 --set height=630 --set "text=Hero {index}" --out ./hero
+```
+
 **Sizes count in 1024s**, the way your file manager does, so `2mb` means
 2097152 bytes. A plain byte count works too: `--size 2097152`.
 
@@ -360,7 +370,7 @@ tfg generate --format txt --size 1mb    settings come from the flags
 | flag | what it does |
 |---|---|
 | `--format <id>` | format of the files, for example `txt` |
-| `--size <size>` | exact size of every file, such as `10mb` or a plain byte count |
+| `--size <size>` | exact size of every file, such as `10mb` or a plain byte count. `smallest` makes each picture as small as it can be at the `width` and `height` you set |
 | `--size-range <a-b>` | a size drawn per file from a range, such as `1kb-8kb`. The draw comes from the seed |
 | `--boundary <size>` | three files around a limit: one byte under, the limit, one byte over |
 | `--count <n>` | how many files to produce. Default `1` |
@@ -621,7 +631,7 @@ next to the recipe. Give an absolute path, or `--out`, when you want it fixed.
 | `id` | names the target, and is the anchor its seeds are derived from |
 | `format` | one of the formats below |
 | `count` | how many files. Default `1` |
-| `size` | exact size of every file |
+| `size` | exact size of every file, or `smallest` for a picture with its `width` and `height` set |
 | `size-range` | a size drawn per file from a range, such as `1kb-8kb` |
 | `boundary` | three files around a limit: under, at, over |
 | `contains` | for archives: entries of `format`, `count` and `size` |
@@ -718,9 +728,11 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | format | settings |
 |---|---|
 | `pdf` | `pages`, `page_size`, `orientation`, `rotate`, `pdf_version`, and the document properties `title`, `author`, `subject`, `keywords`, `creator`, `producer`, `created`, `modified` |
-| `png`, `bmp`, `tiff`, `webp` | `width`, `height` |
+| `png` | `width`, `height`, `content`, `text`, `background`, `foreground`, `guides` |
+| `bmp`, `tiff`, `webp` | `width`, `height` |
 | `gif` | `width`, `height`, `frames` |
-| `avif`, `jpg`, `jxl` | `width`, `height`, `quality` |
+| `jpg` | `width`, `height`, `quality`, `content`, `text`, `background`, `foreground`, `guides` |
+| `avif`, `jxl` | `width`, `height`, `quality` |
 | `ico` | `width`, `height`, `embed` |
 | `wav` | `sample_rate`, `bit_depth`, `channels`, `content` |
 | `webm`, `mp4` | `width`, `height`, `duration`, `change_interval`, `frame_rate`, `keyframe_interval`, `quality` |
@@ -737,7 +749,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `geojson` | `geometry`, `formatting`, `precision`, `altitude`, `vertices`, `holes`, `winding`, `antimeridian`, `unlocated`, `ids`, `bbox` |
 | `otlp` | `signal`, `formatting`, `batch`, `start`, `rate`, `depth`, `status_mix`, `level_mix`, `trace_context`, `metric_kind`, `temporality`, `exemplars`, `interval`, `id_encoding`, `enum_encoding`, `key_case`, `large_numbers`, `bom`, `time_order`, `end_before_start`, `empty_envelope`, `body`, `non_finite` |
 | `eml` | `body`, `layout`, `text_encoding`, `charset`, `headers`, `recipients`, `line_endings`, `attachments`, `attachment_format`, `attachment_size`, `filename_style`, `message_depth`, `inline`, `inline_format`, `inline_size` |
-| `svg` | `width`, `height` |
+| `svg` | `width`, `height`, `content`, `text`, `background`, `foreground`, `guides` |
 | `html` | `structure`, `nesting`, `characters`, `elements`, `links`, `bom`, `formatting`, `styles`, `inline`, `inline_format`, `inline_size` |
 | `yaml`, `toml` | none in this build - the document is a fixed shape, and a size is the only thing to ask for |
 

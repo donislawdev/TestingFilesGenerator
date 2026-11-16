@@ -48,6 +48,9 @@ const (
 	// drawn: at least one target draws its sizes from a range, so the total
 	// is between two numbers until the run is planned.
 	drawn
+	// smallest: at least one target asks for the smallest file its format
+	// makes, which planning works out and nothing before it knows.
+	smallest
 	// fromContents: at least one container is sized by what it holds, which
 	// nothing knows before it is built.
 	fromContents
@@ -78,6 +81,8 @@ func (s *summary) add(t engine.Target) {
 	switch {
 	case t.SizeFromContents:
 		s.lower(fromContents)
+	case t.Smallest:
+		s.lower(smallest)
 	case t.Range.Used:
 		s.lower(drawn)
 		n := int64(len(t.Sizes))
@@ -136,6 +141,8 @@ func (s summary) totalText() string {
 	switch s.certainty {
 	case fromContents:
 		return text.SizeFromContents()
+	case smallest:
+		return text.SizeSmallest()
 	case beyondCounting:
 		return ""
 	case drawn:

@@ -274,6 +274,8 @@
     "extensions separated by commas": "以逗號分隔的副檔名",
     "the id of a format, as tfg formats lists them": "格式的 id，與 tfg formats 列出的相同",
     "the id of a picture format, as tfg formats lists them": "圖片格式的 id，與 tfg formats 列出的相同",
+    "one line of up to 100 characters": "一行，最多 100 個字元",
+    "a colour such as cccccc or ccc": "顏色，例如 cccccc 或 ccc",
     "the password, in plain text": "明文密碼",
     "any text": "任意文字",
     "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": "形如 2024-02-29 或 2024-02-29T13:45:00+02:00 的日期，或 none",

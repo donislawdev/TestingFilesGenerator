@@ -202,7 +202,7 @@ func refuseImpossibleDamage(p *problems, where spot, t Target) {
 		what, why, instead := eaten.Parts()
 		p.add(where.of(KeyDamage), whereWhat(where, what), why, instead)
 	}
-	if sized := t.Damage.SizeConflict(t.SizeFromContents); sized != nil {
+	if sized := t.Damage.SizeConflict(t.SizeFromContents, t.Smallest); sized != nil {
 		what, why, instead := sized.Parts()
 		p.add(where.of(sized.AboutSetting()), whereWhat(where, what), why, instead)
 	}

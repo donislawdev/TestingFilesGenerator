@@ -149,6 +149,21 @@ var provenByProbe = map[string]string{
 	"TestARasterCoversWhatItsOutlineEncloses": "its own canary - the same square a pixel to the right must fail the comparison.",
 	"TestAPlaceholderIsTheSamePixelsOnEverySystem": "its own canary - a picture with one digit changed must hash differently - and " +
 		"the CI matrix draws it on three systems against one pinned hash.",
+	// The settings and smallest, the same day. Each carries its canary, and
+	// two were also broken once by hand and restored: an empty colour taken as
+	// left out turned the recipe guard red, and the walk to the smallest size
+	// stepping two bytes at a time turned the smallest guard red.
+	"TestAPlaceholderSettingRefusesWhatItCannotDraw": "its own canary - the accepted half of the table, which a Read refusing every value fails.",
+	"TestEachPlaceholderSaysItsOwnNumber": "it reads three different numbers off three planned files and the colour as the manifest spells it, " +
+		"so a text that skipped its tokens or a file that took another's number reads wrong.",
+	"TestSmallestIsTheSmallestFile": "its own canary - a size a hundred bytes over the smallest must not pass as the smallest - and " +
+		"red on 2026-11-14 when the walk was broken by hand to step two bytes at a time.",
+	"TestSmallestSaysWhyItCannotBeAnswered": "its own canary - the same picture with a width and height must be planned, so each refusal " +
+		"is about smallest rather than about the picture.",
+	"TestAColourAfterAHashInARecipeIsNotLostInSilence": "its own canary - the same colour without the hash must run - and red on " +
+		"2026-11-14 when an empty colour was taken as left out by hand.",
+	"TestTheSeedSweepMovesEveryNumeralOfTheLabel": "it is the canary of the seed sweep beside it, and that sweep went red on " +
+		"2026-11-14 when the label of a placeholder drawing was put back as outlines by hand.",
 	// Broken once each on 2026-11-14 while they were written, one change at a
 	// time and restored (docs/RUN-FOLDERS-2026-11-14.md section 12). The sixth
 	// guard of the piece, TestANameAnEarlierRecordStillListsIsNotWrittenAgain,
