@@ -249,6 +249,11 @@ var provenByProbe = map[string]string{
 		"- and each standard token let through has to still be a declared value.",
 	"TestTheEnglishWindowShowsAListValueByItsName": "broken by hand on 2026-11-17 twice, ChoiceName saying the value and the " +
 		"folded summary saying the value: red both times. It reads the window, so a stale registry/en.json cannot hide either.",
+	"TestTheEnglishWindowRewordsOnlyNamesAndLabels": "a canary of its own - a planted sentence has to come out reworded, " +
+		"names and labels in and no quotes - a floor on the refusals and the names they carry, and broken by hand on " +
+		"2026-11-17 six ways (names, labels, a sentence inside, quotes, a wrapper at the foot, a join): red every time.",
+	"TestARefusalWithNoBoxNamesItsSettingsByTheirLabels": "broken by hand on 2026-11-17 by giving the foot of the form " +
+		"no name to put in: red in English (the two keys) and in Polish (the empty place) alike.",
 	"TestTheWindowSaysASwitchAsOnOrOff": "a canary of its own - the line it was written against, Guides true, has to be " +
 		"found - a floor on how many switches are asked, and broken by hand on 2026-11-17 three ways (the folded line, " +
 		"the explanation saying true or false, the explanation naming the wrong start): red every time.",

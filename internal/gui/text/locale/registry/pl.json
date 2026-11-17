@@ -556,7 +556,7 @@
   "Label.encryption": { "hash": "sha256-82f4e719a19c", "other": "Szyfrowanie" },
   "Label.end_before_start": { "hash": "sha256-1ce5eed0b42b", "other": "Koniec przed początkiem" },
   "Label.entries": { "hash": "sha256-7cb76b4af12a", "other": "Liczba plików" },
-  "Label.entry_format": { "hash": "sha256-63d61a75badf", "other": "Format plików w środku" },
+  "Label.entry_format": { "hash": "sha256-63d61a75badf", "other": "Format wpisów" },
   "Label.entry_mode": { "hash": "sha256-4a17440263ca", "other": "Uprawnienia plików" },
   "Label.entry_owner": { "hash": "sha256-d7bf94c5f409", "other": "Właściciel plików" },
   "Label.entry_size": { "hash": "sha256-1190635edb6f", "other": "Rozmiar plików w środku" },

@@ -48,11 +48,14 @@ func (p Problem) String() string {
 //
 // String is this with the recipe key, so the command line prints what it
 // always printed and a window asks for the label above the box.
-func (p Problem) InTheWordsOf(name string) string {
+func (p Problem) InTheWordsOf(name string) string { return p.Reworded(name, nil) }
+
+// Reworded is InTheWordsOf with the values worded by w - see core.Said.Reworded.
+func (p Problem) Reworded(name string, w core.Wording) string {
 	if name == "" {
 		name = core.LastSettingSegment(p.At)
 	}
-	return core.InTheWordsOf(p.Said().String(), name)
+	return core.InTheWordsOf(p.Said().Reworded("", w), name)
 }
 
 // Said is the whole problem, for a window that says it in its own language,

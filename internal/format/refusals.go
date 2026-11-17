@@ -259,11 +259,14 @@ func (e *PropertyValueError) Error() string {
 // refusal is assembled rather than written out: the key already stands on its
 // own in the format string. The reason a property gives can still hold slots,
 // so a declaration that names itself twice needs no special case.
-func (e *PropertyValueError) InTheWordsOf(name string) string {
+func (e *PropertyValueError) InTheWordsOf(name string) string { return e.Reworded(name, nil) }
+
+// Reworded is InTheWordsOf with the values worded by w - see core.Said.Reworded.
+func (e *PropertyValueError) Reworded(name string, w core.Wording) string {
 	if name == "" {
 		name = e.Key
 	}
-	return e.said(core.InTheWordsOf(e.Reason.String(), name)).InTheWordsOf(name)
+	return e.said(core.InTheWordsOf(e.Reason.Reworded("", w), name)).Reworded(name, w)
 }
 
 // AboutSetting is the property this refusal is about, so a window can put the

@@ -199,10 +199,14 @@ func asCount(v any) int64 {
 //
 // The %w of a wrapping layout is printed the way fmt.Errorf prints it, as the
 // error's own text.
-func (s Said) String() string {
+func (s Said) String() string { return s.render(nil) }
+
+// render is the sentence with each value as w words it - see Reworded. Nil is
+// the command line: every value exactly as it was handed in.
+func (s Said) render(w Wording) string {
 	values := make([]any, len(s.args))
 	for i, a := range s.args {
-		values[i] = a.Value
+		values[i] = w.value(a.Value)
 	}
 	if s.countUnsaid() {
 		values = values[:len(values)-1]
@@ -312,6 +316,9 @@ func (t Term) Format(f fmt.State, verb rune) {
 // as the label above its box.
 func LabelTerm(name string) Term { return Term{Key: LabelKey(name), Text: name} }
 
+// Setting is the setting a LabelTerm names, and false for any other word.
+func (t Term) Setting() (string, bool) { return strings.CutPrefix(t.Key, LabelKey("")) }
+
 // LabelKey and JointKey are two more of the keys a window keeps words under -
 // see UnitKey. FormatOwner is whose declaration a format's words are.
 func LabelKey(name string) string          { return "Label." + name }
@@ -379,12 +386,10 @@ type Conjoined []Said
 
 // Format prints the sentences in English, each pair joined with "and".
 func (c Conjoined) Format(f fmt.State, verb rune) {
-	parts := make([]string, len(c))
-	for i, s := range c {
-		parts[i] = s.String()
-	}
-	fmt.Fprintf(f, fmt.FormatString(f, verb), strings.Join(parts, " and "))
+	fmt.Fprintf(f, fmt.FormatString(f, verb), c.joined(nil))
 }
+
+func (c Conjoined) joined(w Wording) string { return joinSaid(c, " and ", w) }
 
 // Sentences is several sentences said as a list, one after another with a
 // comma between them.
@@ -392,12 +397,10 @@ type Sentences []Said
 
 // Format prints the sentences in English, joined with commas.
 func (l Sentences) Format(f fmt.State, verb rune) {
-	parts := make([]string, len(l))
-	for i, s := range l {
-		parts[i] = s.String()
-	}
-	fmt.Fprintf(f, fmt.FormatString(f, verb), strings.Join(parts, ", "))
+	fmt.Fprintf(f, fmt.FormatString(f, verb), l.joined(nil))
 }
+
+func (l Sentences) joined(w Wording) string { return joinSaid(l, ", ", w) }
 
 // Lines is several sentences said one under another, each on a line of its own
 // and indented by two spaces after the first.
@@ -405,11 +408,20 @@ type Lines []Said
 
 // Format prints the sentences in English, one a line.
 func (l Lines) Format(f fmt.State, verb rune) {
-	parts := make([]string, len(l))
-	for i, s := range l {
-		parts[i] = s.String()
+	fmt.Fprintf(f, fmt.FormatString(f, verb), l.joined(nil))
+}
+
+func (l Lines) joined(w Wording) string { return joinSaid(l, "\n  ", w) }
+
+// joinSaid is several sentences, each worded by w, joined with sep - the one
+// place each list above is joined, for the command line and for a window
+// rewording it alike.
+func joinSaid(list []Said, sep string, w Wording) string {
+	parts := make([]string, len(list))
+	for i, s := range list {
+		parts[i] = s.render(w)
 	}
-	fmt.Fprintf(f, fmt.FormatString(f, verb), strings.Join(parts, "\n  "))
+	return strings.Join(parts, sep)
 }
 
 // Choices is several values of one closed list, said as a list - "comma, tab,
@@ -422,7 +434,19 @@ type Choices struct {
 // Format prints the values joined the way the command line always joined
 // them.
 func (c Choices) Format(f fmt.State, verb rune) {
-	fmt.Fprintf(f, fmt.FormatString(f, verb), strings.Join(c.Values, ", "))
+	fmt.Fprintf(f, fmt.FormatString(f, verb), c.joined(nil))
+}
+
+// joined is the values, each worded by w as one Choice of the list.
+func (c Choices) joined(w Wording) string {
+	words := make([]string, len(c.Values))
+	for i, v := range c.Values {
+		words[i] = v
+		if said, ok := w.word(Choice{Of: c.Of, Value: v}); ok {
+			words[i] = said
+		}
+	}
+	return strings.Join(words, ", ")
 }
 
 // directivesOf is every value directive of a layout, in the order the values

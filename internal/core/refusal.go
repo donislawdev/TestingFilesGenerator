@@ -29,11 +29,14 @@ func (r *Refusal) Error() string { return r.InTheWordsOf(r.setting) }
 // InTheWordsOf is the sentence with the setting named the way one surface names
 // it. The slots are filled in the layout before the values go in, so a value
 // somebody typed as "{setting}" is printed as typed rather than read as a slot.
-func (r *Refusal) InTheWordsOf(name string) string {
+func (r *Refusal) InTheWordsOf(name string) string { return r.Reworded(name, nil) }
+
+// Reworded is InTheWordsOf with the values worded by w - see Said.Reworded.
+func (r *Refusal) Reworded(name string, w Wording) string {
 	if name == "" {
 		name = r.setting
 	}
-	return r.said.InTheWordsOf(name)
+	return r.said.Reworded(name, w)
 }
 
 // Said is the sentence in parts.
@@ -74,17 +77,7 @@ func (r *Refusal) Unwrap() error {
 // InTheWordsOf is String with the setting slots of the layout filled first, so
 // a value somebody typed as "{setting}" is printed as typed rather than read as
 // a slot.
-func (s Said) InTheWordsOf(name string) string {
-	if name == "" {
-		return s.String()
-	}
-	filled := s
-	filled.layout = InTheWordsOf(s.layout, name)
-	if s.one != "" {
-		filled.one = InTheWordsOf(s.one, name)
-	}
-	return filled.String()
-}
+func (s Said) InTheWordsOf(name string) string { return s.Reworded(name, nil) }
 
 // wrapped is every value the layout takes with %w.
 func (s Said) wrapped() []error {

@@ -344,11 +344,14 @@ func (e *ImpossibleError) Error() string {
 // InTheWordsOf is this refusal with the parameter named the way one surface
 // names it - see core.SettingSlot. Error is this with the declared name, which
 // is what the command line has always printed.
-func (e *ImpossibleError) InTheWordsOf(name string) string {
+func (e *ImpossibleError) InTheWordsOf(name string) string { return e.Reworded(name, nil) }
+
+// Reworded is InTheWordsOf with the values worded by w - see core.Said.Reworded.
+func (e *ImpossibleError) Reworded(name string, w core.Wording) string {
 	if name == "" {
 		name = e.Setting
 	}
-	return core.InTheWordsOf(e.Said().String(), name)
+	return core.InTheWordsOf(e.Said().Reworded("", w), name)
 }
 
 // Said is the whole refusal, for a window that says it in its own language,

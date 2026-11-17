@@ -59,11 +59,14 @@ func (e *RecipeError) Error() string {
 // it in Detail and comes out exactly as it did before, so the two states are
 // not a half finished middle - they are the same sentence written in one piece
 // or in three.
-func (e *RecipeError) InTheWordsOf(name string) string {
+func (e *RecipeError) InTheWordsOf(name string) string { return e.Reworded(name, nil) }
+
+// Reworded is InTheWordsOf with the values worded by w - see core.Said.Reworded.
+func (e *RecipeError) Reworded(name string, w core.Wording) string {
 	if name == "" {
 		name = core.LastSettingSegment(e.Setting)
 	}
-	return core.InTheWordsOf(e.Said().String(), name)
+	return core.InTheWordsOf(e.Said().Reworded("", w), name)
 }
 
 // Said is the whole refusal, for a window that says it in its own language,

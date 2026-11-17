@@ -269,6 +269,13 @@ because it turns other people's test suites red.
   means. A switch reads on or off rather than true or false, in the line of a
   folded section and behind its button. The memory setting on Preferences is
   described in plain words.
+- **A refusal in the window names settings and list values as the screen
+  does.** In English it read "level_mix and entry_format" and "the
+  apache-combined shape", and now reads "Level mix and Entry format" and "the
+  Apache combined shape". In Polish the same refusal at the bottom of the form
+  left the setting's name out entirely. The command line prints every refusal
+  as before. The Polish label of Entry format now suits a log as well as an
+  archive.
 
 - **On Windows, a path picked with Choose... has backslashes.** It is written
   the way Windows writes paths, the same text a drop of that folder or file
