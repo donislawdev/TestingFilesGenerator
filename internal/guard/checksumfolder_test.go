@@ -81,20 +81,41 @@ func checkedJSON(t *testing.T, sums string) (int, checksum.Checked) {
 // is, and its -c calls an escaped line improperly formatted - found on the
 // macos-26 runner on 2026-09-30, where this guard held the file to it as if it
 // were GNU and went red.
+//
+// GNU's is asked for as gnusha256sum first. From Ubuntu 25.10 the sha256sum
+// on the PATH is uutils, a rewrite, and GNU's is installed beside it under
+// that name - so on ubuntu-26.04, which ubuntu-latest became in November 2026
+// (measured in Docker on 2026-11-18: uutils 0.10.0 as sha256sum, GNU 9.7 as
+// gnusha256sum, both installed by default).
 func sha256sumHere(t *testing.T) (program string, gnu bool, major int) {
 	t.Helper()
-	program, err := exec.LookPath("sha256sum")
-	if err != nil {
-		return "", false, 0
+	for _, name := range []string{"gnusha256sum", "sha256sum"} {
+		found, err := exec.LookPath(name)
+		if err != nil {
+			continue
+		}
+		isGNU, itsMajor := sha256sumVersion(found)
+		if isGNU {
+			return found, true, itsMajor
+		}
+		if program == "" {
+			program, major = found, itsMajor
+		}
 	}
+	return program, false, major
+}
+
+// sha256sumVersion is whether program says it is GNU coreutils, and the major
+// version it says it is.
+func sha256sumVersion(program string) (gnu bool, major int) {
 	out, err := exec.Command(program, "--version").Output()
 	if err != nil {
-		return program, false, 0
+		return false, 0
 	}
 	first, _, _ := strings.Cut(string(out), "\n")
 	fields := strings.Fields(first)
 	if len(fields) == 0 {
-		return program, false, 0
+		return false, 0
 	}
 	for _, c := range fields[len(fields)-1] {
 		if c < '0' || c > '9' {
@@ -102,7 +123,7 @@ func sha256sumHere(t *testing.T) (program string, gnu bool, major int) {
 		}
 		major = major*10 + int(c-'0')
 	}
-	return program, strings.Contains(first, "GNU coreutils"), major
+	return strings.Contains(first, "GNU coreutils"), major
 }
 
 // TestTheChecksumFileIsTheOneSha256sumWrites writes a checksum file of a

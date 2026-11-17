@@ -14,6 +14,11 @@
 # Listed: every test that took 10 s or more. "unlisted" is the mean of the rest.
 # TestSmallestIsTheSmallestFile came on 2026-11-16: 79.3 s in a part whose
 # listed tests took 0.61 of their weights, so 130.1.
+# The seven site guards that ask the program about every preset share one
+# answer per process, so the first of them in a part pays for it: 52 to 61 s
+# on 2026-11-18, against 16 to 26 s before, because the picture-sizes preset
+# plans its 21 pictures at their smallest twice (tfg preset show, a dry run).
+# Each weighs what it took where it paid, the rest the most any of them paid.
 #
 # A test that is not here and takes 60 s or more fails its part with the line
 # to add. A test that is here and no longer exists fails every part.
@@ -36,11 +41,18 @@ unlisted 0.58
 65.6 TestADamagedFileIsExactlyTheSizeAskedFor
 64.6 TestNoTrackedFileCarriesPrivateContent
 62.2 TestEveryDamageIsRefusedByTheStructuralCheckInEveryFormat
+60.6 TestEveryLanguageDescribesEveryDamage
+60.6 TestEveryLinkOnTheSiteLeadsSomewhere
+60.6 TestTheSitemapNeedsNoSchemaButItsOwn
+60.6 TestTheSocialPictureShowsTheCardAsItIsNow
+60.0 TestEveryPageSaysWhichLanguageItIsAndWhereItsTranslationsAre
+59.3 TestTheSiteSaysWhatTheToolSays
 57.3 TestAFilmSaysItCarriesItsLabelOnlyWhenAPictureShowsItWhole
 55.6 TestEveryJxlRungStillFitsInsideItsDeclaredCeiling
 55.6 TestTheArchiveScanLooksIntoTheArchivesInside
 55.3 TestAFilmOfANamedSizeKeepsEveryPictureInsideItsReserve
 52.2 TestChoosingAToolLaysTheScreenOutAsIfItOpenedWithIt
+52.0 TestEveryLanguageDescribesEverythingTheProgramCanProduce
 38.6 TestAContainerStopsBetweenTheFilesItPlans
 37.5 TestEveryPictureNamedAfterARefusalShowsOne
 36.7 TestJxlStillFitsWhenTheQualityIsNotTheOneTheCeilingsWereMeasuredAt
@@ -49,13 +61,11 @@ unlisted 0.58
 34.0 TestOurOwnGeneratorsHaveNotDrifted
 29.9 TestTheSameSeedGivesTheSameBytes
 27.9 TestTheMinimumStandsWhateverTheSeedIsUnderEveryDeclaredChoice
-25.9 TestEveryLinkOnTheSiteLeadsSomewhere
 24.9 TestEveryEMLSettingSurvivesItsReferenceTool
 24.2 TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole
 23.2 TestAnAVIFLargerThanOneAV1TileSurvivesItsReferenceTool
 23.1 TestACutTakesTheShareOfTheContentItIsAskedFor
 22.4 TestTheLadderCeilingIsAboveEveryPictureTheTopRungMakes
-22.2 TestTheSiteSaysWhatTheToolSays
 20.9 TestAFilmsProgressMovesWithItsPicturesNotItsPadding
 20.7 TestAFilmHoldsTheFramesTheManifestDeclares
 20.7 TestTheWindowBinaryStartsWithoutAConsole
@@ -64,8 +74,6 @@ unlisted 0.58
 17.4 TestThePresetScreenKeepsTheNameAFileIsSentUnder
 17.0 TestTheSmallestDamagedFileIsTakenAndOneByteLessIsNot
 16.9 TestEveryFormatSurvivesItsReferenceTool
-16.7 TestEveryLanguageDescribesEverythingTheProgramCanProduce
-16.6 TestEveryLanguageDescribesEveryDamage
 16.3 TestTheSameWorkDoneAgainLeavesTheWindowAsItWas
 16.2 TestABuildWithNoWindowInItSaysSoAndKeepsStandardOutputEmpty
 15.4 TestAvifStillFitsWhenTheQualityIsNotTheOneTheCeilingsWereMeasuredAt
