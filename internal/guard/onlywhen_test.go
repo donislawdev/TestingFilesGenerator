@@ -124,6 +124,8 @@ func askingFor(p format.Property) string {
 				return v
 			}
 		}
+	default:
+		// A number, a size, a duration or a text asks for its default below.
 	}
 	if p.Default != "" {
 		return p.Default

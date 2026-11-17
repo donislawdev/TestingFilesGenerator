@@ -178,6 +178,8 @@ func SettingsSaid(fields []PropertyField) string {
 			v = text.ChoiceName(f.Name, v)
 		case format.PropertyBool:
 			v = text.SwitchState(v == "true")
+		default:
+			// A number, a size, a duration or a text reads as it was written.
 		}
 		said = append(said, text.SettingSaid(text.SettingLabel(f.Name), v))
 	}
