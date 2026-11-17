@@ -4065,7 +4065,7 @@
 									<widget pos="0,18" size="788x16" type="*parts.QuietText">
 										<container size="788x16">
 											<widget pos="-6,-6" size="800x28" type="*widget.RichText">
-												<text color="placeholder" pos="6,6" size="708x16">Files of one format and one size, with a manifest that says how the system under test should react to them.</text>
+												<text color="placeholder" pos="6,6" size="620x16">Files of one format, with a manifest that says how the system under test should react to them.</text>
 											</widget>
 										</container>
 									</widget>
@@ -4089,7 +4089,7 @@
 										<widget pos="0,32" size="788x16" type="*parts.QuietText">
 											<container size="788x16">
 												<widget pos="-6,-6" size="800x28" type="*widget.RichText">
-													<text color="placeholder" pos="6,6" size="708x16">Files of one format and one size, with a manifest that says how the system under test should react to them.</text>
+													<text color="placeholder" pos="6,6" size="620x16">Files of one format, with a manifest that says how the system under test should react to them.</text>
 												</widget>
 											</container>
 										</widget>

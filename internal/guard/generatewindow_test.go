@@ -204,7 +204,7 @@ func saysWhatItTakes(t *testing.T, shown, owner string, p format.Property) {
 	t.Helper()
 
 	want := p.Allowed()
-	if p.Kind == format.PropertyChoice {
+	if p.Kind == format.PropertyChoice || p.Kind == format.PropertyBool {
 		want = p.Detail
 	}
 	if want != "" && !strings.Contains(shown, want) {
@@ -213,6 +213,12 @@ func saysWhatItTakes(t *testing.T, shown, owner string, p format.Property) {
 	if p.Kind == format.PropertyChoice && strings.Contains(shown, p.Allowed()) {
 		t.Errorf("the field for %s.%s lists its values in prose (%q) as well as in the "+
 			"menu above them", owner, p.Name, p.Allowed())
+	}
+	// A switch is its two values the same way a menu is its list, and they are
+	// the recipe's words besides. What it starts on is asked, with the folded
+	// line, by TestTheWindowSaysASwitchAsOnOrOff.
+	if p.Kind == format.PropertyBool && strings.Contains(shown, text.AllowedTrueOrFalse()) {
+		t.Errorf("the field for %s.%s says %q beside a switch that shows both", owner, p.Name, text.AllowedTrueOrFalse())
 	}
 }
 

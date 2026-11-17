@@ -249,6 +249,9 @@ var provenByProbe = map[string]string{
 		"- and each standard token let through has to still be a declared value.",
 	"TestTheEnglishWindowShowsAListValueByItsName": "broken by hand on 2026-11-17 twice, ChoiceName saying the value and the " +
 		"folded summary saying the value: red both times. It reads the window, so a stale registry/en.json cannot hide either.",
+	"TestTheWindowSaysASwitchAsOnOrOff": "a canary of its own - the line it was written against, Guides true, has to be " +
+		"found - a floor on how many switches are asked, and broken by hand on 2026-11-17 three ways (the folded line, " +
+		"the explanation saying true or false, the explanation naming the wrong start): red every time.",
 	"TestTheSizeSwitchAndTheSizeBoxNeverSayDifferentThings": "a refusal at the size box asked before the acceptance, so the " +
 		"preview is known to be able to refuse, and broken by hand on 2026-11-17 four ways - typing smallest leaving the switch, " +
 		"choosing Smallest writing nothing, leaving Smallest putting nothing back, a switch losing its choice saying nothing: red " +

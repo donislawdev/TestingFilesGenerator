@@ -16,10 +16,10 @@ func textRanks() Entry {
 	return Entry{Name: "Title", Covers: []string{"Subtitle", "Titled", "Heading", "Subheading", "Prose", "Note", "Caption", "QuietText", "Bullets", "Ledger"}, States: []State{
 		{"the title of a screen", func() fyne.CanvasObject { return parts.Title("Single batch") }},
 		{"the sentence under a title", func() fyne.CanvasObject {
-			return parts.Subtitle("Files of one format and one size, with a manifest that says how the system under test should react to them.")
+			return parts.Subtitle("Files of one format, with a manifest that says how the system under test should react to them.")
 		}},
 		{"a title with its sentence", func() fyne.CanvasObject {
-			return parts.Titled("Single batch", "Files of one format and one size, with a manifest that says how the system under test should react to them.")
+			return parts.Titled("Single batch", "Files of one format, with a manifest that says how the system under test should react to them.")
 		}},
 		{"the name of a field", func() fyne.CanvasObject { return parts.Heading("Output directory") }},
 		{"the name of a block inside a section", func() fyne.CanvasObject { return parts.Subheading("Typically finds") }},

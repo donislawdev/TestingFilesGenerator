@@ -431,9 +431,19 @@ func PropertyDetail(owner text.Owner, p format.Property) string {
 // The default is not said here either, and that is not an omission: the menu's
 // first entry says "not stated" and carries the default in its own words, so
 // repeating it under the control would be the same duplication one line down.
+//
+// A switch is the same case: the switch IS its two values, so "true or false"
+// says nothing it does not, in the recipe's words rather than the window's.
+// What it started on is still said, as on or off, because once it is pressed
+// the screen no longer shows it.
 func allowedOnAScreen(p format.Property) string {
-	if p.Kind == format.PropertyChoice {
+	switch {
+	case p.Kind == format.PropertyChoice:
 		return ""
+	case p.Kind == format.PropertyBool && p.Default == "":
+		return ""
+	case p.Kind == format.PropertyBool:
+		return text.AllowedDefault(text.SwitchState(p.Default == "true"))
 	}
 	return Allowed(p)
 }

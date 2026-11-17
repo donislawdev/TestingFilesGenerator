@@ -34,9 +34,12 @@ func TestTheMemorySettingIsChosenOnPreferencesAndKept(t *testing.T) {
 	}
 	// And the floor the plan keeps under it, from the constant that sets it -
 	// review on #208: without it a machine of four gigabytes or less reads a
-	// refusal the run would never give.
-	if said := textIn(prefs); !strings.Contains(said, "a plan of up to "+text.HumanBytes(core.MaxPlanBytes)+" is never refused") {
-		t.Errorf("the screen does not say the floor of the plan under Automatic:\n%s", said)
+	// refusal the run would never give. Asked as the number inside the sentence
+	// the screen shows rather than as a wording, so rewriting the sentence does
+	// not take the question away.
+	scope, floor := text.PreferencesMemoryScope(), text.HumanBytes(core.MaxPlanBytes)
+	if said := textIn(prefs); !strings.Contains(scope, floor) || !strings.Contains(said, scope) {
+		t.Errorf("the screen does not say the floor of the list under Automatic, %s:\n%s", floor, said)
 	}
 
 	// Custom keeps the size as it is typed, and a size that is not one is

@@ -42,27 +42,41 @@ type declaredList struct {
 
 func declaredLists() []declaredList {
 	var out []declaredList
-	add := func(owner string, props []format.Property) {
-		for _, p := range props {
+	for _, d := range declarations() {
+		for _, p := range d.props {
 			if len(p.Choices) > 0 {
-				out = append(out, declaredList{owner, p.Name, p.Choices})
+				out = append(out, declaredList{string(d.owner), p.Name, p.Choices})
 			}
 		}
 	}
-	for _, d := range format.All() {
-		add(string(text.FormatOwner(d.ID)), d.Properties)
-	}
-	for _, p := range preset.All() {
-		add(string(text.PresetOwner(p.ID)), append(append([]format.Property{}, p.Parameters...), p.Globals()...))
-	}
-	for _, d := range tool.All() {
-		add(string(text.ToolOwner(d.ID)), d.Settings)
-	}
-	for _, d := range damage.All() {
-		add(string(text.DamageOwner(d.ID)), d.Parameters)
-	}
 	out = append(out, declaredList{"recipe", recipe.KeyExpected, recipe.Outcomes()},
 		declaredList{"recipe", recipe.KeyExpectedReason, recipe.Reasons()})
+	return out
+}
+
+// declaration is everything one owner declares, under the owner the window
+// asks its words for.
+type declaration struct {
+	owner text.Owner
+	props []format.Property
+}
+
+// declarations is every declaration the window draws settings from: formats,
+// presets, tools and damage.
+func declarations() []declaration {
+	var out []declaration
+	for _, d := range format.All() {
+		out = append(out, declaration{text.FormatOwner(d.ID), d.Properties})
+	}
+	for _, p := range preset.All() {
+		out = append(out, declaration{text.PresetOwner(p.ID), append(append([]format.Property{}, p.Parameters...), p.Globals()...)})
+	}
+	for _, d := range tool.All() {
+		out = append(out, declaration{text.ToolOwner(d.ID), d.Settings})
+	}
+	for _, d := range damage.All() {
+		out = append(out, declaration{text.DamageOwner(d.ID), d.Parameters})
+	}
 	return out
 }
 

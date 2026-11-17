@@ -246,7 +246,7 @@ func RunHoldsMoreThanItsMemory(holds, room string) string {
 // instant. It says so rather than leaving the screen looking idle while both
 // buttons are greyed out with no explanation.
 func WorkingOutTheCost() string {
-	return say("WorkingOutTheCost", "Working out what this would cost...")
+	return say("WorkingOutTheCost", "Working out the files and their sizes...")
 }
 
 // Progress is the line under the bar during a run. Bytes as well as files,
