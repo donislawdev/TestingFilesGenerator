@@ -220,6 +220,22 @@
         "far-over": "Tệp lớn duy nhất vượt giới hạn bao xa. Tắt đi nếu ghi gấp nhiều lần giới hạn không đáng với dung lượng đĩa.",
         "bulk": "Số tệp trong lần tải lên hàng loạt. Bằng không thì bỏ hẳn nhóm đó khỏi bộ."
       }
+    },
+    "picture-sizes": {
+      "question": "Hệ thống của tôi có nhận hình ảnh ở các kích thước mà màn hình và nền tảng dùng không?",
+      "title": "Kích thước hình ảnh",
+      "pageTitle": "Hình ảnh thử ở kích thước phổ biến - màn hình, ảnh đại diện, mạng xã hội",
+      "description": "Hình ảnh ở kích thước của màn hình HD, Full HD, QHD và 4K, của ảnh đại diện, và của ảnh bìa, bài đăng và hình thu nhỏ mà các nền tảng mạng xã hội yêu cầu, mỗi ảnh nhỏ nhất có thể.",
+      "catches": [
+        "giới hạn chiều rộng hoặc chiều cao đặt cho một dạng ảnh nhưng từ chối dạng khác, chẳng hạn ảnh nền hồ sơ rộng 1584 px",
+        "hình thu nhỏ bị cắt hoặc bị bóp méo vì mã chờ ảnh ngang mà ảnh đến lại là ảnh dọc",
+        "ảnh có chiều cao lẻ, chẳng hạn 1200 x 627, bị một bước chỉ nhận kích thước chẵn từ chối",
+        "ảnh 4K hết thời gian hoặc bộ nhớ trên đường thành hình thu nhỏ, dù bản thân tệp nhỏ"
+      ],
+      "details": {
+        "groups": "Bộ chứa những kích thước nào: screens cho kích thước màn hình, avatars cho ảnh đại diện và social cho ảnh bìa, biểu ngữ, bài đăng và hình thu nhỏ. Để all để có tất cả.",
+        "content": "Hình ảnh hiển thị gì. Mẫu thử dùng để kiểm tra cách một tệp được đọc. Ảnh giữ chỗ là một màu trơn có chữ ở giữa, để dàn trang trước khi có ảnh thật."
+      }
     }
   },
   "commands": {
@@ -271,6 +287,7 @@
     "sizes separated by commas": "các kích thước cách nhau bằng dấu phẩy",
     "format ids separated by commas": "các id định dạng cách nhau bằng dấu phẩy",
     "format ids separated by commas, or all": "các id định dạng cách nhau bằng dấu phẩy, hoặc all",
+    "group names separated by commas, or all": "các tên nhóm cách nhau bằng dấu phẩy, hoặc all",
     "extensions separated by commas": "các phần mở rộng cách nhau bằng dấu phẩy",
     "the id of a format, such as png or csv": "id của một định dạng, chẳng hạn png hoặc csv",
     "the id of a picture format, such as png or jpg": "id của một định dạng hình ảnh, chẳng hạn png hoặc jpg",

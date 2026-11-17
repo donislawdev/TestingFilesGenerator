@@ -254,6 +254,7 @@ for, and the manifest says how your system should react to it:
 |---|---|
 | `empty-and-minimal` | Does a file that is valid and as small as the format allows get through? |
 | `filename-handling` | Will my system store, show and give back a file name it did not expect? |
+| `picture-sizes` | Does my system take pictures at the sizes screens and platforms use? |
 | `size-boundaries` | Is a size limit enforced exactly where it is declared? |
 | `tabular-import` | Does my table import survive what real tools export? |
 | `text-encoding` | Does my reader know which encoding a file is in, or is it guessing? |

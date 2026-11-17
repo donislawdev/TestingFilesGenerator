@@ -220,6 +220,22 @@
         "far-over": "Tek büyük dosyanın sınırın ne kadar ötesine geçtiği. Sınırın birkaç katını yazmak diske değmiyorsa kapatın.",
         "bulk": "Toplu yüklemenin kaç dosya içerdiği. Sıfır, bu grubu setten tamamen çıkarır."
       }
+    },
+    "picture-sizes": {
+      "question": "Sistemim ekranların ve platformların kullandığı boyutlardaki resimleri kabul ediyor mu?",
+      "title": "Resim boyutları",
+      "pageTitle": "Yaygın boyutlarda test resimleri - ekranlar, avatarlar, sosyal medya",
+      "description": "HD, Full HD, QHD ve 4K ekranların, profil fotoğraflarının ve sosyal platformların istediği kapak, gönderi ve küçük resimlerin boyutlarında resimler, her biri olabildiğince küçük.",
+      "catches": [
+        "bir şekil düşünülerek konmuş ve başka bir şekli reddeden genişlik ya da yükseklik sınırı, örneğin 1584 px genişliğinde bir profil arka planı",
+        "kod yatay bir resim beklediği hâlde dikey bir resim geldiği için kırpılan ya da ezilen küçük resim",
+        "yalnızca çift boyutları kabul eden bir adımın reddettiği tek yükseklikli bir resim, örneğin 1200 x 627",
+        "dosyanın kendisi küçük olsa da küçük resme dönüşürken zamanı ya da belleği tükenen bir 4K resim"
+      ],
+      "details": {
+        "groups": "Setin hangi boyutları içerdiği: ekran boyutları için screens, profil fotoğrafları için avatars ve kapaklar, afişler, gönderiler ve küçük resimler için social. Hepsi için all bırakın.",
+        "content": "Resmin ne gösterdiği. Test deseni bir dosyanın nasıl okunduğunu denetlemek içindir. Yer tutucu, ortasında yazı olan düz bir renktir ve gerçek resimler hazır olmadan sayfayı düzenlemeye yarar."
+      }
     }
   },
   "commands": {
@@ -271,6 +287,7 @@
     "sizes separated by commas": "virgülle ayrılmış boyutlar",
     "format ids separated by commas": "virgülle ayrılmış biçim kimlikleri",
     "format ids separated by commas, or all": "virgülle ayrılmış biçim kimlikleri veya all",
+    "group names separated by commas, or all": "virgülle ayrılmış grup adları veya all",
     "extensions separated by commas": "virgülle ayrılmış uzantılar",
     "the id of a format, such as png or csv": "png ya da csv gibi bir biçimin kimliği",
     "the id of a picture format, such as png or jpg": "png ya da jpg gibi bir görüntü biçiminin kimliği",

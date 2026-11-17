@@ -2812,6 +2812,11 @@
     "hash": "sha256-af17cbc9bca4",
     "other": "{{.EveryFormat}} already means every format, so it cannot stand beside a named one. Write it on its own, or name only the formats you want"
   },
+  "preset.AlreadyMeansEveryGroupSoIt": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.EveryGroup}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-bc9f08d2c802",
+    "other": "{{.EveryGroup}} already means every group, so it cannot stand beside a named one. Write it on its own, or name only the groups you want"
+  },
   "preset.AnExtensionIsWrittenWithoutIts": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.TrimPrefix}}, {{.Item}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-098698484a13",
@@ -2831,6 +2836,16 @@
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Preset}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-6ae81854228f",
     "other": "the preset {{.Preset}} cannot build this set"
+  },
+  "preset.CannotDrawAPlaceholder": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Formats}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-b38bd3c1b17e",
+    "other": "{{.Format}} cannot draw a placeholder. The formats that can: {{.Formats}}"
+  },
+  "preset.CannotDrawAPlaceholderFix": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-cc9628eaae2e",
+    "other": "Choose one of those formats, or leave the content as a test pattern"
   },
   "preset.Combinations": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -2924,6 +2939,11 @@
     "hash": "sha256-4504e5d7a37e",
     "other": "it is the same format as {{.First}} and the set would hold that file twice. Every format appears once, because each one stands for one path through your reader"
   },
+  "preset.ItIsTheSameGroupAs": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.First}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-74a8201ee530",
+    "other": "it is the same group as {{.First}}. Name every group once"
+  },
   "preset.ItIsTheSameTypeAs": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.First}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-e66f4431f6ca",
@@ -2974,6 +2994,21 @@
     "hash": "sha256-4cdc44101684",
     "other": "no formats were given, so there is nothing to build the set from"
   },
+  "preset.NoGroupsWereGivenSoThere": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-053d25906787",
+    "other": "no groups were given, so there is no size to make a picture of"
+  },
+  "preset.NoSizeFitsTheFormat": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Cause}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-b46b820f8658",
+    "other": "{{.Format}} cannot draw any size of these groups. Its refusal of the first: {{.Cause}}"
+  },
+  "preset.NoSizeFitsTheFormatFix": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-8c6a83ae0fe6",
+    "other": "Choose other groups, or another picture format"
+  },
   "preset.NoSuchParameter": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Preset}}, {{.Name}}, {{.Known}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-929a6264f65a",
@@ -2983,6 +3018,16 @@
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-bb028b47b8fc",
     "other": "no types were allowed, so the set has no positive control and no file to name wrongly"
+  },
+  "preset.NotAPictureFormat": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Formats}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-433dca4f32e1",
+    "other": "{{.Format}} files are not pictures, and every file of this set is one. The picture formats of this build: {{.Formats}}"
+  },
+  "preset.NotAPictureFormatFix": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-c0ed9e95fd24",
+    "other": "Choose one of the picture formats"
   },
   "preset.OneAllowed": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run.",
@@ -3044,6 +3089,11 @@
     "hash": "sha256-c3ba9e8a8eb4",
     "other": "Set the {{.Setting}} to {{.Floor}} B or more."
   },
+  "preset.SizesLeftOut": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.Count}}, {{.Cause}}, {{.Sizes}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-30215e0cbaf9",
+    "other": "{{.Format}} cannot draw {{.Count}} of the sizes. Its refusal of the first: {{.Cause}}. The set leaves them out: {{.Sizes}}"
+  },
   "preset.StandIns": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Formats}}, {{.Names}}, {{.Count}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-a86a61e3c5aa",
@@ -3094,6 +3144,11 @@
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Name}}, {{.Reason}}, written the way the program writes them - keep each spelled exactly that way.",
     "hash": "sha256-770eaf5a913a",
     "other": "the set holds files in {{.Name}}, and {{.Reason}}"
+  },
+  "preset.ThereIsNoGroupCalledThat": {
+    "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Groups}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-5235c4fc5d29",
+    "other": "there is no group called that. The groups are: {{.Groups}}"
   },
   "preset.ThisBuildHas": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Join}}, written the way the program writes them - keep each spelled exactly that way.",

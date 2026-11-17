@@ -257,6 +257,14 @@ var provenByProbe = map[string]string{
 		"keys, the values and the refusals a window was asked about, and broken by hand on 2026-11-17 seven ways (no " +
 		"phrases, a sentence inside not laid out, a place of the recipe not reworded, the sentence itself not laid out, " +
 		"a phrase dropping a value, Polish saying a key, a listed sentence shown): red every time.",
+	"TestEveryPictureOfTheSizesSetIsTheSizeItIsNamed": "a canary of its own - a picture named for another size has " +
+		"to be caught and one named for its own size let through - a floor on the pictures read back, and broken by " +
+		"hand on 2026-11-17 two ways (width and height swapped, a size with two uses made two files): red both times.",
+	"TestThePictureSizesSetSaysWhatTheFormatCannotDraw": "broken by hand on 2026-11-17 two ways (the placeholder let " +
+		"through for a format without one, the sizes left out not said): red both times, the first by naming the " +
+		"wrong setting to change.",
+	"TestThePresetScreenBuildsThePictureSizesTheCommandLineBuilds": "asserts the count of pictures it compared, and " +
+		"broken by hand on 2026-11-17 by the preset screen not sending its menu: red, the pictures differ.",
 	"TestARefusalWithNoBoxNamesItsSettingsByTheirLabels": "broken by hand on 2026-11-17 by giving the foot of the form " +
 		"no name to put in: red in English (the two keys) and in Polish (the empty place) alike.",
 	"TestTheWindowSaysASwitchAsOnOrOff": "a canary of its own - the line it was written against, Guides true, has to be " +

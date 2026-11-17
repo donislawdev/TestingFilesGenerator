@@ -220,6 +220,22 @@
         "far-over": "Cât de mult peste limită ajunge singurul fișier mare. Oprește-l unde scrierea de mai multe ori limita nu merită discul.",
         "bulk": "Câte fișiere conține încărcarea în masă. Zero scoate acel grup complet din set."
       }
+    },
+    "picture-sizes": {
+      "question": "Acceptă sistemul meu imagini la dimensiunile folosite de ecrane și platforme?",
+      "title": "Dimensiuni de imagine",
+      "pageTitle": "Imagini de test la dimensiuni uzuale - ecrane, avatare, rețele sociale",
+      "description": "Imagini la dimensiunile ecranelor HD, Full HD, QHD și 4K, ale fotografiilor de profil și ale copertelor, postărilor și miniaturilor cerute de rețelele sociale, fiecare cât de mică poate fi.",
+      "catches": [
+        "o limită de lățime sau de înălțime gândită pentru o formă care respinge alta, de exemplu un fundal de profil lat de 1584 px",
+        "o miniatură tăiată sau turtită pentru că codul așteaptă o imagine orizontală și sosește una verticală",
+        "o imagine cu înălțime impară, de exemplu 1200 x 627, respinsă de un pas care acceptă doar dimensiuni pare",
+        "o imagine 4K care rămâne fără timp sau fără memorie în drum spre o miniatură, deși fișierul în sine este mic"
+      ],
+      "details": {
+        "groups": "Ce dimensiuni conține setul: screens pentru dimensiunile ecranelor, avatars pentru fotografiile de profil și social pentru coperte, bannere, postări și miniaturi. Lasă all pentru toate.",
+        "content": "Ce arată imaginea. Un model de test servește la verificarea felului în care este citit un fișier. Un substituent este o culoare uniformă cu text în mijloc, pentru a așeza o pagină înainte să existe imaginile reale."
+      }
     }
   },
   "commands": {
@@ -271,6 +287,7 @@
     "sizes separated by commas": "dimensiuni separate prin virgule",
     "format ids separated by commas": "id-uri de format separate prin virgule",
     "format ids separated by commas, or all": "id-uri de format separate prin virgule, sau all",
+    "group names separated by commas, or all": "nume de grupuri separate prin virgule, sau all",
     "extensions separated by commas": "extensii separate prin virgule",
     "the id of a format, such as png or csv": "id-ul unui format, de exemplu png sau csv",
     "the id of a picture format, such as png or jpg": "id-ul unui format de imagine, de exemplu png sau jpg",

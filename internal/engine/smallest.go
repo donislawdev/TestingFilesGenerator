@@ -2,7 +2,6 @@ package engine
 
 import (
 	"context"
-	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -25,7 +24,7 @@ import (
 // width and height - the question a window asks before it offers smallest as a
 // way of giving the size, answered by the rule checkSmallest refuses by.
 func TakesSmallest(desc format.Descriptor) bool {
-	return strings.HasPrefix(desc.MediaType, "image/")
+	return desc.IsPicture()
 }
 
 // checkSmallest refuses smallest for a target it cannot answer.

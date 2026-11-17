@@ -220,6 +220,22 @@
         "far-over": "O quanto acima do limite vai o único arquivo grande. Desligue onde escrever várias vezes o limite não vale o disco.",
         "bulk": "Quantos arquivos o upload em massa contém. Zero deixa esse grupo totalmente fora do conjunto."
       }
+    },
+    "picture-sizes": {
+      "question": "Meu sistema aceita imagens nos tamanhos que telas e plataformas usam?",
+      "title": "Tamanhos de imagem",
+      "pageTitle": "Imagens de teste em tamanhos comuns - telas, avatares, redes sociais",
+      "description": "Imagens nos tamanhos de telas HD, Full HD, QHD e 4K, de fotos de perfil e das capas, publicações e miniaturas que as redes sociais pedem, cada uma tão pequena quanto pode ser.",
+      "catches": [
+        "um limite de largura ou altura pensado para um formato de imagem que recusa outro, como um fundo de perfil com 1584 px de largura",
+        "uma miniatura cortada ou achatada porque o código espera uma imagem horizontal e chega uma vertical",
+        "uma imagem de altura ímpar, como 1200 x 627, recusada por uma etapa que só aceita tamanhos pares",
+        "uma imagem 4K que fica sem tempo ou sem memória a caminho de uma miniatura, embora o arquivo seja pequeno"
+      ],
+      "details": {
+        "groups": "Quais tamanhos o conjunto contém: screens para tamanhos de tela, avatars para fotos de perfil e social para capas, banners, publicações e miniaturas. Deixe em all para ter todos.",
+        "content": "O que a imagem mostra. Um padrão de teste serve para verificar como um arquivo é lido. Um espaço reservado é uma cor lisa com texto no meio, para montar uma página antes de existirem as imagens reais."
+      }
     }
   },
   "commands": {
@@ -271,6 +287,7 @@
     "sizes separated by commas": "tamanhos separados por vírgulas",
     "format ids separated by commas": "ids de formato separados por vírgulas",
     "format ids separated by commas, or all": "ids de formato separados por vírgulas, ou all",
+    "group names separated by commas, or all": "nomes de grupo separados por vírgulas, ou all",
     "extensions separated by commas": "extensões separadas por vírgulas",
     "the id of a format, such as png or csv": "o id de um formato, como png ou csv",
     "the id of a picture format, such as png or jpg": "o id de um formato de imagem, como png ou jpg",

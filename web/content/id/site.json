@@ -220,6 +220,22 @@
         "far-over": "Seberapa jauh di atas batas file besar tunggal itu. Matikan bila menulis beberapa kali batas tidak sepadan dengan disknya.",
         "bulk": "Berapa banyak file dalam unggahan massal. Nol membuang kelompok itu dari set sepenuhnya."
       }
+    },
+    "picture-sizes": {
+      "question": "Apakah sistem saya menerima gambar dalam ukuran yang dipakai layar dan platform?",
+      "title": "Ukuran gambar",
+      "pageTitle": "Gambar uji dalam ukuran umum - layar, avatar, media sosial",
+      "description": "Gambar dalam ukuran layar HD, Full HD, QHD, dan 4K, foto profil, serta sampul, postingan, dan thumbnail yang diminta platform media sosial, masing-masing sekecil mungkin.",
+      "catches": [
+        "batas lebar atau tinggi yang dibuat untuk satu bentuk dan menolak bentuk lain, misalnya latar profil selebar 1584 px",
+        "thumbnail terpotong atau tergencet karena kode mengharapkan gambar mendatar dan yang datang gambar tegak",
+        "gambar dengan tinggi ganjil, misalnya 1200 x 627, ditolak oleh langkah yang hanya menerima ukuran genap",
+        "gambar 4K yang kehabisan waktu atau memori dalam perjalanan menjadi thumbnail, padahal filenya sendiri kecil"
+      ],
+      "details": {
+        "groups": "Ukuran yang ada di set: screens untuk ukuran layar, avatars untuk foto profil, dan social untuk sampul, banner, postingan, dan thumbnail. Biarkan all untuk semuanya.",
+        "content": "Apa yang ditampilkan gambar. Pola uji dipakai untuk memeriksa cara file dibaca. Placeholder adalah warna polos dengan tulisan di tengah, untuk menata halaman sebelum gambar aslinya ada."
+      }
     }
   },
   "commands": {
@@ -271,6 +287,7 @@
     "sizes separated by commas": "ukuran dipisahkan koma",
     "format ids separated by commas": "id format dipisahkan koma",
     "format ids separated by commas, or all": "id format dipisahkan koma, atau all",
+    "group names separated by commas, or all": "nama grup dipisahkan koma, atau all",
     "extensions separated by commas": "ekstensi dipisahkan koma",
     "the id of a format, such as png or csv": "id sebuah format, misalnya png atau csv",
     "the id of a picture format, such as png or jpg": "id sebuah format gambar, misalnya png atau jpg",

@@ -220,6 +220,22 @@
         "far-over": "Cuánto se pasa del límite el único archivo grande. Desactívalo donde escribir varias veces el límite no compense el disco.",
         "bulk": "Cuántos archivos contiene la subida masiva. Cero deja ese grupo fuera del conjunto por completo."
       }
+    },
+    "picture-sizes": {
+      "question": "¿Acepta mi sistema imágenes en los tamaños que usan las pantallas y las plataformas?",
+      "title": "Tamaños de imagen",
+      "pageTitle": "Imágenes de prueba en tamaños comunes - pantallas, avatares, redes sociales",
+      "description": "Imágenes en los tamaños de pantallas HD, Full HD, QHD y 4K, de fotos de perfil y de las portadas, publicaciones y miniaturas que piden las redes sociales, cada una tan pequeña como puede ser.",
+      "catches": [
+        "un límite de ancho o de alto pensado para una forma que rechaza otra, como un fondo de perfil de 1584 px de ancho",
+        "una miniatura recortada o aplastada porque el código espera una imagen horizontal y llega una vertical",
+        "una imagen de alto impar, como 1200 x 627, rechazada por un paso que solo acepta tamaños pares",
+        "una imagen 4K que se queda sin tiempo o sin memoria camino de una miniatura, aunque el archivo sea pequeño"
+      ],
+      "details": {
+        "groups": "Qué tamaños contiene el conjunto: screens para tamaños de pantalla, avatars para fotos de perfil y social para portadas, banners, publicaciones y miniaturas. Déjalo en all para tenerlos todos.",
+        "content": "Lo que muestra la imagen. Un patrón de prueba sirve para comprobar cómo se lee un archivo. Un marcador de posición es un color liso con texto en el centro, para maquetar una página antes de tener las imágenes reales."
+      }
     }
   },
   "commands": {
@@ -271,6 +287,7 @@
     "sizes separated by commas": "tamaños separados por comas",
     "format ids separated by commas": "ids de formato separados por comas",
     "format ids separated by commas, or all": "ids de formato separados por comas, o all",
+    "group names separated by commas, or all": "nombres de grupo separados por comas, o all",
     "extensions separated by commas": "extensiones separadas por comas",
     "the id of a format, such as png or csv": "el id de un formato, como png o csv",
     "the id of a picture format, such as png or jpg": "el id de un formato de imagen, como png o jpg",

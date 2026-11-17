@@ -72,6 +72,15 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A preset of picture sizes.** `tfg generate --preset picture-sizes` writes
+  a picture at each of 21 common sizes: HD, Full HD, QHD and 4K screens,
+  profile pictures, and the covers, posts and thumbnails YouTube, Facebook, X,
+  LinkedIn, Instagram and Pinterest ask for, read from their help pages in
+  November 2026. Each is as small as it can be and named by its size, such as
+  `1920x1080.jpg`. `--groups` picks screens, avatars or social,
+  `--content placeholder` draws the size on each picture, and `--format` takes
+  any picture format. A size the format cannot draw is left out and named.
+
 - **Placeholder pictures.** `--set content=placeholder` on `png`, `jpg` and
   `svg` draws a flat colour with words in the middle, for laying out a page
   before the real pictures exist. The words are the picture's size unless

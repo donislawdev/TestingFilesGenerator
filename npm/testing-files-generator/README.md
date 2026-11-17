@@ -248,6 +248,7 @@ Three things to know:
 | `upload-validation` | Does my upload form take what it should and turn the rest away? |
 | `size-boundaries` | Is a size limit enforced exactly where it is declared? |
 | `filename-handling` | Will my system store, show and give back a file name it did not expect? |
+| `picture-sizes` | Does my system take pictures at the sizes screens and platforms use? |
 | `tabular-import` | Does my table import survive what real tools export? |
 | `text-encoding` | Does my reader know which encoding a file is in, or is it guessing? |
 | `empty-and-minimal` | Does a file that is valid and as small as the format allows get through? |

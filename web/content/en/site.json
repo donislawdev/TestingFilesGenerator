@@ -152,6 +152,22 @@
       ],
       "details": {}
     },
+    "picture-sizes": {
+      "question": "Does my system take pictures at the sizes screens and platforms use?",
+      "title": "Picture sizes",
+      "pageTitle": "Test Images at Common Sizes - Screens, Avatars, Social Media",
+      "description": "Pictures at the sizes of HD, Full HD, QHD and 4K screens, of profile pictures, and of the covers, posts and thumbnails social platforms ask for, each as small as it can be.",
+      "catches": [
+        "a limit on the width or the height set with one shape in mind that turns away another, such as a profile background 1584 px wide",
+        "a thumbnail cut or squashed because the code expects a landscape picture and a portrait one arrives",
+        "a picture with an odd height, such as 1200 x 627, refused by a step that only takes even sizes",
+        "a 4K picture that runs out of time or memory on its way to a thumbnail, although the file itself is small"
+      ],
+      "details": {
+        "groups": "Which sizes the set holds: screens for the sizes of screens, avatars for profile pictures and social for covers, banners, posts and thumbnails. Leave it at all for every one of them.",
+        "content": "What the picture shows. A test pattern is for checking how a file is read. A placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist."
+      }
+    },
     "size-boundaries": {
       "question": "Is a size limit enforced exactly where it is declared?",
       "title": "Size boundaries",
@@ -266,6 +282,7 @@
     "sizes separated by commas": "sizes separated by commas",
     "format ids separated by commas": "format ids separated by commas",
     "format ids separated by commas, or all": "format ids separated by commas, or all",
+    "group names separated by commas, or all": "group names separated by commas, or all",
     "extensions separated by commas": "extensions separated by commas",
     "the id of a format, such as png or csv": "the id of a format, such as png or csv",
     "the id of a picture format, such as png or jpg": "the id of a picture format, such as png or jpg",

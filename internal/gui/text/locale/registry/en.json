@@ -34,6 +34,26 @@
     "hash": "sha256-c7a8efdaa07d",
     "other": "a length limit counted in characters where the storage counts bytes"
   },
+  "Catch.picture-sizes.1": {
+    "description": "One line of what the picture-sizes preset typically finds, on the preset screen.",
+    "hash": "sha256-0bb5043c2fa4",
+    "other": "a limit on the width or the height set with one shape in mind that turns away another, such as a profile background 1584 px wide"
+  },
+  "Catch.picture-sizes.2": {
+    "description": "One line of what the picture-sizes preset typically finds, on the preset screen.",
+    "hash": "sha256-817785f2eb86",
+    "other": "a thumbnail cut or squashed because the code expects a landscape picture and a portrait one arrives"
+  },
+  "Catch.picture-sizes.3": {
+    "description": "One line of what the picture-sizes preset typically finds, on the preset screen.",
+    "hash": "sha256-22e21f4721d2",
+    "other": "a picture with an odd height, such as 1200 x 627, refused by a step that only takes even sizes"
+  },
+  "Catch.picture-sizes.4": {
+    "description": "One line of what the picture-sizes preset typically finds, on the preset screen.",
+    "hash": "sha256-538591dbed57",
+    "other": "a 4K picture that runs out of time or memory on its way to a thumbnail, although the file itself is small"
+  },
   "Catch.size-boundaries.1": {
     "description": "One line of what the size-boundaries preset typically finds, on the preset screen.",
     "hash": "sha256-1c7f6a00f596",
@@ -2224,6 +2244,21 @@
     "hash": "sha256-30738a4e7806",
     "other": "What kind of file the whole set is made of."
   },
+  "Detail.preset/picture-sizes.content": {
+    "description": "The sentence under the content setting of the picture-sizes preset, after what it takes.",
+    "hash": "sha256-3fdc1bf34bb6",
+    "other": "What the picture shows. A test pattern is for checking how a file is read. A placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist."
+  },
+  "Detail.preset/picture-sizes.format": {
+    "description": "The sentence under the format setting of the picture-sizes preset, after what it takes.",
+    "hash": "sha256-30738a4e7806",
+    "other": "What kind of file the whole set is made of."
+  },
+  "Detail.preset/picture-sizes.groups": {
+    "description": "The sentence under the groups setting of the picture-sizes preset, after what it takes.",
+    "hash": "sha256-64d97c3b0239",
+    "other": "Which sizes the set holds: screens for the sizes of screens, avatars for profile pictures and social for covers, banners, posts and thumbnails. Leave it at all for every one of them."
+  },
   "Detail.preset/size-boundaries.format": {
     "description": "The sentence under the format setting of the size-boundaries preset, after what it takes.",
     "hash": "sha256-30738a4e7806",
@@ -2874,6 +2909,11 @@
     "hash": "sha256-fa9da5754ccf",
     "other": "Geometry"
   },
+  "Label.groups": {
+    "description": "The name beside the box of a setting a recipe writes as groups.",
+    "hash": "sha256-39bbb719fa2b",
+    "other": "Groups"
+  },
   "Label.guides": {
     "description": "The name beside the box of a setting a recipe writes as guides.",
     "hash": "sha256-572cd72feb9a",
@@ -3249,6 +3289,11 @@
     "hash": "sha256-e558318318a2",
     "other": "Will my system store, show and give back a file name it did not expect?"
   },
+  "Question.picture-sizes": {
+    "description": "The question the picture-sizes preset answers, at the top of the preset screen.",
+    "hash": "sha256-9a6f545b5c86",
+    "other": "Does my system take pictures at the sizes screens and platforms use?"
+  },
   "Question.size-boundaries": {
     "description": "The question the size-boundaries preset answers, at the top of the preset screen.",
     "hash": "sha256-e26666b8f7a6",
@@ -3314,6 +3359,11 @@
     "hash": "sha256-48e97c935e5d",
     "other": "format ids separated by commas, or all"
   },
+  "Shape.group names separated by commas, or all": {
+    "description": "What the text in a box has to look like, in the sentence under it.",
+    "hash": "sha256-68f92ad5bd2b",
+    "other": "group names separated by commas, or all"
+  },
   "Shape.one line of up to 100 characters": {
     "description": "What the text in a box has to look like, in the sentence under it.",
     "hash": "sha256-4a7c0c62ca18",
@@ -3348,6 +3398,11 @@
     "description": "What the filename-handling preset is called, beside its id in the list of presets.",
     "hash": "sha256-314f9b08db3f",
     "other": "File name handling"
+  },
+  "Title.picture-sizes": {
+    "description": "What the picture-sizes preset is called, beside its id in the list of presets.",
+    "hash": "sha256-f8376682bd1a",
+    "other": "Picture sizes"
   },
   "Title.size-boundaries": {
     "description": "What the size-boundaries preset is called, beside its id in the list of presets.",

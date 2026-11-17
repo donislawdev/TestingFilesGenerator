@@ -69,16 +69,24 @@ const Group = "Placeholder"
 // this one declaration.
 var onlyOnAPlaceholder = format.Condition{Setting: SettingContent, Values: []string{ContentPlaceholder}}
 
+// Content is the setting that chooses between the test pattern and a
+// placeholder, on its own. A preset that asks the same question of every
+// picture it lays out declares this one rather than a copy, so the values and
+// the words cannot differ from the format's.
+func Content() format.Property {
+	return format.Property{
+		Name: SettingContent, Kind: format.PropertyChoice,
+		Choices: []string{ContentTest, ContentPlaceholder},
+		Default: ContentTest,
+		Detail:  "What the picture shows. A test pattern is for checking how a file is read. A placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist.",
+	}
+}
+
 // Properties declares the five settings. One declaration for every picture
 // format, so the names and what they take cannot differ between them.
 func Properties() []format.Property {
 	return []format.Property{
-		{
-			Name: SettingContent, Kind: format.PropertyChoice,
-			Choices: []string{ContentTest, ContentPlaceholder},
-			Default: ContentTest,
-			Detail:  "What the picture shows. A test pattern is for checking how a file is read. A placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist.",
-		},
+		Content(),
 		{
 			Name: SettingText, Kind: format.PropertyText,
 			Shape:   fmt.Sprintf("one line of up to %d characters", MaxText),

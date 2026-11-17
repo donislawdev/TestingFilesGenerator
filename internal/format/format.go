@@ -576,6 +576,17 @@ func (d Descriptor) smallest(plan func(Request) (Plan, error), r Request) (Plan,
 	return Plan{}, core.Defect(fmt.Errorf("%s: the smallest file did not settle in %d rounds, the last at %d B", d.ID, SmallestRounds, size))
 }
 
+// IsPicture says this format's files are pictures, from the media type it
+// declares rather than from a list kept anywhere.
+//
+// One rule for every place that asks: the engine takes smallest for a picture,
+// a mail message or a page embeds one, and a preset of picture sizes is built
+// from them. A preset offering a format the engine then refuses smallest for
+// is what a second rule that disagreed with this one would look like.
+func (d Descriptor) IsPicture() bool {
+	return strings.HasPrefix(d.MediaType, "image/")
+}
+
 // PropertyNames is the declared keys, in the order the format listed them.
 func (d Descriptor) PropertyNames() []string {
 	out := make([]string, 0, len(d.Properties))

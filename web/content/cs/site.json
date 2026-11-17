@@ -220,6 +220,22 @@
         "far-over": "Jak daleko za limit sahá jediný velký soubor. Vypněte, kde zapsání několikanásobku limitu nestojí za místo na disku.",
         "bulk": "Kolik souborů obsahuje hromadné nahrání. Nula tuto skupinu ze sady úplně vynechá."
       }
+    },
+    "picture-sizes": {
+      "question": "Přijme můj systém obrázky ve velikostech, které používají obrazovky a platformy?",
+      "title": "Velikosti obrázků",
+      "pageTitle": "Testovací obrázky v běžných velikostech - obrazovky, avatary, sociální sítě",
+      "description": "Obrázky ve velikostech obrazovek HD, Full HD, QHD a 4K, profilových fotek a titulních obrázků, příspěvků a náhledů, které chtějí sociální sítě, každý tak malý, jak jen může být.",
+      "catches": [
+        "limit šířky nebo výšky nastavený pro jeden tvar, který odmítne jiný, například pozadí profilu široké 1584 px",
+        "náhled oříznutý nebo zploštělý, protože kód čeká obrázek na šířku a přijde obrázek na výšku",
+        "obrázek s lichou výškou, například 1200 x 627, odmítnutý krokem, který bere jen sudé rozměry",
+        "obrázek 4K, kterému cestou k náhledu dojde čas nebo paměť, i když je samotný soubor malý"
+      ],
+      "details": {
+        "groups": "Jaké velikosti sada obsahuje: screens pro velikosti obrazovek, avatars pro profilové fotky a social pro titulní obrázky, bannery, příspěvky a náhledy. Ponechte all pro všechny.",
+        "content": "Co obrázek ukazuje. Testovací obrazec slouží ke kontrole, jak se soubor čte. Zástupný obrázek je jednolitá barva s textem uprostřed, pro rozvržení stránky dřív, než existují skutečné obrázky."
+      }
     }
   },
   "commands": {
@@ -271,6 +287,7 @@
     "sizes separated by commas": "velikosti oddělené čárkami",
     "format ids separated by commas": "id formátů oddělená čárkami",
     "format ids separated by commas, or all": "id formátů oddělená čárkami, nebo all",
+    "group names separated by commas, or all": "názvy skupin oddělené čárkami, nebo all",
     "extensions separated by commas": "přípony oddělené čárkami",
     "the id of a format, such as png or csv": "id formátu, například png nebo csv",
     "the id of a picture format, such as png or jpg": "id obrázkového formátu, například png nebo jpg",
