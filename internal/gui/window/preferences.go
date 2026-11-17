@@ -85,7 +85,7 @@ func NewPreferences(h Host, leave func(), busy func() bool) *Preferences {
 	)
 	p.memory = newMemoryPreference(h)
 	page := parts.Screen(parts.Titled(text.TabPreferences(), text.SubtitlePreferences()), language, p.memory.object, remembered)
-	p.object = container.NewVScroll(page)
+	p.object = parts.VScroll(page)
 	return p
 }
 

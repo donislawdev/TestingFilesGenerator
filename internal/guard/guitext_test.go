@@ -126,6 +126,8 @@ var notWords = map[string]string{
 	`"user32.dll"`:     "a Windows library this program loads for the dialog it shows when it has no window, a file name and not a word",
 	`"GetProcAddress"`: "the Win32 entry point looked up by name, an identifier and not a word",
 	`"MessageBoxW"`:    "the Win32 entry point that shows a system dialog, looked up by name, an identifier and not a word",
+	`"SystemParametersInfoW"`: "the Win32 entry point that says how far a notch of the wheel scrolls, looked up by name, " +
+		"an identifier and not a word",
 	`"Cause:"`: "the word the toolkit's logger puts in front of the error it was handed, read as an anchor " +
 		"to find the toolkit's own sentence and never shown - see CauseFrom in opening.go",
 	`"windows"`:       "a system name asked of the compiler",

@@ -282,7 +282,7 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 		nil,
 		g.footer(rail(append(outwardButtons(host), links...)...)),
 		nil, nil,
-		(g.keepScroll(container.NewVScroll(parts.Screen(
+		(g.keepScroll(parts.VScroll(parts.Screen(
 			parts.Titled(text.TabOneTarget(), text.SubtitleGenerate()),
 			g.settingsSection()...,
 		)))),

@@ -257,6 +257,14 @@ var provenByProbe = map[string]string{
 		"keys, the values and the refusals a window was asked about, and broken by hand on 2026-11-17 seven ways (no " +
 		"phrases, a sentence inside not laid out, a place of the recipe not reworded, the sentence itself not laid out, " +
 		"a phrase dropping a value, Polish saying a key, a listed sentence shown): red every time.",
+	"TestEveryScrollingAreaMovesAsFarAsTheSystemSays": "a canary of its own - the toolkit's bare scroll turned " +
+		"one notch has to be told apart from the system's distance - every screen asserted to have something below " +
+		"its fold, and broken by hand on 2026-11-17 three ways (the wheel left at the toolkit's step, a screen on " +
+		"the toolkit's own area, a whole view at a time ignored): red every time.",
+	"TestTheWheelStepIsTheToolkitsStep": "a canary of its own - a declared step of 31 has to be read as 31 - and " +
+		"broken by hand on 2026-11-17 by taking the toolkit's step for 20: red.",
+	"TestTheWheelLinesAreWhatWindowsIsSetTo": "a canary of its own - reg.exe's line for a setting of 7 has to read " +
+		"as 7 - and broken by hand on 2026-11-17 by reading the system's answer one too high: red.",
 	"TestEveryPictureOfTheSizesSetIsTheSizeItIsNamed": "a canary of its own - a picture named for another size has " +
 		"to be caught and one named for its own size let through - a floor on the pictures read back, and broken by " +
 		"hand on 2026-11-17 two ways (width and height swapped, a size with two uses made two files): red both times.",

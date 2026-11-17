@@ -102,6 +102,7 @@ func NotDrawn() []Reason {
 		{"PathTarget", "a value: a path box and the field it stands in, read by the window when something is dropped onto it"},
 		{"Fix", "a value: the words on one button under a refusal and what pressing it does, drawn by ErrorArea"},
 		{"Remedy", "a value: what one button under a refusal puts in the box, read by a guard without a window"},
+		{"Scroll", "the toolkit's scrolling area with the wheel moving it as far as the system says - the bars and the shadows are the toolkit's, this catalogue stands in one, and how far a notch moves it is no picture"},
 	}
 }
 
@@ -127,6 +128,7 @@ func LayoutOnly() []Reason {
 		{"Grid", "lays a section's fields in columns, each taking the columns its value needs - drawn under Section"},
 		{"Wide", "marks something that takes a whole row of a Grid"},
 		{"ButtonRow", "buttons side by side, one gap of the scale apart and centred - drawn under Section"},
+		{"VScroll", "the area every screen and this catalogue scroll up and down in - see Scroll under Not drawn"},
 	}
 }
 

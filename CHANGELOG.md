@@ -263,6 +263,12 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The mouse wheel scrolls the window as far as the system says.** One notch
+  moves three lines of text, or as many as Windows is set to under Mouse,
+  Lines to scroll at a time, where it moved about half as far before. A
+  setting of one screen at a time is followed too. On Linux a notch is three
+  lines, and on macOS scrolling is unchanged.
+
 - **The window names list values and settings in words.** An English list
   shows test pattern rather than test, rising tone rather than sweep and file
   count limit rather than count_limit. Settings such as PDF version, Bounding

@@ -141,7 +141,7 @@ type runner struct {
 	// scroll is the part of this screen that moves, so a refusal can bring the
 	// box it is about into view. Set by the screen, because only the screen
 	// that built it knows which scroll holds its form.
-	scroll *container.Scroll
+	scroll *parts.Scroll
 
 	// readdress moves a refusal onto the box that is on the screen, for a
 	// screen that draws one of several boxes for one question.
@@ -725,7 +725,7 @@ func manifestNameOf(path string) string {
 // can bring the box it is about into view. It hands the scroll straight back,
 // so a screen wires it by wrapping the call it was already making rather than
 // by finding somewhere to put an extra statement.
-func (r *runner) keepScroll(scroll *container.Scroll) *container.Scroll {
+func (r *runner) keepScroll(scroll *parts.Scroll) *parts.Scroll {
 	r.scroll = scroll
 	return scroll
 }

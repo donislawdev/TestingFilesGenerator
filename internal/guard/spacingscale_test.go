@@ -464,6 +464,8 @@ func atAbsolute(root fyne.CanvasObject, visit func(fyne.CanvasObject, fyne.Posit
 			}
 		case *container.Scroll:
 			step(v.Content, at)
+		case *parts.Scroll:
+			step(v.Content, at)
 		case *widget.Card:
 			step(v.Content, at)
 		case *container.ThemeOverride:

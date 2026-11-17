@@ -293,6 +293,12 @@ func EdgeWidth() float32 { return edgeWidth }
 // guard asking whether the words start there or a column later.
 func RowGutter() float32 { return rowGutter }
 
+// WheelLinesDefault is how many lines of text one notch of a mouse wheel
+// moves an area by where the system has no setting for it - the number
+// Windows ships with, so a Linux desktop scrolls this window as a Windows one
+// does out of the box.
+const WheelLinesDefault = 3
+
 // NoteItemsShown is how many items of one note of a tool's result the window
 // lists before it says how many more there are. Each item is a line drawn on
 // the canvas, and a checksum file of a folder that moved can have a hundred

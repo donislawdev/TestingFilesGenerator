@@ -1,7 +1,7 @@
-<canvas padded size="1100x18066">
+<canvas padded size="1100x18125">
 	<content>
-		<container pos="4,4" size="1092x18058">
-			<container pos="136,0" size="820x18058">
+		<container pos="4,4" size="1092x18117">
+			<container pos="136,0" size="820x18117">
 				<container size="820x49">
 					<container pos="16,0" size="788x49">
 						<container size="788x24">
@@ -1205,7 +1205,7 @@
 														<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="140x84"/>
 													</container>
 													<rectangle fillColor="inputBackground" radius="8" size="140x84" strokeColor="inputBorder" strokeWidth="1"/>
-													<widget size="140x84" type="*widget.Scroll">
+													<widget size="140x84" type="*parts.Scroll">
 														<container size="140x84">
 															<widget size="140x28" type="*parts.ListRow">
 																<rectangle radius="6" size="140x28"/>
@@ -1243,7 +1243,7 @@
 														<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="140x84"/>
 													</container>
 													<rectangle fillColor="inputBackground" radius="8" size="140x84" strokeColor="inputBorder" strokeWidth="1"/>
-													<widget size="140x84" type="*widget.Scroll">
+													<widget size="140x84" type="*parts.Scroll">
 														<container size="140x84">
 															<widget size="140x28" type="*parts.ListRow">
 																<rectangle radius="6" size="140x28"/>
@@ -1280,7 +1280,7 @@
 														<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="140x112"/>
 													</container>
 													<rectangle fillColor="inputBackground" radius="8" size="140x112" strokeColor="inputBorder" strokeWidth="1"/>
-													<widget size="140x112" type="*widget.Scroll">
+													<widget size="140x112" type="*parts.Scroll">
 														<container size="140x336">
 															<widget size="140x28" type="*parts.ListRow">
 																<rectangle radius="6" size="140x28"/>
@@ -1362,7 +1362,7 @@
 														<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="140x336"/>
 													</container>
 													<rectangle fillColor="inputBackground" radius="8" size="140x336" strokeColor="inputBorder" strokeWidth="1"/>
-													<widget size="140x336" type="*widget.Scroll">
+													<widget size="140x336" type="*parts.Scroll">
 														<container size="140x336">
 															<widget size="140x28" type="*parts.ListRow">
 																<rectangle radius="6" size="140x28"/>
@@ -1448,7 +1448,7 @@
 														<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="230x84"/>
 													</container>
 													<rectangle fillColor="inputBackground" radius="8" size="230x84" strokeColor="inputBorder" strokeWidth="1"/>
-													<widget size="230x84" type="*widget.Scroll">
+													<widget size="230x84" type="*parts.Scroll">
 														<container size="230x84">
 															<widget size="230x28" type="*parts.ListRow">
 																<rectangle radius="6" size="230x28"/>
@@ -1486,7 +1486,7 @@
 														<rectangle fillColor="rgba(0,0,0,102)" pos="0,3" radius="8" size="632x56"/>
 													</container>
 													<rectangle fillColor="inputBackground" radius="8" size="632x56" strokeColor="inputBorder" strokeWidth="1"/>
-													<widget size="632x56" type="*widget.Scroll">
+													<widget size="632x56" type="*parts.Scroll">
 														<container size="632x56">
 															<widget size="632x28" type="*parts.ListRow">
 																<rectangle radius="6" size="632x28"/>
@@ -1521,7 +1521,7 @@
 													</container>
 													<rectangle fillColor="inputBackground" radius="8" size="380x308" strokeColor="inputBorder" strokeWidth="1"/>
 													<container size="380x308">
-														<widget pos="0,40" size="380x267" type="*widget.Scroll">
+														<widget pos="0,40" size="380x267" type="*parts.Scroll">
 															<container size="380x1092">
 																<widget size="380x28" type="*parts.ListRow">
 																	<rectangle radius="6" size="380x28"/>
@@ -1793,7 +1793,7 @@
 													</container>
 													<rectangle fillColor="inputBackground" radius="8" size="380x308" strokeColor="inputBorder" strokeWidth="1"/>
 													<container size="380x308">
-														<widget pos="0,40" size="380x267" type="*widget.Scroll">
+														<widget pos="0,40" size="380x267" type="*parts.Scroll">
 															<container size="380x588">
 																<widget size="380x28" type="*parts.ListRow">
 																	<rectangle radius="6" size="380x28"/>
@@ -1986,7 +1986,7 @@
 													</container>
 													<rectangle fillColor="inputBackground" radius="8" size="380x308" strokeColor="inputBorder" strokeWidth="1"/>
 													<container size="380x308">
-														<widget pos="0,40" size="380x267" type="*widget.Scroll">
+														<widget pos="0,40" size="380x267" type="*parts.Scroll">
 															<container size="380x267">
 																<widget size="380x28" type="*parts.ListRow">
 																	<rectangle radius="6" size="380x28"/>
@@ -6121,13 +6121,13 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,17268" size="820x353">
-					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x353" strokeColor="button" strokeWidth="1"/>
-					<container size="820x353">
-						<container pos="16,16" size="788x321">
+				<container pos="0,17268" size="820x391">
+					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x391" strokeColor="button" strokeWidth="1"/>
+					<container size="820x391">
+						<container pos="16,16" size="788x359">
 							<text bold size="788x20" textSize="17">Not drawn, and why</text>
-							<container pos="0,36" size="788x285">
-								<container size="788x285">
+							<container pos="0,36" size="788x323">
+								<container size="788x323">
 									<container size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
 										<container pos="15,0" size="772x16">
@@ -6259,18 +6259,29 @@
 											</widget>
 										</container>
 									</container>
+									<container pos="0,289" size="788x33">
+										<text color="rgba(211,211,215,255)" size="7x16">•</text>
+										<container pos="15,0" size="772x33">
+											<widget pos="-6,-6" size="784x45" type="*widget.Label">
+												<widget size="784x45" type="*widget.RichText">
+													<text pos="6,6" size="768x16">Scroll - the toolkit's scrolling area with the wheel moving it as far as the system says - the bars and the shadows are</text>
+													<text pos="6,22" size="555x16">the toolkit's, this catalogue stands in one, and how far a notch moves it is no picture</text>
+												</widget>
+											</widget>
+										</container>
+									</container>
 								</container>
 							</container>
 						</container>
 					</container>
 				</container>
-				<container pos="0,17646" size="820x420">
-					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x420" strokeColor="button" strokeWidth="1"/>
-					<container size="820x420">
-						<container pos="16,16" size="788x388">
+				<container pos="0,17684" size="820x441">
+					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x441" strokeColor="button" strokeWidth="1"/>
+					<container size="820x441">
+						<container pos="16,16" size="788x409">
 							<text bold size="788x20" textSize="17">Layout only, and why</text>
-							<container pos="0,36" size="788x351">
-								<container size="788x351">
+							<container pos="0,36" size="788x372">
+								<container size="788x372">
 									<container size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
 										<container pos="15,0" size="772x16">
@@ -6437,6 +6448,16 @@
 											<widget pos="-6,-6" size="784x28" type="*widget.Label">
 												<widget size="784x28" type="*widget.RichText">
 													<text pos="6,6" size="636x16">ButtonRow - buttons side by side, one gap of the scale apart and centred - drawn under Section</text>
+												</widget>
+											</widget>
+										</container>
+									</container>
+									<container pos="0,355" size="788x16">
+										<text color="rgba(211,211,215,255)" size="7x16">•</text>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="671x16">VScroll - the area every screen and this catalogue scroll up and down in - see Scroll under Not drawn</text>
 												</widget>
 											</widget>
 										</container>

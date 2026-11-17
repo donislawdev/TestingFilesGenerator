@@ -339,6 +339,26 @@ func openPath(path string) {
 	_ = fyne.CurrentApp().OpenURL(address)
 }
 
+// followTheSystem takes what the system keeps for every program rather than
+// for one window. The dark menus are asked for before the window exists,
+// because Windows reads the setting when it builds the menus - see
+// darkmenus_windows.go for what it is and what it costs. How far a notch of
+// the wheel scrolls is asked of the system at every notch - see parts.Scroll
+// for why the toolkit's own step is not kept.
+func followTheSystem() {
+	PreferDarkMenus()
+	parts.WheelLines = wheelLines
+}
+
+// wheelLines is the system's lines for a notch of the wheel, or the default
+// where the system has none to give.
+func wheelLines() int {
+	if lines, ok := SystemWheelLines(); ok {
+		return lines
+	}
+	return parts.WheelLinesDefault
+}
+
 // run opens a real window. The only file in this tree that reaches the app
 // package, and therefore the only one that needs a C compiler.
 func run(launch Launch, errOut io.Writer) int {
@@ -377,10 +397,8 @@ func run(launch Launch, errOut io.Writer) int {
 		Migrations: map[string]bool{"fyneDo": true},
 	})
 
-	// Asked before the window exists, because it is a setting for the whole
-	// process rather than for one window, and Windows reads it when it builds
-	// the menus. See darkmenus_windows.go for what it is and what it costs.
-	PreferDarkMenus()
+	// Asked before the window exists - see followTheSystem.
+	followTheSystem()
 
 	// Where the toolkit says what went wrong when it cannot open its window.
 	// It writes through the standard logger, whose stream a binary built for

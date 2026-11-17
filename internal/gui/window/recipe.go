@@ -204,7 +204,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 		nil,
 		r.footer(rail(append(append(outwardButtons(host), parts.Divider(), r.addBtn), links...)...)),
 		nil, nil,
-		(r.keepScroll(container.NewVScroll(parts.Screen(parts.Titled(text.TabRecipe(), text.SubtitleRecipe()), r.baseBox, r.batchBox, r.outBox)))),
+		(r.keepScroll(parts.VScroll(parts.Screen(parts.Titled(text.TabRecipe(), text.SubtitleRecipe()), r.baseBox, r.batchBox, r.outBox)))),
 	))
 
 	// The format of the first batch has to be chosen for its declared settings

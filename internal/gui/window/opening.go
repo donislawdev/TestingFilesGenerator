@@ -2,7 +2,6 @@ package window
 
 import (
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
@@ -122,6 +121,6 @@ func firstOpening(tabbed *fyne.Container, first unscrolled) fyne.Size {
 // bar and forgetting the tab strip said "fits" for a screen whose last field
 // was cut off. Whatever stands above and below the scroll has taken its share
 // in the screen's MinSize already.
-func unscrolledHeight(body fyne.CanvasObject, scroll *container.Scroll) float32 {
+func unscrolledHeight(body fyne.CanvasObject, scroll *parts.Scroll) float32 {
 	return body.MinSize().Height - scroll.MinSize().Height + scroll.Content.MinSize().Height
 }

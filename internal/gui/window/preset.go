@@ -102,7 +102,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 		nil,
 		p.footer(rail(append(outwardButtons(host), links...)...)),
 		nil, nil,
-		(p.keepScroll(container.NewVScroll(parts.Screen(
+		(p.keepScroll(parts.VScroll(parts.Screen(
 			parts.Titled(text.TabPresets(), text.SubtitlePreset()),
 			p.sections.section(sectionPreset, text.SectionPreset(),
 				p.fields.Add(settingPreset, text.FieldPreset(), text.HintPreset(),
