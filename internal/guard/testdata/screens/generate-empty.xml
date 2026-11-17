@@ -205,7 +205,7 @@
 														<container size="788x16">
 															<widget pos="-6,-6" size="800x28" type="*widget.Label">
 																<widget size="800x28" type="*widget.RichText">
-																	<text color="error" pos="6,6" size="320x16">target "files" asks for 0 files. Ask for at least one</text>
+																	<text color="error" pos="6,6" size="318x16">batch "files" asks for 0 files. Ask for at least one</text>
 																</widget>
 															</widget>
 														</container>

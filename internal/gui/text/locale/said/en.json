@@ -713,8 +713,8 @@
   },
   "core.SizeNotPlain": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-0b892bed8bee",
-    "other": "{{.Setting}} {{.Value}} is not a plain number: write the digits out, as 10mb, 1.5gib or 1048576. Spellings such as 1e5, 0x10 or 1_000 are refused rather than guessed at, the same as in a recipe"
+    "hash": "sha256-738167ea079d",
+    "other": "{{.Setting}} {{.Value}} is not a plain number: write the digits out, as 10mb, 1.5gib or 1048576. Spellings such as 1e5, 0x10 or 1_000 are refused rather than guessed at"
   },
   "core.SizeNotWhole": {
     "description": "Said by internal/core - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Value}}, {{.Below}}, {{.Above}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -1086,8 +1086,8 @@
   },
   "engine.GeneratorCrash": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Format}}, {{.While}}, {{.Value}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-82716d977373",
-    "other": "the {{.Format}} generator stopped with an internal error while {{.While}}: {{.Value}}. This is a defect in this tool rather than something a recipe can ask for. Please report it with the settings that produced it"
+    "hash": "sha256-efa280a3e7d4",
+    "other": "the {{.Format}} generator stopped with an internal error while {{.While}}: {{.Value}}. This is a defect in this tool rather than something the settings can ask for. Please report it with the settings that produced it"
   },
   "engine.IDTwice": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.ID}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -1131,8 +1131,8 @@
   },
   "engine.NameAbsoluteWhy": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
-    "hash": "sha256-61f6a0c76deb",
-    "other": "a recipe carries no absolute paths, because then it only works on the machine it was written on"
+    "hash": "sha256-2b68d0bdf02e",
+    "other": "a name with an absolute path only works on the machine it was written on, so the same settings would fail anywhere else"
   },
   "engine.NameColon": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Where}}, {{.Name}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -1146,8 +1146,8 @@
   },
   "engine.NameColonWhy": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
-    "hash": "sha256-f033766b9cf1",
-    "other": "Windows reads that as a drive or as an alternate data stream rather than as part of the name, so the file arrives called something else or not at all. It is refused on every system so that a recipe means one thing everywhere"
+    "hash": "sha256-f38e726d8040",
+    "other": "Windows reads that as a drive or as an alternate data stream rather than as part of the name, so the file arrives called something else or not at all. It is refused on every system, so the same settings give the same files everywhere"
   },
   "engine.NameEmpty": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Where}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -1166,8 +1166,8 @@
   },
   "engine.NameForbiddenWhy": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
-    "hash": "sha256-c7a749a53ea6",
-    "other": "Windows refuses that character in a file name, so the file is not written there at all. It is refused on every system so that a recipe means one thing everywhere"
+    "hash": "sha256-08774d0a4fe5",
+    "other": "Windows refuses that character in a file name, so the file is not written there at all. It is refused on every system, so the same settings give the same files everywhere"
   },
   "engine.NameIsADirectory": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Where}}, {{.Name}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -1181,8 +1181,8 @@
   },
   "engine.NameIsAPathWhy": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
-    "hash": "sha256-8caafc0ee913",
-    "other": "names stay inside the output directory, and a separator is refused on every system so that a recipe works everywhere"
+    "hash": "sha256-be69c7804ea3",
+    "other": "names stay inside the output directory, and a separator is refused on every system, so the same settings work everywhere"
   },
   "engine.NameIsTheInstructions": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Target}}, {{.Name}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -1216,8 +1216,8 @@
   },
   "engine.NameNulWhy": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run.",
-    "hash": "sha256-3c22a55bc686",
-    "other": "writing there succeeds and the bytes go nowhere, so the run would record a file that is not on the disk. It is refused on every system so that a recipe means one thing everywhere"
+    "hash": "sha256-cac19da55a27",
+    "other": "writing there succeeds and the bytes go nowhere, so the run would record a file that is not on the disk. It is refused on every system, so the same settings give the same files everywhere"
   },
   "engine.NameTemplateFix": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Placeholder}}, {{.Example}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -1246,8 +1246,8 @@
   },
   "engine.NameTooLongWhy": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Most}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-08a626e33035",
-    "other": "Linux stores at most {{.Most}} bytes in a file name, and a letter outside ASCII takes two to four of them. It is refused on every system so that a recipe means one thing everywhere"
+    "hash": "sha256-050c095ba6e1",
+    "other": "Linux stores at most {{.Most}} bytes in a file name, and a letter outside ASCII takes two to four of them. It is refused on every system, so the same settings give the same files everywhere"
   },
   "engine.NameTrailing": {
     "description": "Said by internal/engine - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Where}}, {{.Name}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -3080,10 +3080,10 @@
     "hash": "sha256-0bd3908db204",
     "other": "the preset gives every file it builds this format, so it has to be one the build can write"
   },
-  "preset.ThePresetRefusedWhatTheRecipe": {
+  "preset.ThePresetRefusedTheValues": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run.",
-    "hash": "sha256-46f82ba266de",
-    "other": "the preset refused what the recipe gave it"
+    "hash": "sha256-1f5532a6502a",
+    "other": "the preset refused the values it was given"
   },
   "preset.ThePresetTakes": {
     "description": "Said by internal/preset - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Join}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -3224,11 +3224,6 @@
     "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-0f3adf9d29dc",
     "other": "a recipe can build on a preset, and on nothing else in this build - not on another file"
-  },
-  "recipe.ARecipeIsATextDocument": {
-    "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run.",
-    "hash": "sha256-8361f48aa1aa",
-    "other": "a recipe is a text document, and a control character either breaks it or is dropped without a word"
   },
   "recipe.ARecipeIsOneDocumentAnd": {
     "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run.",
@@ -3507,8 +3502,8 @@
   },
   "recipe.HoldsTheCharacterWhichCannotBe": {
     "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.At}}, {{.Bad}}, written the way the program writes them - keep each spelled exactly that way.",
-    "hash": "sha256-e6aafb7f9e39",
-    "other": "{{.At}} holds the character {{.Bad}}, which cannot be written to a recipe"
+    "hash": "sha256-f8b6ab0b3f7d",
+    "other": "{{.At}} has {{.Setting}} holding the character {{.Bad}}, which a setting cannot carry"
   },
   "recipe.IsAListOrABlock": {
     "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.At}}, {{.Key}}, written the way the program writes them - keep each spelled exactly that way.",
@@ -3736,6 +3731,11 @@
     "hash": "sha256-232713d53bb0",
     "other": "{{.Setting}} is written as 2mb or as a plain byte count"
   },
+  "recipe.SettingsAreWrittenDownAsText": {
+    "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run.",
+    "hash": "sha256-01ff946afd1e",
+    "other": "settings are written down as text, and a control character either breaks the text or is dropped without a word"
+  },
   "recipe.SettlingItTwiceGivesTwoDifferent": {
     "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-eff74d7341c6",
@@ -3810,6 +3810,11 @@
     "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run.",
     "hash": "sha256-d273c2d6fe96",
     "other": "the seed decides every byte of the run, so it is read exactly as written and never guessed at"
+  },
+  "recipe.TheSettingHoldsTheCharacter": {
+    "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run. Carries {{.Bad}}, written the way the program writes them - keep each spelled exactly that way.",
+    "hash": "sha256-adf72d87e4db",
+    "other": "the {{.Setting}} holds the character {{.Bad}}, which a setting cannot carry"
   },
   "recipe.TheSettingOfTheContainerFollows": {
     "description": "Said by internal/recipe - a refusal under the box it is about or at the foot of the form, or a note after a run.",

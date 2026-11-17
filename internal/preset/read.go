@@ -138,7 +138,7 @@ func aboutTheFile(name, id string, err error) error {
 		// A refusal of a shape this does not know still arrives whole, at
 		// the extends line, with the two parts it lacks filled in rather than
 		// printed as a bare dash and a bare stop.
-		problem.Why = core.Says("preset.ThePresetRefusedWhatTheRecipe", "the preset refused what the recipe gave it")
+		problem.Why = core.Says("preset.ThePresetRefusedTheValues", "the preset refused the values it was given")
 		problem.Fix = core.Says("preset.RunPresetShow", "run \"tfg preset show %s\" for what it takes", core.A("Preset", id))
 	}
 	return &recipe.ValidationError{Name: name, Problems: []recipe.Problem{problem}}

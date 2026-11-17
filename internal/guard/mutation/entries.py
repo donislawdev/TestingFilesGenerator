@@ -5548,7 +5548,7 @@ MUTATIONS = [
     (
         "a refusal of the engine stops saying why the rule is there",
         "internal/engine/filename.go",
-        "Because: core.Says(\"engine.NameForbiddenWhy\", \"Windows refuses that character in a file name, so the file is not written there at all. It is refused on every system so that a recipe means one thing everywhere\"),",
+        "Because: core.Says(\"engine.NameForbiddenWhy\", \"Windows refuses that character in a file name, so the file is not written there at all. It is refused on every system, so the same settings give the same files everywhere\"),",
         "Because: core.Said{},",
         "TestARefusalFromBelowTheReaderArrivesInItsThreeParts",
     ),

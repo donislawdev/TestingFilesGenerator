@@ -32,7 +32,7 @@ func checkFileName(setting string, where core.Said, name string) error {
 	case strings.ContainsAny(name, `/\`):
 		return &RecipeError{Setting: setting,
 			Detail:  core.Says("engine.NameIsAPath", "%s produces the name %q, which is a path rather than a file name", core.A("Where", where), core.A("Name", name)),
-			Because: core.Says("engine.NameIsAPathWhy", "names stay inside the output directory, and a separator is refused on every system so that a recipe works everywhere"),
+			Because: core.Says("engine.NameIsAPathWhy", "names stay inside the output directory, and a separator is refused on every system, so the same settings work everywhere"),
 			Remedy:  wayOutOfAPath(setting)}
 
 	// A colon, on every system, for the same reason as a separator.
@@ -52,7 +52,7 @@ func checkFileName(setting string, where core.Said, name string) error {
 	case strings.Contains(name, ":"):
 		return &RecipeError{Setting: setting,
 			Detail:  core.Says("engine.NameColon", "%s produces the name %q, which holds a colon", core.A("Where", where), core.A("Name", name)),
-			Because: core.Says("engine.NameColonWhy", "Windows reads that as a drive or as an alternate data stream rather than as part of the name, so the file arrives called something else or not at all. It is refused on every system so that a recipe means one thing everywhere"),
+			Because: core.Says("engine.NameColonWhy", "Windows reads that as a drive or as an alternate data stream rather than as part of the name, so the file arrives called something else or not at all. It is refused on every system, so the same settings give the same files everywhere"),
 			Remedy:  core.Says("engine.NameColonFix", "Take the colon out, or ask for the file inside an archive where the name survives")}
 
 	// Characters Windows will not put in a file name, refused on every system
@@ -78,7 +78,7 @@ func checkFileName(setting string, where core.Said, name string) error {
 		return &RecipeError{Setting: setting,
 			Detail: core.Says("engine.NameForbidden", "%s produces the name %q, which holds %s",
 				core.A("Where", where), core.A("Name", name), core.A("Character", describeForbidden(bad))),
-			Because: core.Says("engine.NameForbiddenWhy", "Windows refuses that character in a file name, so the file is not written there at all. It is refused on every system so that a recipe means one thing everywhere"),
+			Because: core.Says("engine.NameForbiddenWhy", "Windows refuses that character in a file name, so the file is not written there at all. It is refused on every system, so the same settings give the same files everywhere"),
 			Remedy:  core.Says("engine.NameForbiddenFix", "Take the character out, or ask for the file inside an archive where the name survives")}
 
 	// Longer than every system this runs on will store, refused on every
@@ -96,7 +96,7 @@ func checkFileName(setting string, where core.Said, name string) error {
 			Detail: core.Says("engine.NameTooLong", "%s produces the name %q, which is %d bytes long",
 				core.A("Where", where), core.A("Name", name), core.A("Length", len(name))),
 			Because: core.Says("engine.NameTooLongWhy", "Linux stores at most %d bytes in a file name, and a letter outside ASCII takes two to four of them. "+
-				"It is refused on every system so that a recipe means one thing everywhere", core.A("Most", core.MaxNameBytes)),
+				"It is refused on every system, so the same settings give the same files everywhere", core.A("Most", core.MaxNameBytes)),
 			Remedy: core.Says("engine.NameTooLongFix", "Shorten it to %d bytes or fewer, or ask for the file inside an archive where the name survives",
 				core.A("Most", core.MaxNameBytes))}
 
@@ -123,7 +123,7 @@ func checkFileName(setting string, where core.Said, name string) error {
 	case strings.EqualFold(name, "nul"):
 		return &RecipeError{Setting: setting,
 			Detail:  core.Says("engine.NameNul", "%s produces the name %q, which names the null device on Windows rather than a file", core.A("Where", where), core.A("Name", name)),
-			Because: core.Says("engine.NameNulWhy", "writing there succeeds and the bytes go nowhere, so the run would record a file that is not on the disk. It is refused on every system so that a recipe means one thing everywhere"),
+			Because: core.Says("engine.NameNulWhy", "writing there succeeds and the bytes go nowhere, so the run would record a file that is not on the disk. It is refused on every system, so the same settings give the same files everywhere"),
 			Remedy:  core.Says("engine.NameNulFix", "Give it an extension, nul.txt is an ordinary name, or choose another one")}
 
 	case name == "." || name == "..":
@@ -158,7 +158,7 @@ func checkFileName(setting string, where core.Said, name string) error {
 	case filepath.IsAbs(name) || core.HasVolumeName(name):
 		return &RecipeError{Setting: setting,
 			Detail:  core.Says("engine.NameAbsolute", "%s produces the absolute path %q", core.A("Where", where), core.A("Name", name)),
-			Because: core.Says("engine.NameAbsoluteWhy", "a recipe carries no absolute paths, because then it only works on the machine it was written on"),
+			Because: core.Says("engine.NameAbsoluteWhy", "a name with an absolute path only works on the machine it was written on, so the same settings would fail anywhere else"),
 			Remedy:  chooseTheDirectory()}
 	}
 	return nil

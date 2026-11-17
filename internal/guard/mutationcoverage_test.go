@@ -252,6 +252,11 @@ var provenByProbe = map[string]string{
 	"TestTheEnglishWindowRewordsOnlyNamesAndLabels": "a canary of its own - a planted sentence has to come out reworded, " +
 		"names and labels in and no quotes - a floor on the refusals and the names they carry, and broken by hand on " +
 		"2026-11-17 six ways (names, labels, a sentence inside, quotes, a wrapper at the foot, a join): red every time.",
+	"TestTheWindowSaysNoWordOfTheRecipe": "a canary of its own - a sentence made of the recipe's words has to be found " +
+		"to carry each kind, and a layout that dropped a value has to be told from one that keeps them - floors on the " +
+		"keys, the values and the refusals a window was asked about, and broken by hand on 2026-11-17 seven ways (no " +
+		"phrases, a sentence inside not laid out, a place of the recipe not reworded, the sentence itself not laid out, " +
+		"a phrase dropping a value, Polish saying a key, a listed sentence shown): red every time.",
 	"TestARefusalWithNoBoxNamesItsSettingsByTheirLabels": "broken by hand on 2026-11-17 by giving the foot of the form " +
 		"no name to put in: red in English (the two keys) and in Polish (the empty place) alike.",
 	"TestTheWindowSaysASwitchAsOnOrOff": "a canary of its own - the line it was written against, Guides true, has to be " +

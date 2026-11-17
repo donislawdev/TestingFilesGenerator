@@ -22,11 +22,12 @@ import (
 // a number - so a translation cannot change what a value looks like, only the
 // words around it.
 //
-// No entry, or a window in English, is the command line's English with two
-// kinds of value in the window's words: a value of a list by its name, and a
-// setting by its label (englishWords). Everything else in the sentence is the
-// command line's to the byte, which TestTheEnglishWindowRewordsOnlyNamesAndLabels
-// holds across every kind of value.
+// No entry, or a window in English, is the command line's English in the
+// screen's words (englishWindow): a value of a list by its name, a setting by
+// its label, and the recipe's words in the layout by what the screen calls the
+// same things (recipewords.go). The values are the command line's to the byte,
+// which TestTheEnglishWindowRewordsOnlyNamesAndLabels holds across every kind
+// of value.
 
 // SaidFolder is where the engine's sentences are kept, inside the folder of
 // the window's catalogue. Its en.json is written for a translator by the guard
@@ -74,15 +75,15 @@ func inEnglish(err error, label string) string {
 	}
 	if errors.As(err, &reworded) {
 		if label != "" {
-			return reworded.Reworded(label, englishWords)
+			return reworded.Reworded(label, englishWindow{})
 		}
 		if inner, isErr := reworded.(error); isErr && inner.Error() == err.Error() {
-			return reworded.Reworded("", englishWords)
+			return reworded.Reworded("", englishWindow{})
 		}
 	}
 	var said interface{ Said() core.Said }
 	if errors.As(err, &said) && said.Said().String() == err.Error() {
-		return said.Said().Reworded("", englishWords)
+		return said.Said().Reworded("", englishWindow{})
 	}
 	return err.Error()
 }
@@ -101,10 +102,17 @@ func settingWithoutABox(err error) string {
 	return Sentence(named.SettingSaid())
 }
 
-// englishWords is what the English window says differently from the command
-// line inside an engine's sentence: a value of a list by the name its menu
-// shows, and a setting by the label above its box.
-func englishWords(v any) (string, bool) {
+// englishWindow is how the English window says the engine's sentences where it
+// does not say them as the command line does - see core.Wording.
+type englishWindow struct{}
+
+// Layout is a sentence's layout with the recipe's words in the screen's - see
+// recipewords.go.
+func (englishWindow) Layout(layout string) string { return InTheScreensWords(layout) }
+
+// Word is a value of a list by the name its menu shows, and a setting by the
+// label above its box.
+func (englishWindow) Word(v any) (string, bool) {
 	switch v := v.(type) {
 	case core.Choice:
 		return ChoiceName(v.Of, v.Value), true
@@ -122,7 +130,7 @@ func Sentence(s core.Said) string {
 	if out, ok := translated(s, ""); ok {
 		return out
 	}
-	return s.Reworded("", englishWords)
+	return s.Reworded("", englishWindow{})
 }
 
 // Line is a note a run left about itself, as a line of its own on the screen.

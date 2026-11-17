@@ -20,9 +20,17 @@ import (
 // guards hold is the half a reading cannot: that rewording touches the names
 // and the labels and not one other byte.
 
-// sayNothingDifferent is a wording that answers for no value. A sentence
-// reworded by it has to be the command line's sentence to the byte.
-func sayNothingDifferent(any) (string, bool) { return "", false }
+// nothingDifferent is a wording that answers for no value and keeps every
+// layout. A sentence reworded by it has to be the command line's sentence to
+// the byte.
+type nothingDifferent struct{}
+
+func (nothingDifferent) Word(any) (string, bool)     { return "", false }
+func (nothingDifferent) Layout(layout string) string { return layout }
+
+// sayNothingDifferent is the wording that says everything as the command line
+// does.
+var sayNothingDifferent core.Wording = nothingDifferent{}
 
 // rewordable is an error that says itself in a surface's words.
 type rewordable interface {
@@ -147,6 +155,7 @@ func plantedSentences() []plantedSentence {
 			core.A("And", core.Conjoined{inner, inner}), core.A("Comma", core.Sentences{inner, inner}), core.A("Lines", core.Lines{inner, inner}))},
 		{"several values of a list", "", core.Says("guard.Choices", "one of %s", core.A("Values", core.Choices{Of: "time_order", Values: []string{"in-order", "out-of-order"}}))},
 		{"names joined", "", core.Says("guard.Joined", "%s", core.A("Names", core.Joined{Items: []string{"a", "b", "c"}}))},
+		{"a sentence under a type of its own", "", core.Says("guard.Place", "%s has no %s", core.A("At", placeNamed{said: inner}), core.A("Other", placeNamed{said: inner, adds: " size"}))},
 		{"a size and a unit", "", core.Says("guard.Bytes", "%s of %d %s", core.A("Size", core.Bytes(10<<20)), core.A("Count", 3), core.A("Unit", core.UnitTerm("pixels")))},
 		{"a width the layout asks for", "", core.Says("guard.Width", "[%-12s|%8q]", core.A("A", core.Choice{Of: "content", Value: "test"}), core.A("B", "x"))},
 		{"one of a number", "", core.SaysN("guard.One", "%d file holds it", "%d files hold it", core.A("Count", 1))},
@@ -155,6 +164,16 @@ func plantedSentences() []plantedSentence {
 		{"no full stop, a capital", "", core.Says("guard.Shaped", "expects %s.", core.A("Outcome", core.Choice{Of: "expected", Value: "accept"})).WithoutFullStop().Capitalized()},
 	}
 }
+
+// placeNamed is a sentence of ours under a type of its own, the way the recipe
+// names a place in itself - printing its sentence, or adding to it.
+type placeNamed struct {
+	said core.Said
+	adds string
+}
+
+func (p placeNamed) String() string  { return p.said.String() + p.adds }
+func (p placeNamed) Said() core.Said { return p.said }
 
 // refusalCorpus is every refusal the registries give for a value they do not
 // take, opened into the ones each carries - what a window is really shown,

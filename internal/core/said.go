@@ -201,12 +201,13 @@ func asCount(v any) int64 {
 // error's own text.
 func (s Said) String() string { return s.render(nil) }
 
-// render is the sentence with each value as w words it - see Reworded. Nil is
-// the command line: every value exactly as it was handed in.
+// render is the sentence with each value as w words it, in the layout it
+// carries - see Reworded, which lays it out in w's words first. Nil is the
+// command line: every value exactly as it was handed in.
 func (s Said) render(w Wording) string {
 	values := make([]any, len(s.args))
 	for i, a := range s.args {
-		values[i] = w.value(a.Value)
+		values[i] = value(w, a.Value)
 	}
 	if s.countUnsaid() {
 		values = values[:len(values)-1]
@@ -419,7 +420,7 @@ func (l Lines) joined(w Wording) string { return joinSaid(l, "\n  ", w) }
 func joinSaid(list []Said, sep string, w Wording) string {
 	parts := make([]string, len(list))
 	for i, s := range list {
-		parts[i] = s.render(w)
+		parts[i] = laidOut(w, s).render(w)
 	}
 	return strings.Join(parts, sep)
 }
@@ -442,7 +443,7 @@ func (c Choices) joined(w Wording) string {
 	words := make([]string, len(c.Values))
 	for i, v := range c.Values {
 		words[i] = v
-		if said, ok := w.word(Choice{Of: c.Of, Value: v}); ok {
+		if said, ok := word(w, Choice{Of: c.Of, Value: v}); ok {
 			words[i] = said
 		}
 	}

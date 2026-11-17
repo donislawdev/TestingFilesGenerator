@@ -276,6 +276,13 @@ because it turns other people's test suites red.
   left the setting's name out entirely. The command line prints every refusal
   as before. The Polish label of Entry format now suits a log as well as an
   archive.
+- **A refusal in the window speaks of batches and boxes, not of a recipe.**
+  It read "target 1 has no Size ... add size: 2mb, size-range: 1kb-8kb", and now
+  reads "Batch 1 has no Size ... type a size such as 2mb, or choose another way
+  under How the size is given". Hints name a box, a list or a tab rather than
+  a line of a recipe or a `tfg` command. The command line keeps its words,
+  except a few reasons that spoke of a recipe, such as "so the same settings
+  give the same files everywhere".
 
 - **On Windows, a path picked with Choose... has backslashes.** It is written
   the way Windows writes paths, the same text a drop of that folder or file

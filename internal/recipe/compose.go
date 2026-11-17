@@ -351,12 +351,24 @@ func expectationEntry(t TargetDraft) any {
 func refuseUnwritable(d Document) error {
 	p := &problems{name: composedName}
 
+	// The place is named the way every refusal of a recipe names it - the
+	// target as a sentence, the setting in its slot - so each surface says it
+	// in its own words: the key on the command line, the label of the box in
+	// a window.
+	refuse := func(at string, what core.Said) {
+		p.add(at, what,
+			core.Says("recipe.SettingsAreWrittenDownAsText", "settings are written down as text, and a control character either breaks the text or is dropped without a word"),
+			core.Says("recipe.RemoveItItIsUsuallyA", "remove it - it is usually a stray tab or a line break from pasting"))
+	}
 	check := func(at, value string) {
 		if bad, found := firstControl(value); found {
-			p.add(at,
-				core.Says("recipe.HoldsTheCharacterWhichCannotBe", "%s holds the character %q, which cannot be written to a recipe", core.A("At", at), core.A("Bad", bad)),
-				core.Says("recipe.ARecipeIsATextDocument", "a recipe is a text document, and a control character either breaks it or is dropped without a word"),
-				core.Says("recipe.RemoveItItIsUsuallyA", "remove it - it is usually a stray tab or a line break from pasting"))
+			refuse(at, core.Says("recipe.TheSettingHoldsTheCharacter", "the {setting} holds the character %q, which a setting cannot carry", core.A("Bad", bad)))
+		}
+	}
+	checkIn := func(where spot, setting, value string) {
+		if bad, found := firstControl(value); found {
+			refuse(where.of(setting), core.Says("recipe.HoldsTheCharacterWhichCannotBe",
+				"%s has {a} {setting} holding the character %q, which a setting cannot carry", core.A("At", where), core.A("Bad", bad)))
 		}
 	}
 
@@ -370,32 +382,32 @@ func refuseUnwritable(d Document) error {
 
 	for i, t := range d.Targets {
 		where := targetSpot(i, t.ID)
-		check(where.of("id"), t.ID)
-		check(where.of("format"), t.Format)
-		check(where.of("count"), t.Count)
-		check(where.of("size"), t.Size)
-		check(where.of("size-range"), t.SizeRange)
-		check(where.of("boundary"), t.Boundary)
-		check(where.of("name"), t.Name)
-		check(where.of("group"), t.Group)
-		check(where.of(KeyPurpose), t.Purpose)
+		checkIn(where, "id", t.ID)
+		checkIn(where, "format", t.Format)
+		checkIn(where, "count", t.Count)
+		checkIn(where, "size", t.Size)
+		checkIn(where, "size-range", t.SizeRange)
+		checkIn(where, "boundary", t.Boundary)
+		checkIn(where, "name", t.Name)
+		checkIn(where, "group", t.Group)
+		checkIn(where, KeyPurpose, t.Purpose)
 		// send-as is not checked, and it is the one typed value that is not. A
 		// control character in it is a name somebody sends on purpose, the
 		// document carries it as an escape inside double quotes, and the
 		// reader takes it back from there.
-		check(where.of("expected"), t.Expected)
-		check(where.of("expected.reason"), t.ExpectedReason)
+		checkIn(where, "expected", t.Expected)
+		checkIn(where, "expected.reason", t.ExpectedReason)
 
 		// Sorted, so a document with two bad properties reports them in the
 		// same order twice.
 		for _, name := range sortedKeys(t.Properties) {
-			check(where.of("properties."+name), t.Properties[name])
+			checkIn(where, "properties."+name, t.Properties[name])
 		}
 		for j, c := range t.Contains {
 			inside := where.entry("contains", j)
-			check(inside.of("format"), c.Format)
-			check(inside.of("count"), c.Count)
-			check(inside.of("size"), c.Size)
+			checkIn(inside, "format", c.Format)
+			checkIn(inside, "count", c.Count)
+			checkIn(inside, "size", c.Size)
 		}
 	}
 
