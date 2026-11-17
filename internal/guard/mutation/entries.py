@@ -1825,8 +1825,8 @@ MUTATIONS = [
     (
         "a menu spells its values out in prose as well as offering them, on a screen that already does not fit",
         "internal/gui/parts/property.go",
-        "if p.Kind == format.PropertyChoice {",
-        "if p.Kind == format.PropertyChoice && false {",
+        "case p.Kind == format.PropertyChoice:",
+        "case p.Kind == format.PropertyChoice && false:",
         "TestTheWindowDrawsAFieldForEveryDeclaredProperty",
     ),
     (
@@ -2251,12 +2251,13 @@ MUTATIONS = [
         "TestABoxIsWideEnoughForItsOwnPlaceholder",
     ),
     (
-        # Two screens draw a field from the same declaration through different
-        # code, and only one of them got the width on the first try.
+        # The batch screen draws its settings through DeclaredRows, as the
+        # format's own section does, so the width is decided in one place and
+        # this is the guard that sees the batch screen lose it.
         "the batch screen draws a number in one column of the grid, too narrow for the words it shows when left alone",
-        "internal/gui/window/recipefolds.go",
-        "			parts.ShapedFor(b.declared[i], f.Control))",
-        "			f.Control)",
+        "internal/gui/parts/property.go",
+        ", shapedFor(p, f.Control, text.IsTool(owner)))",
+        ", f.Control)",
         "TestABoxForANumberIsNotAsWideAsTheFormOnTheBatchScreen",
     ),
     (
@@ -2265,8 +2266,8 @@ MUTATIONS = [
         # at the same size.
         "a declared setting wears its recipe key as its label again",
         "internal/gui/parts/property.go",
-        "		field := into.Add(p.Name, text.SettingLabel(p.Name), PropertyDetail(owner, p),",
-        "		field := into.Add(p.Name, p.Name, PropertyDetail(owner, p),",
+        "\t\trow := into.Add(at, text.SettingLabel(p.Name), PropertyDetail(owner, p),",
+        "\t\trow := into.Add(at, p.Name, PropertyDetail(owner, p),",
         "TestNoSettingWearsItsRecipeKeyAsALabel",
     ),
     (
@@ -4545,8 +4546,8 @@ MUTATIONS = [
         "a marked field is found and never told",
         "internal/gui/parts/fields.go",
         # Repointed 2026-09-23, when a refusal started offering its own fix.
-        "\tf.Say(inTheWordsOnScreen(f, err))\n\tif label, apply := fixFor(f, err)",
-        "\t_ = f\n\tif label, apply := fixFor(f, err)",
+        "\tf.Say(inTheWordsOnScreen(f, err))\n\tf.area.Offer(",
+        "\tf.area.Offer(",
         "TestEveryRegisteredFieldCanBeMarkedAndUnmarked",
     ),
     (
@@ -4555,8 +4556,8 @@ MUTATIONS = [
         # ones a refusal cannot reach. Fourteen of them across thirteen formats.
         "the settings a format declares are drawn outside the registry",
         "internal/gui/parts/property.go",
-        "field := into.Add(p.Name, text.SettingLabel(p.Name), PropertyDetail(owner, p),",
-        'field := into.Add("", text.SettingLabel(p.Name), PropertyDetail(owner, p),',
+        "row := into.Add(at, text.SettingLabel(p.Name), PropertyDetail(owner, p),",
+        "row := into.Add(\"\", text.SettingLabel(p.Name), PropertyDetail(owner, p),",
         "TestEveryFormatsOwnSettingsCanBeMarked",
     ),
     (
@@ -5047,8 +5048,8 @@ MUTATIONS = [
         # to be written twice.
         "a declared setting that holds a size stops carrying its count",
         "internal/gui/parts/property.go",
-        "		if p.Kind == format.PropertySize {\n			into.InBytes(p.Name)\n		}",
-        "		if false && p.Kind == format.PropertySize {\n			into.InBytes(p.Name)\n		}",
+        "\t\tif p.Kind == format.PropertySize {\n\t\t\tinto.InBytes(at)\n\t\t}",
+        "\t\tif false && p.Kind == format.PropertySize {\n\t\t\tinto.InBytes(at)\n\t\t}",
         "TestADeclaredSizeSaysWhatItComesToOnEveryScreenThatDrawsOne",
     ),
     (
@@ -7422,8 +7423,8 @@ MUTATIONS = [
     (
         "the AVIF ladder claims a picture fits a file far too small to hold it, so the size it promised cannot be met",
         "internal/format/avif/avif.go",
-        "\t{640, 480, 18722, 22027}, {320, 240, 7732, 8312}, {256, 256, 5493, 6648}, {160, 120, 3865, 3865},",
-        "\t{640, 480, 311, 22027}, {320, 240, 7732, 8312}, {256, 256, 5493, 6648}, {160, 120, 3865, 3865},",
+        "\t{640, 480, 18722, 22308}, {320, 240, 7732, 8596}, {256, 256, 6140, 6943}, {160, 120, 3865, 3940},",
+        "\t{640, 480, 311, 22308}, {320, 240, 7732, 8596}, {256, 256, 6140, 6943}, {160, 120, 3865, 3940},",
         "TestAvifDrawsAPictureThatGrowsWithTheFileAndAlwaysFits",
     ),
     (
@@ -7520,8 +7521,8 @@ MUTATIONS = [
     (
         "the JPEG XL ladder claims a picture fits a file far too small to hold it, so the size it promised cannot be met",
         "internal/format/jxl/jxl.go",
-        "	{640, 480, 22762, 23567}, {320, 240, 7949, 8854}, {256, 256, 6485, 7637}, {160, 120, 3542, 3542},",
-        "	{640, 480, 147, 23567}, {320, 240, 7949, 8854}, {256, 256, 6485, 7637}, {160, 120, 3542, 3542},",
+        "\t{640, 480, 22762, 26371}, {320, 240, 10213, 10213}, {256, 256, 7509, 7637}, {160, 120, 3542, 3891},",
+        "\t{640, 480, 147, 26371}, {320, 240, 10213, 10213}, {256, 256, 7509, 7637}, {160, 120, 3542, 3891},",
         "TestJxlDrawsAPictureThatGrowsWithTheFileAndAlwaysFits",
     ),
     (
@@ -10653,8 +10654,8 @@ MUTATIONS = [
     (
         "the button under a size refusal says the smallest size and puts nothing in the box",
         "internal/gui/parts/fixes.go",
-        "func() { box.SetText(value) }",
-        "func() { _, _ = box, value }",
+        "func() { box.SetText(r.Value) }",
+        "func() { _, _ = box, r }",
         "TestASizeBelowTheMinimumOffersTheSmallestSize",
     ),
     # --- the list of formats grouped by kind, with a filter (2026-09-23,
@@ -10705,8 +10706,8 @@ MUTATIONS = [
     (
         "the smallest-size button comes back under a limit, where it leads to the same refusal",
         "internal/gui/parts/fixes.go",
-        "parsed != nil || held != below.Requested {",
-        "parsed != nil || held < 0 {",
+        "parsed != nil || asked != below.Requested {",
+        "parsed != nil || asked < 0 {",
         "TestALimitBelowTheMinimumOffersNoButtonThatLeadsBackToItself",
     ),
     (
@@ -12945,15 +12946,15 @@ MUTATIONS = [
     (
         "the machine readable list stops saying which block a setting is in",
         "internal/cli/formats.go",
-        "\t\t\tGroup: p.Group,\n",
-        "\t\t\tGroup: \"\",\n",
+        "Group: p.Group, OnlyWhen: conditionOf(p.OnlyWhen),",
+        "Group: \"\", OnlyWhen: conditionOf(p.OnlyWhen),",
         "TestASettingsBlockIsNamedWhereItStartsOnBothOutputs",
     ),
     (
         "the window stops drawing the name of a block of settings",
         "internal/gui/parts/property.go",
-        "\t\t\tobjects = append(objects, Subheading(text.SettingGroup(owner, p.Group)))\n",
-        "\t\t\t_ = Subheading\n",
+        "\t\t\tobjects = append(objects, heading)\n",
+        "\t\t\t_ = heading\n",
         "TestEveryScreenStillDrawsItsStoredPicture",
     ),
     (
@@ -13279,8 +13280,8 @@ MUTATIONS = [
     (
         "a value declared long gets a box as narrow as a name again",
         "internal/gui/parts/property.go",
-        "\t\t\tfield = Wide(field)\n",
-        "\t\t\t_ = field\n",
+        "\t\t\trow = Wide(row)\n",
+        "\t\t\t_ = row\n",
         "TestALongValueTakesTheRowAndOnTheToolsTabNothingElseButAPathDoes",
     ),
     (
