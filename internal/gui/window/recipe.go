@@ -114,6 +114,9 @@ type batch struct {
 	// engine refuses unreachable rather than merely discouraged.
 	sizeWay   *parts.Segments
 	sizeBoxes map[string]fyne.CanvasObject
+	// word keeps the box of one size and the switch's Smallest in step - see
+	// smallestWord.
+	word *smallestWord
 
 	// folded is whether this batch is put away, and it is a plain bool on the
 	// batch rather than state inside the panel because the panel is built again
@@ -258,6 +261,7 @@ func (r *Recipe) newBatch() *batch {
 		settingsFolded: true,
 	}
 	b.name.SetPlaceHolder(text.PlaceholderNameTemplate)
+	b.word = newSmallestWord(b.size, b.sizeWay)
 	// What happens if the box is left alone, in the place a box says that.
 	//
 	// The single batch screen arrives with "files" and "1" typed into the same
@@ -577,6 +581,11 @@ func (r *Recipe) onFormatChosen(b *batch, id string) {
 	for _, p := range d.Properties {
 		b.props = append(b.props, parts.FromProperty(p))
 	}
+	// Before the rebuild rather than while the batch is drawn, because a
+	// switch losing Smallest moves to another way and its box changes - and
+	// that is reported to the live check, which must not run on a screen
+	// half registered.
+	b.word.offer(waysFor(batchWays, id))
 	r.rebuild()
 }
 

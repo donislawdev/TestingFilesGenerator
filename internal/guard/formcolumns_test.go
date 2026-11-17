@@ -29,9 +29,14 @@ import (
 // was turned down.
 
 // TestShortFieldsShareARowAndTakeOneColumnEach asks the first row of the
-// single batch screen: the format, the size, how many and the damage stand in
-// one row, one column each, the same width - and the output directory, a path
-// nobody can predict the length of, takes more than one.
+// single batch screen: the format, the size and how many stand in one row,
+// one column each, the same width - and the output directory, a path nobody
+// can predict the length of, takes more than one.
+//
+// The screen opens on a picture, so the way of giving the size stands in that
+// row too, between the format and the size, and the damage starts the second
+// row (2026-11-17). The switch is asked for its row and not its width: it is
+// as wide as its words, like the switch on the batch screen.
 //
 // The defect it keeps away is the one the owner reported twice: a box holding
 // "1" as wide as half the form, and a form one field tall per row.
@@ -40,7 +45,7 @@ func TestShortFieldsShareARowAndTakeOneColumnEach(t *testing.T) {
 	content, _ := laidOutWindow(t)
 	screen := tabContent(t, content, text.TabOneTarget())
 
-	labels := []string{text.FieldFormat(), text.FieldSize(), text.FieldCount(), text.FieldDamage()}
+	labels := []string{text.FieldFormat(), text.FieldSize(), text.FieldCount()}
 	var first band
 	for i, label := range labels {
 		box, ok := objectBox(screen, controlUnder(screen, label))
@@ -61,6 +66,14 @@ func TestShortFieldsShareARowAndTakeOneColumnEach(t *testing.T) {
 		if box.X <= first.X {
 			t.Errorf("%q starts at x=%.1f, not to the right of %q at x=%.1f", label, box.X, labels[0], first.X)
 		}
+	}
+	way, ok := objectBox(screen, controlUnder(screen, text.FieldSizeWay()))
+	if !ok {
+		t.Fatalf("the screen opens on %s and there is no %q to lay out", format.IDs()[0], text.FieldSizeWay())
+	}
+	if off := way.Y - first.Y; off > 1 || off < -1 {
+		t.Errorf("%q stands at y=%.1f and %q at y=%.1f - the way of giving the size is not in the row of the size",
+			text.FieldSizeWay(), way.Y, labels[0], first.Y)
 	}
 	path, ok := objectBox(screen, entryUnder(t, screen, text.FieldOutputDir()))
 	if !ok {

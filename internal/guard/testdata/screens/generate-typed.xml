@@ -117,7 +117,27 @@
 														</container>
 													</container>
 												</container>
-												<container pos="201,0" size="185x104">
+												<container pos="201,0" size="185x60">
+													<container size="185x60">
+														<container size="185x24">
+															<text color="rgba(211,211,215,255)" pos="0,3" size="140x16">How the size is given</text>
+															<widget pos="148,0" size="24x24" type="*parts.DetailButton">
+																<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
+																<rectangle radius="6" size="24x24"/>
+																<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>
+															</widget>
+														</container>
+														<widget pos="0,32" size="185x28" type="*parts.Segments">
+															<rectangle fillColor="selection" pos="1,1" radius="5" size="67x26"/>
+															<rectangle pos="71,1" radius="5" size="66x26"/>
+															<rectangle radius="6" size="138x28" strokeColor="inputBorder" strokeWidth="1"/>
+															<text pos="6,5" size="57x16">One size</text>
+															<text color="placeholder" pos="76,5" size="56x16">Smallest</text>
+															<rectangle pos="-2,-2" radius="6" size="142x32" strokeColor="hyperlink"/>
+														</widget>
+													</container>
+												</container>
+												<container pos="402,0" size="185x104">
 													<container size="185x83">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="28x16">Size</text>
@@ -154,7 +174,7 @@
 															</container>
 														</widget>
 													</container>
-													<container pos="-201,87" size="788x16">
+													<container pos="-402,87" size="788x16">
 														<container size="788x16">
 															<widget pos="-6,-6" size="800x28" type="*widget.Label">
 																<widget size="800x28" type="*widget.RichText">
@@ -164,7 +184,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="402,0" size="185x104">
+												<container pos="603,0" size="185x104">
 													<container size="185x60">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="101x16">How many files</text>
@@ -190,7 +210,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="603,0" size="185x104">
+												<container pos="0,120" size="185x60">
 													<container size="185x58">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="54x16">Damage</text>
@@ -217,7 +237,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="0,120" size="185x60">
+												<container pos="201,120" size="185x60">
 													<container size="185x60">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="78x16">Batch name</text>
@@ -248,7 +268,7 @@
 														</container>
 													</container>
 												</container>
-												<container pos="201,120" size="185x60">
+												<container pos="402,120" size="185x60">
 													<container size="185x60">
 														<container size="185x24">
 															<text color="rgba(211,211,215,255)" pos="0,3" size="71x16">File names</text>

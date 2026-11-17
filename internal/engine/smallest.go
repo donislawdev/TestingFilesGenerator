@@ -21,12 +21,19 @@ import (
 // be the smallest of, and the smallest file of the other formats is an answer
 // nobody has asked a question for yet.
 
+// TakesSmallest says a target of this format can ask for smallest, given its
+// width and height - the question a window asks before it offers smallest as a
+// way of giving the size, answered by the rule checkSmallest refuses by.
+func TakesSmallest(desc format.Descriptor) bool {
+	return strings.HasPrefix(desc.MediaType, "image/")
+}
+
 // checkSmallest refuses smallest for a target it cannot answer.
 func checkSmallest(t *Target, desc format.Descriptor) error {
 	if !t.Smallest {
 		return nil
 	}
-	if !strings.HasPrefix(desc.MediaType, "image/") {
+	if !TakesSmallest(desc) {
 		return &RecipeError{Setting: format.SettingSize,
 			Detail:  core.Says("engine.SmallestNotAPicture", "target %q asks for the smallest %s file, and smallest is for pictures", core.A("Target", t.ID), core.A("Format", desc.ID)),
 			Because: core.Says("engine.SmallestNotAPictureWhy", "a picture with its width and height set has one smallest file, the picture with nothing added to reach a size"),

@@ -299,11 +299,6 @@
     "hash": "sha256-421d366dbd3e",
     "other": "Two sizes with a hyphen, as 1kb-8kb. Each file gets its own size, drawn from the seed, so the run repeats."
   },
-  "DetailSizeWay": {
-    "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-b65673254620",
-    "other": "One size gives every file the same size. A range draws a different size for each file. Around a limit makes three files: one byte under the limit, one on it, one over."
-  },
   "DetailTargetID": {
     "description": "The longer explanation behind the button beside a field name.",
     "hash": "sha256-1a2680483a4d",
@@ -912,6 +907,26 @@
     "hash": "sha256-e40fb5c32602",
     "other": "this run will hold about {{.Holds}} in memory by its end, more than the {{.Room}} the memory setting gives it, so it will run slower and the system may end it before its record is written. Split the run, or give it more Memory in Preferences if this machine has the room."
   },
+  "SaysSizeWayBoundary": {
+    "description": "Shown in the window.",
+    "hash": "sha256-fcf85f6a0ea4",
+    "other": "Around a limit makes three files: one byte under the limit, one on it, one over."
+  },
+  "SaysSizeWayExact": {
+    "description": "Shown in the window.",
+    "hash": "sha256-ddf826f510c4",
+    "other": "One size gives every file the same size."
+  },
+  "SaysSizeWayRange": {
+    "description": "Shown in the window.",
+    "hash": "sha256-6315d292c0fc",
+    "other": "A range draws a different size for each file."
+  },
+  "SaysSizeWaySmallest": {
+    "description": "Shown in the window.",
+    "hash": "sha256-47aca44695a2",
+    "other": "Smallest makes each picture as small as it can be at its width and height, so the files come out at different sizes."
+  },
   "SectionBase": {
     "description": "The heading over a group of fields.",
     "hash": "sha256-cbef193cc958",
@@ -1051,6 +1066,16 @@
     "description": "Shown in the window.",
     "hash": "sha256-8879adb25c7d",
     "other": "A range"
+  },
+  "SizeWaySmallest": {
+    "description": "Shown in the window.",
+    "hash": "sha256-b2443d1a486e",
+    "other": "Smallest"
+  },
+  "SmallestCaption": {
+    "description": "Shown in the window.",
+    "hash": "sha256-e2fe0be2508c",
+    "other": "Known after Preview, from the width and height in the format's settings."
   },
   "StoppedAfter": {
     "description": "Shown in the window. Carries one value, {{.Files}}, which has to stay spelled exactly that way.",

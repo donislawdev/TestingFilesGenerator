@@ -1,7 +1,7 @@
-<canvas padded size="1100x17547">
+<canvas padded size="1100x17770">
 	<content>
-		<container pos="4,4" size="1092x17539">
-			<container pos="136,0" size="820x17539">
+		<container pos="4,4" size="1092x17762">
+			<container pos="136,0" size="820x17762">
 				<container size="820x49">
 					<container pos="16,0" size="788x49">
 						<container size="788x24">
@@ -1018,12 +1018,12 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,3419" size="820x427">
-					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x427" strokeColor="button" strokeWidth="1"/>
-					<container size="820x427">
-						<container pos="16,16" size="788x395">
+				<container pos="0,3419" size="820x490">
+					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x490" strokeColor="button" strokeWidth="1"/>
+					<container size="820x490">
+						<container pos="16,16" size="788x458">
 							<text bold size="788x20" textSize="17">Segments</text>
-							<container pos="0,36" size="788x359">
+							<container pos="0,36" size="788x421">
 								<container size="788x46">
 									<widget size="788x14" type="*parts.QuietText">
 										<container size="788x14">
@@ -1154,11 +1154,36 @@
 										</widget>
 									</container>
 								</container>
+								<container pos="0,375" size="788x46">
+									<widget size="788x14" type="*parts.QuietText">
+										<container size="788x14">
+											<widget pos="-6,-6" size="800x26" type="*widget.RichText">
+												<text color="placeholder" pos="6,6" size="149x14" textSize="12">four ways, the last chosen</text>
+											</widget>
+										</container>
+									</widget>
+									<container pos="0,18" size="788x28">
+										<widget size="249x28" type="*parts.Segments">
+											<rectangle pos="1,1" radius="5" size="46x26"/>
+											<rectangle pos="50,1" radius="5" size="51x26"/>
+											<rectangle pos="105,1" radius="5" size="73x26"/>
+											<rectangle fillColor="selection" pos="182,1" radius="5" size="66x26"/>
+											<rectangle fillColor="inputBorder" pos="48,0" size="1x28"/>
+											<rectangle fillColor="inputBorder" pos="103,0" size="1x28"/>
+											<rectangle radius="6" size="249x28" strokeColor="inputBorder" strokeWidth="1"/>
+											<text color="placeholder" pos="6,5" size="36x16">Exact</text>
+											<text color="placeholder" pos="55,5" size="41x16">Range</text>
+											<text color="placeholder" pos="110,5" size="63x16">Boundary</text>
+											<text pos="187,5" size="56x16">Smallest</text>
+											<rectangle pos="-2,-2" radius="6" size="253x32" strokeColor="hyperlink"/>
+										</widget>
+									</container>
+								</container>
 							</container>
 						</container>
 					</container>
 				</container>
-				<container pos="0,3871" size="820x2043">
+				<container pos="0,3933" size="820x2043">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x2043" strokeColor="button" strokeWidth="1"/>
 					<container size="820x2043">
 						<container pos="16,16" size="788x2011">
@@ -1992,7 +2017,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,5938" size="820x452">
+				<container pos="0,6000" size="820x452">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x452" strokeColor="button" strokeWidth="1"/>
 					<container size="820x452">
 						<container pos="16,16" size="788x420">
@@ -2186,7 +2211,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,6415" size="820x987">
+				<container pos="0,6477" size="820x987">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x987" strokeColor="button" strokeWidth="1"/>
 					<container size="820x987">
 						<container pos="16,16" size="788x955">
@@ -2628,7 +2653,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,7426" size="820x704">
+				<container pos="0,7488" size="820x704">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x704" strokeColor="button" strokeWidth="1"/>
 					<container size="820x704">
 						<container pos="16,16" size="788x672">
@@ -2954,12 +2979,12 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,8154" size="820x406">
-					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x406" strokeColor="button" strokeWidth="1"/>
-					<container size="820x406">
-						<container pos="16,16" size="788x374">
+				<container pos="0,8216" size="820x524">
+					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x524" strokeColor="button" strokeWidth="1"/>
+					<container size="820x524">
+						<container pos="16,16" size="788x492">
 							<text bold size="788x20" textSize="17">ByteCount</text>
-							<container pos="0,36" size="788x337">
+							<container pos="0,36" size="788x455">
 								<container size="788x101">
 									<widget size="788x14" type="*parts.QuietText">
 										<container size="788x14">
@@ -3080,11 +3105,50 @@
 										</container>
 									</container>
 								</container>
+								<container pos="0,353" size="788x101">
+									<widget size="788x14" type="*parts.QuietText">
+										<container size="788x14">
+											<widget pos="-6,-6" size="800x26" type="*widget.RichText">
+												<text color="placeholder" pos="6,6" size="256x14" textSize="12">smallest, with no number until the run plans it</text>
+											</widget>
+										</container>
+									</widget>
+									<container pos="0,18" size="788x83">
+										<container size="788x83">
+											<container size="788x24">
+												<text color="rgba(211,211,215,255)" pos="0,3" size="28x16">Size</text>
+											</container>
+											<container pos="0,32" size="788x28">
+												<container size="788x28">
+													<widget size="788x28" type="*parts.Entry">
+														<rectangle fillColor="inputBackground" pos="1,1" radius="6" size="786x26"/>
+														<rectangle radius="6" size="786x27" strokeColor="inputBorder" strokeWidth="1"/>
+														<widget pos="0,1" size="788x26" type="*widget.Scroll">
+															<widget size="788x26" type="*widget.entryContent">
+																<widget size="788x26" type="*widget.RichText">
+																	<text pos="6,5" size="54x16">smallest</text>
+																</widget>
+															</widget>
+														</widget>
+													</widget>
+													<rectangle radius="6" size="788x28"/>
+												</container>
+											</container>
+											<widget pos="0,68" size="788x14" type="*parts.ByteCount">
+												<container size="788x14">
+													<widget pos="-6,-6" size="800x26" type="*widget.RichText">
+														<text color="placeholder" pos="6,6" size="408x14" textSize="12">Known after Preview, from the width and height in the format's settings.</text>
+													</widget>
+												</container>
+											</widget>
+										</container>
+									</container>
+								</container>
 							</container>
 						</container>
 					</container>
 				</container>
-				<container pos="0,8584" size="820x248">
+				<container pos="0,8765" size="820x248">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x248" strokeColor="button" strokeWidth="1"/>
 					<container size="820x248">
 						<container pos="16,16" size="788x216">
@@ -3198,7 +3262,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,8857" size="820x433">
+				<container pos="0,9037" size="820x433">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x433" strokeColor="button" strokeWidth="1"/>
 					<container size="820x433">
 						<container pos="16,16" size="788x401">
@@ -3316,7 +3380,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,9314" size="820x240">
+				<container pos="0,9495" size="820x240">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x240" strokeColor="button" strokeWidth="1"/>
 					<container size="820x240">
 						<container pos="16,16" size="788x208">
@@ -3376,7 +3440,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,9579" size="820x180">
+				<container pos="0,9760" size="820x180">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x180" strokeColor="button" strokeWidth="1"/>
 					<container size="820x180">
 						<container pos="16,16" size="788x148">
@@ -3425,7 +3489,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,9783" size="820x1119">
+				<container pos="0,9964" size="820x1119">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x1119" strokeColor="button" strokeWidth="1"/>
 					<container size="820x1119">
 						<container pos="16,16" size="788x1087">
@@ -3846,7 +3910,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,10927" size="820x1038">
+				<container pos="0,11108" size="820x1038">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x1038" strokeColor="button" strokeWidth="1"/>
 					<container size="820x1038">
 						<container pos="16,16" size="788x1006">
@@ -4186,7 +4250,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,11990" size="820x1078">
+				<container pos="0,12170" size="820x1078">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x1078" strokeColor="button" strokeWidth="1"/>
 					<container size="820x1078">
 						<container pos="16,16" size="788x1046">
@@ -4697,7 +4761,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,13093" size="820x385">
+				<container pos="0,13273" size="820x385">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x385" strokeColor="button" strokeWidth="1"/>
 					<container size="820x385">
 						<container pos="16,16" size="788x353">
@@ -4767,7 +4831,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,13502" size="820x1620">
+				<container pos="0,13682" size="820x1620">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x1620" strokeColor="button" strokeWidth="1"/>
 					<container size="820x1620">
 						<container pos="16,16" size="788x1588">
@@ -5351,7 +5415,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,15146" size="820x1620">
+				<container pos="0,15327" size="820x1620">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x1620" strokeColor="button" strokeWidth="1"/>
 					<container size="820x1620">
 						<container pos="16,16" size="788x1588">
@@ -5935,13 +5999,13 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,16791" size="820x311">
-					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x311" strokeColor="button" strokeWidth="1"/>
-					<container size="820x311">
-						<container pos="16,16" size="788x279">
+				<container pos="0,16972" size="820x353">
+					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x353" strokeColor="button" strokeWidth="1"/>
+					<container size="820x353">
+						<container pos="16,16" size="788x321">
 							<text bold size="788x20" textSize="17">Not drawn, and why</text>
-							<container pos="0,36" size="788x243">
-								<container size="788x243">
+							<container pos="0,36" size="788x285">
+								<container size="788x285">
 									<container size="788x16">
 										<text color="rgba(211,211,215,255)" size="7x16">•</text>
 										<container pos="15,0" size="772x16">
@@ -6053,12 +6117,32 @@
 											</widget>
 										</container>
 									</container>
+									<container pos="0,247" size="788x16">
+										<text color="rgba(211,211,215,255)" size="7x16">•</text>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="666x16">Fix - a value: the words on one button under a refusal and what pressing it does, drawn by ErrorArea</text>
+												</widget>
+											</widget>
+										</container>
+									</container>
+									<container pos="0,268" size="788x16">
+										<text color="rgba(211,211,215,255)" size="7x16">•</text>
+										<container pos="15,0" size="772x16">
+											<widget pos="-6,-6" size="784x28" type="*widget.Label">
+												<widget size="784x28" type="*widget.RichText">
+													<text pos="6,6" size="669x16">Remedy - a value: what one button under a refusal puts in the box, read by a guard without a window</text>
+												</widget>
+											</widget>
+										</container>
+									</container>
 								</container>
 							</container>
 						</container>
 					</container>
 				</container>
-				<container pos="0,17127" size="820x420">
+				<container pos="0,17349" size="820x420">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x420" strokeColor="button" strokeWidth="1"/>
 					<container size="820x420">
 						<container pos="16,16" size="788x388">

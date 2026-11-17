@@ -1,4 +1,4 @@
-// The three ways of saying how big, as one switch and one box.
+// The ways of saying how big on the batch screen, as one switch and one box.
 //
 // Its own file because recipe.go was 426 lines of a 550 line ceiling when this
 // arrived, and TestNothingIsQuietlyCreepingTowardsTheCeiling said so the same
@@ -15,7 +15,8 @@ import (
 )
 
 // sizeWayFor is the switch that chooses how this batch says how big, and the
-// three boxes it chooses between.
+// three boxes it chooses between - four ways, since smallest fills the box of
+// one size (see smallestWord), and three for a format that is not a picture.
 //
 // All three are registered, and two of them are hidden. Registration is what
 // gives a box the address a refusal is placed by, the star, the count of bytes
@@ -44,17 +45,19 @@ func (r *Recipe) sizeWayFor(b *batch, at func(string) string,
 			r.tips.Say(text.DetailBoundary()), parts.Numeric(b.boundary)),
 	}
 
-	names := sizeWayNames()
 	// Assigned after the boxes exist, and on every rebuild, because a rebuild
 	// makes new boxes for a switch that is kept.
 	b.sizeWay.OnChanged = func(chosen string) {
-		key := sizeWayKey(chosen)
+		// The box first, so that what is shown and checked below is read off
+		// the box as the switch has just left it.
+		b.word.chosen(chosen)
+		key := wayNamed(batchWays, chosen).box
 		b.showSizeWay(key)
 		// A refusal about a box that is no longer sent is a refusal about
 		// nothing. Taken back rather than left on a hidden box, where it would
 		// wait to reappear the next time somebody came back to that way of
 		// saying how big - and read as a complaint about what they just typed.
-		for _, other := range sizeWayKeys() {
+		for _, other := range sizeBoxKeys() {
 			if other != key {
 				r.fields.Clear(at(other))
 			}
@@ -63,11 +66,14 @@ func (r *Recipe) sizeWayFor(b *batch, at func(string) string,
 	}
 	b.showSizeWay(b.chosenSizeKey())
 
-	boxes := make([]fyne.CanvasObject, 0, len(names))
-	for _, key := range sizeWayKeys() {
+	boxes := make([]fyne.CanvasObject, 0, len(b.sizeBoxes))
+	for _, key := range sizeBoxKeys() {
 		boxes = append(boxes, b.sizeBoxes[key])
 	}
-	named := r.fields.Named(text.FieldSizeWay(), r.tips.Say(text.DetailSizeWay()), b.sizeWay)
+	// Explained by the ways this batch's switch offers, so a batch of CSV is
+	// not told about a way it does not have.
+	explained := waysExplained(waysFor(batchWays, b.formatPick.Selected))
+	named := r.fields.Named(text.FieldSizeWay(), r.tips.Say(explained), b.sizeWay)
 	// The switch and the box it leaves are cells of one row since the
 	// prototype of 2026-09-23 - see parts.Grid. All three boxes go in, and
 	// the grid skips the two that are hidden, so the one shown takes the
@@ -84,39 +90,33 @@ func (r *Recipe) sizeWayFor(b *batch, at func(string) string,
 // first one. Found by the guard on its first run.
 //
 // A segmented switch since 2026-09-15, in place of three radio circles. One of
-// the three is always chosen - there is no fourth state where nothing is - so
-// nothing here has to ask for "required" the way the radio did: the switch
-// opens on the first way and never has none.
+// the ways is always chosen - there is no state where nothing is - so nothing
+// here has to ask for "required" the way the radio did: the switch opens on
+// the first way and never has none.
+//
+// It opens on the ways every format has. Smallest is added with the format,
+// in onFormatChosen, which every batch goes through before it is drawn.
 func newSizeWaySwitch() *parts.Segments {
-	return parts.NewSegments(sizeWayNames(), nil)
+	return parts.NewSegments(wayNames(waysFor(batchWays, "")), nil)
 }
 
-// The three ways, in one order, named once. The window shows the words and the
-// recipe writes the keys, and neither list may drift from the other.
-func sizeWayNames() []string {
-	return []string{text.SizeWayExact(), text.SizeWayRange(), text.SizeWayBoundary()}
-}
+// batchWays is every way of saying how big this screen offers, in the order
+// the switch shows them. The window shows the words and the recipe writes the
+// keys, and both come from this one list.
+var batchWays = []sizeWay{wayExact, wayRange, wayBoundary, waySmallest}
 
-func sizeWayKeys() []string {
+// sizeBoxKeys is the boxes the ways leave on the screen, one each - smallest
+// shares the box of one size.
+func sizeBoxKeys() []string {
 	return []string{recipe.KeySize, recipe.KeySizeRange, recipe.KeyBoundary}
 }
 
-// sizeWayKey is the recipe key behind a word on the switch.
-func sizeWayKey(chosen string) string {
-	for i, name := range sizeWayNames() {
-		if name == chosen {
-			return sizeWayKeys()[i]
-		}
-	}
-	return recipe.KeySize
-}
-
-// chosenSizeKey is which way this batch is using.
+// chosenSizeKey is which box this batch is using.
 func (b *batch) chosenSizeKey() string {
 	if b.sizeWay == nil {
 		return recipe.KeySize
 	}
-	return sizeWayKey(b.sizeWay.Selected)
+	return wayNamed(batchWays, b.sizeWay.Selected).box
 }
 
 // showSizeWay leaves one box on the screen and takes the other two off it.
@@ -168,7 +168,7 @@ func (b *batch) statedSize(key string) string {
 // setting that has one box like everything else.
 func (r *Recipe) readdressSizeWay(address string) string {
 	for index, b := range r.batches {
-		for _, key := range sizeWayKeys() {
+		for _, key := range sizeBoxKeys() {
 			if address != recipe.TargetAddress(index+1, key) {
 				continue
 			}

@@ -196,9 +196,12 @@ func TestTheGapBetweenSectionsIsWiderThanTheGapBetweenFields(t *testing.T) {
 	}
 	// The pair is found down a column rather than named, so it follows the
 	// layout (a review of #195): the first field with another under it in
-	// its own column, the way the guard above walks the form.
-	names := []string{text.FieldFormat(), text.FieldSize(), text.FieldCount(), text.FieldTargetID(),
-		text.FieldNameTemplate(), text.FieldOutputDir(), text.FieldSeed()}
+	// its own column, the way the guard above walks the form. The damage is
+	// one of them since the way of giving the size took a place in the first
+	// row (2026-11-17) and moved it under the format - left out, the format's
+	// next field down its column was the output directory, a section away.
+	names := []string{text.FieldFormat(), text.FieldSize(), text.FieldCount(), text.FieldDamage(),
+		text.FieldTargetID(), text.FieldNameTemplate(), text.FieldOutputDir(), text.FieldSeed()}
 	var boxes []band
 	for _, label := range names {
 		_, box := nameAndBox(t, generate, label)

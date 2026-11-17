@@ -191,6 +191,7 @@ type Generate struct {
 
 	formatPick *parts.Chooser
 	size       *parts.Entry
+	sizing     singleSizing
 	count      *parts.Entry
 	id         *parts.Entry
 	name       *parts.Entry
@@ -355,6 +356,7 @@ func (g *Generate) buildFields() {
 	g.damage.pick.SetSelected(text.DamageNone())
 
 	g.size = entry(startingSize, "")
+	g.sizing.build(g.size)
 	g.count = entry("1", "")
 	g.id = entry(startingBatchName, "")
 	g.name = entry("", text.PlaceholderNameTemplate)
@@ -409,7 +411,10 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 			// In the grid's columns since the prototype of 2026-09-23
 			// (parts.Grid): the format, how big, how many and whether damaged
 			// share one row of four, then what the group is called and what
-			// the files are called.
+			// the files are called. For a picture the way of giving the size
+			// stands before its box since 2026-11-17, and damaged moves to the
+			// second row.
+			g.sizing.namedIn(g.fields, g.tips),
 			add(format.SettingSize, text.FieldSize(), text.HintSize(), g.tips.Say(text.DetailSize()),
 				parts.Numeric(g.size)),
 			add(engine.SettingCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(g.count)),
@@ -446,6 +451,7 @@ func (g *Generate) onFormatChosen(id string) {
 	}
 	g.propBox.RemoveAll()
 	g.props = nil
+	g.sizing.offerFor(id)
 	// The fields of the format that was chosen before this one go with their
 	// boxes. Left in the registry they would be places a refusal could still be
 	// put, under widgets no longer on the screen.

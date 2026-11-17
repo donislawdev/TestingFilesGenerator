@@ -1,9 +1,11 @@
 package parts
 
 import (
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/theme"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
 // ByteCount says what the size in a box comes to, counted out in bytes.
@@ -42,6 +44,9 @@ func newByteCount() *ByteCount {
 	// of thing: something quiet beside a control that the eye should skip until
 	// it wants it.
 	c.SizeName = theme.SizeNameCaptionText
+	// Broken at the width of the box, for the one caption that is a sentence
+	// rather than a number - see show.
+	c.Wrapping = fyne.TextWrapWord
 	return c
 }
 
@@ -50,7 +55,15 @@ func newByteCount() *ByteCount {
 // Empty for anything that is not a size, which covers the box somebody is
 // halfway through typing. A count that guessed at a half-typed value would
 // change three times per keystroke and be wrong twice.
+//
+// smallest is a size with no number until the run has planned it, so the
+// caption says when it will have one and what it comes from instead of
+// staying empty under a box that is not half typed.
 func (c *ByteCount) show(size string) {
+	if size == core.SizeSmallest {
+		c.SetText(text.SmallestCaption())
+		return
+	}
 	bytes, err := core.ParseSize(size)
 	if err != nil {
 		c.SetText("")

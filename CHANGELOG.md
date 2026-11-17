@@ -86,7 +86,9 @@ because it turns other people's test suites red.
   recipe, makes each picture as small as it can be at the `width` and
   `height` you set, in all ten picture formats, and `--dry-run` still says the
   size to the byte. The file is the picture alone, with nothing added to reach
-  a size, whether the label is drawn in it or not.
+  a size, whether the label is drawn in it or not. In the window it is
+  Smallest under How the size is given, on Single batch and Several batches,
+  offered when the format is a picture.
 
 - **Generate into the same folder again.** A run into an output directory
   that already holds an earlier run is added beside it: every name of the run,

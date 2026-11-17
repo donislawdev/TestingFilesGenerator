@@ -199,5 +199,15 @@ func TestBothButtonsUnderABatchOfSmallPicturesAreAcceptedInTheWindow(t *testing.
 		if said := saidBy(t, fields, core.SettingSize); said != "" {
 			t.Errorf("the button %q put %q in the size box and the preview refused it: %q", label, put, said)
 		}
+		// The switch beside the box follows what the button put in it, so
+		// the screen does not say one size while the run makes the smallest.
+		want := text.SizeWayExact()
+		if put == core.SizeSmallest {
+			want = text.SizeWaySmallest()
+		}
+		if got := sizeWaySwitch(t, body).Selected; got != want {
+			t.Errorf("the button %q put %q in the size box and the switch beside it reads %q, where %q was due",
+				label, put, got, want)
+		}
 	}
 }

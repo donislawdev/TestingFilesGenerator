@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 )
@@ -142,6 +143,9 @@ func byteCount() Entry {
 		{"a size counted out", func() fyne.CanvasObject { return counted("10mb") }},
 		{"nothing to count yet", func() fyne.CanvasObject { return counted("") }},
 		{"a large size", func() fyne.CanvasObject { return counted("2gb") }},
+		// A sentence rather than a number, broken at the width of the box -
+		// the one caption that wraps.
+		{"smallest, with no number until the run plans it", func() fyne.CanvasObject { return counted(core.SizeSmallest) }},
 	}}
 }
 

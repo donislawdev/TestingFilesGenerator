@@ -230,7 +230,15 @@ var provenByProbe = map[string]string{
 		"reach check that some format drew its label, and broken by hand on 2026-11-16 by giving the picture label its size " +
 		"again: red, avif, gif, jpg and jxl among the first lines (O350).",
 	"TestBothButtonsUnderABatchOfSmallPicturesAreAcceptedInTheWindow": "broken by hand on 2026-11-16 by leaving the number at the " +
-		"first file's minimum: red, the preview refused 1573 B for three PNGs needing 1574 B.",
+		"first file's minimum: red, the preview refused 1573 B for three PNGs needing 1574 B. Broken again on 2026-11-17 by " +
+		"leaving the switch where it was when smallest is typed into the box: red, the switch read One size.",
+	"TestSmallestIsOfferedForExactlyTheFormatsTheEngineTakesItFor": "a canary of its own - a window offering smallest for every " +
+		"format has to disagree with the engine - a reach check that the engine both took and refused smallest, and broken by " +
+		"hand on 2026-11-17 by offering smallest for every format: red on both screens.",
+	"TestTheSizeSwitchAndTheSizeBoxNeverSayDifferentThings": "a refusal at the size box asked before the acceptance, so the " +
+		"preview is known to be able to refuse, and broken by hand on 2026-11-17 four ways - typing smallest leaving the switch, " +
+		"choosing Smallest writing nothing, leaving Smallest putting nothing back, a switch losing its choice saying nothing: red " +
+		"each time.",
 	"TestATruncatedTextSaysHowMuchWasCut": "broken on 2026-11-12 twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times.",
 	"TestALongDamageLabelLeavesEveryFormatWhole": "broken on 2026-11-12 by letting damage.Chain.Label return the whole chain past LabelLimit: red, " +
 		"its own reach check says forty damages no longer fit the limit (docs/REVIEW-234-2026-11-12.md).",

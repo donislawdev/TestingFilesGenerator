@@ -325,5 +325,12 @@ func segments() Entry {
 		{"long words", func() fyne.CanvasObject {
 			return parts.NewSegments([]string{"Exactly this size", "Somewhere in a range", "On a boundary"}, func(string) {})
 		}},
+		{"four ways, the last chosen", func() fyne.CanvasObject {
+			// The batch screen offers a fourth way for a picture since
+			// 2026-11-17, and it sits at the end of the row.
+			s := parts.NewSegments(append(append([]string(nil), ways...), "Smallest"), func(string) {})
+			s.SetSelected("Smallest")
+			return s
+		}},
 	}}
 }

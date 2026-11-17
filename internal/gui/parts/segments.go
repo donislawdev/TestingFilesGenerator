@@ -79,6 +79,26 @@ func (s *Segments) SetSelected(value string) {
 	}
 }
 
+// SetOptions replaces the words the switch offers, for a switch whose choices
+// depend on something else on the form - the ways of giving a size, of which
+// smallest is offered for pictures only.
+//
+// The chosen word stays chosen when it is still offered. When it is not, the
+// first word is chosen and OnChanged says so, because a switch showing a word
+// it no longer holds would be stating a way the form does not send.
+func (s *Segments) SetOptions(options []string) {
+	s.Options = options
+	if s.indexOf(s.Selected) >= 0 || len(options) == 0 {
+		s.Refresh()
+		return
+	}
+	s.Selected = options[0]
+	s.Refresh()
+	if s.OnChanged != nil {
+		s.OnChanged(s.Selected)
+	}
+}
+
 func (s *Segments) indexOf(value string) int {
 	for i, o := range s.Options {
 		if o == value {
@@ -227,9 +247,10 @@ type segmentsRenderer struct {
 }
 
 // build makes one fill and one word per option, and a rule between each pair.
-// The count is fixed once, because a switch does not gain options after it is
-// built.
+// Made again whenever the count of options changes - see SetOptions - and
+// only then, so a refresh of the same switch draws into the same objects.
 func (r *segmentsRenderer) build() {
+	r.fills, r.words, r.rules = nil, nil, nil
 	for range r.seg.Options {
 		fill := canvas.NewRectangle(color.Transparent)
 		// Rounded to sit inside the border's own curve. Until 2026-09-16 the
@@ -284,6 +305,9 @@ func (r *segmentsRenderer) MinSize() fyne.Size {
 }
 
 func (r *segmentsRenderer) Refresh() {
+	if len(r.words) != len(r.seg.Options) {
+		r.build()
+	}
 	off := r.seg.Disabled()
 	chosen := r.seg.indexOf(r.seg.Selected)
 	for i, word := range r.seg.Options {
