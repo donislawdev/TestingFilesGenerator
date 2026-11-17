@@ -2096,8 +2096,8 @@ MUTATIONS = [
     (
         "a run's messages push the form instead of scrolling inside their own room",
         "internal/gui/parts/parts.go",
-        "	inside := container.NewVScroll(content)",
-        "	inside := content",
+        "\tinside := VScroll(content)",
+        "\tinside := content",
         "TestTheFormDoesNotMoveWhenARunStarts",
     ),
     (
@@ -4966,10 +4966,10 @@ MUTATIONS = [
         # assigned once and never returns to nil, so the live check died after
         # the first Generate and a bad value said nothing until a button was
         # pressed.
-        "the live check asks the stop handle whether a run is going",
+        "the live check asks the run's handle, which outlives the run, whether a run is going",
         "internal/gui/window/runrefuse.go",
         "\tif r.busy.occupied {\n\t\treturn\n\t}",
-        "\tif r.stop != nil {\n\t\treturn\n\t}",
+        "\tif r.work != nil {\n\t\treturn\n\t}",
         "TestTypingIsStillCheckedAfterARunHasFinished",
     ),
     (
@@ -14301,8 +14301,8 @@ MUTATIONS = [
     (
         "any format is taken as a picture in the text",
         "internal/format/picture/picture.go",
-        'return desc, strings.HasPrefix(desc.MediaType, "image/"), nil',
-        'return desc, true, nil',
+        "return desc, desc.IsPicture(), nil",
+        "return desc, true, nil",
         "TestAPictureInTheTextHasToBeAPicture",
     ),
     (
