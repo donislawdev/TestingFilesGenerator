@@ -51,7 +51,7 @@ func refusedForTheBatch(ctx context.Context, walk batchWalk, first int, err erro
 	if got.size != below.Minimum {
 		refusal = got.refusal(below.Requested, len(walk.t.Sizes))
 	}
-	if smallestFits(walk.t, walk.desc) {
+	if len(walk.t.Sizes) > 1 && smallestFits(walk.t, walk.desc) {
 		refusal = &smallestOffered{err: refusal}
 	}
 	return refusal
@@ -208,6 +208,15 @@ func smallestFits(t *Target, desc format.Descriptor) bool {
 
 // smallestOffered is a refusal whose target could ask for smallest instead,
 // which the window offers as a second way out (OffersSmallest).
+//
+// Only for a target of more than one file. Then the size every file accepts
+// is the largest of their smallest sizes, and smallest makes each file at its
+// own. A single file at its smallest size is the file smallest makes - the
+// same bytes under the same name, measured for png, jpg and webp at 640x480
+// on 2026-11-18 - so a second button there does what the first does, which
+// the owner reported from the window that day. Not "when the smallest sizes
+// differ": knowing that would mean planning every file at its smallest, ten
+// thousand pictures encoded for the sake of one button.
 //
 // A wrapper rather than a field on format.BelowMinimumError, because the
 // format does not know the target - a picture's width and height can come from

@@ -32,8 +32,10 @@ import (
 // first one to refuse is not the one that needs the most. Each is planned at
 // 1 B. The values the buttons would put in the box come from parts.Remedies,
 // the function the window's buttons are made from, and each value is planned
-// again and has to be accepted. A picture with its width and height set has to
-// be offered smallest as well (section 3.3).
+// again and has to be accepted. A batch of more than one picture with their
+// width and height set has to be offered smallest as well (section 3.3), and
+// one picture must not be: there the second button makes the very file the
+// first one does (owner, 2026-11-18, section 3.9).
 func TestEveryFixUnderASizeRefusalLeadsToARunThatIsAccepted(t *testing.T) {
 	theFirstFilesMinimumIsCaught(t)
 	cases := fixCases(t)
@@ -56,7 +58,10 @@ func TestEveryFixUnderASizeRefusalLeadsToARunThatIsAccepted(t *testing.T) {
 				offeredSmallest++
 			}
 			if c.wantsSmallest && !smallest {
-				t.Errorf("a picture with its width and height set is offered %v, without smallest", remedies)
+				t.Errorf("%d pictures with their width and height set are offered %v, without smallest", c.count, remedies)
+			}
+			if !c.wantsSmallest && smallest {
+				t.Errorf("%d file(s) are offered %v - smallest beside the smallest size, where the two make the same file", c.count, remedies)
 			}
 			for _, r := range remedies {
 				if err := planFixCase(t, c, r.Value); err != nil {
@@ -104,8 +109,8 @@ type fixCase struct {
 	format  string
 	setting map[string]string
 	count   int
-	// wantsSmallest is a picture with its width and height set, which section
-	// 3.3 promises a second button.
+	// wantsSmallest is more than one picture with their width and height set,
+	// which section 3.3 promises a second button.
 	wantsSmallest bool
 }
 
@@ -124,7 +129,10 @@ func fixCases(t *testing.T) []fixCase {
 		_, w := props["width"]
 		_, h := props["height"]
 		picture := strings.HasPrefix(d.MediaType, "image/")
-		shapes := []fixCase{{name: d.ID}}
+		// At its defaults a picture still has a width and a height when the
+		// format declares both - svg does - and smallest takes those.
+		sized := w && h && props["width"].Default != "" && props["height"].Default != ""
+		shapes := []fixCase{{name: d.ID, wantsSmallest: picture && sized}}
 		if w && h {
 			shapes = append(shapes, fixCase{name: d.ID + "-160x120", setting: map[string]string{"width": "160", "height": "120"}, wantsSmallest: picture})
 		}
@@ -136,6 +144,7 @@ func fixCases(t *testing.T) []fixCase {
 			for _, n := range []int{1, 3} {
 				c := shape
 				c.name, c.format, c.count = fmt.Sprintf("%s-x%d", shape.name, n), d.ID, n
+				c.wantsSmallest = shape.wantsSmallest && n > 1
 				out = append(out, c)
 			}
 		}

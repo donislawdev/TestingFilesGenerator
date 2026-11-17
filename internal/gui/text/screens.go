@@ -326,10 +326,11 @@ func UseSmallestSize(size string) string {
 	return sayf("UseSmallestSize", "Use the smallest size, {{.Size}}", map[string]any{"Size": size})
 }
 
-// UseSmallestForEach is the second button under the same refusal, for a
-// picture with its width and height known. It puts smallest into the box, so
-// each picture comes out as small as it can be - at a size of its own, which is
-// what tells it apart from the button above it.
+// UseSmallestForEach is the second button under the same refusal, for a batch
+// of more than one picture with their width and height known. It puts smallest
+// into the box, so each picture comes out as small as it can be - at a size of
+// its own, which is what tells it apart from the button above it. One picture
+// gets no such button, because there the two make the same file.
 func UseSmallestForEach() string {
 	return say("UseSmallestForEach", "Make each picture as small as it can be")
 }
