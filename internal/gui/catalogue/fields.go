@@ -126,7 +126,28 @@ func propertyField() Entry {
 			return tips.Over(parts.FieldColumn(objects...))
 		}})
 	}
-	return Entry{Name: "PropertyField", Covers: []string{"FromProperty", "DeclaredFields", "PropertyFields", "ShapedFor", "PropertyDetail"}, States: states}
+	// A block of settings that changes a file only while a choice above it has
+	// one value, as a placeholder's colours do: on the screen with the choice
+	// there, and gone - name and all - with the choice anywhere else.
+	shown := []format.Property{
+		{Name: "content", Kind: format.PropertyChoice, Choices: []string{"placeholder", "test"}, Default: "test", Detail: "What the picture shows."},
+		{Name: "background", Kind: format.PropertyText, Shape: "a colour such as cccccc", Default: "cccccc", Detail: "The colour of a placeholder.",
+			Group: "Placeholder", OnlyWhen: format.Condition{Setting: "content", Values: []string{"placeholder"}}},
+	}
+	for _, c := range []struct{ caption, value string }{
+		{"a block shown while the choice above it has one value", "placeholder"},
+		{"the same block gone while the choice has another", "test"},
+	} {
+		c := c
+		states = append(states, State{c.caption, func() fyne.CanvasObject {
+			s := form()
+			tips := parts.NewTips()
+			fields, objects := parts.DeclaredFields("format/catalogue", shown, s, tips)
+			fields[0].Control.(*parts.Chooser).SetSelected(c.value)
+			return tips.Over(parts.FieldColumn(objects...))
+		}})
+	}
+	return Entry{Name: "PropertyField", Covers: []string{"FromProperty", "DeclaredFields", "DeclaredRows", "PropertyFields", "ShapedFor", "PropertyDetail"}, States: states}
 }
 
 // The count of bytes beside a size, which the row shows when the field is one

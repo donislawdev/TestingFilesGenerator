@@ -57,8 +57,17 @@ const MaxText = 100
 // the site translates it as one term.
 const shapeColour = "a colour such as cccccc or ccc"
 
-// Group is the heading the settings stand under on both surfaces.
+// Group is the heading the four settings of a placeholder stand under on both
+// surfaces. content stands above it rather than in it, beside the width and
+// the height: it chooses between the test pattern and a placeholder, and
+// under a heading naming one of the two it read as a setting of that one.
 const Group = "Placeholder"
+
+// onlyOnAPlaceholder is the condition the four settings of a placeholder
+// share: each changes a picture only while content is placeholder. A window
+// hides them until then, and Read refuses them on the test pattern - both from
+// this one declaration.
+var onlyOnAPlaceholder = format.Condition{Setting: SettingContent, Values: []string{ContentPlaceholder}}
 
 // Properties declares the five settings. One declaration for every picture
 // format, so the names and what they take cannot differ between them.
@@ -69,34 +78,33 @@ func Properties() []format.Property {
 			Choices: []string{ContentTest, ContentPlaceholder},
 			Default: ContentTest,
 			Detail:  "What the picture shows. test is a pattern for checking how a file is read. placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist.",
-			Group:   Group,
 		},
 		{
 			Name: SettingText, Kind: format.PropertyText,
 			Shape:   fmt.Sprintf("one line of up to %d characters", MaxText),
 			Default: DefaultText,
 			Detail:  "The words in the middle of a placeholder. {width} and {height} become the size of the picture, {index} the number of the file and {index:04} the same number with four digits.",
-			Group:   Group,
+			Group:   Group, OnlyWhen: onlyOnAPlaceholder,
 		},
 		{
 			Name: SettingBackground, Kind: format.PropertyText,
 			Shape:   shapeColour,
 			Default: DefaultBackground,
 			Detail:  "The colour of a placeholder, such as cccccc or ccc. In a recipe write it without # or in quotes, because # starts a comment there.",
-			Group:   Group,
+			Group:   Group, OnlyWhen: onlyOnAPlaceholder,
 		},
 		{
 			Name: SettingForeground, Kind: format.PropertyText,
 			Shape:   shapeColour,
 			Default: DefaultForeground,
 			Detail:  "The colour of the words and the guides on a placeholder, written the same way as background.",
-			Group:   Group,
+			Group:   Group, OnlyWhen: onlyOnAPlaceholder,
 		},
 		{
 			Name: SettingGuides, Kind: format.PropertyBool,
 			Default: "false",
 			Detail:  "Draws a frame along the edges of a placeholder, both diagonals and a circle touching its shorter sides, so you can see where a page crops or stretches the picture.",
-			Group:   Group,
+			Group:   Group, OnlyWhen: onlyOnAPlaceholder,
 		},
 	}
 }
@@ -174,15 +182,22 @@ func allowed(owner, name, v string) error {
 // read, accepted and ignored, and somebody would wait for a colour that never
 // comes - a setting that does nothing has to say so.
 //
-// guides is refused only when it asks for guides. A window sends every switch
-// in the position it shows (parts.boolField), so guides=false arrives with
-// every picture made there, and it asks for exactly what a test picture has.
+// Which settings those are is read off the declaration, so the four a window
+// hides and the four refused here cannot be two lists.
+//
+// guides is refused only when it asks for guides. guides=false asks for
+// exactly what a test picture has, and a recipe written while the switch was
+// on the screen says it.
 func nothingToChange(owner string, props map[string]string) error {
-	for _, name := range []string{SettingText, SettingBackground, SettingForeground, SettingGuides} {
-		v, ok := props[name]
-		if ok && !(name == SettingGuides && v == "false") {
+	declared := Properties()
+	for _, p := range declared {
+		if p.Applies(declared, func(name string) string { return props[name] }) {
+			continue
+		}
+		v, ok := props[p.Name]
+		if ok && !(p.Name == SettingGuides && v == "false") {
 			return &format.PropertyValueError{
-				Format: owner, Key: name, Value: v,
+				Format: owner, Key: p.Name, Value: v,
 				Reason: core.Says("placeholder.OnlyOnAPlaceholder", "it only changes a placeholder, and content is test"),
 				Remedy: core.Says("placeholder.SetContentPlaceholder", "Set content to placeholder, or leave the line out"),
 			}

@@ -235,6 +235,14 @@ var provenByProbe = map[string]string{
 	"TestSmallestIsOfferedForExactlyTheFormatsTheEngineTakesItFor": "a canary of its own - a window offering smallest for every " +
 		"format has to disagree with the engine - a reach check that the engine both took and refused smallest, and broken by " +
 		"hand on 2026-11-17 by offering smallest for every format: red on both screens.",
+	"TestAPlaceholderSettingIsOnTheScreenExactlyWhileItApplies": "the bad background is refused while it is shown, so the " +
+		"preview is known to reach the box, and broken by hand on 2026-11-17 four ways - every row always shown, a hidden value " +
+		"sent, the menu not wired to show the rows again, the heading never hidden: red each time.",
+	"TestASettingThatChangesNothingIsRefusedRatherThanIgnored": "a canary of its own - a png that drops background before " +
+		"planning has to be found silent - the same plan without the setting taken first, and broken by hand on 2026-11-17 by " +
+		"letting text through on the test pattern: red, png, jpg and svg.",
+	"TestARegistryRefusesAConditionItCannotKeep": "a canary of its own - a condition on a choice declared before it has to be " +
+		"taken - beside one declaration for each way a condition cannot be kept.",
 	"TestTheSizeSwitchAndTheSizeBoxNeverSayDifferentThings": "a refusal at the size box asked before the acceptance, so the " +
 		"preview is known to be able to refuse, and broken by hand on 2026-11-17 four ways - typing smallest leaving the switch, " +
 		"choosing Smallest writing nothing, leaving Smallest putting nothing back, a switch losing its choice saying nothing: red " +

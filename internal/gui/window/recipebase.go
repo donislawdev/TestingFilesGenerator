@@ -34,13 +34,12 @@ type base struct {
 	on   *parts.Toggle
 	pick *parts.Chooser
 
-	// declared is what the chosen preset takes - its parameters and the
-	// globals it reads - and params are the controls drawn from it. Both are
-	// replaced when the preset changes and kept across a rebuild, for the
+	// params are the controls drawn from what the chosen preset takes - its
+	// parameters and the globals it reads - each with its declaration.
+	// Replaced when the preset changes and kept across a rebuild, for the
 	// reason the batch's own props are: a rebuilt box has forgotten what was
 	// typed into it.
-	declared []format.Property
-	params   []parts.PropertyField
+	params []parts.PropertyField
 	// owner is whose declaration they are, for the sentences under them in
 	// another language - replaced with them.
 	owner text.Owner
@@ -99,7 +98,6 @@ func (b *base) choose(id string) error {
 	settings := make([]format.Property, 0, len(chosen.Parameters)+len(chosen.Reads))
 	settings = append(settings, chosen.Parameters...)
 	settings = append(settings, chosen.Globals()...)
-	b.declared = settings
 	b.owner = text.PresetOwner(chosen.ID)
 	b.params = make([]parts.PropertyField, 0, len(settings))
 	for _, p := range settings {
@@ -135,17 +133,12 @@ func (b *base) rows(fields *parts.Fields, tips *parts.Tips) []fyne.CanvasObject 
 }
 
 // parameterRows draws the chosen preset's parameters.
+//
+// Laid out by the call every other declaration goes through, under with.<name>
+// - the line a recipe writes the value on. See parts.DeclaredRows.
 func (b *base) parameterRows(fields *parts.Fields, tips *parts.Tips) []fyne.CanvasObject {
-	rows := make([]fyne.CanvasObject, 0, len(b.params))
-	for i, f := range b.params {
-		d := b.declared[i]
-		if d.Kind == format.PropertySize {
-			fields.InBytes(recipe.KeyWith + "." + f.Name)
-		}
-		rows = append(rows, fields.Add(recipe.KeyWith+"."+f.Name, text.SettingLabel(f.Name),
-			parts.PropertyDetail(b.owner, d), tips.Say(text.SettingKey(f.Name)), parts.ShapedFor(d, f.Control)))
-	}
-	return rows
+	return parts.DeclaredRows(b.owner, b.params, fields, tips,
+		func(name string) string { return recipe.KeyWith + "." + name })
 }
 
 // settingBuildOnPreset is the key the switch goes under.
@@ -164,14 +157,5 @@ func (b *base) draft() (extends string, with map[string]string) {
 	if !b.on.Checked {
 		return "", nil
 	}
-	with = map[string]string{}
-	for _, f := range b.params {
-		if v := f.Value(); v != "" {
-			with[f.Name] = v
-		}
-	}
-	if len(with) == 0 {
-		with = nil
-	}
-	return b.pick.Selected, with
+	return b.pick.Selected, parts.StatedValues(b.params)
 }

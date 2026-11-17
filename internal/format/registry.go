@@ -39,6 +39,9 @@ func Register(d Descriptor) {
 	if g, split := splitGroup(d.Properties); split {
 		panic(fmt.Sprintf("format: %q declares the group %q in two places", d.ID, g))
 	}
+	if why := ConditionProblem(d.Properties); why != "" {
+		panic(fmt.Sprintf("format: %q: %s", d.ID, why))
+	}
 	registry[d.ID] = d
 }
 

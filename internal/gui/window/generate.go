@@ -603,22 +603,7 @@ func (g *Generate) chosenDamage() damage.Chain {
 // Only what was stated, and it matters here more than anywhere: this section
 // arrives folded, so a value somebody typed and then had swallowed would be a
 // setting they cannot see and did not remove.
-func (g *Generate) settingsSaid() string {
-	said := make([]string, 0, len(g.props))
-	for _, f := range g.props {
-		// What was CHOSEN, not what the field started on. A menu opens on its
-		// default and so always has a value, and listing all of them turned
-		// this line into every setting the format declares - which for log,
-		// with seven, ran off the edge of the window.
-		if f.Chosen != nil && !f.Chosen() {
-			continue
-		}
-		if v := f.Value(); v != "" {
-			said = append(said, text.SettingSaid(text.SettingLabel(f.Name), v))
-		}
-	}
-	return text.FoldedSummary(said...)
-}
+func (g *Generate) settingsSaid() string { return parts.SettingsSaid(g.props) }
 
 // openFoldHolding opens the settings section when a refusal is about a box
 // inside it.
@@ -643,19 +628,9 @@ func (g *Generate) openFoldHolding(address string) {
 // properties is what the user put in the generated fields, under the keys the
 // format declared. An empty one is left out, because the registry reads a
 // missing key and an empty value as the same thing - not stated - and a format
-// that works its own answer out has to be allowed to.
-func (g *Generate) properties() map[string]string {
-	out := map[string]string{}
-	for _, f := range g.props {
-		if v := f.Value(); v != "" {
-			out[f.Name] = v
-		}
-	}
-	if len(out) == 0 {
-		return nil
-	}
-	return out
-}
+// that works its own answer out has to be allowed to. A hidden one says
+// nothing - see parts.StatedValues.
+func (g *Generate) properties() map[string]string { return parts.StatedValues(g.props) }
 
 // settle turns what is on the screen into what the engine takes.
 //

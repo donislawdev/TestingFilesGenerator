@@ -139,11 +139,10 @@ type batch struct {
 	// notes is the other section, with its fold, as one piece - see batchNotes.
 	notes batchNotes
 
-	// declared is what the chosen format takes, and props are the controls drawn
-	// from it. Both are replaced when the format changes and reused across a
-	// rebuild, for the reason above.
-	declared []format.Property
-	props    []parts.PropertyField
+	// props are the controls drawn from what the chosen format takes, each
+	// with its declaration. Replaced when the format changes and reused across
+	// a rebuild, for the reason above.
+	props []parts.PropertyField
 
 	contents []*content
 }
@@ -576,7 +575,6 @@ func (r *Recipe) onFormatChosen(b *batch, id string) {
 		return
 	}
 
-	b.declared = d.Properties
 	b.props = make([]parts.PropertyField, 0, len(d.Properties))
 	for _, p := range d.Properties {
 		b.props = append(b.props, parts.FromProperty(p))
@@ -698,17 +696,9 @@ func manifestName(stated string) string {
 
 // draft is one batch as text, ready to be composed into a document.
 func (b *batch) draft() recipe.TargetDraft {
-	props := map[string]string{}
-	for _, f := range b.props {
-		// An empty control means the setting was not stated, and a format that
-		// works its own answer out has to be allowed to.
-		if v := f.Value(); v != "" {
-			props[f.Name] = v
-		}
-	}
-	if len(props) == 0 {
-		props = nil
-	}
+	// An empty control means the setting was not stated, and a format that
+	// works its own answer out has to be allowed to. A hidden one says nothing.
+	props := parts.StatedValues(b.props)
 
 	var inside []recipe.ContentDraft
 	for _, c := range b.contents {

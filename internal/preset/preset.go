@@ -448,6 +448,9 @@ func Register(p Preset) {
 	// A parameter IS a format.Property, so a closed set of values is put in the
 	// same order here as it is over there. One rule for both, in the place each
 	// declaration passes through exactly once.
+	if format.AnyConditional(p.Parameters) {
+		panic(fmt.Sprintf("preset: %s declares a parameter with a condition, which only a format keeps", p.ID))
+	}
 	for i := range p.Parameters {
 		format.SortChoices(p.Parameters[i].Choices)
 	}

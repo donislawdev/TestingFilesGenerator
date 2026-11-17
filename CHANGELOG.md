@@ -79,8 +79,14 @@ because it turns other people's test suites red.
   `{index:04}` in it become each file's size and number. `background` and
   `foreground` take a colour such as `cccccc`, and `guides` draws a frame,
   both diagonals and a circle. In a recipe write a colour without the `#` or
-  in quotes, because YAML reads `#` as the start of a comment. The test
-  pattern is unchanged.
+  in quotes. The window shows these four once Content is placeholder. The
+  test pattern is unchanged.
+
+- **`tfg formats` says when a setting changes nothing.** A setting that
+  changes a file only while another setting has a certain value ends its line
+  with that, such as `only when content is placeholder`, and `tfg formats
+  --json` gives it as `only_when`. Such a setting is refused while it would
+  change nothing, as before.
 
 - **`smallest` as a size.** `--size smallest`, or `size: smallest` in a
   recipe, makes each picture as small as it can be at the `width` and
@@ -313,6 +319,10 @@ because it turns other people's test suites red.
   under it in the window puts that size in the box. Refusing a large batch
   takes about as long as planning it. A picture with its width and height set
   also gets a second button, which asks for `smallest`.
+- **Several batches shows a format's settings the way Single batch does.**
+  The settings of a PDF stand under their headings there too, and a setting
+  that is a size, such as Entry size of a ZIP, shows its count of bytes under
+  the box. The same goes for the settings of a preset a batch builds on.
 - **Choose... is off while files are being made.** The output directory box
   was frozen during a run and the button beside it was not, so a folder picked
   mid run went into the box while the run went on writing into the old one.

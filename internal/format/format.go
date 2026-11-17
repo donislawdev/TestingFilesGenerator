@@ -190,6 +190,10 @@ type Property struct {
 	// where a block starts and a split block would get two.
 	Group string
 
+	// OnlyWhen is the value another setting has to have for this one to
+	// change anything. The zero value means always. See Condition.
+	OnlyWhen Condition
+
 	// Secret marks a value that is a credential rather than a description of
 	// the file, and there is exactly one of them today: the password an
 	// archive is locked with.
