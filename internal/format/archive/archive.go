@@ -73,6 +73,12 @@ const (
 	// this format for an empty file.
 	DefaultFormat = "txt"
 
+	// FormatShape is what the box of a format for the files inside takes - an
+	// archive's and a message's alike. Given by example rather than by the
+	// command that lists formats, because a window has no command line beside
+	// the box and does have a list of formats at its top.
+	FormatShape = "the id of a format, such as png or csv"
+
 	defaultEntries = 1
 
 	// maxEntries is the ceiling on how many files an archive holds. It bounds
@@ -137,16 +143,17 @@ var axes = map[string]format.Property{
 		Name: Entries, Kind: format.PropertyInt,
 		Min: 0, Max: maxEntries,
 		Default: strconv.Itoa(defaultEntries),
-		Detail:  "How many files the archive holds. Use contains instead when the files are not all alike.",
+		Detail: "How many files the archive holds. When the files are not all alike, describe each kind on its own instead - " +
+			"with Add files inside on Several batches, or contains in a recipe.",
 	},
 	EntryFormat: {
 		Name: EntryFormat, Kind: format.PropertyText,
-		Shape: "the id of a format, as tfg formats lists them",
+		Shape: FormatShape,
 		// Not a choice, because the allowed values are whatever this build
 		// registered, and a list frozen here would drift away from the
 		// registry the moment a format is added.
 		Default: DefaultFormat,
-		Detail:  "The format of the files inside. Run tfg formats to see what this build supports.",
+		Detail:  "The format of the files inside.",
 	},
 	EntrySize: {
 		Name: EntrySize, Kind: format.PropertySize,

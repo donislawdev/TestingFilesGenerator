@@ -193,7 +193,9 @@ func Licence(notice string) string {
 // ChoiceName is what a list shows for one of its values. The value itself is
 // what a recipe, the command line and the manifest write, and what the list
 // hands back - only the words on the screen are the window's.
-func ChoiceName(of, value string) string { return lookup(ChoiceKey(of, value), value) }
+func ChoiceName(of, value string) string {
+	return lookup(ChoiceKey(of, value), EnglishChoice(of, value))
+}
 
 // ToolQuestion is the question a tool answers, which is its title.
 func ToolQuestion(id, english string) string { return lookup(ToolQuestionKey(id), english) }

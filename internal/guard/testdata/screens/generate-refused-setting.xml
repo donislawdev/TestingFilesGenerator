@@ -407,7 +407,7 @@
 																							<rectangle fillColor="inputBackground" radius="6" size="179x26"/>
 																							<rectangle size="0x0"/>
 																							<widget pos="4,3" size="149x20" type="*widget.RichText">
-																								<text pos="2,2" size="24x16">test</text>
+																								<text pos="2,2" size="75x16">test pattern</text>
 																							</widget>
 																							<widget pos="153,3" size="20x20" type="*widget.Icon">
 																								<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="primary"/>
@@ -421,7 +421,7 @@
 																		<widget pos="0,172" size="764x14" type="*parts.QuietText">
 																			<container size="764x14">
 																				<widget pos="-6,-6" size="776x26" type="*widget.RichText">
-																					<text color="placeholder" pos="6,6" size="595x14" textSize="12">width times height cannot pass 40 megapixels, because the picture is held in memory while it is encoded</text>
+																					<text color="placeholder" pos="6,6" size="599x14" textSize="12">Width times Height cannot pass 40 megapixels, because the picture is held in memory while it is encoded</text>
 																				</widget>
 																			</container>
 																		</widget>

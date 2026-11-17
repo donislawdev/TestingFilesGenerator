@@ -243,6 +243,12 @@ var provenByProbe = map[string]string{
 		"letting text through on the test pattern: red, png, jpg and svg.",
 	"TestARegistryRefusesAConditionItCannotKeep": "a canary of its own - a condition on a choice declared before it has to be " +
 		"taken - beside one declaration for each way a condition cannot be kept.",
+	"TestEveryNameWrittenByHandBelongsToADeclaredValue": "a canary of its own - a name for a value nothing declares has to be " +
+		"found - and a floor on how many names there are.",
+	"TestNoListShowsAValueSpelledAsARecipeKey": "a canary of its own - a list showing record-per-line as it is has to be found " +
+		"- and each standard token let through has to still be a declared value.",
+	"TestTheEnglishWindowShowsAListValueByItsName": "broken by hand on 2026-11-17 twice, ChoiceName saying the value and the " +
+		"folded summary saying the value: red both times. It reads the window, so a stale registry/en.json cannot hide either.",
 	"TestTheSizeSwitchAndTheSizeBoxNeverSayDifferentThings": "a refusal at the size box asked before the acceptance, so the " +
 		"preview is known to be able to refuse, and broken by hand on 2026-11-17 four ways - typing smallest leaving the switch, " +
 		"choosing Smallest writing nothing, leaving Smallest putting nothing back, a switch losing its choice saying nothing: red " +

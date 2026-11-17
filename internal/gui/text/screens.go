@@ -434,7 +434,7 @@ func AllowedWithDefault(what, value string) string {
 }
 
 // AllowedJointly is format.JointLimit.Describe in the window's language. Of and
-// By are the keys a recipe writes, as they are in English.
+// By are the labels of the two settings, as the boxes above the note say them.
 func AllowedJointly(of, by string, most int64, unit, why string) string {
 	return sayf("AllowedJointly", "{{.Of}} times {{.By}} cannot pass {{.Max}} {{.Unit}}, because {{.Why}}",
 		map[string]any{"Of": of, "By": by, "Max": most, "Unit": unit, "Why": why})

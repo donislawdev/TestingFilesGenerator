@@ -243,38 +243,38 @@
 															</container>
 														</container>
 													</container>
-													<container pos="201,0" size="185x138">
-														<container size="185x60">
-															<container size="185x24">
-																<text color="rgba(211,211,215,255)" pos="0,3" size="47x16">Spread</text>
-																<widget pos="55,0" size="24x24" type="*parts.DetailButton">
+													<container pos="201,0" size="386x138">
+														<container size="386x60">
+															<container size="386x24">
+																<text color="rgba(211,211,215,255)" pos="0,3" size="156x16">Distances from the limit</text>
+																<widget pos="164,0" size="24x24" type="*parts.DetailButton">
 																	<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 																	<rectangle radius="6" size="24x24"/>
 																	<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>
 																</widget>
 															</container>
-															<container pos="0,32" size="185x28">
-																<container size="185x28">
-																	<widget size="185x28" type="*parts.Entry">
-																		<rectangle fillColor="inputBackground" pos="1,1" radius="6" size="183x26"/>
-																		<rectangle radius="6" size="183x27" strokeColor="inputBorder" strokeWidth="1"/>
-																		<widget pos="0,1" size="185x26" type="*widget.Scroll">
-																			<widget size="185x26" type="*widget.entryContent">
-																				<widget size="185x26" type="*widget.RichText">
+															<container pos="0,32" size="386x28">
+																<container size="386x28">
+																	<widget size="386x28" type="*parts.Entry">
+																		<rectangle fillColor="inputBackground" pos="1,1" radius="6" size="384x26"/>
+																		<rectangle radius="6" size="384x27" strokeColor="inputBorder" strokeWidth="1"/>
+																		<widget pos="0,1" size="386x26" type="*widget.Scroll">
+																			<widget size="386x26" type="*widget.entryContent">
+																				<widget size="386x26" type="*widget.RichText">
 																					<text color="placeholder" pos="6,5" size="122x16">default: 1B,1kb,1mb</text>
 																				</widget>
-																				<widget size="185x26" type="*widget.RichText">
+																				<widget size="386x26" type="*widget.RichText">
 																					<text pos="6,5" size="0x16"></text>
 																				</widget>
 																			</widget>
 																		</widget>
 																	</widget>
-																	<rectangle radius="6" size="185x28"/>
+																	<rectangle radius="6" size="386x28"/>
 																</container>
 															</container>
 														</container>
 													</container>
-													<container pos="402,0" size="185x138">
+													<container pos="603,0" size="185x138">
 														<container size="185x58">
 															<container size="185x24">
 																<text color="rgba(211,211,215,255)" pos="0,3" size="46x16">Format</text>

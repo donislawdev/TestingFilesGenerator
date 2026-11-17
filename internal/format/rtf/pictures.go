@@ -76,7 +76,7 @@ func pictureProperties() []format.Property {
 		Choices: []string{Hex, Binary},
 		Default: Hex,
 		Group:   picturesGroup,
-		Detail: "How the bytes of each picture are written, which changes nothing while inline is 0. " +
+		Detail: "How the bytes of each picture are written, which changes nothing while the document has no pictures. " +
 			"hex writes them as text, twice as large, the way LibreOffice writes them. " +
 			"binary writes them as they are, so the document is no longer text, and a program that counts braces or reads it as text loses its place. " +
 			"pandoc changes the line ends inside a binary picture, so no png comes out whole, and it can lose the text after the picture or refuse the whole document. " +

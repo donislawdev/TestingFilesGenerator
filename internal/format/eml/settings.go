@@ -223,8 +223,8 @@ func textProperties() []format.Property {
 			Name: Body, Kind: format.PropertyChoice,
 			Choices: []string{Alternative, HTML, Plain},
 			Default: Plain,
-			Detail: "Which text the message carries. plain is one text part and html one HTML part. " +
-				"alternative carries both with the same words, and a mail program shows one of them.",
+			Detail: "Which text the message carries. With plain text and HTML the same words go in both, " +
+				"and a mail program shows one of them.",
 		},
 		layoutProperty(),
 		{
@@ -232,7 +232,7 @@ func textProperties() []format.Property {
 			Choices: []string{SevenBit, EightBit, Base64, QuotedPrintable},
 			Default: SevenBit,
 			Detail: "How the text is written. 7bit keeps it to plain ASCII. " +
-				"quoted-printable, 8bit and base64 add a line in Polish, and in Japanese when charset is utf-8, because that is what they are for. " +
+				"quoted-printable, 8bit and base64 add a line in Polish, and in Japanese when the charset is utf-8, because that is what they are for. " +
 				"quoted-printable spells those letters as =C5=BC, 8bit writes them as they are, and base64 writes the whole text in base64. " +
 				"To reach every size base64 ends the text with empty lines, and with crlf an odd size gives the Message-ID one more digit.",
 		},
@@ -280,7 +280,7 @@ func charsetProperty() format.Property {
 		Name: Charset, Kind: format.PropertyChoice,
 		Choices: []string{CharsetLatin2, CharsetUTF8, CharsetWindows1250},
 		Default: CharsetUTF8,
-		Detail: "The character set of the text when text_encoding is not 7bit. iso-8859-2 and windows-1250 hold Polish and no Japanese, " +
+		Detail: "The character set of the text when the text encoding is not 7bit. iso-8859-2 and windows-1250 hold Polish and no Japanese, " +
 			"and they write ą, ś and ź as different bytes, so a program that takes one for the other shows the wrong letters. " +
 			"MimeKit with no code page provider registered tries UTF-8 and then Latin-1, which shows the Polish letters of both wrong, and reads them right once one is. Go's standard library converts no character set at all. " +
 			"With 7bit the text is plain ASCII and says us-ascii, whatever this is set to.",
@@ -306,17 +306,18 @@ func attachmentProperties() []format.Property {
 			Name: Attachments, Kind: format.PropertyInt,
 			Min: 0, Max: archive.MaxMembers,
 			Default: strconv.Itoa(defaultAttachments),
-			Detail: "How many files the message carries. Use contains instead when the files are not all alike. " +
+			Detail: "How many files the message carries. When the files are not all alike, describe each kind on its own instead - " +
+				"with Add files inside on Several batches, or contains in a recipe. " +
 				"mailparser refuses a message of more than 1000 MIME entities, and the manifest gives this one's count as mime_entities.",
 			Group: attachmentsGroup,
 		},
 		{
 			Name: AttachmentFormat, Kind: format.PropertyText,
-			Shape: "the id of a format, as tfg formats lists them",
+			Shape: archive.FormatShape,
 			// Not a choice, for the reason the archives give: the allowed
 			// values are whatever this build registered.
 			Default: archive.DefaultFormat,
-			Detail: "The format of the attached files. Run tfg formats to see what this build supports. " +
+			Detail: "The format of the attached files. " +
 				"eml attaches a message as it is, the way mail is forwarded, with no base64 around it.",
 			Group: attachmentsGroup,
 		},
@@ -343,7 +344,7 @@ func filenameStyle() format.Property {
 			"both writes the two, and content-type puts the name only where old mail programs looked for it. " +
 			"none writes no name at all, and a program that needs one has to make one up - Thunderbird 157 calls them Part 1.2, Part 1.3 and so on. " +
 			"Go's standard library reads no name from content-type and the encoded text itself from rfc2047. " +
-			"Unless headers is encoded a name is written as it is and only where it goes changes, " +
+			"Unless the headers are encoded, a name is written as it is and only where it goes changes, " +
 			"so rfc2047 and both write the same bytes.",
 		Group: attachmentsGroup,
 	}

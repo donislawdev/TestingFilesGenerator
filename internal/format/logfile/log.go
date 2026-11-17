@@ -99,7 +99,7 @@ func properties() []format.Property {
 		{
 			Name: "methods", Kind: format.PropertyChoice,
 			Choices: []string{"get", "read", "mixed"}, Default: "get",
-			Detail: "Which request methods appear. Read is GET and HEAD, mixed adds POST, PUT, PATCH and DELETE.",
+			Detail: "Which request methods appear: GET only, GET and HEAD, or mixed, which adds POST, PUT, PATCH and DELETE to those two.",
 		},
 		{
 			Name: "status_mix", Kind: format.PropertyChoice,
@@ -109,7 +109,7 @@ func properties() []format.Property {
 		{
 			Name: "level_mix", Kind: format.PropertyChoice,
 			Choices: levelMixIDs, Default: "realistic",
-			Detail: "Which severities appear. Only the plain and json-lines shapes carry one, and asking for it beside another shape is refused.",
+			Detail: "Which severities appear. Only the plain and JSON Lines shapes carry one, and asking for it beside another shape is refused.",
 		},
 		{
 			Name: "ip_version", Kind: format.PropertyChoice,

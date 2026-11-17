@@ -233,10 +233,14 @@ func PropertyFields(d format.Descriptor, into *Fields, tips *Tips) ([]PropertyFi
 	return fields, objects
 }
 
-// JointLimit is JointLimit.Describe in the window's language. A guard asks the
-// English of the two to agree to the letter, for every limit declared.
+// JointLimit is JointLimit.Describe in the window's language, with the two
+// settings called by the labels of their boxes rather than by the keys a
+// recipe writes, since the note stands under boxes named Width and Height. A
+// guard asks the English of the two to agree to the letter once the keys are
+// put back, for every limit declared.
 func JointLimit(owner text.Owner, j format.JointLimit) string {
-	return text.AllowedJointly(j.Of, j.By, j.Most(), text.Unit(j.Unit), text.JointReason(owner, j.Of, j.By, j.Why))
+	return text.AllowedJointly(text.SettingLabel(j.Of), text.SettingLabel(j.By), j.Most(),
+		text.Unit(j.Unit), text.JointReason(owner, j.Of, j.By, j.Why))
 }
 
 // DeclaredFields draws every field a list of declared settings describes, in

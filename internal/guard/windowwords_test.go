@@ -3,6 +3,7 @@ package guard
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"regexp"
 	"sort"
@@ -107,39 +108,96 @@ func valueWord(value string) *regexp.Regexp {
 // decision of 2026-10-05: a value of a list is said in a sentence by its name
 // in the list). Values somebody types - all in a list of format ids, none in
 // a date - are not on a list and are not asked about.
+//
+// English too, since its lists have names of their own: a menu offering a test
+// pattern under a sentence about test is the same two words for one thing.
+// English is the language the values are written in, so one of its sentences
+// may use a value as the word it is - LibreOffice reads both - and there a
+// value that is a plain word is held only in the sentence of its own setting.
+// A value spelled as a key, record-per-line, is held everywhere.
 func TestNoTranslationNamesAListValueTheListCallsOtherwise(t *testing.T) {
 	byOwner := map[string][]declaredList{}
 	for _, l := range declaredLists() {
 		byOwner[l.owner] = append(byOwner[l.owner], l)
 	}
-	checked := 0
+	checked := map[string]int{}
 	for tag, entries := range registryFiles(t) {
-		if tag == text.English {
+		wrong, asked := valuesNamedOtherwise(entries, byOwner, tag == text.English)
+		checked[tag] = asked
+		for _, w := range wrong {
+			t.Errorf("%s %s", tag, w)
+		}
+	}
+	// Each language on its own, English among them: one language asked about
+	// fifty values would hide another asked about none.
+	if len(checked) < 2 {
+		t.Fatalf("%d language(s) read, so no translation was held to a list", len(checked))
+	}
+	for tag, n := range checked {
+		if n < 20 {
+			t.Errorf("%s was asked about %d value(s), so its sentences were not held to its lists", tag, n)
+		}
+	}
+	if checked[text.English] == 0 {
+		t.Error("English was not asked at all, and its lists name values as much as any other language's")
+	}
+
+	// The canaries, on the png's list of what a picture shows: a sentence
+	// saying test where the list says test pattern has to be found, and one
+	// saying the name, which holds the value inside it, must not be.
+	name := map[string]string{"other": "test pattern"}
+	said := func(sentence string) map[string]map[string]string {
+		return map[string]map[string]string{text.ChoiceKey("content", "test"): name,
+			"Detail.format/png.content": {"other": sentence}}
+	}
+	if wrong, _ := valuesNamedOtherwise(said("What the picture shows. test checks a reader."), byOwner, true); len(wrong) == 0 {
+		t.Error("canary: a sentence saying test under a list saying test pattern passed")
+	}
+	if wrong, _ := valuesNamedOtherwise(said("What the picture shows. A test pattern checks a reader."), byOwner, true); len(wrong) != 0 {
+		t.Errorf("canary: a sentence saying the name was taken for one saying the value: %v", wrong)
+	}
+}
+
+// valuesNamedOtherwise is every sentence of one catalogue naming a value of a
+// list that the catalogue gives another name, and how many values it asked
+// about. The names of a list are cut out of a sentence before its values are
+// looked for, so a test pattern is not read as test.
+func valuesNamedOtherwise(entries map[string]map[string]string, byOwner map[string][]declaredList, english bool) ([]string, int) {
+	var wrong []string
+	checked := 0
+	for key, entry := range entries {
+		if !strings.HasPrefix(key, "Detail.") {
 			continue
 		}
-		for key, entry := range entries {
-			if !strings.HasPrefix(key, "Detail.") {
-				continue
+		owner, setting := ownerOfDetail(key), strings.TrimPrefix(key, "Detail."+ownerOfDetail(key)+".")
+		for _, l := range byOwner[owner] {
+			names := map[string]string{}
+			var longestFirst []string
+			for _, v := range l.values {
+				if n := entries[text.ChoiceKey(l.setting, v)]["other"]; n != "" && !strings.EqualFold(n, v) {
+					names[v] = n
+					longestFirst = append(longestFirst, n)
+				}
 			}
-			owner := ownerOfDetail(key)
-			for _, l := range byOwner[owner] {
-				for _, v := range l.values {
-					named, has := entries[text.ChoiceKey(l.setting, v)]
-					if !has || named["other"] == v || len(v) < 3 {
-						continue
-					}
-					checked++
-					if valueWord(v).MatchString(entry["other"]) {
-						t.Errorf("%s %s names %q, which the %s list above it calls %q:\n  %s",
-							tag, key, v, l.setting, named["other"], entry["other"])
-					}
+			sort.Slice(longestFirst, func(i, j int) bool { return len(longestFirst[i]) > len(longestFirst[j]) })
+			sentence := entry["other"]
+			for _, n := range longestFirst {
+				sentence = regexp.MustCompile(`(?i)`+regexp.QuoteMeta(n)).ReplaceAllString(sentence, " ")
+			}
+			for v, n := range names {
+				if len(v) < 3 || english && l.setting != setting && !strings.ContainsAny(v, "_-") {
+					continue
+				}
+				checked++
+				if valueWord(v).MatchString(sentence) {
+					wrong = append(wrong, fmt.Sprintf("%s names %q, which the %s list above it calls %q:\n  %s",
+						key, v, l.setting, n, entry["other"]))
 				}
 			}
 		}
 	}
-	if checked < 50 {
-		t.Fatalf("asked about %d value(s), so no sentence was held to a list", checked)
-	}
+	sort.Strings(wrong)
+	return wrong, checked
 }
 
 // ownerOfDetail is the owner part of Detail.<owner>.<setting>, where an owner

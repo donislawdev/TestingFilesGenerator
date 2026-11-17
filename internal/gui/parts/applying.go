@@ -153,7 +153,9 @@ func StatedValues(fields []PropertyField) map[string]string {
 }
 
 // SettingsSaid is what a folded section of a declaration's fields says about
-// itself: each setting somebody chose, by its name and value.
+// itself: each setting somebody chose, by its label and its value as the field
+// shows it - a value of a list by its name in the list, since the line names
+// what the fold hides and the menu inside says test pattern, not test.
 //
 // What was CHOSEN, not what a field started on. A menu opens on its default
 // and so always has a value, and listing all of them turned this line into
@@ -166,9 +168,14 @@ func SettingsSaid(fields []PropertyField) string {
 		if f.Chosen != nil && !f.Chosen() {
 			continue
 		}
-		if v := f.Value(); v != "" && appliesAt(fields, i) {
-			said = append(said, text.SettingSaid(text.SettingLabel(f.Name), v))
+		v := f.Value()
+		if v == "" || !appliesAt(fields, i) {
+			continue
 		}
+		if f.Declared.Kind == format.PropertyChoice {
+			v = text.ChoiceName(f.Name, v)
+		}
+		said = append(said, text.SettingSaid(text.SettingLabel(f.Name), v))
 	}
 	return text.FoldedSummary(said...)
 }

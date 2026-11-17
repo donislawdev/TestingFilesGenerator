@@ -95,13 +95,13 @@ func ownProperties() []format.Property {
 		Name: TextEncoding, Kind: format.PropertyChoice,
 		Choices: []string{Unicode, Both, Codepage, Literal},
 		Default: Unicode,
-		Detail: "How the letters outside ASCII are written, which changes nothing while characters is ascii. " +
+		Detail: "How the letters outside ASCII are written, which changes nothing while the characters are ascii. " +
 			"unicode writes each one as a number with a question mark after it for a reader that does not know numbers. " +
-			"both puts the letter in the code page of its font after the number, two bytes for Japanese, the way Word writes it. " +
-			"codepage writes only the code page bytes, and the emoji still as numbers, since no code page holds them. " +
+			"Unicode and code page also puts the letter in the code page of its font after the number, two bytes for Japanese, the way Word writes it. " +
+			"Code page writes only the code page bytes, and the emoji still as numbers, since no code page holds them. " +
 			"literal writes the question mark as a plain character. " +
 			"LibreOffice, Tika and the RichEdit control of Windows read all four. " +
-			"pandoc shows codepage text in the wrong letters. pandoc before 3.13 also drops the character after every letter written literal, and pandoc 3.1 and 3.7 drop the emoji in all four. " +
+			"pandoc shows code page text in the wrong letters. pandoc before 3.13 also drops the character after every letter written literal, and pandoc 3.1 and 3.7 drop the emoji in all four. " +
 			"striprtf returns an emoji as two halves, which Python refuses to write as UTF-8.",
 	}, {
 		Name: Elements, Kind: format.PropertyChoice,

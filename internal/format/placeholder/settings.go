@@ -77,7 +77,7 @@ func Properties() []format.Property {
 			Name: SettingContent, Kind: format.PropertyChoice,
 			Choices: []string{ContentTest, ContentPlaceholder},
 			Default: ContentTest,
-			Detail:  "What the picture shows. test is a pattern for checking how a file is read. placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist.",
+			Detail:  "What the picture shows. A test pattern is for checking how a file is read. A placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist.",
 		},
 		{
 			Name: SettingText, Kind: format.PropertyText,

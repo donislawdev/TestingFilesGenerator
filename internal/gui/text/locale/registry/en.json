@@ -130,1172 +130,1172 @@
     "other": "a name with a path in it, such as ../, used as given, so the file is written outside the upload directory"
   },
   "Choice.algorithm.md5": {
-    "description": "One entry of the algorithm list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the algorithm list, as the list shows it. A recipe and the command line write md5, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3ebff31b62c0",
     "other": "md5"
   },
   "Choice.algorithm.sha1": {
-    "description": "One entry of the algorithm list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the algorithm list, as the list shows it. A recipe and the command line write sha1, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-b1565820a5cd",
     "other": "sha1"
   },
   "Choice.algorithm.sha256": {
-    "description": "One entry of the algorithm list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the algorithm list, as the list shows it. A recipe and the command line write sha256, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-5d5b09f6dcb2",
     "other": "sha256"
   },
   "Choice.algorithm.sha512": {
-    "description": "One entry of the algorithm list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the algorithm list, as the list shows it. A recipe and the command line write sha512, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-a396244643b5",
     "other": "sha512"
   },
   "Choice.bit_depth.16": {
-    "description": "One entry of the bit_depth list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the bit_depth list, as the list shows it. A recipe and the command line write 16, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-b17ef6d19c7a",
     "other": "16"
   },
   "Choice.bit_depth.24": {
-    "description": "One entry of the bit_depth list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the bit_depth list, as the list shows it. A recipe and the command line write 24, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-c2356069e9d1",
     "other": "24"
   },
   "Choice.bit_depth.32": {
-    "description": "One entry of the bit_depth list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the bit_depth list, as the list shows it. A recipe and the command line write 32, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-e29c9c180c62",
     "other": "32"
   },
   "Choice.bit_depth.8": {
-    "description": "One entry of the bit_depth list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the bit_depth list, as the list shows it. A recipe and the command line write 8, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-2c624232cdd2",
     "other": "8"
   },
   "Choice.body.alternative": {
-    "description": "One entry of the body list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-27747689baf9",
-    "other": "alternative"
+    "description": "One entry of the body list, as the list shows it. A recipe and the command line write alternative, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-fab1573b3dd1",
+    "other": "plain text and HTML"
   },
   "Choice.body.any-value": {
-    "description": "One entry of the body list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-cc8f80439173",
-    "other": "any-value"
+    "description": "One entry of the body list, as the list shows it. A recipe and the command line write any-value, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-aa9cde9613f4",
+    "other": "every kind of value"
   },
   "Choice.body.html": {
-    "description": "One entry of the body list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-e5e239560bc1",
-    "other": "html"
+    "description": "One entry of the body list, as the list shows it. A recipe and the command line write html, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-07239dbd2a1a",
+    "other": "HTML"
   },
   "Choice.body.plain": {
-    "description": "One entry of the body list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-a116c9ed46d6",
-    "other": "plain"
+    "description": "One entry of the body list, as the list shows it. A recipe and the command line write plain, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-c9ecf5e54c7b",
+    "other": "plain text"
   },
   "Choice.body.text": {
-    "description": "One entry of the body list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the body list, as the list shows it. A recipe and the command line write text, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-982d9e3eb996",
     "other": "text"
   },
   "Choice.characters.ascii": {
-    "description": "One entry of the characters list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the characters list, as the list shows it. A recipe and the command line write ascii, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-c543ece81605",
     "other": "ascii"
   },
   "Choice.characters.international": {
-    "description": "One entry of the characters list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the characters list, as the list shows it. A recipe and the command line write international, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-1e3bb894756f",
     "other": "international"
   },
   "Choice.charset.iso-8859-2": {
-    "description": "One entry of the charset list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the charset list, as the list shows it. A recipe and the command line write iso-8859-2, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-d7b4209b5c03",
     "other": "iso-8859-2"
   },
   "Choice.charset.utf-8": {
-    "description": "One entry of the charset list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the charset list, as the list shows it. A recipe and the command line write utf-8, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-5cf1fa8d836a",
     "other": "utf-8"
   },
   "Choice.charset.windows-1250": {
-    "description": "One entry of the charset list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the charset list, as the list shows it. A recipe and the command line write windows-1250, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-5cfde86a4658",
     "other": "windows-1250"
   },
   "Choice.compression.best": {
-    "description": "One entry of the compression list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the compression list, as the list shows it. A recipe and the command line write best, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-8f4375ec65c2",
     "other": "best"
   },
   "Choice.compression.default": {
-    "description": "One entry of the compression list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the compression list, as the list shows it. A recipe and the command line write default, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-37a8eec1ce19",
     "other": "default"
   },
   "Choice.compression.fast": {
-    "description": "One entry of the compression list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the compression list, as the list shows it. A recipe and the command line write fast, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-115dc3606fbf",
     "other": "fast"
   },
   "Choice.compression.none": {
-    "description": "One entry of the compression list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the compression list, as the list shows it. A recipe and the command line write none, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-140bedbf9c3f",
     "other": "none"
   },
   "Choice.content.noise": {
-    "description": "One entry of the content list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the content list, as the list shows it. A recipe and the command line write noise, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-efe2a5c09e6d",
     "other": "noise"
   },
   "Choice.content.placeholder": {
-    "description": "One entry of the content list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the content list, as the list shows it. A recipe and the command line write placeholder, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-4097889236a2",
     "other": "placeholder"
   },
   "Choice.content.silence": {
-    "description": "One entry of the content list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the content list, as the list shows it. A recipe and the command line write silence, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-e6c18fdbe597",
     "other": "silence"
   },
   "Choice.content.sweep": {
-    "description": "One entry of the content list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-dfd33796972c",
-    "other": "sweep"
+    "description": "One entry of the content list, as the list shows it. A recipe and the command line write sweep, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-009bf8c7b1b8",
+    "other": "rising tone"
   },
   "Choice.content.test": {
-    "description": "One entry of the content list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-9f86d081884c",
-    "other": "test"
+    "description": "One entry of the content list, as the list shows it. A recipe and the command line write test, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-4d1f108611d7",
+    "other": "test pattern"
   },
   "Choice.content.tone": {
-    "description": "One entry of the content list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-00cf4ce3935c",
-    "other": "tone"
+    "description": "One entry of the content list, as the list shows it. A recipe and the command line write tone, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-7cfb96347670",
+    "other": "steady tone"
   },
   "Choice.delimiter.comma": {
-    "description": "One entry of the delimiter list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the delimiter list, as the list shows it. A recipe and the command line write comma, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-f36a4e586705",
     "other": "comma"
   },
   "Choice.delimiter.pipe": {
-    "description": "One entry of the delimiter list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the delimiter list, as the list shows it. A recipe and the command line write pipe, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-400829473916",
     "other": "pipe"
   },
   "Choice.delimiter.semicolon": {
-    "description": "One entry of the delimiter list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the delimiter list, as the list shows it. A recipe and the command line write semicolon, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-1e69fcfadd9d",
     "other": "semicolon"
   },
   "Choice.delimiter.tab": {
-    "description": "One entry of the delimiter list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the delimiter list, as the list shows it. A recipe and the command line write tab, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-7508386a2056",
     "other": "tab"
   },
   "Choice.elements.basic": {
-    "description": "One entry of the elements list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the elements list, as the list shows it. A recipe and the command line write basic, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-fbb7b5bf4ca3",
     "other": "basic"
   },
   "Choice.elements.every": {
-    "description": "One entry of the elements list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the elements list, as the list shows it. A recipe and the command line write every, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-66a424a9a958",
     "other": "every"
   },
   "Choice.embed.bmp": {
-    "description": "One entry of the embed list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the embed list, as the list shows it. A recipe and the command line write bmp, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-7685a5cb2b57",
     "other": "bmp"
   },
   "Choice.embed.png": {
-    "description": "One entry of the embed list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the embed list, as the list shows it. A recipe and the command line write png, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-8f8cbb7dcf46",
     "other": "png"
   },
   "Choice.encoding.utf-16be": {
-    "description": "One entry of the encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the encoding list, as the list shows it. A recipe and the command line write utf-16be, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-43b2bae67086",
     "other": "utf-16be"
   },
   "Choice.encoding.utf-16le": {
-    "description": "One entry of the encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the encoding list, as the list shows it. A recipe and the command line write utf-16le, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-4ffbae688018",
     "other": "utf-16le"
   },
   "Choice.encoding.utf-8": {
-    "description": "One entry of the encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the encoding list, as the list shows it. A recipe and the command line write utf-8, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-5cf1fa8d836a",
     "other": "utf-8"
   },
   "Choice.encryption.aes-128": {
-    "description": "One entry of the encryption list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the encryption list, as the list shows it. A recipe and the command line write aes-128, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-8cf9659cdea5",
     "other": "aes-128"
   },
   "Choice.encryption.aes-192": {
-    "description": "One entry of the encryption list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the encryption list, as the list shows it. A recipe and the command line write aes-192, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-5498c4450db4",
     "other": "aes-192"
   },
   "Choice.encryption.aes-256": {
-    "description": "One entry of the encryption list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the encryption list, as the list shows it. A recipe and the command line write aes-256, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-7237b089a3fc",
     "other": "aes-256"
   },
   "Choice.encryption.none": {
-    "description": "One entry of the encryption list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the encryption list, as the list shows it. A recipe and the command line write none, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-140bedbf9c3f",
     "other": "none"
   },
   "Choice.encryption.zipcrypto": {
-    "description": "One entry of the encryption list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the encryption list, as the list shows it. A recipe and the command line write zipcrypto, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-42ea6e5dc44a",
     "other": "zipcrypto"
   },
   "Choice.entry_format.apache-combined": {
-    "description": "One entry of the entry_format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-eb5679006aba",
-    "other": "apache-combined"
+    "description": "One entry of the entry_format list, as the list shows it. A recipe and the command line write apache-combined, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-d0857dd9bd16",
+    "other": "Apache combined"
   },
   "Choice.entry_format.apache-common": {
-    "description": "One entry of the entry_format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-5385bfe0ab10",
-    "other": "apache-common"
+    "description": "One entry of the entry_format list, as the list shows it. A recipe and the command line write apache-common, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-fedd364848fa",
+    "other": "Apache common"
   },
   "Choice.entry_format.json-lines": {
-    "description": "One entry of the entry_format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-9e26c12b9d04",
-    "other": "json-lines"
+    "description": "One entry of the entry_format list, as the list shows it. A recipe and the command line write json-lines, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-74163645b1b5",
+    "other": "JSON Lines"
   },
   "Choice.entry_format.nginx": {
-    "description": "One entry of the entry_format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_format list, as the list shows it. A recipe and the command line write nginx, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-5be1ecc7935f",
     "other": "nginx"
   },
   "Choice.entry_format.plain": {
-    "description": "One entry of the entry_format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_format list, as the list shows it. A recipe and the command line write plain, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-a116c9ed46d6",
     "other": "plain"
   },
   "Choice.entry_format.syslog": {
-    "description": "One entry of the entry_format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_format list, as the list shows it. A recipe and the command line write syslog, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-4d75f832ea26",
     "other": "syslog"
   },
   "Choice.entry_mode.000": {
-    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write 000, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-2ac9a6746aca",
     "other": "000"
   },
   "Choice.entry_mode.400": {
-    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write 400, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-26d228663f13",
     "other": "400"
   },
   "Choice.entry_mode.444": {
-    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write 444, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3538a1ef2e11",
     "other": "444"
   },
   "Choice.entry_mode.600": {
-    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write 600, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-284b7e6d788f",
     "other": "600"
   },
   "Choice.entry_mode.644": {
-    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write 644, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-87e50b287059",
     "other": "644"
   },
   "Choice.entry_mode.664": {
-    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write 664, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-09eac95eb995",
     "other": "664"
   },
   "Choice.entry_mode.666": {
-    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write 666, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-c7e616822f36",
     "other": "666"
   },
   "Choice.entry_mode.700": {
-    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write 700, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-99ee50221221",
     "other": "700"
   },
   "Choice.entry_mode.755": {
-    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write 755, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-86ab8cbe5869",
     "other": "755"
   },
   "Choice.entry_mode.777": {
-    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_mode list, as the list shows it. A recipe and the command line write 777, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-eaf89db71084",
     "other": "777"
   },
   "Choice.entry_owner.root": {
-    "description": "One entry of the entry_owner list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_owner list, as the list shows it. A recipe and the command line write root, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-4813494d137e",
     "other": "root"
   },
   "Choice.entry_owner.unset": {
-    "description": "One entry of the entry_owner list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_owner list, as the list shows it. A recipe and the command line write unset, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-6cbf83e08093",
     "other": "unset"
   },
   "Choice.entry_owner.user": {
-    "description": "One entry of the entry_owner list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the entry_owner list, as the list shows it. A recipe and the command line write user, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-04f8996da763",
     "other": "user"
   },
   "Choice.enum_encoding.name": {
-    "description": "One entry of the enum_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the enum_encoding list, as the list shows it. A recipe and the command line write name, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-82a3537ff0db",
     "other": "name"
   },
   "Choice.enum_encoding.number": {
-    "description": "One entry of the enum_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the enum_encoding list, as the list shows it. A recipe and the command line write number, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-12886f9d0005",
     "other": "number"
   },
   "Choice.expected.accept": {
-    "description": "One entry of the list of what the system under test should do with a file. The manifest writes the value itself.",
+    "description": "One entry of the list of what the system under test should do with a file. The manifest writes accept.",
     "hash": "sha256-c125d0397b60",
     "other": "accept"
   },
   "Choice.expected.reason.content_malformed": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
-    "hash": "sha256-14484a3d8ff7",
-    "other": "content_malformed"
+    "description": "One entry of the list of the rule a file tests. The manifest writes content_malformed.",
+    "hash": "sha256-51d22886ab72",
+    "other": "malformed content"
   },
   "Choice.expected.reason.count_limit": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
-    "hash": "sha256-636449b3d71c",
-    "other": "count_limit"
+    "description": "One entry of the list of the rule a file tests. The manifest writes count_limit.",
+    "hash": "sha256-80094c926360",
+    "other": "file count limit"
   },
   "Choice.expected.reason.dimensions_limit": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
-    "hash": "sha256-539dd060c765",
-    "other": "dimensions_limit"
+    "description": "One entry of the list of the rule a file tests. The manifest writes dimensions_limit.",
+    "hash": "sha256-b3dc71e8df2e",
+    "other": "dimensions limit"
   },
   "Choice.expected.reason.duplicate": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
+    "description": "One entry of the list of the rule a file tests. The manifest writes duplicate.",
     "hash": "sha256-e24a5a32c9b8",
     "other": "duplicate"
   },
   "Choice.expected.reason.encoding_invalid": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
-    "hash": "sha256-1ed4a2806f5f",
-    "other": "encoding_invalid"
+    "description": "One entry of the list of the rule a file tests. The manifest writes encoding_invalid.",
+    "hash": "sha256-126efde45cec",
+    "other": "invalid encoding"
   },
   "Choice.expected.reason.extension_rule": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
-    "hash": "sha256-87ad72d63a7f",
-    "other": "extension_rule"
+    "description": "One entry of the list of the rule a file tests. The manifest writes extension_rule.",
+    "hash": "sha256-ea91ae4f758e",
+    "other": "extension rule"
   },
   "Choice.expected.reason.filename_invalid": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
-    "hash": "sha256-816b1c0c80ea",
-    "other": "filename_invalid"
+    "description": "One entry of the list of the rule a file tests. The manifest writes filename_invalid.",
+    "hash": "sha256-94d1f4a7e785",
+    "other": "invalid file name"
   },
   "Choice.expected.reason.filename_too_long": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
-    "hash": "sha256-394b764c42c4",
-    "other": "filename_too_long"
+    "description": "One entry of the list of the rule a file tests. The manifest writes filename_too_long.",
+    "hash": "sha256-7d00dd68fceb",
+    "other": "file name too long"
   },
   "Choice.expected.reason.filename_traversal": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
-    "hash": "sha256-51dbdb34a500",
-    "other": "filename_traversal"
+    "description": "One entry of the list of the rule a file tests. The manifest writes filename_traversal.",
+    "hash": "sha256-a22edd75d23b",
+    "other": "path outside the folder"
   },
   "Choice.expected.reason.malware_signature": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
-    "hash": "sha256-adb5581b7ea9",
-    "other": "malware_signature"
+    "description": "One entry of the list of the rule a file tests. The manifest writes malware_signature.",
+    "hash": "sha256-11dfd8a66593",
+    "other": "malware signature"
   },
   "Choice.expected.reason.mime_mismatch": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
-    "hash": "sha256-a1c2c3069328",
-    "other": "mime_mismatch"
+    "description": "One entry of the list of the rule a file tests. The manifest writes mime_mismatch.",
+    "hash": "sha256-601dd0fbb437",
+    "other": "type does not match the content"
   },
   "Choice.expected.reason.nesting_depth": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
-    "hash": "sha256-ddc6be14fb52",
-    "other": "nesting_depth"
+    "description": "One entry of the list of the rule a file tests. The manifest writes nesting_depth.",
+    "hash": "sha256-f797a19b6d78",
+    "other": "nesting depth"
   },
   "Choice.expected.reason.none": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
+    "description": "One entry of the list of the rule a file tests. The manifest writes none.",
     "hash": "sha256-140bedbf9c3f",
     "other": "none"
   },
   "Choice.expected.reason.size_limit": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
-    "hash": "sha256-7fba5810a3a2",
-    "other": "size_limit"
+    "description": "One entry of the list of the rule a file tests. The manifest writes size_limit.",
+    "hash": "sha256-40caef2f118c",
+    "other": "size limit"
   },
   "Choice.expected.reason.size_zero": {
-    "description": "One entry of the list of the rule a file tests. The manifest writes the value itself.",
-    "hash": "sha256-2ccd5d11434a",
-    "other": "size_zero"
+    "description": "One entry of the list of the rule a file tests. The manifest writes size_zero.",
+    "hash": "sha256-9e8c00db8eed",
+    "other": "empty file"
   },
   "Choice.expected.reject": {
-    "description": "One entry of the list of what the system under test should do with a file. The manifest writes the value itself.",
+    "description": "One entry of the list of what the system under test should do with a file. The manifest writes reject.",
     "hash": "sha256-084e990a49ba",
     "other": "reject"
   },
   "Choice.expected.sanitize": {
-    "description": "One entry of the list of what the system under test should do with a file. The manifest writes the value itself.",
+    "description": "One entry of the list of what the system under test should do with a file. The manifest writes sanitize.",
     "hash": "sha256-af6a3bb0c72f",
     "other": "sanitize"
   },
   "Choice.expected.unspecified": {
-    "description": "One entry of the list of what the system under test should do with a file. The manifest writes the value itself.",
+    "description": "One entry of the list of what the system under test should do with a file. The manifest writes unspecified.",
     "hash": "sha256-f416648f8086",
     "other": "unspecified"
   },
   "Choice.far-over.10x": {
-    "description": "One entry of the far-over list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the far-over list, as the list shows it. A recipe and the command line write 10x, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-687f5e475cbd",
     "other": "10x"
   },
   "Choice.far-over.2x": {
-    "description": "One entry of the far-over list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the far-over list, as the list shows it. A recipe and the command line write 2x, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-b595b214b5d4",
     "other": "2x"
   },
   "Choice.far-over.off": {
-    "description": "One entry of the far-over list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the far-over list, as the list shows it. A recipe and the command line write off, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-b4dc66dde806",
     "other": "off"
   },
   "Choice.filename_style.both": {
-    "description": "One entry of the filename_style list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the filename_style list, as the list shows it. A recipe and the command line write both, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-ff7772053abf",
     "other": "both"
   },
   "Choice.filename_style.content-type": {
-    "description": "One entry of the filename_style list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the filename_style list, as the list shows it. A recipe and the command line write content-type, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-846b3a9229ce",
     "other": "content-type"
   },
   "Choice.filename_style.none": {
-    "description": "One entry of the filename_style list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the filename_style list, as the list shows it. A recipe and the command line write none, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-140bedbf9c3f",
     "other": "none"
   },
   "Choice.filename_style.rfc2047": {
-    "description": "One entry of the filename_style list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the filename_style list, as the list shows it. A recipe and the command line write rfc2047, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-1eeb8be955da",
     "other": "rfc2047"
   },
   "Choice.filename_style.rfc2231": {
-    "description": "One entry of the filename_style list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the filename_style list, as the list shows it. A recipe and the command line write rfc2231, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-c4a81dcefb6e",
     "other": "rfc2231"
   },
   "Choice.format.avif": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write avif, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-2f47c57aae31",
     "other": "avif"
   },
   "Choice.format.bmp": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write bmp, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-7685a5cb2b57",
     "other": "bmp"
   },
   "Choice.format.csv": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write csv, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-53bb9b0b38ac",
     "other": "csv"
   },
   "Choice.format.docx": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write docx, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-584cb925e6ad",
     "other": "docx"
   },
   "Choice.format.eml": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write eml, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-13033c0419d0",
     "other": "eml"
   },
   "Choice.format.geojson": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write geojson, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-64bce794becb",
     "other": "geojson"
   },
   "Choice.format.gif": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write gif, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3b34c6906f7e",
     "other": "gif"
   },
   "Choice.format.html": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write html, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-e5e239560bc1",
     "other": "html"
   },
   "Choice.format.ico": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write ico, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-c51052ef06b6",
     "other": "ico"
   },
   "Choice.format.jpg": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write jpg, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-f8146b6cb496",
     "other": "jpg"
   },
   "Choice.format.json": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write json, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-02bd175f3297",
     "other": "json"
   },
   "Choice.format.jxl": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write jxl, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-87953914d2ad",
     "other": "jxl"
   },
   "Choice.format.log": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write log, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-836ff184e7b4",
     "other": "log"
   },
   "Choice.format.md": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write md, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-21262a3cb533",
     "other": "md"
   },
   "Choice.format.mp4": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write mp4, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-862c4ec62def",
     "other": "mp4"
   },
   "Choice.format.otlp": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write otlp, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-e81fa7c0883f",
     "other": "otlp"
   },
   "Choice.format.pdf": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write pdf, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-c35b21d6ca39",
     "other": "pdf"
   },
   "Choice.format.png": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write png, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-8f8cbb7dcf46",
     "other": "png"
   },
   "Choice.format.pptx": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write pptx, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-1512e97a4b84",
     "other": "pptx"
   },
   "Choice.format.rtf": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write rtf, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-b97d62f2e9e5",
     "other": "rtf"
   },
   "Choice.format.svg": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write svg, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-acdb1373d176",
     "other": "svg"
   },
   "Choice.format.targz": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write targz, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-fc53fb509109",
     "other": "targz"
   },
   "Choice.format.tiff": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write tiff, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-904749a4869b",
     "other": "tiff"
   },
   "Choice.format.toml": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write toml, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-bf0a90221595",
     "other": "toml"
   },
   "Choice.format.txt": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write txt, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-486b9a6fc855",
     "other": "txt"
   },
   "Choice.format.wav": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write wav, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-61e25c2cdda1",
     "other": "wav"
   },
   "Choice.format.webm": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write webm, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-ed55d4a2399b",
     "other": "webm"
   },
   "Choice.format.webp": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write webp, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-a57bb082e728",
     "other": "webp"
   },
   "Choice.format.xlsx": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write xlsx, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-1c980b22bca3",
     "other": "xlsx"
   },
   "Choice.format.xml": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write xml, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-bf92a04e60b4",
     "other": "xml"
   },
   "Choice.format.yaml": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write yaml, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-9831daaaa0a9",
     "other": "yaml"
   },
   "Choice.format.zip": {
-    "description": "One entry of the format list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the format list, as the list shows it. A recipe and the command line write zip, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-4a70fe9aa643",
     "other": "zip"
   },
   "Choice.formatting.indented": {
-    "description": "One entry of the formatting list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the formatting list, as the list shows it. A recipe and the command line write indented, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-a258f543b0a6",
     "other": "indented"
   },
   "Choice.formatting.lines": {
-    "description": "One entry of the formatting list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the formatting list, as the list shows it. A recipe and the command line write lines, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-5ea44c3961f1",
     "other": "lines"
   },
   "Choice.formatting.minified": {
-    "description": "One entry of the formatting list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the formatting list, as the list shows it. A recipe and the command line write minified, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-1ddd424e287f",
     "other": "minified"
   },
   "Choice.formatting.record-per-line": {
-    "description": "One entry of the formatting list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-6f0d86374d60",
-    "other": "record-per-line"
+    "description": "One entry of the formatting list, as the list shows it. A recipe and the command line write record-per-line, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-a24bb4915137",
+    "other": "record per line"
   },
   "Choice.frame_rate.1": {
-    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write 1, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-6b86b273ff34",
     "other": "1"
   },
   "Choice.frame_rate.10": {
-    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write 10, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-4a44dc153642",
     "other": "10"
   },
   "Choice.frame_rate.12": {
-    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write 12, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-6b51d431df5d",
     "other": "12"
   },
   "Choice.frame_rate.15": {
-    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write 15, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-e629fa6598d7",
     "other": "15"
   },
   "Choice.frame_rate.24": {
-    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write 24, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-c2356069e9d1",
     "other": "24"
   },
   "Choice.frame_rate.25": {
-    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write 25, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-b7a56873cd77",
     "other": "25"
   },
   "Choice.frame_rate.30": {
-    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write 30, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-624b60c58c9d",
     "other": "30"
   },
   "Choice.frame_rate.48": {
-    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write 48, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-98010bd9270f",
     "other": "48"
   },
   "Choice.frame_rate.5": {
-    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write 5, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-ef2d127de37b",
     "other": "5"
   },
   "Choice.frame_rate.50": {
-    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write 50, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-1a6562590ef1",
     "other": "50"
   },
   "Choice.frame_rate.60": {
-    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the frame_rate list, as the list shows it. A recipe and the command line write 60, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-39fa9ec190ee",
     "other": "60"
   },
   "Choice.geometry.geometrycollection": {
-    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write geometrycollection, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-c86a75e30348",
     "other": "geometrycollection"
   },
   "Choice.geometry.linestring": {
-    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write linestring, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-5f381815f5ce",
     "other": "linestring"
   },
   "Choice.geometry.mixed": {
-    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write mixed, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3f8fee624f43",
     "other": "mixed"
   },
   "Choice.geometry.multilinestring": {
-    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write multilinestring, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-f1d6790bc746",
     "other": "multilinestring"
   },
   "Choice.geometry.multipoint": {
-    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write multipoint, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-0ebeeffc0a24",
     "other": "multipoint"
   },
   "Choice.geometry.multipolygon": {
-    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write multipolygon, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-d9cfa92a41b7",
     "other": "multipolygon"
   },
   "Choice.geometry.point": {
-    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write point, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-251fecd592e5",
     "other": "point"
   },
   "Choice.geometry.polygon": {
-    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the geometry list, as the list shows it. A recipe and the command line write polygon, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-2b3b18120924",
     "other": "polygon"
   },
   "Choice.headers.ascii": {
-    "description": "One entry of the headers list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the headers list, as the list shows it. A recipe and the command line write ascii, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-c543ece81605",
     "other": "ascii"
   },
   "Choice.headers.encoded": {
-    "description": "One entry of the headers list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the headers list, as the list shows it. A recipe and the command line write encoded, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-766adc67b02b",
     "other": "encoded"
   },
   "Choice.headers.utf8": {
-    "description": "One entry of the headers list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the headers list, as the list shows it. A recipe and the command line write utf8, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-941b7ecd47e5",
     "other": "utf8"
   },
   "Choice.id_encoding.base64": {
-    "description": "One entry of the id_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the id_encoding list, as the list shows it. A recipe and the command line write base64, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-371a286d5872",
     "other": "base64"
   },
   "Choice.id_encoding.hex": {
-    "description": "One entry of the id_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the id_encoding list, as the list shows it. A recipe and the command line write hex, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-128df13c1e54",
     "other": "hex"
   },
   "Choice.id_encoding.upper-hex": {
-    "description": "One entry of the id_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-18b09d853661",
-    "other": "upper-hex"
+    "description": "One entry of the id_encoding list, as the list shows it. A recipe and the command line write upper-hex, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-8f531e68f1b1",
+    "other": "upper-case hex"
   },
   "Choice.ids.mixed": {
-    "description": "One entry of the ids list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the ids list, as the list shows it. A recipe and the command line write mixed, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3f8fee624f43",
     "other": "mixed"
   },
   "Choice.ids.none": {
-    "description": "One entry of the ids list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the ids list, as the list shows it. A recipe and the command line write none, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-140bedbf9c3f",
     "other": "none"
   },
   "Choice.ids.number": {
-    "description": "One entry of the ids list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the ids list, as the list shows it. A recipe and the command line write number, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-12886f9d0005",
     "other": "number"
   },
   "Choice.ids.string": {
-    "description": "One entry of the ids list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the ids list, as the list shows it. A recipe and the command line write string, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-473287f8298d",
     "other": "string"
   },
   "Choice.ip_version.mixed": {
-    "description": "One entry of the ip_version list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the ip_version list, as the list shows it. A recipe and the command line write mixed, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3f8fee624f43",
     "other": "mixed"
   },
   "Choice.ip_version.v4": {
-    "description": "One entry of the ip_version list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the ip_version list, as the list shows it. A recipe and the command line write v4, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-8e38a1ea5c68",
     "other": "v4"
   },
   "Choice.ip_version.v6": {
-    "description": "One entry of the ip_version list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the ip_version list, as the list shows it. A recipe and the command line write v6, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3e8286044388",
     "other": "v6"
   },
   "Choice.key_case.camel": {
-    "description": "One entry of the key_case list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-4812585e9449",
-    "other": "camel"
+    "description": "One entry of the key_case list, as the list shows it. A recipe and the command line write camel, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-987aa078ffa1",
+    "other": "camelCase"
   },
   "Choice.key_case.snake": {
-    "description": "One entry of the key_case list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-538d7d9fe78e",
-    "other": "snake"
+    "description": "One entry of the key_case list, as the list shows it. A recipe and the command line write snake, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-ffdf29cd20be",
+    "other": "snake_case"
   },
   "Choice.large_numbers.number": {
-    "description": "One entry of the large_numbers list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the large_numbers list, as the list shows it. A recipe and the command line write number, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-12886f9d0005",
     "other": "number"
   },
   "Choice.large_numbers.text": {
-    "description": "One entry of the large_numbers list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the large_numbers list, as the list shows it. A recipe and the command line write text, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-982d9e3eb996",
     "other": "text"
   },
   "Choice.layout.newsletter": {
-    "description": "One entry of the layout list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the layout list, as the list shows it. A recipe and the command line write newsletter, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-dd6f465f6810",
     "other": "newsletter"
   },
   "Choice.layout.simple": {
-    "description": "One entry of the layout list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the layout list, as the list shows it. A recipe and the command line write simple, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-a7a39b72f297",
     "other": "simple"
   },
   "Choice.level_mix.debug": {
-    "description": "One entry of the level_mix list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the level_mix list, as the list shows it. A recipe and the command line write debug, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-0b8e9e995d8d",
     "other": "debug"
   },
   "Choice.level_mix.errors": {
-    "description": "One entry of the level_mix list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the level_mix list, as the list shows it. A recipe and the command line write errors, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-be4bd5677277",
     "other": "errors"
   },
   "Choice.level_mix.quiet": {
-    "description": "One entry of the level_mix list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the level_mix list, as the list shows it. A recipe and the command line write quiet, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-008f0747f4e2",
     "other": "quiet"
   },
   "Choice.level_mix.realistic": {
-    "description": "One entry of the level_mix list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the level_mix list, as the list shows it. A recipe and the command line write realistic, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-9d2f45fd706a",
     "other": "realistic"
   },
   "Choice.line_ending.crlf": {
-    "description": "One entry of the line_ending list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the line_ending list, as the list shows it. A recipe and the command line write crlf, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-c613dc516f32",
     "other": "crlf"
   },
   "Choice.line_ending.lf": {
-    "description": "One entry of the line_ending list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the line_ending list, as the list shows it. A recipe and the command line write lf, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-39e741eddb03",
     "other": "lf"
   },
   "Choice.line_endings.crlf": {
-    "description": "One entry of the line_endings list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the line_endings list, as the list shows it. A recipe and the command line write crlf, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-c613dc516f32",
     "other": "crlf"
   },
   "Choice.line_endings.lf": {
-    "description": "One entry of the line_endings list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the line_endings list, as the list shows it. A recipe and the command line write lf, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-39e741eddb03",
     "other": "lf"
   },
   "Choice.methods.get": {
-    "description": "One entry of the methods list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-2998b3232d29",
-    "other": "get"
+    "description": "One entry of the methods list, as the list shows it. A recipe and the command line write get, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-00dc16a60bf9",
+    "other": "GET only"
   },
   "Choice.methods.mixed": {
-    "description": "One entry of the methods list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the methods list, as the list shows it. A recipe and the command line write mixed, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3f8fee624f43",
     "other": "mixed"
   },
   "Choice.methods.read": {
-    "description": "One entry of the methods list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-3316348dbadf",
-    "other": "read"
+    "description": "One entry of the methods list, as the list shows it. A recipe and the command line write read, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-575866d5fc48",
+    "other": "GET and HEAD"
   },
   "Choice.metric_kind.exponential-histogram": {
-    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-9e08a9dd9e02",
-    "other": "exponential-histogram"
+    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write exponential-histogram, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-d9efa57e1d07",
+    "other": "exponential histogram"
   },
   "Choice.metric_kind.gauge": {
-    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write gauge, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-a90fd9a9a1e6",
     "other": "gauge"
   },
   "Choice.metric_kind.histogram": {
-    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write histogram, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-56f0e5b2847c",
     "other": "histogram"
   },
   "Choice.metric_kind.mixed": {
-    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write mixed, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3f8fee624f43",
     "other": "mixed"
   },
   "Choice.metric_kind.sum": {
-    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write sum, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-09f5ffef2830",
     "other": "sum"
   },
   "Choice.metric_kind.summary": {
-    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the metric_kind list, as the list shows it. A recipe and the command line write summary, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-761b7ad8ad43",
     "other": "summary"
   },
   "Choice.orientation.landscape": {
-    "description": "One entry of the orientation list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the orientation list, as the list shows it. A recipe and the command line write landscape, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-acb955df82b8",
     "other": "landscape"
   },
   "Choice.orientation.mixed": {
-    "description": "One entry of the orientation list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the orientation list, as the list shows it. A recipe and the command line write mixed, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3f8fee624f43",
     "other": "mixed"
   },
   "Choice.orientation.portrait": {
-    "description": "One entry of the orientation list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the orientation list, as the list shows it. A recipe and the command line write portrait, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-51c5a8296a03",
     "other": "portrait"
   },
   "Choice.page_size.a3": {
-    "description": "One entry of the page_size list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the page_size list, as the list shows it. A recipe and the command line write a3, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-f46dd28a5499",
     "other": "a3"
   },
   "Choice.page_size.a4": {
-    "description": "One entry of the page_size list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the page_size list, as the list shows it. A recipe and the command line write a4, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-4539e4b48890",
     "other": "a4"
   },
   "Choice.page_size.a5": {
-    "description": "One entry of the page_size list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the page_size list, as the list shows it. A recipe and the command line write a5, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-66220e71591b",
     "other": "a5"
   },
   "Choice.page_size.legal": {
-    "description": "One entry of the page_size list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the page_size list, as the list shows it. A recipe and the command line write legal, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-a708df92c9e4",
     "other": "legal"
   },
   "Choice.page_size.letter": {
-    "description": "One entry of the page_size list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the page_size list, as the list shows it. A recipe and the command line write letter, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-f80105efab6d",
     "other": "letter"
   },
   "Choice.page_size.mixed": {
-    "description": "One entry of the page_size list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the page_size list, as the list shows it. A recipe and the command line write mixed, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3f8fee624f43",
     "other": "mixed"
   },
   "Choice.pdf_version.1.4": {
-    "description": "One entry of the pdf_version list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the pdf_version list, as the list shows it. A recipe and the command line write 1.4, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-1a948f1b4374",
     "other": "1.4"
   },
   "Choice.pdf_version.1.7": {
-    "description": "One entry of the pdf_version list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the pdf_version list, as the list shows it. A recipe and the command line write 1.7, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-8f65223004a7",
     "other": "1.7"
   },
   "Choice.picture_data.binary": {
-    "description": "One entry of the picture_data list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the picture_data list, as the list shows it. A recipe and the command line write binary, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-9a3a45d01531",
     "other": "binary"
   },
   "Choice.picture_data.hex": {
-    "description": "One entry of the picture_data list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the picture_data list, as the list shows it. A recipe and the command line write hex, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-128df13c1e54",
     "other": "hex"
   },
   "Choice.quote_style.all": {
-    "description": "One entry of the quote_style list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the quote_style list, as the list shows it. A recipe and the command line write all, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-5ef5ef0364b6",
     "other": "all"
   },
   "Choice.quote_style.minimal": {
-    "description": "One entry of the quote_style list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the quote_style list, as the list shows it. A recipe and the command line write minimal, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-a703788f8320",
     "other": "minimal"
   },
   "Choice.quote_style.none": {
-    "description": "One entry of the quote_style list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the quote_style list, as the list shows it. A recipe and the command line write none, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-140bedbf9c3f",
     "other": "none"
   },
   "Choice.rotate.0": {
-    "description": "One entry of the rotate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-5feceb66ffc8",
-    "other": "0"
+    "description": "One entry of the rotate list, as the list shows it. A recipe and the command line write 0, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-88e62a100a18",
+    "other": "0 degrees"
   },
   "Choice.rotate.180": {
-    "description": "One entry of the rotate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-7b69759630f8",
-    "other": "180"
+    "description": "One entry of the rotate list, as the list shows it. A recipe and the command line write 180, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-46621106fbaa",
+    "other": "180 degrees"
   },
   "Choice.rotate.270": {
-    "description": "One entry of the rotate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-d8d1790737d5",
-    "other": "270"
+    "description": "One entry of the rotate list, as the list shows it. A recipe and the command line write 270, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-a8cb2ff65791",
+    "other": "270 degrees"
   },
   "Choice.rotate.90": {
-    "description": "One entry of the rotate list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-69f59c273b6e",
-    "other": "90"
+    "description": "One entry of the rotate list, as the list shows it. A recipe and the command line write 90, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-cd38ccdf1e9a",
+    "other": "90 degrees"
   },
   "Choice.signal.logs": {
-    "description": "One entry of the signal list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the signal list, as the list shows it. A recipe and the command line write logs, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-98f38f12db22",
     "other": "logs"
   },
   "Choice.signal.metrics": {
-    "description": "One entry of the signal list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the signal list, as the list shows it. A recipe and the command line write metrics, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-177a7ea3611f",
     "other": "metrics"
   },
   "Choice.signal.traces": {
-    "description": "One entry of the signal list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the signal list, as the list shows it. A recipe and the command line write traces, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-b5ac69fc467c",
     "other": "traces"
   },
   "Choice.status_mix.client-errors": {
-    "description": "One entry of the status_mix list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-cc47f4e83c84",
-    "other": "client-errors"
+    "description": "One entry of the status_mix list, as the list shows it. A recipe and the command line write client-errors, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-1f234ccd9f7f",
+    "other": "client errors"
   },
   "Choice.status_mix.realistic": {
-    "description": "One entry of the status_mix list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the status_mix list, as the list shows it. A recipe and the command line write realistic, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-9d2f45fd706a",
     "other": "realistic"
   },
   "Choice.status_mix.server-errors": {
-    "description": "One entry of the status_mix list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-af6f28d08a12",
-    "other": "server-errors"
+    "description": "One entry of the status_mix list, as the list shows it. A recipe and the command line write server-errors, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-be03a2c09cf1",
+    "other": "server errors"
   },
   "Choice.status_mix.success": {
-    "description": "One entry of the status_mix list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the status_mix list, as the list shows it. A recipe and the command line write success, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-aee408847d35",
     "other": "success"
   },
   "Choice.structure.document": {
-    "description": "One entry of the structure list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the structure list, as the list shows it. A recipe and the command line write document, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-43cc23fa52b8",
     "other": "document"
   },
   "Choice.structure.fragment": {
-    "description": "One entry of the structure list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the structure list, as the list shows it. A recipe and the command line write fragment, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-7587669ca42e",
     "other": "fragment"
   },
   "Choice.styles.embedded": {
-    "description": "One entry of the styles list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the styles list, as the list shows it. A recipe and the command line write embedded, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-9289140b1ac2",
     "other": "embedded"
   },
   "Choice.styles.inline": {
-    "description": "One entry of the styles list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the styles list, as the list shows it. A recipe and the command line write inline, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-995cf20a9c45",
     "other": "inline"
   },
   "Choice.styles.none": {
-    "description": "One entry of the styles list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the styles list, as the list shows it. A recipe and the command line write none, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-140bedbf9c3f",
     "other": "none"
   },
   "Choice.temporality.cumulative": {
-    "description": "One entry of the temporality list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the temporality list, as the list shows it. A recipe and the command line write cumulative, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-2dfda8e4279b",
     "other": "cumulative"
   },
   "Choice.temporality.delta": {
-    "description": "One entry of the temporality list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the temporality list, as the list shows it. A recipe and the command line write delta, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-4f4a9410ffcd",
     "other": "delta"
   },
   "Choice.text_encoding.7bit": {
-    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write 7bit, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-af6ec1d82852",
     "other": "7bit"
   },
   "Choice.text_encoding.8bit": {
-    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write 8bit, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-e318653d2946",
     "other": "8bit"
   },
   "Choice.text_encoding.base64": {
-    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write base64, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-371a286d5872",
     "other": "base64"
   },
   "Choice.text_encoding.both": {
-    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-ff7772053abf",
-    "other": "both"
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write both, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-5e3237154d6d",
+    "other": "unicode and code page"
   },
   "Choice.text_encoding.codepage": {
-    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-0b653bac8180",
-    "other": "codepage"
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write codepage, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-ca1ae48a54d8",
+    "other": "code page"
   },
   "Choice.text_encoding.literal": {
-    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write literal, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-829f8d848b44",
     "other": "literal"
   },
   "Choice.text_encoding.quoted-printable": {
-    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write quoted-printable, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-7956a9e2a40b",
     "other": "quoted-printable"
   },
   "Choice.text_encoding.unicode": {
-    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the text_encoding list, as the list shows it. A recipe and the command line write unicode, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-2fcf76a4c3c7",
     "other": "unicode"
   },
   "Choice.time_order.in-order": {
-    "description": "One entry of the time_order list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-d733f4e84323",
-    "other": "in-order"
+    "description": "One entry of the time_order list, as the list shows it. A recipe and the command line write in-order, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-63be856a06e4",
+    "other": "in order"
   },
   "Choice.time_order.out-of-order": {
-    "description": "One entry of the time_order list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
-    "hash": "sha256-da48228bd1a4",
-    "other": "out-of-order"
+    "description": "One entry of the time_order list, as the list shows it. A recipe and the command line write out-of-order, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "hash": "sha256-2ee32f5ece03",
+    "other": "out of order"
   },
   "Choice.timestamps.advancing": {
-    "description": "One entry of the timestamps list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the timestamps list, as the list shows it. A recipe and the command line write advancing, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-3656fa4d5539",
     "other": "advancing"
   },
   "Choice.timestamps.fixed": {
-    "description": "One entry of the timestamps list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the timestamps list, as the list shows it. A recipe and the command line write fixed, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-992a93455c71",
     "other": "fixed"
   },
   "Choice.unlocated.all": {
-    "description": "One entry of the unlocated list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the unlocated list, as the list shows it. A recipe and the command line write all, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-5ef5ef0364b6",
     "other": "all"
   },
   "Choice.unlocated.none": {
-    "description": "One entry of the unlocated list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the unlocated list, as the list shows it. A recipe and the command line write none, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-140bedbf9c3f",
     "other": "none"
   },
   "Choice.unlocated.some": {
-    "description": "One entry of the unlocated list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the unlocated list, as the list shows it. A recipe and the command line write some, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-a6b46dd0d1ae",
     "other": "some"
   },
   "Choice.winding.reversed": {
-    "description": "One entry of the winding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the winding list, as the list shows it. A recipe and the command line write reversed, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-bc64f64fb479",
     "other": "reversed"
   },
   "Choice.winding.rfc7946": {
-    "description": "One entry of the winding list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
+    "description": "One entry of the winding list, as the list shows it. A recipe and the command line write rfc7946, so a token such as utf-8, a4, sha256 or 644 stays as it is.",
     "hash": "sha256-38755035559d",
     "other": "rfc7946"
   },
@@ -1371,8 +1371,8 @@
   },
   "Detail.format/eml.attachment_format": {
     "description": "The sentence under the attachment_format setting of the eml format, after what it takes.",
-    "hash": "sha256-8855c0b55a42",
-    "other": "The format of the attached files. Run tfg formats to see what this build supports. eml attaches a message as it is, the way mail is forwarded, with no base64 around it."
+    "hash": "sha256-97b84e4986be",
+    "other": "The format of the attached files. eml attaches a message as it is, the way mail is forwarded, with no base64 around it."
   },
   "Detail.format/eml.attachment_size": {
     "description": "The sentence under the attachment_size setting of the eml format, after what it takes.",
@@ -1381,23 +1381,23 @@
   },
   "Detail.format/eml.attachments": {
     "description": "The sentence under the attachments setting of the eml format, after what it takes.",
-    "hash": "sha256-43c96b5ef075",
-    "other": "How many files the message carries. Use contains instead when the files are not all alike. mailparser refuses a message of more than 1000 MIME entities, and the manifest gives this one's count as mime_entities."
+    "hash": "sha256-9eb089191964",
+    "other": "How many files the message carries. When the files are not all alike, describe each kind on its own instead - with Add files inside on Several batches, or contains in a recipe. mailparser refuses a message of more than 1000 MIME entities, and the manifest gives this one's count as mime_entities."
   },
   "Detail.format/eml.body": {
     "description": "The sentence under the body setting of the eml format, after what it takes.",
-    "hash": "sha256-5dc479375b75",
-    "other": "Which text the message carries. plain is one text part and html one HTML part. alternative carries both with the same words, and a mail program shows one of them."
+    "hash": "sha256-48c2cdb55b7b",
+    "other": "Which text the message carries. With plain text and HTML the same words go in both, and a mail program shows one of them."
   },
   "Detail.format/eml.charset": {
     "description": "The sentence under the charset setting of the eml format, after what it takes.",
-    "hash": "sha256-636bf249f436",
-    "other": "The character set of the text when text_encoding is not 7bit. iso-8859-2 and windows-1250 hold Polish and no Japanese, and they write ą, ś and ź as different bytes, so a program that takes one for the other shows the wrong letters. MimeKit with no code page provider registered tries UTF-8 and then Latin-1, which shows the Polish letters of both wrong, and reads them right once one is. Go's standard library converts no character set at all. With 7bit the text is plain ASCII and says us-ascii, whatever this is set to."
+    "hash": "sha256-459b6c507537",
+    "other": "The character set of the text when the text encoding is not 7bit. iso-8859-2 and windows-1250 hold Polish and no Japanese, and they write ą, ś and ź as different bytes, so a program that takes one for the other shows the wrong letters. MimeKit with no code page provider registered tries UTF-8 and then Latin-1, which shows the Polish letters of both wrong, and reads them right once one is. Go's standard library converts no character set at all. With 7bit the text is plain ASCII and says us-ascii, whatever this is set to."
   },
   "Detail.format/eml.filename_style": {
     "description": "The sentence under the filename_style setting of the eml format, after what it takes.",
-    "hash": "sha256-adf72ea5fcb6",
-    "other": "How the names of attached files and pictures are written. rfc2231 is the standard way. rfc2047 is the encoded form RFC 2047 forbids inside a name, and many readers decode it anyway. both writes the two, and content-type puts the name only where old mail programs looked for it. none writes no name at all, and a program that needs one has to make one up - Thunderbird 157 calls them Part 1.2, Part 1.3 and so on. Go's standard library reads no name from content-type and the encoded text itself from rfc2047. Unless headers is encoded a name is written as it is and only where it goes changes, so rfc2047 and both write the same bytes."
+    "hash": "sha256-44eb98e1acc7",
+    "other": "How the names of attached files and pictures are written. rfc2231 is the standard way. rfc2047 is the encoded form RFC 2047 forbids inside a name, and many readers decode it anyway. both writes the two, and content-type puts the name only where old mail programs looked for it. none writes no name at all, and a program that needs one has to make one up - Thunderbird 157 calls them Part 1.2, Part 1.3 and so on. Go's standard library reads no name from content-type and the encoded text itself from rfc2047. Unless the headers are encoded, a name is written as it is and only where it goes changes, so rfc2047 and both write the same bytes."
   },
   "Detail.format/eml.headers": {
     "description": "The sentence under the headers setting of the eml format, after what it takes.",
@@ -1441,8 +1441,8 @@
   },
   "Detail.format/eml.text_encoding": {
     "description": "The sentence under the text_encoding setting of the eml format, after what it takes.",
-    "hash": "sha256-783ad3f77f90",
-    "other": "How the text is written. 7bit keeps it to plain ASCII. quoted-printable, 8bit and base64 add a line in Polish, and in Japanese when charset is utf-8, because that is what they are for. quoted-printable spells those letters as =C5=BC, 8bit writes them as they are, and base64 writes the whole text in base64. To reach every size base64 ends the text with empty lines, and with crlf an odd size gives the Message-ID one more digit."
+    "hash": "sha256-3893e44f3c25",
+    "other": "How the text is written. 7bit keeps it to plain ASCII. quoted-printable, 8bit and base64 add a line in Polish, and in Japanese when the charset is utf-8, because that is what they are for. quoted-printable spells those letters as =C5=BC, 8bit writes them as they are, and base64 writes the whole text in base64. To reach every size base64 ends the text with empty lines, and with crlf an odd size gives the Message-ID one more digit."
   },
   "Detail.format/geojson.altitude": {
     "description": "The sentence under the altitude setting of the geojson format, after what it takes.",
@@ -1591,8 +1591,8 @@
   },
   "Detail.format/jpg.content": {
     "description": "The sentence under the content setting of the jpg format, after what it takes.",
-    "hash": "sha256-3fb6c23165c1",
-    "other": "What the picture shows. test is a pattern for checking how a file is read. placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist."
+    "hash": "sha256-3fdc1bf34bb6",
+    "other": "What the picture shows. A test pattern is for checking how a file is read. A placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist."
   },
   "Detail.format/jpg.foreground": {
     "description": "The sentence under the foreground setting of the jpg format, after what it takes.",
@@ -1656,8 +1656,8 @@
   },
   "Detail.format/log.level_mix": {
     "description": "The sentence under the level_mix setting of the log format, after what it takes.",
-    "hash": "sha256-45f87458cd88",
-    "other": "Which severities appear. Only the plain and json-lines shapes carry one, and asking for it beside another shape is refused."
+    "hash": "sha256-0c82bcd0f561",
+    "other": "Which severities appear. Only the plain and JSON Lines shapes carry one, and asking for it beside another shape is refused."
   },
   "Detail.format/log.line_ending": {
     "description": "The sentence under the line_ending setting of the log format, after what it takes.",
@@ -1666,8 +1666,8 @@
   },
   "Detail.format/log.methods": {
     "description": "The sentence under the methods setting of the log format, after what it takes.",
-    "hash": "sha256-c621eebad3fc",
-    "other": "Which request methods appear. Read is GET and HEAD, mixed adds POST, PUT, PATCH and DELETE."
+    "hash": "sha256-5addc1801744",
+    "other": "Which request methods appear: GET only, GET and HEAD, or mixed, which adds POST, PUT, PATCH and DELETE to those two."
   },
   "Detail.format/log.rate": {
     "description": "The sentence under the rate setting of the log format, after what it takes.",
@@ -1731,13 +1731,13 @@
   },
   "Detail.format/otlp.batch": {
     "description": "The sentence under the batch setting of the otlp format, after what it takes.",
-    "hash": "sha256-793fcaf7d3f2",
-    "other": "How many spans or log records each line holds. 512 is the batch an OpenTelemetry SDK sends by default. Only record-per-line has batches, and beside another layout or beside signal metrics, where a line holds one collection, a batch is refused."
+    "hash": "sha256-86925d95718f",
+    "other": "How many spans or log records each line holds. 512 is the batch an OpenTelemetry SDK sends by default. Only the formatting record per line has batches. Beside other formatting, or beside the signal metrics, where a line holds one collection, a batch is refused."
   },
   "Detail.format/otlp.body": {
     "description": "The sentence under the body setting of the otlp format, after what it takes.",
-    "hash": "sha256-483c91e6d770",
-    "other": "What the body of a log record holds. text is a sentence. any-value gives the seven kinds of value OTLP has in turn - text, a boolean, the whole number 2^53 + 1, a fraction, a list, a map and bytes - and the OpenTelemetry Collector reads them and writes them back unchanged. With large_numbers number, a reader that holds numbers as doubles reads that whole number one less. It shapes log records, and beside signal traces or metrics it is refused."
+    "hash": "sha256-dfbf231101d0",
+    "other": "What the body of a log record holds. Text is a sentence. Every kind of value gives the seven kinds of value OTLP has in turn - text, a boolean, the whole number 2^53 + 1, a fraction, a list, a map and bytes - and the OpenTelemetry Collector reads them and writes them back unchanged. With large numbers written as JSON numbers, a reader that holds numbers as doubles reads that whole number one less. It shapes log records, and beside signal traces or metrics it is refused."
   },
   "Detail.format/otlp.bom": {
     "description": "The sentence under the bom setting of the otlp format, after what it takes.",
@@ -1751,8 +1751,8 @@
   },
   "Detail.format/otlp.empty_envelope": {
     "description": "The sentence under the empty_envelope setting of the otlp format, after what it takes.",
-    "hash": "sha256-62ac042d001f",
-    "other": "Whether the file opens with a line holding a batch with nothing in it, which the OTLP specification asks senders not to write. The file receiver of the OpenTelemetry Collector reads the line and writes nothing for it. Only record-per-line has a line to spare, and beside another layout it is refused."
+    "hash": "sha256-36033d02b33f",
+    "other": "Whether the file opens with a line holding a batch with nothing in it, which the OTLP specification asks senders not to write. The file receiver of the OpenTelemetry Collector reads the line and writes nothing for it. Only the formatting record per line has a line to spare, and beside other formatting it is refused."
   },
   "Detail.format/otlp.end_before_start": {
     "description": "The sentence under the end_before_start setting of the otlp format, after what it takes.",
@@ -1766,28 +1766,28 @@
   },
   "Detail.format/otlp.exemplars": {
     "description": "The sentence under the exemplars setting of the otlp format, after what it takes.",
-    "hash": "sha256-ac0f521a7266",
-    "other": "Whether the durations of requests name the trace and the span a measurement was taken in, one for each bucket a collection measured in. The file holds no spans, so those ids match nothing in it. Only http.server.request.duration has them, and beside a metric_kind without it exemplars are refused."
+    "hash": "sha256-01d1085a1875",
+    "other": "Whether the durations of requests name the trace and the span a measurement was taken in, one for each bucket a collection measured in. The file holds no spans, so those ids match nothing in it. Only http.server.request.duration has them, and beside a metric kind without it they are refused."
   },
   "Detail.format/otlp.formatting": {
     "description": "The sentence under the formatting setting of the otlp format, after what it takes.",
-    "hash": "sha256-b094d2e4c7a2",
-    "other": "How the file is laid out. record-per-line puts one batch on each line, which is what the OTLP file exporter writes and the file receiver of the OpenTelemetry Collector reads, and the file name ends in .jsonl. minified and indented make the whole file one request, the body to post to an OTLP endpoint, and the file name ends in .json. Posted as a body, a file of several lines loses every line after the first in the Collector, and its file receiver reads nothing from an indented file."
+    "hash": "sha256-2863be35bc52",
+    "other": "How the file is laid out. Record per line puts one batch on each line, which is what the OTLP file exporter writes and the file receiver of the OpenTelemetry Collector reads, and the file name ends in .jsonl. Minified and indented make the whole file one request, the body to post to an OTLP endpoint, and the file name ends in .json. Posted as a body, a file of several lines loses every line after the first in the Collector, and its file receiver reads nothing from an indented file."
   },
   "Detail.format/otlp.id_encoding": {
     "description": "The sentence under the id_encoding setting of the otlp format, after what it takes.",
-    "hash": "sha256-76bf0def8c16",
-    "other": "How trace and span ids are written. hex is what the OTLP specification asks for. upper-hex writes the same digits in capitals, which the specification allows, and the OpenTelemetry Collector writes them back in lower case. base64 writes them the way the JSON mapping of protobuf writes bytes, which the specification forbids - the file receiver of the Collector drops every batch that holds an id without a word and its HTTP receiver answers 400. A reader built on the protobuf library reads base64 ids right and hex ids as something else."
+    "hash": "sha256-e9a63bebedc7",
+    "other": "How trace and span ids are written. hex is what the OTLP specification asks for. Upper-case hex writes the same digits in capitals, which the specification allows, and the OpenTelemetry Collector writes them back in lower case. base64 writes them the way the JSON mapping of protobuf writes bytes, which the specification forbids - the file receiver of the Collector drops every batch that holds an id without a word and its HTTP receiver answers 400. A reader built on the protobuf library reads base64 ids right and hex ids as something else."
   },
   "Detail.format/otlp.interval": {
     "description": "The sentence under the interval setting of the otlp format, after what it takes.",
-    "hash": "sha256-2ce89e34952b",
-    "other": "How long a service waits between two collections of its metrics. 60 is what an SDK uses by default. Every point of a collection is dated at the same moment, and in record-per-line a line holds one collection."
+    "hash": "sha256-826c955891cb",
+    "other": "How long a service waits between two collections of its metrics. 60 is what an SDK uses by default. Every point of a collection is dated at the same moment, and with the formatting record per line a line holds one collection."
   },
   "Detail.format/otlp.key_case": {
     "description": "The sentence under the key_case setting of the otlp format, after what it takes.",
-    "hash": "sha256-4f17fdd9113b",
-    "other": "How the keys of the file are written. camel is what the OTLP specification asks for, such as traceId. snake writes the names the .proto files give the fields, such as trace_id, which the specification calls not valid. The OpenTelemetry Collector reads them and writes camel case back, and the Rust crate opentelemetry-proto refuses the file."
+    "hash": "sha256-580a9580e01d",
+    "other": "How the keys of the file are written. camelCase is what the OTLP specification asks for, such as traceId. snake_case writes the names the .proto files give the fields, such as trace_id, which the specification calls not valid. The OpenTelemetry Collector reads them and writes camelCase back, and the Rust crate opentelemetry-proto refuses the file."
   },
   "Detail.format/otlp.large_numbers": {
     "description": "The sentence under the large_numbers setting of the otlp format, after what it takes.",
@@ -1801,13 +1801,13 @@
   },
   "Detail.format/otlp.metric_kind": {
     "description": "The sentence under the metric_kind setting of the otlp format, after what it takes.",
-    "hash": "sha256-c1a86feb6d4f",
-    "other": "Which metrics the file holds. gauge writes jvm.cpu.recent_utilization and shop.orders.pending, sum writes jvm.cpu.time, jvm.class.loaded and jvm.memory.used, histogram writes http.server.request.duration in the buckets the OpenTelemetry conventions name, exponential-histogram writes jvm.gc.duration in buckets that double every eight, and summary writes http.server.requests as three percentiles, the way Micrometer writes a timer. mixed writes all of them. gauge and sum each hold whole numbers and fractions."
+    "hash": "sha256-a10ffb3ec979",
+    "other": "Which metrics the file holds. gauge writes jvm.cpu.recent_utilization and shop.orders.pending, sum writes jvm.cpu.time, jvm.class.loaded and jvm.memory.used, histogram writes http.server.request.duration in the buckets the OpenTelemetry conventions name, exponential histogram writes jvm.gc.duration in buckets that double every eight, and summary writes http.server.requests as three percentiles, the way Micrometer writes a timer. mixed writes all of them. gauge and sum each hold whole numbers and fractions."
   },
   "Detail.format/otlp.non_finite": {
     "description": "The sentence under the non_finite setting of the otlp format, after what it takes.",
-    "hash": "sha256-3cbadc5f5abb",
-    "other": "Whether jvm.cpu.recent_utilization reports values that are not numbers: NaN in the second of every four collections, and Infinity and -Infinity in turn in the fourth, written as text the way the JSON mapping of protobuf writes them. The OpenTelemetry Collector reads them and writes them back unchanged. Beside a metric_kind without that gauge it is refused."
+    "hash": "sha256-9982e6fbd68c",
+    "other": "Whether jvm.cpu.recent_utilization reports values that are not numbers: NaN in the second of every four collections, and Infinity and -Infinity in turn in the fourth, written as text the way the JSON mapping of protobuf writes them. The OpenTelemetry Collector reads them and writes them back unchanged. Beside a metric kind without that gauge it is refused."
   },
   "Detail.format/otlp.rate": {
     "description": "The sentence under the rate setting of the otlp format, after what it takes.",
@@ -1831,13 +1831,13 @@
   },
   "Detail.format/otlp.temporality": {
     "description": "The sentence under the temporality setting of the otlp format, after what it takes.",
-    "hash": "sha256-0f6234dad243",
-    "other": "Whether a sum or a histogram counts everything since the service started or only what came since the collection before. cumulative is what an SDK sends by default. delta leaves jvm.memory.used cumulative, as the delta setting of an SDK does. Beside metric_kind gauge or summary it is refused."
+    "hash": "sha256-fbcdfaa5a468",
+    "other": "Whether a sum or a histogram counts everything since the service started or only what came since the collection before. cumulative is what an SDK sends by default. delta leaves jvm.memory.used cumulative, as the delta setting of an SDK does. Beside the metric kind gauge or summary it is refused."
   },
   "Detail.format/otlp.time_order": {
     "description": "The sentence under the time_order setting of the otlp format, after what it takes.",
-    "hash": "sha256-223b0e56bd8a",
-    "other": "Whether every trace, log record or collection is dated later than the one before it. out-of-order swaps the times of every two neighbours, so every second one is dated before the one in front of it. The specification of the OTLP file promises no order, and the OpenTelemetry Collector reads the file and writes it back unchanged. What the system storing the data does with what comes late is the question this file asks."
+    "hash": "sha256-a689a5471709",
+    "other": "Whether every trace, log record or collection is dated later than the one before it. Out of order swaps the times of every two neighbours, so every second one is dated before the one in front of it. The specification of the OTLP file promises no order, and the OpenTelemetry Collector reads the file and writes it back unchanged. What the system storing the data does with what comes late is the question this file asks."
   },
   "Detail.format/otlp.trace_context": {
     "description": "The sentence under the trace_context setting of the otlp format, after what it takes.",
@@ -1916,8 +1916,8 @@
   },
   "Detail.format/png.content": {
     "description": "The sentence under the content setting of the png format, after what it takes.",
-    "hash": "sha256-3fb6c23165c1",
-    "other": "What the picture shows. test is a pattern for checking how a file is read. placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist."
+    "hash": "sha256-3fdc1bf34bb6",
+    "other": "What the picture shows. A test pattern is for checking how a file is read. A placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist."
   },
   "Detail.format/png.foreground": {
     "description": "The sentence under the foreground setting of the png format, after what it takes.",
@@ -1986,13 +1986,13 @@
   },
   "Detail.format/rtf.picture_data": {
     "description": "The sentence under the picture_data setting of the rtf format, after what it takes.",
-    "hash": "sha256-f91b5cd2e506",
-    "other": "How the bytes of each picture are written, which changes nothing while inline is 0. hex writes them as text, twice as large, the way LibreOffice writes them. binary writes them as they are, so the document is no longer text, and a program that counts braces or reads it as text loses its place. pandoc changes the line ends inside a binary picture, so no png comes out whole, and it can lose the text after the picture or refuse the whole document. LibreOffice, Tika and RichEdit read both."
+    "hash": "sha256-3f4349029862",
+    "other": "How the bytes of each picture are written, which changes nothing while the document has no pictures. hex writes them as text, twice as large, the way LibreOffice writes them. binary writes them as they are, so the document is no longer text, and a program that counts braces or reads it as text loses its place. pandoc changes the line ends inside a binary picture, so no png comes out whole, and it can lose the text after the picture or refuse the whole document. LibreOffice, Tika and RichEdit read both."
   },
   "Detail.format/rtf.text_encoding": {
     "description": "The sentence under the text_encoding setting of the rtf format, after what it takes.",
-    "hash": "sha256-3766bb620616",
-    "other": "How the letters outside ASCII are written, which changes nothing while characters is ascii. unicode writes each one as a number with a question mark after it for a reader that does not know numbers. both puts the letter in the code page of its font after the number, two bytes for Japanese, the way Word writes it. codepage writes only the code page bytes, and the emoji still as numbers, since no code page holds them. literal writes the question mark as a plain character. LibreOffice, Tika and the RichEdit control of Windows read all four. pandoc shows codepage text in the wrong letters. pandoc before 3.13 also drops the character after every letter written literal, and pandoc 3.1 and 3.7 drop the emoji in all four. striprtf returns an emoji as two halves, which Python refuses to write as UTF-8."
+    "hash": "sha256-3daac818c4c7",
+    "other": "How the letters outside ASCII are written, which changes nothing while the characters are ascii. unicode writes each one as a number with a question mark after it for a reader that does not know numbers. Unicode and code page also puts the letter in the code page of its font after the number, two bytes for Japanese, the way Word writes it. Code page writes only the code page bytes, and the emoji still as numbers, since no code page holds them. literal writes the question mark as a plain character. LibreOffice, Tika and the RichEdit control of Windows read all four. pandoc shows code page text in the wrong letters. pandoc before 3.13 also drops the character after every letter written literal, and pandoc 3.1 and 3.7 drop the emoji in all four. striprtf returns an emoji as two halves, which Python refuses to write as UTF-8."
   },
   "Detail.format/svg.background": {
     "description": "The sentence under the background setting of the svg format, after what it takes.",
@@ -2001,8 +2001,8 @@
   },
   "Detail.format/svg.content": {
     "description": "The sentence under the content setting of the svg format, after what it takes.",
-    "hash": "sha256-3fb6c23165c1",
-    "other": "What the picture shows. test is a pattern for checking how a file is read. placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist."
+    "hash": "sha256-3fdc1bf34bb6",
+    "other": "What the picture shows. A test pattern is for checking how a file is read. A placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist."
   },
   "Detail.format/svg.foreground": {
     "description": "The sentence under the foreground setting of the svg format, after what it takes.",
@@ -2046,13 +2046,13 @@
   },
   "Detail.format/targz.entries": {
     "description": "The sentence under the entries setting of the targz format, after what it takes.",
-    "hash": "sha256-e8a3f919b300",
-    "other": "How many files the archive holds. Use contains instead when the files are not all alike."
+    "hash": "sha256-276a8339f4ae",
+    "other": "How many files the archive holds. When the files are not all alike, describe each kind on its own instead - with Add files inside on Several batches, or contains in a recipe."
   },
   "Detail.format/targz.entry_format": {
     "description": "The sentence under the entry_format setting of the targz format, after what it takes.",
-    "hash": "sha256-f4dab5f30a79",
-    "other": "The format of the files inside. Run tfg formats to see what this build supports."
+    "hash": "sha256-c0b9bc30cf28",
+    "other": "The format of the files inside."
   },
   "Detail.format/targz.entry_mode": {
     "description": "The sentence under the entry_mode setting of the targz format, after what it takes.",
@@ -2101,8 +2101,8 @@
   },
   "Detail.format/wav.content": {
     "description": "The sentence under the content setting of the wav format, after what it takes.",
-    "hash": "sha256-c2baa480c847",
-    "other": "What the signal sounds like."
+    "hash": "sha256-526b89878d2e",
+    "other": "What the sound is. A steady tone holds one pitch between 220 and 1099 Hz, chosen by the seed. A rising tone starts at such a pitch and climbs as the file plays. Noise is random hiss, and silence is nothing at all."
   },
   "Detail.format/wav.sample_rate": {
     "description": "The sentence under the sample_rate setting of the wav format, after what it takes.",
@@ -2196,13 +2196,13 @@
   },
   "Detail.format/zip.entries": {
     "description": "The sentence under the entries setting of the zip format, after what it takes.",
-    "hash": "sha256-e8a3f919b300",
-    "other": "How many files the archive holds. Use contains instead when the files are not all alike."
+    "hash": "sha256-276a8339f4ae",
+    "other": "How many files the archive holds. When the files are not all alike, describe each kind on its own instead - with Add files inside on Several batches, or contains in a recipe."
   },
   "Detail.format/zip.entry_format": {
     "description": "The sentence under the entry_format setting of the zip format, after what it takes.",
-    "hash": "sha256-f4dab5f30a79",
-    "other": "The format of the files inside. Run tfg formats to see what this build supports."
+    "hash": "sha256-c0b9bc30cf28",
+    "other": "The format of the files inside."
   },
   "Detail.format/zip.entry_size": {
     "description": "The sentence under the entry_size setting of the zip format, after what it takes.",
@@ -2596,8 +2596,8 @@
   },
   "Label.allow": {
     "description": "The name beside the box of a setting a recipe writes as allow.",
-    "hash": "sha256-e213c161d5ce",
-    "other": "Allow"
+    "hash": "sha256-2b04790e11e9",
+    "other": "Allowed types"
   },
   "Label.altitude": {
     "description": "The name beside the box of a setting a recipe writes as altitude.",
@@ -2641,13 +2641,13 @@
   },
   "Label.batch": {
     "description": "The name beside the box of a setting a recipe writes as batch.",
-    "hash": "sha256-320b5d80f8cf",
-    "other": "Batch"
+    "hash": "sha256-b58f36c0362b",
+    "other": "Records per line"
   },
   "Label.bbox": {
     "description": "The name beside the box of a setting a recipe writes as bbox.",
-    "hash": "sha256-708f44b1bd98",
-    "other": "Bbox"
+    "hash": "sha256-c1af2bd9fa64",
+    "other": "Bounding box"
   },
   "Label.bit_depth": {
     "description": "The name beside the box of a setting a recipe writes as bit_depth.",
@@ -2666,8 +2666,8 @@
   },
   "Label.bulk": {
     "description": "The name beside the box of a setting a recipe writes as bulk.",
-    "hash": "sha256-3140100df131",
-    "other": "Bulk"
+    "hash": "sha256-4e0c0bc5be3c",
+    "other": "Mass upload"
   },
   "Label.bytes": {
     "description": "The name beside the box of a setting a recipe writes as bytes.",
@@ -2731,8 +2731,8 @@
   },
   "Label.deny": {
     "description": "The name beside the box of a setting a recipe writes as deny.",
-    "hash": "sha256-05a2d7332eb9",
-    "other": "Deny"
+    "hash": "sha256-15c77d9c11ec",
+    "other": "Denied extensions"
   },
   "Label.depth": {
     "description": "The name beside the box of a setting a recipe writes as depth.",
@@ -2756,8 +2756,8 @@
   },
   "Label.embed": {
     "description": "The name beside the box of a setting a recipe writes as embed.",
-    "hash": "sha256-7512561d2f68",
-    "other": "Embed"
+    "hash": "sha256-be53a02ffd1a",
+    "other": "Picture inside"
   },
   "Label.empty_envelope": {
     "description": "The name beside the box of a setting a recipe writes as empty_envelope.",
@@ -2816,13 +2816,13 @@
   },
   "Label.expected": {
     "description": "The name beside the box of a setting a recipe writes as expected.",
-    "hash": "sha256-ca99b7f1b14e",
-    "other": "Expected"
+    "hash": "sha256-d23e9f8e2ce8",
+    "other": "Expected checksum"
   },
   "Label.far-over": {
     "description": "The name beside the box of a setting a recipe writes as far-over.",
-    "hash": "sha256-874367c30d4e",
-    "other": "Far-over"
+    "hash": "sha256-a547261596f8",
+    "other": "Far over the limit"
   },
   "Label.file": {
     "description": "The name beside the box of what the checksum tool works on.",
@@ -2906,8 +2906,8 @@
   },
   "Label.ids": {
     "description": "The name beside the box of a setting a recipe writes as ids.",
-    "hash": "sha256-d9aa9d4aca97",
-    "other": "Ids"
+    "hash": "sha256-f8f8e0aa3ac3",
+    "other": "Feature IDs"
   },
   "Label.inline": {
     "description": "The name beside the box of a setting a recipe writes as inline.",
@@ -2931,8 +2931,8 @@
   },
   "Label.ip_version": {
     "description": "The name beside the box of a setting a recipe writes as ip_version.",
-    "hash": "sha256-29016036fada",
-    "other": "Ip version"
+    "hash": "sha256-0f9c33e753e5",
+    "other": "IP version"
   },
   "Label.key_case": {
     "description": "The name beside the box of a setting a recipe writes as key_case.",
@@ -3001,8 +3001,8 @@
   },
   "Label.missing": {
     "description": "The name beside the box of a setting a recipe writes as missing.",
-    "hash": "sha256-6be36ca49ee8",
-    "other": "Missing"
+    "hash": "sha256-ca096c3e2581",
+    "other": "Part cut off"
   },
   "Label.modified": {
     "description": "The name beside the box of a setting a recipe writes as modified.",
@@ -3046,8 +3046,8 @@
   },
   "Label.pdf_version": {
     "description": "The name beside the box of a setting a recipe writes as pdf_version.",
-    "hash": "sha256-3ce7c43387ea",
-    "other": "Pdf version"
+    "hash": "sha256-7a4d61286488",
+    "other": "PDF version"
   },
   "Label.picture_data": {
     "description": "The name beside the box of a setting a recipe writes as picture_data.",
@@ -3086,8 +3086,8 @@
   },
   "Label.rotate": {
     "description": "The name beside the box of a setting a recipe writes as rotate.",
-    "hash": "sha256-c3613b1704f5",
-    "other": "Rotate"
+    "hash": "sha256-57b5e2fc1bba",
+    "other": "Rotation"
   },
   "Label.rows": {
     "description": "The name beside the box of a setting a recipe writes as rows.",
@@ -3096,8 +3096,8 @@
   },
   "Label.sample": {
     "description": "The name beside the box of a setting a recipe writes as sample.",
-    "hash": "sha256-95a2f1edb08a",
-    "other": "Sample"
+    "hash": "sha256-ff0442941bd8",
+    "other": "File size"
   },
   "Label.sample_rate": {
     "description": "The name beside the box of a setting a recipe writes as sample_rate.",
@@ -3116,8 +3116,8 @@
   },
   "Label.spread": {
     "description": "The name beside the box of a setting a recipe writes as spread.",
-    "hash": "sha256-b11fb1f593a8",
-    "other": "Spread"
+    "hash": "sha256-3de7c6087466",
+    "other": "Distances from the limit"
   },
   "Label.start": {
     "description": "The name beside the box of a setting a recipe writes as start.",
@@ -3181,8 +3181,8 @@
   },
   "Label.unlocated": {
     "description": "The name beside the box of a setting a recipe writes as unlocated.",
-    "hash": "sha256-9d9b671e4837",
-    "other": "Unlocated"
+    "hash": "sha256-c7016f7ebb1d",
+    "other": "Features without a place"
   },
   "Label.unpacked_limit": {
     "description": "The name beside the box of a setting a recipe writes as unpacked_limit.",
@@ -3231,13 +3231,13 @@
   },
   "Note.size-boundaries.limit": {
     "description": "What a run of the size-boundaries preset says when nobody gave its limit.",
-    "hash": "sha256-d65173d5db01",
-    "other": "no limit was given, so this set is built around 10mb - that is our placeholder and not your system's limit. Pass the limit your system declares, or the files say nothing about it."
+    "hash": "sha256-188ae54516cc",
+    "other": "no limit was given, so this set is built around 10mb - that is our placeholder and not your system's limit. Give the limit your system declares, or the files say nothing about it."
   },
   "Note.upload-validation.limit": {
     "description": "What a run of the upload-validation preset says when nobody gave its limit.",
-    "hash": "sha256-c30ac7e13539",
-    "other": "no limit was given, so this set is built around 10mb - that is our placeholder and not your form's limit. Pass the limit your form declares, or the files say nothing about it."
+    "hash": "sha256-e9c953090726",
+    "other": "no limit was given, so this set is built around 10mb - that is our placeholder and not your form's limit. Give the limit your form declares, or the files say nothing about it."
   },
   "Question.empty-and-minimal": {
     "description": "The question the empty-and-minimal preset answers, at the top of the preset screen.",
@@ -3324,15 +3324,15 @@
     "hash": "sha256-f7e5e8c54e6f",
     "other": "sizes separated by commas"
   },
-  "Shape.the id of a format, as tfg formats lists them": {
+  "Shape.the id of a format, such as png or csv": {
     "description": "What the text in a box has to look like, in the sentence under it.",
-    "hash": "sha256-b6784882fdeb",
-    "other": "the id of a format, as tfg formats lists them"
+    "hash": "sha256-776e6545e346",
+    "other": "the id of a format, such as png or csv"
   },
-  "Shape.the id of a picture format, as tfg formats lists them": {
+  "Shape.the id of a picture format, such as png or jpg": {
     "description": "What the text in a box has to look like, in the sentence under it.",
-    "hash": "sha256-bf30a7c2c3a4",
-    "other": "the id of a picture format, as tfg formats lists them"
+    "hash": "sha256-ea19ea70a8b7",
+    "other": "the id of a picture format, such as png or jpg"
   },
   "Shape.the password, in plain text": {
     "description": "What the text in a box has to look like, in the sentence under it.",

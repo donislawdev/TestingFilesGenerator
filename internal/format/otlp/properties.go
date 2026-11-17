@@ -102,8 +102,8 @@ func fileProperties() []format.Property {
 			// tell a reader that picks its parser by the name to read it line
 			// by line. docs/ROZSZERZENIE-UKLADU-2026-11-11.md.
 			Extensions: map[string]string{Indented: ".json", Minified: ".json"},
-			Detail: "How the file is laid out. record-per-line puts one batch on each line, which is what the OTLP file exporter writes and the file receiver of the OpenTelemetry Collector reads, and the file name ends in .jsonl. " +
-				"minified and indented make the whole file one request, the body to post to an OTLP endpoint, and the file name ends in .json. " +
+			Detail: "How the file is laid out. Record per line puts one batch on each line, which is what the OTLP file exporter writes and the file receiver of the OpenTelemetry Collector reads, and the file name ends in .jsonl. " +
+				"Minified and indented make the whole file one request, the body to post to an OTLP endpoint, and the file name ends in .json. " +
 				"Posted as a body, a file of several lines loses every line after the first in the Collector, and its file receiver reads nothing from an indented file.",
 		},
 		// The byte order mark every text format of this tool declares, in the
@@ -115,7 +115,8 @@ func fileProperties() []format.Property {
 			Name: Batch, Kind: format.PropertyInt,
 			Min: 1, Max: maxBatch,
 			Default: strconv.Itoa(defaultBatch),
-			Detail:  "How many spans or log records each line holds. 512 is the batch an OpenTelemetry SDK sends by default. Only record-per-line has batches, and beside another layout or beside signal metrics, where a line holds one collection, a batch is refused.",
+			Detail: "How many spans or log records each line holds. 512 is the batch an OpenTelemetry SDK sends by default. " +
+				"Only the formatting record per line has batches. Beside other formatting, or beside the signal metrics, where a line holds one collection, a batch is refused.",
 		},
 		{
 			Name: Start, Kind: format.PropertyText,
@@ -180,7 +181,7 @@ func metricProperties() []format.Property {
 			Default: Mixed,
 			Group:   metricsGroup,
 			Detail: "Which metrics the file holds. gauge writes jvm.cpu.recent_utilization and shop.orders.pending, sum writes jvm.cpu.time, jvm.class.loaded and jvm.memory.used, " +
-				"histogram writes http.server.request.duration in the buckets the OpenTelemetry conventions name, exponential-histogram writes jvm.gc.duration in buckets that double every eight, " +
+				"histogram writes http.server.request.duration in the buckets the OpenTelemetry conventions name, exponential histogram writes jvm.gc.duration in buckets that double every eight, " +
 				"and summary writes http.server.requests as three percentiles, the way Micrometer writes a timer. mixed writes all of them. gauge and sum each hold whole numbers and fractions.",
 		},
 		{
@@ -189,21 +190,21 @@ func metricProperties() []format.Property {
 			Default: Cumulative,
 			Group:   metricsGroup,
 			Detail: "Whether a sum or a histogram counts everything since the service started or only what came since the collection before. cumulative is what an SDK sends by default. " +
-				"delta leaves jvm.memory.used cumulative, as the delta setting of an SDK does. Beside metric_kind gauge or summary it is refused.",
+				"delta leaves jvm.memory.used cumulative, as the delta setting of an SDK does. Beside the metric kind gauge or summary it is refused.",
 		},
 		{
 			Name: Exemplars, Kind: format.PropertyBool,
 			Default: "false",
 			Group:   metricsGroup,
 			Detail: "Whether the durations of requests name the trace and the span a measurement was taken in, one for each bucket a collection measured in. " +
-				"The file holds no spans, so those ids match nothing in it. Only http.server.request.duration has them, and beside a metric_kind without it exemplars are refused.",
+				"The file holds no spans, so those ids match nothing in it. Only http.server.request.duration has them, and beside a metric kind without it they are refused.",
 		},
 		{
 			Name: Interval, Kind: format.PropertyInt,
 			Min: 1, Max: maxInterval, Unit: "seconds",
 			Default: strconv.Itoa(defaultInterval),
 			Group:   metricsGroup,
-			Detail:  "How long a service waits between two collections of its metrics. 60 is what an SDK uses by default. Every point of a collection is dated at the same moment, and in record-per-line a line holds one collection.",
+			Detail:  "How long a service waits between two collections of its metrics. 60 is what an SDK uses by default. Every point of a collection is dated at the same moment, and with the formatting record per line a line holds one collection.",
 		},
 	}
 }

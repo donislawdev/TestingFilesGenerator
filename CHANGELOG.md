@@ -254,6 +254,15 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **The window names list values and settings in words.** An English list
+  shows test pattern rather than test, rising tone rather than sweep and file
+  count limit rather than count_limit. Settings such as PDF version, Bounding
+  box and Records per line are no longer spelled out of their keys, and the
+  note under Width and Height calls them that. A recipe and the command line
+  write values and keys as before. The sentences `tfg formats` prints under
+  these settings use the same words, and a box for the format of the files
+  inside reads `such as png or csv`.
+
 - **On Windows, a path picked with Choose... has backslashes.** It is written
   the way Windows writes paths, the same text a drop of that folder or file
   puts in the box. It came with forward slashes before.

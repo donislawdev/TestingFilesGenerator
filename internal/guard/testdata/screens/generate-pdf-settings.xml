@@ -390,8 +390,8 @@
 																		<container pos="585,0" size="179x60">
 																			<container size="179x58">
 																				<container size="179x24">
-																					<text color="rgba(211,211,215,255)" pos="0,3" size="42x16">Rotate</text>
-																					<widget pos="50,0" size="24x24" type="*parts.DetailButton">
+																					<text color="rgba(211,211,215,255)" pos="0,3" size="54x16">Rotation</text>
+																					<widget pos="62,0" size="24x24" type="*parts.DetailButton">
 																						<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 																						<rectangle radius="6" size="24x24"/>
 																						<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>
@@ -403,7 +403,7 @@
 																							<rectangle fillColor="inputBackground" radius="6" size="179x26"/>
 																							<rectangle size="0x0"/>
 																							<widget pos="4,3" size="149x20" type="*widget.RichText">
-																								<text pos="2,2" size="8x16">0</text>
+																								<text pos="2,2" size="67x16">0 degrees</text>
 																							</widget>
 																							<widget pos="153,3" size="20x20" type="*widget.Icon">
 																								<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="primary"/>
@@ -417,8 +417,8 @@
 																		<container pos="0,76" size="179x58">
 																			<container size="179x58">
 																				<container size="179x24">
-																					<text color="rgba(211,211,215,255)" pos="0,3" size="75x16">Pdf version</text>
-																					<widget pos="83,0" size="24x24" type="*parts.DetailButton">
+																					<text color="rgba(211,211,215,255)" pos="0,3" size="79x16">PDF version</text>
+																					<widget pos="87,0" size="24x24" type="*parts.DetailButton">
 																						<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 																						<rectangle radius="6" size="24x24"/>
 																						<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>

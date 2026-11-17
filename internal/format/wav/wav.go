@@ -119,7 +119,8 @@ func init() {
 				Name: "content", Kind: format.PropertyChoice,
 				Choices: []string{"tone", "silence", "noise", "sweep"},
 				Default: "tone",
-				Detail:  "What the signal sounds like.",
+				Detail: "What the sound is. A steady tone holds one pitch between 220 and 1099 Hz, chosen by the seed. " +
+					"A rising tone starts at such a pitch and climbs as the file plays. Noise is random hiss, and silence is nothing at all.",
 			},
 		},
 		GeneratorVersion: generatorVersion,
