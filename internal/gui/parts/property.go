@@ -456,9 +456,9 @@ func Allowed(p format.Property) string {
 	what := allowedKind(p)
 	switch {
 	case p.Default != "" && what == "":
-		return text.AllowedDefault(p.Default)
+		return text.AllowedDefault(core.Literal(p.Default))
 	case p.Default != "":
-		return text.AllowedWithDefault(what, p.Default)
+		return text.AllowedWithDefault(what, core.Literal(p.Default))
 	}
 	return what
 }
@@ -469,7 +469,7 @@ func allowedKind(p format.Property) string {
 	case format.PropertyInt:
 		return allowedNumber(p)
 	case format.PropertyChoice:
-		return text.AllowedOneOf(p.Choices)
+		return text.AllowedOneOf(core.LiteralEach(p.Choices))
 	case format.PropertyBool:
 		return text.AllowedTrueOrFalse()
 	case format.PropertySize:

@@ -58,7 +58,7 @@ func Properties(group string, d Details) []format.Property {
 		},
 		{
 			Name: Format, Kind: format.PropertyText,
-			Shape:   "the id of a picture format, such as png or jpg",
+			Shape:   "the id of a picture format, such as `png` or `jpg`",
 			Default: DefaultFormat,
 			Detail:  d.Format,
 			Group:   group,

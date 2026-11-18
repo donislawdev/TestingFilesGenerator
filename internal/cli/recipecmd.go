@@ -62,7 +62,7 @@ func validateFlagSet(errOut io.Writer, v *validateFlags) (*flag.FlagSet, func(io
 	usage := func(w io.Writer) {
 		fmt.Fprint(w, "tfg validate - check a recipe and write nothing.\n\nUsage:\n  tfg validate <recipe.yaml>\n\nFlags:\n")
 		fs.SetOutput(w)
-		fs.PrintDefaults()
+		printFlags(fs)
 		fs.SetOutput(errOut)
 	}
 	fs.Usage = func() { usage(errOut) }
@@ -311,7 +311,7 @@ Usage:
 Flags:
 `)
 		fs.SetOutput(w)
-		fs.PrintDefaults()
+		printFlags(fs)
 		fs.SetOutput(errOut)
 	}
 	fs.Usage = func() { usage(errOut) }

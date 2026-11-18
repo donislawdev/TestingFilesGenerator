@@ -108,7 +108,7 @@ Usage:
 Flags:
 `)
 		fs.SetOutput(w)
-		fs.PrintDefaults()
+		printFlags(fs)
 		fs.SetOutput(errOut)
 	}
 	// Pointed at wherever the set is currently writing rather than at errOut,

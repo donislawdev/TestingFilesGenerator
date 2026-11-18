@@ -410,7 +410,9 @@ func SettingsFor(formatID string) string {
 // What a setting takes, in the window's language - format.Property.Allowed put
 // together from these rather than read whole, because that sentence is English
 // and the command line prints it (D9). The values in it - true, 2mb, the
-// default, the numbers - are what a recipe writes, and stay as they are.
+// default, the numbers - are what a recipe writes, and stay as they are. The
+// ones a person types stand between backticks, as in Property.Allowed: the
+// examples here, the choices and the default in what the caller hands in.
 //
 // A guard puts every declared setting through both and asks for the same
 // English to the letter, so the window and tfg formats cannot come to describe
@@ -430,7 +432,7 @@ func AllowedRangeOf(unit string, least, most int64) string {
 func AllowedOneOf(values []string) string {
 	return sayf("AllowedOneOf", "one of: {{.Values}}", map[string]any{"Values": strings.Join(values, ", ")})
 }
-func AllowedTrueOrFalse() string { return say("AllowedTrueOrFalse", "true or false") }
+func AllowedTrueOrFalse() string { return say("AllowedTrueOrFalse", "`true` or `false`") }
 
 // SwitchState is the state of a switch in words, for the places the window
 // says it rather than draws it: the line a folded section shows, and the
@@ -443,13 +445,13 @@ func SwitchState(on bool) string {
 	return say("SwitchOff", "off")
 }
 func AllowedSize() string {
-	return say("AllowedSize", "a size such as 2mb, or a plain byte count")
+	return say("AllowedSize", "a size such as `2mb`, or a plain byte count")
 }
 func AllowedDuration() string {
-	return say("AllowedDuration", "a length of time such as 10s, 1m30s or 500ms")
+	return say("AllowedDuration", "a length of time such as `10s`, `1m30s` or `500ms`")
 }
 func AllowedDurationRange(least, most string) string {
-	return sayf("AllowedDurationRange", "a length of time from {{.Min}} to {{.Max}}, such as 10s, 1m30s or 500ms",
+	return sayf("AllowedDurationRange", "a length of time from {{.Min}} to {{.Max}}, such as `10s`, `1m30s` or `500ms`",
 		map[string]any{"Min": least, "Max": most})
 }
 func AllowedDefault(value string) string {

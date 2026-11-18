@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
@@ -34,7 +35,10 @@ func TestASettingIsDescribedTheSameWayEmptyOrRefused(t *testing.T) {
 			// Allowed carries the default on the end, because it is read under
 			// a field where the default is worth knowing. Allows never does -
 			// somebody who typed a value is not choosing whether to.
-			want := p.Allowed()
+			// Allowed marks the values a person types (O358) and a refusal is
+			// a sentence of the engine without marks, so the words are what
+			// has to agree.
+			want := strings.ReplaceAll(p.Allowed(), core.Backtick, "")
 			if cut := strings.Index(want, ", default "); cut >= 0 {
 				want = want[:cut]
 			}

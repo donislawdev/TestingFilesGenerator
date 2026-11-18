@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 )
 
 // Condition is a setting that changes a file only while another setting of
@@ -29,9 +31,10 @@ type Condition struct {
 func (c Condition) IsZero() bool { return c.Setting == "" }
 
 // Describe is the condition in the words tfg formats prints after what a
-// setting takes.
+// setting takes, the setting and its values marked as Property.Allowed marks
+// the values it names.
 func (c Condition) Describe() string {
-	return fmt.Sprintf("only when %s is %s", c.Setting, strings.Join(c.Values, " or "))
+	return fmt.Sprintf("only when %s is %s", core.Literal(c.Setting), strings.Join(core.LiteralEach(c.Values), " or "))
 }
 
 // Applies reports whether p changes anything while the settings declared

@@ -182,8 +182,10 @@ type PresetPage struct {
 
 // SettingRow is one line of the settings table.
 type SettingRow struct {
-	Flag    string
-	Takes   string
+	Flag string
+	// Takes is what the setting accepts, with every value to type in <code>
+	// (withCode), as Detail.
+	Takes   template.HTML
 	Default string
 	// Detail is the sentence about the setting, with every value to type in
 	// <code> (withCode).
@@ -288,7 +290,7 @@ func (v view) settingRows(f PresetFacts, text PresetText) ([]SettingRow, error) 
 		if !ok {
 			return nil, fmt.Errorf("the setting --%s of the preset %q has no sentence written in %s", s.Name, f.ID, v.Lang.Code)
 		}
-		out = append(out, SettingRow{Flag: s.Name, Takes: takes, Default: s.Default, Detail: withCode(detail), Placeholder: s.Placeholder})
+		out = append(out, SettingRow{Flag: s.Name, Takes: withCode(takes), Default: s.Default, Detail: withCode(detail), Placeholder: s.Placeholder})
 	}
 	for _, r := range f.Reads {
 		takes, err := v.Word("readTakes." + r.Name)
@@ -299,7 +301,7 @@ func (v view) settingRows(f PresetFacts, text PresetText) ([]SettingRow, error) 
 		if err != nil {
 			return nil, err
 		}
-		out = append(out, SettingRow{Flag: r.Name, Takes: takes, Default: r.Default, Detail: withCode(detail)})
+		out = append(out, SettingRow{Flag: r.Name, Takes: withCode(takes), Default: r.Default, Detail: withCode(detail)})
 	}
 	return out, nil
 }

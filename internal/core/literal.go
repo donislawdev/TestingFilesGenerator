@@ -52,6 +52,19 @@ func Pieces(s string) []Piece {
 	return out
 }
 
+// Literal marks value as one to type, for a description put together by the
+// program - the choices and the default of a setting (format.Property.Allowed).
+func Literal(value string) string { return Backtick + value + Backtick }
+
+// LiteralEach is Literal of every value, in order.
+func LiteralEach(values []string) []string {
+	out := make([]string, len(values))
+	for i, v := range values {
+		out[i] = Literal(v)
+	}
+	return out
+}
+
 // Literals is every value to type in a description, in order.
 func Literals(s string) []string {
 	var out []string

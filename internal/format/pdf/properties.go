@@ -21,7 +21,7 @@ const anyText = "any text"
 
 // dateText is what a date accepts. The three ways a date may be written are
 // the ones dateShape reads, and none leaves the date out.
-const dateText = "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none"
+const dateText = "a date such as `2024-02-29` or `2024-02-29T13:45:00+02:00`, or `none`"
 
 var properties = []format.Property{
 	{

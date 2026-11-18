@@ -259,6 +259,11 @@ var provenByProbe = map[string]string{
 		"and it asks that it reached the test job of ci.yml and the script that job hands its part to.",
 	"TestAVerdictOfPartsRunsWhateverThePartsDid": "a canary of its own - the test job's verdict read with if: success() " +
 		"has to be found wrong.",
+	"TestEveryValueASettingTakesIsMarked": "a canary of its own - a choice with a default, none of them marked, has " +
+		"to give three faults - and it asks that it read 150 settings or more. Broken by hand on 2026-11-18 by a default " +
+		"left bare in Allowed: red.",
+	"TestTheHelpOfAFlagKeepsTheMarksOfItsValues": "a canary of its own - a usage printed by flag.PrintDefaults has to " +
+		"be found to lose its marks. Broken by hand on 2026-11-18 by generate printing its flags with PrintDefaults: red.",
 	"TestTheSmallestPictureIsEncodedOnceWhileItIsPlanned": "a canary of its own - a walk whose generator drops what the " +
 		"walk kept has to be caught in jpg and png. Broken by hand on 2026-11-18 by a walk that makes no Measured: red in " +
 		"all six formats that encode while planning.",

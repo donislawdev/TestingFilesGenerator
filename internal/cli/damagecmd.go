@@ -214,7 +214,7 @@ Usage:
 Flags:
 `)
 	fs.SetOutput(w)
-	fs.PrintDefaults()
+	printFlags(fs)
 	fs.SetOutput(errOut)
 }
 

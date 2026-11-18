@@ -3641,7 +3641,7 @@ MUTATIONS = [
         # "text, default 1B,1kb,1mb" for a setting that wants a list of sizes -
         # the declaration knew that and had nowhere to put it.
         "a text setting goes back to describing itself as text",
-        "internal/format/format.go",
+        "internal/format/allowed.go",
         "\t\twhat = p.Shape",
         '\t\twhat = "text"',
         "TestNoTextSettingDescribesItselfAsText",
@@ -5665,7 +5665,7 @@ MUTATIONS = [
         # for size they used to be written out separately - so what a person
         # read depended on whether they had already typed something wrong. O64.
         "a size setting goes back to being described two ways",
-        "internal/format/format.go",
+        "internal/format/allowed.go",
         "\t\twhat = sizePhrase\n",
         "\t\twhat = \"a size written the way any size is, such as 2mb or a plain byte count\"\n",
         "TestASettingIsDescribedTheSameWayEmptyOrRefused",
@@ -13164,7 +13164,7 @@ MUTATIONS = [
     (
         "the window stops saying a setting's default where tfg formats says it",
         "internal/gui/parts/property.go",
-        "return text.AllowedWithDefault(what, p.Default)",
+        "return text.AllowedWithDefault(what, core.Literal(p.Default))",
         "return what",
         "TestTheWindowDescribesASettingAsTheCommandLineDoes",
     ),

@@ -120,7 +120,7 @@ func fileProperties() []format.Property {
 		},
 		{
 			Name: Start, Kind: format.PropertyText,
-			Shape:   "a moment in UTC such as 2026-08-01T12:00:00Z",
+			Shape:   "a moment in UTC such as `2026-08-01T12:00:00Z`",
 			Default: defaultStart,
 			Detail:  "The moment the first span or log record is dated, and the moment a service writing metrics started. The later ones follow it at the rate or every interval. Change it when the system that receives the file refuses or hides data that is too old.",
 		},

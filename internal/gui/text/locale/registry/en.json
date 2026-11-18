@@ -3319,25 +3319,25 @@
     "hash": "sha256-62cb052ebc94",
     "other": "a checksum in hexadecimal"
   },
-  "Shape.a colour such as cccccc or ccc": {
+  "Shape.a colour such as `cccccc` or `ccc`": {
     "description": "What the text in a box has to look like, in the sentence under it.",
-    "hash": "sha256-dacfc70e2e23",
-    "other": "a colour such as cccccc or ccc"
+    "hash": "sha256-6d6baef1ee53",
+    "other": "a colour such as `cccccc` or `ccc`"
   },
-  "Shape.a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none": {
+  "Shape.a date such as `2024-02-29` or `2024-02-29T13:45:00+02:00`, or `none`": {
     "description": "What the text in a box has to look like, in the sentence under it.",
-    "hash": "sha256-a40bd1decdc9",
-    "other": "a date such as 2024-02-29 or 2024-02-29T13:45:00+02:00, or none"
+    "hash": "sha256-d8f0b52f069d",
+    "other": "a date such as `2024-02-29` or `2024-02-29T13:45:00+02:00`, or `none`"
   },
-  "Shape.a moment in UTC such as 2026-08-01T12:00:00Z": {
+  "Shape.a moment in UTC such as `2026-08-01T12:00:00Z`": {
     "description": "What the text in a box has to look like, in the sentence under it.",
-    "hash": "sha256-97f0219d13b4",
-    "other": "a moment in UTC such as 2026-08-01T12:00:00Z"
+    "hash": "sha256-55d08f72c053",
+    "other": "a moment in UTC such as `2026-08-01T12:00:00Z`"
   },
-  "Shape.algorithm names separated by commas, or all": {
+  "Shape.algorithm names separated by commas, or `all`": {
     "description": "What the text in a box has to look like, in the sentence under it.",
-    "hash": "sha256-bba80a8dec88",
-    "other": "algorithm names separated by commas, or all"
+    "hash": "sha256-33a9134780e7",
+    "other": "algorithm names separated by commas, or `all`"
   },
   "Shape.any text": {
     "description": "What the text in a box has to look like, in the sentence under it.",
@@ -3354,15 +3354,15 @@
     "hash": "sha256-cc1ca5dd954c",
     "other": "format ids separated by commas"
   },
-  "Shape.format ids separated by commas, or all": {
+  "Shape.format ids separated by commas, or `all`": {
     "description": "What the text in a box has to look like, in the sentence under it.",
-    "hash": "sha256-48e97c935e5d",
-    "other": "format ids separated by commas, or all"
+    "hash": "sha256-d69f4fe98ba2",
+    "other": "format ids separated by commas, or `all`"
   },
-  "Shape.group names separated by commas, or all": {
+  "Shape.group names separated by commas, or `all`": {
     "description": "What the text in a box has to look like, in the sentence under it.",
-    "hash": "sha256-68f92ad5bd2b",
-    "other": "group names separated by commas, or all"
+    "hash": "sha256-d3b510e50dba",
+    "other": "group names separated by commas, or `all`"
   },
   "Shape.one line of up to 100 characters": {
     "description": "What the text in a box has to look like, in the sentence under it.",
@@ -3374,15 +3374,15 @@
     "hash": "sha256-f7e5e8c54e6f",
     "other": "sizes separated by commas"
   },
-  "Shape.the id of a format, such as png or csv": {
+  "Shape.the id of a format, such as `png` or `csv`": {
     "description": "What the text in a box has to look like, in the sentence under it.",
-    "hash": "sha256-776e6545e346",
-    "other": "the id of a format, such as png or csv"
+    "hash": "sha256-24b6f15cf215",
+    "other": "the id of a format, such as `png` or `csv`"
   },
-  "Shape.the id of a picture format, such as png or jpg": {
+  "Shape.the id of a picture format, such as `png` or `jpg`": {
     "description": "What the text in a box has to look like, in the sentence under it.",
-    "hash": "sha256-ea19ea70a8b7",
-    "other": "the id of a picture format, such as png or jpg"
+    "hash": "sha256-47e2c15131f6",
+    "other": "the id of a picture format, such as `png` or `jpg`"
   },
   "Shape.the password, in plain text": {
     "description": "What the text in a box has to look like, in the sentence under it.",
