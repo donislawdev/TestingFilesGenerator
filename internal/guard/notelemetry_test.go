@@ -204,6 +204,7 @@ var allowedURLs = map[string]string{
 var allowedLibraries = map[string]string{
 	"kernel32.dll": "free disk space, and GetProcAddress for the call below",
 	"uxtheme.dll":  "the dark window menu, called by ordinal - see darkmenus_windows.go",
+	"dwmapi.dll":   "the dark title bar, one window attribute set and read back - see titlebar_windows.go",
 	"user32.dll":   "the system dialog shown when the toolkit could not open a window - see dialog_windows.go - and how far a notch of the mouse wheel scrolls, see wheel_windows.go",
 }
 
@@ -323,6 +324,9 @@ var librariesLoadedByPath = map[string]approvedOperation{
 	"internal/gui/darkmenus_windows.go": {call: "syscall.LoadDLL", from: "systemLibraryPath",
 		why: "the dark window menu, loaded from an absolute path under the system directory " +
 			"because uxtheme.dll is not a KnownDLL - see systemLibraryPath there"},
+	"internal/gui/titlebar_windows.go": {call: "syscall.LoadDLL", from: "systemLibraryPath",
+		why: "the dark title bar, loaded from an absolute path under the system directory " +
+			"because dwmapi.dll is not a KnownDLL either - the same answer as darkmenus_windows.go (O360)"},
 	// The second case, and the reason it is the safer answer is different:
 	// the path is under the executable's own directory rather than the
 	// system's, which is the trust the executable already carries, and a

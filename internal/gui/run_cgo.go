@@ -486,8 +486,9 @@ func run(launch Launch, errOut io.Writer) int {
 	// standard error for whatever started this, and to a system dialog for
 	// the person, because the window that would have carried it is what
 	// failed - and it says what became of the renderer, when there is
-	// something to say.
-	code := OpenOrRefuse(w, a.Run, SecondAttemptFor(launch, errOut).Try, func(why error) {
+	// something to say. Run with the title bar dark, as the window under it
+	// always is - see RunDark.
+	code := OpenOrRefuse(w, RunDark(a, w), SecondAttemptFor(launch, errOut).Try, func(why error) {
 		sentence := text.WindowRefused(CauseFrom(said.String()))
 		fmt.Fprintln(errOut, sentence)
 		body := sentence

@@ -270,6 +270,12 @@ var provenByProbe = map[string]string{
 	"TestAWalkThatRemembersWritesTheBytesOfOneThatMeasuresAgain": "it asks that it reached ten picture formats and three " +
 		"placeholders. Broken by hand on 2026-11-18 by a Measure that hands back what it kept for another key: red in the " +
 		"walk without a size of jpg, png, gif and ico.",
+	"TestWindowsHoldsTheTitleBarDarkOnceAsked": "a canary of its own - a window nobody asked about has to read as " +
+		"not dark before the asked one may read as dark - and a window of none has to be refused. What it cannot see, the " +
+		"look of the bar, was measured on Windows Server 2025 on 2026-11-18: 243 before, 32 after.",
+	"TestTheTitleBarIsAskedForAgainAfterEveryChangeOfSettings": "it demands no ask before a change and one per change. " +
+		"Broken by hand on 2026-11-18 on a real window: a build without KeepTitleBarDark left the bar light after the " +
+		"desktop went to dark apps and back, attribute 0 and caption 243, where the build with it kept 1 and 32.",
 	"TestACaseWritingThroughALinkSkipsOnlyWhereTheHostRefusesAFreeName": "a table of its own, asked of " +
 		"requireNewNamesThroughLinkWith rather than of the predicate, as TestACaseBuiltOnALinkSkipsOnlyOffCI is. Broken by " +
 		"hand on 2026-11-18 by every refusal counted as the host's and by the host's refusal skipped on CI: red both times. " +

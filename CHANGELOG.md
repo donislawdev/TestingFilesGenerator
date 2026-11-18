@@ -386,6 +386,11 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **The title bar of the window is dark on Windows set to light apps.** The
+  window is always dark, and on a Windows set to light apps its title bar was
+  white. It is now dark there too, and stays dark when the Windows setting is
+  changed while the window is open. On macOS and Linux the title bar still
+  follows the system.
 - **The smallest size a refusal names is one every file of the batch takes.**
   Three 320x240 PNGs asked for at 1 B named the smallest size of the first
   file, and that size was refused again, because each picture needs its own.

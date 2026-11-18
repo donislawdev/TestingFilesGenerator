@@ -16,9 +16,9 @@ import (
 // theme against a dark application.
 //
 // That menu is drawn by Windows and not by us, and the attribute that darkens a
-// title bar does not reach it. Fyne already sets DWMWA_USE_IMMERSIVE_DARK_MODE
-// on the window - measured in the toolkit source at v2.8.0 - and that covers the
-// caption and its buttons and nothing else. Menus, standard dialogs and
+// title bar does not reach it. DWMWA_USE_IMMERSIVE_DARK_MODE covers the caption
+// and its buttons and nothing else - titlebar_windows.go sets it, because the
+// toolkit sets it only when the desktop is dark. Menus, standard dialogs and
 // scrollbars follow a separate, process wide setting.
 //
 // That setting is SetPreferredAppMode in uxtheme.dll, and three things about it
@@ -41,7 +41,8 @@ import (
 // set to, and a white menu is the one place that decision visibly breaks.
 //
 // ForceDark rather than AllowDark, and the difference matters here. AllowDark
-// follows the desktop, which is what Fyne already does for the title bar.
+// follows the desktop, which is what the toolkit does for the title bar on its
+// own and why titlebar_windows.go exists.
 // ForceDark is dark regardless, which is what this program is.
 const (
 	uxthemeSetPreferredAppMode = 135
