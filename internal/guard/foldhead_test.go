@@ -81,12 +81,21 @@ func TestTheWholeHeadRowOfAFoldOpensAndShutsIt(t *testing.T) {
 	// the row toggled.
 	//
 	// What the fold of batch 1 is afterwards no longer says whether the row
-	// answered too. A copy folds the batch it came from since 2026-11-18
-	// (foldAbove), and that is asserted instead: the batch above shut, the
-	// copy open under it.
+	// answered too: a copy folds the batch it came from since 2026-11-18
+	// (foldAbove). So the row is read as the button's own work begins - still
+	// open, or the press reached the row first - and what the copy does is
+	// asserted after: the batch above shut, the copy open under it.
 	duplicate := buttonNamed(screen, text.ButtonDuplicateBatch())
 	if duplicate == nil {
 		t.Fatalf("batch 1 has no %q button", text.ButtonDuplicateBatch())
+	}
+	if !head.Open() {
+		t.Fatalf("batch 1 is shut before %q is pressed, so a press that also toggled its row could not be seen", text.ButtonDuplicateBatch())
+	}
+	copyBatch, openWhenCopied := duplicate.OnTapped, false
+	duplicate.OnTapped = func() {
+		openWhenCopied = head.Open()
+		copyBatch()
 	}
 	batches := batchFolds(screen)
 	buttonAt := fyne.CurrentApp().Driver().AbsolutePositionForObject(duplicate)
@@ -94,6 +103,10 @@ func TestTheWholeHeadRowOfAFoldOpensAndShutsIt(t *testing.T) {
 	if got := batchFolds(screen); got != batches+1 {
 		t.Fatalf("pressing %q left %d batch(es) where %d were expected, so the press did not land on the button",
 			text.ButtonDuplicateBatch(), got, batches+1)
+	}
+	if !openWhenCopied {
+		t.Errorf("pressing %q shut the row of batch 1 before the copy was made - a press on a button in the head goes to the button alone",
+			text.ButtonDuplicateBatch())
 	}
 	if foldTitled(t, screen, "", text.BatchHeading(1)).Open() {
 		t.Errorf("pressing %q in the head of batch 1 left batch 1 open - a copy folds the batch above it", text.ButtonDuplicateBatch())

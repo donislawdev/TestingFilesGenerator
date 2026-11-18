@@ -2,12 +2,14 @@ package guard
 
 import (
 	"fmt"
+	"maps"
 	"reflect"
 	"runtime"
+	"slices"
 	"sort"
 	"strings"
-	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
@@ -32,10 +34,6 @@ import (
 // A picture plans by drawing and encoding itself, so planning sixteen at once
 // holds sixteen pictures, the thing the memory setting is for.
 
-// besideReach is the case whose plan is watched for files planned at once:
-// pictures, which start no goroutines of their own.
-const besideReach = "png pictures"
-
 // planWidths are the two numbers of processors the plans are compared at. One
 // is the plan of one file at a time, eight is more stretches than any case
 // below has files for.
@@ -51,8 +49,12 @@ func besideCases() map[string][]engine.Target {
 	return map[string][]engine.Target{
 		"png pictures": {{ID: "p", Format: "png", Sizes: engine.Uniform(40, 2<<20), Label: true, Properties: pictures()}},
 		"a range of png": {{ID: "r", Format: "png", Sizes: make([]int64, 40), Label: true,
-			Range:      engine.SizeRange{Used: true, Min: 2 << 10, Max: 96 << 10},
-			Properties: map[string]string{"width": "64", "height": "64"}}},
+			Range: engine.SizeRange{Used: true, Min: 2 << 10, Max: 96 << 10},
+			// 320 by 240 rather than smaller: it encodes to 1573 B, under the
+			// range, and takes long enough to plan that a stretch of the draw
+			// is still running when plannersBeside looks (64 by 64 was over
+			// between two readings, one run in three).
+			Properties: map[string]string{"width": "320", "height": "240"}}},
 		"png refused at its first file": {{ID: "f", Format: "png", Sizes: engine.Uniform(24, 1), Label: true, Properties: pictures()}},
 		"jpg refused, its files unlike": {{ID: "j", Format: "jpg", Sizes: engine.Uniform(24, 36000), Label: true, Properties: pictures()}},
 		"damaged pictures": {{ID: "d", Format: "png", Sizes: engine.Uniform(24, 64<<10), Label: true, Properties: pictures(),
@@ -70,10 +72,14 @@ func TestAPlanIsTheSameHoweverManyFilesArePlannedAtOnce(t *testing.T) {
 	opt := engine.Options{OutDir: t.TempDir(), Seed: 7, Command: "test"}
 
 	// Canary: two plans that differ by their seed have to be told apart, or a
-	// comparison that saw nothing would pass every case below.
+	// comparison that saw nothing would pass every case below. Both accepted
+	// and whole, so the difference is the seed's and not a refusal's.
 	runtime.GOMAXPROCS(1)
-	one, _ := engine.Plan(besideCases()["png pictures"], opt)
-	other, _ := engine.Plan(besideCases()["png pictures"], engine.Options{OutDir: opt.OutDir, Seed: 8, Command: "test"})
+	one, oneErr := engine.Plan(besideCases()["png pictures"], opt)
+	other, otherErr := engine.Plan(besideCases()["png pictures"], engine.Options{OutDir: opt.OutDir, Seed: 8, Command: "test"})
+	if oneErr != nil || otherErr != nil || len(one) != 40 || len(other) != 40 {
+		t.Fatalf("canary: the two plans compared were not both whole (%d files, %v; %d files, %v)", len(one), oneErr, len(other), otherErr)
+	}
 	if planParts(one, nil, other, nil) == "" {
 		t.Fatal("canary: two plans of different seeds compare as one - this test cannot see a plan that moved")
 	}
@@ -105,20 +111,15 @@ func TestAPlanIsTheSameHoweverManyFilesArePlannedAtOnce(t *testing.T) {
 	}
 	sort.Strings(names)
 
-	most := 0
+	most := map[string]int{}
 	for _, name := range names {
 		var planned [2][]engine.PlannedFile
 		var errs [2]error
 		for i, width := range planWidths {
 			runtime.GOMAXPROCS(width)
 			targets := append([]engine.Target(nil), cases[name]...)
-			seen := goroutinesBeside(func() { planned[i], errs[i] = engine.Plan(targets, opt) })
-			// Counted on pictures alone. A format may start goroutines of
-			// its own while it plans, and those would be counted as the
-			// plan's - measured so on 2026-11-18, when a plan of one file
-			// at a time still showed several beside it across every case.
-			if width > 1 && name == besideReach {
-				most = seen
+			for path, seen := range plannersBeside(func() { planned[i], errs[i] = engine.Plan(targets, opt) }) {
+				most[path] = max(most[path], seen)
 			}
 		}
 		if why := planParts(planned[0], errs[0], planned[1], errs[1]); why != "" {
@@ -127,59 +128,86 @@ func TestAPlanIsTheSameHoweverManyFilesArePlannedAtOnce(t *testing.T) {
 		if reached := reachedRefusal(name, errs[1]); reached != "" {
 			t.Errorf("%s: %s", name, reached)
 		}
+		// A case that is not named for a refusal has to be planned whole, or
+		// two refusals alike would compare as one plan and pass.
+		if want := filesOf(cases[name]); !strings.Contains(name, "refused") && (errs[1] != nil || len(planned[1]) != want) {
+			t.Errorf("%s was planned to %d of its %d files: %v", name, len(planned[1]), want, errs[1])
+		}
 	}
 
 	// The state this is about, asserted rather than assumed: at eight
-	// processors the files were planned beside each other at all.
-	if most < 2 {
-		t.Errorf("at most %d goroutines ran beside the plan of %s at %d processors - nothing was planned at once, "+
-			"so the comparison above compared one way of planning with itself", most, besideReach, planWidths[1])
+	// processors each of the three loops planned files beside each other, so
+	// none of the comparisons above compared one way of planning with itself.
+	for _, path := range slices.Sorted(maps.Keys(plannerPaths)) {
+		if most[path] < 2 {
+			t.Errorf("at most %d goroutines planned %s beside each other at %d processors - nothing of it was planned "+
+				"at once, so its plans above were compared with themselves", most[path], path, planWidths[1])
+		}
 	}
+}
+
+// filesOf is how many files targets ask for.
+func filesOf(targets []engine.Target) int {
+	n := 0
+	for _, target := range targets {
+		n += len(target.Sizes)
+	}
+	return n
 }
 
 func TestThePicturesPlannedAtOnceHoldNoMoreThanTheMemorySettingLeaves(t *testing.T) {
 	was := runtime.GOMAXPROCS(8)
 	t.Cleanup(func() { runtime.GOMAXPROCS(was) })
 	const mib = int64(1) << 20
-	// 1500 by 1500, which png says holds 11.25 MB while it is drawn (Holds), in
-	// 16 MB of room - room for one with megabytes to spare, since the heap
-	// this test reads is not the heap the engine reads a moment later.
+	// Two pictures, each holding about 12 MB while it is made, in 16 MB of
+	// room - room for one with megabytes to spare, since the heap this test
+	// reads is not the heap the engine reads a moment later. A png of 1500 by
+	// 1500 holds 11.25 MB while it is drawn and says so for the writer
+	// (Holds). A jxl of 600 by 600 is coded while it plans, holds 12.2 MB
+	// then and nothing while it is written, so only its plan says so
+	// (PlanHolds) - the case a planner reading Holds alone let through.
 	//
 	// After a target of text, so the pictures are not the first files of the
 	// run: the first file of every target is planned alone because nothing
 	// yet says what its files hold, and at the first file of a run the
-	// ceiling of the plan would hold it alone anyway. One file of text, since
-	// text holds nothing and more of it would be planned beside itself and
-	// counted here (measured so on 2026-11-18, three files showed two).
-	targets := []engine.Target{
-		{ID: "notes", Format: "txt", Sizes: engine.Uniform(1, 4096)},
-		{ID: "big", Format: "png", Sizes: engine.Uniform(6, 24*mib), Properties: map[string]string{"width": "1500", "height": "1500"}},
+	// ceiling of the plan would hold it alone anyway.
+	pictures := map[string]engine.Target{
+		"png": {ID: "big", Format: "png", Sizes: engine.Uniform(6, 24*mib), Properties: map[string]string{"width": "1500", "height": "1500"}},
+		"jxl": {ID: "big", Format: "jxl", Sizes: engine.Uniform(6, 2*mib), Properties: map[string]string{"width": "600", "height": "600"}},
 	}
-	files := len(targets[0].Sizes) + len(targets[1].Sizes)
-
-	plan := func(room int64) int {
-		runtime.GC()
-		var m runtime.MemStats
-		runtime.ReadMemStats(&m)
-		opt := engine.Options{OutDir: t.TempDir(), Seed: 7, Command: "test", Memory: core.MemoryOf(int64(m.HeapAlloc) + room)}
-		var err error
-		var planned []engine.PlannedFile
-		seen := goroutinesBeside(func() { planned, err = engine.Plan(append([]engine.Target(nil), targets...), opt) })
-		if err != nil || len(planned) != files {
-			t.Fatalf("planning %d files in %d MB of room gave %d: %v", files, room/mib, len(planned), err)
+	for _, id := range slices.Sorted(maps.Keys(pictures)) {
+		targets := []engine.Target{{ID: "notes", Format: "txt", Sizes: engine.Uniform(1, 4096)}, pictures[id]}
+		files := filesOf(targets)
+		plan := func(room int64) (int, []engine.PlannedFile) {
+			runtime.GC()
+			var m runtime.MemStats
+			runtime.ReadMemStats(&m)
+			opt := engine.Options{OutDir: t.TempDir(), Seed: 7, Command: "test", Memory: core.MemoryOf(int64(m.HeapAlloc) + room)}
+			var err error
+			var planned []engine.PlannedFile
+			seen := plannersBeside(func() { planned, err = engine.Plan(append([]engine.Target(nil), targets...), opt) })
+			if err != nil || len(planned) != files {
+				t.Fatalf("planning %d files of %s in %d MB of room gave %d: %v", files, id, room/mib, len(planned), err)
+			}
+			return seen[targetFiles], planned
 		}
-		return seen
-	}
 
-	// The reach: with room to spare the pictures are planned beside each
-	// other, so the count below can see them when they are.
-	if seen := plan(2 << 30); seen < 2 {
-		t.Fatalf("with 2 GB of room at most %d goroutines planned beside each other - this test cannot see "+
-			"pictures planned at once", seen)
-	}
-	if seen := plan(16 * mib); seen > 1 {
-		t.Errorf("%d goroutines planned pictures that hold 11.25 MB each in 16 MB of room - the plan went past the "+
-			"memory setting, which leaves room for one at a time", seen)
+		// The reach: with room to spare the pictures are planned beside each
+		// other, so the count below can see them when they are - and the
+		// picture holds what this is about where it is said to.
+		seen, planned := plan(2 << 30)
+		if seen < 2 {
+			t.Fatalf("%s: with 2 GB of room at most %d goroutines planned beside each other - this test cannot see "+
+				"pictures planned at once", id, seen)
+		}
+		if p := planned[1].Plan; max(p.Holds, p.PlanHolds) < 10*mib {
+			t.Fatalf("%s: a picture of the case says it holds %d B writing and %d B planning, so the room below "+
+				"does not hold it to one at a time", id, p.Holds, p.PlanHolds)
+		}
+		if seen, _ := plan(16 * mib); seen > 1 {
+			t.Errorf("%s: %d goroutines planned pictures that hold about 12 MB each in 16 MB of room - the plan went "+
+				"past the memory setting, which leaves room for one at a time", id, seen)
+		}
 	}
 }
 
@@ -220,31 +248,60 @@ func planParts(a []engine.PlannedFile, aErr error, b []engine.PlannedFile, bErr 
 	return ""
 }
 
-// goroutinesBeside runs do and answers the most goroutines there were beside
-// it at any moment - not the ones there before it started, nor the one
-// counting.
+// targetFiles is the loop that plans the files of a target, the one
+// TestThePicturesPlannedAtOnceHoldNoMoreThanTheMemorySettingLeaves counts.
+const targetFiles = "the files of a target"
+
+// plannerPaths are the three loops planned in stretches, each named by the
+// function only a goroutine planning in it has on its stack.
+var plannerPaths = map[string]string{
+	targetFiles:                   "engine.(*planning).files",
+	"the draw of a range":         "engine.drawOne",
+	"the walk of a refused batch": "engine.batchWalk.sizeEveryFileTakes",
+}
+
+// plannersBeside runs do and answers, for each loop of plannerPaths, the most
+// goroutines planning in it at one moment.
 //
-// Counted from outside rather than told, because the engine says nothing
-// about how it plans, and being told would be a promise this test could only
-// believe.
-func goroutinesBeside(do func()) int {
-	before := runtime.NumGoroutine()
-	var most atomic.Int64
+// A goroutine planning is one with engine.askInTurn on its stack - a
+// goroutine of a stretch (beside, in parallel.go) - so a goroutine a format
+// starts of its own, or one an earlier test left behind, is not counted. The
+// count of every goroutine in the process was what this read until the review
+// of #252, which named both ways that could be wrong. Read from the stacks
+// rather than told, because the engine says nothing about how it plans, and
+// being told would be a promise this test could only believe. A stretch of
+// pictures plans for milliseconds, so a reading every 200 us sees it, and a
+// name that stops matching after a rename reads as nothing planned at once.
+func plannersBeside(do func()) map[string]int {
+	most := map[string]int{}
 	stop, counted := make(chan struct{}), make(chan struct{})
 	go func() {
 		defer close(counted)
+		buf := make([]byte, 8<<20)
 		for {
-			most.Store(max(most.Load(), int64(runtime.NumGoroutine())))
+			now := map[string]int{}
+			for _, g := range strings.Split(string(buf[:runtime.Stack(buf, true)]), "\n\n") {
+				if !strings.Contains(g, "engine.askInTurn") {
+					continue
+				}
+				for path, frame := range plannerPaths {
+					if strings.Contains(g, frame) {
+						now[path]++
+					}
+				}
+			}
+			for path, n := range now {
+				most[path] = max(most[path], n)
+			}
 			select {
 			case <-stop:
 				return
-			default:
-				runtime.Gosched()
+			case <-time.After(200 * time.Microsecond):
 			}
 		}
 	}()
 	do()
 	close(stop)
 	<-counted
-	return int(most.Load()) - before - 1
+	return most
 }

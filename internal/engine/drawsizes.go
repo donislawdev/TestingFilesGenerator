@@ -3,7 +3,6 @@ package engine
 import (
 	"context"
 	"errors"
-	"math"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -147,7 +146,7 @@ func drawSizes(ctx context.Context, t *Target, desc format.Descriptor, targetSee
 	pace := pace{run: run}
 	got := make([]drawn, min(len(t.Sizes), widthFor(len(t.Sizes))*planStretchPerWriter))
 	for from := 0; from < len(t.Sizes); {
-		n, width := pace.stretch(len(t.Sizes)-from, planStretchPerWriter, t.Range.Max, math.MaxInt)
+		n, width := pace.stretch(len(t.Sizes)-from, planStretchPerWriter, t.Range.Max, len(got))
 		planStretch(&pace, got[:n], from, width, draw)
 		if err := settleDrawn(t, from, got[:n], &pace); err != nil {
 			return err
@@ -172,7 +171,11 @@ func settleDrawn(t *Target, from int, got []drawn, pace *pace) error {
 }
 
 // drawn is what drawing the size of one file of a range came to: the size the
-// seed drew, the writable size it settled on and the plan at that size.
+// seed drew, the writable size it settled on, and of the plan at that size
+// only what pace reads. The whole plan stays behind, because a stretch holds
+// up to a hundred and twenty eight of these at once and a plan can carry its
+// file - a PDF plans its whole document - while the plan that is written is
+// made again once the sizes are settled.
 type drawn struct {
 	want, size int64
 	plan       format.Plan
@@ -206,5 +209,6 @@ func drawOne(ctx context.Context, t *Target, desc format.Descriptor, targetSeed 
 		// hands the stop back at its first probe.
 		got, plan, err = firstWritable(ctx, desc, req, t.Range.Min, t.Range.Max)
 	}
-	return drawn{want: want, size: got, plan: plan, err: err}
+	return drawn{want: want, size: got, err: err,
+		plan: format.Plan{Bytes: plan.Bytes, Holds: plan.Holds, PlanHolds: plan.PlanHolds}}
 }

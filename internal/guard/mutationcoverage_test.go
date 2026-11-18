@@ -245,6 +245,13 @@ var provenByProbe = map[string]string{
 	"TestANewBatchIsTheOneOpen": "a reach check of its own - the screen has to open with one open batch and the " +
 		"first batch has to be shut before it is opened again - and broken by hand on 2026-11-18 by taking out what " +
 		"foldAbove sets: red, every batch left open.",
+	"TestAPartRunsTheTestsItIsHandedAndNoOther": "three children of its own, one of them a refusal, each with a deadline - " +
+		"and broken by hand on 2026-11-18 by a TestMain that ignores the file: red after 90 s, the child ran the whole package " +
+		"from its first test.",
+	"TestAVerdictPassesOnlyWhenEveryPartRanAndPassed": "a table of runs, the first of which has to pass, so the refusals " +
+		"are not the script refusing everything.",
+	"TestAVerdictOfPartsRunsWhateverThePartsDid": "a canary of its own - the test job's verdict read with if: success() " +
+		"has to be found wrong.",
 	"TestAGridAsksEveryPartOfAFieldForItsSizeOnce": "a canary of its own - a sentence behind a layout that asks it twice " +
 		"has to be found - every counted thing asked exactly once, so a field the grid never reached is red too, and run on " +
 		"2026-11-18 against the grid before the change: red, a field asked 5 times and a field in a group 15.",
@@ -520,7 +527,9 @@ var provenByProbe = map[string]string{
 }
 
 var (
-	testDeclaration = regexp.MustCompile(`(?m)^func (Test\w+)\(`)
+	// A guard takes *testing.T. TestMain takes *testing.M and is how go test
+	// starts the package (guardpart_test.go), not a guard of anything.
+	testDeclaration = regexp.MustCompile(`(?m)^func (Test\w+)\(\w+ \*testing\.T\)`)
 	// Either quote: Python writes a string in single quotes as readily as in
 	// double ones, and an entry written by repr() comes out in single. With
 	// only the double quote read, nine of the guards this reported as unproven

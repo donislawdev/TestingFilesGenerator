@@ -19,10 +19,11 @@
 # on 2026-11-18, against 16 to 26 s before, because the picture-sizes preset
 # plans its 21 pictures at their smallest twice (tfg preset show, a dry run).
 # Each weighs what it took where it paid, the rest the most any of them paid.
-# The two guards of the plan on several goroutines came on 2026-11-18 with
-# no time from CI: 47.0 s and 11.3 s under -race on the owner's machine,
-# times 2.55, the ratio one guard showed on 2026-11-12. A guess, to be
-# replaced by the first part that runs them.
+# The two guards of the plan on several goroutines took 85.0 s and 24.6 s in
+# their first part, on an EPYC 7763, on 2026-11-18. The review of the pull
+# request that brought them made them dearer the same day - a heavier range,
+# a jxl coded while it plans - and on the owner's machine under -race they
+# went from 47.0 to 47.7 s and from 11.3 to 24.0 s, so 86.2 and 52.2.
 #
 # A test that is not here and takes 60 s or more fails its part with the line
 # to add. A test that is here and no longer exists fails every part.
@@ -37,9 +38,9 @@ unlisted 0.58
 130.1 TestSmallestIsTheSmallestFile
 130.0 TestTheMinimumThisToolPrintsStandsWhateverTheSeedIs
 124.3 TestFreeBoxesCarryPaddingOfAnyLength
-119.9 TestAPlanIsTheSameHoweverManyFilesArePlannedAtOnce
 99.9 TestEveryBase64TextSizeIsExact
 93.8 TestAFilmPictureLargerThanAnyAV1LevelIsRefusedNotBroken
+86.2 TestAPlanIsTheSameHoweverManyFilesArePlannedAtOnce
 84.3 TestEveryFormatsMapIsTheOneItsStructureReadsBack
 68.2 TestADeclaredDefaultIsTheOneTheFormatUses
 65.9 TestNoGeneratorHoldsTheWholeFileInMemory
@@ -57,6 +58,7 @@ unlisted 0.58
 55.6 TestTheArchiveScanLooksIntoTheArchivesInside
 55.3 TestAFilmOfANamedSizeKeepsEveryPictureInsideItsReserve
 52.2 TestChoosingAToolLaysTheScreenOutAsIfItOpenedWithIt
+52.2 TestThePicturesPlannedAtOnceHoldNoMoreThanTheMemorySettingLeaves
 52.0 TestEveryLanguageDescribesEverythingTheProgramCanProduce
 38.6 TestAContainerStopsBetweenTheFilesItPlans
 37.5 TestEveryPictureNamedAfterARefusalShowsOne
@@ -65,7 +67,6 @@ unlisted 0.58
 35.9 TestTheArchiveScanFindsEveryTrapItNames
 34.0 TestOurOwnGeneratorsHaveNotDrifted
 29.9 TestTheSameSeedGivesTheSameBytes
-28.8 TestThePicturesPlannedAtOnceHoldNoMoreThanTheMemorySettingLeaves
 27.9 TestTheMinimumStandsWhateverTheSeedIsUnderEveryDeclaredChoice
 24.9 TestEveryEMLSettingSurvivesItsReferenceTool
 24.2 TestAPictureSaysItCarriesItsLabelOnlyWhenItsTextIsWhole

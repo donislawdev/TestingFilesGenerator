@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -95,10 +94,13 @@ type batchWalk struct {
 
 // planAt plans file idx of the target, from nought, at size bytes.
 func (w batchWalk) planAt(ctx context.Context, idx int, size int64) answer {
-	r := requestFor(w.t, idx, core.FileSeed(w.targetSeed, idx), w.damaged)
+	// Per target and index, never from a stream the run shares - untouchable
+	// rule 2, and the reason two runs of one recipe write the same bytes.
+	seed := core.FileSeed(w.targetSeed, idx)
+	r := requestFor(w.t, idx, seed, w.damaged)
 	r.Bytes = size
 	p, err := planFile(ctx, w.t, w.desc, r)
-	return answer{plan: p, err: err}
+	return answer{plan: p, err: err, seed: seed}
 }
 
 // everyFile is where the walk ended.
@@ -151,7 +153,7 @@ func (w batchWalk) sizeEveryFileTakes(ctx context.Context, first int, below *for
 		if err := ctx.Err(); err != nil {
 			return everyFile{}, err
 		}
-		k, width := pace.stretch(n-s.inARow, 1, s.got.size, math.MaxInt)
+		k, width := pace.stretch(n-s.inARow, 1, s.got.size, len(got))
 		planStretch(&pace, got[:k], s.idx, width, ask)
 		if err := s.take(got[:k], &pace, w.desc.ID); err != nil {
 			return everyFile{}, err

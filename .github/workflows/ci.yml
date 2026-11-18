@@ -30,7 +30,7 @@ env:
 
 jobs:
   test:
-    name: test on ${{ matrix.os }}
+    name: guards on ${{ matrix.os }} (part ${{ matrix.part }} of ${{ matrix.parts }})
     # A hung job otherwise holds a runner until the GitHub default of six
     # hours. Remeasured 2026-09-03, because the sentence here said "the matrix
     # runs in about a minute" and had not been true for a long time: the test
@@ -39,10 +39,29 @@ jobs:
     # and its own numbers now, and fuzzing is given 5 minutes a target by its
     # own loop.
     timeout-minutes: 20
+    # Two parts on each system, the owner's decision of 2026-11-18 (O361). In
+    # one process the guards took 995 s on Windows on main that day, against
+    # the 1080 s of the test step's timeout, and 1080 s - the timeout - on
+    # Windows and macOS for the pull request after it. The same package had
+    # taken 621 to 744 s four days earlier, and it grows with every guard.
+    # The race job met the same wall in September and split for the same
+    # reason: a timeout raised once and met again is the wrong shape. The
+    # guards are laid out by .github/race-weights through
+    # .github/scripts/guard_part.sh, the way the race job lays out its own.
+    #
+    # parts is the length of part, stated beside it, because the name cannot
+    # count a list. A part outside the parts fails when it picks its tests,
+    # and a part missing from the list fails the verdict below, which counts
+    # the parts it finds against the number in their names.
+    #
+    # The steps that are not the guards - formatting, vet, the dependency
+    # list, the two builds and the other packages - run in part 0 alone.
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        part: [0, 1]
+        parts: [2]
     runs-on: ${{ matrix.os }}
     env:
       # The engine, the command line and the tests build without CGO on every
@@ -87,14 +106,17 @@ jobs:
           cache: true
 
       - name: formatting
+        if: matrix.part == 0
         run: |
           test -z "$(gofmt -l .)" || { echo "gofmt found unformatted files:"; gofmt -l .; exit 1; }
         shell: bash
 
       - name: vet
+        if: matrix.part == 0
         run: go vet -tags "$(cat .github/build-tags)" ./...
 
       - name: the dependency list has not grown by accident
+        if: matrix.part == 0
         # Every dependency is a licence question and a byte stability
         # question. A new one arriving as somebody's transitive import has
         # to be visible rather than discovered later.
@@ -287,7 +309,7 @@ jobs:
           echo "the command line binary links only: $linked"
         shell: bash
 
-      - name: test
+      - name: the guards of this part
         # The timeout is stated for the reason the race job and the coverage
         # gate both state theirs: Go allows ten minutes PER PACKAGE by default,
         # this job allows twenty for all of it, and internal/guard is one
@@ -300,12 +322,40 @@ jobs:
         # on windows, 491 s on macOS. macOS therefore had 109 s of room under a
         # limit nobody had chosen, and the same fleet was measured swinging by
         # more than 25 percent between two runs of one branch.
-        run: go test -tags "$(cat .github/build-tags)" ./... -count=1 -timeout 18m
+        #
+        # The part's tests reach the binary through a file (TFG_GUARD_PART,
+        # read by TestMain in internal/guard/guardpart_test.go), not through
+        # -run: half the package is about 34 000 characters of names, and
+        # Windows hands a program at most 32 767. -v so the log names every
+        # test it started, for the check after the run, and its time.
+        env:
+          PART: ${{ matrix.part }}
+          PARTS: ${{ matrix.parts }}
+        run: |
+          set -euo pipefail
+          bash .github/scripts/guard_part.sh pick "$PART" "$PARTS" "$PART"
+          TFG_GUARD_PART=mine.txt go test -tags "$(cat .github/build-tags)" ./internal/guard/ -count=1 -timeout 18m -v 2>&1 | tee part.log
+          bash .github/scripts/guard_part.sh ran part.log
+        shell: bash
+
+      - name: the other packages
+        # Every package outside internal/guard, in part 0 alone. None holds a
+        # test today, and one written there has to run as well.
+        if: ${{ !cancelled() && matrix.part == 0 }}
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          go list -tags "$(cat .github/build-tags)" ./... | grep -v '/internal/guard$' > others.txt
+          mapfile -t others < others.txt
+          go test -tags "$(cat .github/build-tags)" -count=1 -timeout 4m "${others[@]}"
+        shell: bash
 
       - name: build the command line binary
+        if: matrix.part == 0
         run: go build -tags "$(cat .github/build-tags)" ./cmd/tfg
 
       - name: build the window binary
+        if: matrix.part == 0
         # The toolkit arrived on 2026-08-05 and this step still passes, which
         # is the point of how it was wired in. Reaching the toolkit's app
         # package needs CGO and, on Linux, X11 development headers no runner
@@ -341,6 +391,47 @@ jobs:
           else
             go build -tags "$(cat .github/build-tags)" ./cmd/tfg-gui
           fi
+        shell: bash
+
+  verdict:
+    name: test on ${{ matrix.os }}
+    # The name the ruleset of main requires, which the test job carried until
+    # it was split into parts (O361). A job of its own rather than a renamed
+    # check, so main's rules did not have to change, and one for each system,
+    # so a red Windows part does not turn ubuntu red. race_parts.py verdict is
+    # what decides, and the coverage gate asks it the same question.
+    #
+    # always() rather than the default, because a job whose needs failed is
+    # skipped, and a required check that was skipped counts as passed. This
+    # one runs whatever happened and decides from what the parts concluded.
+    needs: test
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    # Reads the jobs of this run and the script that judges them. filter=latest
+    # answers with the newest attempt of every job, so a part that failed and
+    # was run again is judged by the run that counts.
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: every part of the guards on this system passed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OS: ${{ matrix.os }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs?filter=latest&per_page=100" --paginate \
+            --jq '.jobs[] | [.name, (.conclusion // "none")] | @tsv' > jobs.tsv
+          python3 .github/scripts/race_parts.py verdict "guards on $OS" jobs.tsv
         shell: bash
 
   imports:
@@ -1050,8 +1141,9 @@ jobs:
         # is .github/build-tags, which every command of the job reads and which
         # decides the files it compiles - the same reason as go.mod, named by
         # an outside review of the pull request that split the job. And so are
-        # the weights and the script that lay its parts out (O298), since a
-        # change to either decides which guards each part runs.
+        # the weights and the scripts that lay its parts out and check them
+        # (O298), and the TestMain that hands a part its tests (O361), since a
+        # change to any of them decides which guards each part runs.
         #
         # Anything unclear counts as touched. A first push, a branch with no
         # comparable parent, a pull request event with no before - all answer
@@ -1060,7 +1152,7 @@ jobs:
         # in somebody else's file.
         run: |
           set -euo pipefail
-          watched='internal/format/registry.go internal/damage/damage.go cmd/tfg/main.go internal/gui/window/run.go internal/gui/run_cgo.go internal/gui/window/tidy.go internal/audit/parallel.go internal/engine/parallel.go internal/tool/tool.go internal/gui/window/tools.go internal/gui/window/work.go internal/gui/window/closing.go internal/gui/window/dropping.go internal/format/video/ahead.go go.mod .github/workflows/ci.yml .github/build-tags .github/race-weights .github/scripts/race_parts.py'
+          watched='internal/format/registry.go internal/damage/damage.go cmd/tfg/main.go internal/gui/window/run.go internal/gui/run_cgo.go internal/gui/window/tidy.go internal/audit/parallel.go internal/engine/parallel.go internal/tool/tool.go internal/gui/window/tools.go internal/gui/window/work.go internal/gui/window/closing.go internal/gui/window/dropping.go internal/format/video/ahead.go go.mod .github/workflows/ci.yml .github/build-tags .github/race-weights .github/scripts/race_parts.py .github/scripts/guard_part.sh internal/guard/guardpart_test.go'
           # On a pull request there is no "before" - the field belongs to a push
           # - so this asked for something empty and every pull request answered
           # "touched". That quietly undid the decision of 2026-08-20, because
@@ -1200,8 +1292,9 @@ jobs:
         # the declared files lives in internal/guard, so this and that one
         # answer different halves of the same worry.
         #
-        # Which tests are this part's is worked out here, from the test binary,
-        # rather than written down. A list kept by hand would miss the next
+        # Which tests are this part's is worked out from the test binary, by
+        # .github/scripts/guard_part.sh for every job split into parts, rather
+        # than written down. A list kept by hand would miss the next
         # guard somebody adds, and miss it green. The list is asked with -race,
         # because a file in the package builds only without it, and it keeps
         # Fuzz and Example because go test runs those as tests too.
@@ -1240,31 +1333,11 @@ jobs:
           LISTED: ${{ matrix.part }}
         run: |
           set -euo pipefail
-          if [ "$PART" != "$LISTED" ] || [ "$PART" -ge "$PARTS" ]; then
-            echo "job $PART of $PARTS is part $LISTED in the matrix, and the split needs the two equal and below the total."
-            echo "List strategy.matrix.part as 0, 1, 2 and on, in order, and check the context names in this step's env."
-            exit 1
-          fi
-          go test -tags "$(cat .github/build-tags)" ./internal/guard/ -race -list '.*' > listed.txt || { cat listed.txt; exit 1; }
-          grep -E '^(Test|Fuzz|Example)' listed.txt > names.txt || { echo "the test binary listed no Test, Fuzz or Example function. What it printed:"; cat listed.txt; exit 1; }
-          python3 .github/scripts/race_parts.py split names.txt .github/race-weights "$PART" "$PARTS" > mine.txt
-          planned=$(wc -l < mine.txt)
-          echo "part $PART of $PARTS runs $planned of $(wc -l < names.txt) tests"
-          if [ "$planned" -eq 0 ]; then
-            echo "part $PART of $PARTS was given no test - the checksum of no listed name lands here."
-            echo "With this few tests, use fewer parts in strategy.matrix.part."
-            exit 1
-          fi
+          bash .github/scripts/guard_part.sh pick "$PART" "$PARTS" "$LISTED" -race
           head -n 1 /proc/stat > stat-before.txt
           date +%s > time-before.txt
-          go test -tags "$(cat .github/build-tags)" ./internal/guard/ -count=1 -race -timeout 20m -v -run "^($(paste -sd'|' mine.txt))\$" 2>&1 | tee part.log
-          missing=$(comm -23 <(sort mine.txt) <(sed -n 's/^=== RUN   \([^/]*\)$/\1/p' part.log | sort -u))
-          if [ -n "$missing" ]; then
-            echo "part $PART was given $planned tests and never ran these:"
-            echo "$missing"
-            echo "Each of these is a name the -run pattern did not reach, or a test the binary skipped before it started."
-            exit 1
-          fi
+          TFG_GUARD_PART=mine.txt go test -tags "$(cat .github/build-tags)" ./internal/guard/ -count=1 -race -timeout 20m -v 2>&1 | tee part.log
+          bash .github/scripts/guard_part.sh ran part.log
           python3 .github/scripts/race_parts.py unlisted .github/race-weights part.log
         shell: bash
 
@@ -1324,9 +1397,21 @@ jobs:
         shell: bash
 
   coverage:
-    name: coverage gate
+    name: coverage (part ${{ matrix.part }} of ${{ matrix.parts }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Two parts, for the reason the test job has two (O361): one process took
+    # 861 s of its 1080 on main on 2026-11-18 and 1036 s on the pull request
+    # after it. Each part measures its own guards and hands its profile to the
+    # gate below, which adds them up. A block two parts both ran is counted
+    # once with the counts of both, because go tool cover merges blocks of the
+    # same place - measured that day on two guards: 9.9% and 16.5% apart, 16.6%
+    # added up and 16.6% run together.
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1]
+        parts: [2]
     env:
       CGO_ENABLED: "0"
     steps:
@@ -1368,17 +1453,92 @@ jobs:
         # generates files for twenty four formats. Eighteen minutes sits under
         # the job's own ceiling on purpose, so a genuinely stuck run still fails
         # as a test with output rather than as a killed job without any.
-        run: >
-          go test -tags "$(cat .github/build-tags)" ./... -count=1 -covermode=atomic
-          -coverpkg=./internal/...,./cmd/...
-          -coverprofile=coverage.out -timeout 18m
+        #
+        # This part's guards reach the binary through a file, the way the test
+        # job hands its parts over (guard_part.sh).
+        env:
+          PART: ${{ matrix.part }}
+          PARTS: ${{ matrix.parts }}
+        run: |
+          set -euo pipefail
+          bash .github/scripts/guard_part.sh pick "$PART" "$PARTS" "$PART"
+          TFG_GUARD_PART=mine.txt go test -tags "$(cat .github/build-tags)" ./internal/guard/ -count=1 -covermode=atomic \
+            -coverpkg=./internal/...,./cmd/... -coverprofile="coverage-$PART.out" -timeout 18m -v 2>&1 | tee part.log
+          bash .github/scripts/guard_part.sh ran part.log
+        shell: bash
+
+      - name: measure the other packages
+        # Every package outside internal/guard, in part 0 alone, so a test
+        # written there counts towards the gate as it did when one command
+        # measured the whole tree.
+        if: ${{ !cancelled() && matrix.part == 0 }}
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          go list -tags "$(cat .github/build-tags)" ./... | grep -v '/internal/guard$' > others.txt
+          mapfile -t others < others.txt
+          go test -tags "$(cat .github/build-tags)" -count=1 -covermode=atomic -coverpkg=./internal/...,./cmd/... \
+            -coverprofile=coverage-others.out -timeout 4m "${others[@]}"
+        shell: bash
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: coverage-part-${{ matrix.part }}
+          path: coverage-*.out
+          if-no-files-found: error
+          retention-days: 3
+
+  coverage-gate:
+    name: coverage gate
+    # The name the ruleset of main requires. always(), for the reason the
+    # verdict of the test job gives: a skipped required check counts as
+    # passed, so this runs whatever the parts did and fails unless every one
+    # of them succeeded.
+    needs: coverage
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: false
+          cache: true
+
+      - name: every part measured
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs?filter=latest&per_page=100" --paginate \
+            --jq '.jobs[] | [.name, (.conclusion // "none")] | @tsv' > jobs.tsv
+          python3 .github/scripts/race_parts.py verdict "coverage" jobs.tsv
+        shell: bash
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          pattern: coverage-part-*
+          path: profiles
+          merge-multiple: true
 
       - name: gate
         # The threshold lives in exactly one place, .github/coverage-threshold.
         # It rises with coverage and is never lowered to turn a red run green.
         # Lowering it is a decision for the owner, not a way to get unblocked.
+        #
+        # The profiles of the parts are one profile once the line naming the
+        # mode is said once.
         run: |
           set -euo pipefail
+          ls profiles/coverage-*.out
+          { echo "mode: atomic"; tail -q -n +2 profiles/coverage-*.out; } > coverage.out
           threshold=$(tr -d '[:space:]' < .github/coverage-threshold)
           actual=$(go tool cover -func=coverage.out | awk '/^total:/ {gsub("%","",$3); print $3}')
           echo "coverage ${actual}% - threshold ${threshold}%"

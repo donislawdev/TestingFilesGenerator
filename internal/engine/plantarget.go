@@ -52,7 +52,7 @@ func (pl *planning) files(ctx context.Context, t *Target, desc format.Descriptor
 	pace := pace{run: pl.run}
 	got := make([]answer, min(len(t.Sizes), widthFor(len(t.Sizes))*planStretchPerWriter))
 	for from := 0; from < len(t.Sizes); {
-		n, width := pace.stretch(len(t.Sizes)-from, planStretchPerWriter, largest, pl.budget.ahead())
+		n, width := pace.stretch(len(t.Sizes)-from, planStretchPerWriter, largest, min(pl.budget.ahead(), len(got)))
 		planStretch(&pace, got[:n], from, width, ask)
 		if err := pl.stretch(ctx, walk, from, got[:n], &pace); err != nil {
 			return err
@@ -164,7 +164,7 @@ func (pl *planning) file(ctx context.Context, walk batchWalk, idx int, a answer)
 		Target: t,
 		Index:  idx,
 		Name:   name,
-		Seed:   core.FileSeed(walk.targetSeed, idx),
+		Seed:   a.seed,
 		Desc:   walk.desc,
 		Plan:   p,
 	})

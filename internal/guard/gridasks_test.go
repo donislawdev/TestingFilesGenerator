@@ -58,9 +58,10 @@ func (askingTwice) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 // asks about: the box of a field and what stands after it, a field whose
 // refusal is on the screen, a field in a group of settings - a grid inside
 // the grid - and a sentence across the row. A box to tick stands among them
-// for the way the grid asks it, uncounted, since its parts are the
-// toolkit's. sentence wraps what stands across the row, so the canary can
-// plant a layout there.
+// with something counted added to its column, since its own parts are the
+// toolkit's: the grid levels a box to tick by the column it asked already,
+// and asking it again would count two there. sentence wraps what stands
+// across the row, so the canary can plant a layout there.
 func countedGrid(t *testing.T, sentence func(fyne.CanvasObject) fyne.CanvasObject) (fyne.CanvasObject, map[string]*sizeAsked) {
 	t.Helper()
 	counted := map[string]*sizeAsked{}
@@ -80,6 +81,7 @@ func countedGrid(t *testing.T, sentence func(fyne.CanvasObject) fyne.CanvasObjec
 		t.Fatal("the group of settings is folded, so the grid inside it is not asked")
 	}
 	tick := parts.ToggleSaying("Tick", parts.NoDetail, parts.NewToggle(nil))
+	tick.Object.(*fyne.Container).Add(leaf("the column of a box to tick"))
 	grid := parts.Grid(plain.Object, trailed.Object, tick.Object, refused.Object, group.Object(),
 		parts.Wide(sentence(leaf("a sentence across the row"))))
 	return grid, counted
@@ -112,8 +114,12 @@ func TestAGridAsksEveryPartOfAFieldForItsSizeOnce(t *testing.T) {
 	planted, plantedCounted := countedGrid(t, func(o fyne.CanvasObject) fyne.CanvasObject {
 		return container.New(askingTwice{}, o)
 	})
-	if wrong := askedOnce(planted, plantedCounted); len(wrong) == 0 {
-		t.Fatal("canary: a sentence behind a layout that asks it twice passed, so this check cannot see a grid that asks twice")
+	// Exactly the sentence planted, asked exactly twice, and nothing else
+	// wrong: a canary that took any complaint would pass on a sentence the
+	// grid never asked at all.
+	want := []string{"a sentence across the row was asked 2 time(s)"}
+	if wrong := askedOnce(planted, plantedCounted); !slices.Equal(wrong, want) {
+		t.Fatalf("canary: a sentence behind a layout that asks it twice gave %q, not %q - this check cannot see a grid that asks twice", wrong, want)
 	}
 
 	grid, counted := countedGrid(t, func(o fyne.CanvasObject) fyne.CanvasObject { return o })

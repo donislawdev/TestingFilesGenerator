@@ -270,10 +270,14 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	carries, p.Notes = imagelabel.Claim(carries, m.width, m.height, len(label), p.Notes)
 	p.Properties[format.PropertyLabelEmbedded] = carries
 	p.Memo = m
+	// Coded while writing or while planning, and whichever did it held the
+	// picture and the encoder's work - see holdsPerPixel. The plan says which,
+	// so the writers wait for room only when they code, and the planner plans
+	// fewer at once when it does.
 	if m.coded == nil {
-		// Coded while writing rather than while planning, so the writer holds
-		// the picture and the encoder's work - see holdsPerPixel.
 		p.Holds = holdsPerPixel * int64(m.width) * int64(m.height)
+	} else {
+		p.PlanHolds = holdsPerPixel * int64(m.width) * int64(m.height)
 	}
 	return p, nil
 }

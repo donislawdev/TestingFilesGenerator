@@ -38,6 +38,10 @@ import (
 //     planned, so a file not yet planned is taken to hold as much as the
 //     dearest one so far - or more, in proportion to its size, since a picture
 //     that is not given its width and height grows with the bytes asked for.
+//     What a file holds is the larger of what writing it holds (Plan.Holds)
+//     and what planning it held (Plan.PlanHolds): a jxl or avif given its
+//     width and height is coded while it plans and holds nothing while it is
+//     written, and its plan is where sixteen of them would meet.
 //   - A stretch never passes the next reading of the plan's ceiling
 //     (planMemory.ahead), so a plan that crosses the ceiling is refused at the
 //     file it was refused at before, not a stretch later.
@@ -87,12 +91,14 @@ type pace struct {
 	cost time.Duration
 }
 
-// saw takes in one planned file of the target.
+// saw takes in one planned file of the target: what it holds, the larger of
+// what writing it holds and what planning it held.
 func (p *pace) saw(plan format.Plan) {
 	p.seen = true
-	p.most = max(p.most, plan.Holds)
+	held := max(plan.Holds, plan.PlanHolds)
+	p.most = max(p.most, held)
 	if plan.Bytes > 0 {
-		p.perByte = max(p.perByte, float64(plan.Holds)/float64(plan.Bytes))
+		p.perByte = max(p.perByte, float64(held)/float64(plan.Bytes))
 	}
 }
 
@@ -103,10 +109,16 @@ func (p *pace) holds(size int64) int64 {
 
 // stretch is how many of the remaining files to plan next, and on how many
 // goroutines. perWriter is planStretchPerWriter or one, largest the most
-// bytes any of the remaining files is asked for, and ahead how many files may
-// be planned before the ceiling of the plan is read again.
-func (p *pace) stretch(remaining, perWriter int, largest int64, ahead int) (files, width int) {
-	if !p.seen || remaining <= 1 || ahead <= 1 {
+// bytes any of the remaining files is asked for, and most the most files the
+// caller takes at once: what its buffer of answers holds, and fewer when the
+// ceiling of the plan is read again sooner (planMemory.ahead).
+//
+// The buffer is the caller's to state because widthFor is read again here and
+// GOMAXPROCS can rise between the two readings - Go moves it when the
+// processors a container may use change - and a stretch wider than the buffer
+// it was sized by would be an index out of range.
+func (p *pace) stretch(remaining, perWriter int, largest int64, most int) (files, width int) {
+	if !p.seen || remaining <= 1 || most <= 1 {
 		return 1, 1
 	}
 	width = widthFor(remaining)
@@ -117,7 +129,7 @@ func (p *pace) stretch(remaining, perWriter int, largest int64, ahead int) (file
 		// Files too cheap to share out, a stretch of them on this goroutine,
 		// timed again so a target whose files grow dearer is shared out after
 		// all.
-		return min(remaining, width*perWriter, ahead), 1
+		return min(remaining, width*perWriter, most), 1
 	}
 	if one := p.holds(largest); p.run > 0 && one > 0 {
 		width = min(width, int(max(roomLeft(p.run, int64(width)*one)/one, 1)))
@@ -125,7 +137,7 @@ func (p *pace) stretch(remaining, perWriter int, largest int64, ahead int) (file
 	if width <= 1 {
 		return 1, 1
 	}
-	return min(remaining, width*perWriter, ahead), width
+	return min(remaining, width*perWriter, most), min(width, most)
 }
 
 // planStretch plans the files of one stretch (beside) and times them for the
@@ -136,8 +148,11 @@ func planStretch[T any](p *pace, out []T, from, width int, ask func(i int) T) {
 	p.cost = time.Since(start) * time.Duration(width) / time.Duration(max(len(out), 1))
 }
 
-// answer is what planning one file came to.
+// answer is what planning one file came to, and the seed it was planned with.
+// The seed travels with the plan so the file is written and recorded with the
+// one its plan was made from, worked out in one place (batchWalk.planAt).
 type answer struct {
 	plan format.Plan
 	err  error
+	seed uint64
 }
