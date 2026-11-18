@@ -538,7 +538,7 @@ MUTATIONS = [
     (
         "the version in the file properties drifts from the one the program reports",
         "internal/version/version.go",
-        'const Version = "0.5.0"',
+        'const Version = "0.6.0-rc1"',
         'const Version = "0.1.0"',
         "TestBothBinariesCarryTheirVersionAndAuthor",
     ),
@@ -8155,8 +8155,8 @@ MUTATIONS = [
     (
         "Unreleased is left comparing from the release before the newest one",
         "CHANGELOG.md",
+        "[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.6.0-rc1...HEAD",
         "[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.5.0...HEAD",
-        "[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.4.0...HEAD",
         "TestEveryChangelogVersionHasItsLinkDefinition",
     ),
     (
