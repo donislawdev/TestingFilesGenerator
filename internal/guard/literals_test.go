@@ -218,6 +218,10 @@ func TestEveryValueToTypeIsShownAsAValue(t *testing.T) {
 	for _, p := range preset.All() {
 		for _, param := range p.Parameters {
 			wanted[p.ID] = append(wanted[p.ID], core.Literals(param.Detail)...)
+			// And what it takes: its choices, its default and the values its
+			// shape names (O358). The site's words for a size or a length of
+			// time are its own and shorter, so a size names 2mb alone.
+			wanted[p.ID] = append(wanted[p.ID], siteTakes(param)...)
 		}
 	}
 	published := map[string]int{}
@@ -312,15 +316,33 @@ func declaredDescriptions() map[string]string {
 		"Seed":         text.DetailSeed(),
 		"Smallest why": text.SmallestNeedsTheSides(),
 	}
+	// The start of every explanation as the window words it - what a setting
+	// takes, its choices and its default, marked since O358.
 	for _, d := range format.All() {
 		for _, p := range d.Properties {
 			out[d.ID+"."+p.Name] = p.Detail
+			out[d.ID+"."+p.Name+" takes"] = parts.Allowed(p)
 		}
 	}
 	for _, p := range preset.All() {
 		for _, param := range p.Parameters {
 			out["preset "+p.ID+"."+param.Name] = param.Detail
+			out["preset "+p.ID+"."+param.Name+" takes"] = parts.Allowed(param)
 		}
+	}
+	return out
+}
+
+// siteTakes is the values the settings table of the site shows as code for p:
+// each choice, the default, the values its shape marks, and 2mb for a size.
+func siteTakes(p format.Property) []string {
+	out := slices.Clone(p.Choices)
+	if p.Default != "" {
+		out = append(out, p.Default)
+	}
+	out = append(out, core.Literals(p.Shape)...)
+	if p.Kind == format.PropertySize {
+		out = append(out, "2mb")
 	}
 	return out
 }

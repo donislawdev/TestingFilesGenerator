@@ -28,7 +28,7 @@ import (
 // milliseconds to encode.
 func writeForACut(ctx context.Context, w io.Writer, m memo, whole int64) error {
 	if !m.bodyKnown {
-		body, err := encodedBodySize(m)
+		body, err := encodedBodySize(m.drawing)
 		if err != nil {
 			return err
 		}
@@ -51,7 +51,7 @@ func writeForACut(ctx context.Context, w io.Writer, m memo, whole int64) error {
 		return writePaddingChunk(ctx, w, paddingChunk, m.seed, front-chunkOverhead)
 	}}
 	holder := &format.TailHolder{W: split, Keep: iendSize}
-	if err := encode(holder, m); err != nil {
+	if err := encode(holder, m.drawing); err != nil {
 		return err
 	}
 	if holder.Written != m.body {

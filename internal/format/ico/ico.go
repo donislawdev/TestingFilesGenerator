@@ -99,11 +99,19 @@ func init() {
 
 type generator struct{}
 
-type memo struct {
+// drawing is everything the picture inside the icon is drawn and encoded
+// from, and nothing else. picture and build read only this, so it is the whole
+// of what the bytes built in one round of a walk to the smallest file are kept
+// under for the next (format.Measure).
+type drawing struct {
 	width, height int
 	seed          uint64
 	label         string
 	embed         string
+}
+
+type memo struct {
+	drawing
 	// image is the picture as it will sit inside the file. Small by
 	// construction, because an icon side is at most 256 pixels.
 	image []byte
@@ -131,7 +139,8 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
-	blob, err := build(memo{width: w, height: h, seed: r.Seed, label: label, embed: embed})
+	pic := drawing{width: w, height: h, seed: r.Seed, label: label, embed: embed}
+	blob, err := format.Measure(r.Measured, pic, build)
 	if err != nil {
 		return format.Plan{}, err
 	}
@@ -141,10 +150,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 		return format.Plan{}, err
 	}
 
-	m := memo{
-		width: w, height: h, seed: r.Seed, label: label, embed: embed,
-		image: blob, gap: r.Bytes - bare, cutAt: r.CutAt,
-	}
+	m := memo{drawing: pic, image: blob, gap: r.Bytes - bare, cutAt: r.CutAt}
 
 	p := format.Plan{
 		Bytes:       r.Bytes,
@@ -233,7 +239,7 @@ func chooseSize(r format.Request, label, embed string) (int, int, error) {
 
 	smallest := standardSizes[len(standardSizes)-1]
 	for _, side := range standardSizes {
-		blob, err := build(memo{width: side, height: side, seed: r.Seed, label: label, embed: embed})
+		blob, err := format.Measure(r.Measured, drawing{width: side, height: side, seed: r.Seed, label: label, embed: embed}, build)
 		if err != nil {
 			return 0, 0, err
 		}
@@ -364,7 +370,7 @@ func writeGap(ctx context.Context, w io.Writer, seed uint64, n int64) error {
 }
 
 // build produces the picture that sits inside the icon.
-func build(m memo) ([]byte, error) {
+func build(m drawing) ([]byte, error) {
 	img := picture(m)
 	if m.embed == embedPNG {
 		var buf bytes.Buffer
@@ -377,7 +383,7 @@ func build(m memo) ([]byte, error) {
 	return deviceIndependentBitmap(img), nil
 }
 
-func picture(m memo) *image.RGBA {
+func picture(m drawing) *image.RGBA {
 	img := image.NewRGBA(image.Rect(0, 0, m.width, m.height))
 	off := int(m.seed % 256)
 	for y := 0; y < m.height; y++ {
@@ -445,7 +451,7 @@ func deviceIndependentBitmap(img *image.RGBA) []byte {
 // The refusal says so when it happens, rather than this number pretending to
 // cover both.
 func minimumBytes() int64 {
-	blob, err := build(memo{width: 1, height: 1, embed: embedBMP})
+	blob, err := build(drawing{width: 1, height: 1, embed: embedBMP})
 	if err != nil {
 		return 1 << 62
 	}

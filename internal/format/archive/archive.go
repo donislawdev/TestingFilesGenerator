@@ -77,7 +77,7 @@ const (
 	// archive's and a message's alike. Given by example rather than by the
 	// command that lists formats, because a window has no command line beside
 	// the box and does have a list of formats at its top.
-	FormatShape = "the id of a format, such as png or csv"
+	FormatShape = "the id of a format, such as `png` or `csv`"
 
 	defaultEntries = 1
 

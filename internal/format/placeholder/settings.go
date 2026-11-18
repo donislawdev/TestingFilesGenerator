@@ -55,7 +55,7 @@ const MaxText = 100
 
 // shapeColour is what a colour has to look like, said once for both colours -
 // the site translates it as one term.
-const shapeColour = "a colour such as cccccc or ccc"
+const shapeColour = "a colour such as `cccccc` or `ccc`"
 
 // Group is the heading the four settings of a placeholder stand under on both
 // surfaces. content stands above it rather than in it, beside the width and

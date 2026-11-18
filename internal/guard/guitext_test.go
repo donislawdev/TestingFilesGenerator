@@ -119,10 +119,15 @@ var notWords = map[string]string{
 	`"."`:           "the working directory, when the system will not say which one it is",
 	`"tfg-out"`: "the folder the window offers to write into. A directory name rather than " +
 		"prose, and translating it would move where somebody's files land",
-	`". "`:             "what joins two sentences the declaration already carries",
-	`"png"`:            "a format id in a comment example rather than a label",
-	`"uxtheme.dll"`:    "a Windows library this program loads, a file name and not a word",
-	`"kernel32.dll"`:   "a Windows library this program loads, a file name and not a word",
+	`". "`:           "what joins two sentences the declaration already carries",
+	`"png"`:          "a format id in a comment example rather than a label",
+	`"uxtheme.dll"`:  "a Windows library this program loads, a file name and not a word",
+	`"kernel32.dll"`: "a Windows library this program loads, a file name and not a word",
+	`"dwmapi.dll"`:   "a Windows library this program loads for the dark title bar, a file name and not a word",
+	`"DwmSetWindowAttribute"`: "the Win32 entry point that asks for the dark title bar, looked up by name, " +
+		"an identifier and not a word",
+	`"DwmGetWindowAttribute"`: "the Win32 entry point that reads the title bar back, looked up by name, " +
+		"an identifier and not a word",
 	`"user32.dll"`:     "a Windows library this program loads for the dialog it shows when it has no window, a file name and not a word",
 	`"GetProcAddress"`: "the Win32 entry point looked up by name, an identifier and not a word",
 	`"MessageBoxW"`:    "the Win32 entry point that shows a system dialog, looked up by name, an identifier and not a word",

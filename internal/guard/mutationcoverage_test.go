@@ -259,6 +259,33 @@ var provenByProbe = map[string]string{
 		"and it asks that it reached the test job of ci.yml and the script that job hands its part to.",
 	"TestAVerdictOfPartsRunsWhateverThePartsDid": "a canary of its own - the test job's verdict read with if: success() " +
 		"has to be found wrong.",
+	"TestEveryValueASettingTakesIsMarked": "a canary of its own - a choice with a default, none of them marked, has " +
+		"to give three faults - and it asks that it read 150 settings or more. Broken by hand on 2026-11-18 by a default " +
+		"left bare in Allowed: red.",
+	"TestTheHelpOfAFlagKeepsTheMarksOfItsValues": "a canary of its own - a usage printed by flag.PrintDefaults has to " +
+		"be found to lose its marks. Broken by hand on 2026-11-18 by generate printing its flags with PrintDefaults: red.",
+	"TestTheSmallestPictureIsEncodedOnceWhileItIsPlanned": "a canary of its own - a walk whose generator drops what the " +
+		"walk kept has to be caught in jpg and png. Broken by hand on 2026-11-18 by a walk that makes no Measured: red in " +
+		"all six formats that encode while planning.",
+	"TestAWalkThatRemembersWritesTheBytesOfOneThatMeasuresAgain": "it asks that it reached ten picture formats and three " +
+		"placeholders. Broken by hand on 2026-11-18 by a Measure that hands back what it kept for another key: red in the " +
+		"walk without a size of jpg, png, gif and ico.",
+	"TestWindowsHoldsTheTitleBarDarkOnceAsked": "a canary of its own - a window nobody asked about has to read as " +
+		"not dark before the asked one may read as dark - and a window of none has to be refused. What it cannot see, the " +
+		"look of the bar, was measured on Windows Server 2025 on 2026-11-18: 243 before, 32 after.",
+	"TestTheTitleBarIsAskedForAgainAfterEveryChangeOfSettings": "a canary of its own - an ask made straight from the " +
+		"listener, before the toolkit's answer, has to leave the bar light. Broken by hand on 2026-11-18 by " +
+		"KeepTitleBarDark without fyne.Do: red. On a real window that day a build without KeepTitleBarDark left the bar " +
+		"light after the desktop went to dark apps and back, attribute 0 and caption 243, where the build with it kept 1 and 32.",
+	"TestACaseWritingThroughALinkSkipsOnlyWhereTheHostRefusesAFreeName": "a table of its own, asked of " +
+		"requireNewNamesThroughLinkWith rather than of the predicate, as TestACaseBuiltOnALinkSkipsOnlyOffCI is. Broken by " +
+		"hand on 2026-11-18 by every refusal counted as the host's and by the host's refusal skipped on CI: red both times. " +
+		"A probe that left its name behind turned TestADirectoryReachedThroughALinkStillWorks red.",
+	"TestAMeasurementIsKeptForAnEqualKeyOnly": "a table whose first row has to be measured, so the rows after it are not " +
+		"a Measure that never measures. Broken by hand on 2026-11-18 with the key comparison taken out: red.",
+	"TestEveryMeasurementIsAFunctionOfItsKeyAlone": "a table of canaries of its own - a closure, a variable and a method " +
+		"value have to be found, a function of the package not - and it asks that it reached jpg and avif. Broken by hand " +
+		"on 2026-11-18 by a closure in jpg's chooseSize: red.",
 	"TestAGridAsksEveryPartOfAFieldForItsSizeOnce": "a canary of its own - a sentence behind a layout that asks it twice " +
 		"has to be found - every counted thing asked exactly once, so a field the grid never reached is red too, and run on " +
 		"2026-11-18 against the grid before the change: red, a field asked 5 times and a field in a group 15.",

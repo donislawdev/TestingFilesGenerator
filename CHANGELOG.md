@@ -14,6 +14,8 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+## [0.6.0-rc1] - 2026-11-18
+
 ### Breaking
 
 - **The label drawn in a picture no longer states the size of the file.** It
@@ -263,6 +265,11 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **Working out the smallest file of a picture takes half the time.** A
+  picture with its width and height set and `smallest` as its size was
+  compressed twice while the run worked out how small it can be, and is now
+  compressed once. `tfg preset show picture-sizes` and a dry run of the set
+  take about 0.7 s rather than 1.2 to 1.3 s. The files are the same.
 - **Many pictures are ready to write several times sooner.** Before the
   first file is written, every file is worked out, and a picture is drawn to
   do it - now on every processor at once. On 16 threads,
@@ -281,11 +288,12 @@ because it turns other people's test suites red.
   turn of the mouse wheel takes the window about 8 to 11 ms rather than 15 to
   20 ms, inside the time of one screen refresh.
 - **A value to type stands out from the words describing it.** In the
-  explanation behind a field, a value you type as it is - `screens` and `all`
-  for the groups of `picture-sizes`, `10mb` for a size, `{index:04}` in a file
-  name, `cccccc` for a colour - is drawn in a code typeface and its own colour.
-  The site shows it as code, and `tfg preset show` and `tfg formats` print it
-  between backticks.
+  explanation behind a field, each value you type as it is - the choices and
+  the default of a setting, its examples, and values such as `screens` and
+  `all` for the groups of `picture-sizes` - is drawn in a code typeface and
+  its own colour. The site shows them as code. The command line prints them
+  between backticks in `tfg formats`, `tfg preset show` and the list of a
+  preset's flags.
 - **The mouse wheel scrolls the window as far as the system says.** One notch
   moves three lines of text, or as many as Windows is set to under Mouse,
   Lines to scroll at a time, where it moved about half as far before. A
@@ -380,6 +388,11 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **The title bar of the window is dark on Windows set to light apps.** The
+  window is always dark, and on a Windows set to light apps its title bar was
+  white. It is now dark there too, and stays dark when the Windows setting is
+  changed while the window is open. On macOS and Linux the title bar still
+  follows the system.
 - **The smallest size a refusal names is one every file of the batch takes.**
   Three 320x240 PNGs asked for at 1 B named the smallest size of the first
   file, and that size was refused again, because each picture needs its own.
@@ -3203,7 +3216,8 @@ because it turns other people's test suites red.
 
 Initial release.
 
-[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.6.0-rc1...HEAD
+[0.6.0-rc1]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.5.0...v0.6.0-rc1
 [0.5.0]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.2.0...v0.3.0

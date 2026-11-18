@@ -44,7 +44,7 @@ func writeForACut(ctx context.Context, w io.Writer, m memo, whole int64) error {
 	// marker held back, so the fill goes in front of it.
 	holder := &format.TailHolder{W: w, Keep: eoiSize}
 	skip := &headSkipper{w: holder, keep: soiSize}
-	if err := encode(skip, m); err != nil {
+	if err := encode(skip, m.drawing); err != nil {
 		return err
 	}
 	if err := skip.check(); err != nil {

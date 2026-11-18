@@ -210,10 +210,18 @@ func (v view) DamageList() ([]DamageRow, error) {
 // The numbers come from the registry and the words from the language file. A
 // kind or a unit the language has no word for is an error rather than a gap,
 // which is what stops an English noun appearing on a Polish page.
+//
+// A value to type stands between backticks, as tfg formats prints it - each
+// choice here, and the examples a language file writes into a term - and the
+// page shows it as code (withCode).
 func (v view) AllowedOf(p Property) (string, error) {
 	switch p.Kind {
 	case "choice":
-		return strings.Join(p.Choices, ", "), nil
+		marked := make([]string, len(p.Choices))
+		for i, c := range p.Choices {
+			marked[i] = "`" + c + "`"
+		}
+		return strings.Join(marked, ", "), nil
 	case "int":
 		if p.Min == 0 && p.Max == 0 {
 			return v.Term("int")

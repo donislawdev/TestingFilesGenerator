@@ -151,11 +151,19 @@ func init() {
 
 type generator struct{}
 
-type memo struct {
+// drawing is everything the frames are drawn and encoded from, and nothing
+// else. picture and encode read only this, so it is the whole of what a
+// length measured in one round of a walk to the smallest file is kept under
+// for the next (format.Measure).
+type drawing struct {
 	width, height int
 	frames        int
 	seed          uint64
 	label         string
+}
+
+type memo struct {
+	drawing
 	// body is the encoded picture up to but not including the trailer.
 	body int64
 	// bodyKnown says whether planning worked that out. For a request far
@@ -349,7 +357,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	// The trailer is always the final byte, so hold it back and let the rest
 	// stream out. Nothing else is buffered.
 	holder := &format.TailHolder{W: w, Keep: trailerSize}
-	if err := encode(holder, m); err != nil {
+	if err := encode(holder, m.drawing); err != nil {
 		return err
 	}
 	if !m.bodyKnown {
@@ -460,6 +468,8 @@ var sizeLadder = [][2]int{
 	{40, 30}, {20, 15}, {8, 6}, {4, 3}, {2, 2}, {1, 1},
 }
 
+// chooseSize settles the picture size and measures what it encodes to - once
+// in a walk to the smallest file, whose later rounds ask for the same picture.
 func chooseSize(r format.Request, label string) (memo, error) {
 	_, wSet := r.Properties["width"]
 	_, hSet := r.Properties["height"]
@@ -481,8 +491,8 @@ func chooseSize(r format.Request, label string) (memo, error) {
 		if err := checkJointLimits(w, h); err != nil {
 			return memo{}, err
 		}
-		m := memo{width: w, height: h, frames: frames, seed: r.Seed, label: label}
-		body, err := encodedBodySize(m)
+		m := memo{drawing: drawing{width: w, height: h, frames: frames, seed: r.Seed, label: label}}
+		body, err := format.Measure(r.Measured, m.drawing, encodedBodySize)
 		if err != nil {
 			return memo{}, err
 		}
@@ -502,13 +512,13 @@ func chooseSize(r format.Request, label string) (memo, error) {
 	// from here.
 	if r.Bytes >= ladderCeiling+trailerSize+smallestCarryingComment {
 		rung := sizeLadder[0]
-		return memo{width: rung[0], height: rung[1], frames: frames, seed: r.Seed, label: label}, nil
+		return memo{drawing: drawing{width: rung[0], height: rung[1], frames: frames, seed: r.Seed, label: label}}, nil
 	}
 
 	var smallest memo
 	for _, rung := range sizeLadder {
-		m := memo{width: rung[0], height: rung[1], frames: frames, seed: r.Seed, label: label}
-		body, err := encodedBodySize(m)
+		m := memo{drawing: drawing{width: rung[0], height: rung[1], frames: frames, seed: r.Seed, label: label}}
+		body, err := format.Measure(r.Measured, m.drawing, encodedBodySize)
 		if err != nil {
 			return memo{}, err
 		}
@@ -523,7 +533,7 @@ func chooseSize(r format.Request, label string) (memo, error) {
 	return smallest, nil
 }
 
-func encodedBodySize(m memo) (int64, error) {
+func encodedBodySize(m drawing) (int64, error) {
 	holder := &format.TailHolder{W: io.Discard, Keep: trailerSize}
 	if err := encode(holder, m); err != nil {
 		return 0, err
@@ -539,7 +549,7 @@ func encodedBodySize(m memo) (int64, error) {
 // run animates. Asking for frames: 1 reaches something smaller, and that is
 // the setting saying so.
 func minimumBytes() int64 {
-	body, err := encodedBodySize(memo{width: 1, height: 1, frames: defaultFrames})
+	body, err := encodedBodySize(drawing{width: 1, height: 1, frames: defaultFrames})
 	if err != nil {
 		return 1 << 62
 	}

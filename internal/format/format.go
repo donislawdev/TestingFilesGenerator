@@ -424,73 +424,6 @@ func (p Property) takesDuration() core.Said {
 		core.A("Least", core.FormatDuration(p.Min)), core.A("Most", core.FormatDuration(p.Max)))
 }
 
-// sizePhrase is what a size setting takes, written once.
-//
-// Allows and Allowed both have to say this, and until 2026-08-26 they said it
-// differently - "a size written the way any size is, such as 2mb or a plain
-// byte count" against "a size such as 2mb, or a plain byte count". The other
-// four kinds agree word for word, so size was the one place where the sentence
-// a person reads depended on whether they had already typed something. O64.
-//
-// The shorter half won: "written the way any size is" is a sentence about
-// sizes rather than about this setting, and somebody who has just been refused
-// needs the shape, not the provenance.
-const sizePhrase = "a size such as 2mb, or a plain byte count"
-
-func (p Property) unitSuffix() string {
-	if p.Unit == "" {
-		return ""
-	}
-	return " of " + p.Unit
-}
-
-// Allowed says what this property accepts, as one phrase for a person.
-//
-// It lives here rather than beside a consumer because there are two of them and
-// they cannot import each other. "tfg formats png" prints it in a list, and the
-// window shows it under the field it drew from this same declaration - so a
-// second copy would be two surfaces coming to describe one format differently,
-// which is D1 in the place nobody thinks to compare.
-//
-// Near neighbour of Allows above, and deliberately not folded into it. Allows
-// answers somebody who has already typed a wrong value and names the flag that
-// would have taken a right one. This answers somebody looking at an empty field.
-// The two phrasings agree today for every kind but size, and unifying them would
-// change a message the command line already prints - a decision for the owner
-// rather than a tidy up. Recorded as O64.
-func (p Property) Allowed() string {
-	var what string
-	switch p.Kind {
-	case PropertyInt:
-		if p.Min != 0 || p.Max != 0 {
-			what = fmt.Sprintf("whole number%s from %d to %d", p.unitSuffix(), p.Min, p.Max)
-		} else {
-			what = "whole number" + p.unitSuffix()
-		}
-	case PropertyChoice:
-		what = "one of: " + strings.Join(p.Choices, ", ")
-	case PropertyBool:
-		what = "true or false"
-	case PropertySize:
-		what = sizePhrase
-	case PropertyDuration:
-		// The refusal's own words without its first two, so an empty field
-		// and a refused one describe the setting identically.
-		what = strings.TrimPrefix(p.takesDuration().String(), "it takes ")
-	default:
-		// A text setting describes itself with Shape or not at all. Saying
-		// "text" under a field is a word where a description should be.
-		what = p.Shape
-	}
-	if p.Default != "" && what == "" {
-		return "default " + p.Default
-	}
-	if p.Default != "" {
-		what += ", default " + p.Default
-	}
-	return what
-}
-
 // SmallestAccepted is the smallest size this format will actually produce for
 // a request shaped like r.
 //
@@ -540,6 +473,8 @@ func (d Descriptor) SmallestAccepted(r Request) int64 {
 //
 // The same walk as SmallestAccepted, and the plan it ends on rather than the
 // number, so the file is planned once rather than walked to and planned again.
+// The walk plans it a round at a time, and a picture is encoded in the first
+// round only (smallest).
 // A refusal that is not about the size is handed back as it is - a colour the
 // format cannot read is the answer somebody needs, not a floor.
 func (d Descriptor) PlanSmallest(ctx context.Context, r Request) (Plan, error) {
@@ -552,8 +487,13 @@ func (d Descriptor) PlanSmallest(ctx context.Context, r Request) (Plan, error) {
 const SmallestRounds = 64
 
 // smallest walks plan from nought to the first size it accepts.
+//
+// Every round asks for the same file at another size, so what one round
+// measures the next can take: a picture with its width and height set is
+// encoded once rather than once a round (Measured).
 func (d Descriptor) smallest(plan func(Request) (Plan, error), r Request) (Plan, error) {
 	r.SizeFromContents = false
+	r.Measured = &Measured{}
 	size := int64(0)
 	for round := 0; round < SmallestRounds; round++ {
 		r.Bytes = size
@@ -734,6 +674,11 @@ type Request struct {
 	Number int
 	// Properties are format specific settings, straight from the recipe.
 	Properties map[string]string
+	// Measured is what earlier rounds of a walk to the smallest file measured,
+	// handed to the next round (Measure), or nil outside one. It changes how
+	// long a plan takes and never what the plan says, so RequestKey leaves it
+	// out.
+	Measured *Measured
 }
 
 // Note is something that happened and has to stay visible.

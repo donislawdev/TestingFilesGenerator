@@ -166,9 +166,13 @@ func TestADurationSettingTakesALengthInsideItsRangeAndSaysSo(t *testing.T) {
 			t.Errorf("%q is inside 33ms to 24h and was refused: %s", ok, bad)
 		}
 	}
+	// The empty field marks the examples and the default as values to type
+	// (O358), and the refusal is a sentence of the engine without marks - the
+	// same words either way.
 	const want = "a length of time from 33ms to 24h, such as 10s, 1m30s or 500ms"
-	if got := p.Allowed(); got != want+", default 10s" {
-		t.Errorf("an empty field says %q, expected %q", got, want+", default 10s")
+	const marked = "a length of time from 33ms to 24h, such as `10s`, `1m30s` or `500ms`"
+	if got := p.Allowed(); got != marked+", default `10s`" {
+		t.Errorf("an empty field says %q, expected %q", got, marked+", default `10s`")
 	}
 	for _, bad := range []string{"32ms", "24h1ms", "10", "banana", "-1s"} {
 		why := p.Allows(bad)
@@ -188,7 +192,7 @@ func TestADurationSettingTakesALengthInsideItsRangeAndSaysSo(t *testing.T) {
 		t.Errorf("the window says %q and tfg formats says %q", got, p.Allowed())
 	}
 	unbounded := format.Property{Name: "duration", Kind: format.PropertyDuration}
-	if got := parts.Allowed(unbounded); got != unbounded.Allowed() || got != "a length of time such as 10s, 1m30s or 500ms" {
+	if got := parts.Allowed(unbounded); got != unbounded.Allowed() || got != "a length of time such as `10s`, `1m30s` or `500ms`" {
 		t.Errorf("without a range the window says %q and tfg formats says %q", got, unbounded.Allowed())
 	}
 }

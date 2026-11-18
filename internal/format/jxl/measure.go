@@ -20,8 +20,7 @@ package jxl
 // label is passed in rather than derived, because its length moves with the
 // size of the file asked for and the ceilings have to cover the longest one.
 func FileSizeFor(width, height, quality int, seed uint64, label string) (int, error) {
-	m := memo{width: width, height: height, quality: quality, seed: seed, label: label}
-	coded, err := encode(picture(m), quality)
+	coded, err := codePicture(drawing{width: width, height: height, quality: quality, seed: seed, label: label})
 	if err != nil {
 		return 0, err
 	}

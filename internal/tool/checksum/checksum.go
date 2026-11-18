@@ -84,7 +84,7 @@ func init() {
 		Settings: []format.Property{
 			{
 				Name: SettingAlgorithm, Kind: format.PropertyText, Default: "sha256",
-				Shape: "algorithm names separated by commas, or all",
+				Shape: "algorithm names separated by commas, or `all`",
 				Detail: "Which checksums to work out: md5, sha1, sha256, sha512 or crc32. " +
 					"Only sha256 and sha512 still show that nobody changed the file on purpose. " +
 					"crc32 is the one ZIP and PNG use, not the one cksum prints.",

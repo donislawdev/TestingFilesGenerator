@@ -104,7 +104,7 @@ Arm. It holds the program from the release archive and nothing else, and it
 runs with no network:
 
 ```
-docker run --rm --network none -v "${PWD}:/work" ghcr.io/donislawdev/tfg:0.5.0 generate --format pdf --size 1mb
+docker run --rm --network none -v "${PWD}:/work" ghcr.io/donislawdev/tfg:0.6.0-rc1 generate --format pdf --size 1mb
 ```
 
 The files land in the current directory. On Linux add
@@ -779,7 +779,7 @@ interrupted. One entry per file:
 ```json
 {
   "manifest_version": "1.0",
-  "tool": { "name": "testing-files-generator", "version": "0.5.0" },
+  "tool": { "name": "testing-files-generator", "version": "0.6.0-rc1" },
   "run": {
     "id": "run_b359aa8d94",
     "seed": 0,
@@ -906,7 +906,7 @@ On a Linux runner the Docker image needs no install step:
 
 ```yaml
 - name: build the fixtures
-  run: docker run --rm --network none --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/donislawdev/tfg:0.5.0 generate fixtures.yaml --out fixtures
+  run: docker run --rm --network none --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/donislawdev/tfg:0.6.0-rc1 generate fixtures.yaml --out fixtures
 ```
 
 Name the version rather than `latest`, so the same recipe gives the same bytes
@@ -926,7 +926,7 @@ names the SPDX predicate. On macOS this needs an Apple silicon runner, such as
   env:
     GH_TOKEN: ${{ github.token }}
   run: |
-    version=0.5.0
+    version=0.6.0-rc1
     arch=amd64
     if [ "$RUNNER_ARCH" = ARM64 ]; then arch=arm64; fi
     case "$RUNNER_OS" in

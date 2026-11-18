@@ -538,7 +538,7 @@ MUTATIONS = [
     (
         "the version in the file properties drifts from the one the program reports",
         "internal/version/version.go",
-        'const Version = "0.5.0"',
+        'const Version = "0.6.0-rc1"',
         'const Version = "0.1.0"',
         "TestBothBinariesCarryTheirVersionAndAuthor",
     ),
@@ -3641,7 +3641,7 @@ MUTATIONS = [
         # "text, default 1B,1kb,1mb" for a setting that wants a list of sizes -
         # the declaration knew that and had nowhere to put it.
         "a text setting goes back to describing itself as text",
-        "internal/format/format.go",
+        "internal/format/allowed.go",
         "\t\twhat = p.Shape",
         '\t\twhat = "text"',
         "TestNoTextSettingDescribesItselfAsText",
@@ -5665,7 +5665,7 @@ MUTATIONS = [
         # for size they used to be written out separately - so what a person
         # read depended on whether they had already typed something wrong. O64.
         "a size setting goes back to being described two ways",
-        "internal/format/format.go",
+        "internal/format/allowed.go",
         "\t\twhat = sizePhrase\n",
         "\t\twhat = \"a size written the way any size is, such as 2mb or a plain byte count\"\n",
         "TestASettingIsDescribedTheSameWayEmptyOrRefused",
@@ -7432,8 +7432,8 @@ MUTATIONS = [
     (
         "planning codes the picture again, so previewing a large run costs what the run costs",
         "internal/format/avif/avif.go",
-        "\treturn memo{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label}, nil",
-        "\treturn coded(memo{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label})",
+        "\treturn memo{drawing: drawing{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label}}, nil",
+        "\treturn coded(r.Measured, drawing{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label})",
         "TestAvifPlanningDoesNotCodeThePicture",
     ),
     (
@@ -7537,8 +7537,8 @@ MUTATIONS = [
     (
         "JPEG XL planning codes the picture again, so previewing a large run costs what the run costs",
         "internal/format/jxl/jxl.go",
-        "	return memo{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label}, nil",
-        "	return coded(memo{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label})",
+        "	return memo{drawing: drawing{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label}}, nil",
+        "	return coded(r.Measured, drawing{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label})",
         "TestJxlPlanningDoesNotCodeThePicture",
     ),
     (
@@ -8155,8 +8155,8 @@ MUTATIONS = [
     (
         "Unreleased is left comparing from the release before the newest one",
         "CHANGELOG.md",
+        "[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.6.0-rc1...HEAD",
         "[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.5.0...HEAD",
-        "[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.4.0...HEAD",
         "TestEveryChangelogVersionHasItsLinkDefinition",
     ),
     (
@@ -9489,8 +9489,8 @@ MUTATIONS = [
         # runs before the question is ever asked.
         "the window binary shows and runs before the seam",
         "internal/gui/run_cgo.go",
-        "\tcode := OpenOrRefuse(w, a.Run, SecondAttemptFor(launch, errOut).Try, func(why error) {",
-        "\tw.ShowAndRun()\n\tcode := OpenOrRefuse(w, a.Run, SecondAttemptFor(launch, errOut).Try, func(why error) {",
+        "\tcode := OpenOrRefuse(w, RunDark(a, w), SecondAttemptFor(launch, errOut).Try, func(why error) {",
+        "\tw.ShowAndRun()\n\tcode := OpenOrRefuse(w, RunDark(a, w), SecondAttemptFor(launch, errOut).Try, func(why error) {",
         "TestTheWindowBinaryOpensThroughTheRefusalSeam",
     ),
     (
@@ -13164,7 +13164,7 @@ MUTATIONS = [
     (
         "the window stops saying a setting's default where tfg formats says it",
         "internal/gui/parts/property.go",
-        "return text.AllowedWithDefault(what, p.Default)",
+        "return text.AllowedWithDefault(what, core.Literal(p.Default))",
         "return what",
         "TestTheWindowDescribesASettingAsTheCommandLineDoes",
     ),
