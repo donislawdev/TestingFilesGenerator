@@ -74,6 +74,10 @@ func (r *Recipe) sizeWayFor(b *batch, at func(string) string,
 	// not told about a way it does not have.
 	explained := waysExplained(waysFor(batchWays, b.formatPick.Selected))
 	named := r.fields.Named(text.FieldSizeWay(), r.tips.Say(explained), b.sizeWay)
+	// Asked as the panel is drawn as well as after every change, because a
+	// panel is drawn again - a batch added, copied or a format chosen - where
+	// nothing was typed.
+	b.holdSmallest(r.tips)
 	// The switch and the box it leaves are cells of one row since the
 	// prototype of 2026-09-23 - see parts.Grid. All three boxes go in, and
 	// the grid skips the two that are hidden, so the one shown takes the

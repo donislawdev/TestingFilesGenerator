@@ -298,6 +298,8 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 
 	// Said last, once every box it reads exists.
 	g.runner.destination = g.OutDir
+	g.runner.follow = g.holdSmallest
+	g.holdSmallest()
 	g.runner.refreshLine()
 	// A host that wants to wait for work in flight is told how, here as well
 	// as in Open. A screen built on its own - which is how most of the
@@ -604,6 +606,13 @@ func (g *Generate) chosenDamage() damage.Chain {
 // arrives folded, so a value somebody typed and then had swallowed would be a
 // setting they cannot see and did not remove.
 func (g *Generate) settingsSaid() string { return parts.SettingsSaid(g.props) }
+
+// holdSmallest holds Smallest back until the format's settings say how large
+// the picture is - see holdSmallest in sizeword.go. After every change on the
+// form, a new format included.
+func (g *Generate) holdSmallest() {
+	holdSmallest(g.sizing.way, g.formatPick.Selected, g.properties(), g.tips)
+}
 
 // openFoldHolding opens the settings section when a refusal is about a box
 // inside it.

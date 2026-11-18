@@ -55,6 +55,26 @@ func waysFor(all []sizeWay, formatID string) []sizeWay {
 	return offered
 }
 
+// holdSmallest holds Smallest back on a switch while the settings of its batch
+// do not say how large the picture is, and lets it be chosen once they do. The
+// engine is asked, by the rule a run refuses smallest by (G1), so the switch
+// never offers what Preview would refuse. A switch without Smallest is told to
+// let it go, which changes nothing.
+//
+// The owner's report of 2026-11-18: Smallest was there to choose with no width
+// and no height, and the run then refused it - with nothing on the screen
+// saying that smallest needs them.
+func holdSmallest(way *parts.Segments, formatID string, properties map[string]string, tips *parts.Tips) {
+	if way == nil {
+		return
+	}
+	why := parts.NoDetail
+	if desc, err := format.Get(formatID); err == nil && engine.TakesSmallest(desc) && !engine.SmallestAnswered(desc, properties) {
+		why = tips.Say(text.SmallestNeedsTheSides())
+	}
+	way.Held.Set(text.SizeWaySmallest(), why)
+}
+
 // takesSmallest says a batch of this format can ask for smallest.
 func takesSmallest(formatID string) bool {
 	desc, err := format.Get(formatID)

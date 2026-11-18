@@ -70,6 +70,15 @@ const ColorNamePanel fyne.ThemeColorName = "panel"
 // Owner's decision of 2026-09-21 - see docs/GUI-STRUCTURE-2026-09-21.md.
 const ColorNameLabel fyne.ThemeColorName = "label"
 
+// ColorNameHeld is the ink of a choice that cannot be made yet - Smallest on
+// the switch of a picture with no width and height (Segments.Hold). The
+// quietest ink, a step below a hint, where the disabled ink is a step above
+// it: a frozen value is something somebody typed and wants to re-read during
+// a run, a held choice is one they cannot take, and drawn in the disabled ink
+// it stood out brighter than the choices beside it that they can (measured
+// off the stored screen on 2026-11-18: 161 against 133).
+const ColorNameHeld fyne.ThemeColorName = "held"
+
 // ColorNameTipShade is the shade an explanation casts on the form under it.
 // A name of its own rather than the toolkit's Shadow, which this palette
 // answers with nothing on purpose (see ColorNameShadow): the toolkit lays its
@@ -122,7 +131,10 @@ var (
 		// made the one thing a person wants to re-read during a run the hardest
 		// thing on the screen to read. A button loses its fill when it is
 		// disabled, so it does not need the text to carry the whole message.
-		theme.ColorNameDisabled:  hex(0xC7, 0xC7, 0xCC),
+		theme.ColorNameDisabled: hex(0xC7, 0xC7, 0xCC),
+		// 51.3 in L*, 15.5 below the hint, and 3.9:1 on the page - quieter
+		// than anything that can be used and still read without effort.
+		ColorNameHeld:            hex(0x7A, 0x7A, 0x80),
 		theme.ColorNameError:     hex(0xF4, 0x8F, 0x8D),
 		theme.ColorNameSuccess:   hex(0x42, 0xC2, 0x60),
 		theme.ColorNameWarning:   hex(0xDA, 0xA1, 0x31),
@@ -333,7 +345,10 @@ var (
 		// The same three steps the other way up: on a white page "closer to
 		// the value" means darker. 9.3, 25.9 and 37.7 in L*, 16.6 and 11.8
 		// apart.
-		theme.ColorNameDisabled:  hex(0x3D, 0x3D, 0x42),
+		theme.ColorNameDisabled: hex(0x3D, 0x3D, 0x42),
+		// The other way up: 56.2 in L*, 18.5 lighter than the hint, 3.6:1 on
+		// white.
+		ColorNameHeld:            hex(0x87, 0x87, 0x90),
 		theme.ColorNameError:     hex(0xBB, 0x29, 0x3B),
 		theme.ColorNameSuccess:   hex(0x23, 0x71, 0x35),
 		theme.ColorNameWarning:   hex(0x80, 0x5D, 0x18),

@@ -103,6 +103,7 @@ func NotDrawn() []Reason {
 		{"Fix", "a value: the words on one button under a refusal and what pressing it does, drawn by ErrorArea"},
 		{"Remedy", "a value: what one button under a refusal puts in the box, read by a guard without a window"},
 		{"Scroll", "the toolkit's scrolling area with the wheel moving it as far as the system says - the bars and the shadows are the toolkit's, this catalogue stands in one, and how far a notch moves it is no picture"},
+		{"Held", "the choices of a switch that cannot be made yet, and why - drawn by the Segments that carries it, in its two held states"},
 	}
 }
 

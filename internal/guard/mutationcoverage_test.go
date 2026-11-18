@@ -235,6 +235,11 @@ var provenByProbe = map[string]string{
 	"TestSmallestIsOfferedForExactlyTheFormatsTheEngineTakesItFor": "a canary of its own - a window offering smallest for every " +
 		"format has to disagree with the engine - a reach check that the engine both took and refused smallest, and broken by " +
 		"hand on 2026-11-17 by offering smallest for every format: red on both screens.",
+	"TestSmallestCannotBeChosenUntilTheWidthAndHeightAreSet": "a canary of its own - a switch holding Smallest for every picture " +
+		"has to disagree with the engine, which takes it for svg at its defaults - a reach check that the engine both took and " +
+		"refused it, and broken by hand on 2026-11-18 six ways: never held, a press choosing a held option, the keys stepping " +
+		"onto it, no reason under the pointer, the batch screen not following what is typed, the declared sides ignored - red " +
+		"each time (the press only after each way of reaching it was asked on its own: End stepped back off it).",
 	"TestAPlaceholderSettingIsOnTheScreenExactlyWhileItApplies": "the bad background is refused while it is shown, so the " +
 		"preview is known to reach the box, and broken by hand on 2026-11-17 four ways - every row always shown, a hidden value " +
 		"sent, the menu not wired to show the rows again, the heading never hidden: red each time.",

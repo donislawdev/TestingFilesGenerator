@@ -165,6 +165,12 @@ type runner struct {
 	// about it can be seen. Nil on a screen that folds nothing.
 	unfold func(string)
 
+	// follow is what the screen does after any field changes, before the
+	// form is checked: a control whose choices depend on other fields catches
+	// up with them - smallest held back until a width and a height are set.
+	// Nil on a screen with no such control.
+	follow func()
+
 	// sections are the screen's panels, each of which folds away - see
 	// sections.go. Opened by a refusal as unfold is.
 	sections *sections

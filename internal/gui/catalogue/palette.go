@@ -193,6 +193,8 @@ var palettePlan = map[fyne.ThemeColorName]paletteRole{
 		theme.ColorNameInputBackground, "a box to type in", byContrast},
 	theme.ColorNamePlaceHolder: {inks, "a hint in a box nobody has typed in",
 		theme.ColorNameInputBackground, "a box to type in", byContrast},
+	parts.ColorNameHeld: {inks, "a choice on a switch that cannot be made yet, quieter than a hint",
+		parts.ColorNamePanel, "a panel", byContrast},
 
 	theme.ColorNamePrimary: {meaning, "the action a screen is for, and the line round a focused control",
 		theme.ColorNameBackground, "the page", byContrast},

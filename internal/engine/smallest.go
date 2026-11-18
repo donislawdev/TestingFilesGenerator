@@ -20,11 +20,33 @@ import (
 // be the smallest of, and the smallest file of the other formats is an answer
 // nobody has asked a question for yet.
 
-// TakesSmallest says a target of this format can ask for smallest, given its
-// width and height - the question a window asks before it offers smallest as a
-// way of giving the size, answered by the rule checkSmallest refuses by.
+// TakesSmallest says a target of this format can ask for smallest once its
+// width and height are known - the question a window asks before it offers
+// smallest as a way of giving the size at all. Whether this target's settings
+// already say how large the picture is, is SmallestAnswered.
 func TakesSmallest(desc format.Descriptor) bool {
 	return desc.IsPicture()
+}
+
+// SmallestAnswered says a target of this format with these settings can ask
+// for smallest now: a picture whose width and height are set, or declared by
+// the format. The rule checkSmallest refuses by, whole, so a window that holds
+// smallest back until it is true holds back exactly what a run would refuse.
+//
+// Asked by the window after every change on the form, so it plans nothing.
+func SmallestAnswered(desc format.Descriptor, properties map[string]string) bool {
+	return TakesSmallest(desc) && sidesKnown(desc, properties)
+}
+
+// sidesKnown says the picture's width and height are both set, or declared by
+// the format when nothing sets them.
+func sidesKnown(desc format.Descriptor, properties map[string]string) bool {
+	for _, side := range []string{"width", "height"} {
+		if properties[side] == "" && declaredDefault(desc, side) == "" {
+			return false
+		}
+	}
+	return true
 }
 
 // checkSmallest refuses smallest for a target it cannot answer.
@@ -38,13 +60,11 @@ func checkSmallest(t *Target, desc format.Descriptor) error {
 			Because: core.Says("engine.SmallestNotAPictureWhy", "a picture with its width and height set has one smallest file, the picture with nothing added to reach a size"),
 			Remedy:  core.Says("engine.SmallestNotAPictureFix", "Give the target a size such as 2mb, or choose a picture format")}
 	}
-	for _, side := range []string{"width", "height"} {
-		if t.Properties[side] == "" && declaredDefault(desc, side) == "" {
-			return &RecipeError{Setting: format.SettingSize,
-				Detail:  core.Says("engine.SmallestNeedsASize", "target %q asks for the smallest %s and does not say how large the picture is", core.A("Target", t.ID), core.A("Format", desc.ID)),
-				Because: core.Says("engine.SmallestNeedsASizeWhy", "without a width and a height the picture is chosen to fit the bytes asked for, so there is no picture to be the smallest of"),
-				Remedy:  core.Says("engine.SmallestNeedsASizeFix", "Set width and height, such as width 1920 and height 1080, or give the target a size")}
-		}
+	if !sidesKnown(desc, t.Properties) {
+		return &RecipeError{Setting: format.SettingSize,
+			Detail:  core.Says("engine.SmallestNeedsASize", "target %q asks for the smallest %s and does not say how large the picture is", core.A("Target", t.ID), core.A("Format", desc.ID)),
+			Because: core.Says("engine.SmallestNeedsASizeWhy", "without a width and a height the picture is chosen to fit the bytes asked for, so there is no picture to be the smallest of"),
+			Remedy:  core.Says("engine.SmallestNeedsASizeFix", "Set width and height, such as width 1920 and height 1080, or give the target a size")}
 	}
 	return nil
 }

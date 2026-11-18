@@ -221,6 +221,15 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 
 	// Said last, once every box it reads exists.
 	r.runner.destination = r.OutDir
+	// Smallest held back on every batch whose settings do not say how large
+	// its picture is - see holdSmallest in sizeword.go. A closure rather than
+	// a method, because Recipe is one of the three types allowed past twenty
+	// methods and is near the ceiling.
+	r.runner.follow = func() {
+		for _, b := range r.batches {
+			b.holdSmallest(r.tips)
+		}
+	}
 	r.runner.refreshLine()
 	// A host that wants to wait for work in flight is told how, here as well
 	// as in Open. A screen built on its own - which is how most of the
@@ -228,6 +237,13 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// no way to wait for an answer that now comes back from a worker.
 	offerSettling(host, []interface{ Settled() }{r})
 	return r
+}
+
+// holdSmallest holds Smallest back while this batch's settings do not say how
+// large its picture is. After every change on the form, and as its panel is
+// drawn.
+func (b *batch) holdSmallest(tips *parts.Tips) {
+	holdSmallest(b.sizeWay, b.formatPick.Selected, parts.StatedValues(b.props), tips)
 }
 
 // Object is the screen, to put in the window.

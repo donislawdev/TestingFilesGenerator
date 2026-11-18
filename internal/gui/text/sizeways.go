@@ -58,7 +58,15 @@ func SaysSizeWayBoundary() string {
 	return say("SaysSizeWayBoundary", "Around a limit makes three files: one byte under the limit, one on it, one over.")
 }
 func SaysSizeWaySmallest() string {
-	return say("SaysSizeWaySmallest", "Smallest makes each picture as small as it can be at its width and height, so the files come out at different sizes.")
+	return say("SaysSizeWaySmallest", "Smallest makes each picture as small as it can be at its width and height, so the files come out at different sizes. It can be chosen once both are set in the format's settings.")
+}
+
+// SmallestNeedsTheSides is why Smallest cannot be chosen yet, opened by the
+// pointer over it. The second sentence of SaysSizeWaySmallest says the same
+// for somebody who reached the switch by keyboard and has no pointer to hover
+// with.
+func SmallestNeedsTheSides() string {
+	return say("SmallestNeedsTheSides", "Smallest needs the picture's width and height. Set both in the format's settings first.")
 }
 
 // DetailSizeWays is the explanation of a switch offering these ways, from the

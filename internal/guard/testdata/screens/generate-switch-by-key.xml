@@ -132,7 +132,7 @@
 															<rectangle pos="71,1" radius="5" size="66x26"/>
 															<rectangle radius="6" size="138x28" strokeColor="inputBorder" strokeWidth="1"/>
 															<text pos="6,5" size="57x16">One size</text>
-															<text color="placeholder" pos="76,5" size="56x16">Smallest</text>
+															<text color="rgba(122,122,128,255)" pos="76,5" size="56x16">Smallest</text>
 															<rectangle pos="-2,-2" radius="6" size="142x32" strokeColor="hyperlink"/>
 														</widget>
 													</container>

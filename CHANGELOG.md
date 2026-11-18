@@ -103,7 +103,7 @@ because it turns other people's test suites red.
   size to the byte. The file is the picture alone, with nothing added to reach
   a size, whether the label is drawn in it or not. In the window it is
   Smallest under How the size is given, on Single batch and Several batches,
-  offered when the format is a picture.
+  for pictures, greyed out until the width and height are set.
 
 - **Generate into the same folder again.** A run into an output directory
   that already holds an earlier run is added beside it: every name of the run,
@@ -362,8 +362,8 @@ because it turns other people's test suites red.
   file, and that size was refused again, because each picture needs its own.
   The refusal now names the smallest size every file can have, and the button
   under it in the window puts that size in the box. Refusing a large batch
-  takes about as long as planning it. A picture with its width and height set
-  also gets a second button, which asks for `smallest`.
+  takes about as long as planning it. Several pictures with a width and height
+  also get a second button, for `smallest`, each at its own size.
 - **Several batches shows a format's settings the way Single batch does.**
   The settings of a PDF stand under their headings there too, and a setting
   that is a size, such as Entry size of a ZIP, shows its count of bytes under

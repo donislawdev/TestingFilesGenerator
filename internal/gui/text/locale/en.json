@@ -924,8 +924,8 @@
   },
   "SaysSizeWaySmallest": {
     "description": "Shown in the window.",
-    "hash": "sha256-47aca44695a2",
-    "other": "Smallest makes each picture as small as it can be at its width and height, so the files come out at different sizes."
+    "hash": "sha256-ea0d93e1274a",
+    "other": "Smallest makes each picture as small as it can be at its width and height, so the files come out at different sizes. It can be chosen once both are set in the format's settings."
   },
   "SectionBase": {
     "description": "The heading over a group of fields.",
@@ -1076,6 +1076,11 @@
     "description": "Shown in the window.",
     "hash": "sha256-e2fe0be2508c",
     "other": "Known after Preview, from the width and height in the format's settings."
+  },
+  "SmallestNeedsTheSides": {
+    "description": "Shown in the window.",
+    "hash": "sha256-51c334c1bae8",
+    "other": "Smallest needs the picture's width and height. Set both in the format's settings first."
   },
   "StoppedAfter": {
     "description": "Shown in the window. Carries one value, {{.Files}}, which has to stay spelled exactly that way.",

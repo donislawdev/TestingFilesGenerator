@@ -298,7 +298,7 @@
 																	<text pos="6,5" size="57x16">One size</text>
 																	<text color="placeholder" pos="76,5" size="51x16">A range</text>
 																	<text color="placeholder" pos="141,5" size="91x16">Around a limit</text>
-																	<text color="placeholder" pos="245,5" size="56x16">Smallest</text>
+																	<text color="rgba(122,122,128,255)" pos="245,5" size="56x16">Smallest</text>
 																	<rectangle pos="-2,-2" radius="6" size="311x32" strokeColor="hyperlink"/>
 																</widget>
 															</container>

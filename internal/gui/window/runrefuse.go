@@ -210,6 +210,9 @@ func (r *runner) recheck(setting string) {
 	if r.settle == nil {
 		return
 	}
+	if r.follow != nil {
+		r.follow()
+	}
 	// A run owns the screen while it lasts. Its progress and its refusals are
 	// not to be wiped by a keystroke.
 	if r.busy.occupied {

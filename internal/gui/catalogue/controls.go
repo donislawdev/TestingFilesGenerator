@@ -332,5 +332,22 @@ func segments() Entry {
 			s.SetSelected("Smallest")
 			return s
 		}},
+		{"the last one held", func() fyne.CanvasObject {
+			// Smallest before a picture has a width and a height, since
+			// 2026-11-18: on the switch, out of reach, in the ink of
+			// something that cannot be used. The reason it opens under the
+			// pointer needs a screen's sheet, which a catalogue cell has not.
+			s := parts.NewSegments(append(append([]string(nil), ways...), "Smallest"), func(string) {})
+			s.Held.Set("Smallest", parts.NewTips().Say("Set a width and a height first."))
+			return s
+		}},
+		{"the last one held and chosen", func() fyne.CanvasObject {
+			// Chosen before the width was emptied again: it stays chosen,
+			// drawn as a frozen choice is, and the run says why it refuses.
+			s := parts.NewSegments(append(append([]string(nil), ways...), "Smallest"), func(string) {})
+			s.SetSelected("Smallest")
+			s.Held.Set("Smallest", parts.NewTips().Say("Set a width and a height first."))
+			return s
+		}},
 	}}
 }
