@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"math"
 	"reflect"
 	"runtime"
 	"runtime/metrics"
@@ -237,6 +238,25 @@ func (p *planMemory) account(targetIndex, filesSoFar int) error {
 		Because: core.PlanTooLargeWhy(p.setting, p.limits),
 		Remedy:  core.PlanTooLargeFix,
 	}
+}
+
+// ahead is how many more files may be planned before the next reading, the
+// longest stretch of the plan (planstretch.go) that does not carry it past
+// one. Unlimited without a ceiling.
+//
+// NO GUARD PROVES THIS, and what it buys says why. Without it the plan is
+// still refused, at the same reading or one earlier, because the files a
+// stretch planned past the reading are held by then and counted too. What it
+// keeps is the PEAK: a stretch of a dear shape - a pdf of a thousand pages is
+// 5 MB of plan a file - planned past the reading is a hundred and twenty eight
+// such files the ceiling did not get to weigh first. Seeing that needs the
+// peak of the heap while a plan near its ceiling is built, which this process
+// does not keep, and a guard sampling it would be a guard on a clock.
+func (p *planMemory) ahead() int {
+	if p == nil {
+		return math.MaxInt
+	}
+	return max(p.nextAt-p.seen, 1)
 }
 
 // stepFor is how many more files may go by before the next reading.

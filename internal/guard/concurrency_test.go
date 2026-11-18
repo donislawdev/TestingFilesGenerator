@@ -119,7 +119,7 @@ var mayBeConcurrent = map[string]string{
 	//
 	// Numbers, the instrument, and the two mistakes made getting them:
 	// docs/PERFORMANCE-REVIEW-2026-09-05.md section 14.
-	"internal/engine/parallel.go": "the planned files are written beside each other, and nothing else in the package does",
+	"internal/engine/parallel.go": "the planned files are written beside each other, the files of a stretch of the plan are planned beside each other, and nothing else in the package does either",
 	// A film is its pictures, each a whole picture through gav1d on one
 	// goroutine: the owner's thirty minute 1920x1080 film was 611.7 s on one
 	// core of sixteen, and the window's estimate from the bytes said three

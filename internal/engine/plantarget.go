@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -28,127 +29,154 @@ type planning struct {
 	// reserve is how long a list the plan takes at its first file - see
 	// planCapacity for how long, and startList for when.
 	reserve int
+	// run is what the memory setting lets the run hold, which the files
+	// planned at once are kept inside (planstretch.go).
+	run int64
 }
 
 // files plans every file of one target and adds them to the run.
 //
 // position is the target's place in the recipe, counted from one, and it is
 // what every refusal below carries so a window can mark the right box.
+//
+// The files are planned a stretch at a time and taken in order
+// (planstretch.go), so what file does with each is what it did when they were
+// planned one at a time.
 func (pl *planning) files(ctx context.Context, t *Target, desc format.Descriptor, targetSeed uint64, position int) error {
 	// One ending for every file of the target, because it follows the
 	// target's settings and every file shares them.
-	ext := desc.ExtensionFor(t.Properties)
-	damaged := t.Damage.Label()
-	for idx, size := range t.Sizes {
-		fileSeed := core.FileSeed(targetSeed, idx)
-
-		r := requestFor(t, idx, fileSeed, damaged)
-		r.Bytes = size
-		p, err := planFile(ctx, t, desc, r)
-		if err != nil {
-			walk := batchWalk{t: t, desc: desc, targetSeed: targetSeed, damaged: damaged}
-			return atTarget(position, t, refusedForTheBatch(ctx, walk, idx, err))
-		}
-
-		// A size drawn from the range that this format cannot write was moved
-		// to the nearest one it can. Silence is banned, so it is said here.
-		//
-		// The wording carries NO number on purpose. Notes are grouped by their
-		// text, so a number would make every file its own line - 25 000 of them
-		// on a big run, which is what buried the one note that mattered before
-		// grouping arrived. Which files moved is still exact in the manifest,
-		// because the note sits on each of their entries.
-		if idx < len(t.SizeMoved) && t.SizeMoved[idx] {
-			p.Notes = append(p.Notes, format.Note{
-				Code:   "size_moved",
-				Detail: core.Says("engine.SizeMoved", "A size drawn from the range is not one this format can write, so the nearest size it can write was used instead. The file is still inside the range that was asked for."),
-			})
-		}
-
-		name, err := renderName(t, ext, idx)
-		if err != nil {
-			return atTarget(position, t, err)
-		}
-		// Two files heading for one name means one of them would be
-		// destroyed by the other, and the manifest would still describe
-		// both. A manifest that quietly lost a file looks complete and
-		// reaches the test suite as a false truth.
-		//
-		// "One name" is not "the same string", and reading it that way cost
-		// exactly what this check exists to prevent. Most filesystems people
-		// run this on keep the case somebody typed and match without it -
-		// NTFS, APFS and exFAT do, ext4 does not - so "report.txt" and
-		// "REPORT.TXT" are two files on one machine and one file on the
-		// next. Measured on Windows, 2026-08-03: exit 0, two entries in the
-		// manifest, one file on the disk, and "tfg verify" failing on the
-		// tool's own output a second later.
-		//
-		// Case is not the only way to spell one name twice. An accented
-		// letter is one code point, U+00E9, and it is also the plain letter
-		// followed by a combining accent, U+0301. Both are valid UTF-8 and
-		// they print identically. APFS normalises what it is given, so on
-		// macOS the two spellings are one file, while NTFS and ext4 keep
-		// them apart. Measured there 2026-08-04: exit 0, two entries in the
-		// manifest, one file on the disk, and "tfg verify" failing on the
-		// tool's own output a second later - the same defect the case rule
-		// exists to stop, reached by spelling a letter the other way.
-		//
-		// So the key folds case and normalises, and neither alone is
-		// enough: case folding does not bring the two spellings together
-		// and normalising does not bring REPORT.TXT to report.txt.
-		//
-		// Refused everywhere rather than only where it bites, the same as a
-		// path separator and for the same reason: a recipe travels between
-		// machines by design, and one that quietly loses a file on somebody
-		// else's is worse than one refused on both. Producing such a pair on
-		// purpose belongs to the name laboratory and its archive mode, D10.
-		// No address, deliberately, and this is the one refusal here that
-		// keeps it. Two targets produce the pair, so naming one of them
-		// would send somebody to a box that is not wrong on its own - and
-		// which of the two to change is theirs to decide. The sentence
-		// names both ids, which is what a person needs and what a window
-		// cannot place either way.
-		if err := claimFileName(pl.names, position, t.ID, name); err != nil {
+	walk := batchWalk{t: t, desc: desc, targetSeed: targetSeed, damaged: t.Damage.Label(), run: pl.run,
+		position: position, ext: desc.ExtensionFor(t.Properties)}
+	ask := func(idx int) answer { return walk.planAt(ctx, idx, t.Sizes[idx]) }
+	largest := slices.Max(t.Sizes)
+	pace := pace{run: pl.run}
+	got := make([]answer, min(len(t.Sizes), widthFor(len(t.Sizes))*planStretchPerWriter))
+	for from := 0; from < len(t.Sizes); {
+		n, width := pace.stretch(len(t.Sizes)-from, planStretchPerWriter, largest, pl.budget.ahead())
+		planStretch(&pace, got[:n], from, width, ask)
+		if err := pl.stretch(ctx, walk, from, got[:n], &pace); err != nil {
 			return err
 		}
-
-		if pl.totalBytes, err = core.AddSizes(pl.totalBytes, p.Bytes); err != nil {
-			// The size of this target, for the same reason as the ceiling
-			// above: the total belongs to the run, the box somebody can
-			// change belongs to a target.
-			return &RecipeError{
-				Setting: core.TargetAddress(position, format.SettingSize),
-				Detail:  core.Says("engine.RunTooLarge", "target %q brings the run to a size that is too large to measure", core.A("Target", t.ID)),
-				Because: core.SaidOf(err)}
-		}
-
-		// Here, after every check above, and not before the first target -
-		// see startList for why.
-		if err := pl.startList(ctx); err != nil {
-			return err
-		}
-		pl.out = append(pl.out, PlannedFile{
-			ID:     fmt.Sprintf("f_%04d", len(pl.out)+1),
-			Target: t,
-			Index:  idx,
-			Name:   name,
-			Seed:   fileSeed,
-			Desc:   desc,
-			Plan:   p,
-		})
-
-		// What the plan costs, rather than how many files are in it. See
-		// planmemory.go for why the count alone could not see this.
-		if err := pl.budget.account(position, len(pl.out)); err != nil {
-			return err
-		}
-		// Asked here rather than per target, because one target of ten
-		// thousand pictures is the case this is for.
-		if err := ctx.Err(); err != nil {
-			return err
-		}
+		from += n
 	}
 	return nil
+}
+
+// stretch adds the planned files of one stretch to the run, in order, and
+// stops at the first that refuses.
+func (pl *planning) stretch(ctx context.Context, walk batchWalk, from int, got []answer, pace *pace) error {
+	for j, a := range got {
+		if err := pl.file(ctx, walk, from+j, a); err != nil {
+			return err
+		}
+		pace.saw(a.plan)
+	}
+	return nil
+}
+
+// file adds one planned file of a target to the run, or refuses the run with
+// what planning it came to.
+func (pl *planning) file(ctx context.Context, walk batchWalk, idx int, a answer) error {
+	t, p, position := walk.t, a.plan, walk.position
+	if a.err != nil {
+		return atTarget(position, t, refusedForTheBatch(ctx, walk, idx, a.err))
+	}
+
+	// A size drawn from the range that this format cannot write was moved
+	// to the nearest one it can. Silence is banned, so it is said here.
+	//
+	// The wording carries NO number on purpose. Notes are grouped by their
+	// text, so a number would make every file its own line - 25 000 of them
+	// on a big run, which is what buried the one note that mattered before
+	// grouping arrived. Which files moved is still exact in the manifest,
+	// because the note sits on each of their entries.
+	if idx < len(t.SizeMoved) && t.SizeMoved[idx] {
+		p.Notes = append(p.Notes, format.Note{
+			Code:   "size_moved",
+			Detail: core.Says("engine.SizeMoved", "A size drawn from the range is not one this format can write, so the nearest size it can write was used instead. The file is still inside the range that was asked for."),
+		})
+	}
+
+	name, err := renderName(t, walk.ext, idx)
+	if err != nil {
+		return atTarget(position, t, err)
+	}
+	// Two files heading for one name means one of them would be
+	// destroyed by the other, and the manifest would still describe
+	// both. A manifest that quietly lost a file looks complete and
+	// reaches the test suite as a false truth.
+	//
+	// "One name" is not "the same string", and reading it that way cost
+	// exactly what this check exists to prevent. Most filesystems people
+	// run this on keep the case somebody typed and match without it -
+	// NTFS, APFS and exFAT do, ext4 does not - so "report.txt" and
+	// "REPORT.TXT" are two files on one machine and one file on the
+	// next. Measured on Windows, 2026-08-03: exit 0, two entries in the
+	// manifest, one file on the disk, and "tfg verify" failing on the
+	// tool's own output a second later.
+	//
+	// Case is not the only way to spell one name twice. An accented
+	// letter is one code point, U+00E9, and it is also the plain letter
+	// followed by a combining accent, U+0301. Both are valid UTF-8 and
+	// they print identically. APFS normalises what it is given, so on
+	// macOS the two spellings are one file, while NTFS and ext4 keep
+	// them apart. Measured there 2026-08-04: exit 0, two entries in the
+	// manifest, one file on the disk, and "tfg verify" failing on the
+	// tool's own output a second later - the same defect the case rule
+	// exists to stop, reached by spelling a letter the other way.
+	//
+	// So the key folds case and normalises, and neither alone is
+	// enough: case folding does not bring the two spellings together
+	// and normalising does not bring REPORT.TXT to report.txt.
+	//
+	// Refused everywhere rather than only where it bites, the same as a
+	// path separator and for the same reason: a recipe travels between
+	// machines by design, and one that quietly loses a file on somebody
+	// else's is worse than one refused on both. Producing such a pair on
+	// purpose belongs to the name laboratory and its archive mode, D10.
+	// No address, deliberately, and this is the one refusal here that
+	// keeps it. Two targets produce the pair, so naming one of them
+	// would send somebody to a box that is not wrong on its own - and
+	// which of the two to change is theirs to decide. The sentence
+	// names both ids, which is what a person needs and what a window
+	// cannot place either way.
+	if err := claimFileName(pl.names, position, t.ID, name); err != nil {
+		return err
+	}
+
+	if pl.totalBytes, err = core.AddSizes(pl.totalBytes, p.Bytes); err != nil {
+		// The size of this target, for the same reason as the ceiling
+		// above: the total belongs to the run, the box somebody can
+		// change belongs to a target.
+		return &RecipeError{
+			Setting: core.TargetAddress(position, format.SettingSize),
+			Detail:  core.Says("engine.RunTooLarge", "target %q brings the run to a size that is too large to measure", core.A("Target", t.ID)),
+			Because: core.SaidOf(err)}
+	}
+
+	// Here, after every check above, and not before the first target -
+	// see startList for why.
+	if err := pl.startList(ctx); err != nil {
+		return err
+	}
+	pl.out = append(pl.out, PlannedFile{
+		ID:     fmt.Sprintf("f_%04d", len(pl.out)+1),
+		Target: t,
+		Index:  idx,
+		Name:   name,
+		Seed:   core.FileSeed(walk.targetSeed, idx),
+		Desc:   walk.desc,
+		Plan:   p,
+	})
+
+	// What the plan costs, rather than how many files are in it. See
+	// planmemory.go for why the count alone could not see this.
+	if err := pl.budget.account(position, len(pl.out)); err != nil {
+		return err
+	}
+	// Asked here rather than per target, because one target of ten
+	// thousand pictures is the case this is for.
+	return ctx.Err()
 }
 
 // startList takes the list of the plan at its first file, as long as

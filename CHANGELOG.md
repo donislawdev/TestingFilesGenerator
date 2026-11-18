@@ -263,6 +263,14 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **Many pictures are ready to write several times sooner.** Before the
+  first file is written, every file is worked out, and a picture is drawn to
+  do it - now on every processor at once. On 16 threads,
+  `--dry-run` of 2000 PNG pictures of 640x480 takes 2.6 s rather than 16 s,
+  and a size too small for them is refused in 6.5 s rather than 33 s. Ranges
+  of sizes, PDF and Office files gain too, and text is as fast as before. The
+  files are the same, and pictures worked out at once stay inside the memory
+  setting.
 - **A value to type stands out from the words describing it.** In the
   explanation behind a field, a value you type as it is - `screens` and `all`
   for the groups of `picture-sizes`, `10mb` for a size, `{index:04}` in a file

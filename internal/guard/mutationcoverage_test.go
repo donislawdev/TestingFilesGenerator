@@ -235,6 +235,13 @@ var provenByProbe = map[string]string{
 	"TestSmallestIsOfferedForExactlyTheFormatsTheEngineTakesItFor": "a canary of its own - a window offering smallest for every " +
 		"format has to disagree with the engine - a reach check that the engine both took and refused smallest, and broken by " +
 		"hand on 2026-11-17 by offering smallest for every format: red on both screens.",
+	"TestAPlanIsTheSameHoweverManyFilesArePlannedAtOnce": "a canary of its own - two plans of different seeds have to be " +
+		"told apart - a reach check that the pictures were planned beside each other and that each refusal case is refused, " +
+		"and broken by hand on 2026-11-18 three ways: answers put in the wrong place, the walk reading past a refusal and " +
+		"nothing ever planned beside anything: red each time.",
+	"TestThePicturesPlannedAtOnceHoldNoMoreThanTheMemorySettingLeaves": "a reach check of its own - with room to spare the " +
+		"pictures have to be seen planned beside each other - and broken by hand on 2026-11-18 by dropping the memory bound " +
+		"and by not planning the first file of a target alone: red both times.",
 	"TestAValueToTypeIsTheSameInEveryLanguage": "a canary of its own - a translation that changed `all` into `wszystko` " +
 		"has to disagree - a reach check of how many marked texts the catalogues and the site carry, and broken by hand on " +
 		"2026-11-18 by changing one value in the Polish registry and by making no value ever a value: red both times.",
