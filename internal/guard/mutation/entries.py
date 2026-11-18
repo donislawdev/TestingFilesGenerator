@@ -9489,8 +9489,8 @@ MUTATIONS = [
         # runs before the question is ever asked.
         "the window binary shows and runs before the seam",
         "internal/gui/run_cgo.go",
-        "\tcode := OpenOrRefuse(w, a.Run, SecondAttemptFor(launch, errOut).Try, func(why error) {",
-        "\tw.ShowAndRun()\n\tcode := OpenOrRefuse(w, a.Run, SecondAttemptFor(launch, errOut).Try, func(why error) {",
+        "\tcode := OpenOrRefuse(w, RunDark(a, w), SecondAttemptFor(launch, errOut).Try, func(why error) {",
+        "\tw.ShowAndRun()\n\tcode := OpenOrRefuse(w, RunDark(a, w), SecondAttemptFor(launch, errOut).Try, func(why error) {",
         "TestTheWindowBinaryOpensThroughTheRefusalSeam",
     ),
     (

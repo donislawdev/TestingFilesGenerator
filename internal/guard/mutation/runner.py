@@ -359,7 +359,13 @@ def write_checked(path: Path, want: bytes, what: str) -> None:
         path.write_bytes(want)
     except OSError as err:
         raise TreeCorrupted(f"{path}: {what} could not be written - {err}") from err
-    got = path.read_bytes()
+    try:
+        got = path.read_bytes()
+    except OSError as err:
+        # The same answer as a failed write: what is on disk is unknown, and a
+        # bare OSError would leave the caller without its verdict and the run
+        # without its report.
+        raise TreeCorrupted(f"{path}: {what} was written but could not be read back - {err}") from err
     if got != want:
         raise TreeCorrupted(
             f"{path}: {what} was written but the file holds {len(got)} bytes "

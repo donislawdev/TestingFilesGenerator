@@ -100,7 +100,9 @@ def check_canary_in(tree) -> bool:
     planted file and its variable, or a BROKEN below says nothing about why.
     A canary that cannot be planted is a verdict, not a crash: a run that
     crashes here writes no report, and that reads as a part that did not
-    report (O366).
+    report (O366). A tree that cannot be rebuilt after a failed plant raises
+    OSError, and main stops the run with its report, because that tree is not
+    fit for the entries.
     """
     label, rel, body, test = CANARY
     stale = canary_fault(tree.path)
@@ -564,7 +566,15 @@ def main() -> int:
         # The canary first and alone. It proves the BROKEN path works, and
         # every BROKEN verdict below is unreliable if it does not - so it is
         # worth the one entry it costs to run it before the others start.
-        canary_ok = check_canary_in(trees[0])
+        try:
+            canary_ok = check_canary_in(trees[0])
+        except OSError as error:
+            # Most likely the disk that refused the plant refusing the copy
+            # too. Said and written down, as a tree that could not be made is.
+            print(f"no entry was run - the canary's worker tree could not be rebuilt:\n  {error}")
+            report["stopped"] = f"the canary's worker tree could not be rebuilt - {error}"
+            write_report(args.json, report)
+            return 2
 
         outcomes, stopped = dispatch(chosen, trees, budget, deadline, unbuilt)
 
