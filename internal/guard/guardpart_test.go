@@ -2,6 +2,7 @@ package guard
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -118,6 +119,62 @@ func TestAPartRunsTheTestsItIsHandedAndNoOther(t *testing.T) {
 	ran, out, err = runPart(t, "", empty)
 	if err == nil || len(ran) != 0 || !strings.Contains(out, guardPartVariable+" names "+empty+" as the tests to run, and it lists none") {
 		t.Fatalf("handed an empty part, the binary ran %v (%v) without refusing in words naming %s and the file it read:\n%s", ran, err, guardPartVariable, out)
+	}
+}
+
+// TestTheLogOfAPartIsAFileGitIgnores asks git whether it ignores the log each
+// job of ci.yml that runs a part of the guards writes their output into.
+//
+// The guards read every file git could commit, the untracked ones as well, so
+// a log in the working tree is read by them while it grows. On Windows the
+// tests print paths in the runner's profile, and the guard against private
+// content failed on the log of its own part (2026-11-18). Linux and macOS keep
+// their temporary directories outside any home, so one system of three shows
+// it, and only in a part where that guard runs after a test printed a path.
+func TestTheLogOfAPartIsAFileGitIgnores(t *testing.T) {
+	root := repoRoot(t)
+	// The check has to be able to say no, for a file nobody tracks either.
+	if gitIgnores(t, root, "a-log-no-rule-ignores.txt") {
+		t.Fatal("git says it ignores a-log-no-rule-ignores.txt, so this check cannot tell an ignored log from another")
+	}
+	data, err := os.ReadFile(filepath.Join(root, ".github", "workflows", "ci.yml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// One line of shell to a command: coverage carries its pipe to tee on
+	// the line after the package.
+	text := strings.ReplaceAll(strings.ReplaceAll(string(data), "\r\n", "\n"), "\\\n", " ")
+	tee := regexp.MustCompile(`\./internal/guard/ [^\n]*\| tee (\S+)`)
+	jobs := ciJobs(text)
+	for _, job := range []string{"test", "race", "coverage"} {
+		logs := tee.FindAllStringSubmatch(jobs[job], -1)
+		if len(logs) == 0 {
+			t.Errorf("the %s job of ci.yml writes no log of the guards with tee, and it runs a part of them: this check reached nothing there", job)
+		}
+		for _, log := range logs {
+			if !gitIgnores(t, root, log[1]) {
+				t.Errorf("the %s job writes the output of its part of the guards to %s, and git does not ignore it. The guards read it while it grows, and on Windows it carries paths in the runner's profile. Ignore it in .gitignore", job, log[1])
+			}
+		}
+	}
+}
+
+// gitIgnores asks git whether it ignores path, relative to root. It skips the
+// test where git cannot answer, as gitOutput does.
+func gitIgnores(t *testing.T, root, path string) bool {
+	t.Helper()
+	cmd := exec.Command("git", "check-ignore", "-q", "--", path)
+	cmd.Dir = root
+	err := cmd.Run()
+	var exit *exec.ExitError
+	switch {
+	case err == nil:
+		return true
+	case errors.As(err, &exit) && exit.ExitCode() == 1:
+		return false
+	default:
+		t.Skipf("git could not answer whether it ignores %s, so this cannot be read here: %v", path, err)
+		return false
 	}
 }
 

@@ -71,6 +71,13 @@ coverage.out
 coverage.html
 /covdata/
 
+# The log of a part of the guards in ci.yml (go test -v | tee part.log). The
+# guards read every file git could commit, untracked ones as well, and this one
+# grows while they run with the paths the tests print. On Windows those lie in
+# the runner's profile, and the guard against private content read them there.
+# TestTheLogOfAPartIsAFileGitIgnores holds this line to the log ci.yml writes.
+/part.log
+
 # ---------------------------------------------------------------------------
 # Editors and operating systems
 # ---------------------------------------------------------------------------

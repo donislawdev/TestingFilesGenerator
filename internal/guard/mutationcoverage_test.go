@@ -251,6 +251,9 @@ var provenByProbe = map[string]string{
 		"directory, as every part of the first run of the parts did: red, mine.txt cannot be read.",
 	"TestAVerdictPassesOnlyWhenEveryPartRanAndPassed": "a table of runs, the first of which has to pass, so the refusals " +
 		"are not the script refusing everything.",
+	"TestTheLogOfAPartIsAFileGitIgnores": "a canary of its own - a name no rule ignores has to be found not ignored - " +
+		"and it asks that it reached the log of the test, race and coverage jobs. Broken by hand on 2026-11-18 by taking " +
+		"/part.log out of .gitignore: red in all three jobs.",
 	"TestAJobOnMacOSUsesOnlyWhatItsBashHas": "a table of canaries of its own - each construct in a job on macOS, in a " +
 		"script it names and in a local action it uses has to be found, the same on Linux and a comment have not to be - " +
 		"and it asks that it reached the test job of ci.yml and the script that job hands its part to.",
