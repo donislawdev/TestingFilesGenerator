@@ -212,7 +212,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 	}
 	label := ""
 	if r.Label {
-		label = r.LabelText("jpg")
+		label = r.PictureLabel("jpg")
 	}
 
 	quality, err := qualityOf(r.Properties)

@@ -41,7 +41,7 @@
 			</container>
 			<container pos="0,70" size="1092x1221">
 				<container size="1092x1221">
-					<widget size="1092x1115" type="*widget.Scroll">
+					<widget size="1092x1115" type="*parts.Scroll">
 						<container size="1092x1115">
 							<container pos="136,0" size="820x1115">
 								<container size="820x49">
@@ -93,8 +93,8 @@
 													<widget size="788x29" type="*parts.QuietText">
 														<container size="788x29">
 															<widget pos="-6,-6" size="800x41" type="*widget.RichText">
-																<text color="placeholder" pos="6,6" size="786x14" textSize="12">With the box ticked, the chosen preset's files come first and the batches below are added after them. Without it, the batches are the whole</text>
-																<text color="placeholder" pos="6,20" size="39x14" textSize="12">recipe.</text>
+																<text color="placeholder" pos="6,6" size="764x14" textSize="12">With the box ticked, the chosen preset's files come first and the batches below are added after them. Without it, the batches below are</text>
+																<text color="placeholder" pos="6,20" size="147x14" textSize="12">everything the run makes.</text>
 															</widget>
 														</container>
 													</widget>
@@ -706,7 +706,7 @@
 												</widget>
 											</container>
 											<container pos="0,36" size="788x40">
-												<widget size="788x40" type="*widget.Scroll">
+												<widget size="788x40" type="*parts.Scroll">
 													<container size="788x40">
 														<container size="788x16">
 															<widget pos="-6,-6" size="800x28" type="*widget.Label">

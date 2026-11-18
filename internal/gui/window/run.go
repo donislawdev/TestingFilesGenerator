@@ -141,7 +141,7 @@ type runner struct {
 	// scroll is the part of this screen that moves, so a refusal can bring the
 	// box it is about into view. Set by the screen, because only the screen
 	// that built it knows which scroll holds its form.
-	scroll *container.Scroll
+	scroll *parts.Scroll
 
 	// readdress moves a refusal onto the box that is on the screen, for a
 	// screen that draws one of several boxes for one question.
@@ -164,6 +164,12 @@ type runner struct {
 	// unfold opens whatever the screen has put a box away inside, so a refusal
 	// about it can be seen. Nil on a screen that folds nothing.
 	unfold func(string)
+
+	// follow is what the screen does after any field changes, before the
+	// form is checked: a control whose choices depend on other fields catches
+	// up with them - smallest held back until a width and a height are set.
+	// Nil on a screen with no such control.
+	follow func()
 
 	// sections are the screen's panels, each of which folds away - see
 	// sections.go. Opened by a refusal as unfold is.
@@ -725,7 +731,7 @@ func manifestNameOf(path string) string {
 // can bring the box it is about into view. It hands the scroll straight back,
 // so a screen wires it by wrapping the call it was already making rather than
 // by finding somewhere to put an extra statement.
-func (r *runner) keepScroll(scroll *container.Scroll) *container.Scroll {
+func (r *runner) keepScroll(scroll *parts.Scroll) *parts.Scroll {
 	r.scroll = scroll
 	return scroll
 }

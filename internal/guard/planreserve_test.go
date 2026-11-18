@@ -18,15 +18,22 @@ import (
 // allocated, with a margin the two answers cannot cross: the reserved list is
 // 440 MB, everything else here a few. Only two guards in this package run in
 // parallel, so the neighbours do not reach that margin.
+//
+// A size ABOVE what the format can make, since 2026-11-17. A size below it is
+// no longer refused at the first file: the engine asks every file of the
+// batch for the size all of them take (internal/engine/batchminimum.go), which
+// holds nothing per file and allocates as it plans - a million plans of
+// garbage, which this sum cannot tell from a reservation. A BMP over 4 GiB is
+// refused by the format at the first file and walks nothing.
 func TestARunRefusedAtItsFirstFileReservesNothing(t *testing.T) {
 	const n = 1_000_000
-	targets := []engine.Target{{ID: "files", Format: "png", Sizes: engine.Uniform(n, 10)}}
+	targets := []engine.Target{{ID: "files", Format: "bmp", Sizes: engine.Uniform(n, 5<<30)}}
 	var before, after runtime.MemStats
 	runtime.ReadMemStats(&before)
 	_, err := engine.Plan(targets, engine.Options{OutDir: t.TempDir(), ManifestName: "manifest.json"})
 	runtime.ReadMemStats(&after)
-	if err == nil || !strings.Contains(err.Error(), "smaller than") {
-		t.Fatalf("a PNG of 10 B was not refused for its size at the first file, so this is not the case it names: %v", err)
+	if err == nil || !strings.Contains(err.Error(), "larger than") {
+		t.Fatalf("a BMP of 5 GiB was not refused for its size at the first file, so this is not the case it names: %v", err)
 	}
 	if took := after.TotalAlloc - before.TotalAlloc; took > 100<<20 {
 		t.Errorf("planning %d files refused at the first one allocated %d MB. "+

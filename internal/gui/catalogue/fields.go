@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 )
@@ -125,7 +126,28 @@ func propertyField() Entry {
 			return tips.Over(parts.FieldColumn(objects...))
 		}})
 	}
-	return Entry{Name: "PropertyField", Covers: []string{"FromProperty", "DeclaredFields", "PropertyFields", "ShapedFor", "PropertyDetail"}, States: states}
+	// A block of settings that changes a file only while a choice above it has
+	// one value, as a placeholder's colours do: on the screen with the choice
+	// there, and gone - name and all - with the choice anywhere else.
+	shown := []format.Property{
+		{Name: "content", Kind: format.PropertyChoice, Choices: []string{"placeholder", "test"}, Default: "test", Detail: "What the picture shows."},
+		{Name: "background", Kind: format.PropertyText, Shape: "a colour such as cccccc", Default: "cccccc", Detail: "The colour of a placeholder.",
+			Group: "Placeholder", OnlyWhen: format.Condition{Setting: "content", Values: []string{"placeholder"}}},
+	}
+	for _, c := range []struct{ caption, value string }{
+		{"a block shown while the choice above it has one value", "placeholder"},
+		{"the same block gone while the choice has another", "test"},
+	} {
+		c := c
+		states = append(states, State{c.caption, func() fyne.CanvasObject {
+			s := form()
+			tips := parts.NewTips()
+			fields, objects := parts.DeclaredFields("format/catalogue", shown, s, tips)
+			fields[0].Control.(*parts.Chooser).SetSelected(c.value)
+			return tips.Over(parts.FieldColumn(objects...))
+		}})
+	}
+	return Entry{Name: "PropertyField", Covers: []string{"FromProperty", "DeclaredFields", "DeclaredRows", "PropertyFields", "ShapedFor", "PropertyDetail"}, States: states}
 }
 
 // The count of bytes beside a size, which the row shows when the field is one
@@ -142,6 +164,9 @@ func byteCount() Entry {
 		{"a size counted out", func() fyne.CanvasObject { return counted("10mb") }},
 		{"nothing to count yet", func() fyne.CanvasObject { return counted("") }},
 		{"a large size", func() fyne.CanvasObject { return counted("2gb") }},
+		// A sentence rather than a number, broken at the width of the box -
+		// the one caption that wraps.
+		{"smallest, with no number until the run plans it", func() fyne.CanvasObject { return counted(core.SizeSmallest) }},
 	}}
 }
 
@@ -189,7 +214,14 @@ func errorArea() Entry {
 		{"offering the fix it asks for", func() fyne.CanvasObject {
 			a := parts.NewErrorArea()
 			a.Say("AVIF cannot be smaller than 311 B. Requested: 1 B")
-			a.Offer("Use the smallest size, 311 B", func() {})
+			a.Offer(parts.Fix{Label: "Use the smallest size, 311 B", Apply: func() {}})
+			return a.Object()
+		}},
+		{"offering two ways out", func() fyne.CanvasObject {
+			a := parts.NewErrorArea()
+			a.Say("PNG cannot be smaller than 1596 B - each of the 3 files is different, so each has a smallest size of its own. Requested: 1 B. Ask for 1596 B, the smallest size all 3 files can have.")
+			a.Offer(parts.Fix{Label: "Use the smallest size, 1 596 B", Apply: func() {}},
+				parts.Fix{Label: "Make each picture as small as it can be", Apply: func() {}})
 			return a.Object()
 		}},
 	}}

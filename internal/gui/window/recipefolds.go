@@ -49,17 +49,11 @@ func (r *Recipe) declaredSettings(b *batch, at func(string) string) fyne.CanvasO
 		return nil
 	}
 
-	var out []fyne.CanvasObject
 	owner := text.FormatOwner(b.formatPick.Selected)
-	for i, f := range b.props {
-		// Shaped here as well as on the single batch screen. The two draw the
-		// same declarations through different code, and only one of them was
-		// given the width on the first try - which is how a difference between
-		// two surfaces starts.
-		out = append(out, r.fields.Add(at(recipe.KeyProperties+"."+f.Name), text.SettingLabel(f.Name),
-			parts.PropertyDetail(owner, b.declared[i]), r.tips.Say(text.SettingKey(f.Name)),
-			parts.ShapedFor(b.declared[i], f.Control)))
-	}
+	// Laid out by the call the single batch screen's fields go through, under
+	// addresses naming this batch - see parts.DeclaredRows.
+	out := parts.DeclaredRows(owner, b.props, r.fields, r.tips,
+		func(name string) string { return at(recipe.KeyProperties + "." + name) })
 	// A rule binding two settings belongs beside them. Two number boxes drawn
 	// from a range alone would offer a pair the run then refuses.
 	if d, err := format.Get(b.formatPick.Selected); err == nil {
@@ -189,22 +183,7 @@ func (r *Recipe) wire(fold *parts.Folding, folded *bool, say func() string) {
 // Only what was stated. A section folded from the start that swallowed a value
 // somebody typed would be a setting they cannot see and did not remove, which
 // is worse than the scrolling folding was meant to save.
-func (b *batch) settingsSaid() string {
-	said := make([]string, 0, len(b.props))
-	for _, f := range b.props {
-		// What was CHOSEN, not what the field started on. A menu opens on its
-		// default and so always has a value, and listing all of them turned
-		// this line into every setting the format declares - which for log,
-		// with seven, ran off the edge of the window.
-		if f.Chosen != nil && !f.Chosen() {
-			continue
-		}
-		if v := f.Value(); v != "" {
-			said = append(said, text.SettingSaid(text.SettingLabel(f.Name), v))
-		}
-	}
-	return text.FoldedSummary(said...)
-}
+func (b *batch) settingsSaid() string { return parts.SettingsSaid(b.props) }
 
 // said is what the manifest notes say while they are away.
 func (n *batchNotes) said() string {

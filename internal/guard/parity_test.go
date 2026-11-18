@@ -96,6 +96,15 @@ var reachableFromTheWindow = []string{
 	"preset:filename-handling",
 	"preset:filename-handling.format",
 
+	// The preset of picture sizes, 2026-11-17, with every parameter and the
+	// global flag it gives jpg to. Run from the screen with all three stated
+	// by TestThePresetScreenBuildsThePictureSizesTheCommandLineBuilds, which
+	// compares the pictures with the command line's byte for byte.
+	"preset:picture-sizes",
+	"preset:picture-sizes.groups",
+	"preset:picture-sizes.content",
+	"preset:picture-sizes.format",
+
 	// A recipe that builds on a preset, since 2026-09-22: the switch and the
 	// menu on the batch screen are the extends key, and the chosen preset's
 	// parameters under it are the with section, drawn from the declaration

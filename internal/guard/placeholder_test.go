@@ -153,6 +153,72 @@ func TestSmallestIsTheSmallestFile(t *testing.T) {
 		"find a format that still has one")
 }
 
+// TestSmallestWithTheLabelIsThePictureAlone asks the same of a picture large
+// enough to have its label drawn in it: the smallest file is the picture and
+// nothing added to reach a size.
+//
+// Not true until 2026-11-16 (O350). The label stated the size of the file, so
+// the walk to the smallest size stopped at the first size it accepted, with up
+// to about 900 B of padding in a PNG of 1200x630, because the numerals of each
+// size compressed differently. The label no longer states the size
+// (docs/SIZE-FIXES-2026-11-16.md section 3.1), and that is what this holds.
+//
+// Too large to walk every size below, so the question is the one that answers
+// it for a picture that no longer changes with the size: a byte less is
+// refused, and the refusal names the smallest file as its minimum. A file that
+// still carried padding would have the byte below it planned, which the
+// canary plants - a hundred bytes over the smallest has to fail.
+func TestSmallestWithTheLabelIsThePictureAlone(t *testing.T) {
+	props := map[string]string{"width": "160", "height": "120"}
+	png, err := format.Get("png")
+	if err != nil {
+		t.Fatal(err)
+	}
+	canary := format.Request{Label: true, Seed: 1, Properties: props}
+	p, err := png.PlanSmallest(t.Context(), canary)
+	if err != nil {
+		t.Fatalf("png: smallest at 160x120 with the label was refused: %v", err)
+	}
+	if aByteLessNamesIt(png, canary, p.Bytes+100) {
+		t.Fatalf("canary - %d B is a hundred over the smallest png and was called the picture alone, so this check cannot fail", p.Bytes+100)
+	}
+	drawn := 0
+	for _, id := range pictures.Formats() {
+		d, err := format.Get(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for seed := uint64(0); seed < 3; seed++ {
+			r := format.Request{Label: true, Seed: seed, Properties: props}
+			p, err := d.PlanSmallest(t.Context(), r)
+			if err != nil {
+				t.Errorf("%s seed %d: smallest at 160x120 with the label was refused: %v", id, seed, err)
+				continue
+			}
+			if embedded, _ := p.Properties[format.PropertyLabelEmbedded].(bool); embedded {
+				drawn++
+			}
+			if !aByteLessNamesIt(d, r, p.Bytes) {
+				t.Errorf("%s seed %d: smallest is %d B, and a byte less is planned or refused with another minimum - the file carries more than its picture", id, seed, p.Bytes)
+			}
+		}
+	}
+	// Asserted rather than assumed: a ladder that stopped drawing the label at
+	// 160x120 would leave this asking about pictures with none.
+	if drawn == 0 {
+		t.Fatal("no picture format drew its label at 160x120, so this guard asked about none")
+	}
+}
+
+// aByteLessNamesIt says a request of r one byte under size is refused with
+// size as its minimum.
+func aByteLessNamesIt(d format.Descriptor, r format.Request, size int64) bool {
+	r.Bytes = size - 1
+	_, err := d.Generator.Plan(r)
+	var below *format.BelowMinimumError
+	return errors.As(err, &below) && below.Minimum == size
+}
+
 // smallestSide is the picture these checks ask about.
 func smallestSide() map[string]string { return map[string]string{"width": "8", "height": "8"} }
 

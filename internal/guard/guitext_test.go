@@ -126,6 +126,8 @@ var notWords = map[string]string{
 	`"user32.dll"`:     "a Windows library this program loads for the dialog it shows when it has no window, a file name and not a word",
 	`"GetProcAddress"`: "the Win32 entry point looked up by name, an identifier and not a word",
 	`"MessageBoxW"`:    "the Win32 entry point that shows a system dialog, looked up by name, an identifier and not a word",
+	`"SystemParametersInfoW"`: "the Win32 entry point that says how far a notch of the wheel scrolls, looked up by name, " +
+		"an identifier and not a word",
 	`"Cause:"`: "the word the toolkit's logger puts in front of the error it was handed, read as an anchor " +
 		"to find the toolkit's own sentence and never shown - see CauseFrom in opening.go",
 	`"windows"`:       "a system name asked of the compiler",
@@ -142,6 +144,8 @@ var notWords = map[string]string{
 	`"panel"`:         "our name for a colour, in the palette the toolkit asks by name",
 	`"label"`:         "our name for the ink of a field's name, a colour the palette holds",
 	`"tipshade"`:      "our name for the shade under an explanation, a colour the palette holds",
+	`"held"`:          "our name for the ink of a choice that cannot be made yet, a colour the palette holds",
+	`"literal"`:       "our name for the ink of a value to type inside an explanation, a colour the palette holds",
 	`"lift"`:          "our name for what the pointer does to the filled button, a colour the palette holds",
 	`"shade"`:         "our name for what a press does to the filled button, a colour the palette holds",
 	`"fyneDo"`:        "a migration flag the toolkit reads, never shown",

@@ -44,7 +44,7 @@ func init() {
 
 		SaidWhenDefaulted: map[string]string{
 			"limit": "no limit was given, so this set is built around " + defaultLimitText +
-				" - that is our placeholder and not your system's limit. Pass the limit your system declares, or the files say nothing about it.",
+				" - that is our placeholder and not your system's limit. Give the limit your system declares, or the files say nothing about it.",
 		},
 
 		Requires: []string{"MVP"},

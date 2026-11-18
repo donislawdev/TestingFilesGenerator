@@ -254,6 +254,7 @@ for, and the manifest says how your system should react to it:
 |---|---|
 | `empty-and-minimal` | Does a file that is valid and as small as the format allows get through? |
 | `filename-handling` | Will my system store, show and give back a file name it did not expect? |
+| `picture-sizes` | Does my system take pictures at the sizes screens and platforms use? |
 | `size-boundaries` | Is a size limit enforced exactly where it is declared? |
 | `tabular-import` | Does my table import survive what real tools export? |
 | `text-encoding` | Does my reader know which encoding a file is in, or is it guessing? |
@@ -528,8 +529,11 @@ tfg generate --format zip --size 5mb --damage truncate:missing=30
 A damaged file names its damage in its label, beside the size it has on disk:
 `tfg - txt - 10485760 B - damage truncate:missing=50 - seed c2a547b2`. So two
 texts cut by different shares can be told apart from their first line, although
-the text after it is the same. A long list of damages names the first few and
-how many more there are, and the manifest lists every one. The label is still
+the text after it is the same. A picture or a film draws its label without the
+size, `tfg - png - damage zero-head:bytes=16 - seed c2a547b2`, so a picture of a
+given width and height is the same picture at every size you ask for. A long
+list of damages names the first few and how many more there are, and the
+manifest lists every one. The label is still
 written before the damage, so the damage can overwrite it, and the manifest does
 not promise it is there.
 

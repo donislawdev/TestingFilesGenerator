@@ -74,6 +74,38 @@ type propertyEntry struct {
 	// is every one a preset, a damage or a tool takes. Added on 2026-11-11,
 	// which widens this output and changes the meaning of no key in it.
 	Extensions map[string]string `json:"extensions,omitempty"`
+	// OnlyWhen is the setting, and its values, under which this one changes
+	// anything - a placeholder's colours while content is placeholder. Absent
+	// for a setting that always does. Added on 2026-11-17, widening this
+	// output the way extensions did.
+	OnlyWhen *conditionEntry `json:"only_when,omitempty"`
+}
+
+// conditionEntry is format.Condition as --json writes it.
+type conditionEntry struct {
+	Setting string   `json:"setting"`
+	Values  []string `json:"values"`
+}
+
+// conditionOf is a condition for --json, or nothing for a setting that has
+// none, so the key is absent rather than empty.
+func conditionOf(c format.Condition) *conditionEntry {
+	if c.IsZero() {
+		return nil
+	}
+	return &conditionEntry{Setting: c.Setting, Values: c.Values}
+}
+
+// allowedWithCondition is what a setting takes, and after it when it changes
+// anything, for a setting that does not always: "true or false, default
+// false, only when content is placeholder". On the setting's own line rather
+// than once over its block, so a line read alone - grep for background - still
+// says it.
+func allowedWithCondition(p format.Property) string {
+	if p.OnlyWhen.IsZero() {
+		return p.Allowed()
+	}
+	return p.Allowed() + ", " + p.OnlyWhen.Describe()
 }
 
 // smallestAccepted is the number this command prints as the minimum.
@@ -106,7 +138,7 @@ func entryFor(d format.Descriptor) formatEntry {
 		props = append(props, propertyEntry{
 			Name: p.Name, Kind: string(p.Kind), Min: p.Min, Max: p.Max, Extensions: p.Extensions,
 			Unit: p.Unit, Choices: p.Choices, Default: p.Default, Detail: p.Detail,
-			Group: p.Group,
+			Group: p.Group, OnlyWhen: conditionOf(p.OnlyWhen),
 		})
 	}
 	return formatEntry{
@@ -145,7 +177,7 @@ func describeOne(d format.Descriptor, out io.Writer) {
 		if p.Group != "" && (i == 0 || d.Properties[i-1].Group != p.Group) {
 			fmt.Fprintf(out, "\n  %s:\n", p.Group)
 		}
-		fmt.Fprintf(out, "  %-14s %s\n", p.Name, p.Allowed())
+		fmt.Fprintf(out, "  %-14s %s\n", p.Name, allowedWithCondition(p))
 		if p.Detail != "" {
 			fmt.Fprintf(out, "  %-14s %s\n", "", p.Detail)
 		}

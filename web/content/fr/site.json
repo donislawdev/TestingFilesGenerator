@@ -137,7 +137,7 @@
         "un stockage qui lit zéro octet comme un envoi échoué et recommence sans fin"
       ],
       "details": {
-        "formats": "Les formats dont le jeu est fait. Laissez all pour tous les formats de cette version, ou nommez ceux que votre système accepte."
+        "formats": "Les formats dont le jeu est fait. Laissez `all` pour tous les formats de cette version, ou nommez ceux que votre système accepte."
       }
     },
     "filename-handling": {
@@ -220,6 +220,22 @@
         "far-over": "Jusqu'où le grand fichier dépasse la limite. Désactivez-le là où écrire plusieurs fois la limite ne vaut pas le disque.",
         "bulk": "Le nombre de fichiers de l'envoi en masse. Zéro retire complètement ce groupe du jeu."
       }
+    },
+    "picture-sizes": {
+      "question": "Mon système accepte-t-il les images aux tailles qu'utilisent les écrans et les plateformes ?",
+      "title": "Tailles d'image",
+      "pageTitle": "Images de test aux tailles courantes - écrans, avatars, réseaux sociaux",
+      "description": "Des images aux tailles des écrans HD, Full HD, QHD et 4K, des photos de profil, et des couvertures, publications et miniatures que demandent les réseaux sociaux, chacune aussi petite que possible.",
+      "catches": [
+        "une limite de largeur ou de hauteur pensée pour une forme qui en refuse une autre, comme un arrière-plan de profil de 1584 px de large",
+        "une miniature coupée ou écrasée parce que le code attend une image en paysage et qu'une image en portrait arrive",
+        "une image de hauteur impaire, comme 1200 x 627, refusée par une étape qui n'accepte que des tailles paires",
+        "une image 4K qui manque de temps ou de mémoire en route vers une miniature, alors que le fichier lui-même est petit"
+      ],
+      "details": {
+        "groups": "Les tailles que contient le jeu : `screens` pour les tailles d'écran, `avatars` pour les photos de profil et `social` pour les couvertures, bannières, publications et miniatures. Laissez `all` pour les avoir toutes.",
+        "content": "Ce que montre l'image. Une mire de test sert à vérifier comment un fichier est lu. Un espace réservé est une couleur unie avec du texte au milieu, pour mettre en page avant que les vraies images existent."
+      }
     }
   },
   "commands": {
@@ -271,9 +287,10 @@
     "sizes separated by commas": "tailles séparées par des virgules",
     "format ids separated by commas": "identifiants de format séparés par des virgules",
     "format ids separated by commas, or all": "identifiants de format séparés par des virgules, ou all",
+    "group names separated by commas, or all": "noms de groupe séparés par des virgules, ou all",
     "extensions separated by commas": "extensions séparées par des virgules",
-    "the id of a format, as tfg formats lists them": "l'identifiant d'un format, comme le liste tfg formats",
-    "the id of a picture format, as tfg formats lists them": "l'identifiant d'un format d'image, comme le liste tfg formats",
+    "the id of a format, such as png or csv": "l'identifiant d'un format, par exemple png ou csv",
+    "the id of a picture format, such as png or jpg": "l'identifiant d'un format d'image, par exemple png ou jpg",
     "one line of up to 100 characters": "une ligne de 100 caractères au plus",
     "a colour such as cccccc or ccc": "une couleur comme cccccc ou ccc",
     "the password, in plain text": "le mot de passe, en clair",

@@ -45,16 +45,39 @@ func EnglishLabel(key string) string {
 // too, and non_finite read "Non finite", which names the values it writes in
 // no words a reader of OTLP knows.
 //
+// The rest came out of reading every text of the window on 2026-11-17
+// (docs/SIZE-FIXES-2026-11-16.md section 6.3): an abbreviation spelled as a
+// word (Pdf, Ip, Bbox, Ids), a verb over a box that holds a list or a number
+// (Allow, Deny, Rotate, Missing), and a word that means something else on the
+// screen - a batch is a batch of files everywhere else in this window, and a
+// sample of the text-encoding preset is the size of each file.
+//
 // Keyed by the recipe key rather than declared on a format's setting, because
 // a label belongs to the key: every format, preset and tool declaring one key
 // shares one Label entry in the catalogue.
 var respelled = map[string]string{
+	"allow":         "Allowed types",
+	"batch":         "Records per line",
+	"bbox":          "Bounding box",
 	"bom":           "BOM",
+	"bulk":          "Mass upload",
+	"deny":          "Denied extensions",
+	"embed":         "Picture inside",
+	"expected":      "Expected checksum",
+	"far-over":      "Far over the limit",
 	"id_encoding":   "ID encoding",
+	"ids":           "Feature IDs",
 	"inline":        "Pictures",
 	"inline_format": "Picture format",
 	"inline_size":   "Picture size",
+	"ip_version":    "IP version",
+	"missing":       "Part cut off",
 	"non_finite":    "NaN and Infinity",
+	"pdf_version":   "PDF version",
+	"rotate":        "Rotation",
+	"sample":        "File size",
+	"spread":        "Distances from the limit",
+	"unlocated":     "Features without a place",
 }
 
 // RespelledKeys are the keys EnglishLabel does not spell out of themselves,

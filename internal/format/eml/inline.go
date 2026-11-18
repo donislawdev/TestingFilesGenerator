@@ -37,7 +37,7 @@ func pictureProperties() []format.Property {
 		Count: "How many pictures the text shows. With html and alternative each one sits beside the HTML and the HTML points at it through cid:. " +
 			"With plain there is no HTML to point from, so they travel after the text as pictures to show inline. " +
 			"mailparser lists them among the attachments, and so does Python's email package when the HTML is alone. MimeKit never does.",
-		Format: "The format of the pictures. Any format whose files are pictures, such as png, jpg or gif.",
+		Format: "The format of the pictures. Any format whose files are pictures, such as `png`, `jpg` or `gif`.",
 		Size:   "How big each picture is. Like an attached file it travels in base64, about a third larger.",
 	})
 }

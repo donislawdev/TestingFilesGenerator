@@ -241,6 +241,9 @@ func Register(d Descriptor) {
 	if _, exists := registry[d.ID]; exists {
 		panic(fmt.Sprintf("tool: %q is registered twice", d.ID))
 	}
+	if format.AnyConditional(d.Settings) {
+		panic(fmt.Sprintf("tool: %q declares a setting with a condition, which only a format keeps", d.ID))
+	}
 	for i := range d.Settings {
 		format.SortChoices(d.Settings[i].Choices)
 	}

@@ -624,6 +624,8 @@ func walk(o fyne.CanvasObject, visit func(fyne.CanvasObject)) {
 		}
 	case *container.Scroll:
 		walk(v.Content, visit)
+	case *parts.Scroll:
+		walk(v.Content, visit)
 	case *widget.Card:
 		// A card is a widget rather than a container, so nothing below it is
 		// reachable without this - and every field moved inside one on

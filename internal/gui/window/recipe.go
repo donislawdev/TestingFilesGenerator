@@ -114,6 +114,9 @@ type batch struct {
 	// engine refuses unreachable rather than merely discouraged.
 	sizeWay   *parts.Segments
 	sizeBoxes map[string]fyne.CanvasObject
+	// word keeps the box of one size and the switch's Smallest in step - see
+	// smallestWord.
+	word *smallestWord
 
 	// folded is whether this batch is put away, and it is a plain bool on the
 	// batch rather than state inside the panel because the panel is built again
@@ -136,11 +139,10 @@ type batch struct {
 	// notes is the other section, with its fold, as one piece - see batchNotes.
 	notes batchNotes
 
-	// declared is what the chosen format takes, and props are the controls drawn
-	// from it. Both are replaced when the format changes and reused across a
-	// rebuild, for the reason above.
-	declared []format.Property
-	props    []parts.PropertyField
+	// props are the controls drawn from what the chosen format takes, each
+	// with its declaration. Replaced when the format changes and reused across
+	// a rebuild, for the reason above.
+	props []parts.PropertyField
 
 	contents []*content
 }
@@ -202,7 +204,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 		nil,
 		r.footer(rail(append(append(outwardButtons(host), parts.Divider(), r.addBtn), links...)...)),
 		nil, nil,
-		(r.keepScroll(container.NewVScroll(parts.Screen(parts.Titled(text.TabRecipe(), text.SubtitleRecipe()), r.baseBox, r.batchBox, r.outBox)))),
+		(r.keepScroll(parts.VScroll(parts.Screen(parts.Titled(text.TabRecipe(), text.SubtitleRecipe()), r.baseBox, r.batchBox, r.outBox)))),
 	))
 
 	// The format of the first batch has to be chosen for its declared settings
@@ -219,6 +221,15 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 
 	// Said last, once every box it reads exists.
 	r.runner.destination = r.OutDir
+	// Smallest held back on every batch whose settings do not say how large
+	// its picture is - see holdSmallest in sizeword.go. A closure rather than
+	// a method, because Recipe is one of the three types allowed past twenty
+	// methods and is near the ceiling.
+	r.runner.follow = func() {
+		for _, b := range r.batches {
+			b.holdSmallest(r.tips)
+		}
+	}
 	r.runner.refreshLine()
 	// A host that wants to wait for work in flight is told how, here as well
 	// as in Open. A screen built on its own - which is how most of the
@@ -226,6 +237,13 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 	// no way to wait for an answer that now comes back from a worker.
 	offerSettling(host, []interface{ Settled() }{r})
 	return r
+}
+
+// holdSmallest holds Smallest back while this batch's settings do not say how
+// large its picture is. After every change on the form, and as its panel is
+// drawn.
+func (b *batch) holdSmallest(tips *parts.Tips) {
+	holdSmallest(b.sizeWay, b.formatPick.Selected, parts.StatedValues(b.props), tips)
 }
 
 // Object is the screen, to put in the window.
@@ -258,6 +276,7 @@ func (r *Recipe) newBatch() *batch {
 		settingsFolded: true,
 	}
 	b.name.SetPlaceHolder(text.PlaceholderNameTemplate)
+	b.word = newSmallestWord(b.size, b.sizeWay)
 	// What happens if the box is left alone, in the place a box says that.
 	//
 	// The single batch screen arrives with "files" and "1" typed into the same
@@ -572,11 +591,15 @@ func (r *Recipe) onFormatChosen(b *batch, id string) {
 		return
 	}
 
-	b.declared = d.Properties
 	b.props = make([]parts.PropertyField, 0, len(d.Properties))
 	for _, p := range d.Properties {
 		b.props = append(b.props, parts.FromProperty(p))
 	}
+	// Before the rebuild rather than while the batch is drawn, because a
+	// switch losing Smallest moves to another way and its box changes - and
+	// that is reported to the live check, which must not run on a screen
+	// half registered.
+	b.word.offer(waysFor(batchWays, id))
 	r.rebuild()
 }
 
@@ -689,17 +712,9 @@ func manifestName(stated string) string {
 
 // draft is one batch as text, ready to be composed into a document.
 func (b *batch) draft() recipe.TargetDraft {
-	props := map[string]string{}
-	for _, f := range b.props {
-		// An empty control means the setting was not stated, and a format that
-		// works its own answer out has to be allowed to.
-		if v := f.Value(); v != "" {
-			props[f.Name] = v
-		}
-	}
-	if len(props) == 0 {
-		props = nil
-	}
+	// An empty control means the setting was not stated, and a format that
+	// works its own answer out has to be allowed to. A hidden one says nothing.
+	props := parts.StatedValues(b.props)
 
 	var inside []recipe.ContentDraft
 	for _, c := range b.contents {

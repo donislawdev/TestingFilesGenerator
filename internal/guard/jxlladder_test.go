@@ -93,19 +93,18 @@ var heaviestJxlSeeds = map[int][]uint64{
 }
 
 // Every rung's two ceilings still cover what that rung produces: the first
-// with the label of a file at the edge of the rung, the second with the label
+// with no label and with the label a picture draws, the second with the label
 // of a damaged file.
 //
 // The guard above walks the ladder the way a run does, so it only ever sees
 // the rung each size happens to select, at one seed. This one asks each rung
 // directly, across seeds, which is the question the ceiling is an answer to.
 //
-// A file at the edge of a rung - asked for at its ceiling, where the picture
-// leaves the least room - states a size with the digits of the ceiling, so the
-// first ceiling is asked with those. A label with more digits is a file with
-// far more room than its picture needs. A damaged file's label names its
-// damage, and a longer label is more ink until it is too long for its scale, so
-// the second is asked with the longest damaged label every scale still draws.
+// The label of a picture names no size (format.Request.PictureLabel), so one
+// label per seed stands for every file of the rung. A damaged file's label
+// names its damage, and a longer label is more ink until it is too long for its
+// scale, so the second is asked with the longest damaged label every scale
+// still draws.
 //
 // A handful of seeds from zero and the heaviest the thorough sweep found
 // (heaviestJxlSeeds): this is the version that runs on every push and would
@@ -143,26 +142,15 @@ func TestEveryJxlRungStillFitsInsideItsDeclaredCeiling(t *testing.T) {
 		for seed := range first {
 			seeds = append(seeds, seed)
 		}
-		// The size the label states: the ceiling itself, a tenth above it,
-		// and the lightest and the heaviest number with as many digits.
-		eights, lightest := int64(0), int64(1)
-		for n := r[2]; n > 0; n /= 10 {
-			eights, lightest = eights*10+8, lightest*10
-		}
-		lightest /= 10
 		var worst ask
 		over, size, worstSeed := int64(0), int64(0), uint64(0)
 		for _, seed := range seeds {
-			asks := []ask{{"", r[2]}}
-			for _, want := range []int64{r[2], r[2] + r[2]/10, lightest, eights} {
-				asks = append(asks, ask{format.Request{Bytes: want, Seed: seed}.LabelText("jxl"), r[2]})
-			}
-			// A damaged file states a size of any length the damage leaves it.
-			plain := format.Request{Bytes: 1e12, Seed: seed}
+			plain := format.Request{Seed: seed}
+			asks := []ask{{"", r[2]}, {plain.PictureLabel("jxl"), r[2]}}
 			for _, damage := range damagesDrawnAtEveryScale(t, plain, "jxl", w) {
 				damaged := plain
 				damaged.Damage = damage
-				asks = append(asks, ask{damaged.LabelText("jxl"), r[3]})
+				asks = append(asks, ask{damaged.PictureLabel("jxl"), r[3]})
 				drawn++
 			}
 			for _, a := range asks {

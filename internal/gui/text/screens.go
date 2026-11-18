@@ -23,8 +23,11 @@ import (
 // The thing it does that they do not is the manifest, and the manifest was
 // named on no work screen at all: not in the form, not after a run. Named
 // here it costs a clause on a line that was already there.
+//
+// It names no size, because a range and Smallest both give the files of one
+// batch different sizes, and "one size" would be untrue of either.
 func SubtitleGenerate() string {
-	return say("SubtitleGenerate", "Files of one format and one size, with a manifest that says how the system under test should react to them.")
+	return say("SubtitleGenerate", "Files of one format, with a manifest that says how the system under test should react to them.")
 }
 
 func SubtitlePreset() string {
@@ -75,10 +78,16 @@ func SectionHowToUse() string { return say("SectionHowToUse", "How to use it") }
 // A list of sentences rather than one paragraph per step: the window draws
 // these as the bullets the preset screen already uses for what a set
 // typically finds, so the three steps are read at a glance rather than read.
+//
+// The tabs, the buttons and the field are named by their own words rather than
+// spelled here, so a renamed tab cannot leave these steps sending somebody to
+// a screen the window no longer has.
 func HowToUseSteps() []string {
 	return []string{
-		say("HowToUseChoose", "Choose a preset, or fill in one batch on the first screen."),
-		say("HowToUsePress", "Press Generate. The files and a manifest land in the output folder."),
+		sayf("HowToUseChoose", "Choose a preset on {{.Presets}}, or describe the files yourself on {{.Single}} or {{.Several}}.",
+			map[string]any{"Presets": TabPresets(), "Single": TabOneTarget(), "Several": TabRecipe()}),
+		sayf("HowToUsePress", "Press {{.Preview}} to see what would be written, then {{.Generate}}. The files and a manifest go into the folder named in {{.OutputDir}}.",
+			map[string]any{"Preview": ButtonPreview(), "Generate": ButtonGenerate(), "OutputDir": FieldOutputDir()}),
 		say("HowToUseRead", "Point your test at the manifest. For every file it says what the system under test should do with it - accept it, reject it or sanitize it - or records the outcome as unspecified, where the right answer belongs to the application's own policy."),
 	}
 }
@@ -218,25 +227,31 @@ func HintPreset() string    { return say("HintPreset", "What you are testing.") 
 // the field cannot show. The button is still there, carrying the line that says
 // what the setting does.
 func DetailSize() string {
-	return say("DetailSize", "Units count in 1024s, so 10mb is 10485760 bytes. A plain number is a count of bytes. smallest makes a picture with its width and height set as small as it can be.")
+	return say("DetailSize", "Units count in 1024s, so `10mb` is 10485760 bytes. A plain number is a count of bytes.")
 }
 func DetailTargetID() string {
 	return say("DetailTargetID", "It reaches the manifest and the file names, so a test can tell these files from the rest of the run. The seeds are derived from it, so changing it changes the bytes.")
 }
 func DetailNameTemplate() string {
-	return say("DetailNameTemplate", "Left empty, the files are named after the batch and numbered, like invoices_0001.pdf. Fill it in and the name is used exactly as written, extension and all. The one placeholder is {index:04}, which becomes 0001, 0002 and so on, and a batch of more than one file needs it.")
+	return say("DetailNameTemplate", "Left empty, the files are named after the batch and numbered, like invoices_0001.pdf. Fill it in and the name is used exactly as written, extension and all. The one placeholder is `{index:04}`, which becomes 0001, 0002 and so on, and a batch of more than one file needs it.")
 }
 func DetailOutputDir() string { return say("DetailOutputDir", "It is created if it is not there.") }
 func DetailSeed() string {
-	return say("DetailSeed", "On any machine and in any build of this tool. 0 is the seed a run uses when nobody asks for another one. It is a seed like any other rather than a request for random files, which this tool never produces.")
+	return say("DetailSeed", "On any machine. A new version of this tool may change them, and its release notes then say so. `0` is the seed a run uses when nobody asks for another one. It is a seed like any other rather than a request for random files, which this tool never produces.")
 }
+
+// DetailLabel lists what the label carries, because a picture and a film carry
+// less than the rest: their label names no size (format.Request.PictureLabel).
 func DetailLabel() string {
-	return say("DetailLabel", "Writes into the file what it is and how big it was meant to be. Turn it off for a file that has to hold nothing but its content.")
+	return say("DetailLabel", "Writes into each file what it is - its format, its seed, any damage and, except in a picture or a film, its size. Turn it off for a file that has to hold nothing but its content.")
 }
 func DetailNumberIfTaken() string {
 	return say("DetailNumberIfTaken", "When the output directory already holds an earlier run, this run is added beside it. Its files and its manifest get a number in their names, such as files-2_0001.pdf, and nothing already there changes. Turned off, a run into such a directory is refused, so every run needs a directory of its own.")
 }
-func DetailPreset() string { return say("DetailPreset", "The set is worked out from the answer.") }
+func DetailPreset() string {
+	return sayf("DetailPreset", "Each preset is a ready-made set of files for the question it names. Its files are made from the values under {{.Settings}}.",
+		map[string]any{"Settings": SectionSettings()})
+}
 
 // PlaceholderNameTemplate stands in the empty name box. It shows the answer
 // rather than describing it, because a name template is easier recognised than
@@ -309,6 +324,15 @@ func ListHeadingCount(kind string, count int) string {
 // count of bytes in the refusal does not have to be copied by hand.
 func UseSmallestSize(size string) string {
 	return sayf("UseSmallestSize", "Use the smallest size, {{.Size}}", map[string]any{"Size": size})
+}
+
+// UseSmallestForEach is the second button under the same refusal, for a batch
+// of more than one picture with their width and height known. It puts smallest
+// into the box, so each picture comes out as small as it can be - at a size of
+// its own, which is what tells it apart from the button above it. One picture
+// gets no such button, because there the two make the same file.
+func UseSmallestForEach() string {
+	return say("UseSmallestForEach", "Make each picture as small as it can be")
 }
 
 // PlaceholderLeftEmpty stands in a format setting that has a declared default,
@@ -407,6 +431,17 @@ func AllowedOneOf(values []string) string {
 	return sayf("AllowedOneOf", "one of: {{.Values}}", map[string]any{"Values": strings.Join(values, ", ")})
 }
 func AllowedTrueOrFalse() string { return say("AllowedTrueOrFalse", "true or false") }
+
+// SwitchState is the state of a switch in words, for the places the window
+// says it rather than draws it: the line a folded section shows, and the
+// state a switch starts in. A recipe writes true and false, and a switch on
+// the screen is neither.
+func SwitchState(on bool) string {
+	if on {
+		return say("SwitchOn", "on")
+	}
+	return say("SwitchOff", "off")
+}
 func AllowedSize() string {
 	return say("AllowedSize", "a size such as 2mb, or a plain byte count")
 }
@@ -426,7 +461,7 @@ func AllowedWithDefault(what, value string) string {
 }
 
 // AllowedJointly is format.JointLimit.Describe in the window's language. Of and
-// By are the keys a recipe writes, as they are in English.
+// By are the labels of the two settings, as the boxes above the note say them.
 func AllowedJointly(of, by string, most int64, unit, why string) string {
 	return sayf("AllowedJointly", "{{.Of}} times {{.By}} cannot pass {{.Max}} {{.Unit}}, because {{.Why}}",
 		map[string]any{"Of": of, "By": by, "Max": most, "Unit": unit, "Why": why})
@@ -503,47 +538,12 @@ func ContentsHeading() string { return say("ContentsHeading", "Files inside each
 // surprise.
 func FieldSizeRange() string { return say("FieldSizeRange", "Size range") }
 func FieldBoundary() string  { return say("FieldBoundary", "Limit to test") }
-
-// The three ways of saying how big, as one control that allows one of them.
-//
-// They were three boxes side by side until 2026-08-25, with a sentence above
-// them saying that only one may be filled in - which is O114, and it was a
-// sentence because the screen let somebody fill in two and find out at the
-// press of a button. A switch removes the state instead of describing it.
-//
-// The words differ from the labels below them on purpose. A switch reading
-// "Size" above a box reading "Size" is the same word twice in 40 px, and these
-// say HOW the size is stated where the label says WHAT the box holds.
-func SizeWayExact() string    { return say("SizeWayExact", "One size") }
-func SizeWayRange() string    { return say("SizeWayRange", "A range") }
-func SizeWayBoundary() string { return say("SizeWayBoundary", "Around a limit") }
-
-// FieldSizeWay names that switch, and until 2026-09-23 it had no name at all.
-//
-// It was the one control on the batch screen standing between two named
-// fields with nothing over it, so what it was about came from where it sat -
-// which is guessing, and which puts it outside the rule that every element
-// belongs to something. The words say HOW the size is stated, where the
-// label under it says WHAT the box holds, for the reason written above the
-// three words themselves.
-func FieldSizeWay() string { return say("FieldSizeWay", "How the size is given") }
-
-// DetailSizeWay says what each of the three does, and it is behind the button
-// because it is read once.
-//
-// All three in one sentence each, deliberately: the line under a box explains
-// only the way already chosen, so before choosing there is nothing on the
-// screen that compares them - and "Around a limit" is both the least obvious
-// of the three and the one this tool is really for.
-func DetailSizeWay() string {
-	return say("DetailSizeWay", "One size gives every file the same size. A range draws a different size for each file. Around a limit makes three files: one byte under the limit, one on it, one over.")
-}
-func FieldGroup() string    { return say("FieldGroup", "Kind of case") }
-func FieldPurpose() string  { return say("FieldPurpose", "Purpose") }
-func FieldSendAs() string   { return say("FieldSendAs", "Send as") }
-func FieldExpected() string { return say("FieldExpected", "Expected outcome") }
-func FieldReason() string   { return say("FieldReason", "Rule being tested") }
-func FieldManifest() string { return say("FieldManifest", "Manifest file name") }
+func FieldGroup() string     { return say("FieldGroup", "Kind of case") }
+func FieldPurpose() string   { return say("FieldPurpose", "Purpose") }
+func FieldSendAs() string    { return say("FieldSendAs", "Send as") }
+func FieldExpected() string  { return say("FieldExpected", "Expected outcome") }
+func FieldReason() string    { return say("FieldReason", "Rule being tested") }
+func FieldManifest() string  { return say("FieldManifest", "Manifest file name") }
 
 // The line under each of the recipe screen's own fields.
 func HintSizeRange() string { return say("HintSizeRange", "A different size for every file.") }
@@ -565,10 +565,10 @@ func HintManifest() string { return say("HintManifest", "The record of what this
 
 // The longer explanation behind the button beside each of them.
 func DetailSizeRange() string {
-	return say("DetailSizeRange", "Two sizes with a hyphen, as 1kb-8kb. Each file gets its own size, drawn from the seed, so the run repeats.")
+	return say("DetailSizeRange", "Two sizes with a hyphen, as `1kb-8kb`. Each file gets its own size, drawn from the seed, so the run repeats.")
 }
 func DetailBoundary() string {
-	return say("DetailBoundary", "Give the limit your system declares, as 10mb. Units count in 1024s, and the run prints the number it used.")
+	return say("DetailBoundary", "Give the limit your system declares, such as `10mb`. Units count in 1024s, so `10mb` is 10485760 bytes.")
 }
 func DetailPurpose() string {
 	return say("DetailPurpose", "It is written into the manifest and into the instructions beside it, which say what every file of the run is for. It changes no byte of any file.")
@@ -579,8 +579,13 @@ func DetailSendAs() string {
 func DetailGroup() string {
 	return say("DetailGroup", "It reaches the manifest, so a test can assert about a whole class of case at once.")
 }
+
+// DetailExpected says what the manifest records when the menu is left alone,
+// which is the engine's answer rather than nothing: unspecified, or reject for
+// a damage that certainly breaks the format (engine.expectationFor).
 func DetailExpected() string {
-	return say("DetailExpected", "It reaches the manifest and nothing else reads it. Leave it alone where the right answer depends on the application's own policy.")
+	return sayf("DetailExpected", "Left at {{.NotStated}}, the manifest records the outcome as unspecified, or as reject for a file whose damage certainly breaks its format. Leave it at {{.NotStated}} where the right answer depends on the application's own policy.",
+		map[string]any{"NotStated": PlaceholderNotStated()})
 }
 func DetailReason() string {
 	return say("DetailReason", "From a closed list, so a report can group by reason. It names the rule in play whatever the outcome is - a file a byte under a size limit is expected to be accepted, and the rule in play is still the size limit. A reason needs an outcome beside it.")
@@ -684,7 +689,7 @@ func SectionBase() string { return say("SectionBase", "Build on a preset") }
 // screen does not have. Pointed out by an outside review of #119.
 func NoteBase() string {
 	return say("NoteBase",
-		"With the box ticked, the chosen preset's files come first and the batches below are added after them. Without it, the batches are the whole recipe.")
+		"With the box ticked, the chosen preset's files come first and the batches below are added after them. Without it, the batches below are everything the run makes.")
 }
 
 // FieldBuildOnPreset names the switch that turns the section on. Off is the
@@ -692,7 +697,7 @@ func NoteBase() string {
 func FieldBuildOnPreset() string { return say("FieldBuildOnPreset", "Start from a preset") }
 func DetailBuildOnPreset() string {
 	return say("DetailBuildOnPreset",
-		"Unticked, the batches below are the whole recipe. Ticked, the chosen preset's files come first and the batches are added after them.")
+		"Unticked, the batches below are everything the run makes. Ticked, the chosen preset's files come first and the batches are added after them.")
 }
 
 // FieldBasePreset names the box choosing the preset to build on. A different

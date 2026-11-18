@@ -285,10 +285,10 @@ func screenInAWindowWithHost(t *testing.T, tab string) (fyne.CanvasObject, fyne.
 }
 
 // scrollIn is the scrolling area a screen puts its form in.
-func scrollIn(o fyne.CanvasObject) *container.Scroll {
-	var found *container.Scroll
+func scrollIn(o fyne.CanvasObject) *parts.Scroll {
+	var found *parts.Scroll
 	walk(o, func(obj fyne.CanvasObject) {
-		if scroll, ok := obj.(*container.Scroll); ok && found == nil {
+		if scroll, ok := obj.(*parts.Scroll); ok && found == nil {
 			found = scroll
 		}
 	})

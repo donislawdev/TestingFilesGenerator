@@ -41,7 +41,7 @@
 			</container>
 			<container pos="0,70" size="1092x1221">
 				<container size="1092x1221">
-					<widget size="1092x1115" type="*widget.Scroll">
+					<widget size="1092x1115" type="*parts.Scroll">
 						<container size="1092x1115">
 							<container pos="136,0" size="820x1115">
 								<container size="820x49">
@@ -228,8 +228,8 @@
 														<container size="788x60">
 															<container size="788x60">
 																<container size="788x24">
-																	<text color="rgba(211,211,215,255)" pos="0,3" size="62x16">Expected</text>
-																	<widget pos="70,0" size="24x24" type="*parts.DetailButton">
+																	<text color="rgba(211,211,215,255)" pos="0,3" size="134x16">Expected checksum</text>
+																	<widget pos="142,0" size="24x24" type="*parts.DetailButton">
 																		<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 																		<rectangle radius="6" size="24x24"/>
 																		<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>
@@ -354,7 +354,7 @@
 												</widget>
 											</container>
 											<container pos="0,36" size="788x40">
-												<widget size="788x40" type="*widget.Scroll">
+												<widget size="788x40" type="*parts.Scroll">
 													<container size="788x40">
 														<container size="788x0">
 														</container>

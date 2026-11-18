@@ -44,7 +44,7 @@ func (e *GeneratorCrashError) Error() string { return e.Said().String() }
 func (e *GeneratorCrashError) Said() core.Said {
 	return core.Says("engine.GeneratorCrash",
 		"the %s generator stopped with an internal error while %s: %v. "+
-			"This is a defect in this tool rather than something a recipe can ask for. "+
+			"This is a defect in this tool rather than something the settings can ask for. "+
 			"Please report it with the settings that produced it",
 		core.A("Format", e.Format), core.A("While", e.while()), core.A("Value", fmt.Sprint(e.Value)))
 }

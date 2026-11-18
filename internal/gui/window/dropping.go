@@ -7,7 +7,6 @@ import (
 	"unicode/utf8"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
@@ -32,7 +31,7 @@ type dropScreen struct {
 	fields   *parts.Fields
 	busy     *busy
 	sections *sections
-	scroll   *container.Scroll
+	scroll   *parts.Scroll
 	// unfold opens whatever the screen put a box away inside. Nil on a screen
 	// that folds nothing of its own.
 	unfold func(string)
@@ -247,7 +246,7 @@ func (d *dropping) land(screen dropScreen, items []DroppedItem, at fyne.Position
 // Where each one stands is asked only when there are two or more, because only
 // then is the position read at all - and asking the toolkit where something is
 // walks the whole canvas.
-func boxesOf(targets []parts.PathTarget, scroll *container.Scroll) []DropBox {
+func boxesOf(targets []parts.PathTarget, scroll *parts.Scroll) []DropBox {
 	boxes := make([]DropBox, len(targets))
 	for i, t := range targets {
 		boxes[i].Takes = t.Takes
@@ -264,7 +263,7 @@ func boxesOf(targets []parts.PathTarget, scroll *container.Scroll) []DropBox {
 // The toolkit answers nought for a control it did not find on a visible
 // canvas, which is a control folded away. A box at the very corner of the
 // window would read the same, and none stands there: the tabs do.
-func areaOf(o fyne.CanvasObject, scroll *container.Scroll) Area {
+func areaOf(o fyne.CanvasObject, scroll *parts.Scroll) Area {
 	driver := fyne.CurrentApp().Driver()
 	at := driver.AbsolutePositionForObject(o)
 	if at.IsZero() || !o.Visible() {

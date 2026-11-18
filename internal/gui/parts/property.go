@@ -40,6 +40,10 @@ type PropertyField struct {
 	// numbers were ours through defaulted, untouchable rule 5 - so hiding a
 	// typed value there would hide a real one.
 	Chosen func() bool
+	// Declared is the declaration the field was drawn from, so the rows can be
+	// laid out, and what the fields send worked out, from the fields alone -
+	// see DeclaredRows and StatedValues.
+	Declared format.Property
 }
 
 // FromProperty draws the field a declaration describes.
@@ -63,14 +67,17 @@ func FromProperty(p format.Property) PropertyField { return fromProperty(p, fals
 
 // fromProperty is FromProperty for a setting of a tool, or of anything else.
 func fromProperty(p format.Property, ofATool bool) PropertyField {
+	var f PropertyField
 	switch p.Kind {
 	case format.PropertyChoice:
-		return choiceField(p, ofATool)
+		f = choiceField(p, ofATool)
 	case format.PropertyBool:
-		return boolField(p)
+		f = boolField(p)
 	default:
-		return textField(p, ofATool)
+		f = textField(p, ofATool)
 	}
+	f.Declared = p
+	return f
 }
 
 // An empty control means "not stated", and no box somebody types in is filled
@@ -226,10 +233,14 @@ func PropertyFields(d format.Descriptor, into *Fields, tips *Tips) ([]PropertyFi
 	return fields, objects
 }
 
-// JointLimit is JointLimit.Describe in the window's language. A guard asks the
-// English of the two to agree to the letter, for every limit declared.
+// JointLimit is JointLimit.Describe in the window's language, with the two
+// settings called by the labels of their boxes rather than by the keys a
+// recipe writes, since the note stands under boxes named Width and Height. A
+// guard asks the English of the two to agree to the letter once the keys are
+// put back, for every limit declared.
 func JointLimit(owner text.Owner, j format.JointLimit) string {
-	return text.AllowedJointly(j.Of, j.By, j.Most(), text.Unit(j.Unit), text.JointReason(owner, j.Of, j.By, j.Why))
+	return text.AllowedJointly(text.SettingLabel(j.Of), text.SettingLabel(j.By), j.Most(),
+		text.Unit(j.Unit), text.JointReason(owner, j.Of, j.By, j.Why))
 }
 
 // DeclaredFields draws every field a list of declared settings describes, in
@@ -253,23 +264,46 @@ func JointLimit(owner text.Owner, j format.JointLimit) string {
 // sentence of it is found under in another language - see text.Owner.
 func DeclaredFields(owner text.Owner, declared []format.Property, into *Fields, tips *Tips) ([]PropertyField, []fyne.CanvasObject) {
 	fields := make([]PropertyField, 0, len(declared))
-	objects := make([]fyne.CanvasObject, 0, len(declared))
+	for _, p := range declared {
+		fields = append(fields, fromProperty(p, text.IsTool(owner)))
+	}
+	return fields, DeclaredRows(owner, fields, into, tips, func(name string) string { return name })
+}
 
-	for i, p := range declared {
+// DeclaredRows lays out fields already drawn from a declaration, each
+// registered under the address the screen gives its name.
+//
+// Apart from DeclaredFields for the batch screen, which keeps its fields
+// across a rebuild so that what was typed survives it, and lays them out
+// again under addresses naming the batch. It drew them with loops of its own
+// until 2026-11-17 - one for a batch's settings and one for the parameters of
+// the preset it builds on - and neither had the name of a block nor the count
+// of bytes under a size, which is how a difference between two screens
+// drawing one declaration starts. A setting shown only while another has some
+// values is the third thing, and it lives here once (see applying).
+func DeclaredRows(owner text.Owner, fields []PropertyField, into *Fields, tips *Tips, address func(name string) string) []fyne.CanvasObject {
+	objects := make([]fyne.CanvasObject, 0, len(fields))
+	shown := &applying{fields: fields}
+	var heading fyne.CanvasObject
+	for i, f := range fields {
+		p := f.Declared
 		// A block of settings opens with its name, drawn as the name of a block
 		// inside a section - the same heading as the files inside an archive.
 		// tfg formats prints the same name in the same place.
-		if p.Group != "" && (i == 0 || declared[i-1].Group != p.Group) {
-			objects = append(objects, Subheading(text.SettingGroup(owner, p.Group)))
+		switch {
+		case p.Group == "":
+			heading = nil
+		case i == 0 || fields[i-1].Declared.Group != p.Group:
+			heading = Subheading(text.SettingGroup(owner, p.Group))
+			objects = append(objects, heading)
 		}
-		f := fromProperty(p, text.IsTool(owner))
-		fields = append(fields, f)
+		at := address(p.Name)
 		// A setting the format itself calls a size gets its count of bytes.
 		// Read off the declaration rather than off the name, so a format that
 		// declares a size tomorrow gets this without a line of window code -
 		// the same reason the field is drawn from the declaration at all.
 		if p.Kind == format.PropertySize {
-			into.InBytes(p.Name)
+			into.InBytes(at)
 		}
 		// The label is the window's own wording and the key a recipe writes
 		// is behind the button. Until 2026-08-20 the key WAS the label, so a
@@ -280,14 +314,16 @@ func DeclaredFields(owner text.Owner, declared []format.Property, into *Fields, 
 		// whose window and whose recipe file are two ways into one engine, so
 		// somebody who finds a setting here has to be able to write it down.
 		// For a tool that is a flag rather than a recipe key - see WrittenAs.
-		field := into.Add(p.Name, text.SettingLabel(p.Name), PropertyDetail(owner, p),
+		row := into.Add(at, text.SettingLabel(p.Name), PropertyDetail(owner, p),
 			tips.Say(text.WrittenAs(owner, p.Name)), shapedFor(p, f.Control, text.IsTool(owner)))
 		if longText(p) {
-			field = Wide(field)
+			row = Wide(row)
 		}
-		objects = append(objects, field)
+		objects = append(objects, row)
+		shown.rows = append(shown.rows, applyingRow{row: row, heading: heading, field: into.Lookup(at)})
 	}
-	return fields, objects
+	shown.wire()
+	return objects
 }
 
 // longText is free text the declaration calls long, which takes the row the
@@ -395,9 +431,19 @@ func PropertyDetail(owner text.Owner, p format.Property) string {
 // The default is not said here either, and that is not an omission: the menu's
 // first entry says "not stated" and carries the default in its own words, so
 // repeating it under the control would be the same duplication one line down.
+//
+// A switch is the same case: the switch IS its two values, so "true or false"
+// says nothing it does not, in the recipe's words rather than the window's.
+// What it started on is still said, as on or off, because once it is pressed
+// the screen no longer shows it.
 func allowedOnAScreen(p format.Property) string {
-	if p.Kind == format.PropertyChoice {
+	switch {
+	case p.Kind == format.PropertyChoice:
 		return ""
+	case p.Kind == format.PropertyBool && p.Default == "":
+		return ""
+	case p.Kind == format.PropertyBool:
+		return text.AllowedDefault(text.SwitchState(p.Default == "true"))
 	}
 	return Allowed(p)
 }

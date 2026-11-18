@@ -38,7 +38,7 @@ func pictureProperties() []format.Property {
 	return picture.Properties(picturesGroup, picture.Details{
 		Count: "How many pictures the page shows, each one a real file of its format written into the page as a data: URL, so opening the page fetches nothing. " +
 			"They sit above the blocks, each in a paragraph of its own, and each says which it is in its alt text.",
-		Format: "The format of the pictures. Any format whose files are pictures, such as png, jpg or gif. Chromium shows every one of them but tiff.",
+		Format: "The format of the pictures. Any format whose files are pictures, such as `png`, `jpg` or `gif`. Chromium shows every one of them but tiff.",
 		Size: "How big each picture is. Inside the page it is base64 on one line, about a third larger. " +
 			"lxml, and BeautifulSoup on top of it, leave out a picture past about 7.1 MB unless told to read huge trees. " +
 			"On Linux lxml took over 20 seconds over such a page, and with a 15 MB picture it lost the rest of the page as well.",

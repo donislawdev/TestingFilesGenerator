@@ -16,7 +16,7 @@ import (
 // catalogue that is silent about what it leaves out looks complete, which is
 // rule 6 of the untouchables from the other side.
 func Screen() fyne.CanvasObject {
-	return container.NewVScroll(Page())
+	return parts.VScroll(Page())
 }
 
 // Page is the catalogue before it is put in a scroll: the whole height of

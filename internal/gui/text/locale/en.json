@@ -206,13 +206,13 @@
   },
   "DetailBoundary": {
     "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-eaf5b74b1f70",
-    "other": "Give the limit your system declares, as 10mb. Units count in 1024s, and the run prints the number it used."
+    "hash": "sha256-67ed619061b2",
+    "other": "Give the limit your system declares, such as `10mb`. Units count in 1024s, so `10mb` is 10485760 bytes."
   },
   "DetailBuildOnPreset": {
     "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-5f88fed7a993",
-    "other": "Unticked, the batches below are the whole recipe. Ticked, the chosen preset's files come first and the batches are added after them."
+    "hash": "sha256-922af162e408",
+    "other": "Unticked, the batches below are everything the run makes. Ticked, the chosen preset's files come first and the batches are added after them."
   },
   "DetailDamage": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -225,9 +225,9 @@
     "other": "Opens the support page in your browser. The tool is free and stays free - this pays for the time that goes into it."
   },
   "DetailExpected": {
-    "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-7923af561fdd",
-    "other": "It reaches the manifest and nothing else reads it. Leave it alone where the right answer depends on the application's own policy."
+    "description": "The longer explanation behind the button beside a field name. Carries one value, {{.NotStated}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-5ed3fe511390",
+    "other": "Left at {{.NotStated}}, the manifest records the outcome as unspecified, or as reject for a file whose damage certainly breaks its format. Leave it at {{.NotStated}} where the right answer depends on the application's own policy."
   },
   "DetailGitHub": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -241,8 +241,8 @@
   },
   "DetailLabel": {
     "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-aeb24fe1804e",
-    "other": "Writes into the file what it is and how big it was meant to be. Turn it off for a file that has to hold nothing but its content."
+    "hash": "sha256-64e764692711",
+    "other": "Writes into each file what it is - its format, its seed, any damage and, except in a picture or a film, its size. Turn it off for a file that has to hold nothing but its content."
   },
   "DetailManifest": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -251,8 +251,8 @@
   },
   "DetailNameTemplate": {
     "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-3e64e80529fb",
-    "other": "Left empty, the files are named after the batch and numbered, like invoices_0001.pdf. Fill it in and the name is used exactly as written, extension and all. The one placeholder is {index:04}, which becomes 0001, 0002 and so on, and a batch of more than one file needs it."
+    "hash": "sha256-d535c81644d8",
+    "other": "Left empty, the files are named after the batch and numbered, like invoices_0001.pdf. Fill it in and the name is used exactly as written, extension and all. The one placeholder is `{index:04}`, which becomes 0001, 0002 and so on, and a batch of more than one file needs it."
   },
   "DetailNumberIfTaken": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -265,9 +265,9 @@
     "other": "It is created if it is not there."
   },
   "DetailPreset": {
-    "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-9c28266cd16b",
-    "other": "The set is worked out from the answer."
+    "description": "The longer explanation behind the button beside a field name. Carries one value, {{.Settings}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-70a71df7ab08",
+    "other": "Each preset is a ready-made set of files for the question it names. Its files are made from the values under {{.Settings}}."
   },
   "DetailPurpose": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -281,8 +281,8 @@
   },
   "DetailSeed": {
     "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-823564b2ed53",
-    "other": "On any machine and in any build of this tool. 0 is the seed a run uses when nobody asks for another one. It is a seed like any other rather than a request for random files, which this tool never produces."
+    "hash": "sha256-d3ce50a025b6",
+    "other": "On any machine. A new version of this tool may change them, and its release notes then say so. `0` is the seed a run uses when nobody asks for another one. It is a seed like any other rather than a request for random files, which this tool never produces."
   },
   "DetailSendAs": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -291,18 +291,13 @@
   },
   "DetailSize": {
     "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-df450f130c7f",
-    "other": "Units count in 1024s, so 10mb is 10485760 bytes. A plain number is a count of bytes. smallest makes a picture with its width and height set as small as it can be."
+    "hash": "sha256-2e35fc88491e",
+    "other": "Units count in 1024s, so `10mb` is 10485760 bytes. A plain number is a count of bytes."
   },
   "DetailSizeRange": {
     "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-421d366dbd3e",
-    "other": "Two sizes with a hyphen, as 1kb-8kb. Each file gets its own size, drawn from the seed, so the run repeats."
-  },
-  "DetailSizeWay": {
-    "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-b65673254620",
-    "other": "One size gives every file the same size. A range draws a different size for each file. Around a limit makes three files: one byte under the limit, one on it, one over."
+    "hash": "sha256-31f1b9b7ac0f",
+    "other": "Two sizes with a hyphen, as `1kb-8kb`. Each file gets its own size, drawn from the seed, so the run repeats."
   },
   "DetailTargetID": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -608,14 +603,14 @@
     "other": "What you want to find out."
   },
   "HowToUseChoose": {
-    "description": "Shown in the window.",
-    "hash": "sha256-d3826a08883e",
-    "other": "Choose a preset, or fill in one batch on the first screen."
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Presets}}, {{.Single}}, {{.Several}}.",
+    "hash": "sha256-cb062900f4eb",
+    "other": "Choose a preset on {{.Presets}}, or describe the files yourself on {{.Single}} or {{.Several}}."
   },
   "HowToUsePress": {
-    "description": "Shown in the window.",
-    "hash": "sha256-efe55efa1794",
-    "other": "Press Generate. The files and a manifest land in the output folder."
+    "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Preview}}, {{.Generate}}, {{.OutputDir}}.",
+    "hash": "sha256-f985c5df4062",
+    "other": "Press {{.Preview}} to see what would be written, then {{.Generate}}. The files and a manifest go into the folder named in {{.OutputDir}}."
   },
   "HowToUseRead": {
     "description": "Shown in the window.",
@@ -704,8 +699,8 @@
   },
   "MemoryAutoUnknown": {
     "description": "Shown in the window. Carries one value, {{.Size}}, which has to stay spelled exactly that way.",
-    "hash": "sha256-c1b8c2b64c84",
-    "other": "The memory of this computer could not be read, so runs take {{.Size}}, the most every run took before this setting."
+    "hash": "sha256-2165025c1e3f",
+    "other": "The memory of this computer could not be read, so runs may take {{.Size}}."
   },
   "MemoryCustomEmpty": {
     "description": "Shown in the window.",
@@ -719,8 +714,8 @@
   },
   "MemoryOffIs": {
     "description": "Shown in the window.",
-    "hash": "sha256-2b45ce57da2e",
-    "other": "Runs take what they need. Pictures are not held back and the plan has no limit, so a very large run can be ended by the system without a word."
+    "hash": "sha256-c3c90d0e1a06",
+    "other": "Runs take as much memory as they need. A very large run can then be ended by the system without a word."
   },
   "MemoryUnreadable": {
     "description": "Shown in the window. Carries one value, {{.Value}}, which has to stay spelled exactly that way.",
@@ -749,8 +744,8 @@
   },
   "NoteBase": {
     "description": "Shown in the window.",
-    "hash": "sha256-e48510060140",
-    "other": "With the box ticked, the chosen preset's files come first and the batches below are added after them. Without it, the batches are the whole recipe."
+    "hash": "sha256-ecc2f89fb3a6",
+    "other": "With the box ticked, the chosen preset's files come first and the batches below are added after them. Without it, the batches below are everything the run makes."
   },
   "NoteManifestOnly": {
     "description": "Shown in the window.",
@@ -804,8 +799,8 @@
   },
   "PreferencesKept": {
     "description": "Shown on the Preferences screen.",
-    "hash": "sha256-d5cfc5e4bd88",
-    "other": "Between runs this window keeps four things: the output directory, the size of the window, and the language and the memory chosen above. The folder picker also keeps the last folder it showed. Nothing leaves this computer."
+    "hash": "sha256-c3993e304ac1",
+    "other": "For the next time it opens, this window keeps four things: the output directory, the size of the window, and the language and the memory chosen above. The folder picker also keeps the last folder it showed. Nothing leaves this computer."
   },
   "PreferencesKeptIn": {
     "description": "Shown on the Preferences screen.",
@@ -819,8 +814,8 @@
   },
   "PreferencesMemoryScope": {
     "description": "Shown on the Preferences screen. Carries one value, {{.Floor}}, which has to stay spelled exactly that way.",
-    "hash": "sha256-4c95226d14ae",
-    "other": "How much memory one run may take, the plan and the files being written together. Pictures wait for room rather than all being held at once, and a plan larger than this is refused before anything is written. When a run gets close to this amount, the program frees memory more often, which makes the run slower. A run that needs more memory than this still gets it. Under Automatic, a plan of up to {{.Floor}} is never refused. It applies from the next run, and nothing in the files changes."
+    "hash": "sha256-df04093e16d6",
+    "other": "How much memory one run may take. A run first works out the whole list of files and keeps that list while it writes, so a list that needs more memory than this is refused before anything is written. Files that need a lot of memory, such as large pictures, are then written in turn rather than all at once. Close to this amount the program frees memory more often, which makes the run slower, and a file that needs more than all of it is still written, on its own. Under Automatic, a list needing up to {{.Floor}} is never refused. It applies from the next run, and nothing in the files changes."
   },
   "PreferencesMissing": {
     "description": "Shown on the Preferences screen. Carries one value, {{.Tag}}, which has to stay spelled exactly that way.",
@@ -911,6 +906,26 @@
     "description": "Shown in the window. Carries these values, each of which has to stay spelled exactly that way: {{.Holds}}, {{.Room}}.",
     "hash": "sha256-e40fb5c32602",
     "other": "this run will hold about {{.Holds}} in memory by its end, more than the {{.Room}} the memory setting gives it, so it will run slower and the system may end it before its record is written. Split the run, or give it more Memory in Preferences if this machine has the room."
+  },
+  "SaysSizeWayBoundary": {
+    "description": "Shown in the window.",
+    "hash": "sha256-fcf85f6a0ea4",
+    "other": "Around a limit makes three files: one byte under the limit, one on it, one over."
+  },
+  "SaysSizeWayExact": {
+    "description": "Shown in the window.",
+    "hash": "sha256-ddf826f510c4",
+    "other": "One size gives every file the same size."
+  },
+  "SaysSizeWayRange": {
+    "description": "Shown in the window.",
+    "hash": "sha256-6315d292c0fc",
+    "other": "A range draws a different size for each file."
+  },
+  "SaysSizeWaySmallest": {
+    "description": "Shown in the window.",
+    "hash": "sha256-ea0d93e1274a",
+    "other": "Smallest makes each picture as small as it can be at its width and height, so the files come out at different sizes. It can be chosen once both are set in the format's settings."
   },
   "SectionBase": {
     "description": "The heading over a group of fields.",
@@ -1052,6 +1067,21 @@
     "hash": "sha256-8879adb25c7d",
     "other": "A range"
   },
+  "SizeWaySmallest": {
+    "description": "Shown in the window.",
+    "hash": "sha256-b2443d1a486e",
+    "other": "Smallest"
+  },
+  "SmallestCaption": {
+    "description": "Shown in the window.",
+    "hash": "sha256-e2fe0be2508c",
+    "other": "Known after Preview, from the width and height in the format's settings."
+  },
+  "SmallestNeedsTheSides": {
+    "description": "Shown in the window.",
+    "hash": "sha256-51c334c1bae8",
+    "other": "Smallest needs the picture's width and height. Set both in the format's settings first."
+  },
   "StoppedAfter": {
     "description": "Shown in the window. Carries one value, {{.Files}}, which has to stay spelled exactly that way.",
     "hash": "sha256-f08278015581",
@@ -1069,13 +1099,13 @@
   },
   "SubtitleGenerate": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
-    "hash": "sha256-e7dcd4001e28",
-    "other": "Files of one format and one size, with a manifest that says how the system under test should react to them."
+    "hash": "sha256-287c7b75171a",
+    "other": "Files of one format, with a manifest that says how the system under test should react to them."
   },
   "SubtitlePreferences": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
-    "hash": "sha256-836103012003",
-    "other": "How this window speaks, how much memory its runs may take, and what it keeps between runs. Nothing here changes the files it makes."
+    "hash": "sha256-3cd0e133cd77",
+    "other": "How this window speaks, how much memory its runs may take, and what it remembers for the next time it opens. Nothing here changes the files it makes."
   },
   "SubtitlePreset": {
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
@@ -1091,6 +1121,16 @@
     "description": "The sentence under the heading at the top of a screen, saying what the screen is for.",
     "hash": "sha256-53bdfa16d586",
     "other": "Small things to do with files you already have. Every tool here is on the command line too, as tfg tool."
+  },
+  "SwitchOff": {
+    "description": "Shown in the window.",
+    "hash": "sha256-b4dc66dde806",
+    "other": "off"
+  },
+  "SwitchOn": {
+    "description": "Shown in the window.",
+    "hash": "sha256-b8d31e852725",
+    "other": "on"
   },
   "SystemAlreadyThere": {
     "description": "Shown in the window. Carries one value, {{.Number}}, which has to stay spelled exactly that way.",
@@ -1242,6 +1282,11 @@
     "hash": "sha256-1da20fb189f8",
     "other": "Stopped before it finished. Nothing was written or changed."
   },
+  "UseSmallestForEach": {
+    "description": "Shown in the window.",
+    "hash": "sha256-a09b7491974d",
+    "other": "Make each picture as small as it can be"
+  },
   "UseSmallestSize": {
     "description": "Shown in the window. Carries one value, {{.Size}}, which has to stay spelled exactly that way.",
     "hash": "sha256-c42521834dd8",
@@ -1269,8 +1314,8 @@
   },
   "WorkingOutTheCost": {
     "description": "Shown in the window.",
-    "hash": "sha256-76988f639628",
-    "other": "Working out what this would cost..."
+    "hash": "sha256-047842be5390",
+    "other": "Working out the files and their sizes..."
   },
   "WritingTo": {
     "description": "Shown in the window. Carries one value, {{.Directory}}, which has to stay spelled exactly that way.",

@@ -137,7 +137,7 @@
         "uno storage che legge zero byte come un upload fallito e continua a riprovare"
       ],
       "details": {
-        "formats": "Da quali formati è composto il set. Lascia all per tutti i formati di questa versione, oppure indica quelli che il tuo sistema accetta."
+        "formats": "Da quali formati è composto il set. Lascia `all` per tutti i formati di questa versione, oppure indica quelli che il tuo sistema accetta."
       }
     },
     "filename-handling": {
@@ -220,6 +220,22 @@
         "far-over": "Quanto oltre il limite arriva l'unico file grande. Disattivalo dove scrivere diverse volte il limite non vale il disco.",
         "bulk": "Quanti file contiene l'upload di massa. Zero lascia del tutto fuori dal set quel gruppo."
       }
+    },
+    "picture-sizes": {
+      "question": "Il mio sistema accetta immagini nelle dimensioni usate da schermi e piattaforme?",
+      "title": "Dimensioni delle immagini",
+      "pageTitle": "Immagini di test in dimensioni comuni - schermi, avatar, social media",
+      "description": "Immagini nelle dimensioni di schermi HD, Full HD, QHD e 4K, delle foto profilo e di copertine, post e miniature richieste dalle piattaforme social, ognuna piccola quanto può esserlo.",
+      "catches": [
+        "un limite di larghezza o di altezza pensato per una forma che ne rifiuta un'altra, come uno sfondo del profilo largo 1584 px",
+        "una miniatura tagliata o schiacciata perché il codice si aspetta un'immagine orizzontale e ne arriva una verticale",
+        "un'immagine di altezza dispari, come 1200 x 627, rifiutata da un passaggio che accetta solo dimensioni pari",
+        "un'immagine 4K che esaurisce tempo o memoria mentre diventa una miniatura, anche se il file è piccolo"
+      ],
+      "details": {
+        "groups": "Quali dimensioni contiene il set: `screens` per le dimensioni degli schermi, `avatars` per le foto profilo e `social` per copertine, banner, post e miniature. Lascia `all` per averle tutte.",
+        "content": "Cosa mostra l'immagine. Un'immagine di prova serve a controllare come viene letto un file. Un segnaposto è un colore uniforme con un testo al centro, per impaginare prima che esistano le immagini vere."
+      }
     }
   },
   "commands": {
@@ -271,9 +287,10 @@
     "sizes separated by commas": "dimensioni separate da virgole",
     "format ids separated by commas": "id di formato separati da virgole",
     "format ids separated by commas, or all": "id di formato separati da virgole, oppure all",
+    "group names separated by commas, or all": "nomi di gruppo separati da virgole, oppure all",
     "extensions separated by commas": "estensioni separate da virgole",
-    "the id of a format, as tfg formats lists them": "l'id di un formato, come lo elenca tfg formats",
-    "the id of a picture format, as tfg formats lists them": "l'id di un formato di immagine, come lo elenca tfg formats",
+    "the id of a format, such as png or csv": "l'id di un formato, come png o csv",
+    "the id of a picture format, such as png or jpg": "l'id di un formato di immagine, come png o jpg",
     "one line of up to 100 characters": "una riga di al massimo 100 caratteri",
     "a colour such as cccccc or ccc": "un colore come cccccc o ccc",
     "the password, in plain text": "la password, in chiaro",

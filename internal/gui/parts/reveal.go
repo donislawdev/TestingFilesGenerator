@@ -2,7 +2,6 @@ package parts
 
 import (
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
 )
 
 // Reveal scrolls a control into view and puts the keyboard in it.
@@ -26,7 +25,7 @@ import (
 //
 // It reports whether it found somewhere to put the keyboard, so a caller can
 // tell "nothing to reveal" from "revealed".
-func Reveal(scroll *container.Scroll, control fyne.CanvasObject) bool {
+func Reveal(scroll *Scroll, control fyne.CanvasObject) bool {
 	if control == nil {
 		return false
 	}

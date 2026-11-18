@@ -137,7 +137,7 @@
         "儲存空間把零位元組當成上傳失敗，並不斷重試"
       ],
       "details": {
-        "formats": "組合由哪些格式構成。填 all 代表此版本的所有格式，也可以只列出你的系統接受的格式。"
+        "formats": "組合由哪些格式構成。填 `all` 代表此版本的所有格式，也可以只列出你的系統接受的格式。"
       }
     },
     "filename-handling": {
@@ -220,6 +220,22 @@
         "far-over": "那個超大檔案超出限制多少。如果寫入限制數倍大小的檔案不值得占用磁碟，可以關閉。",
         "bulk": "大量上傳包含多少個檔案。設為零則完全不包含這一組。"
       }
+    },
+    "picture-sizes": {
+      "question": "我的系統能接受螢幕和平台所用尺寸的圖片嗎？",
+      "title": "圖片尺寸",
+      "pageTitle": "常用尺寸的測試圖片 - 螢幕、頭像、社群媒體",
+      "description": "HD、Full HD、QHD 和 4K 螢幕尺寸、頭像尺寸，以及社群平台要求的封面、貼文和縮圖尺寸的圖片，每張都盡可能小。",
+      "catches": [
+        "依一種形狀設定的寬度或高度上限拒絕了另一種形狀，例如寬 1584 px 的個人檔案背景",
+        "程式碼以為是橫向圖片，來的卻是直向圖片，於是縮圖被裁切或壓扁",
+        "高度為奇數的圖片，例如 1200 x 627，被只接受偶數尺寸的步驟拒絕",
+        "檔案本身很小，產生縮圖時卻耗盡時間或記憶體的 4K 圖片"
+      ],
+      "details": {
+        "groups": "組合包含哪些尺寸：`screens` 代表螢幕尺寸，`avatars` 代表頭像，`social` 代表封面、橫幅、貼文和縮圖。填 `all` 代表全部。",
+        "content": "圖片顯示什麼。測試圖樣用來檢查檔案如何被讀取。佔位圖是中間有文字的純色圖片，用來在真實圖片出現之前排版頁面。"
+      }
     }
   },
   "commands": {
@@ -271,9 +287,10 @@
     "sizes separated by commas": "以逗號分隔的大小",
     "format ids separated by commas": "以逗號分隔的格式 id",
     "format ids separated by commas, or all": "以逗號分隔的格式 id，或 all",
+    "group names separated by commas, or all": "以逗號分隔的組名，或 all",
     "extensions separated by commas": "以逗號分隔的副檔名",
-    "the id of a format, as tfg formats lists them": "格式的 id，與 tfg formats 列出的相同",
-    "the id of a picture format, as tfg formats lists them": "圖片格式的 id，與 tfg formats 列出的相同",
+    "the id of a format, such as png or csv": "格式的 id，例如 png 或 csv",
+    "the id of a picture format, such as png or jpg": "圖片格式的 id，例如 png 或 jpg",
     "one line of up to 100 characters": "一行，最多 100 個字元",
     "a colour such as cccccc or ccc": "顏色，例如 cccccc 或 ccc",
     "the password, in plain text": "明文密碼",

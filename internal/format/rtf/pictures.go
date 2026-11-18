@@ -68,7 +68,7 @@ func pictureProperties() []format.Property {
 		Count: "How many pictures the document shows, each a real file of its format in a paragraph of its own that starts with its name, such as inline_0001.png. " +
 			"They sit above the blocks, at 96 pixels to the inch and never wider than 6 inches. " +
 			"LibreOffice, pandoc and Tika return each file as it was written. RichEdit shows the same picture and writes it out again smaller.",
-		Format: "The format of the pictures, png or jpg - the two picture formats RTF has a name for. Any other format is refused.",
+		Format: "The format of the pictures, `png` or `jpg` - the two picture formats RTF has a name for. Any other format is refused.",
 		Size: "How big each picture is. Written in hex it takes twice as many bytes in the document, with a line end every 128 characters. " +
 			"Written binary it takes its own size.",
 	}), format.Property{
@@ -76,7 +76,7 @@ func pictureProperties() []format.Property {
 		Choices: []string{Hex, Binary},
 		Default: Hex,
 		Group:   picturesGroup,
-		Detail: "How the bytes of each picture are written, which changes nothing while inline is 0. " +
+		Detail: "How the bytes of each picture are written, which changes nothing while the document has no pictures. " +
 			"hex writes them as text, twice as large, the way LibreOffice writes them. " +
 			"binary writes them as they are, so the document is no longer text, and a program that counts braces or reads it as text loses its place. " +
 			"pandoc changes the line ends inside a binary picture, so no png comes out whole, and it can lose the text after the picture or refuse the whole document. " +

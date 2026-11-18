@@ -63,7 +63,7 @@ type toolMenu struct {
 // sections, kept to lay the screen out again (see relay), and the whole with
 // the bar under it.
 type toolsView struct {
-	scroll *container.Scroll
+	scroll *parts.Scroll
 	body   fyne.CanvasObject
 }
 
@@ -158,7 +158,7 @@ func NewTools(host Host) *Tools {
 	t.status.Wrapping = fyne.TextWrapWord
 	t.fault = parts.NewErrorArea()
 
-	t.view.scroll = container.NewVScroll(parts.Screen(
+	t.view.scroll = parts.VScroll(parts.Screen(
 		parts.Titled(text.TabTools(), text.SubtitleTools()),
 		t.sections.section(sectionTool, text.SectionTool(),
 			t.fields.Add(settingTool, text.FieldTool(), text.HintTool(), t.tips.Say(text.DetailTool()), t.menu.pick),
@@ -230,7 +230,7 @@ func (t *Tools) onChosen(choice string) {
 	t.chosen = d
 	t.offer.withdraw(t.busy.relay)
 	t.about.RemoveAll()
-	t.about.Add(parts.Prose(text.ToolDetail(d.ID, d.Detail)))
+	t.about.Add(parts.Explanation(text.ToolDetail(d.ID, d.Detail)))
 	t.about.Refresh()
 
 	t.fields.KeepFirst(t.form.fixed)

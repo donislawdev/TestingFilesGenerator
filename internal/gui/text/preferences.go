@@ -19,7 +19,7 @@ import "github.com/donislawdev/TestingFilesGenerator/internal/core"
 func TabPreferences() string { return say("TabPreferences", "Preferences") }
 
 func SubtitlePreferences() string {
-	return say("SubtitlePreferences", "How this window speaks, how much memory its runs may take, and what it keeps between runs. Nothing here changes the files it makes.")
+	return say("SubtitlePreferences", "How this window speaks, how much memory its runs may take, and what it remembers for the next time it opens. Nothing here changes the files it makes.")
 }
 
 func SectionLanguage() string { return say("SectionLanguage", "Language") }
@@ -35,7 +35,7 @@ func MemoryWayOff() string    { return say("MemoryWayOff", "No limit") }
 // floor of the plan under Automatic is said from the constant that sets it,
 // the way --help says it.
 func PreferencesMemoryScope() string {
-	return sayf("PreferencesMemoryScope", "How much memory one run may take, the plan and the files being written together. Pictures wait for room rather than all being held at once, and a plan larger than this is refused before anything is written. When a run gets close to this amount, the program frees memory more often, which makes the run slower. A run that needs more memory than this still gets it. Under Automatic, a plan of up to {{.Floor}} is never refused. It applies from the next run, and nothing in the files changes.",
+	return sayf("PreferencesMemoryScope", "How much memory one run may take. A run first works out the whole list of files and keeps that list while it writes, so a list that needs more memory than this is refused before anything is written. Files that need a lot of memory, such as large pictures, are then written in turn rather than all at once. Close to this amount the program frees memory more often, which makes the run slower, and a file that needs more than all of it is still written, on its own. Under Automatic, a list needing up to {{.Floor}} is never refused. It applies from the next run, and nothing in the files changes.",
 		map[string]any{"Floor": HumanBytes(core.MaxPlanBytes)})
 }
 
@@ -46,7 +46,7 @@ func MemoryAutoIs(size string) string {
 
 // MemoryAutoUnknown is Automatic on a computer that could not be asked.
 func MemoryAutoUnknown(size string) string {
-	return sayf("MemoryAutoUnknown", "The memory of this computer could not be read, so runs take {{.Size}}, the most every run took before this setting.", map[string]any{"Size": size})
+	return sayf("MemoryAutoUnknown", "The memory of this computer could not be read, so runs may take {{.Size}}.", map[string]any{"Size": size})
 }
 
 func MemoryCustomIs() string {
@@ -58,7 +58,7 @@ func MemoryCustomEmpty() string {
 }
 
 func MemoryOffIs() string {
-	return say("MemoryOffIs", "Runs take what they need. Pictures are not held back and the plan has no limit, so a very large run can be ended by the system without a word.")
+	return say("MemoryOffIs", "Runs take as much memory as they need. A very large run can then be ended by the system without a word.")
 }
 
 // MemoryUnreadable is a kept setting that does not read as one.
@@ -128,7 +128,7 @@ func PreferencesMissing(tag string) string {
 // computer. The folder picker's own memory is named as well: it writes into the
 // same place, and a list of what is kept that left it out would be untrue.
 func PreferencesKept() string {
-	return say("PreferencesKept", "Between runs this window keeps four things: the output directory, the size of the window, and the language and the memory chosen above. The folder picker also keeps the last folder it showed. Nothing leaves this computer.")
+	return say("PreferencesKept", "For the next time it opens, this window keeps four things: the output directory, the size of the window, and the language and the memory chosen above. The folder picker also keeps the last folder it showed. Nothing leaves this computer.")
 }
 
 func PreferencesKeptIn() string { return say("PreferencesKeptIn", "They are kept in this folder:") }

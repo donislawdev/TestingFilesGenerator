@@ -36,9 +36,9 @@ func (g Rung) bound(r format.Request) int {
 // 640x360 for the reason AVIF stops at 640x480: a larger picture costs every
 // file of a run its encoding time, and somebody who wants Full HD says so.
 //
-// Ceiling is a tenth above the largest any picture of a film on the rung
-// coded to - all its tiles together - and it is the reserve of every one of
-// them. Measured by tools/probes/videoladder at the default quality on
+// Ceiling is at least a tenth above the largest any picture of a film on the
+// rung coded to - all its tiles together - and it is the reserve of every one
+// of them. Measured by tools/probes/videoladder at the default quality on
 // 2026-10-06 (docs/WIDEO-2026-10-06.md section 15), in three passes, and
 // again on 2026-10-07 once pictures were cut into tiles
 // (docs/WEBM-WYDAJNOSC-2026-10-06.md section 10): the four rungs from 640x360
@@ -64,13 +64,20 @@ func (g Rung) bound(r format.Request) int {
 // The second number is the ceiling for a damaged film, whose label names its
 // damage, by the same rule: a tenth above the largest picture measured with
 // the label at the longest length each scale still draws, never below the
-// first number. Measured on 2026-11-12 by tools/probes/videoladder, the same
-// three passes: on 640x360 a damaged label coded to 16946 B, which left less
-// than a fiftieth of the first number above it, and on every other rung it
-// coded smaller than the label of a film nothing damages.
+// first number.
+//
+// Both measured again on 2026-11-16 by tools/probes/videoladder, the same three
+// passes, once the label a picture draws named no size
+// (format.Request.PictureLabel). The shorter label is drawn larger on some
+// widths: on 320x180 a film nothing damages coded to 7906 B, and a damaged one
+// to 17101 B on 640x360 and 3642 B on 160x90, each closer than a tenth to its
+// ceiling. Those three were raised to a tenth above. Every other ceiling stands
+// a tenth or more above what was measured and was left where it was, because a
+// ceiling moved down moves the picture of every film near it, with no label
+// too, and buys nothing anybody asked for (D11).
 var Ladder = []Rung{
-	{640, 360, 17277, 18641}, {426, 240, 11156, 11156}, {320, 180, 8322, 8322}, {256, 144, 6754, 6754},
-	{160, 90, 3951, 3951}, {80, 45, 1454, 1454}, {40, 23, 825, 825}, {16, 9, 149, 149},
+	{640, 360, 17277, 18812}, {426, 240, 11156, 11156}, {320, 180, 8697, 8697}, {256, 144, 6754, 6754},
+	{160, 90, 3951, 4007}, {80, 45, 1454, 1454}, {40, 23, 825, 825}, {16, 9, 149, 149},
 	{4, 3, 46, 46}, {2, 2, 31, 31}, {1, 1, 6, 6},
 }
 

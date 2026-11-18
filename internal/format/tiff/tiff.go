@@ -170,7 +170,7 @@ func pixelBytes(width, height int) int64 {
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = r.LabelText("tiff")
+		label = r.PictureLabel("tiff")
 	}
 
 	w, h, err := chooseSize(r)

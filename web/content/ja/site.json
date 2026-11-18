@@ -137,7 +137,7 @@
         "0バイトを失敗したアップロードと見なして再試行し続けるストレージ"
       ],
       "details": {
-        "formats": "セットを構成する形式です。このビルドのすべての形式にするにはallのままにし、システムが受け付ける形式だけを指定することもできます。"
+        "formats": "セットを構成する形式です。このビルドのすべての形式にするには`all`のままにし、システムが受け付ける形式だけを指定することもできます。"
       }
     },
     "filename-handling": {
@@ -220,6 +220,22 @@
         "far-over": "1つだけの大きなファイルが制限をどれだけ超えるかです。制限の何倍も書き込むのがディスクの無駄になる場合はオフにします。",
         "bulk": "一括アップロードに含めるファイル数です。0にすると、そのグループはセットから完全に外れます。"
       }
+    },
+    "picture-sizes": {
+      "question": "画面やプラットフォームが使うサイズの画像を、システムは受け付けるでしょうか。",
+      "title": "画像サイズ",
+      "pageTitle": "よく使われるサイズのテスト画像 - 画面、アバター、ソーシャルメディア",
+      "description": "HD、Full HD、QHD、4Kの画面サイズ、プロフィール画像のサイズ、そしてソーシャルプラットフォームが求めるカバー、投稿、サムネイルのサイズの画像。それぞれできるだけ小さく作ります。",
+      "catches": [
+        "ある形を想定して設けた幅や高さの上限が、別の形を拒否する問題。たとえば幅1584 pxのプロフィール背景",
+        "コードが横長の画像を想定しているのに縦長の画像が届き、切り取られたりつぶれたりするサムネイル",
+        "偶数のサイズしか受け付けない処理に拒否される、1200 x 627のような高さが奇数の画像",
+        "ファイル自体は小さいのに、サムネイルにする途中で時間やメモリが足りなくなる4K画像"
+      ],
+      "details": {
+        "groups": "セットに含めるサイズです。画面サイズは`screens`、プロフィール画像は`avatars`、カバー、バナー、投稿、サムネイルは`social`です。すべてにするには`all`のままにします。",
+        "content": "画像に何を表示するかです。テストパターンはファイルの読み取られ方を確かめるためのものです。プレースホルダーは中央に文字のある単色の画像で、本物の画像ができる前にページをレイアウトするためのものです。"
+      }
     }
   },
   "commands": {
@@ -271,9 +287,10 @@
     "sizes separated by commas": "カンマ区切りのサイズ",
     "format ids separated by commas": "カンマ区切りの形式ID",
     "format ids separated by commas, or all": "カンマ区切りの形式ID、またはall",
+    "group names separated by commas, or all": "カンマ区切りのグループ名、またはall",
     "extensions separated by commas": "カンマ区切りの拡張子",
-    "the id of a format, as tfg formats lists them": "tfg formatsが一覧表示する形式のID",
-    "the id of a picture format, as tfg formats lists them": "tfg formatsが一覧表示する画像形式のID",
+    "the id of a format, such as png or csv": "pngやcsvなどの形式のID",
+    "the id of a picture format, such as png or jpg": "pngやjpgなどの画像形式のID",
     "one line of up to 100 characters": "100文字以内の1行",
     "a colour such as cccccc or ccc": "cccccc や ccc のような色",
     "the password, in plain text": "パスワード（平文）",

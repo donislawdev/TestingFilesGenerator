@@ -41,6 +41,9 @@ type Segments struct {
 	// from knows whether the keyboard arrived by press or by key - see
 	// PointerFocus and Toggle, which follow the same rule.
 	from PointerFocus
+
+	// Held is the options that cannot be chosen now, each with why - see Held.
+	Held Held
 }
 
 var (
@@ -55,6 +58,7 @@ func NewSegments(options []string, changed func(string)) *Segments {
 	if len(options) > 0 {
 		s.Selected = options[0]
 	}
+	s.Held.redraw = s.Refresh
 	s.ExtendBaseWidget(s)
 	return s
 }
@@ -79,6 +83,26 @@ func (s *Segments) SetSelected(value string) {
 	}
 }
 
+// SetOptions replaces the words the switch offers, for a switch whose choices
+// depend on something else on the form - the ways of giving a size, of which
+// smallest is offered for pictures only.
+//
+// The chosen word stays chosen when it is still offered. When it is not, the
+// first word is chosen and OnChanged says so, because a switch showing a word
+// it no longer holds would be stating a way the form does not send.
+func (s *Segments) SetOptions(options []string) {
+	s.Options = options
+	if s.indexOf(s.Selected) >= 0 || len(options) == 0 {
+		s.Refresh()
+		return
+	}
+	s.Selected = options[0]
+	s.Refresh()
+	if s.OnChanged != nil {
+		s.OnChanged(s.Selected)
+	}
+}
+
 func (s *Segments) indexOf(value string) int {
 	for i, o := range s.Options {
 		if o == value {
@@ -91,13 +115,14 @@ func (s *Segments) indexOf(value string) int {
 // Tapped chooses the segment under the pointer and puts the keyboard on the
 // switch, quietly - the way the toolkit's radio item does (widget/radio_item.go
 // Tapped), so the arrows step on from what was clicked. See Toggle.Tapped for
-// the whole of why, and for what stood here until 2026-09-16.
+// the whole of why, and for what stood here until 2026-09-16. A held segment
+// is not chosen, and the pointer over it has already said why.
 func (s *Segments) Tapped(event *fyne.PointEvent) {
 	if s.Disabled() || event == nil {
 		return
 	}
 	s.from.Take(s)
-	if at := s.segmentAt(event.Position.X); at >= 0 {
+	if at := s.segmentAt(event.Position.X); at >= 0 && !s.Held.Has(s.Options[at]) {
 		s.SetSelected(s.Options[at])
 	}
 }
@@ -131,12 +156,19 @@ func (s *Segments) MouseMoved(e *desktop.MouseEvent) {
 	}
 	if at != s.hovered {
 		s.hovered = at
+		// Why a held option cannot be chosen, under the pointer that is on
+		// it, and nothing open for the segment the pointer left.
+		s.Held.stop()
+		if at >= 0 {
+			s.Held.tell(s.Options[at], s)
+		}
 		s.Refresh()
 	}
 }
 func (s *Segments) MouseOut() {
 	if s.hovered != -1 {
 		s.hovered = -1
+		s.Held.stop()
 		s.Refresh()
 	}
 }
@@ -184,20 +216,26 @@ func (s *Segments) TypedKey(event *fyne.KeyEvent) {
 	if !s.marked {
 		s.mark()
 	}
+	// Each key steps over a held option to the next one that can be chosen,
+	// and does nothing when there is none that way.
 	at := s.indexOf(s.Selected)
+	to := -1
 	switch event.Name {
 	case fyne.KeyLeft:
 		if at > 0 {
-			s.SetSelected(s.Options[at-1])
+			to = s.Held.reachable(s.Options, at, -1)
 		}
 	case fyne.KeyRight:
-		if at >= 0 && at < len(s.Options)-1 {
-			s.SetSelected(s.Options[at+1])
+		if at >= 0 {
+			to = s.Held.reachable(s.Options, at, 1)
 		}
 	case fyne.KeyHome:
-		s.SetSelected(s.Options[0])
+		to = s.Held.reachable(s.Options, -1, 1)
 	case fyne.KeyEnd:
-		s.SetSelected(s.Options[len(s.Options)-1])
+		to = s.Held.reachable(s.Options, len(s.Options), -1)
+	}
+	if to >= 0 {
+		s.SetSelected(s.Options[to])
 	}
 }
 
@@ -227,9 +265,10 @@ type segmentsRenderer struct {
 }
 
 // build makes one fill and one word per option, and a rule between each pair.
-// The count is fixed once, because a switch does not gain options after it is
-// built.
+// Made again whenever the count of options changes - see SetOptions - and
+// only then, so a refresh of the same switch draws into the same objects.
 func (r *segmentsRenderer) build() {
+	r.fills, r.words, r.rules = nil, nil, nil
 	for range r.seg.Options {
 		fill := canvas.NewRectangle(color.Transparent)
 		// Rounded to sit inside the border's own curve. Until 2026-09-16 the
@@ -284,12 +323,15 @@ func (r *segmentsRenderer) MinSize() fyne.Size {
 }
 
 func (r *segmentsRenderer) Refresh() {
+	if len(r.words) != len(r.seg.Options) {
+		r.build()
+	}
 	off := r.seg.Disabled()
 	chosen := r.seg.indexOf(r.seg.Selected)
 	for i, word := range r.seg.Options {
 		r.words[i].Text = word
 		r.words[i].TextSize = TextBody
-		r.fills[i].FillColor, r.words[i].Color = segmentFace(i == chosen, i == r.seg.hovered, off)
+		r.fills[i].FillColor, r.words[i].Color = segmentFace(i == chosen, i == r.seg.hovered, off, r.seg.Held.Has(word))
 		redraw(r.fills[i], r.words[i])
 	}
 	for i := range r.rules {
@@ -320,15 +362,23 @@ func (r *segmentsRenderer) Refresh() {
 // frozen for a run would not have said which way of stating a size it was
 // running with (O223). It never showed, because the switch was not being
 // frozen at all, which is the other half of O223.
-func segmentFace(chosen, hovered, off bool) (fill, ink color.Color) {
+//
+// A held option (Hold) takes the quietest ink and lights up under nothing: a
+// fill under the pointer says "press here", which it cannot keep. Held and
+// chosen - chosen before the field it waits for was emptied - it keeps the
+// chosen fill in the ink of a frozen choice, which reads on that fill where
+// the held ink would not.
+func segmentFace(chosen, hovered, off, held bool) (fill, ink color.Color) {
 	dark := theme.VariantDark
 	fill = color.Transparent
 	switch {
-	case off:
+	case off || held && chosen:
 		ink = PaletteColour(theme.ColorNameDisabled, dark)
 		if chosen {
 			fill = PaletteColour(theme.ColorNameSelection, dark)
 		}
+	case held:
+		ink = PaletteColour(ColorNameHeld, dark)
 	case chosen:
 		fill = PaletteColour(theme.ColorNameSelection, dark)
 		ink = PaletteColour(theme.ColorNameForeground, dark)

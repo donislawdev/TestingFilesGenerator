@@ -299,7 +299,7 @@ func (generator) Plan(r format.Request) (format.Plan, error) {
 
 	m := memo{seed: r.Seed, width: w, height: h}
 	if r.Label {
-		switch line := labelOpen(h) + r.LabelText("svg") + textClose; {
+		switch line := labelOpen(h) + r.PictureLabel("svg") + textClose; {
 		case !labelFits(h):
 			// Room on the page rather than room in the byte count, so it is a
 			// separate sentence from the one below. Both leave the file named

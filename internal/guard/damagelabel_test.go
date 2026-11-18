@@ -107,10 +107,12 @@ func TestADamagedFileNeverClaimsItsLabel(t *testing.T) {
 // Every format whose healthy file carries its label as text is asked, with
 // junk appended: that damage keeps every byte the generator wrote, so the
 // label is where the generator put it and can be read back. Which formats
-// those are is read from the healthy file, not listed here - a picture draws
-// its label in pixels and is left to the guards on pictures. The expected text
-// is written out here rather than asked of format.Request, so a wording that
-// drops the damage cannot agree with itself.
+// those are is read from the healthy file, not listed here. A drawing written
+// as text, an SVG, carries the label of a picture, which names no size
+// (format.Request.PictureLabel), and is held to naming its damage the same way.
+// A picture draws its label in pixels and is left to the guards on pictures.
+// The expected text is written out here rather than asked of format.Request,
+// so a wording that drops the damage cannot agree with itself.
 func TestADamagedFileStatesItsSizeOnDiskAndItsDamage(t *testing.T) {
 	chain := damage.Chain{{ID: damage.AppendJunk}}
 	const size = witnessSize
@@ -126,8 +128,12 @@ func TestADamagedFileStatesItsSizeOnDiskAndItsDamage(t *testing.T) {
 		t.Fatal("the check took a label naming the size before the damage, and no damage, for the label it asks for")
 	}
 
+	if namesItsDamage([]byte(fmt.Sprintf("tfg - svg - seed %s", core.SeedLabel(brokenSeed))), "svg", chain, brokenSeed) == "" {
+		t.Fatal("the check took the label of a drawing naming no damage for the label it asks for")
+	}
+
 	dir := t.TempDir()
-	read := 0
+	read, drawings := 0, 0
 	for _, f := range format.All() {
 		good := engine.Target{ID: "good", Format: f.ID, Sizes: engine.Uniform(1, size), Label: true}
 		broken := engine.Target{ID: "broken", Format: f.ID, Sizes: engine.Uniform(1, size), Damage: chain, Label: true}
@@ -137,22 +143,45 @@ func TestADamagedFileStatesItsSizeOnDiskAndItsDamage(t *testing.T) {
 			t.Fatal(err)
 		}
 		goodSeed := core.FileSeed(core.TargetSeed(lengthSeed, "good"), 0)
-		if !bytes.Contains(healthy, fmt.Appendf(nil, "tfg - %s - %d B - seed %s", f.ID, size, core.SeedLabel(goodSeed))) {
+		text := bytes.Contains(healthy, fmt.Appendf(nil, "tfg - %s - %d B - seed %s", f.ID, size, core.SeedLabel(goodSeed)))
+		drawing := bytes.Contains(healthy, fmt.Appendf(nil, "tfg - %s - seed %s", f.ID, core.SeedLabel(goodSeed)))
+		if !text && !drawing {
 			continue
 		}
 		got, err := os.ReadFile(paths["broken"])
 		if err != nil {
 			t.Fatal(err)
 		}
-		if why := statesItsDamage(got, f.ID, size, chain, brokenSeed); why != "" {
+		why := ""
+		if text {
+			why = statesItsDamage(got, f.ID, size, chain, brokenSeed)
+			read++
+		} else {
+			why = namesItsDamage(got, f.ID, chain, brokenSeed)
+			drawings++
+		}
+		if why != "" {
 			t.Errorf("%s: %s", f.ID, why)
 		}
-		read++
 	}
 	if read < 10 {
 		t.Fatalf("only %d format(s) carry their label as text the guard could find - it did not reach the formats it is about", read)
 	}
-	t.Logf("the label was read back from %d format(s)", read)
+	if drawings == 0 {
+		t.Fatal("no format writes the label of a picture as text - the drawing half of this guard reached nothing")
+	}
+	t.Logf("the label was read back from %d format(s), and the label of a drawing from %d", read, drawings)
+}
+
+// namesItsDamage says what is wrong with the label of a drawing in got, or
+// nothing when it names every entry of chain with its settings resolved, and
+// no size.
+func namesItsDamage(got []byte, id string, chain damage.Chain, seed uint64) string {
+	want := fmt.Sprintf("tfg - %s - damage %s - seed %s", id, chain.Label(), core.SeedLabel(seed))
+	if !bytes.Contains(got, []byte(want)) {
+		return fmt.Sprintf("the drawing does not carry the label %q", want)
+	}
+	return ""
 }
 
 // TestATruncatedTextSaysHowMuchWasCut is the case the owner met: two texts of
@@ -262,16 +291,16 @@ func damagesDrawnAtEveryScale(t *testing.T, r format.Request, id string, width i
 	t.Helper()
 	long := longestDamageLabel(t)
 	r.Damage = "x"
-	fixed := len(r.LabelText(id)) - len(r.Damage)
+	fixed := len(r.PictureLabel(id)) - len(r.Damage)
 	var out []string
 	for _, n := range imagelabel.LongestAtEachScale(width) {
 		if n <= fixed {
 			continue // no damaged label is this short
 		}
 		r.Damage = long[:min(n-fixed, len(long))]
-		if got, want := imagelabel.BandHeight(width, len(r.LabelText(id))), imagelabel.BandHeight(width, n); got != want || got == 0 {
+		if got, want := imagelabel.BandHeight(width, len(r.PictureLabel(id))), imagelabel.BandHeight(width, n); got != want || got == 0 {
 			t.Fatalf("a %s label of %d characters across %d pixels draws a band %d high where %d was worked out - the guard does not reach the scale it measures",
-				id, len(r.LabelText(id)), width, got, want)
+				id, len(r.PictureLabel(id)), width, got, want)
 		}
 		out = append(out, r.Damage)
 	}
@@ -509,7 +538,7 @@ func TestEveryCharacterOfADamagedLabelCanBeDrawn(t *testing.T) {
 		}
 		for _, v := range values {
 			chain := damage.Chain{{ID: d.ID, Values: v}, {ID: d.ID, Values: v}}
-			label := format.Request{Bytes: 1 << 40, Seed: 1, Damage: chain.Label()}.LabelText("png")
+			label := format.Request{Bytes: 1 << 40, Seed: 1, Damage: chain.Label()}.PictureLabel("png")
 			for _, r := range label {
 				if !imagelabel.HasGlyph(r) {
 					t.Errorf("%s: the picture font has no %q, so the label %q is drawn with a box in its place", d.ID, r, label)

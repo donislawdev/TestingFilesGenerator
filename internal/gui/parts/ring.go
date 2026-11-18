@@ -212,6 +212,9 @@ type Chooser struct {
 	// reports is the address a choice is told to the screen under - see
 	// wiredOnce in fields.go.
 	reports wiredOnce[string]
+	// shows is the rows a choice shows and hides, for a menu other settings
+	// depend on - see applying.
+	shows wiredOnce[*applying]
 }
 
 // shown is the words one value is drawn as - see ShownAs.

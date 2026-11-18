@@ -55,10 +55,12 @@ func RegistryWords() []RegistryWord {
 // the manifest": what the system under test should do, and the rule tested.
 func (w registryWords) lists() {
 	for _, o := range recipe.Outcomes() {
-		w.add(ChoiceKey(recipe.KeyExpected, o), o, "One entry of the list of what the system under test should do with a file. The manifest writes the value itself.")
+		w.add(ChoiceKey(recipe.KeyExpected, o), EnglishChoice(recipe.KeyExpected, o),
+			"One entry of the list of what the system under test should do with a file. The manifest writes "+o+".")
 	}
 	for _, r := range recipe.Reasons() {
-		w.add(ChoiceKey(recipe.KeyExpectedReason, r), r, "One entry of the list of the rule a file tests. The manifest writes the value itself.")
+		w.add(ChoiceKey(recipe.KeyExpectedReason, r), EnglishChoice(recipe.KeyExpectedReason, r),
+			"One entry of the list of the rule a file tests. The manifest writes "+r+".")
 	}
 }
 
@@ -123,7 +125,8 @@ func (w registryWords) settings(owner Owner, whose string, declared []format.Pro
 		w.add(GroupKey(owner, p.Group), p.Group, "The heading over a block of settings of "+whose+".")
 		w.add(ShapeKey(p.Shape), p.Shape, "What the text in a box has to look like, in the sentence under it.")
 		for _, c := range p.Choices {
-			w.add(ChoiceKey(p.Name, c), c, "One entry of the "+p.Name+" list, as the list shows it. A recipe and the command line write the value itself, so a token such as utf-8, a4, sha256 or 644 stays as it is.")
+			w.add(ChoiceKey(p.Name, c), EnglishChoice(p.Name, c), "One entry of the "+p.Name+" list, as the list shows it. A recipe and the command line write "+c+
+				", so a token such as utf-8, a4, sha256 or 644 stays as it is.")
 		}
 		w.unit(p.Unit)
 	}

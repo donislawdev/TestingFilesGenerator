@@ -148,12 +148,25 @@ type ErrorArea struct {
 	// edge is the line round the control, if it has one. Marked and cleared
 	// with the sentence, so the two never disagree.
 	edge *Ring
-	// fix is a button under the sentence that puts right what it is about,
-	// when the refusal carries the value that would - see Offer. fixRow is
-	// what is shown and hidden, so a field with nothing to offer keeps no
-	// room for a button.
-	fix    *Button
-	fixRow fyne.CanvasObject
+	// fixes are the buttons under the sentence that put right what it is
+	// about, one row each - see Offer. fixRows is what is shown and hidden, so
+	// a field with nothing to offer keeps no room for a button.
+	fixes   []offered
+	fixRows *fyne.Container
+}
+
+// Fix is one way out of a refusal: the words on its button and what pressing
+// it does.
+type Fix struct {
+	Label string
+	Apply func()
+}
+
+// offered is one button under the sentence and the row it stands in, hidden
+// together - see hideFix for why both.
+type offered struct {
+	button *Button
+	row    fyne.CanvasObject
 }
 
 // NewErrorArea builds one that stands on its own, for the line at the foot of
@@ -165,11 +178,13 @@ func NewErrorArea() *ErrorArea {
 	// The sentence starts under the control it is about, on the edge the
 	// control starts on - which is the field's edge since the name stands
 	// over the control rather than beside it.
-	fix := NewButton(Secondary, "", nil)
-	fix.Hide()
-	fixRow := container.NewHBox(fix)
-	area := &ErrorArea{label: label, fix: fix, fixRow: fixRow,
-		box: Column(GapLabel, inkTight(label), fixRow)}
+	//
+	// The buttons stand one under another rather than side by side. Two of
+	// them side by side are wider than a field's column in a narrow window,
+	// and this layout has no way to wrap a row.
+	fixRows := Column(GapLabel)
+	area := &ErrorArea{label: label, fixRows: fixRows,
+		box: Column(GapLabel, inkTight(label), fixRows)}
 	area.Clear()
 	return area
 }
@@ -189,31 +204,59 @@ func (a *ErrorArea) Say(text string) {
 	a.mark(true)
 }
 
-// Offer puts a button under the sentence that does what the sentence asks
-// for, so nobody has to copy a number out of a refusal into the box above it.
-// Called after Say, and taken away by the next Say or Clear.
-func (a *ErrorArea) Offer(label string, apply func()) {
-	a.fix.SetText(label)
-	a.fix.OnTapped = apply
-	a.fix.Show()
-	a.fixRow.Show()
+// Offer puts a button under the sentence for each way out of it, in the order
+// given, so nobody has to copy a number out of a refusal into the box above
+// it. Called after Say, and taken away by the next Say or Clear.
+//
+// The buttons are kept between refusals and only the ones in use are shown,
+// so a field refused again and again does not grow a new button each time.
+func (a *ErrorArea) Offer(fixes ...Fix) {
+	a.hideFix()
+	for len(a.fixes) < len(fixes) {
+		button := NewButton(Secondary, "", nil)
+		row := container.NewHBox(button)
+		a.fixes = append(a.fixes, offered{button: button, row: row})
+		a.fixRows.Add(row)
+	}
+	for i, fix := range fixes {
+		shown := a.fixes[i]
+		shown.button.SetText(fix.Label)
+		shown.button.OnTapped = fix.Apply
+		shown.button.Show()
+		shown.row.Show()
+	}
+	if len(fixes) > 0 {
+		a.fixRows.Show()
+	}
+	// After the last change to the column, so a row added here is drawn
+	// now rather than at the next repaint from anywhere.
+	a.fixRows.Refresh()
 }
 
-// hideFix takes the button away with its row. The button itself as well,
+// hideFix takes every button away with its row. The button itself as well,
 // because a button still marked visible inside a hidden row is a button a
 // guard walking the tree counts as there to press, at 0x0.
 func (a *ErrorArea) hideFix() {
-	a.fix.Hide()
-	a.fixRow.Hide()
+	for _, shown := range a.fixes {
+		shown.button.Hide()
+		shown.row.Hide()
+	}
+	a.fixRows.Hide()
 }
 
-// Offered is the words on the button under the sentence, or nothing, for a
-// guard.
-func (a *ErrorArea) Offered() string {
-	if !a.fixRow.Visible() {
-		return ""
+// Offered is the words on each button under the sentence, in order, or
+// nothing, for a guard.
+func (a *ErrorArea) Offered() []string {
+	if !a.fixRows.Visible() {
+		return nil
 	}
-	return a.fix.Text
+	var words []string
+	for _, shown := range a.fixes {
+		if shown.button.Visible() {
+			words = append(words, shown.button.Text)
+		}
+	}
+	return words
 }
 
 // Clear takes the sentence away and gives the room back.

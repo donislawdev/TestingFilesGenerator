@@ -65,7 +65,7 @@ func TestEveryFilmLayoutIsOneTheAV1SpecificationAllows(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	labels := [2]string{format.Request{Bytes: 268435456, Seed: 7741}.LabelText("webm"), ""}
+	labels := [2]string{format.Request{Bytes: 268435456, Seed: 7741}.PictureLabel("webm"), ""}
 	seen := layoutsSeen{}
 	n := 0
 	for _, w := range sides {

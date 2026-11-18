@@ -13,18 +13,24 @@ import (
 // thing a person looks at as a whole, which is why every rank is here once,
 // one under another, and once more with a long line to see where it wraps.
 func textRanks() Entry {
-	return Entry{Name: "Title", Covers: []string{"Subtitle", "Titled", "Heading", "Subheading", "Prose", "Note", "Caption", "QuietText", "Bullets", "Ledger"}, States: []State{
+	return Entry{Name: "Title", Covers: []string{"Subtitle", "Titled", "Heading", "Subheading", "Prose", "Explanation", "Note", "Caption", "QuietText", "Bullets", "Ledger"}, States: []State{
 		{"the title of a screen", func() fyne.CanvasObject { return parts.Title("Single batch") }},
 		{"the sentence under a title", func() fyne.CanvasObject {
-			return parts.Subtitle("Files of one format and one size, with a manifest that says how the system under test should react to them.")
+			return parts.Subtitle("Files of one format, with a manifest that says how the system under test should react to them.")
 		}},
 		{"a title with its sentence", func() fyne.CanvasObject {
-			return parts.Titled("Single batch", "Files of one format and one size, with a manifest that says how the system under test should react to them.")
+			return parts.Titled("Single batch", "Files of one format, with a manifest that says how the system under test should react to them.")
 		}},
 		{"the name of a field", func() fyne.CanvasObject { return parts.Heading("Output directory") }},
 		{"the name of a block inside a section", func() fyne.CanvasObject { return parts.Subheading("Typically finds") }},
 		{"a paragraph", func() fyne.CanvasObject {
 			return parts.Prose("Every file has exactly the size you ask for, to the byte, or the run refuses before writing anything.")
+		}},
+		{"an explanation naming values to type", func() fyne.CanvasObject {
+			// The groups of the picture sizes preset, where the owner could
+			// not tell the names to type from the words describing them.
+			return parts.Explanation("Which sizes the set holds: `screens` for the sizes of screens, `avatars` for profile " +
+				"pictures and `social` for covers, banners, posts and thumbnails. Leave it at `all` for every one of them.")
 		}},
 		{"a note that has to stay visible", func() fyne.CanvasObject {
 			return parts.Note("The limit of 100 000 files is this tool's, not the disk's.")

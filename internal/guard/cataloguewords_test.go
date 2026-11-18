@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 	"testing"
 
 	"fyne.io/fyne/v2"
@@ -83,7 +84,7 @@ func wordsEndingAt(o fyne.CanvasObject, x float32, visit func(*canvas.Text, floa
 		if v.Text != "" {
 			visit(v, x+v.MinSize().Width)
 		}
-	case *container.Scroll:
+	case *container.Scroll, *parts.Scroll:
 	case *fyne.Container:
 		for _, child := range v.Objects {
 			wordsEndingAt(child, x, visit)

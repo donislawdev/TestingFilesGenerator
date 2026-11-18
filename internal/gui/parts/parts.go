@@ -812,7 +812,7 @@ func WithRoomForARun(content fyne.CanvasObject) fyne.CanvasObject {
 
 	// Scrolled rather than clipped, and vertical only - a status line that
 	// scrolled sideways would hide the start of its own sentence.
-	inside := container.NewVScroll(content)
+	inside := VScroll(content)
 	return container.New(&reserving{height: sample.MinSize().Height}, inside)
 }
 

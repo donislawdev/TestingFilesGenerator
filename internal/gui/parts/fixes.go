@@ -6,11 +6,12 @@ import (
 	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
+	"github.com/donislawdev/TestingFilesGenerator/internal/engine"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/text"
 )
 
-// fixFor is the button a refusal can carry under a field, when the refusal
+// fixesFor is the buttons a refusal can carry under a field, when the refusal
 // itself holds the value that would put it right - or nothing.
 //
 // One refusal today, and it is the one the owner reported from the running
@@ -20,6 +21,19 @@ import (
 // format.BelowMinimumError, which carries the minimum as a number rather than
 // only as words, so the button is worked out from the number and not read out
 // of the sentence.
+//
+// The number holds for every file of the batch. Until 2026-11-16 it was the
+// smallest size of the first file that refused, so on a batch of pictures the
+// button led to another refusal - each picture codes to its own size - and the
+// owner reported exactly that. The engine now answers for the whole batch
+// (internal/engine/batchminimum.go), which is G1: the window shows a number,
+// it never works one out.
+//
+// A second button, when the engine says the target could ask for smallest
+// instead: a picture with its width and height known. The first makes every
+// file the same size, the smallest all of them can have. The second makes each
+// picture as small as it can be, so the files come out at different sizes -
+// and that is the one a person wanting small pictures is usually after.
 //
 // Nothing is filled in by itself. Untouchable rule 1 says a size is exact or
 // refused, never quietly rounded, and a button somebody presses is the
@@ -45,18 +59,41 @@ import (
 // engine can answer it (G1). Until it can, the limit keeps the sentence and
 // gets no button, because a button that promises the smallest value and does
 // not deliver it is worse than none.
-func fixFor(f *Field, err error) (string, func()) {
-	var below *format.BelowMinimumError
-	if !errors.As(err, &below) || below.Minimum <= 0 {
-		return "", nil
-	}
+func fixesFor(f *Field, err error) []Fix {
 	boxes := boxesIn(f.Control)
-	if len(boxes) != 1 || strings.Contains(boxes[0].Text, "-") {
-		return "", nil
+	if len(boxes) != 1 {
+		return nil
 	}
-	if held, parsed := core.ParseSize(boxes[0].Text); parsed != nil || held != below.Requested {
-		return "", nil
+	box := boxes[0]
+	var fixes []Fix
+	for _, r := range Remedies(err, box.Text) {
+		fixes = append(fixes, Fix{Label: r.Label, Apply: func() { box.SetText(r.Value) }})
 	}
-	box, value := boxes[0], strconv.FormatInt(below.Minimum, 10)
-	return text.UseSmallestSize(core.ExactBytes(below.Minimum)), func() { box.SetText(value) }
+	return fixes
+}
+
+// Remedy is what one button under a refusal puts in the box, and the words on
+// it.
+type Remedy struct {
+	Label string
+	Value string
+}
+
+// Remedies is what the buttons under a refusal put in a box holding held, in
+// the order they stand - or nothing. Apart from the widgets so a guard can ask
+// the very function the buttons are made from, for every format, without
+// building a window for each (picturefixes_test.go).
+func Remedies(err error, held string) []Remedy {
+	var below *format.BelowMinimumError
+	if !errors.As(err, &below) || below.Minimum <= 0 || strings.Contains(held, "-") {
+		return nil
+	}
+	if asked, parsed := core.ParseSize(held); parsed != nil || asked != below.Requested {
+		return nil
+	}
+	remedies := []Remedy{{Label: text.UseSmallestSize(core.ExactBytes(below.Minimum)), Value: strconv.FormatInt(below.Minimum, 10)}}
+	if engine.OffersSmallest(err) {
+		remedies = append(remedies, Remedy{Label: text.UseSmallestForEach(), Value: core.SizeSmallest})
+	}
+	return remedies
 }

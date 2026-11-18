@@ -23,9 +23,28 @@ import (
 // size nobody asked for and no damage at all (O333).
 
 // LabelText is the self describing label of the file r asks for. Every format
-// that carries a label asks this, so the wording cannot drift between them.
+// that carries its label as text asks this, so the wording cannot drift between
+// them. A picture asks PictureLabel.
 func (r Request) LabelText(formatID string) string {
 	return r.LabelSized(formatID, r.Bytes)
+}
+
+// PictureLabel is the label drawn into a picture: into its pixels, into the
+// frames of a film, into the text of an SVG drawing. It names the format, the
+// damage and the seed, and not the size.
+//
+// Because a picture is then the same picture whatever size of file it is
+// asked for, and only the padding around it moves. Its smallest file is one
+// number, so the minimum a refusal names is a size the next run takes. With the
+// byte count drawn in, a compressed picture changed its length with the digits:
+// JPG 640x480 refused 1 B naming 41549 B, then refused 41549 B naming 42484 B,
+// measured on 2026-11-16 (docs/SIZE-FIXES-2026-11-16.md section 2). The size
+// stays in the manifest and in the file's own length.
+func (r Request) PictureLabel(formatID string) string {
+	if r.Damage == "" {
+		return fmt.Sprintf("tfg - %s - seed %s", formatID, core.SeedLabel(r.Seed))
+	}
+	return fmt.Sprintf("tfg - %s - damage %s - seed %s", formatID, r.Damage, core.SeedLabel(r.Seed))
 }
 
 // LabelSized is the label of a file of size bytes, for a generator that works

@@ -41,7 +41,7 @@
 			</container>
 			<container pos="0,70" size="1092x1221">
 				<container size="1092x1221">
-					<widget size="1092x1115" type="*widget.Scroll">
+					<widget size="1092x1115" type="*parts.Scroll">
 						<container size="1092x1115">
 							<container pos="136,0" size="820x1115">
 								<container size="820x49">
@@ -277,8 +277,8 @@
 													<container pos="201,0" size="185x83">
 														<container size="185x60">
 															<container size="185x24">
-																<text color="rgba(211,211,215,255)" pos="0,3" size="36x16">Allow</text>
-																<widget pos="44,0" size="24x24" type="*parts.DetailButton">
+																<text color="rgba(211,211,215,255)" pos="0,3" size="93x16">Allowed types</text>
+																<widget pos="101,0" size="24x24" type="*parts.DetailButton">
 																	<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 																	<rectangle radius="6" size="24x24"/>
 																	<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>
@@ -308,8 +308,8 @@
 													<container pos="402,0" size="185x83">
 														<container size="185x60">
 															<container size="185x24">
-																<text color="rgba(211,211,215,255)" pos="0,3" size="34x16">Deny</text>
-																<widget pos="42,0" size="24x24" type="*parts.DetailButton">
+																<text color="rgba(211,211,215,255)" pos="0,3" size="122x16">Denied extensions</text>
+																<widget pos="130,0" size="24x24" type="*parts.DetailButton">
 																	<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 																	<rectangle radius="6" size="24x24"/>
 																	<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>
@@ -339,8 +339,8 @@
 													<container pos="603,0" size="185x83">
 														<container size="185x58">
 															<container size="185x24">
-																<text color="rgba(211,211,215,255)" pos="0,3" size="57x16">Far-over</text>
-																<widget pos="65,0" size="24x24" type="*parts.DetailButton">
+																<text color="rgba(211,211,215,255)" pos="0,3" size="110x16">Far over the limit</text>
+																<widget pos="118,0" size="24x24" type="*parts.DetailButton">
 																	<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 																	<rectangle radius="6" size="24x24"/>
 																	<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>
@@ -366,8 +366,8 @@
 													<container pos="0,99" size="185x60">
 														<container size="185x60">
 															<container size="185x24">
-																<text color="rgba(211,211,215,255)" pos="0,3" size="28x16">Bulk</text>
-																<widget pos="36,0" size="24x24" type="*parts.DetailButton">
+																<text color="rgba(211,211,215,255)" pos="0,3" size="84x16">Mass upload</text>
+																<widget pos="92,0" size="24x24" type="*parts.DetailButton">
 																	<rectangle pos="-2,-2" radius="6" size="28x28" strokeColor="hyperlink"/>
 																	<rectangle radius="6" size="24x24"/>
 																	<image fillMode="contain" pos="2,2" rsc="infoIcon" size="iconInlineSize" themed="placeholder"/>
@@ -545,7 +545,7 @@
 												</widget>
 											</container>
 											<container pos="0,36" size="788x40">
-												<widget size="788x40" type="*widget.Scroll">
+												<widget size="788x40" type="*parts.Scroll">
 													<container size="788x40">
 														<container size="788x16">
 															<widget pos="-6,-6" size="800x28" type="*widget.Label">

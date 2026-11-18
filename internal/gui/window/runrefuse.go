@@ -93,7 +93,7 @@ func placed(r *runner, one error) string {
 	// with the way to the directory under the sentence - see inTheWay.
 	if dir := inTheWay(one); dir != "" {
 		if where := r.placeOf(engine.SettingOutDir); r.fields.Mark(where, one) {
-			r.fields.Lookup(where).Offer(text.ButtonOpenFolder(), openIn(r.offer, dir))
+			r.fields.Lookup(where).Offer(parts.Fix{Label: text.ButtonOpenFolder(), Apply: openIn(r.offer, dir)})
 			return where
 		}
 	}
@@ -209,6 +209,9 @@ func (r *runner) recheck(setting string) {
 	// Nothing to check against yet, during the screen being built.
 	if r.settle == nil {
 		return
+	}
+	if r.follow != nil {
+		r.follow()
 	}
 	// A run owns the screen while it lasts. Its progress and its refusals are
 	// not to be wiped by a keystroke.

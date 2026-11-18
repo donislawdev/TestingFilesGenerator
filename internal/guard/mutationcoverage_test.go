@@ -215,7 +215,85 @@ var provenByProbe = map[string]string{
 		"by taking damage.Chain.Check out of engine.prepareDamage: red, every value went through.",
 	"TestADamageSettingOutsideItsRangeIsRefusedUnderItsBox": "broken on 2026-11-12 by taking damage.Chain.Check out of engine.prepareDamage: red, the window wrote the file and the box said nothing.",
 	"TestADamagedFileStatesItsSizeOnDiskAndItsDamage": "its own canary - the label it was written against, naming the size before the damage and no damage, rejected by its check - and broken on 2026-11-12 " +
-		"twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times.",
+		"twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times. A second canary for the label of a drawing, " +
+		"and broken on 2026-11-16 by leaving the damage out of Request.PictureLabel: red, the SVG did not carry it.",
+	// The label of a picture without its size (docs/SIZE-FIXES-2026-11-16.md section 3.1).
+	"TestAPictureIsTheSameWhateverSizeItIsAskedFor": "three canaries of its own - the same picture behind different padding, two pictures a byte apart, " +
+		"and two drawings whose labels differ - and red on 2026-11-16 in all fifteen of its cases on the code before the change, " +
+		"where the label drawn into a picture stated the size.",
+	"TestEveryFixUnderASizeRefusalLeadsToARunThatIsAccepted": "a canary of its own - the button as it was, the first file's minimum, " +
+		"has to be refused for a batch of three pictures - a reach check that some case is refused and some offers smallest, and " +
+		"broken by hand on 2026-11-16 three times: the batch walk off (every picture with its size set, pdf and a film red), only " +
+		"the number left at the first file's (batches of gif, jpg, png and mp4, and pdf, targz and wav red), and smallest never " +
+		"offered (every picture with its width and height set red).",
+	"TestSmallestWithTheLabelIsThePictureAlone": "a canary of its own - a hundred bytes over the smallest png has to fail - a " +
+		"reach check that some format drew its label, and broken by hand on 2026-11-16 by giving the picture label its size " +
+		"again: red, avif, gif, jpg and jxl among the first lines (O350).",
+	"TestBothButtonsUnderABatchOfSmallPicturesAreAcceptedInTheWindow": "broken by hand on 2026-11-16 by leaving the number at the " +
+		"first file's minimum: red, the preview refused 1573 B for three PNGs needing 1574 B. Broken again on 2026-11-17 by " +
+		"leaving the switch where it was when smallest is typed into the box: red, the switch read One size.",
+	"TestSmallestIsOfferedForExactlyTheFormatsTheEngineTakesItFor": "a canary of its own - a window offering smallest for every " +
+		"format has to disagree with the engine - a reach check that the engine both took and refused smallest, and broken by " +
+		"hand on 2026-11-17 by offering smallest for every format: red on both screens.",
+	"TestAValueToTypeIsTheSameInEveryLanguage": "a canary of its own - a translation that changed `all` into `wszystko` " +
+		"has to disagree - a reach check of how many marked texts the catalogues and the site carry, and broken by hand on " +
+		"2026-11-18 by changing one value in the Polish registry and by making no value ever a value: red both times.",
+	"TestEveryValueToTypeIsShownAsAValue": "a canary of its own - Prose of a marked text, drawing the backticks, has to be " +
+		"told apart - a reach check of the declared descriptions that name a value, and broken by hand on 2026-11-18 three " +
+		"ways: the explanation box drawing Prose, a value without the type of code, the published preset page without " +
+		"<code>: red each time.",
+	"TestSmallestCannotBeChosenUntilTheWidthAndHeightAreSet": "a canary of its own - a switch holding Smallest for every picture " +
+		"has to disagree with the engine, which takes it for svg at its defaults - a reach check that the engine both took and " +
+		"refused it, and broken by hand on 2026-11-18 six ways: never held, a press choosing a held option, the keys stepping " +
+		"onto it, no reason under the pointer, the batch screen not following what is typed, the declared sides ignored - red " +
+		"each time (the press only after each way of reaching it was asked on its own: End stepped back off it).",
+	"TestAPlaceholderSettingIsOnTheScreenExactlyWhileItApplies": "the bad background is refused while it is shown, so the " +
+		"preview is known to reach the box, and broken by hand on 2026-11-17 four ways - every row always shown, a hidden value " +
+		"sent, the menu not wired to show the rows again, the heading never hidden: red each time.",
+	"TestASettingThatChangesNothingIsRefusedRatherThanIgnored": "a canary of its own - a png that drops background before " +
+		"planning has to be found silent - the same plan without the setting taken first, and broken by hand on 2026-11-17 by " +
+		"letting text through on the test pattern: red, png, jpg and svg.",
+	"TestARegistryRefusesAConditionItCannotKeep": "a canary of its own - a condition on a choice declared before it has to be " +
+		"taken - beside one declaration for each way a condition cannot be kept.",
+	"TestEveryNameWrittenByHandBelongsToADeclaredValue": "a canary of its own - a name for a value nothing declares has to be " +
+		"found - and a floor on how many names there are.",
+	"TestNoListShowsAValueSpelledAsARecipeKey": "a canary of its own - a list showing record-per-line as it is has to be found " +
+		"- and each standard token let through has to still be a declared value.",
+	"TestTheEnglishWindowShowsAListValueByItsName": "broken by hand on 2026-11-17 twice, ChoiceName saying the value and the " +
+		"folded summary saying the value: red both times. It reads the window, so a stale registry/en.json cannot hide either.",
+	"TestTheEnglishWindowRewordsOnlyNamesAndLabels": "a canary of its own - a planted sentence has to come out reworded, " +
+		"names and labels in and no quotes - a floor on the refusals and the names they carry, and broken by hand on " +
+		"2026-11-17 six ways (names, labels, a sentence inside, quotes, a wrapper at the foot, a join): red every time.",
+	"TestTheWindowSaysNoWordOfTheRecipe": "a canary of its own - a sentence made of the recipe's words has to be found " +
+		"to carry each kind, and a layout that dropped a value has to be told from one that keeps them - floors on the " +
+		"keys, the values and the refusals a window was asked about, and broken by hand on 2026-11-17 seven ways (no " +
+		"phrases, a sentence inside not laid out, a place of the recipe not reworded, the sentence itself not laid out, " +
+		"a phrase dropping a value, Polish saying a key, a listed sentence shown): red every time.",
+	"TestEveryScrollingAreaMovesAsFarAsTheSystemSays": "a canary of its own - the toolkit's bare scroll turned " +
+		"one notch has to be told apart from the system's distance - every screen asserted to have something below " +
+		"its fold, and broken by hand on 2026-11-17 three ways (the wheel left at the toolkit's step, a screen on " +
+		"the toolkit's own area, a whole view at a time ignored): red every time.",
+	"TestTheWheelStepIsTheToolkitsStep": "a canary of its own - a declared step of 31 has to be read as 31 - and " +
+		"broken by hand on 2026-11-17 by taking the toolkit's step for 20: red.",
+	"TestTheWheelLinesAreWhatWindowsIsSetTo": "a canary of its own - reg.exe's line for a setting of 7 has to read " +
+		"as 7 - and broken by hand on 2026-11-17 by reading the system's answer one too high: red.",
+	"TestEveryPictureOfTheSizesSetIsTheSizeItIsNamed": "a canary of its own - a picture named for another size has " +
+		"to be caught and one named for its own size let through - a floor on the pictures read back, and broken by " +
+		"hand on 2026-11-17 two ways (width and height swapped, a size with two uses made two files): red both times.",
+	"TestThePictureSizesSetSaysWhatTheFormatCannotDraw": "broken by hand on 2026-11-17 two ways (the placeholder let " +
+		"through for a format without one, the sizes left out not said): red both times, the first by naming the " +
+		"wrong setting to change.",
+	"TestThePresetScreenBuildsThePictureSizesTheCommandLineBuilds": "asserts the count of pictures it compared, and " +
+		"broken by hand on 2026-11-17 by the preset screen not sending its menu: red, the pictures differ.",
+	"TestARefusalWithNoBoxNamesItsSettingsByTheirLabels": "broken by hand on 2026-11-17 by giving the foot of the form " +
+		"no name to put in: red in English (the two keys) and in Polish (the empty place) alike.",
+	"TestTheWindowSaysASwitchAsOnOrOff": "a canary of its own - the line it was written against, Guides true, has to be " +
+		"found - a floor on how many switches are asked, and broken by hand on 2026-11-17 three ways (the folded line, " +
+		"the explanation saying true or false, the explanation naming the wrong start): red every time.",
+	"TestTheSizeSwitchAndTheSizeBoxNeverSayDifferentThings": "a refusal at the size box asked before the acceptance, so the " +
+		"preview is known to be able to refuse, and broken by hand on 2026-11-17 four ways - typing smallest leaving the switch, " +
+		"choosing Smallest writing nothing, leaving Smallest putting nothing back, a switch losing its choice saying nothing: red " +
+		"each time.",
 	"TestATruncatedTextSaysHowMuchWasCut": "broken on 2026-11-12 twice: Request.LabelSized ignoring OnDisk, and leaving the damage out. Red both times.",
 	"TestALongDamageLabelLeavesEveryFormatWhole": "broken on 2026-11-12 by letting damage.Chain.Label return the whole chain past LabelLimit: red, " +
 		"its own reach check says forty damages no longer fit the limit (docs/REVIEW-234-2026-11-12.md).",

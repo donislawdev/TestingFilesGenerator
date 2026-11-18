@@ -125,6 +125,13 @@ func TestEjectingAPresetGivesTheBytesItAlwaysGave(t *testing.T) {
 		// since the names about length are made to a length with it.
 		{id: "filename-handling", args: preset.Args{}, bytes: 18983, sum: "f720c4a54c5fc17fea553a084fd13aaff4150c2fce5a4d953b10aee137ebe021"},
 		{id: "filename-handling", args: preset.Args{"format": "docx"}, bytes: 19077, sum: "94a40d97bf549cbdd3e7ccaafe3372d7962ad542f358d37a2d945445c95d6f43"},
+		// The preset of picture sizes, measured 2026-11-17 on its first build:
+		// the default, a format that leaves most sizes out, every parameter
+		// stated, and the refusal of a format that is not a picture.
+		{id: "picture-sizes", args: preset.Args{}, bytes: 9920, sum: "fe6ef552ddc82dc343963743c4f2968ba53ff55ef0114767f35d1395a6d14ff0"},
+		{id: "picture-sizes", args: preset.Args{"format": "ico"}, bytes: 1630, sum: "8b7db325966dd636bd2c654c3d4c5e80b46cedeeb234b2fdf6f1147ff837031b"},
+		{id: "picture-sizes", args: preset.Args{"groups": "social,avatars", "content": "placeholder", "format": "png"}, bytes: 9896, sum: "fd93c41bc9620a0e7e7bfa840a95d838b30f6badc61ce9976b9b732e86330abd"},
+		{id: "picture-sizes", args: preset.Args{"format": "pdf"}, refused: "picture-sizes: format cannot be \"pdf\" - pdf files are not pictures, and every file of this set is one. The picture formats of this build: avif, bmp, gif, ico, jpg, jxl, png, svg, tiff, webp"},
 	}
 
 	for _, want := range pinned {

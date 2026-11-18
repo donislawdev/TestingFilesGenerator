@@ -41,7 +41,7 @@
 			</container>
 			<container pos="0,70" size="1092x1221">
 				<container size="1092x1221">
-					<widget size="1092x1115" type="*widget.Scroll">
+					<widget size="1092x1115" type="*parts.Scroll">
 						<container size="1092x1432">
 							<container pos="136,0" size="820x1432">
 								<container size="820x49">
@@ -93,8 +93,8 @@
 													<widget size="788x29" type="*parts.QuietText">
 														<container size="788x29">
 															<widget pos="-6,-6" size="800x41" type="*widget.RichText">
-																<text color="placeholder" pos="6,6" size="786x14" textSize="12">With the box ticked, the chosen preset's files come first and the batches below are added after them. Without it, the batches are the whole</text>
-																<text color="placeholder" pos="6,20" size="39x14" textSize="12">recipe.</text>
+																<text color="placeholder" pos="6,6" size="764x14" textSize="12">With the box ticked, the chosen preset's files come first and the batches below are added after them. Without it, the batches below are</text>
+																<text color="placeholder" pos="6,20" size="147x14" textSize="12">everything the run makes.</text>
 															</widget>
 														</container>
 													</widget>
@@ -232,12 +232,15 @@
 																	<rectangle fillColor="selection" pos="1,1" radius="5" size="67x26"/>
 																	<rectangle pos="71,1" radius="5" size="61x26"/>
 																	<rectangle pos="136,1" radius="5" size="101x26"/>
+																	<rectangle pos="240,1" radius="5" size="66x26"/>
 																	<rectangle fillColor="inputBorder" pos="134,0" size="1x28"/>
-																	<rectangle radius="6" size="238x28" strokeColor="inputBorder" strokeWidth="1"/>
+																	<rectangle fillColor="inputBorder" pos="238,0" size="1x28"/>
+																	<rectangle radius="6" size="307x28" strokeColor="inputBorder" strokeWidth="1"/>
 																	<text pos="6,5" size="57x16">One size</text>
 																	<text color="placeholder" pos="76,5" size="51x16">A range</text>
 																	<text color="placeholder" pos="141,5" size="91x16">Around a limit</text>
-																	<rectangle pos="-2,-2" radius="6" size="242x32" strokeColor="hyperlink"/>
+																	<text color="rgba(122,122,128,255)" pos="245,5" size="56x16">Smallest</text>
+																	<rectangle pos="-2,-2" radius="6" size="311x32" strokeColor="hyperlink"/>
 																</widget>
 															</container>
 														</container>
@@ -285,9 +288,9 @@
 																<container size="788x50">
 																	<widget pos="-6,-6" size="800x62" type="*widget.Label">
 																		<widget size="800x62" type="*widget.RichText">
-																			<text color="error" pos="6,6" size="779x16">target 1 has no Size - every target declares its Size, which is what lets a dry run report exact numbers before anything</text>
+																			<text color="error" pos="6,6" size="770x16">Batch 1 has no Size - every batch declares its Size, which is what lets Preview report exact numbers before anything</text>
 																			<text color="error" pos="6,22" size="113x16">reaches the disk.</text>
-																			<text color="error" pos="6,39" size="573x16">  add size: 2mb, size-range: 1kb-8kb, a boundary, contains, or a plain number of bytes.</text>
+																			<text color="error" pos="6,39" size="519x16">  type a size such as 2mb, or choose another way under How the size is given.</text>
 																		</widget>
 																	</widget>
 																</container>
@@ -331,9 +334,9 @@
 																<container size="788x50">
 																	<widget pos="-6,-6" size="800x62" type="*widget.Label">
 																		<widget size="800x62" type="*widget.RichText">
-																			<text color="error" pos="6,6" size="773x16">target 1 has no Batch name - a Batch name anchors the seed of a target, so editing one target never moves the bytes</text>
-																			<text color="error" pos="6,22" size="72x16">of another.</text>
-																			<text color="error" pos="6,39" size="311x16">  give it a Batch name, for example id: invoices.</text>
+																			<text color="error" pos="6,6" size="786x16">Batch 1 has no Batch name - a Batch name anchors the seed of a batch, so editing one batch never moves the bytes of</text>
+																			<text color="error" pos="6,22" size="54x16">another.</text>
+																			<text color="error" pos="6,39" size="263x16">  give it a Batch name, such as invoices.</text>
 																		</widget>
 																	</widget>
 																</container>
@@ -547,12 +550,15 @@
 																	<rectangle fillColor="selection" pos="1,1" radius="5" size="67x26"/>
 																	<rectangle pos="71,1" radius="5" size="61x26"/>
 																	<rectangle pos="136,1" radius="5" size="101x26"/>
+																	<rectangle pos="240,1" radius="5" size="66x26"/>
 																	<rectangle fillColor="inputBorder" pos="134,0" size="1x28"/>
-																	<rectangle radius="6" size="238x28" strokeColor="inputBorder" strokeWidth="1"/>
+																	<rectangle fillColor="inputBorder" pos="238,0" size="1x28"/>
+																	<rectangle radius="6" size="307x28" strokeColor="inputBorder" strokeWidth="1"/>
 																	<text pos="6,5" size="57x16">One size</text>
 																	<text color="placeholder" pos="76,5" size="51x16">A range</text>
 																	<text color="placeholder" pos="141,5" size="91x16">Around a limit</text>
-																	<rectangle pos="-2,-2" radius="6" size="242x32" strokeColor="hyperlink"/>
+																	<text color="rgba(122,122,128,255)" pos="245,5" size="56x16">Smallest</text>
+																	<rectangle pos="-2,-2" radius="6" size="311x32" strokeColor="hyperlink"/>
 																</widget>
 															</container>
 														</container>
@@ -940,7 +946,7 @@
 												</widget>
 											</container>
 											<container pos="0,36" size="788x40">
-												<widget size="788x40" type="*widget.Scroll">
+												<widget size="788x40" type="*parts.Scroll">
 													<container size="788x40">
 														<container size="788x16">
 															<widget pos="-6,-6" size="800x28" type="*widget.Label">

@@ -137,7 +137,7 @@
         "ein Speicher, der null Bytes als fehlgeschlagenen Upload liest und immer wieder neu versucht"
       ],
       "details": {
-        "formats": "Aus welchen Formaten das Set besteht. Mit all werden alle Formate dieses Builds verwendet, oder du nennst die, die dein System akzeptiert."
+        "formats": "Aus welchen Formaten das Set besteht. Mit `all` werden alle Formate dieses Builds verwendet, oder du nennst die, die dein System akzeptiert."
       }
     },
     "filename-handling": {
@@ -220,6 +220,22 @@
         "far-over": "Wie weit über dem Limit die eine große Datei liegt. Schalte sie ab, wo es das Vielfache des Limits auf der Platte nicht wert ist.",
         "bulk": "Wie viele Dateien der Massen-Upload enthält. Bei null fällt diese Gruppe ganz aus dem Set."
       }
+    },
+    "picture-sizes": {
+      "question": "Nimmt mein System Bilder in den Größen an, die Bildschirme und Plattformen verwenden?",
+      "title": "Bildgrößen",
+      "pageTitle": "Testbilder in gängigen Größen - Bildschirme, Avatare, soziale Medien",
+      "description": "Bilder in den Größen von HD-, Full-HD-, QHD- und 4K-Bildschirmen, von Profilbildern und von den Titelbildern, Beiträgen und Vorschaubildern, die soziale Plattformen verlangen, jedes so klein wie möglich.",
+      "catches": [
+        "eine Grenze für Breite oder Höhe, die für eine Bildform gedacht war und eine andere abweist, etwa einen Profilhintergrund mit 1584 px Breite",
+        "ein Vorschaubild, das beschnitten oder gestaucht wird, weil der Code ein Querformat erwartet und ein Hochformat ankommt",
+        "ein Bild mit ungerader Höhe, etwa 1200 x 627, das von einem Schritt abgewiesen wird, der nur gerade Größen annimmt",
+        "ein 4K-Bild, dem auf dem Weg zum Vorschaubild Zeit oder Speicher ausgeht, obwohl die Datei selbst klein ist"
+      ],
+      "details": {
+        "groups": "Welche Größen das Set enthält: `screens` für Bildschirmgrößen, `avatars` für Profilbilder und `social` für Titelbilder, Banner, Beiträge und Vorschaubilder. Mit `all` bekommst du alle.",
+        "content": "Was das Bild zeigt. Ein Testmuster dient dazu, zu prüfen, wie eine Datei gelesen wird. Ein Platzhalter ist eine einfarbige Fläche mit Text in der Mitte, um eine Seite zu gestalten, bevor es die echten Bilder gibt."
+      }
     }
   },
   "commands": {
@@ -271,9 +287,10 @@
     "sizes separated by commas": "Größen, durch Kommas getrennt",
     "format ids separated by commas": "Format-IDs, durch Kommas getrennt",
     "format ids separated by commas, or all": "Format-IDs, durch Kommas getrennt, oder all",
+    "group names separated by commas, or all": "Gruppennamen, durch Kommas getrennt, oder all",
     "extensions separated by commas": "Endungen, durch Kommas getrennt",
-    "the id of a format, as tfg formats lists them": "die ID eines Formats, wie tfg formats sie auflistet",
-    "the id of a picture format, as tfg formats lists them": "die ID eines Bildformats, wie tfg formats sie auflistet",
+    "the id of a format, such as png or csv": "die ID eines Formats, etwa png oder csv",
+    "the id of a picture format, such as png or jpg": "die ID eines Bildformats, etwa png oder jpg",
     "one line of up to 100 characters": "eine Zeile mit bis zu 100 Zeichen",
     "a colour such as cccccc or ccc": "eine Farbe wie cccccc oder ccc",
     "the password, in plain text": "das Passwort im Klartext",

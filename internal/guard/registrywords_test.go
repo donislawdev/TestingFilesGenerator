@@ -222,7 +222,9 @@ func TestOneEnglishSentenceIsOneSentenceInEveryLanguage(t *testing.T) {
 // puts the same sentence together out of its catalogue - and a second way of
 // saying one thing is the start of two surfaces describing one setting
 // differently (D1). In English the two have to agree to the letter, for every
-// setting, every limit on two settings, and the sizes of a run.
+// setting, every limit on two settings, and the sizes of a run. A limit on two
+// settings is the one difference allowed, and only in how the two are called:
+// the window's note stands under their boxes and calls them by their labels.
 func TestTheWindowDescribesASettingAsTheCommandLineDoes(t *testing.T) {
 	if got := text.AllowedWholeNumber(); got != "whole number" {
 		t.Fatalf("this process speaks another language (%q), so nothing here is English to compare", got)
@@ -239,8 +241,14 @@ func TestTheWindowDescribesASettingAsTheCommandLineDoes(t *testing.T) {
 	for _, d := range format.All() {
 		each(text.FormatOwner(d.ID), d.Properties)
 		for _, j := range d.JointLimits {
-			if got, want := parts.JointLimit(text.FormatOwner(d.ID), j), j.Describe(); got != want {
-				t.Errorf("%s: the window says %q and tfg formats says %q", d.ID, got, want)
+			labelled := j
+			labelled.Of, labelled.By = text.SettingLabel(j.Of), text.SettingLabel(j.By)
+			if labelled.Of == j.Of || labelled.By == j.By {
+				t.Fatalf("%s: %s and %s are labelled as they are keyed, so nothing here tells a label "+
+					"from a key", d.ID, j.Of, j.By)
+			}
+			if got, want := parts.JointLimit(text.FormatOwner(d.ID), j), labelled.Describe(); got != want {
+				t.Errorf("%s: the window says %q and tfg formats, with labels for keys, says %q", d.ID, got, want)
 			}
 		}
 	}

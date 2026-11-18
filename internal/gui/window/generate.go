@@ -191,6 +191,7 @@ type Generate struct {
 
 	formatPick *parts.Chooser
 	size       *parts.Entry
+	sizing     singleSizing
 	count      *parts.Entry
 	id         *parts.Entry
 	name       *parts.Entry
@@ -281,7 +282,7 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 		nil,
 		g.footer(rail(append(outwardButtons(host), links...)...)),
 		nil, nil,
-		(g.keepScroll(container.NewVScroll(parts.Screen(
+		(g.keepScroll(parts.VScroll(parts.Screen(
 			parts.Titled(text.TabOneTarget(), text.SubtitleGenerate()),
 			g.settingsSection()...,
 		)))),
@@ -297,6 +298,8 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 
 	// Said last, once every box it reads exists.
 	g.runner.destination = g.OutDir
+	g.runner.follow = g.holdSmallest
+	g.holdSmallest()
 	g.runner.refreshLine()
 	// A host that wants to wait for work in flight is told how, here as well
 	// as in Open. A screen built on its own - which is how most of the
@@ -355,6 +358,7 @@ func (g *Generate) buildFields() {
 	g.damage.pick.SetSelected(text.DamageNone())
 
 	g.size = entry(startingSize, "")
+	g.sizing.build(g.size)
 	g.count = entry("1", "")
 	g.id = entry(startingBatchName, "")
 	g.name = entry("", text.PlaceholderNameTemplate)
@@ -409,7 +413,10 @@ func (g *Generate) settingsSection() []fyne.CanvasObject {
 			// In the grid's columns since the prototype of 2026-09-23
 			// (parts.Grid): the format, how big, how many and whether damaged
 			// share one row of four, then what the group is called and what
-			// the files are called.
+			// the files are called. For a picture the way of giving the size
+			// stands before its box since 2026-11-17, and damaged moves to the
+			// second row.
+			g.sizing.namedIn(g.fields, g.tips),
 			add(format.SettingSize, text.FieldSize(), text.HintSize(), g.tips.Say(text.DetailSize()),
 				parts.Numeric(g.size)),
 			add(engine.SettingCount, text.FieldCount(), "", parts.NoDetail, parts.Numeric(g.count)),
@@ -446,6 +453,7 @@ func (g *Generate) onFormatChosen(id string) {
 	}
 	g.propBox.RemoveAll()
 	g.props = nil
+	g.sizing.offerFor(id)
 	// The fields of the format that was chosen before this one go with their
 	// boxes. Left in the registry they would be places a refusal could still be
 	// put, under widgets no longer on the screen.
@@ -597,21 +605,13 @@ func (g *Generate) chosenDamage() damage.Chain {
 // Only what was stated, and it matters here more than anywhere: this section
 // arrives folded, so a value somebody typed and then had swallowed would be a
 // setting they cannot see and did not remove.
-func (g *Generate) settingsSaid() string {
-	said := make([]string, 0, len(g.props))
-	for _, f := range g.props {
-		// What was CHOSEN, not what the field started on. A menu opens on its
-		// default and so always has a value, and listing all of them turned
-		// this line into every setting the format declares - which for log,
-		// with seven, ran off the edge of the window.
-		if f.Chosen != nil && !f.Chosen() {
-			continue
-		}
-		if v := f.Value(); v != "" {
-			said = append(said, text.SettingSaid(text.SettingLabel(f.Name), v))
-		}
-	}
-	return text.FoldedSummary(said...)
+func (g *Generate) settingsSaid() string { return parts.SettingsSaid(g.props) }
+
+// holdSmallest holds Smallest back until the format's settings say how large
+// the picture is - see holdSmallest in sizeword.go. After every change on the
+// form, a new format included.
+func (g *Generate) holdSmallest() {
+	holdSmallest(g.sizing.way, g.formatPick.Selected, g.properties(), g.tips)
 }
 
 // openFoldHolding opens the settings section when a refusal is about a box
@@ -637,19 +637,9 @@ func (g *Generate) openFoldHolding(address string) {
 // properties is what the user put in the generated fields, under the keys the
 // format declared. An empty one is left out, because the registry reads a
 // missing key and an empty value as the same thing - not stated - and a format
-// that works its own answer out has to be allowed to.
-func (g *Generate) properties() map[string]string {
-	out := map[string]string{}
-	for _, f := range g.props {
-		if v := f.Value(); v != "" {
-			out[f.Name] = v
-		}
-	}
-	if len(out) == 0 {
-		return nil
-	}
-	return out
-}
+// that works its own answer out has to be allowed to. A hidden one says
+// nothing - see parts.StatedValues.
+func (g *Generate) properties() map[string]string { return parts.StatedValues(g.props) }
 
 // settle turns what is on the screen into what the engine takes.
 //

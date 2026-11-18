@@ -245,6 +245,9 @@ func Register(d Descriptor) {
 			panic(fmt.Sprintf("damage: %q declares a policy case with no format or no reason", d.ID))
 		}
 	}
+	if format.AnyConditional(d.Parameters) {
+		panic(fmt.Sprintf("damage: %q declares a parameter with a condition, which only a format keeps", d.ID))
+	}
 	for i := range d.Parameters {
 		format.SortChoices(d.Parameters[i].Choices)
 	}

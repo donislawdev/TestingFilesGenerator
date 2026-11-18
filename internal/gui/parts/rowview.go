@@ -24,7 +24,7 @@ import (
 // the same document). A menu of hundreds of values is where that stops being
 // true, and the answer then is to build only the rows in sight.
 type rowView struct {
-	scroll *container.Scroll
+	scroll *Scroll
 	stack  *fyne.Container
 	// built is every row made so far, kept for the next arrangement, and
 	// shown how many of them the current one uses.
@@ -37,7 +37,7 @@ type rowView struct {
 
 func newRowView() *rowView {
 	v := &rowView{stack: container.New(rowStack{})}
-	v.scroll = container.NewVScroll(v.stack)
+	v.scroll = VScroll(v.stack)
 	return v
 }
 

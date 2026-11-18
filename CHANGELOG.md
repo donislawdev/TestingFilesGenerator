@@ -16,6 +16,19 @@ because it turns other people's test suites red.
 
 ### Breaking
 
+- **The label drawn in a picture no longer states the size of the file.** It
+  reads `tfg - png - seed c2a547b2`, with any damage before the seed. A picture
+  of a given width and height is then the same at every size you ask for, so
+  the smallest size a refusal names is accepted next time. Before, it could be
+  refused again. The label also fits narrower pictures than before.
+  Labelled pictures and films, and mails, HTML pages and RTF documents with
+  pictures, are not byte for byte what 0.5.0 wrote. Text formats still state
+  the size.
+- **A JPEG XL or a film just above the size where its picture grows gets the
+  smaller picture.** A JPEG XL now steps up to 256x256 at 7509 B and to
+  320x240 at 10213 B, and a WebM or MP4 film to 320x180 at 8697 B, because
+  the label is drawn larger there. A file between the old step and the new one
+  is not byte for byte what 0.5.0 wrote.
 - **A TIFF of an odd size is not byte for byte what 0.5.0 wrote.** Its
   directory, which says where the pixels are, came last and so started on an
   odd byte, where the TIFF specification has it start on an even one. Every
@@ -39,7 +52,7 @@ because it turns other people's test suites red.
   wrote. Files with no damage, and files made with `--clean`, are unchanged.
 - **An AVIF file just above the size where its picture grows gets the smaller
   picture.** The picture now steps up to 160x120 at 3865 B, to 256x256 at
-  5493 B, to 320x240 at 7732 B and to 640x480 at 18722 B, about a tenth above
+  6140 B, to 320x240 at 7732 B and to 640x480 at 18722 B, a tenth or more above
   where it did. A file between the old step and the new one is not byte for
   byte what 0.5.0 wrote.
 - **A tar.gz 16 KiB to 64 KiB larger than the files inside it now opens in
@@ -59,6 +72,15 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **A preset of picture sizes.** `tfg generate --preset picture-sizes` writes
+  a picture at each of 21 common sizes: HD, Full HD, QHD and 4K screens,
+  profile pictures, and the covers, posts and thumbnails YouTube, Facebook, X,
+  LinkedIn, Instagram and Pinterest ask for, read from their help pages in
+  November 2026. Each is as small as it can be and named by its size, such as
+  `1920x1080.jpg`. `--groups` picks screens, avatars or social,
+  `--content placeholder` draws the size on each picture, and `--format` takes
+  any picture format. A size the format cannot draw is left out and named.
+
 - **Placeholder pictures.** `--set content=placeholder` on `png`, `jpg` and
   `svg` draws a flat colour with words in the middle, for laying out a page
   before the real pictures exist. The words are the picture's size unless
@@ -66,16 +88,22 @@ because it turns other people's test suites red.
   `{index:04}` in it become each file's size and number. `background` and
   `foreground` take a colour such as `cccccc`, and `guides` draws a frame,
   both diagonals and a circle. In a recipe write a colour without the `#` or
-  in quotes, because YAML reads `#` as the start of a comment. The test
-  pattern is unchanged.
+  in quotes. The window shows these four once Content is placeholder. The
+  test pattern is unchanged.
+
+- **`tfg formats` says when a setting changes nothing.** A setting that
+  changes a file only while another setting has a certain value ends its line
+  with that, such as `only when content is placeholder`, and `tfg formats
+  --json` gives it as `only_when`. Such a setting is refused while it would
+  change nothing, as before.
 
 - **`smallest` as a size.** `--size smallest`, or `size: smallest` in a
   recipe, makes each picture as small as it can be at the `width` and
   `height` you set, in all ten picture formats, and `--dry-run` still says the
-  size to the byte. With the label on, the label states the file's size and
-  its numerals change how a PNG or a JPG compresses, so it can carry up to
-  about a kilobyte more than its picture needs. With `--clean` the file is the
-  picture alone.
+  size to the byte. The file is the picture alone, with nothing added to reach
+  a size, whether the label is drawn in it or not. In the window it is
+  Smallest under How the size is given, on Single batch and Several batches,
+  for pictures, greyed out until the width and height are set.
 
 - **Generate into the same folder again.** A run into an output directory
   that already holds an earlier run is added beside it: every name of the run,
@@ -235,6 +263,48 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **A value to type stands out from the words describing it.** In the
+  explanation behind a field, a value you type as it is - `screens` and `all`
+  for the groups of `picture-sizes`, `10mb` for a size, `{index:04}` in a file
+  name, `cccccc` for a colour - is drawn in a code typeface and its own colour.
+  The site shows it as code, and `tfg preset show` and `tfg formats` print it
+  between backticks.
+- **The mouse wheel scrolls the window as far as the system says.** One notch
+  moves three lines of text, or as many as Windows is set to under Mouse,
+  Lines to scroll at a time, where it moved about half as far before. A
+  setting of one screen at a time is followed too. On Linux a notch is three
+  lines, and on macOS scrolling is unchanged.
+
+- **The window names list values and settings in words.** An English list
+  shows test pattern rather than test, rising tone rather than sweep and file
+  count limit rather than count_limit. Settings such as PDF version, Bounding
+  box and Records per line are no longer spelled out of their keys, and the
+  note under Width and Height calls them that. A recipe and the command line
+  write values and keys as before. The sentences `tfg formats` prints under
+  these settings use the same words, and a box for the format of the files
+  inside reads `such as png or csv`.
+- **The window's own sentences say what the screen shows.** Single batch no
+  longer promises one size. The explanations behind Seed, Label in each file,
+  Size, Limit to test, Expected outcome and Preset say what each does without
+  words from inside the program, and About names the tabs and buttons it
+  means. A switch reads on or off rather than true or false, in the line of a
+  folded section and behind its button. The memory setting on Preferences is
+  described in plain words.
+- **A refusal in the window names settings and list values as the screen
+  does.** In English it read "level_mix and entry_format" and "the
+  apache-combined shape", and now reads "Level mix and Entry format" and "the
+  Apache combined shape". In Polish the same refusal at the bottom of the form
+  left the setting's name out entirely. The command line prints every refusal
+  as before. The Polish label of Entry format now suits a log as well as an
+  archive.
+- **A refusal in the window speaks of batches and boxes, not of a recipe.**
+  It read "target 1 has no Size ... add size: 2mb, size-range: 1kb-8kb", and now
+  reads "Batch 1 has no Size ... type a size such as 2mb, or choose another way
+  under How the size is given". Hints name a box, a list or a tab rather than
+  a line of a recipe or a `tfg` command. The command line keeps its words,
+  except a few reasons that spoke of a recipe, such as "so the same settings
+  give the same files everywhere".
+
 - **On Windows, a path picked with Choose... has backslashes.** It is written
   the way Windows writes paths, the same text a drop of that folder or file
   puts in the box. It came with forward slashes before.
@@ -293,6 +363,17 @@ because it turns other people's test suites red.
 
 ### Fixed
 
+- **The smallest size a refusal names is one every file of the batch takes.**
+  Three 320x240 PNGs asked for at 1 B named the smallest size of the first
+  file, and that size was refused again, because each picture needs its own.
+  The refusal now names the smallest size every file can have, and the button
+  under it in the window puts that size in the box. Refusing a large batch
+  takes about as long as planning it. Several pictures with a width and height
+  also get a second button, for `smallest`, each at its own size.
+- **Several batches shows a format's settings the way Single batch does.**
+  The settings of a PDF stand under their headings there too, and a setting
+  that is a size, such as Entry size of a ZIP, shows its count of bytes under
+  the box. The same goes for the settings of a preset a batch builds on.
 - **Choose... is off while files are being made.** The output directory box
   was frozen during a run and the button beside it was not, so a folder picked
   mid run went into the box while the run went on writing into the old one.

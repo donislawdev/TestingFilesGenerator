@@ -103,7 +103,7 @@ func About(h Host) fyne.CanvasObject {
 	// start and this one did not need while it held four paragraphs. It holds
 	// the list of what the binary carries now, and a licence notice that cannot
 	// be read to the end is the one kind of notice that fails at its only job.
-	return container.NewVScroll(page)
+	return parts.VScroll(page)
 }
 
 // linkCard is a card whose button leads out of the program: what pressing it

@@ -60,6 +60,8 @@ func TestTheLongerExplanationOpensWhenAsked(t *testing.T) {
 		{text.FieldSeed(), text.DetailSeed()},
 		{text.FieldLabel(), text.DetailLabel()},
 	} {
+		// As the screen draws it: a value to type loses its marks.
+		field.detail = asDrawn(field.detail)
 		button := detailButtonBeside(screen, field.label)
 		if button == nil {
 			t.Errorf("%q has a longer explanation and no button that opens it", field.label)
@@ -166,7 +168,7 @@ func TestTheExplanationNeverUsesTheOverlayLayer(t *testing.T) {
 	// It has to be up before its absence anywhere else means anything. A guard
 	// that checked for an empty overlay without opening the explanation would
 	// pass on a button that does nothing.
-	if shown := allText(screen); !strings.Contains(shown, text.DetailSize()) {
+	if shown := allText(screen); !strings.Contains(shown, asDrawn(text.DetailSize())) {
 		t.Fatal("hovering showed nothing, so this guard is measuring a button that does not work")
 	}
 

@@ -143,7 +143,7 @@ func bareBytes(width, height int) int64 {
 func (generator) Plan(r format.Request) (format.Plan, error) {
 	label := ""
 	if r.Label {
-		label = r.LabelText("webp")
+		label = r.PictureLabel("webp")
 	}
 
 	w, h, err := chooseSize(r)

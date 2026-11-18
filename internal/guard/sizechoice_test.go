@@ -76,7 +76,11 @@ func chooseSizeWayIn(t *testing.T, o fyne.CanvasObject, position int, way string
 }
 
 // TestEveryWayOfStatingASizeIsOfferedAndOnlyOneIsOnTheScreen is the first half:
-// all three are reachable, and never two at once.
+// all of them are reachable, and never two boxes at once.
+//
+// Four ways and three boxes since 2026-11-17: smallest fills the box of one
+// size with its word, so choosing it leaves that box on the screen. The screen
+// opens on a picture, which is the format smallest is offered for.
 //
 // Reachable matters as much as exclusive. A switch that offered one way and hid
 // the other two behind nothing would make the invalid state unreachable by
@@ -87,6 +91,7 @@ func TestEveryWayOfStatingASizeIsOfferedAndOnlyOneIsOnTheScreen(t *testing.T) {
 		text.SizeWayExact():    text.FieldSize(),
 		text.SizeWayRange():    text.FieldSizeRange(),
 		text.SizeWayBoundary(): text.FieldBoundary(),
+		text.SizeWaySmallest(): text.FieldSize(),
 	}
 
 	content, _ := laidOutWindow(t)
@@ -112,7 +117,7 @@ func TestEveryWayOfStatingASizeIsOfferedAndOnlyOneIsOnTheScreen(t *testing.T) {
 			t.Errorf("the switch is on %q and the screen has no box called %q", way, box)
 		}
 		for other, hidden := range ways {
-			if other == way {
+			if other == way || hidden == box {
 				continue
 			}
 			if shown[hidden] {

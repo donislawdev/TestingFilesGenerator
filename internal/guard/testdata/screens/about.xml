@@ -39,9 +39,9 @@
 					</widget>
 				</container>
 			</container>
-			<widget pos="0,70" size="1092x1221" type="*widget.Scroll">
-				<container size="1092x2265">
-					<container pos="136,0" size="820x2265">
+			<widget pos="0,70" size="1092x1221" type="*parts.Scroll">
+				<container size="1092x2282">
+					<container pos="136,0" size="820x2282">
 						<container size="820x49">
 							<container pos="16,0" size="788x49">
 								<container size="788x24">
@@ -60,34 +60,35 @@
 								</widget>
 							</container>
 						</container>
-						<container pos="0,73" size="820x161">
-							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x161" strokeColor="button" strokeWidth="1"/>
-							<container size="820x161">
-								<container pos="16,16" size="788x129">
+						<container pos="0,73" size="820x178">
+							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x178" strokeColor="button" strokeWidth="1"/>
+							<container size="820x178">
+								<container pos="16,16" size="788x146">
 									<text bold size="788x20" textSize="17">How to use it</text>
-									<container pos="0,36" size="788x92">
-										<container size="788x92">
+									<container pos="0,36" size="788x109">
+										<container size="788x109">
 											<container size="788x16">
 												<text color="rgba(211,211,215,255)" size="7x16">•</text>
 												<container pos="15,0" size="772x16">
 													<widget pos="-6,-6" size="784x28" type="*widget.Label">
 														<widget size="784x28" type="*widget.RichText">
-															<text pos="6,6" size="363x16">Choose a preset, or fill in one batch on the first screen.</text>
+															<text pos="6,6" size="619x16">Choose a preset on Presets, or describe the files yourself on Single batch or Several batches.</text>
 														</widget>
 													</widget>
 												</container>
 											</container>
-											<container pos="0,20" size="788x16">
+											<container pos="0,20" size="788x33">
 												<text color="rgba(211,211,215,255)" size="7x16">•</text>
-												<container pos="15,0" size="772x16">
-													<widget pos="-6,-6" size="784x28" type="*widget.Label">
-														<widget size="784x28" type="*widget.RichText">
-															<text pos="6,6" size="434x16">Press Generate. The files and a manifest land in the output folder.</text>
+												<container pos="15,0" size="772x33">
+													<widget pos="-6,-6" size="784x45" type="*widget.Label">
+														<widget size="784x45" type="*widget.RichText">
+															<text pos="6,6" size="739x16">Press Preview to see what would be written, then Generate. The files and a manifest go into the folder named in</text>
+															<text pos="6,22" size="112x16">Output directory.</text>
 														</widget>
 													</widget>
 												</container>
 											</container>
-											<container pos="0,41" size="788x50">
+											<container pos="0,58" size="788x50">
 												<text color="rgba(211,211,215,255)" size="7x16">•</text>
 												<container pos="15,0" size="772x50">
 													<widget pos="-6,-6" size="784x62" type="*widget.Label">
@@ -104,7 +105,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,258" size="820x305">
+						<container pos="0,275" size="820x305">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x305" strokeColor="button" strokeWidth="1"/>
 							<container size="820x305">
 								<container pos="16,16" size="788x273">
@@ -134,7 +135,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,588" size="820x163">
+						<container pos="0,605" size="820x163">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x163" strokeColor="button" strokeWidth="1"/>
 							<container size="820x163">
 								<container pos="16,16" size="788x131">
@@ -165,7 +166,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,775" size="820x163">
+						<container pos="0,792" size="820x163">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x163" strokeColor="button" strokeWidth="1"/>
 							<container size="820x163">
 								<container pos="16,16" size="788x131">
@@ -197,7 +198,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,962" size="820x850">
+						<container pos="0,979" size="820x850">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x850" strokeColor="button" strokeWidth="1"/>
 							<container size="820x850">
 								<container pos="16,16" size="788x818">
@@ -923,7 +924,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,1837" size="820x301">
+						<container pos="0,1854" size="820x301">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x301" strokeColor="button" strokeWidth="1"/>
 							<container size="820x301">
 								<container pos="16,16" size="788x269">
@@ -1143,7 +1144,7 @@
 								</container>
 							</container>
 						</container>
-						<container pos="0,2163" size="820x102">
+						<container pos="0,2180" size="820x102">
 							<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x102" strokeColor="button" strokeWidth="1"/>
 							<container size="820x102">
 								<container pos="16,16" size="788x70">
@@ -1187,8 +1188,8 @@
 					<linearGradient pos="0,-8" size="1092x8"/>
 				</widget>
 				<widget pos="1086,0" size="6x1221" type="*widget.scrollBarArea">
-					<widget pos="3,0" size="3x658" type="*widget.scrollBar">
-						<rectangle fillColor="scrollbar" radius="3" size="3x658"/>
+					<widget pos="3,0" size="3x653" type="*widget.scrollBar">
+						<rectangle fillColor="scrollbar" radius="3" size="3x653"/>
 					</widget>
 				</widget>
 			</widget>

@@ -46,7 +46,8 @@ func (pl *planning) files(ctx context.Context, t *Target, desc format.Descriptor
 		r.Bytes = size
 		p, err := planFile(ctx, t, desc, r)
 		if err != nil {
-			return atTarget(position, t, err)
+			walk := batchWalk{t: t, desc: desc, targetSeed: targetSeed, damaged: damaged}
+			return atTarget(position, t, refusedForTheBatch(ctx, walk, idx, err))
 		}
 
 		// A size drawn from the range that this format cannot write was moved

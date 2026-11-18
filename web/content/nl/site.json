@@ -137,7 +137,7 @@
         "opslag die nul bytes als een mislukte upload leest en blijft opnieuw proberen"
       ],
       "details": {
-        "formats": "Uit welke formaten de set is opgebouwd. Laat het op all staan voor elk formaat van deze build, of noem de formaten die je systeem accepteert."
+        "formats": "Uit welke formaten de set is opgebouwd. Laat het op `all` staan voor elk formaat van deze build, of noem de formaten die je systeem accepteert."
       }
     },
     "filename-handling": {
@@ -220,6 +220,22 @@
         "far-over": "Hoe ver boven de limiet het ene grote bestand komt. Zet het uit waar het schrijven van een veelvoud van de limiet de schijfruimte niet waard is.",
         "bulk": "Hoeveel bestanden de bulkupload bevat. Nul laat die groep helemaal uit de set."
       }
+    },
+    "picture-sizes": {
+      "question": "Neemt mijn systeem afbeeldingen aan in de formaten die schermen en platforms gebruiken?",
+      "title": "Afbeeldingsformaten",
+      "pageTitle": "Testafbeeldingen in gangbare formaten - schermen, avatars, sociale media",
+      "description": "Afbeeldingen in de formaten van HD-, Full HD-, QHD- en 4K-schermen, van profielfoto's en van de omslagfoto's, berichten en miniaturen die sociale platforms vragen, elk zo klein als het kan.",
+      "catches": [
+        "een grens voor breedte of hoogte die voor één vorm bedoeld was en een andere weigert, zoals een profielachtergrond van 1584 px breed",
+        "een miniatuur die wordt bijgesneden of platgedrukt omdat de code een liggende afbeelding verwacht en er een staande binnenkomt",
+        "een afbeelding met een oneven hoogte, zoals 1200 x 627, geweigerd door een stap die alleen even formaten aanneemt",
+        "een 4K-afbeelding die op weg naar een miniatuur zonder tijd of geheugen komt, hoewel het bestand zelf klein is"
+      ],
+      "details": {
+        "groups": "Welke formaten de set bevat: `screens` voor schermformaten, `avatars` voor profielfoto's en `social` voor omslagfoto's, banners, berichten en miniaturen. Laat het op `all` staan voor allemaal.",
+        "content": "Wat de afbeelding toont. Een testpatroon is om te controleren hoe een bestand wordt gelezen. Een placeholder is een egale kleur met tekst in het midden, om een pagina op te maken voordat de echte afbeeldingen er zijn."
+      }
     }
   },
   "commands": {
@@ -271,9 +287,10 @@
     "sizes separated by commas": "groottes gescheiden door komma's",
     "format ids separated by commas": "formaat-id's gescheiden door komma's",
     "format ids separated by commas, or all": "formaat-id's gescheiden door komma's, of all",
+    "group names separated by commas, or all": "groepsnamen gescheiden door komma's, of all",
     "extensions separated by commas": "extensies gescheiden door komma's",
-    "the id of a format, as tfg formats lists them": "de id van een formaat, zoals tfg formats ze opsomt",
-    "the id of a picture format, as tfg formats lists them": "de id van een afbeeldingsformaat, zoals tfg formats ze opsomt",
+    "the id of a format, such as png or csv": "de id van een formaat, zoals png of csv",
+    "the id of a picture format, such as png or jpg": "de id van een afbeeldingsformaat, zoals png of jpg",
     "one line of up to 100 characters": "één regel van maximaal 100 tekens",
     "a colour such as cccccc or ccc": "een kleur zoals cccccc of ccc",
     "the password, in plain text": "het wachtwoord, als platte tekst",

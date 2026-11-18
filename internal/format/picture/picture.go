@@ -11,7 +11,6 @@ package picture
 
 import (
 	"strconv"
-	"strings"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
@@ -59,7 +58,7 @@ func Properties(group string, d Details) []format.Property {
 		},
 		{
 			Name: Format, Kind: format.PropertyText,
-			Shape:   "the id of a picture format, as tfg formats lists them",
+			Shape:   "the id of a picture format, such as png or jpg",
 			Default: DefaultFormat,
 			Detail:  d.Format,
 			Group:   group,
@@ -119,7 +118,7 @@ func Of(id string) (desc format.Descriptor, ok bool, err error) {
 	if err != nil {
 		return format.Descriptor{}, false, err
 	}
-	return desc, strings.HasPrefix(desc.MediaType, "image/"), nil
+	return desc, desc.IsPicture(), nil
 }
 
 // Formats are the formats of this build whose files are pictures, from the
@@ -127,7 +126,7 @@ func Of(id string) (desc format.Descriptor, ok bool, err error) {
 func Formats() []string {
 	var out []string
 	for _, d := range format.All() {
-		if strings.HasPrefix(d.MediaType, "image/") {
+		if d.IsPicture() {
 			out = append(out, d.ID)
 		}
 	}

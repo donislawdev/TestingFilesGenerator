@@ -88,7 +88,7 @@ func ParseSize(s string) (int64, error) {
 	// The decimal point stays, because 1.5gib is a real thing people write.
 	if !plainDecimal(digits) {
 		return 0, RefuseAbout(SettingSize, Says("core.SizeNotPlain",
-			"{setting} %q is not a plain number: write the digits out, as 10mb, 1.5gib or 1048576. Spellings such as 1e5, 0x10 or 1_000 are refused rather than guessed at, the same as in a recipe", A("Value", s)))
+			"{setting} %q is not a plain number: write the digits out, as 10mb, 1.5gib or 1048576. Spellings such as 1e5, 0x10 or 1_000 are refused rather than guessed at", A("Value", s)))
 	}
 	return parseDecimal(s, digits, multiplier)
 }
