@@ -340,14 +340,15 @@ jobs:
 
       - name: the other packages
         # Every package outside internal/guard, in part 0 alone. None holds a
-        # test today, and one written there has to run as well.
+        # test today, and one written there has to run as well. The list goes
+        # to go test through xargs: the bash of macOS is 3.2 and has no
+        # mapfile (TestAJobOnMacOSUsesOnlyWhatItsBashHas).
         if: ${{ !cancelled() && matrix.part == 0 }}
         timeout-minutes: 5
         run: |
           set -euo pipefail
           go list -tags "$(cat .github/build-tags)" ./... | grep -v '/internal/guard$' > others.txt
-          mapfile -t others < others.txt
-          go test -tags "$(cat .github/build-tags)" -count=1 -timeout 4m "${others[@]}"
+          xargs go test -tags "$(cat .github/build-tags)" -count=1 -timeout 4m < others.txt
         shell: bash
 
       - name: build the command line binary

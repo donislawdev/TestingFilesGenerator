@@ -247,9 +247,13 @@ var provenByProbe = map[string]string{
 		"foldAbove sets: red, every batch left open.",
 	"TestAPartRunsTheTestsItIsHandedAndNoOther": "three children of its own, one of them a refusal, each with a deadline - " +
 		"and broken by hand on 2026-11-18 by a TestMain that ignores the file: red after 90 s, the child ran the whole package " +
-		"from its first test.",
+		"from its first test. Broken by hand again that day by a TestMain that reads a relative path from the package's " +
+		"directory, as every part of the first run of the parts did: red, mine.txt cannot be read.",
 	"TestAVerdictPassesOnlyWhenEveryPartRanAndPassed": "a table of runs, the first of which has to pass, so the refusals " +
 		"are not the script refusing everything.",
+	"TestAJobOnMacOSUsesOnlyWhatItsBashHas": "a table of canaries of its own - each construct in a job on macOS, in a " +
+		"script it names and in a local action it uses has to be found, the same on Linux and a comment have not to be - " +
+		"and it asks that it reached the test job of ci.yml and the script that job hands its part to.",
 	"TestAVerdictOfPartsRunsWhateverThePartsDid": "a canary of its own - the test job's verdict read with if: success() " +
 		"has to be found wrong.",
 	"TestAGridAsksEveryPartOfAFieldForItsSizeOnce": "a canary of its own - a sentence behind a layout that asks it twice " +

@@ -51,9 +51,21 @@ var guardName = regexp.MustCompile(`^(Test|Fuzz|Example)[A-Za-z0-9_]*$`)
 // runThePartListed points -test.run at the names in the file at path, one or
 // more to a line. Nothing happens when path is empty or a run or a list was
 // asked for by name.
+//
+// A relative path is read from the root of the module, where ci.yml writes
+// the file and runs go test. go test starts this binary in the package's own
+// directory, and read from there the same path names a file that is not
+// there.
 func runThePartListed(path string) error {
 	if path == "" || flag.Lookup("test.run").Value.String() != "" || flag.Lookup("test.list").Value.String() != "" {
 		return nil
+	}
+	if !filepath.IsAbs(path) {
+		root, err := moduleRoot()
+		if err != nil {
+			return fmt.Errorf("%s names %s, a path read from the root of the module, and the root cannot be found: %w", guardPartVariable, path, err)
+		}
+		path = filepath.Join(root, path)
 	}
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -74,41 +86,51 @@ func runThePartListed(path string) error {
 // TestAPartRunsTheTestsItIsHandedAndNoOther runs this binary again with a part
 // of two cheap guards and asks which tests started.
 //
-// Three children. Handed the file, the two in it run and nothing else. Handed
-// the file and one test by name, only that test runs - the child a guard
-// starts. Handed an empty file, the binary refuses before running anything. A
+// The first two children are started the way ci.yml starts a part: the file
+// at the root of a module, named by a path relative to it, and the binary in
+// the package's directory below, where go test starts it. Handed the file, the
+// two in it run and nothing else. Handed the file and one test by name, only
+// that test runs - the child a guard starts. The third is handed an empty file
+// by its full path and refuses, having read it, before running anything. A
 // TestMain that ignored the file would run all of the package, so every child
 // has a deadline and a part that reached a third test fails here in seconds
 // rather than in eighteen minutes.
 func TestAPartRunsTheTestsItIsHandedAndNoOther(t *testing.T) {
 	part := []string{"TestAGridAsksEveryPartOfAFieldForItsSizeOnce", "TestANewBatchIsTheOneOpen"}
-	listed := filepath.Join(t.TempDir(), "part.txt")
-	writeOrFail(t, listed, []byte(strings.Join(part, "\n")+"\n"))
+	module := t.TempDir()
+	writeOrFail(t, filepath.Join(module, "go.mod"), []byte("module part\n"))
+	writeOrFail(t, filepath.Join(module, "mine.txt"), []byte(strings.Join(part, "\n")+"\n"))
+	inPackage := filepath.Join(module, "internal", "guard")
+	if err := os.MkdirAll(inPackage, 0o755); err != nil {
+		t.Fatal(err)
+	}
 	empty := filepath.Join(t.TempDir(), "empty.txt")
 	writeOrFail(t, empty, []byte("\n"))
 
-	ran, out, err := runPart(t, listed)
+	ran, out, err := runPart(t, inPackage, "mine.txt")
 	if err != nil || !slices.Equal(ran, part) {
-		t.Fatalf("handed %v, the binary ran %v (%v):\n%s", part, ran, err, out)
+		t.Fatalf("handed %v in mine.txt at the root of the module, as ci.yml hands a part, the binary ran %v (%v):\n%s", part, ran, err, out)
 	}
-	ran, out, err = runPart(t, listed, "-test.run=^"+part[1]+"$")
+	ran, out, err = runPart(t, inPackage, "mine.txt", "-test.run=^"+part[1]+"$")
 	if err != nil || !slices.Equal(ran, part[1:]) {
 		t.Fatalf("handed the part and asked for %s by name, the binary ran %v (%v), and a guard's child would run the part again:\n%s", part[1], ran, err, out)
 	}
-	ran, out, err = runPart(t, empty)
-	if err == nil || len(ran) != 0 || !strings.Contains(out, guardPartVariable) {
-		t.Fatalf("handed an empty part, the binary ran %v (%v) without refusing in words naming %s:\n%s", ran, err, guardPartVariable, out)
+	ran, out, err = runPart(t, "", empty)
+	if err == nil || len(ran) != 0 || !strings.Contains(out, guardPartVariable+" names "+empty+" as the tests to run, and it lists none") {
+		t.Fatalf("handed an empty part, the binary ran %v (%v) without refusing in words naming %s and the file it read:\n%s", ran, err, guardPartVariable, out)
 	}
 }
 
-// runPart runs this test binary with the part file and args, and returns the
-// top level tests that started, sorted - they start in the order of the
-// source, not of the file.
-func runPart(t *testing.T, part string, args ...string) (ran []string, out string, err error) {
+// runPart runs this test binary in dir, or in this package's directory when
+// dir is empty, with the part file and args. It returns the top level tests
+// that started, sorted - they start in the order of the source, not of the
+// file.
+func runPart(t *testing.T, dir, part string, args ...string) (ran []string, out string, err error) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, os.Args[0], append([]string{"-test.v", "-test.count=1", "-test.timeout=90s"}, args...)...)
+	cmd.Dir = dir
 	defer func() { slices.Sort(ran) }()
 	cmd.Env = append(slices.DeleteFunc(os.Environ(), func(kv string) bool {
 		return strings.HasPrefix(kv, guardPartVariable+"=")
