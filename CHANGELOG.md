@@ -271,10 +271,15 @@ because it turns other people's test suites red.
   of sizes, PDF and Office files gain too, and text is as fast as before. The
   files are the same, and pictures worked out at once stay inside the memory
   setting.
-- **Scrolling a long list on the Several batches screen is smoother.** With
-  forty batches open, each turn of the mouse wheel takes the window about 11 ms
-  rather than 15 to 20 ms, inside the time of one screen refresh. Batches you
-  fold cost almost nothing to scroll past.
+- **Adding or copying a batch on the Several batches screen folds the
+  batches above it.** The batch you just made is open under them, and each
+  folded batch shows in one line what it holds. Click a batch's title to open
+  it again. If Generate or Preview is refused because of a box in a folded
+  batch, that batch opens by itself. Batches below a copy stay as they were.
+- **Scrolling a long list on the Several batches screen is smoother.** Folded
+  batches cost almost nothing to scroll past. With forty batches open, each
+  turn of the mouse wheel takes the window about 8 to 11 ms rather than 15 to
+  20 ms, inside the time of one screen refresh.
 - **A value to type stands out from the words describing it.** In the
   explanation behind a field, a value you type as it is - `screens` and `all`
   for the groups of `picture-sizes`, `10mb` for a size, `{index:04}` in a file

@@ -11,10 +11,32 @@ import (
 // on 2026-11-03, when that file reached its ceiling - the screen builds the
 // batches, and this is the part that only changes how many there are.
 
-// addBatch puts another batch at the end of the list.
+// addBatch puts another batch at the end of the list, open under the ones
+// before it, which fold - see foldAbove.
 func (r *Recipe) addBatch() {
+	foldAbove(r, len(r.batches))
 	newBatchAtTheEnd(r)
 	afterAPress(r)
+}
+
+// foldAbove folds every batch above the place a new one is about to stand,
+// so the batch just added or copied is the one open, under heads that each
+// say what their batch holds (the owner's choice of 2026-11-18, O356).
+//
+// What it is for, measured with docs/PLAN-AND-WHEEL-2026-11-18.md section 2:
+// the window measures every shown field before each frame it draws after a
+// notch of the wheel, so forty open batches cost it 11 ms a notch and forty
+// folded ones too little to read. A batch was open from the moment it was
+// added until somebody folded it, and a list built by pressing Add batch was
+// a list of open batches. Batches below a copy keep whatever state they had:
+// nothing a person did not touch moves under them.
+//
+// Folded is not out of reach: a press refused about a field in a folded batch
+// opens that batch first (runner.unfold).
+func foldAbove(r *Recipe, place int) {
+	for _, b := range r.batches[:place] {
+		b.folded = true
+	}
 }
 
 // newBatchAtTheEnd puts a batch after the last one, without saying what the
@@ -60,6 +82,7 @@ func (r *Recipe) duplicateBatch(index int) {
 		to.sizeWay.SetSelected(from.sizeWay.Selected)
 	}
 
+	foldAbove(r, index+1)
 	rest := append([]*batch{to}, r.batches[index+1:]...)
 	r.batches = append(r.batches[:index+1], rest...)
 	afterAPress(r)

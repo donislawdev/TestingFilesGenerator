@@ -308,7 +308,7 @@ type screenScene struct {
 }
 
 func screenScenes() []screenScene {
-	return []screenScene{
+	return append([]screenScene{
 		// The whole catalogue, every part in every state, as one picture.
 		// This is the one scene where a change of a token shows on every
 		// control at once, which is what makes it the before-and-after of
@@ -520,17 +520,33 @@ func screenScenes() []screenScene {
 			set: func(t *testing.T, s scene) {
 				menuUnder(t, s.tab, text.FieldPreset()).SetSelected("upload-validation")
 			}},
+	}, recipeScenes()...)
+}
 
-		// The recipe screen, which arrived on 2026-08-18. It has states neither
-		// of the others can be put into, and every one of them is here because a
-		// state with no picture is a state nobody has looked at - docs/UX.md
-		// section 7.0 gate 1.
+// recipeScenes is the recipe screen, which arrived on 2026-08-18. It has
+// states neither of the others can be put into, and every one of them is here
+// because a state with no picture is a state nobody has looked at -
+// docs/UX.md section 7.0 gate 1. A list of its own since 2026-11-18, when the
+// whole list reached the length a person can follow.
+func recipeScenes() []screenScene {
+	return []screenScene{
 		{name: "recipe", tab: text.TabRecipe()},
 		// A second batch. This is the state the whole screen exists for, and it
 		// is also the one that proves the form does not fall apart when the
 		// blocks repeat - two batches means two fields called Size, two called
 		// Format, and a heading over each block saying which is which.
+		//
+		// Adding a batch folds the one above it since 2026-11-18 (foldAbove),
+		// so the first is opened again: this picture is of the two blocks one
+		// under the other.
 		{name: "recipe-two-batches", tab: text.TabRecipe(), set: func(t *testing.T, s scene) {
+			pressNamed(t, s.tab, text.ButtonAddBatch())
+			openFold(t, s.tab, "", text.BatchHeading(1))
+		}},
+		// What a press of Add batch leaves since 2026-11-18: the batch above
+		// folded to its head, saying what it holds, and the new one open under
+		// it (foldAbove, O356).
+		{name: "recipe-batch-added", tab: text.TabRecipe(), set: func(t *testing.T, s scene) {
 			pressNamed(t, s.tab, text.ButtonAddBatch())
 		}},
 		// Everything wrong at once on an untouched screen: no group name and no

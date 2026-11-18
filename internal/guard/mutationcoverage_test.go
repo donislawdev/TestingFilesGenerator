@@ -242,6 +242,9 @@ var provenByProbe = map[string]string{
 	"TestThePicturesPlannedAtOnceHoldNoMoreThanTheMemorySettingLeaves": "a reach check of its own - with room to spare the " +
 		"pictures have to be seen planned beside each other - and broken by hand on 2026-11-18 by dropping the memory bound " +
 		"and by not planning the first file of a target alone: red both times.",
+	"TestANewBatchIsTheOneOpen": "a reach check of its own - the screen has to open with one open batch and the " +
+		"first batch has to be shut before it is opened again - and broken by hand on 2026-11-18 by taking out what " +
+		"foldAbove sets: red, every batch left open.",
 	"TestAGridAsksEveryPartOfAFieldForItsSizeOnce": "a canary of its own - a sentence behind a layout that asks it twice " +
 		"has to be found - every counted thing asked exactly once, so a field the grid never reached is red too, and run on " +
 		"2026-11-18 against the grid before the change: red, a field asked 5 times and a field in a group 15.",

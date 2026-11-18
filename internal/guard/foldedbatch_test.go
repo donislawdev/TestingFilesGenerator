@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
@@ -157,6 +158,60 @@ func TestAFoldedBatchSaysWhatIsInIt(t *testing.T) {
 	}
 }
 
+// openBatches is which batches stand open, from the first.
+func openBatches(t *testing.T, o fyne.CanvasObject) []bool {
+	t.Helper()
+	var open []bool
+	for i := 1; i <= batchFolds(o); i++ {
+		open = append(open, foldTitled(t, o, "", text.BatchHeading(i)).Open())
+	}
+	return open
+}
+
+// TestANewBatchIsTheOneOpen keeps a list built with Add batch a list of heads
+// with the batch just made open under them - foldAbove, the owner's choice of
+// 2026-11-18 (O356). The window measures every shown field before each frame
+// it draws after a notch of the wheel: forty open batches cost it 11 ms a
+// notch, forty folded too little to read.
+//
+// A copy folds the batches above it and leaves the ones below as they were,
+// so a batch somebody opened further down stays open.
+func TestANewBatchIsTheOneOpen(t *testing.T) {
+	screen := window.NewRecipe(newFakeHost(t))
+	batches := screen.Object()
+	if got := openBatches(t, batches); !slices.Equal(got, []bool{true}) {
+		t.Fatalf("the screen opened with batches open %v, not one open batch, so what follows is not asked of a fresh screen", got)
+	}
+
+	pressNamed(t, batches, text.ButtonAddBatch())
+	pressNamed(t, batches, text.ButtonAddBatch())
+	if got := openBatches(t, batches); !slices.Equal(got, []bool{false, false, true}) {
+		t.Errorf("after two presses of %q the batches stand open %v, wanted only the last one open",
+			text.ButtonAddBatch(), got)
+	}
+
+	// The first opened again, then copied: the copy stands second and open,
+	// the first folds, and the two below keep what they had - the second
+	// folded, the third open.
+	// The first Copy button in the tree, which is the first batch's -
+	// pressNamed takes the last.
+	openFold(t, batches, "", text.BatchHeading(1))
+	var first *parts.Button
+	walk(batches, func(obj fyne.CanvasObject) {
+		if b, ok := obj.(*parts.Button); ok && b.Text == text.ButtonDuplicateBatch() && first == nil {
+			first = b
+		}
+	})
+	if first == nil {
+		t.Fatalf("there is no %q button on the screen", text.ButtonDuplicateBatch())
+	}
+	first.OnTapped()
+	if got := openBatches(t, batches); !slices.Equal(got, []bool{false, true, false, true}) {
+		t.Errorf("after copying the first of three batches they stand open %v, wanted [false true false true]: "+
+			"the batch copied folds, the copy is open and what is below it keeps its state", got)
+	}
+}
+
 // TestARefusalOpensTheBatchItIsAbout is the guard that lets this screen fold at
 // all, and it is worth saying why in full.
 //
@@ -185,7 +240,10 @@ func TestARefusalOpensTheBatchItIsAbout(t *testing.T) {
 
 	// Counted by a field NAME rather than by what was typed, because what is
 	// typed lives in an entry and the words on the screen are labels. Two
-	// batches with one folded leave one of each name showing.
+	// batches with one folded leave one of each name showing. Adding the
+	// second folded the first (foldAbove), so the first is opened again -
+	// openFold asserts it was shut - and the refused one folded.
+	openFold(t, batches, "", text.BatchHeading(1))
 	foldBatch(t, batches, 2)
 	if got := strings.Count(shownText(batches), text.FieldNameTemplate()); got != 1 {
 		t.Fatalf("batch 2 was folded and %d boxes called %q are still on the screen, so this guard "+

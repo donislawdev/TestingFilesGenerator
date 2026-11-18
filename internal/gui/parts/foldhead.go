@@ -196,7 +196,15 @@ func (r *foldHeadRenderer) MinSize() fyne.Size { return fyne.NewSize(0, 0) }
 // Refresh draws the state: a fill under the pointer, a ring for the keyboard,
 // and neither at rest. The ring is a line and not a fill, for the reason Ring
 // gives.
+//
+// It lays the two out again first, because folding changes how wide the
+// words are - the summary shows while folded - and leaves the row the same
+// size, so the toolkit does not lay it out. Until 2026-11-18 a batch folded
+// and opened again kept a fill as wide as its title and its summary under
+// the pointer (found in the stored screens when batches began to fold on
+// their own, O356).
 func (r *foldHeadRenderer) Refresh() {
+	r.Layout(r.head.Size())
 	if r.head.hovered {
 		r.back.FillColor = PaletteColour(theme.ColorNameHover, theme.VariantDark)
 	} else {
