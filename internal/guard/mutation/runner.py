@@ -383,6 +383,27 @@ def mutation_applied(path: Path, original: bytes, mutant: bytes) -> Iterator[Non
         write_checked(path, original, "the original")
 
 
+@contextlib.contextmanager
+def planted(path: Path, body: bytes) -> Iterator[None]:
+    """Hold a new file on disk for the length of the block, then take it away.
+
+    The canary's counterpart of mutation_applied. A file already there is
+    refused rather than overwritten, and the file is taken away in a finally,
+    because every entry after the canary on the same worker would otherwise
+    build against it and come back BROKEN.
+    """
+    if path.exists():
+        raise TreeCorrupted(f"{path}: already there, so planting a file would overwrite it")
+    try:
+        write_checked(path, body, "the planted file")
+        yield
+    finally:
+        try:
+            path.unlink(missing_ok=True)
+        except OSError as err:
+            raise TreeCorrupted(f"{path}: the planted file could not be taken away - {err}") from err
+
+
 class Baselines:
     """What every mutated file held when the run started.
 

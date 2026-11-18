@@ -25,12 +25,18 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+from canary import CANARY, fault as canary_fault  # noqa: E402
 from entries import MUTATIONS  # noqa: E402
 from pool import ROOT  # noqa: E402
 
 
 def main():
     missing, doubled = [], []
+    # The canary is not an entry, and every entry rests on it: when it cannot
+    # be planted, a run stops before its first entry (O366).
+    stale = canary_fault(ROOT)
+    if stale:
+        missing.append((CANARY[0], CANARY[1], stale))
     for label, rel, old, _new, _test in MUTATIONS:
         path = ROOT / rel
         if not path.exists():

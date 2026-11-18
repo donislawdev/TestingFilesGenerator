@@ -25,31 +25,17 @@ import threading
 import time
 from pathlib import Path
 
+from canary import CANARY, fault as canary_fault
 from entries import MUTATIONS
 from pool import DEFAULT_WORKERS, TreeDamaged, TreesNotMade, drop_trees, make_trees
 from runner import (
     record_proof, proofs_recorded, require_go, unbuilt_files, unjudged_reason,
     ROOT, Budget, TreeCorrupted, below_floor, free_bytes, measured_ceiling,
-    mutation_applied, no_room_for, run_test, time_cap_for,
+    mutation_applied, no_room_for, planted, run_test, time_cap_for,
 )
 from selection import (
     canary as selection_canary, changed_files, entries_at, guard_files, reached,
     shard, shard_count,
-)
-
-
-# The canary. A mutation that deliberately does not compile, so the detection
-# of that case is exercised on every run rather than only on the day somebody
-# writes a broken mutation by accident.
-#
-# Without it the BROKEN path is code nobody proves. That is the same gap this
-# whole script exists to close, one level further in.
-CANARY = (
-    "canary: a mutation that cannot compile must report BROKEN",
-    "internal/core/label.go",
-    "func Label(formatID string, bytes int64, seed uint64) string {",
-    "func Label(formatID string, bytes int64, seed uint64) string {\n\tvar orphan int",
-    "TestOurOwnGeneratorsHaveNotDrifted",
 )
 
 
@@ -106,23 +92,29 @@ def first_complaint(output: str) -> str:
 
 
 def check_canary_in(tree) -> bool:
-    """True when a non compiling mutation is correctly reported as BROKEN.
+    """True when a tree that does not compile is correctly reported as BROKEN.
 
     Runs in a worker tree like every other entry, so the real repository is
-    never mutated - not even by the one entry that is meant to leave the tree
+    never touched - not even by the one entry that is meant to leave the tree
     unable to compile. The complaint has to come through as well, naming the
-    file and the variable the canary added, or a BROKEN below says nothing
-    about why.
+    planted file and its variable, or a BROKEN below says nothing about why.
+    A canary that cannot be planted is a verdict, not a crash: a run that
+    crashes here writes no report, and that reads as a part that did not
+    report (O366).
     """
-    label, rel, old, new, test = CANARY
-    path = tree.file(rel)
-    original = path.read_bytes()
-    if old.encode() not in original:
-        print(f"SKIP  {label}\n      pattern not found in {rel} - the canary is stale")
+    label, rel, body, test = CANARY
+    stale = canary_fault(tree.path)
+    if stale:
+        print(f"SKIP  {label}\n      {stale} - the canary is stale")
         return False
 
-    with mutation_applied(path, original, original.replace(old.encode(), new.encode(), 1)):
-        result = run_test(test, tree.path)
+    try:
+        with planted(tree.file(rel), body.encode()):
+            result = run_test(test, tree.path)
+    except TreeCorrupted as damage:
+        tree.rebuild()
+        print(f"SKIP  {label}\n      {damage} - the worker tree was rebuilt")
+        return False
 
     if result.compiled:
         print(f"HOLE  {label}\n      a tree that does not compile was reported as compiling, "
@@ -453,6 +445,14 @@ def chosen_entries(args: argparse.Namespace, say) -> list[int] | None:
         for fault in faults:
             say(f"  {fault}")
         return None
+    # Asked here as well as before the first entry, because here is where a
+    # pull request sees it: the plan stops red, where a canary failing inside
+    # a part is only a warning on a pull request.
+    stale = canary_fault(ROOT)
+    if stale:
+        say(f"the canary cannot be planted, so no BROKEN verdict could be trusted and nothing was run:\n"
+            f"  {stale}")
+        return None
     if not args.changed:
         return list(range(len(MUTATIONS)))
     changed = changed_files(ROOT, args.changed)
@@ -525,7 +525,7 @@ def main() -> int:
     # Asked once, before anything is copied. The answer does not change while
     # the run goes, and refusing here costs a syscall where finding out the
     # hard way costs the whole run and a log ending in BROKEN lines. The
-    # canary mutates a file too, hence the extra entry.
+    # canary writes a file too, hence the extra entry.
     cramped = no_room_for(total + 1, workers)
     if cramped:
         print(f"not enough disk for this run\n  {cramped}")
