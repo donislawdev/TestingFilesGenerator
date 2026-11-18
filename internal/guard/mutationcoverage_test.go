@@ -270,6 +270,10 @@ var provenByProbe = map[string]string{
 	"TestAWalkThatRemembersWritesTheBytesOfOneThatMeasuresAgain": "it asks that it reached ten picture formats and three " +
 		"placeholders. Broken by hand on 2026-11-18 by a Measure that hands back what it kept for another key: red in the " +
 		"walk without a size of jpg, png, gif and ico.",
+	"TestACaseWritingThroughALinkSkipsOnlyWhereTheHostRefusesAFreeName": "a table of its own, asked of " +
+		"requireNewNamesThroughLinkWith rather than of the predicate, as TestACaseBuiltOnALinkSkipsOnlyOffCI is. Broken by " +
+		"hand on 2026-11-18 by every refusal counted as the host's and by the host's refusal skipped on CI: red both times. " +
+		"A probe that left its name behind turned TestADirectoryReachedThroughALinkStillWorks red.",
 	"TestAMeasurementIsKeptForAnEqualKeyOnly": "a table whose first row has to be measured, so the rows after it are not " +
 		"a Measure that never measures. Broken by hand on 2026-11-18 with the key comparison taken out: red.",
 	"TestEveryMeasurementIsAFunctionOfItsKeyAlone": "a table of canaries of its own - a closure, a variable and a method " +

@@ -295,6 +295,7 @@ func TestADirectoryReachedThroughALinkStillWorks(t *testing.T) {
 	}
 	linked := filepath.Join(root, "linked")
 	plantLink(t, real, linked)
+	requireNewNamesThroughLink(t, linked)
 
 	// Generate through the link, then verify and clean up through it. Every
 	// path involved resolves inside, so all three have to behave normally.

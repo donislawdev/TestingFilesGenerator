@@ -58,6 +58,7 @@ func TestALinkInsideTheDirectoryPointingBackInsideItIsNotAnEscape(t *testing.T) 
 	}
 	out := filepath.Join(root, "out")
 	plantLink(t, actual, out)
+	requireNewNamesThroughLink(t, out)
 
 	if code, _, errOut := run(t,
 		"generate", "--format", "txt", "--size", "1kb", "--count", "1",
