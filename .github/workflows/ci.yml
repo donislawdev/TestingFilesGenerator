@@ -1267,6 +1267,33 @@ jobs:
           sudo apt-get install -y --no-install-recommends             libgl1-mesa-dev             libwayland-dev             libx11-dev             libxkbcommon-dev             xorg-dev
         shell: bash
 
+      - name: the modules, fetched again when the proxy breaks off
+        # O364. The module cache setup-go restores is saved by the job that
+        # finishes first, and that one builds without CGO, so this job fetches
+        # the toolkit's Linux modules on every run - 28 of them on main
+        # (2026-11-16). On 2026-11-18 proxy.golang.org broke a stream off in
+        # the middle twice ("stream error ... INTERNAL_ERROR"), and go test
+        # ended "[setup failed]" before it reached a test. Three tries with a
+        # pause between them: a dropped stream is fetched again, and a proxy
+        # that is down still fails the job, by name. With no argument go mod
+        # download fetches every module go.mod requires, which since go 1.17
+        # is every module a build or test of this module needs.
+        timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          for try in 1 2 3; do
+            if go mod download; then
+              exit 0
+            fi
+            echo "go mod download failed on try $try of 3"
+            if [ "$try" -lt 3 ]; then
+              sleep 20
+            fi
+          done
+          echo "go mod download failed three times. The proxy is down or a module is gone, see the errors above."
+          exit 1
+        shell: bash
+
       - name: the machine this part runs on
         # O298, 2026-11-03. Part 2 ran past its twenty minutes in one run of
         # three since 2026-10-26, main included, and the log named the runner's
