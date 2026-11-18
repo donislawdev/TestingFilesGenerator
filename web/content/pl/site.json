@@ -137,7 +137,7 @@
         "magazyn, który zero bajtów uznaje za nieudane przesłanie i ponawia je bez końca"
       ],
       "details": {
-        "formats": "Z jakich formatów powstaje zestaw. Zostaw all, żeby dostać każdy format tej wersji, albo wymień te, które przyjmuje Twój system."
+        "formats": "Z jakich formatów powstaje zestaw. Zostaw `all`, żeby dostać każdy format tej wersji, albo wymień te, które przyjmuje Twój system."
       }
     },
     "filename-handling": {
@@ -233,7 +233,7 @@
         "obrazek 4K, któremu w drodze do miniatury kończy się czas albo pamięć, choć sam plik jest mały"
       ],
       "details": {
-        "groups": "Jakie rozmiary zawiera zestaw: screens to rozmiary ekranów, avatars to zdjęcia profilowe, a social to okładki, banery, posty i miniatury. Zostaw all, żeby dostać wszystkie.",
+        "groups": "Jakie rozmiary zawiera zestaw: `screens` to rozmiary ekranów, `avatars` to zdjęcia profilowe, a `social` to okładki, banery, posty i miniatury. Zostaw `all`, żeby dostać wszystkie.",
         "content": "Co pokazuje obrazek. Obraz testowy to wzór do sprawdzania, jak plik jest odczytywany. Obraz zastępczy to jednolity kolor z napisem na środku, do układania strony, zanim powstaną prawdziwe obrazki."
       }
     }

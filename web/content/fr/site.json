@@ -137,7 +137,7 @@
         "un stockage qui lit zéro octet comme un envoi échoué et recommence sans fin"
       ],
       "details": {
-        "formats": "Les formats dont le jeu est fait. Laissez all pour tous les formats de cette version, ou nommez ceux que votre système accepte."
+        "formats": "Les formats dont le jeu est fait. Laissez `all` pour tous les formats de cette version, ou nommez ceux que votre système accepte."
       }
     },
     "filename-handling": {
@@ -233,7 +233,7 @@
         "une image 4K qui manque de temps ou de mémoire en route vers une miniature, alors que le fichier lui-même est petit"
       ],
       "details": {
-        "groups": "Les tailles que contient le jeu : screens pour les tailles d'écran, avatars pour les photos de profil et social pour les couvertures, bannières, publications et miniatures. Laissez all pour les avoir toutes.",
+        "groups": "Les tailles que contient le jeu : `screens` pour les tailles d'écran, `avatars` pour les photos de profil et `social` pour les couvertures, bannières, publications et miniatures. Laissez `all` pour les avoir toutes.",
         "content": "Ce que montre l'image. Une mire de test sert à vérifier comment un fichier est lu. Un espace réservé est une couleur unie avec du texte au milieu, pour mettre en page avant que les vraies images existent."
       }
     }

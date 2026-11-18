@@ -137,7 +137,7 @@
         "um armazenamento que lê zero byte como upload com falha e fica tentando de novo"
       ],
       "details": {
-        "formats": "De quais formatos o conjunto é feito. Deixe em all para todos os formatos desta versão, ou nomeie os que o seu sistema aceita."
+        "formats": "De quais formatos o conjunto é feito. Deixe em `all` para todos os formatos desta versão, ou nomeie os que o seu sistema aceita."
       }
     },
     "filename-handling": {
@@ -233,7 +233,7 @@
         "uma imagem 4K que fica sem tempo ou sem memória a caminho de uma miniatura, embora o arquivo seja pequeno"
       ],
       "details": {
-        "groups": "Quais tamanhos o conjunto contém: screens para tamanhos de tela, avatars para fotos de perfil e social para capas, banners, publicações e miniaturas. Deixe em all para ter todos.",
+        "groups": "Quais tamanhos o conjunto contém: `screens` para tamanhos de tela, `avatars` para fotos de perfil e `social` para capas, banners, publicações e miniaturas. Deixe em `all` para ter todos.",
         "content": "O que a imagem mostra. Um padrão de teste serve para verificar como um arquivo é lido. Um espaço reservado é uma cor lisa com texto no meio, para montar uma página antes de existirem as imagens reais."
       }
     }

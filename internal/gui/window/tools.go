@@ -230,7 +230,7 @@ func (t *Tools) onChosen(choice string) {
 	t.chosen = d
 	t.offer.withdraw(t.busy.relay)
 	t.about.RemoveAll()
-	t.about.Add(parts.Prose(text.ToolDetail(d.ID, d.Detail)))
+	t.about.Add(parts.Explanation(text.ToolDetail(d.ID, d.Detail)))
 	t.about.Refresh()
 
 	t.fields.KeepFirst(t.form.fixed)

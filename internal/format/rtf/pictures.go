@@ -68,7 +68,7 @@ func pictureProperties() []format.Property {
 		Count: "How many pictures the document shows, each a real file of its format in a paragraph of its own that starts with its name, such as inline_0001.png. " +
 			"They sit above the blocks, at 96 pixels to the inch and never wider than 6 inches. " +
 			"LibreOffice, pandoc and Tika return each file as it was written. RichEdit shows the same picture and writes it out again smaller.",
-		Format: "The format of the pictures, png or jpg - the two picture formats RTF has a name for. Any other format is refused.",
+		Format: "The format of the pictures, `png` or `jpg` - the two picture formats RTF has a name for. Any other format is refused.",
 		Size: "How big each picture is. Written in hex it takes twice as many bytes in the document, with a line end every 128 characters. " +
 			"Written binary it takes its own size.",
 	}), format.Property{

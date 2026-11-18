@@ -137,7 +137,7 @@
         "un almacenamiento que lee cero bytes como una subida fallida y sigue reintentando"
       ],
       "details": {
-        "formats": "De qué formatos se compone el conjunto. Déjalo en all para todos los formatos de esta versión, o nombra los que acepta tu sistema."
+        "formats": "De qué formatos se compone el conjunto. Déjalo en `all` para todos los formatos de esta versión, o nombra los que acepta tu sistema."
       }
     },
     "filename-handling": {
@@ -233,7 +233,7 @@
         "una imagen 4K que se queda sin tiempo o sin memoria camino de una miniatura, aunque el archivo sea pequeño"
       ],
       "details": {
-        "groups": "Qué tamaños contiene el conjunto: screens para tamaños de pantalla, avatars para fotos de perfil y social para portadas, banners, publicaciones y miniaturas. Déjalo en all para tenerlos todos.",
+        "groups": "Qué tamaños contiene el conjunto: `screens` para tamaños de pantalla, `avatars` para fotos de perfil y `social` para portadas, banners, publicaciones y miniaturas. Déjalo en `all` para tenerlos todos.",
         "content": "Lo que muestra la imagen. Un patrón de prueba sirve para comprobar cómo se lee un archivo. Un marcador de posición es un color liso con texto en el centro, para maquetar una página antes de tener las imágenes reales."
       }
     }

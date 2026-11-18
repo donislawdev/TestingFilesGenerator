@@ -137,7 +137,7 @@
         "storage that reads nought bytes as a failed upload and keeps retrying"
       ],
       "details": {
-        "formats": "Which formats the set is built from. Leave it at all for every format this build has, or name the ones your system accepts."
+        "formats": "Which formats the set is built from. Leave it at `all` for every format this build has, or name the ones your system accepts."
       }
     },
     "filename-handling": {
@@ -164,7 +164,7 @@
         "a 4K picture that runs out of time or memory on its way to a thumbnail, although the file itself is small"
       ],
       "details": {
-        "groups": "Which sizes the set holds: screens for the sizes of screens, avatars for profile pictures and social for covers, banners, posts and thumbnails. Leave it at all for every one of them.",
+        "groups": "Which sizes the set holds: `screens` for the sizes of screens, `avatars` for profile pictures and `social` for covers, banners, posts and thumbnails. Leave it at `all` for every one of them.",
         "content": "What the picture shows. A test pattern is for checking how a file is read. A placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist."
       }
     },

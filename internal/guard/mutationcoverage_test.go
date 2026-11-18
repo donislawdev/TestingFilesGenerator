@@ -235,6 +235,13 @@ var provenByProbe = map[string]string{
 	"TestSmallestIsOfferedForExactlyTheFormatsTheEngineTakesItFor": "a canary of its own - a window offering smallest for every " +
 		"format has to disagree with the engine - a reach check that the engine both took and refused smallest, and broken by " +
 		"hand on 2026-11-17 by offering smallest for every format: red on both screens.",
+	"TestAValueToTypeIsTheSameInEveryLanguage": "a canary of its own - a translation that changed `all` into `wszystko` " +
+		"has to disagree - a reach check of how many marked texts the catalogues and the site carry, and broken by hand on " +
+		"2026-11-18 by changing one value in the Polish registry and by making no value ever a value: red both times.",
+	"TestEveryValueToTypeIsShownAsAValue": "a canary of its own - Prose of a marked text, drawing the backticks, has to be " +
+		"told apart - a reach check of the declared descriptions that name a value, and broken by hand on 2026-11-18 three " +
+		"ways: the explanation box drawing Prose, a value without the type of code, the published preset page without " +
+		"<code>: red each time.",
 	"TestSmallestCannotBeChosenUntilTheWidthAndHeightAreSet": "a canary of its own - a switch holding Smallest for every picture " +
 		"has to disagree with the engine, which takes it for svg at its defaults - a reach check that the engine both took and " +
 		"refused it, and broken by hand on 2026-11-18 six ways: never held, a press choosing a held option, the keys stepping " +

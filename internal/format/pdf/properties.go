@@ -94,7 +94,7 @@ var properties = []format.Property{
 		Name: "created", Kind: format.PropertyText, Shape: dateText, Group: documentProperties,
 		Default: defaultCreated,
 		Detail: "When the document says it was created. A time written without a zone is kept without one, " +
-			"and none leaves the date out.",
+			"and `none` leaves the date out.",
 	},
 	{
 		Name: "modified", Kind: format.PropertyText, Shape: dateText, Group: documentProperties,

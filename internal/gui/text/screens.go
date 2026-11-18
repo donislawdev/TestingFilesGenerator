@@ -227,17 +227,17 @@ func HintPreset() string    { return say("HintPreset", "What you are testing.") 
 // the field cannot show. The button is still there, carrying the line that says
 // what the setting does.
 func DetailSize() string {
-	return say("DetailSize", "Units count in 1024s, so 10mb is 10485760 bytes. A plain number is a count of bytes.")
+	return say("DetailSize", "Units count in 1024s, so `10mb` is 10485760 bytes. A plain number is a count of bytes.")
 }
 func DetailTargetID() string {
 	return say("DetailTargetID", "It reaches the manifest and the file names, so a test can tell these files from the rest of the run. The seeds are derived from it, so changing it changes the bytes.")
 }
 func DetailNameTemplate() string {
-	return say("DetailNameTemplate", "Left empty, the files are named after the batch and numbered, like invoices_0001.pdf. Fill it in and the name is used exactly as written, extension and all. The one placeholder is {index:04}, which becomes 0001, 0002 and so on, and a batch of more than one file needs it.")
+	return say("DetailNameTemplate", "Left empty, the files are named after the batch and numbered, like invoices_0001.pdf. Fill it in and the name is used exactly as written, extension and all. The one placeholder is `{index:04}`, which becomes 0001, 0002 and so on, and a batch of more than one file needs it.")
 }
 func DetailOutputDir() string { return say("DetailOutputDir", "It is created if it is not there.") }
 func DetailSeed() string {
-	return say("DetailSeed", "On any machine. A new version of this tool may change them, and its release notes then say so. 0 is the seed a run uses when nobody asks for another one. It is a seed like any other rather than a request for random files, which this tool never produces.")
+	return say("DetailSeed", "On any machine. A new version of this tool may change them, and its release notes then say so. `0` is the seed a run uses when nobody asks for another one. It is a seed like any other rather than a request for random files, which this tool never produces.")
 }
 
 // DetailLabel lists what the label carries, because a picture and a film carry
@@ -565,10 +565,10 @@ func HintManifest() string { return say("HintManifest", "The record of what this
 
 // The longer explanation behind the button beside each of them.
 func DetailSizeRange() string {
-	return say("DetailSizeRange", "Two sizes with a hyphen, as 1kb-8kb. Each file gets its own size, drawn from the seed, so the run repeats.")
+	return say("DetailSizeRange", "Two sizes with a hyphen, as `1kb-8kb`. Each file gets its own size, drawn from the seed, so the run repeats.")
 }
 func DetailBoundary() string {
-	return say("DetailBoundary", "Give the limit your system declares, such as 10mb. Units count in 1024s, so 10mb is 10485760 bytes.")
+	return say("DetailBoundary", "Give the limit your system declares, such as `10mb`. Units count in 1024s, so `10mb` is 10485760 bytes.")
 }
 func DetailPurpose() string {
 	return say("DetailPurpose", "It is written into the manifest and into the instructions beside it, which say what every file of the run is for. It changes no byte of any file.")

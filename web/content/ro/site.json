@@ -137,7 +137,7 @@
         "un depozit care citește zero octeți ca pe o încărcare eșuată și tot reîncearcă"
       ],
       "details": {
-        "formats": "Din ce formate este alcătuit setul. Lasă all pentru toate formatele acestei versiuni sau numește-le pe cele pe care le acceptă sistemul tău."
+        "formats": "Din ce formate este alcătuit setul. Lasă `all` pentru toate formatele acestei versiuni sau numește-le pe cele pe care le acceptă sistemul tău."
       }
     },
     "filename-handling": {
@@ -233,7 +233,7 @@
         "o imagine 4K care rămâne fără timp sau fără memorie în drum spre o miniatură, deși fișierul în sine este mic"
       ],
       "details": {
-        "groups": "Ce dimensiuni conține setul: screens pentru dimensiunile ecranelor, avatars pentru fotografiile de profil și social pentru coperte, bannere, postări și miniaturi. Lasă all pentru toate.",
+        "groups": "Ce dimensiuni conține setul: `screens` pentru dimensiunile ecranelor, `avatars` pentru fotografiile de profil și `social` pentru coperte, bannere, postări și miniaturi. Lasă `all` pentru toate.",
         "content": "Ce arată imaginea. Un model de test servește la verificarea felului în care este citit un fișier. Un substituent este o culoare uniformă cu text în mijloc, pentru a așeza o pagină înainte să existe imaginile reale."
       }
     }

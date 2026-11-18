@@ -91,14 +91,14 @@ func Properties() []format.Property {
 			Name: SettingText, Kind: format.PropertyText,
 			Shape:   fmt.Sprintf("one line of up to %d characters", MaxText),
 			Default: DefaultText,
-			Detail:  "The words in the middle of a placeholder. {width} and {height} become the size of the picture, {index} the number of the file and {index:04} the same number with four digits.",
+			Detail:  "The words in the middle of a placeholder. `{width}` and `{height}` become the size of the picture, `{index}` the number of the file and `{index:04}` the same number with four digits.",
 			Group:   Group, OnlyWhen: onlyOnAPlaceholder,
 		},
 		{
 			Name: SettingBackground, Kind: format.PropertyText,
 			Shape:   shapeColour,
 			Default: DefaultBackground,
-			Detail:  "The colour of a placeholder, such as cccccc or ccc. In a recipe write it without # or in quotes, because # starts a comment there.",
+			Detail:  "The colour of a placeholder, such as `cccccc` or `ccc`. In a recipe write it without `#` or in quotes, because `#` starts a comment there.",
 			Group:   Group, OnlyWhen: onlyOnAPlaceholder,
 		},
 		{

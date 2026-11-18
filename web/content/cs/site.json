@@ -137,7 +137,7 @@
         "úložiště, které čte nula bajtů jako selhané nahrání a stále to opakuje"
       ],
       "details": {
-        "formats": "Z jakých formátů se sada skládá. Ponechte all pro všechny formáty této verze, nebo uveďte ty, které váš systém přijímá."
+        "formats": "Z jakých formátů se sada skládá. Ponechte `all` pro všechny formáty této verze, nebo uveďte ty, které váš systém přijímá."
       }
     },
     "filename-handling": {
@@ -233,7 +233,7 @@
         "obrázek 4K, kterému cestou k náhledu dojde čas nebo paměť, i když je samotný soubor malý"
       ],
       "details": {
-        "groups": "Jaké velikosti sada obsahuje: screens pro velikosti obrazovek, avatars pro profilové fotky a social pro titulní obrázky, bannery, příspěvky a náhledy. Ponechte all pro všechny.",
+        "groups": "Jaké velikosti sada obsahuje: `screens` pro velikosti obrazovek, `avatars` pro profilové fotky a `social` pro titulní obrázky, bannery, příspěvky a náhledy. Ponechte `all` pro všechny.",
         "content": "Co obrázek ukazuje. Testovací obrazec slouží ke kontrole, jak se soubor čte. Zástupný obrázek je jednolitá barva s textem uprostřed, pro rozvržení stránky dřív, než existují skutečné obrázky."
       }
     }

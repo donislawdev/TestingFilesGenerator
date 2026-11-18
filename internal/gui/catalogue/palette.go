@@ -200,6 +200,8 @@ var palettePlan = map[fyne.ThemeColorName]paletteRole{
 		theme.ColorNameBackground, "the page", byContrast},
 	theme.ColorNameHyperlink: {meaning, "a link, the same blue as the action",
 		theme.ColorNameBackground, "the page", byContrast},
+	parts.ColorNameLiteral: {meaning, "a value to type, in the type of code, inside an explanation",
+		theme.ColorNameInputBackground, "the card an explanation opens on", byContrast},
 	theme.ColorNameError: {meaning, "a refusal, and a file that failed",
 		theme.ColorNameBackground, "the page", byContrast},
 	theme.ColorNameSuccess: {meaning, "a run that wrote everything it promised",

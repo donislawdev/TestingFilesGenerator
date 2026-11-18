@@ -58,8 +58,8 @@ func init() {
 				Name: "groups", Kind: format.PropertyText,
 				Shape:   "group names separated by commas, or all",
 				Default: everyGroup,
-				Detail: "Which sizes the set holds: screens for the sizes of screens, avatars for profile pictures " +
-					"and social for covers, banners, posts and thumbnails. Leave it at all for every one of them.",
+				Detail: "Which sizes the set holds: `screens` for the sizes of screens, `avatars` for profile pictures " +
+					"and `social` for covers, banners, posts and thumbnails. Leave it at `all` for every one of them.",
 			},
 			content,
 		},

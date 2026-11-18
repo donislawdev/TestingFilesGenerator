@@ -137,7 +137,7 @@
         "opslag die nul bytes als een mislukte upload leest en blijft opnieuw proberen"
       ],
       "details": {
-        "formats": "Uit welke formaten de set is opgebouwd. Laat het op all staan voor elk formaat van deze build, of noem de formaten die je systeem accepteert."
+        "formats": "Uit welke formaten de set is opgebouwd. Laat het op `all` staan voor elk formaat van deze build, of noem de formaten die je systeem accepteert."
       }
     },
     "filename-handling": {
@@ -233,7 +233,7 @@
         "een 4K-afbeelding die op weg naar een miniatuur zonder tijd of geheugen komt, hoewel het bestand zelf klein is"
       ],
       "details": {
-        "groups": "Welke formaten de set bevat: screens voor schermformaten, avatars voor profielfoto's en social voor omslagfoto's, banners, berichten en miniaturen. Laat het op all staan voor allemaal.",
+        "groups": "Welke formaten de set bevat: `screens` voor schermformaten, `avatars` voor profielfoto's en `social` voor omslagfoto's, banners, berichten en miniaturen. Laat het op `all` staan voor allemaal.",
         "content": "Wat de afbeelding toont. Een testpatroon is om te controleren hoe een bestand wordt gelezen. Een placeholder is een egale kleur met tekst in het midden, om een pagina op te maken voordat de echte afbeeldingen er zijn."
       }
     }

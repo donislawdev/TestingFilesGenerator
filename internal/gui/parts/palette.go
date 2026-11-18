@@ -147,6 +147,7 @@ var paletteOrder = map[fyne.ThemeColorName]int{
 	theme.ColorNameSuccess:   33,
 	theme.ColorNameWarning:   34,
 	theme.ColorNameSelection: 35,
+	ColorNameLiteral:         36,
 
 	// What the pointer, the press and the keyboard do - every one of these is
 	// blended rather than painted.

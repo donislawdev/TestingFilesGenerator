@@ -12,6 +12,7 @@ package site
 
 import (
 	"fmt"
+	"html/template"
 	"path"
 	"regexp"
 	"strconv"
@@ -181,11 +182,40 @@ type PresetPage struct {
 
 // SettingRow is one line of the settings table.
 type SettingRow struct {
-	Flag        string
-	Takes       string
-	Default     string
-	Detail      string
+	Flag    string
+	Takes   string
+	Default string
+	// Detail is the sentence about the setting, with every value to type in
+	// <code> (withCode).
+	Detail      template.HTML
 	Placeholder bool
+}
+
+// withCode is a description as HTML: its words escaped, and every value to
+// type in <code>, as the window draws it in the type of code.
+//
+// The marks are the ones internal/core/literal.go describes - a value between
+// two backticks, a backtick without a partner kept as it is. Split here rather
+// than through core.Pieces because this package imports nothing of ours (the
+// layer table in internal/guard/layers_test.go), and
+// TestEveryValueToTypeIsShownAsAValue holds every published value to the
+// values core.Literals reads out of the same words.
+func withCode(s string) template.HTML {
+	parts := strings.Split(s, "`")
+	if len(parts)%2 == 0 {
+		// An odd number of marks: the last has no partner, so it is words.
+		last := len(parts) - 2
+		parts = append(parts[:last:last], parts[last]+"`"+parts[last+1])
+	}
+	var b strings.Builder
+	for i, p := range parts {
+		if i%2 == 1 && p != "" {
+			b.WriteString("<code>" + template.HTMLEscapeString(p) + "</code>")
+			continue
+		}
+		b.WriteString(template.HTMLEscapeString(p))
+	}
+	return template.HTML(b.String()) //nolint:gosec // every piece escaped above
 }
 
 // OutcomeRow is one line of the reactions table.
@@ -258,7 +288,7 @@ func (v view) settingRows(f PresetFacts, text PresetText) ([]SettingRow, error) 
 		if !ok {
 			return nil, fmt.Errorf("the setting --%s of the preset %q has no sentence written in %s", s.Name, f.ID, v.Lang.Code)
 		}
-		out = append(out, SettingRow{Flag: s.Name, Takes: takes, Default: s.Default, Detail: detail, Placeholder: s.Placeholder})
+		out = append(out, SettingRow{Flag: s.Name, Takes: takes, Default: s.Default, Detail: withCode(detail), Placeholder: s.Placeholder})
 	}
 	for _, r := range f.Reads {
 		takes, err := v.Word("readTakes." + r.Name)
@@ -269,7 +299,7 @@ func (v view) settingRows(f PresetFacts, text PresetText) ([]SettingRow, error) 
 		if err != nil {
 			return nil, err
 		}
-		out = append(out, SettingRow{Flag: r.Name, Takes: takes, Default: r.Default, Detail: detail})
+		out = append(out, SettingRow{Flag: r.Name, Takes: takes, Default: r.Default, Detail: withCode(detail)})
 	}
 	return out, nil
 }

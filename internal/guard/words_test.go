@@ -1,10 +1,13 @@
 package guard
 
 import (
+	"strings"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/widget"
 
+	"github.com/donislawdev/TestingFilesGenerator/internal/core"
 	"github.com/donislawdev/TestingFilesGenerator/internal/gui/parts"
 )
 
@@ -38,8 +41,24 @@ func wordsOf(o fyne.CanvasObject) (string, bool) {
 		return v.Text, true
 	case *parts.ByteCount:
 		return v.Text, true
+	case *widget.RichText:
+		// parts.Explanation since 2026-11-18: an explanation naming a value
+		// to type is drawn in pieces, the value in the type of code - what
+		// it says is every piece in order, without the marks (asDrawn).
+		return v.String(), true
 	}
 	return "", false
+}
+
+// asDrawn is a description as the window draws it: its values to type without
+// the backticks that mark them (core.Pieces), which is what a guard reading
+// the screen finds.
+func asDrawn(s string) string {
+	var b strings.Builder
+	for _, p := range core.Pieces(s) {
+		b.WriteString(p.Text)
+	}
+	return b.String()
 }
 
 // boldWordsAt is wordsOf for the guards that read RANK: whether the words are

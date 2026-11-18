@@ -318,7 +318,7 @@ func attachmentProperties() []format.Property {
 			// values are whatever this build registered.
 			Default: archive.DefaultFormat,
 			Detail: "The format of the attached files. " +
-				"eml attaches a message as it is, the way mail is forwarded, with no base64 around it.",
+				"`eml` attaches a message as it is, the way mail is forwarded, with no base64 around it.",
 			Group: attachmentsGroup,
 		},
 		{

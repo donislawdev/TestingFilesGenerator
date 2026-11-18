@@ -263,6 +263,12 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **A value to type stands out from the words describing it.** In the
+  explanation behind a field, a value you type as it is - `screens` and `all`
+  for the groups of `picture-sizes`, `10mb` for a size, `{index:04}` in a file
+  name, `cccccc` for a colour - is drawn in a code typeface and its own colour.
+  The site shows it as code, and `tfg preset show` and `tfg formats` print it
+  between backticks.
 - **The mouse wheel scrolls the window as far as the system says.** One notch
   moves three lines of text, or as many as Windows is set to under Mouse,
   Lines to scroll at a time, where it moved about half as far before. A

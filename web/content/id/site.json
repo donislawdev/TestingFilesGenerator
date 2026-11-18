@@ -137,7 +137,7 @@
         "penyimpanan yang membaca nol byte sebagai unggahan gagal dan terus mencoba ulang"
       ],
       "details": {
-        "formats": "Dari format apa set dibuat. Biarkan all untuk setiap format build ini, atau sebutkan format yang diterima sistem Anda."
+        "formats": "Dari format apa set dibuat. Biarkan `all` untuk setiap format build ini, atau sebutkan format yang diterima sistem Anda."
       }
     },
     "filename-handling": {
@@ -233,7 +233,7 @@
         "gambar 4K yang kehabisan waktu atau memori dalam perjalanan menjadi thumbnail, padahal filenya sendiri kecil"
       ],
       "details": {
-        "groups": "Ukuran yang ada di set: screens untuk ukuran layar, avatars untuk foto profil, dan social untuk sampul, banner, postingan, dan thumbnail. Biarkan all untuk semuanya.",
+        "groups": "Ukuran yang ada di set: `screens` untuk ukuran layar, `avatars` untuk foto profil, dan `social` untuk sampul, banner, postingan, dan thumbnail. Biarkan `all` untuk semuanya.",
         "content": "Apa yang ditampilkan gambar. Pola uji dipakai untuk memeriksa cara file dibaca. Placeholder adalah warna polos dengan tulisan di tengah, untuk menata halaman sebelum gambar aslinya ada."
       }
     }

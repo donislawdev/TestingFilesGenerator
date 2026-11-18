@@ -137,7 +137,7 @@
         "ein Speicher, der null Bytes als fehlgeschlagenen Upload liest und immer wieder neu versucht"
       ],
       "details": {
-        "formats": "Aus welchen Formaten das Set besteht. Mit all werden alle Formate dieses Builds verwendet, oder du nennst die, die dein System akzeptiert."
+        "formats": "Aus welchen Formaten das Set besteht. Mit `all` werden alle Formate dieses Builds verwendet, oder du nennst die, die dein System akzeptiert."
       }
     },
     "filename-handling": {
@@ -233,7 +233,7 @@
         "ein 4K-Bild, dem auf dem Weg zum Vorschaubild Zeit oder Speicher ausgeht, obwohl die Datei selbst klein ist"
       ],
       "details": {
-        "groups": "Welche Größen das Set enthält: screens für Bildschirmgrößen, avatars für Profilbilder und social für Titelbilder, Banner, Beiträge und Vorschaubilder. Mit all bekommst du alle.",
+        "groups": "Welche Größen das Set enthält: `screens` für Bildschirmgrößen, `avatars` für Profilbilder und `social` für Titelbilder, Banner, Beiträge und Vorschaubilder. Mit `all` bekommst du alle.",
         "content": "Was das Bild zeigt. Ein Testmuster dient dazu, zu prüfen, wie eine Datei gelesen wird. Ein Platzhalter ist eine einfarbige Fläche mit Text in der Mitte, um eine Seite zu gestalten, bevor es die echten Bilder gibt."
       }
     }

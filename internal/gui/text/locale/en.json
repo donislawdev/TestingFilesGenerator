@@ -206,8 +206,8 @@
   },
   "DetailBoundary": {
     "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-8d9742dcb82c",
-    "other": "Give the limit your system declares, such as 10mb. Units count in 1024s, so 10mb is 10485760 bytes."
+    "hash": "sha256-67ed619061b2",
+    "other": "Give the limit your system declares, such as `10mb`. Units count in 1024s, so `10mb` is 10485760 bytes."
   },
   "DetailBuildOnPreset": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -251,8 +251,8 @@
   },
   "DetailNameTemplate": {
     "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-3e64e80529fb",
-    "other": "Left empty, the files are named after the batch and numbered, like invoices_0001.pdf. Fill it in and the name is used exactly as written, extension and all. The one placeholder is {index:04}, which becomes 0001, 0002 and so on, and a batch of more than one file needs it."
+    "hash": "sha256-d535c81644d8",
+    "other": "Left empty, the files are named after the batch and numbered, like invoices_0001.pdf. Fill it in and the name is used exactly as written, extension and all. The one placeholder is `{index:04}`, which becomes 0001, 0002 and so on, and a batch of more than one file needs it."
   },
   "DetailNumberIfTaken": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -281,8 +281,8 @@
   },
   "DetailSeed": {
     "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-40448fe72868",
-    "other": "On any machine. A new version of this tool may change them, and its release notes then say so. 0 is the seed a run uses when nobody asks for another one. It is a seed like any other rather than a request for random files, which this tool never produces."
+    "hash": "sha256-d3ce50a025b6",
+    "other": "On any machine. A new version of this tool may change them, and its release notes then say so. `0` is the seed a run uses when nobody asks for another one. It is a seed like any other rather than a request for random files, which this tool never produces."
   },
   "DetailSendAs": {
     "description": "The longer explanation behind the button beside a field name.",
@@ -291,13 +291,13 @@
   },
   "DetailSize": {
     "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-794528f6abe6",
-    "other": "Units count in 1024s, so 10mb is 10485760 bytes. A plain number is a count of bytes."
+    "hash": "sha256-2e35fc88491e",
+    "other": "Units count in 1024s, so `10mb` is 10485760 bytes. A plain number is a count of bytes."
   },
   "DetailSizeRange": {
     "description": "The longer explanation behind the button beside a field name.",
-    "hash": "sha256-421d366dbd3e",
-    "other": "Two sizes with a hyphen, as 1kb-8kb. Each file gets its own size, drawn from the seed, so the run repeats."
+    "hash": "sha256-31f1b9b7ac0f",
+    "other": "Two sizes with a hyphen, as `1kb-8kb`. Each file gets its own size, drawn from the seed, so the run repeats."
   },
   "DetailTargetID": {
     "description": "The longer explanation behind the button beside a field name.",

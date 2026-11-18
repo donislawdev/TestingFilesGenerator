@@ -145,6 +145,7 @@ var notWords = map[string]string{
 	`"label"`:         "our name for the ink of a field's name, a colour the palette holds",
 	`"tipshade"`:      "our name for the shade under an explanation, a colour the palette holds",
 	`"held"`:          "our name for the ink of a choice that cannot be made yet, a colour the palette holds",
+	`"literal"`:       "our name for the ink of a value to type inside an explanation, a colour the palette holds",
 	`"lift"`:          "our name for what the pointer does to the filled button, a colour the palette holds",
 	`"shade"`:         "our name for what a press does to the filled button, a colour the palette holds",
 	`"fyneDo"`:        "a migration flag the toolkit reads, never shown",

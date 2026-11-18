@@ -137,7 +137,7 @@
         "sıfır baytı başarısız yükleme sayıp durmadan yeniden deneyen depolama"
       ],
       "details": {
-        "formats": "Setin hangi biçimlerden oluştuğu. Bu sürümdeki tüm biçimler için all bırakın veya sisteminizin kabul ettiklerini yazın."
+        "formats": "Setin hangi biçimlerden oluştuğu. Bu sürümdeki tüm biçimler için `all` bırakın veya sisteminizin kabul ettiklerini yazın."
       }
     },
     "filename-handling": {
@@ -233,7 +233,7 @@
         "dosyanın kendisi küçük olsa da küçük resme dönüşürken zamanı ya da belleği tükenen bir 4K resim"
       ],
       "details": {
-        "groups": "Setin hangi boyutları içerdiği: ekran boyutları için screens, profil fotoğrafları için avatars ve kapaklar, afişler, gönderiler ve küçük resimler için social. Hepsi için all bırakın.",
+        "groups": "Setin hangi boyutları içerdiği: ekran boyutları için `screens`, profil fotoğrafları için `avatars` ve kapaklar, afişler, gönderiler ve küçük resimler için `social`. Hepsi için `all` bırakın.",
         "content": "Resmin ne gösterdiği. Test deseni bir dosyanın nasıl okunduğunu denetlemek içindir. Yer tutucu, ortasında yazı olan düz bir renktir ve gerçek resimler hazır olmadan sayfayı düzenlemeye yarar."
       }
     }

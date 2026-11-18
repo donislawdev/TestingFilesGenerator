@@ -42,7 +42,7 @@ func init() {
 				Name: "formats", Kind: format.PropertyText,
 				Shape:   "format ids separated by commas, or all",
 				Default: everyFormat,
-				Detail: "Which formats the set is built from. Leave it at all for every format " +
+				Detail: "Which formats the set is built from. Leave it at `all` for every format " +
 					"this build has, or name the ones your system accepts.",
 			},
 		},

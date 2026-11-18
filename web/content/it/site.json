@@ -137,7 +137,7 @@
         "uno storage che legge zero byte come un upload fallito e continua a riprovare"
       ],
       "details": {
-        "formats": "Da quali formati è composto il set. Lascia all per tutti i formati di questa versione, oppure indica quelli che il tuo sistema accetta."
+        "formats": "Da quali formati è composto il set. Lascia `all` per tutti i formati di questa versione, oppure indica quelli che il tuo sistema accetta."
       }
     },
     "filename-handling": {
@@ -233,7 +233,7 @@
         "un'immagine 4K che esaurisce tempo o memoria mentre diventa una miniatura, anche se il file è piccolo"
       ],
       "details": {
-        "groups": "Quali dimensioni contiene il set: screens per le dimensioni degli schermi, avatars per le foto profilo e social per copertine, banner, post e miniature. Lascia all per averle tutte.",
+        "groups": "Quali dimensioni contiene il set: `screens` per le dimensioni degli schermi, `avatars` per le foto profilo e `social` per copertine, banner, post e miniature. Lascia `all` per averle tutte.",
         "content": "Cosa mostra l'immagine. Un'immagine di prova serve a controllare come viene letto un file. Un segnaposto è un colore uniforme con un testo al centro, per impaginare prima che esistano le immagini vere."
       }
     }

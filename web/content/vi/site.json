@@ -137,7 +137,7 @@
         "bộ lưu trữ đọc không byte như một lần tải lên thất bại và cứ thử lại mãi"
       ],
       "details": {
-        "formats": "Bộ được dựng từ những định dạng nào. Để all cho mọi định dạng của bản dựng này, hoặc nêu những định dạng hệ thống của bạn chấp nhận."
+        "formats": "Bộ được dựng từ những định dạng nào. Để `all` cho mọi định dạng của bản dựng này, hoặc nêu những định dạng hệ thống của bạn chấp nhận."
       }
     },
     "filename-handling": {
@@ -233,7 +233,7 @@
         "ảnh 4K hết thời gian hoặc bộ nhớ trên đường thành hình thu nhỏ, dù bản thân tệp nhỏ"
       ],
       "details": {
-        "groups": "Bộ chứa những kích thước nào: screens cho kích thước màn hình, avatars cho ảnh đại diện và social cho ảnh bìa, biểu ngữ, bài đăng và hình thu nhỏ. Để all để có tất cả.",
+        "groups": "Bộ chứa những kích thước nào: `screens` cho kích thước màn hình, `avatars` cho ảnh đại diện và `social` cho ảnh bìa, biểu ngữ, bài đăng và hình thu nhỏ. Để `all` để có tất cả.",
         "content": "Hình ảnh hiển thị gì. Mẫu thử dùng để kiểm tra cách một tệp được đọc. Ảnh giữ chỗ là một màu trơn có chữ ở giữa, để dàn trang trước khi có ảnh thật."
       }
     }

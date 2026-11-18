@@ -1391,8 +1391,8 @@
   },
   "Detail.format/eml.attachment_format": {
     "description": "The sentence under the attachment_format setting of the eml format, after what it takes.",
-    "hash": "sha256-97b84e4986be",
-    "other": "The format of the attached files. eml attaches a message as it is, the way mail is forwarded, with no base64 around it."
+    "hash": "sha256-73f4ca55d9b2",
+    "other": "The format of the attached files. `eml` attaches a message as it is, the way mail is forwarded, with no base64 around it."
   },
   "Detail.format/eml.attachment_size": {
     "description": "The sentence under the attachment_size setting of the eml format, after what it takes.",
@@ -1431,8 +1431,8 @@
   },
   "Detail.format/eml.inline_format": {
     "description": "The sentence under the inline_format setting of the eml format, after what it takes.",
-    "hash": "sha256-fbdd11d7bf9a",
-    "other": "The format of the pictures. Any format whose files are pictures, such as png, jpg or gif."
+    "hash": "sha256-fb11a5da4cc7",
+    "other": "The format of the pictures. Any format whose files are pictures, such as `png`, `jpg` or `gif`."
   },
   "Detail.format/eml.inline_size": {
     "description": "The sentence under the inline_size setting of the eml format, after what it takes.",
@@ -1561,8 +1561,8 @@
   },
   "Detail.format/html.inline_format": {
     "description": "The sentence under the inline_format setting of the html format, after what it takes.",
-    "hash": "sha256-0c0288233958",
-    "other": "The format of the pictures. Any format whose files are pictures, such as png, jpg or gif. Chromium shows every one of them but tiff."
+    "hash": "sha256-7c58ff8c5727",
+    "other": "The format of the pictures. Any format whose files are pictures, such as `png`, `jpg` or `gif`. Chromium shows every one of them but tiff."
   },
   "Detail.format/html.inline_size": {
     "description": "The sentence under the inline_size setting of the html format, after what it takes.",
@@ -1606,8 +1606,8 @@
   },
   "Detail.format/jpg.background": {
     "description": "The sentence under the background setting of the jpg format, after what it takes.",
-    "hash": "sha256-f19788fb6882",
-    "other": "The colour of a placeholder, such as cccccc or ccc. In a recipe write it without # or in quotes, because # starts a comment there."
+    "hash": "sha256-d8261f6d9243",
+    "other": "The colour of a placeholder, such as `cccccc` or `ccc`. In a recipe write it without `#` or in quotes, because `#` starts a comment there."
   },
   "Detail.format/jpg.content": {
     "description": "The sentence under the content setting of the jpg format, after what it takes.",
@@ -1636,8 +1636,8 @@
   },
   "Detail.format/jpg.text": {
     "description": "The sentence under the text setting of the jpg format, after what it takes.",
-    "hash": "sha256-7055101b0dd9",
-    "other": "The words in the middle of a placeholder. {width} and {height} become the size of the picture, {index} the number of the file and {index:04} the same number with four digits."
+    "hash": "sha256-795954c1effc",
+    "other": "The words in the middle of a placeholder. `{width}` and `{height}` become the size of the picture, `{index}` the number of the file and `{index:04}` the same number with four digits."
   },
   "Detail.format/jpg.width": {
     "description": "The sentence under the width setting of the jpg format, after what it takes.",
@@ -1871,8 +1871,8 @@
   },
   "Detail.format/pdf.created": {
     "description": "The sentence under the created setting of the pdf format, after what it takes.",
-    "hash": "sha256-76abcd78cc63",
-    "other": "When the document says it was created. A time written without a zone is kept without one, and none leaves the date out."
+    "hash": "sha256-c3a8f5b4f263",
+    "other": "When the document says it was created. A time written without a zone is kept without one, and `none` leaves the date out."
   },
   "Detail.format/pdf.creator": {
     "description": "The sentence under the creator setting of the pdf format, after what it takes.",
@@ -1931,8 +1931,8 @@
   },
   "Detail.format/png.background": {
     "description": "The sentence under the background setting of the png format, after what it takes.",
-    "hash": "sha256-f19788fb6882",
-    "other": "The colour of a placeholder, such as cccccc or ccc. In a recipe write it without # or in quotes, because # starts a comment there."
+    "hash": "sha256-d8261f6d9243",
+    "other": "The colour of a placeholder, such as `cccccc` or `ccc`. In a recipe write it without `#` or in quotes, because `#` starts a comment there."
   },
   "Detail.format/png.content": {
     "description": "The sentence under the content setting of the png format, after what it takes.",
@@ -1956,8 +1956,8 @@
   },
   "Detail.format/png.text": {
     "description": "The sentence under the text setting of the png format, after what it takes.",
-    "hash": "sha256-7055101b0dd9",
-    "other": "The words in the middle of a placeholder. {width} and {height} become the size of the picture, {index} the number of the file and {index:04} the same number with four digits."
+    "hash": "sha256-795954c1effc",
+    "other": "The words in the middle of a placeholder. `{width}` and `{height}` become the size of the picture, `{index}` the number of the file and `{index:04}` the same number with four digits."
   },
   "Detail.format/png.width": {
     "description": "The sentence under the width setting of the png format, after what it takes.",
@@ -1986,8 +1986,8 @@
   },
   "Detail.format/rtf.inline_format": {
     "description": "The sentence under the inline_format setting of the rtf format, after what it takes.",
-    "hash": "sha256-929d6bcd9c5e",
-    "other": "The format of the pictures, png or jpg - the two picture formats RTF has a name for. Any other format is refused."
+    "hash": "sha256-11b2027132aa",
+    "other": "The format of the pictures, `png` or `jpg` - the two picture formats RTF has a name for. Any other format is refused."
   },
   "Detail.format/rtf.inline_size": {
     "description": "The sentence under the inline_size setting of the rtf format, after what it takes.",
@@ -2016,8 +2016,8 @@
   },
   "Detail.format/svg.background": {
     "description": "The sentence under the background setting of the svg format, after what it takes.",
-    "hash": "sha256-f19788fb6882",
-    "other": "The colour of a placeholder, such as cccccc or ccc. In a recipe write it without # or in quotes, because # starts a comment there."
+    "hash": "sha256-d8261f6d9243",
+    "other": "The colour of a placeholder, such as `cccccc` or `ccc`. In a recipe write it without `#` or in quotes, because `#` starts a comment there."
   },
   "Detail.format/svg.content": {
     "description": "The sentence under the content setting of the svg format, after what it takes.",
@@ -2041,8 +2041,8 @@
   },
   "Detail.format/svg.text": {
     "description": "The sentence under the text setting of the svg format, after what it takes.",
-    "hash": "sha256-7055101b0dd9",
-    "other": "The words in the middle of a placeholder. {width} and {height} become the size of the picture, {index} the number of the file and {index:04} the same number with four digits."
+    "hash": "sha256-795954c1effc",
+    "other": "The words in the middle of a placeholder. `{width}` and `{height}` become the size of the picture, `{index}` the number of the file and `{index:04}` the same number with four digits."
   },
   "Detail.format/svg.width": {
     "description": "The sentence under the width setting of the svg format, after what it takes.",
@@ -2236,8 +2236,8 @@
   },
   "Detail.preset/empty-and-minimal.formats": {
     "description": "The sentence under the formats setting of the empty-and-minimal preset, after what it takes.",
-    "hash": "sha256-945bbcfdb3cf",
-    "other": "Which formats the set is built from. Leave it at all for every format this build has, or name the ones your system accepts."
+    "hash": "sha256-b8636e5b9ead",
+    "other": "Which formats the set is built from. Leave it at `all` for every format this build has, or name the ones your system accepts."
   },
   "Detail.preset/filename-handling.format": {
     "description": "The sentence under the format setting of the filename-handling preset, after what it takes.",
@@ -2256,8 +2256,8 @@
   },
   "Detail.preset/picture-sizes.groups": {
     "description": "The sentence under the groups setting of the picture-sizes preset, after what it takes.",
-    "hash": "sha256-64d97c3b0239",
-    "other": "Which sizes the set holds: screens for the sizes of screens, avatars for profile pictures and social for covers, banners, posts and thumbnails. Leave it at all for every one of them."
+    "hash": "sha256-132f33fd1602",
+    "other": "Which sizes the set holds: `screens` for the sizes of screens, `avatars` for profile pictures and `social` for covers, banners, posts and thumbnails. Leave it at `all` for every one of them."
   },
   "Detail.preset/size-boundaries.format": {
     "description": "The sentence under the format setting of the size-boundaries preset, after what it takes.",

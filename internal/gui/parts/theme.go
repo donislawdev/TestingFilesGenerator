@@ -79,6 +79,13 @@ const ColorNameLabel fyne.ThemeColorName = "label"
 // off the stored screen on 2026-11-18: 161 against 133).
 const ColorNameHeld fyne.ThemeColorName = "held"
 
+// ColorNameLiteral is the ink of a value to type, inside an explanation
+// (Explanation, core.Pieces) - drawn in the type of code as well, so it reads
+// as "this, exactly" against the words round it. The accent of the palette,
+// the owner's choice of 2026-11-18. A name of its own, so the value can move
+// away from the accent without touching what the accent means elsewhere.
+const ColorNameLiteral fyne.ThemeColorName = "literal"
+
 // ColorNameTipShade is the shade an explanation casts on the form under it.
 // A name of its own rather than the toolkit's Shadow, which this palette
 // answers with nothing on purpose (see ColorNameShadow): the toolkit lays its
@@ -135,6 +142,7 @@ var (
 		// 51.3 in L*, 15.5 below the hint, and 3.9:1 on the page - quieter
 		// than anything that can be used and still read without effort.
 		ColorNameHeld:            hex(0x7A, 0x7A, 0x80),
+		ColorNameLiteral:         hex(0x5A, 0xB3, 0xF2),
 		theme.ColorNameError:     hex(0xF4, 0x8F, 0x8D),
 		theme.ColorNameSuccess:   hex(0x42, 0xC2, 0x60),
 		theme.ColorNameWarning:   hex(0xDA, 0xA1, 0x31),
@@ -349,6 +357,7 @@ var (
 		// The other way up: 56.2 in L*, 18.5 lighter than the hint, 3.6:1 on
 		// white.
 		ColorNameHeld:            hex(0x87, 0x87, 0x90),
+		ColorNameLiteral:         hex(0x28, 0x68, 0x93),
 		theme.ColorNameError:     hex(0xBB, 0x29, 0x3B),
 		theme.ColorNameSuccess:   hex(0x23, 0x71, 0x35),
 		theme.ColorNameWarning:   hex(0x80, 0x5D, 0x18),

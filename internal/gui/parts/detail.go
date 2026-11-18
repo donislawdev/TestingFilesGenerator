@@ -218,7 +218,7 @@ func (t *Tips) open(near fyne.CanvasObject, detail string) fyne.CanvasObject {
 
 	// On the card an open list floats on, not on a panel's surface - see
 	// floatingCard for the reports that shaped it.
-	box := container.NewStack(append(floatingCard(), Padded(Inset, Prose(detail)))...)
+	box := container.NewStack(append(floatingCard(), Padded(Inset, Explanation(detail)))...)
 
 	// Sized twice, and this is the same finding the render probe records rather
 	// than superstition. A wrapping label reports the height it needs for the

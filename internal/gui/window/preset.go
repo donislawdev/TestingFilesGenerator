@@ -171,7 +171,7 @@ func (p *Preset) onPresetChosen(id string) {
 
 	// The question first, because it is the thing somebody chooses by. A list
 	// of ids says nothing about which one answers what they came to ask.
-	p.about.Add(parts.Prose(text.PresetQuestion(chosen.ID, chosen.Question)))
+	p.about.Add(parts.Explanation(text.PresetQuestion(chosen.ID, chosen.Question)))
 
 	// One line each rather than one sentence. Run together they are unreadable,
 	// because the entries have commas inside them - "MB confused with MiB,
