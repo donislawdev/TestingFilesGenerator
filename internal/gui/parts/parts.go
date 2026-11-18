@@ -722,21 +722,37 @@ func Column(gap float32, children ...fyne.CanvasObject) *fyne.Container {
 type column struct{ gap float32 }
 
 func (c column) MinSize(objects []fyne.CanvasObject) fyne.Size {
-	size := fyne.NewSize(0, 0)
-	shown := 0
+	var s stacked
 	for _, o := range objects {
-		if !o.Visible() {
-			continue
+		if o.Visible() {
+			s.add(o.MinSize())
 		}
-		min := o.MinSize()
-		size.Width = fyne.Max(size.Width, min.Width)
-		size.Height += min.Height
-		shown++
 	}
-	if shown > 1 {
-		size.Height += c.gap * float32(shown-1)
+	return s.with(c.gap)
+}
+
+// stacked is the size of things standing one under another, added one answer
+// at a time: as wide as the widest, as tall as all of them and the gaps
+// between. The rule of column.MinSize, in a type of its own so a grid that
+// has asked a field's parts already stacks them by the same rule
+// (gridasks.go).
+type stacked struct {
+	size  fyne.Size
+	shown int
+}
+
+func (s *stacked) add(min fyne.Size) {
+	s.size.Width = fyne.Max(s.size.Width, min.Width)
+	s.size.Height += min.Height
+	s.shown++
+}
+
+// with is the stack with gap between every two things in it.
+func (s stacked) with(gap float32) fyne.Size {
+	if s.shown > 1 {
+		s.size.Height += gap * float32(s.shown-1)
 	}
-	return size
+	return s.size
 }
 
 func (c column) Layout(objects []fyne.CanvasObject, size fyne.Size) {

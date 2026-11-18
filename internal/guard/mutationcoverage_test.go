@@ -242,6 +242,9 @@ var provenByProbe = map[string]string{
 	"TestThePicturesPlannedAtOnceHoldNoMoreThanTheMemorySettingLeaves": "a reach check of its own - with room to spare the " +
 		"pictures have to be seen planned beside each other - and broken by hand on 2026-11-18 by dropping the memory bound " +
 		"and by not planning the first file of a target alone: red both times.",
+	"TestAGridAsksEveryPartOfAFieldForItsSizeOnce": "a canary of its own - a sentence behind a layout that asks it twice " +
+		"has to be found - every counted thing asked exactly once, so a field the grid never reached is red too, and run on " +
+		"2026-11-18 against the grid before the change: red, a field asked 5 times and a field in a group 15.",
 	"TestAValueToTypeIsTheSameInEveryLanguage": "a canary of its own - a translation that changed `all` into `wszystko` " +
 		"has to disagree - a reach check of how many marked texts the catalogues and the site carry, and broken by hand on " +
 		"2026-11-18 by changing one value in the Polish registry and by making no value ever a value: red both times.",
