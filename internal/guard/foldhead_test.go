@@ -76,23 +76,43 @@ func TestTheWholeHeadRowOfAFoldOpensAndShutsIt(t *testing.T) {
 		t.Error("the row was pressed with the pointer and drew the keyboard mark")
 	}
 
-	// A button in the head does its own job and leaves the fold alone. A
-	// press on it goes to the button, which is on top of the row - and if the
-	// row answered as well, pressing Duplicate would also shut the batch.
+	// A button in the head does its own job: a press on it goes to the
+	// button, which is on top of the row, so the batch is copied rather than
+	// the row toggled.
+	//
+	// What the fold of batch 1 is afterwards no longer says whether the row
+	// answered too: a copy folds the batch it came from since 2026-11-18
+	// (foldAbove). So the row is read as the button's own work begins - still
+	// open, or the press reached the row first - and what the copy does is
+	// asserted after: the batch above shut, the copy open under it.
 	duplicate := buttonNamed(screen, text.ButtonDuplicateBatch())
 	if duplicate == nil {
 		t.Fatalf("batch 1 has no %q button", text.ButtonDuplicateBatch())
 	}
-	before, batches := head.Open(), batchFolds(screen)
+	if !head.Open() {
+		t.Fatalf("batch 1 is shut before %q is pressed, so a press that also toggled its row could not be seen", text.ButtonDuplicateBatch())
+	}
+	copyBatch, openWhenCopied := duplicate.OnTapped, false
+	duplicate.OnTapped = func() {
+		openWhenCopied = head.Open()
+		copyBatch()
+	}
+	batches := batchFolds(screen)
 	buttonAt := fyne.CurrentApp().Driver().AbsolutePositionForObject(duplicate)
 	test.TapCanvas(c, buttonAt.Add(fyne.NewPos(duplicate.Size().Width/2, duplicate.Size().Height/2)))
 	if got := batchFolds(screen); got != batches+1 {
 		t.Fatalf("pressing %q left %d batch(es) where %d were expected, so the press did not land on the button",
 			text.ButtonDuplicateBatch(), got, batches+1)
 	}
-	head = foldTitled(t, screen, "", text.BatchHeading(1))
-	if head.Open() != before {
-		t.Errorf("pressing %q in the head of batch 1 also toggled the fold (open %v -> %v)", text.ButtonDuplicateBatch(), before, head.Open())
+	if !openWhenCopied {
+		t.Errorf("pressing %q shut the row of batch 1 before the copy was made - a press on a button in the head goes to the button alone",
+			text.ButtonDuplicateBatch())
+	}
+	if foldTitled(t, screen, "", text.BatchHeading(1)).Open() {
+		t.Errorf("pressing %q in the head of batch 1 left batch 1 open - a copy folds the batch above it", text.ButtonDuplicateBatch())
+	}
+	if !foldTitled(t, screen, "", text.BatchHeading(2)).Open() {
+		t.Errorf("pressing %q in the head of batch 1 left the copy shut - the batch just made is the one open", text.ButtonDuplicateBatch())
 	}
 }
 

@@ -269,8 +269,9 @@ func (f PlannedFile) Damaged() bool {
 // what a part does rather than how long it is: this answers "is this target
 // askable at all", and the loop it was taken out of answers "what files does it
 // come to". seen carries across targets because a duplicate id is a fact about
-// the run rather than about one entry.
-func settleTarget(ctx context.Context, t *Target, opt Options, seen map[string]bool) (format.Descriptor, error) {
+// the run rather than about one entry, and run is what the memory setting lets
+// the run hold, which the draw of a range is kept inside (planstretch.go).
+func settleTarget(ctx context.Context, t *Target, opt Options, seen map[string]bool, run int64) (format.Descriptor, error) {
 	if t.ID == "" {
 		return format.Descriptor{}, &RecipeError{Setting: SettingID,
 			Detail:  core.Says("engine.NoID", "a target has no id"),
@@ -328,7 +329,7 @@ func settleTarget(ctx context.Context, t *Target, opt Options, seen map[string]b
 	// for every registered format. It was removed rather than kept as defence
 	// nobody can verify.
 	if t.Range.Used {
-		if err := drawSizes(ctx, t, desc, core.TargetSeed(opt.Seed, t.ID)); err != nil {
+		if err := drawSizes(ctx, t, desc, core.TargetSeed(opt.Seed, t.ID), run); err != nil {
 			return format.Descriptor{}, err
 		}
 	}
@@ -404,7 +405,7 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 	// rather than at the first file because constructing it is what takes the
 	// reference point, and that has to happen before any of the plan exists.
 	limits := opt.memoryLimits()
-	pl.budget = newPlanMemory(opt.Memory, limits)
+	pl.budget, pl.run = newPlanMemory(opt.Memory, limits), limits.Run
 	HandToRuntime(limits)
 
 	// The manifest lands beside the files, so its name is a name too. A path
@@ -465,7 +466,7 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 		// Everything refused from here down is refused about one target, so it
 		// carries which one. See atTarget for what that is worth and what it
 		// deliberately leaves alone.
-		desc, err := settleTarget(ctx, t, opt, seen)
+		desc, err := settleTarget(ctx, t, opt, seen, pl.run)
 		if err != nil {
 			return nil, atTarget(i+1, t, err)
 		}

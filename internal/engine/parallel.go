@@ -31,7 +31,12 @@ import (
 // Why it exists. Writing the files is what a run is: measured on 2026-09-06,
 // after P7 stopped planning from encoding the picture twice, planning a run of
 // 300 PNGs is 51 ms and writing it is 2741 ms - 2% against 98%. So the write
-// loop is the whole of what is left to parallelise, and the plan is not.
+// loop came first. The plan followed on 2026-11-18 (O355), once a picture
+// given its width and height was found to encode while it plans: two thousand
+// PNGs of 640x480 took 25.6 s to plan and ten thousand 76 s, one file at a
+// time, and a size refused for such a batch about twice that. beside, at the
+// end of this file, is the whole of what planning runs at once, and
+// planstretch.go says how much of it.
 //
 // Measured with tools/probes/writeparallel, which writes a real planned run
 // with N goroutines in ONE process - the shape this file has, rather than the
@@ -651,4 +656,45 @@ func (c *countingWriter) Write(p []byte) (int, error) {
 		c.report(c.n)
 	}
 	return n, err
+}
+
+// beside fills out with ask(from), ask(from+1) and so on, one answer for each
+// place in it, on width goroutines - the files of one stretch of a plan
+// (planstretch.go).
+//
+// Answers by place rather than by finishing order, for the reason writeAll
+// does: the caller reads them in the order a plan of one file at a time would
+// have reached them, so the first refusal it meets is the one that plan would
+// have stopped at, and the files after it are thrown away unread. That is
+// what keeps the plan, the names and every refusal the same at any width.
+//
+// Width one is the loop it replaces, on this goroutine. A machine with one
+// processor, or a stretch the memory setting holds to one file at a time,
+// starts nothing.
+//
+// It asks no context. ask plans a file, and planning asks the context before
+// anything else (format.PlanWith), so after a stop every place left answers
+// with the stop at once.
+func beside[T any](out []T, from, width int, ask func(i int) T) {
+	if width <= 1 || len(out) <= 1 {
+		for j := range out {
+			out[j] = ask(from + j)
+		}
+		return
+	}
+	var next atomic.Int64
+	var wg sync.WaitGroup
+	for range min(width, len(out)) {
+		wg.Go(func() { askInTurn(&next, out, from, ask) })
+	}
+	wg.Wait()
+}
+
+// askInTurn is one goroutine of beside: it takes the next place nobody has
+// taken and answers it, until there are none. A function of its own for the
+// reason drain is one.
+func askInTurn[T any](next *atomic.Int64, out []T, from int, ask func(i int) T) {
+	for j := int(next.Add(1)) - 1; j < len(out); j = int(next.Add(1)) - 1 {
+		out[j] = ask(from + j)
+	}
 }

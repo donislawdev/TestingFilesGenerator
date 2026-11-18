@@ -1,6 +1,8 @@
 package guard
 
 import (
+	"errors"
+	"fmt"
 	"go/build"
 	"io/fs"
 	"os"
@@ -32,17 +34,28 @@ type pkg struct {
 // repoRoot walks up from this test file until it finds go.mod.
 func repoRoot(t *testing.T) string {
 	t.Helper()
+	root, err := moduleRoot()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return root
+}
+
+// moduleRoot walks up from the working directory - the package's own, where
+// go test starts the binary - until it finds go.mod. TestMain needs it before
+// there is a test to fail, so it reports rather than fails.
+func moduleRoot() (string, error) {
 	dir, err := os.Getwd()
 	if err != nil {
-		t.Fatalf("working directory: %v", err)
+		return "", fmt.Errorf("working directory: %w", err)
 	}
 	for {
 		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
-			return dir
+			return dir, nil
 		}
 		parent := filepath.Dir(dir)
 		if parent == dir {
-			t.Fatal("go.mod not found above the test directory")
+			return "", errors.New("go.mod not found above the test directory")
 		}
 		dir = parent
 	}

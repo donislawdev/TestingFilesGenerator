@@ -41,13 +41,16 @@ import (
 // SmallestAccepted is called from guards and from the window, where that wrapper
 // is not in hand. Merging them would mean handing a planner in, which buys less
 // than it costs.
-func firstWritable(ctx context.Context, desc format.Descriptor, r format.Request, from, limit int64) (int64, error) {
+//
+// The plan it answers with is the one at that size, for what it says the file
+// holds (planstretch.go).
+func firstWritable(ctx context.Context, desc format.Descriptor, r format.Request, from, limit int64) (int64, format.Plan, error) {
 	var first error
 	for at := from; at <= limit; {
 		r.Bytes = at
-		_, err := planWithoutCrashing(ctx, desc, r)
+		p, err := planWithoutCrashing(ctx, desc, r)
 		if err == nil {
-			return at, nil
+			return at, p, nil
 		}
 		if first == nil {
 			first = err
@@ -56,11 +59,11 @@ func firstWritable(ctx context.Context, desc format.Descriptor, r format.Request
 		if !errors.As(err, &below) || below.Minimum <= at {
 			// Not a refusal about the size, or one that names no way forward.
 			// Either way there is nothing to jump to.
-			return 0, err
+			return 0, format.Plan{}, err
 		}
 		at = below.Minimum
 	}
-	return 0, first
+	return 0, format.Plan{}, first
 }
 
 // drawSizes settles the size of every file of a range target.
@@ -108,7 +111,7 @@ func firstWritable(ctx context.Context, desc format.Descriptor, r format.Request
 // size stopped in 0.01 s (docs/STABILITY-REVIEW-2026-10-26.md, R05).
 // format.PlanWith asks the context before anything else, and a stop is not a
 // refusal about the size, so firstWritable hands it straight back.
-func drawSizes(ctx context.Context, t *Target, desc format.Descriptor, targetSeed uint64) error {
+func drawSizes(ctx context.Context, t *Target, desc format.Descriptor, targetSeed uint64, run int64) error {
 	damaged := t.Damage.Label()
 	first := requestFor(t, 0, core.FileSeed(targetSeed, 0), damaged)
 
@@ -124,7 +127,7 @@ func drawSizes(ctx context.Context, t *Target, desc format.Descriptor, targetSee
 	// UTF-16, the band above a PNG's encoded picture - is a different thing:
 	// nobody can be expected to enumerate those, and snapping inside the range
 	// is the answer.
-	floor, err := firstWritable(ctx, desc, first, 0, t.Range.Max)
+	floor, _, err := firstWritable(ctx, desc, first, 0, t.Range.Max)
 	if err != nil {
 		// The floor is above the whole range, so nothing in it is writable.
 		return err
@@ -138,35 +141,74 @@ func drawSizes(ctx context.Context, t *Target, desc format.Descriptor, targetSee
 		}
 	}
 
-	span := uint64(t.Range.Max - t.Range.Min)
 	t.SizeMoved = make([]bool, len(t.Sizes))
-
-	for i := range t.Sizes {
-		want := t.Range.Min
-		if span != 0 {
-			// Per index, never from a running stream. Raising a count then
-			// leaves the sizes of the earlier files alone, which is rule 2 and
-			// the reason core.SizeSeed takes an index at all.
-			r := core.NewRand(core.SizeSeed(targetSeed, i))
-			want = t.Range.Min + int64(r.Uint64N(span+1))
-		}
-
-		req := requestFor(t, i, core.FileSeed(targetSeed, i), damaged)
-
-		got, err := firstWritable(ctx, desc, req, want, t.Range.Max)
-		if err != nil && want > t.Range.Min {
-			// Nothing writable from the draw upwards. The bottom of the range
-			// can still hold something - a draw landing on the last odd number
-			// of a range has nowhere above it and plenty below - so the range is
-			// only empty once THAT fails too. After a stop this second try
-			// hands the stop back at its first probe.
-			got, err = firstWritable(ctx, desc, req, t.Range.Min, t.Range.Max)
-		}
-		if err != nil {
+	draw := func(i int) drawn { return drawOne(ctx, t, desc, targetSeed, damaged, i) }
+	pace := pace{run: run}
+	got := make([]drawn, min(len(t.Sizes), widthFor(len(t.Sizes))*planStretchPerWriter))
+	for from := 0; from < len(t.Sizes); {
+		n, width := pace.stretch(len(t.Sizes)-from, planStretchPerWriter, t.Range.Max, len(got))
+		planStretch(&pace, got[:n], from, width, draw)
+		if err := settleDrawn(t, from, got[:n], &pace); err != nil {
 			return err
 		}
-		t.SizeMoved[i] = got != want
-		t.Sizes[i] = got
+		from += n
 	}
 	return nil
+}
+
+// settleDrawn gives the files of one stretch of a range their sizes, in order,
+// and stops at the first that could not be drawn.
+func settleDrawn(t *Target, from int, got []drawn, pace *pace) error {
+	for j, d := range got {
+		if d.err != nil {
+			return d.err
+		}
+		t.SizeMoved[from+j] = d.size != d.want
+		t.Sizes[from+j] = d.size
+		pace.saw(d.plan)
+	}
+	return nil
+}
+
+// drawn is what drawing the size of one file of a range came to: the size the
+// seed drew, the writable size it settled on, and of the plan at that size
+// only what pace reads. The whole plan stays behind, because a stretch holds
+// up to a hundred and twenty eight of these at once and a plan can carry its
+// file - a PDF plans its whole document - while the plan that is written is
+// made again once the sizes are settled.
+type drawn struct {
+	want, size int64
+	plan       format.Plan
+	err        error
+}
+
+// drawOne draws the size of file i of a range target and settles it on one
+// the format can write.
+//
+// One file, asking nothing of the others, so the files of a range are drawn a
+// stretch at a time beside each other (planstretch.go) and read in order -
+// the first that fails is the one a draw of one file at a time stopped at.
+func drawOne(ctx context.Context, t *Target, desc format.Descriptor, targetSeed uint64, damaged string, i int) drawn {
+	want := t.Range.Min
+	if span := uint64(t.Range.Max - t.Range.Min); span != 0 {
+		// Per index, never from a running stream. Raising a count then
+		// leaves the sizes of the earlier files alone, which is rule 2 and
+		// the reason core.SizeSeed takes an index at all.
+		r := core.NewRand(core.SizeSeed(targetSeed, i))
+		want = t.Range.Min + int64(r.Uint64N(span+1))
+	}
+
+	req := requestFor(t, i, core.FileSeed(targetSeed, i), damaged)
+
+	got, plan, err := firstWritable(ctx, desc, req, want, t.Range.Max)
+	if err != nil && want > t.Range.Min {
+		// Nothing writable from the draw upwards. The bottom of the range
+		// can still hold something - a draw landing on the last odd number
+		// of a range has nowhere above it and plenty below - so the range is
+		// only empty once THAT fails too. After a stop this second try
+		// hands the stop back at its first probe.
+		got, plan, err = firstWritable(ctx, desc, req, t.Range.Min, t.Range.Max)
+	}
+	return drawn{want: want, size: got, err: err,
+		plan: format.Plan{Bytes: plan.Bytes, Holds: plan.Holds, PlanHolds: plan.PlanHolds}}
 }

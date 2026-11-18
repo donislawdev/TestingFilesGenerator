@@ -50,9 +50,21 @@ func (t *toggleCell) drop() float32 {
 }
 
 func (t *toggleCell) MinSize(objects []fyne.CanvasObject) fyne.Size {
-	size := column{gap: GapTight}.MinSize(objects)
-	size.Height += t.drop()
-	return size
+	return t.over(t.stack(objects))
+}
+
+// stack is the cell's column: the box with its name, and its refusal under
+// it.
+func (*toggleCell) stack(objects []fyne.CanvasObject) fyne.Size {
+	return column{gap: GapTight}.MinSize(objects)
+}
+
+// over is the cell's size from the size of its column: the column, with the
+// room its row gives it above. Apart from MinSize so a grid that has asked
+// the column already can level the box without asking again (gridasks.go).
+func (t *toggleCell) over(col fyne.Size) fyne.Size {
+	col.Height += t.drop()
+	return col
 }
 
 func (t *toggleCell) Layout(objects []fyne.CanvasObject, size fyne.Size) {
@@ -69,7 +81,8 @@ func (t *toggleCell) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 }
 
 // levelToggles tells every box to tick in a packing whether it shares its
-// row with a named field.
+// row with a named field, and works out the height that gives it from the
+// column it was asked for while being packed.
 func levelToggles(items []placed) {
 	named := map[int]bool{}
 	for _, p := range items {
@@ -77,9 +90,10 @@ func levelToggles(items []placed) {
 			named[p.row] = true
 		}
 	}
-	for _, p := range items {
+	for i, p := range items {
 		if t, toggle := layoutOf(p.o).(*toggleCell); toggle {
 			t.level = named[p.row]
+			items[i].asked.tall = t.over(p.asked.column).Height
 		}
 	}
 }

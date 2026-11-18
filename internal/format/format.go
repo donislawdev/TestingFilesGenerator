@@ -792,6 +792,14 @@ type Plan struct {
 	// Like Work, it is a cost only the format knows, and like Work it never
 	// reaches the manifest.
 	Holds int64
+	// PlanHolds is how much memory planning the file took at once, counted
+	// the way Holds is - nought for every format whose plan is arithmetic.
+	// A picture coded while it plans holds its pixels and the encoder's work
+	// then and only the coded bytes after, so its Holds is nought and this is
+	// not. Read by the planner alone (engine/planstretch.go), which plans as
+	// many files at once as the memory setting leaves room for, and takes the
+	// larger of the two.
+	PlanHolds int64
 }
 
 // PropertyLabelEmbedded is the key a generator sets to say whether the label

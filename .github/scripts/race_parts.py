@@ -2,6 +2,7 @@
 
     race_parts.py split NAMES WEIGHTS PART PARTS > mine.txt
     race_parts.py unlisted WEIGHTS LOG
+    race_parts.py verdict WHAT JOBS
 
 split prints the names of NAMES (one per line, as go test -list gives them)
 that part PART of PARTS runs. The tests WEIGHTS names are laid out by their
@@ -14,7 +15,11 @@ unlisted reads the log of a part (go test -v) and fails when a test WEIGHTS
 does not name took UNLISTED_CEILING seconds or more. Such a test is laid out as
 if it were light, and the parts stop being even without anything saying so.
 
-Both fail closed, with a sentence that names what to change: a weight for a
+verdict reads the jobs of a workflow run and fails unless every part of WHAT
+ran and passed. The checks main's rules require are those verdicts, because a
+part carries its number in its name and the rules name jobs.
+
+They fail closed, with a sentence that names what to change: a weight for a
 test the binary does not list (renamed or removed), a line that is not a
 weight, a name given twice, no "unlisted" line, or a part outside the parts.
 """
@@ -34,6 +39,9 @@ UNLISTED_CEILING = 60.0
 # A duration as go test writes it. A looser one let "1.2.3s" through to float(),
 # which ended the script with a traceback instead of passing the line by.
 TOP = re.compile(r"^--- (?:PASS|FAIL|SKIP): (\S+) \(([0-9]+(?:\.[0-9]+)?)s\)$")
+
+# A job of a part as ci.yml names it: "guards on windows-latest (part 1 of 2)".
+PART_NAME = re.compile(r"^(.+) \(part ([0-9]+) of ([0-9]+)\)$")
 
 
 def refuse(message):
@@ -137,14 +145,54 @@ def check_unlisted(weights_path, log_path):
                "as if they were light:\n%s\nAdd each line above to %s." % (UNLISTED_CEILING, lines, weights_path))
 
 
+def verdict(what, jobs_path):
+    """Fail unless every part of WHAT ran in this workflow and passed.
+
+    JOBS is the jobs of the run, a name and a conclusion to a line with a tab
+    between, as the verdict jobs of ci.yml ask the API for them. A part is a
+    job named WHAT (part I of N). Every N has to agree, every I below N has to
+    be there once, and every one has to have succeeded - a part that never ran
+    is as red as one that failed, because its tests ran nowhere.
+    """
+    found, counts = {}, set()
+    for line in read_lines(jobs_path, "list of jobs"):
+        name, _, conclusion = line.partition("\t")
+        named = PART_NAME.match(name.strip())
+        if not named or named.group(1) != what:
+            continue
+        part, parts = int(named.group(2)), int(named.group(3))
+        if part in found:
+            refuse("two jobs of this run are part %d of %s." % (part, what))
+        found[part] = conclusion.strip()
+        counts.add(parts)
+    if not found:
+        refuse("no job of this run is a part of %s, so nothing says its tests passed." % what)
+    if len(counts) != 1:
+        refuse("the parts of %s disagree about how many there are: %s." % (what, ", ".join(sorted(str(n) for n in counts))))
+    parts = counts.pop()
+    failed = False
+    for part in range(parts):
+        conclusion = found.get(part, "")
+        print("part %d of %d of %s: %s" % (part, parts, what, conclusion or "did not run in this workflow"))
+        failed = failed or conclusion != "success"
+    for part in sorted(p for p in found if p >= parts):
+        print("part %d of %s is past its %d parts, so the matrix and the number in the name disagree" % (part, what, parts))
+        failed = True
+    if failed:
+        sys.exit(1)
+
+
 def main():
     args = sys.argv[1:]
     if len(args) == 5 and args[0] == "split":
         split(*args[1:])
     elif len(args) == 3 and args[0] == "unlisted":
         check_unlisted(*args[1:])
+    elif len(args) == 3 and args[0] == "verdict":
+        verdict(*args[1:])
     else:
-        refuse("usage: race_parts.py split NAMES WEIGHTS PART PARTS | race_parts.py unlisted WEIGHTS LOG")
+        refuse("usage: race_parts.py split NAMES WEIGHTS PART PARTS | race_parts.py unlisted WEIGHTS LOG"
+               " | race_parts.py verdict WHAT JOBS")
 
 
 if __name__ == "__main__":

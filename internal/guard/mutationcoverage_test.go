@@ -235,6 +235,33 @@ var provenByProbe = map[string]string{
 	"TestSmallestIsOfferedForExactlyTheFormatsTheEngineTakesItFor": "a canary of its own - a window offering smallest for every " +
 		"format has to disagree with the engine - a reach check that the engine both took and refused smallest, and broken by " +
 		"hand on 2026-11-17 by offering smallest for every format: red on both screens.",
+	"TestAPlanIsTheSameHoweverManyFilesArePlannedAtOnce": "a canary of its own - two plans of different seeds have to be " +
+		"told apart - a reach check that the pictures were planned beside each other and that each refusal case is refused, " +
+		"and broken by hand on 2026-11-18 three ways: answers put in the wrong place, the walk reading past a refusal and " +
+		"nothing ever planned beside anything: red each time.",
+	"TestThePicturesPlannedAtOnceHoldNoMoreThanTheMemorySettingLeaves": "a reach check of its own - with room to spare the " +
+		"pictures have to be seen planned beside each other - and broken by hand on 2026-11-18 by dropping the memory bound " +
+		"and by not planning the first file of a target alone: red both times.",
+	"TestANewBatchIsTheOneOpen": "a reach check of its own - the screen has to open with one open batch and the " +
+		"first batch has to be shut before it is opened again - and broken by hand on 2026-11-18 by taking out what " +
+		"foldAbove sets: red, every batch left open.",
+	"TestAPartRunsTheTestsItIsHandedAndNoOther": "three children of its own, one of them a refusal, each with a deadline - " +
+		"and broken by hand on 2026-11-18 by a TestMain that ignores the file: red after 90 s, the child ran the whole package " +
+		"from its first test. Broken by hand again that day by a TestMain that reads a relative path from the package's " +
+		"directory, as every part of the first run of the parts did: red, mine.txt cannot be read.",
+	"TestAVerdictPassesOnlyWhenEveryPartRanAndPassed": "a table of runs, the first of which has to pass, so the refusals " +
+		"are not the script refusing everything.",
+	"TestTheLogOfAPartIsAFileGitIgnores": "a canary of its own - a name no rule ignores has to be found not ignored - " +
+		"and it asks that it reached the log of the test, race and coverage jobs. Broken by hand on 2026-11-18 by taking " +
+		"/part.log out of .gitignore: red in all three jobs.",
+	"TestAJobOnMacOSUsesOnlyWhatItsBashHas": "a table of canaries of its own - each construct in a job on macOS, in a " +
+		"script it names and in a local action it uses has to be found, the same on Linux and a comment have not to be - " +
+		"and it asks that it reached the test job of ci.yml and the script that job hands its part to.",
+	"TestAVerdictOfPartsRunsWhateverThePartsDid": "a canary of its own - the test job's verdict read with if: success() " +
+		"has to be found wrong.",
+	"TestAGridAsksEveryPartOfAFieldForItsSizeOnce": "a canary of its own - a sentence behind a layout that asks it twice " +
+		"has to be found - every counted thing asked exactly once, so a field the grid never reached is red too, and run on " +
+		"2026-11-18 against the grid before the change: red, a field asked 5 times and a field in a group 15.",
 	"TestAValueToTypeIsTheSameInEveryLanguage": "a canary of its own - a translation that changed `all` into `wszystko` " +
 		"has to disagree - a reach check of how many marked texts the catalogues and the site carry, and broken by hand on " +
 		"2026-11-18 by changing one value in the Polish registry and by making no value ever a value: red both times.",
@@ -507,7 +534,9 @@ var provenByProbe = map[string]string{
 }
 
 var (
-	testDeclaration = regexp.MustCompile(`(?m)^func (Test\w+)\(`)
+	// A guard takes *testing.T. TestMain takes *testing.M and is how go test
+	// starts the package (guardpart_test.go), not a guard of anything.
+	testDeclaration = regexp.MustCompile(`(?m)^func (Test\w+)\(\w+ \*testing\.T\)`)
 	// Either quote: Python writes a string in single quotes as readily as in
 	// double ones, and an entry written by repr() comes out in single. With
 	// only the double quote read, nine of the guards this reported as unproven

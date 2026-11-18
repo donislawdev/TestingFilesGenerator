@@ -84,6 +84,23 @@ type batchWalk struct {
 	desc       format.Descriptor
 	targetSeed uint64
 	damaged    string
+	// run is what the memory setting lets the run hold (planstretch.go).
+	run int64
+	// position is the target's place in the recipe, counted from one, and
+	// ext the ending of its files - what planning.file gives each of them.
+	position int
+	ext      string
+}
+
+// planAt plans file idx of the target, from nought, at size bytes.
+func (w batchWalk) planAt(ctx context.Context, idx int, size int64) answer {
+	// Per target and index, never from a stream the run shares - untouchable
+	// rule 2, and the reason two runs of one recipe write the same bytes.
+	seed := core.FileSeed(w.targetSeed, idx)
+	r := requestFor(w.t, idx, seed, w.damaged)
+	r.Bytes = size
+	p, err := planFile(ctx, w.t, w.desc, r)
+	return answer{plan: p, err: err, seed: seed}
 }
 
 // everyFile is where the walk ended.
@@ -113,7 +130,13 @@ type everyFile struct {
 // and height set encodes while it plans, so ten thousand of them is the time
 // their plan takes, measured in docs/SIZE-FIXES-2026-11-16.md. It holds nothing
 // per file, so a million files cost time and no memory, and the run's context
-// is asked before every plan, so a stop is a stop.
+// is asked before every stretch, so a stop is a stop.
+//
+// The files are asked a stretch at a time (planstretch.go), one file a
+// goroutine, and their answers are read in the order of the walk. A file read
+// after a refusal was asked at the size before the raise, so its answer is
+// thrown away and it is asked again - which makes every raise, every file
+// that raised it and so the reason the refusal gives the same at any width.
 //
 // The ceiling is for a generator that never accepts, which would otherwise walk
 // one byte at a time without end. A raise never goes down, so nothing cycles,
@@ -121,35 +144,58 @@ type everyFile struct {
 // size - format.SmallestRounds - so n files may raise it n times that.
 func (w batchWalk) sizeEveryFileTakes(ctx context.Context, first int, below *format.BelowMinimumError) (everyFile, error) {
 	n := len(w.t.Sizes)
-	got := everyFile{size: max(below.Minimum, below.Requested+1), last: below}
-	raises, ceiling := 0, format.SmallestRounds*n
-	for idx, inARow := first, 0; inARow < n; {
+	s := &walking{n: n, first: first, idx: first, ceiling: format.SmallestRounds * n,
+		got: everyFile{size: max(below.Minimum, below.Requested+1), last: below}}
+	ask := func(i int) answer { return w.planAt(ctx, i%n, s.got.size) }
+	pace := pace{run: w.run}
+	got := make([]answer, widthFor(n))
+	for s.inARow < n {
 		if err := ctx.Err(); err != nil {
 			return everyFile{}, err
 		}
-		r := requestFor(w.t, idx, core.FileSeed(w.targetSeed, idx), w.damaged)
-		r.Bytes = got.size
-		_, err := planFile(ctx, w.t, w.desc, r)
-		if err == nil {
-			inARow++
-			idx = (idx + 1) % n
+		k, width := pace.stretch(n-s.inARow, 1, s.got.size, len(got))
+		planStretch(&pace, got[:k], s.idx, width, ask)
+		if err := s.take(got[:k], &pace, w.desc.ID); err != nil {
+			return everyFile{}, err
+		}
+	}
+	return s.got, nil
+}
+
+// walking is where the walk of sizeEveryFileTakes stands: the file to ask
+// next, how many in a row accepted the size, and how often it was raised.
+type walking struct {
+	n, first, idx, inARow int
+	raises, ceiling       int
+	got                   everyFile
+}
+
+// take reads the answers of one stretch in order, up to the first refusal,
+// which raises the size for the next.
+func (s *walking) take(answers []answer, pace *pace, id string) error {
+	for _, a := range answers {
+		if a.err == nil {
+			pace.saw(a.plan)
+			s.inARow++
+			s.idx = (s.idx + 1) % s.n
 			continue
 		}
 		var refused *format.BelowMinimumError
-		if !errors.As(err, &refused) {
+		if !errors.As(a.err, &refused) {
 			// A refusal about something else, or a stop the format noticed
 			// first. Either is the answer somebody needs, so it goes out as it
 			// came.
-			return everyFile{}, err
+			return a.err
 		}
-		if raises++; raises > ceiling {
-			return everyFile{}, core.Defect(fmt.Errorf("%s: the size every one of %d files accepts did not settle in %d raises, the last at %d B",
-				w.desc.ID, n, ceiling, got.size))
+		if s.raises++; s.raises > s.ceiling {
+			return core.Defect(fmt.Errorf("%s: the size every one of %d files accepts did not settle in %d raises, the last at %d B",
+				id, s.n, s.ceiling, s.got.size))
 		}
-		got.size = max(refused.Minimum, got.size+1)
-		got.last, got.differ, inARow = refused, got.differ || idx != first, 0
+		s.got.size = max(refused.Minimum, s.got.size+1)
+		s.got.last, s.got.differ, s.inARow = refused, s.got.differ || s.idx != s.first, 0
+		return nil
 	}
-	return got, nil
+	return nil
 }
 
 // refusal is the refusal for a batch whose size moved past the one the first

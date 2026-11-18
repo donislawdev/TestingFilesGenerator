@@ -1024,10 +1024,11 @@ MUTATIONS = [
         # The regression surface claimed this was proven by mutation and it was
         # not: no entry here named a locality test. Found 2026-08-01 by the
         # coverage guard, not by reading.
+        # Repointed 2026-11-18 (#252): the seed is worked out once, in batchWalk.planAt, and travels with the plan. The target's place stands in for the files before it
         "the file seed comes from a stream shared by the whole run",
-        "internal/engine/plantarget.go",
-        "core.FileSeed(targetSeed, idx)",
-        "core.FileSeed(targetSeed, idx+len(pl.out))",
+        "internal/engine/batchminimum.go",
+        "seed := core.FileSeed(w.targetSeed, idx)",
+        "seed := core.FileSeed(w.targetSeed, idx+w.position)",
         # Reordering only. Checked one test at a time: the same substitution
         # leaves the other three locality guards green, because a target
         # appended at the end shifts nothing before it. Naming a test that
@@ -1050,10 +1051,11 @@ MUTATIONS = [
     (
         # Raising a count rewrites the files that were already there, which is
         # the failure somebody meets after generating a fixture set twice.
+        # Repointed 2026-11-18 (#252): the seed is worked out once, in batchWalk.planAt, and travels with the plan.
         "the file seed depends on how many files the target holds",
-        "internal/engine/plantarget.go",
-        "core.FileSeed(targetSeed, idx)",
-        "core.FileSeed(targetSeed, idx+len(t.Sizes))",
+        "internal/engine/batchminimum.go",
+        "seed := core.FileSeed(w.targetSeed, idx)",
+        "seed := core.FileSeed(w.targetSeed, idx+len(w.t.Sizes))",
         "TestRaisingTheCountLeavesTheEarlierFilesIdentical",
     ),
     (
@@ -7834,10 +7836,11 @@ MUTATIONS = [
         # timeout of its own, so Go's ten minutes a package decides instead of
         # the twenty the job declares. The run then PANICS out of whichever test
         # was running, which reads as a broken test rather than a busy runner.
+        # Repointed 2026-11-18 (#252): the test job runs its guards in parts (O361).
         "a workflow runs the whole suite without stating a timeout",
         ".github/workflows/ci.yml",
-        './... -count=1 -timeout 18m\n\n      - name: build the command line binary',
-        './... -count=1\n\n      - name: build the command line binary',
+        "./internal/guard/ -count=1 -timeout 18m -v 2>&1",
+        "./internal/guard/ -count=1 -v 2>&1",
         "TestEveryWholeTreeTestRunStatesItsOwnTimeout",
     ),
     (
@@ -8685,24 +8688,27 @@ MUTATIONS = [
     # --- a drawn size is snapped to one the format can write, and the move is
     #     reported (2026-09-08, O190) ---
     (
+        # Repointed 2026-11-18 (#252): a range is drawn a stretch at a time, drawOne and settleDrawn.
         "a drawn size goes back to being used whether the format can write it or not",
         "internal/engine/drawsizes.go",
-        "\t\tt.Sizes[i] = got",
-        "\t\tt.Sizes[i] = want",
+        "\t\tt.Sizes[from+j] = d.size",
+        "\t\tt.Sizes[from+j] = d.want",
         "TestASizeTheFormatCannotWriteIsMovedInsideTheRange",
     ),
     (
+        # Repointed 2026-11-18 (#252): a range is drawn a stretch at a time, drawOne and settleDrawn.
         "a size is moved to fit the format and nothing records that it was",
         "internal/engine/drawsizes.go",
-        "\t\tt.SizeMoved[i] = got != want",
-        "\t\tt.SizeMoved[i] = false",
+        "\t\tt.SizeMoved[from+j] = d.size != d.want",
+        "\t\tt.SizeMoved[from+j] = false",
         "TestAMovedSizeIsReported",
     ),
     (
+        # Repointed 2026-11-18 (#252): planning.file attaches the note, one level less deep.
         "the note about a moved size is attached to every file of a range",
         "internal/engine/plantarget.go",
-        "\t\tif idx < len(t.SizeMoved) && t.SizeMoved[idx] {",
-        "\t\tif idx < len(t.Sizes) {",
+        "\tif idx < len(t.SizeMoved) && t.SizeMoved[idx] {",
+        "\tif idx < len(t.Sizes) {",
         "TestAMovedSizeIsReported",
     ),
     (
@@ -8720,10 +8726,11 @@ MUTATIONS = [
         "TestARangeHoldingNoWritableSizeIsRefusedBeforeAnyFile",
     ),
     (
+        # Repointed 2026-11-18 (#252): a range is drawn a stretch at a time, drawOne and settleDrawn.
         "snapping starts from somewhere that depends on how many files were asked for",
         "internal/engine/drawsizes.go",
-        "\t\tgot, err := firstWritable(ctx, desc, req, want, t.Range.Max)",
-        "\t\tgot, err := firstWritable(ctx, desc, req, want+int64(len(t.Sizes)), t.Range.Max)",
+        "\tgot, plan, err := firstWritable(ctx, desc, req, want, t.Range.Max)",
+        "\tgot, plan, err := firstWritable(ctx, desc, req, want+int64(len(t.Sizes)), t.Range.Max)",
         "TestSnappingStillLeavesTheEarlierFilesAlone",
     ),
     # --- HTML is a whole page or only the blocks that sit inside one
@@ -10645,10 +10652,11 @@ MUTATIONS = [
     # --- the form in columns, groups that say what they are, and a refusal
     #     that offers its own fix (2026-09-23, the layout prototype) ---
     (
+        # Repointed 2026-11-18 (#252): spanOf reads what the grid asked once (gridasks.go).
         "every field takes a whole row of the form again",
         "internal/gui/parts/grid.go",
-        "func spanOf(o fyne.CanvasObject, column float32) int {\n",
-        "func spanOf(o fyne.CanvasObject, column float32) int {\n\treturn GridColumns\n",
+        "func spanOf(p placed, column float32) int {\n",
+        "func spanOf(p placed, column float32) int {\n\treturn GridColumns\n",
         "TestShortFieldsShareARowAndTakeOneColumnEach",
     ),
     (
@@ -15860,19 +15868,21 @@ MUTATIONS = [
         # R05: a probe of the range draw plans the file with a context of its
         # own again, so a stop waits for the whole draw. The range under the
         # pdf floor is refused by the format in both halves of the guard.
+        # Repointed 2026-11-18 (#252): the probe of a draw is firstWritable's.
         "a range draws its sizes without looking at the stop",
         "internal/engine/drawsizes.go",
-        "_, err := planWithoutCrashing(ctx, desc, r)",
-        "_, err := planWithoutCrashing(context.Background(), desc, r)",
+        "p, err := planWithoutCrashing(ctx, desc, r)",
+        "p, err := planWithoutCrashing(context.Background(), desc, r)",
         "TestARangeStopsWhileItsSizesAreDrawn",
     ),
     (
         # The same, one layer up: the engine stops handing its context to the
         # draw, which is the shape the draw had from 2026-09-08 until R05.
+        # Repointed 2026-11-18 (#252): the draw takes the run's memory limit as well.
         "the engine draws the sizes of a range with a context of its own",
         "internal/engine/engine.go",
-        "if err := drawSizes(ctx, t, desc, core.TargetSeed(opt.Seed, t.ID)); err != nil {",
-        "if err := drawSizes(context.Background(), t, desc, core.TargetSeed(opt.Seed, t.ID)); err != nil {",
+        "if err := drawSizes(ctx, t, desc, core.TargetSeed(opt.Seed, t.ID), run); err != nil {",
+        "if err := drawSizes(context.Background(), t, desc, core.TargetSeed(opt.Seed, t.ID), run); err != nil {",
         "TestARangeStopsWhileItsSizesAreDrawn",
     ),
     (
@@ -15897,10 +15907,11 @@ MUTATIONS = [
         # The class guard on its own: a context from nothing in the engine, in
         # a place no behaviour guard of R05 or R09 looks at. Only the walk over
         # the source sees it, which is why that walk exists.
+        # Repointed 2026-11-18 (#252): the stop is asked once a file, at the end of planning.file.
         "the engine makes a context from nothing in a place nobody listed",
         "internal/engine/plantarget.go",
-        "// thousand pictures is the case this is for.\n\t\tif err := ctx.Err(); err != nil {",
-        "// thousand pictures is the case this is for.\n\t\tif err := context.Background().Err(); err != nil {",
+        "// thousand pictures is the case this is for.\n\treturn ctx.Err()",
+        "// thousand pictures is the case this is for.\n\treturn context.Background().Err()",
         "TestAContextIsMadeFromNothingOnlyWhereItIsMeantToStart",
     ),
     (
@@ -16059,10 +16070,11 @@ MUTATIONS = [
     (
         # Planning works to the old two gigabytes whatever the setting says -
         # the ceiling that could not be moved, which is R02.
+        # Repointed 2026-11-18 (#252): the run's limit is set beside the ceiling, and stays.
         "planning ignores the memory setting and works to the old ceiling",
         "internal/engine/engine.go",
-        "pl.budget = newPlanMemory(opt.Memory, limits)",
-        "pl.budget = newPlanMemory(opt.Memory, core.MemoryLimits{Plan: core.MaxPlanBytes})",
+        "pl.budget, pl.run = newPlanMemory(opt.Memory, limits), limits.Run",
+        "pl.budget, pl.run = newPlanMemory(opt.Memory, core.MemoryLimits{Plan: core.MaxPlanBytes}), limits.Run",
         "TestThePlanCeilingIsTheMemorySetting",
     ),
     (
@@ -16100,17 +16112,19 @@ MUTATIONS = [
     (
         # A jxl chosen from the ladder is coded while writing and declares
         # nothing, so the setting cannot see it.
+        # Repointed 2026-11-18 (#252): the plan says PlanHolds when it codes and Holds when the writer does.
         "a jxl coded while writing declares nothing",
         "internal/format/jxl/jxl.go",
-        "\tif m.coded == nil {\n\t\t// Coded while writing",
-        "\tif false && m.coded == nil {\n\t\t// Coded while writing",
+        "\tif m.coded == nil {\n\t\tp.Holds = holdsPerPixel",
+        "\tif false && m.coded == nil {\n\t\tp.Holds = holdsPerPixel",
         "TestEveryPictureItChoosesSaysWhatWritingItHolds",
     ),
     (
+        # Repointed 2026-11-18 (#252): the plan says PlanHolds when it codes and Holds when the writer does.
         "an avif coded while writing declares nothing",
         "internal/format/avif/avif.go",
-        "\tif m.coded == nil {\n\t\t// Coded while writing",
-        "\tif false && m.coded == nil {\n\t\t// Coded while writing",
+        "\tif m.coded == nil {\n\t\tp.Holds = holdsPerPixel",
+        "\tif false && m.coded == nil {\n\t\tp.Holds = holdsPerPixel",
         "TestEveryPictureItChoosesSaysWhatWritingItHolds",
     ),
     (
@@ -16574,9 +16588,10 @@ MUTATIONS = [
         "TestTheRaceSplitRefusesWeightsItCannotTrust",
     ),
     (
+        # Repointed 2026-11-18 (#252): every job split into parts picks its part in guard_part.sh (O361).
         "the race job stops laying its parts out by the weights",
-        ".github/workflows/ci.yml",
-        'python3 .github/scripts/race_parts.py split names.txt .github/race-weights "$PART" "$PARTS" > mine.txt',
+        ".github/scripts/guard_part.sh",
+        "\"$(python_here)\" .github/scripts/race_parts.py split names.txt .github/race-weights \"$part\" \"$parts\" | tr -d '\\r' > mine.txt",
         "cp names.txt mine.txt",
         "TestTheRaceJobLaysItsPartsOutByTheWeights",
     ),
@@ -16595,9 +16610,10 @@ MUTATIONS = [
         "TestEveryGuardRunsInExactlyOneRacePart",
     ),
     (
+        # Repointed 2026-11-18 (#252): the list names the script that picks a part and the TestMain that hands it over (O361).
         "a pull request that changes only the race weights or the script laying them out merges with the race job skipped",
         ".github/workflows/ci.yml",
-        " .github/build-tags .github/race-weights .github/scripts/race_parts.py'",
+        " .github/build-tags .github/race-weights .github/scripts/race_parts.py .github/scripts/guard_part.sh internal/guard/guardpart_test.go'",
         " .github/build-tags'",
         "TestTheRaceJobLaysItsPartsOutByTheWeights",
     ),
@@ -17683,10 +17699,11 @@ MUTATIONS = [
         "TestTheOTLPCheckRefusesWhatAJSONReaderLetsThrough",
     ),
     (
+        # Repointed 2026-11-18 (#252): the ending is worked out with the walk of a target.
         "the engine names every file by the format's own extension, whatever was chosen",
         "internal/engine/plantarget.go",
-        "ext := desc.ExtensionFor(t.Properties)",
-        "ext := desc.Extension",
+        "position: position, ext: desc.ExtensionFor(t.Properties)}",
+        "position: position, ext: desc.Extension}",
         "TestEveryFileIsNamedForTheSettingsItWasMadeWith",
     ),
     (

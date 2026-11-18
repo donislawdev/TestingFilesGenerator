@@ -172,12 +172,13 @@ func isGridCell(o fyne.CanvasObject) bool {
 // width it was last laid out at - see MinSize.
 type formGrid struct{ width float32 }
 
-// placed is one item of a grid: where it starts, how many columns it takes
-// and which row it is in.
+// placed is one item of a grid: where it starts, how many columns it takes,
+// which row it is in and what it asked for (gridasks.go).
 type placed struct {
 	o           fyne.CanvasObject
 	row, column int
 	span        int
+	asked       asked
 }
 
 // columnWidth is the width of one of GridColumns columns in a grid this wide.
@@ -189,13 +190,12 @@ func columnWidth(width float32) float32 {
 // fewest that hold what it needs, and all of them for anything that is not a
 // field or was marked Wide. Worked out from the item, never written down per
 // field - a translation that makes a name longer makes its field wider.
-func spanOf(o fyne.CanvasObject, column float32) int {
-	if IsWide(o) || !isGridCell(o) {
+func spanOf(p placed, column float32) int {
+	if IsWide(p.o) || !isGridCell(p.o) {
 		return GridColumns
 	}
-	need := cellWidthNeed(o)
 	for span := 1; span < GridColumns; span++ {
-		if column*float32(span)+GapColumns*float32(span-1) >= need {
+		if column*float32(span)+GapColumns*float32(span-1) >= p.asked.across {
 			return span
 		}
 	}
@@ -203,20 +203,23 @@ func spanOf(o fyne.CanvasObject, column float32) int {
 }
 
 // pack lays the shown items into rows at one width, in the order given: an
-// item that does not fit in what is left of a row starts the next one.
-func pack(objects []fyne.CanvasObject, width float32) []placed {
+// item that does not fit in what is left of a row starts the next one. It
+// takes the items askAll gave and hands back the ones with a height, in the
+// same slice.
+func pack(shown []placed, width float32) []placed {
 	column := columnWidth(width)
-	var out []placed
+	out := shown[:0]
 	row, used := 0, 0
-	for _, o := range objects {
-		if !o.Visible() || o.MinSize().Height == 0 {
+	for _, p := range shown {
+		if p.asked.whole.Height == 0 {
 			continue
 		}
-		span := spanOf(o, column)
+		span := spanOf(p, column)
 		if used > 0 && used+span > GridColumns {
 			row, used = row+1, 0
 		}
-		out = append(out, placed{o: o, row: row, column: used, span: span})
+		p.row, p.column, p.span = row, used, span
+		out = append(out, p)
 		used += span
 		if used >= GridColumns {
 			row, used = row+1, 0
@@ -238,11 +241,7 @@ func rowHeights(items []placed, width float32) []float32 {
 		for len(heights) <= p.row {
 			heights = append(heights, 0)
 		}
-		body := p.o.MinSize().Height
-		if cell, _ := refusalOf(p.o); cell != nil {
-			body = p.o.(*fyne.Container).Objects[0].MinSize().Height
-		}
-		heights[p.row] = fyne.Max(heights[p.row], body)
+		heights[p.row] = fyne.Max(heights[p.row], p.asked.tall)
 	}
 	column := columnWidth(width)
 	under := make([]float32, len(heights))
@@ -258,7 +257,7 @@ func rowHeights(items []placed, width float32) []float32 {
 		cell.areaWidth = width
 		cell.areaTop = heights[p.row] + GapTight + under[p.row]
 		if area.Visible() {
-			under[p.row] += area.MinSize().Height + GapTight
+			under[p.row] += p.asked.refusal + GapTight
 		}
 	}
 	for row := range heights {
@@ -280,13 +279,12 @@ func (g *formGrid) MinSize(objects []fyne.CanvasObject) fyne.Size {
 	if width <= 0 {
 		width = ColumnWidth - Inset*2
 	}
+	shown := askAll(objects)
 	var minWidth, height float32
-	for _, o := range objects {
-		if o.Visible() {
-			minWidth = fyne.Max(minWidth, cellWidthNeed(o))
-		}
+	for _, p := range shown {
+		minWidth = fyne.Max(minWidth, p.asked.across)
 	}
-	items := pack(objects, width)
+	items := pack(shown, width)
 	gaps := rowGaps(items)
 	for i, h := range rowHeights(items, width) {
 		height += gaps[i] + h
@@ -297,7 +295,7 @@ func (g *formGrid) MinSize(objects []fyne.CanvasObject) fyne.Size {
 func (g *formGrid) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	g.width = size.Width
 	column := columnWidth(size.Width)
-	items := pack(objects, size.Width)
+	items := pack(askAll(objects), size.Width)
 	heights := rowHeights(items, size.Width)
 	gaps := rowGaps(items)
 	tops := make([]float32, len(heights))
@@ -306,7 +304,7 @@ func (g *formGrid) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 	}
 	for _, p := range items {
 		width := column*float32(p.span) + GapColumns*float32(p.span-1)
-		height := p.o.MinSize().Height
+		height := p.asked.tall
 		if cell, _ := refusalOf(p.o); cell != nil {
 			height = heights[p.row]
 		}
@@ -358,16 +356,4 @@ func holdsGroup(o fyne.CanvasObject) bool {
 func isGroup(o fyne.CanvasObject) bool {
 	_, group := layoutOf(o).(groupCell)
 	return group
-}
-
-// cellWidthNeed is how wide an item asks to be in a grid. A field asks with
-// its body alone: its refusal is laid under the row, across it, so a long
-// sentence or the button under it must not widen the field's column -
-// measured on the prototype, the button offering the smallest size pushed the
-// size box to two columns and the field after it to the next row.
-func cellWidthNeed(o fyne.CanvasObject) float32 {
-	if cell, _ := refusalOf(o); cell != nil {
-		return o.(*fyne.Container).Objects[0].MinSize().Width
-	}
-	return o.MinSize().Width
 }

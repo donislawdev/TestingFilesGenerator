@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"slices"
 	"strings"
 	"testing"
 
@@ -157,6 +158,74 @@ func TestAFoldedBatchSaysWhatIsInIt(t *testing.T) {
 	}
 }
 
+// openBatches is which batches stand open, from the first.
+func openBatches(t *testing.T, o fyne.CanvasObject) []bool {
+	t.Helper()
+	var open []bool
+	for i := 1; i <= batchFolds(o); i++ {
+		open = append(open, foldTitled(t, o, "", text.BatchHeading(i)).Open())
+	}
+	return open
+}
+
+// TestANewBatchIsTheOneOpen keeps a list built with Add batch a list of heads
+// with the batch just made open under them - foldAbove, the owner's choice of
+// 2026-11-18 (O356). The window measures every shown field before each frame
+// it draws after a notch of the wheel: forty open batches cost it 11 ms a
+// notch, forty folded too little to read.
+//
+// A copy folds the batches above it and leaves the ones below as they were,
+// so a batch somebody opened further down stays open.
+func TestANewBatchIsTheOneOpen(t *testing.T) {
+	screen := window.NewRecipe(newFakeHost(t))
+	batches := screen.Object()
+	if got := openBatches(t, batches); !slices.Equal(got, []bool{true}) {
+		t.Fatalf("the screen opened with batches open %v, not one open batch, so what follows is not asked of a fresh screen", got)
+	}
+
+	// The first batch opened again between the presses, so a rule folding only
+	// the batch that was last would leave it open: every batch above folds.
+	pressNamed(t, batches, text.ButtonAddBatch())
+	openFold(t, batches, "", text.BatchHeading(1))
+	pressNamed(t, batches, text.ButtonAddBatch())
+	if got := openBatches(t, batches); !slices.Equal(got, []bool{false, false, true}) {
+		t.Errorf("after %q with the first batch opened again the batches stand open %v, wanted only the last one open",
+			text.ButtonAddBatch(), got)
+	}
+
+	// Four batches standing open, open, folded, open, and the second copied.
+	// The copy stands third and open. The first folds as well as the second,
+	// so a rule folding only the batch copied is told apart, and the two below
+	// keep what they had - one folded, one open.
+	pressNamed(t, batches, text.ButtonAddBatch())
+	openFold(t, batches, "", text.BatchHeading(1))
+	openFold(t, batches, "", text.BatchHeading(2))
+	if got := openBatches(t, batches); !slices.Equal(got, []bool{true, true, false, true}) {
+		t.Fatalf("the four batches stand open %v before the copy, not [true true false true], so the copy below is not asked about what it is meant to be", got)
+	}
+	nthButton(t, batches, text.ButtonDuplicateBatch(), 2).OnTapped()
+	if got := openBatches(t, batches); !slices.Equal(got, []bool{false, false, true, false, true}) {
+		t.Errorf("after copying the second of four batches they stand open %v, wanted [false false true false true]: "+
+			"every batch down to the one copied folds, the copy is open and what is below it keeps its state", got)
+	}
+}
+
+// nthButton is the n-th button saying label in the tree, counted from one -
+// pressNamed takes the last.
+func nthButton(t *testing.T, o fyne.CanvasObject, label string, n int) *parts.Button {
+	t.Helper()
+	var found []*parts.Button
+	walk(o, func(obj fyne.CanvasObject) {
+		if b, ok := obj.(*parts.Button); ok && b.Text == label {
+			found = append(found, b)
+		}
+	})
+	if len(found) < n {
+		t.Fatalf("there are %d %q buttons on the screen, and this asks for number %d", len(found), label, n)
+	}
+	return found[n-1]
+}
+
 // TestARefusalOpensTheBatchItIsAbout is the guard that lets this screen fold at
 // all, and it is worth saying why in full.
 //
@@ -185,7 +254,10 @@ func TestARefusalOpensTheBatchItIsAbout(t *testing.T) {
 
 	// Counted by a field NAME rather than by what was typed, because what is
 	// typed lives in an entry and the words on the screen are labels. Two
-	// batches with one folded leave one of each name showing.
+	// batches with one folded leave one of each name showing. Adding the
+	// second folded the first (foldAbove), so the first is opened again -
+	// openFold asserts it was shut - and the refused one folded.
+	openFold(t, batches, "", text.BatchHeading(1))
 	foldBatch(t, batches, 2)
 	if got := strings.Count(shownText(batches), text.FieldNameTemplate()); got != 1 {
 		t.Fatalf("batch 2 was folded and %d boxes called %q are still on the screen, so this guard "+

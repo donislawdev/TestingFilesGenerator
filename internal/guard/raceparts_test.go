@@ -75,10 +75,14 @@ func guardTestNames(t *testing.T) []string {
 // raceJob reads what the race job states: its parts and its timeout in seconds.
 func raceJob(t *testing.T) (parts int, timeout float64) {
 	t.Helper()
-	ci := readFile(t, filepath.Join(repoRoot(t), ".github", "workflows", "ci.yml"))
+	// The race job's block alone: the test job and coverage have parts too.
+	ci, ok := ciJobs(readFile(t, filepath.Join(repoRoot(t), ".github", "workflows", "ci.yml")))["race"]
+	if !ok {
+		t.Fatal("ci.yml has no job called race, so its parts cannot be read")
+	}
 	matrix := regexp.MustCompile(`(?m)^\s+part: \[([0-9, ]+)\]$`).FindAllStringSubmatch(ci, -1)
 	if len(matrix) != 1 {
-		t.Fatalf("ci.yml states the race job's parts %d times, and this reads exactly one strategy.matrix.part", len(matrix))
+		t.Fatalf("the race job of ci.yml states its parts %d times, and this reads exactly one strategy.matrix.part", len(matrix))
 	}
 	parts = len(strings.Split(matrix[0][1], ","))
 	limit := regexp.MustCompile(`\./internal/guard/ -count=1 -race -timeout ([0-9]+)m `).FindAllStringSubmatch(ci, -1)
@@ -291,23 +295,32 @@ func TestTheRaceJobLaysItsPartsOutByTheWeights(t *testing.T) {
 		t.Fatalf("ci.yml sets the race job's watched files %d times, and this reads exactly one", len(watched))
 	}
 	files := strings.Fields(watched[0][1])
-	for _, want := range []string{".github/race-weights", ".github/scripts/race_parts.py"} {
+	for _, want := range []string{".github/race-weights", ".github/scripts/race_parts.py", ".github/scripts/guard_part.sh", "internal/guard/guardpart_test.go"} {
 		if !slices.Contains(files, want) {
 			t.Errorf("the race job does not run when %s changes, so a change to how its parts are laid out merges unrun", want)
 		}
 	}
-	split := `python3 .github/scripts/race_parts.py split names.txt .github/race-weights "$PART" "$PARTS" > mine.txt`
+	// The split itself lives in guard_part.sh, which every job split into
+	// parts calls (O361), so it is asked for there, once.
+	script := readFile(t, filepath.Join(repoRoot(t), ".github", "scripts", "guard_part.sh"))
+	split := `.github/scripts/race_parts.py split names.txt .github/race-weights "$part" "$parts" | tr -d '\r' > mine.txt`
+	if n := strings.Count(script, split); n != 1 {
+		t.Errorf("guard_part.sh holds %d copies of\n  %s\nand the parts need exactly one", n, split)
+	}
+	race := ciJobs(ci)["race"]
+	pick := `bash .github/scripts/guard_part.sh pick "$PART" "$PARTS" "$LISTED" -race`
+	ran := `bash .github/scripts/guard_part.sh ran part.log`
 	unlisted := `python3 .github/scripts/race_parts.py unlisted .github/race-weights part.log`
-	for _, line := range []string{split, unlisted} {
-		if n := strings.Count(ci, line); n != 1 {
-			t.Errorf("ci.yml holds %d copies of\n  %s\nand the race job needs exactly one", n, line)
+	for _, line := range []string{pick, ran, unlisted} {
+		if n := strings.Count(race, line); n != 1 {
+			t.Errorf("the race job holds %d copies of\n  %s\nand needs exactly one", n, line)
 		}
 	}
 	if strings.Contains(ci, "| cksum)") {
 		t.Error("ci.yml still lays the race parts out by the checksum of each name alone")
 	}
-	tee, after := strings.Index(ci, "| tee part.log"), strings.Index(ci, unlisted)
+	tee, after := strings.Index(race, "| tee part.log"), strings.Index(race, unlisted)
 	if tee < 0 || after < tee {
-		t.Error("ci.yml asks about unlisted tests before the part's log is written, so it reads nothing")
+		t.Error("the race job asks about unlisted tests before the part's log is written, so it reads nothing")
 	}
 }

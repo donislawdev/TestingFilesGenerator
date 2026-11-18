@@ -34,7 +34,9 @@ import (
 // And the same branch swung from 479 s to past 600 s between two runs, so the
 // margin was smaller than the fleet's own variance.
 //
-// Only whole tree runs are asked. A targeted -run walks a handful of tests and
+// Whole tree runs are asked, and runs of the guard package without -run, which
+// is how the parts of the test job, coverage and the race detector run theirs
+// (O361). A targeted -run walks a handful of tests and
 // a fuzz step carries -fuzztime, which is its own budget - demanding a flag
 // there would be noise, and a guard that cries wolf gets skipped.
 func TestEveryWholeTreeTestRunStatesItsOwnTimeout(t *testing.T) {
@@ -46,7 +48,12 @@ func TestEveryWholeTreeTestRunStatesItsOwnTimeout(t *testing.T) {
 	asked := 0
 	for _, step := range steps {
 		command := strings.Join(strings.Fields(step.run), " ")
-		if !strings.Contains(command, "go test ") || !strings.Contains(command, "./...") {
+		wholeTree := strings.Contains(command, "./...")
+		// A part of a job split into parts runs the guard package with its
+		// tests handed over in a file, not by -run (O361), and that is most of
+		// the tree's time.
+		aPart := strings.Contains(command, "./internal/guard/ ") && !strings.Contains(command, "-run ")
+		if !strings.Contains(command, "go test ") || !(wholeTree || aPart) {
 			continue
 		}
 		asked++
@@ -64,7 +71,7 @@ func TestEveryWholeTreeTestRunStatesItsOwnTimeout(t *testing.T) {
 	// reading nothing - the same failure it exists to catch.
 	if asked < 3 {
 		t.Errorf("only %d whole tree test runs were found across the workflows, and there are at least "+
-			"three - the matrix, the coverage gate and the release. Either they moved or the way this "+
+			"three - the parts of the test job, coverage and the release. Either they moved or the way this "+
 			"reads them stopped working", asked)
 	}
 }
