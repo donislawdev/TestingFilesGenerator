@@ -263,6 +263,11 @@ because it turns other people's test suites red.
 
 ### Changed
 
+- **Working out the smallest file of a picture takes half the time.** A
+  picture with its width and height set and `smallest` as its size was
+  compressed twice while the run worked out how small it can be, and is now
+  compressed once. `tfg preset show picture-sizes` and a dry run of the set
+  take about 0.7 s rather than 1.2 to 1.3 s. The files are the same.
 - **Many pictures are ready to write several times sooner.** Before the
   first file is written, every file is worked out, and a picture is drawn to
   do it - now on every processor at once. On 16 threads,

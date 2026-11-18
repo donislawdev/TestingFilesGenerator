@@ -62,7 +62,7 @@ func marker(width, height, frames, i int) (x, y, side int) {
 // markerFrame is one step of the animation: the square alone, at its own
 // offset, and nothing else. Keeping it to the square is what stops the frames
 // costing as much as the picture, in bytes and in memory both.
-func markerFrame(m memo, i int) *image.Paletted {
+func markerFrame(m drawing, i int) *image.Paletted {
 	x, y, side := marker(m.width, m.height, m.frames, i)
 	img := image.NewPaletted(image.Rect(x, y, x+side, y+side), buildPalette(paletteSize(m.width, m.height)))
 	for j := range img.Pix {
@@ -71,7 +71,7 @@ func markerFrame(m memo, i int) *image.Paletted {
 	return img
 }
 
-func encode(w io.Writer, m memo) error {
+func encode(w io.Writer, m drawing) error {
 	if m.frames <= 1 {
 		// The plain encoder, byte for byte what this package wrote before it
 		// could animate. Reached by asking for frames: 1.

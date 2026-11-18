@@ -141,7 +141,11 @@ func init() {
 
 type generator struct{}
 
-type memo struct {
+// drawing is everything the picture is drawn and encoded from, and nothing
+// else. picture and encode read only this, so it is the whole of what a
+// length measured in one round of a walk to the smallest file is kept under
+// for the next (format.Measure).
+type drawing struct {
 	width, height int
 	quality       int
 	seed          uint64
@@ -150,6 +154,10 @@ type memo struct {
 	// with this file's numbers in them. A test picture has neither.
 	look placeholder.Settings
 	text string
+}
+
+type memo struct {
+	drawing
 	// body is the exact number of bytes the encoded picture takes, start
 	// marker included. Worked out during planning so that a size this format
 	// cannot reach is refused before any file exists.
@@ -345,7 +353,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	}
 
 	skip := &headSkipper{w: w, keep: soiSize}
-	if err := encode(skip, m); err != nil {
+	if err := encode(skip, m.drawing); err != nil {
 		return err
 	}
 	if err := skip.check(); err != nil {
@@ -366,10 +374,11 @@ var sizeLadder = [][2]int{
 	{40, 30}, {20, 15}, {8, 6}, {4, 3}, {2, 2}, {1, 1},
 }
 
-// chooseSize settles the picture size and measures what it encodes to.
+// chooseSize settles the picture size and measures what it encodes to - once
+// in a walk to the smallest file, whose later rounds ask for the same picture.
 func chooseSize(r format.Request, label string, q int, look placeholder.Settings) (memo, error) {
 	at := func(w, h int) memo {
-		return memo{width: w, height: h, quality: q, seed: r.Seed, label: label, look: look, text: look.Expand(r.Number, w, h)}
+		return memo{drawing: drawing{width: w, height: h, quality: q, seed: r.Seed, label: label, look: look, text: look.Expand(r.Number, w, h)}}
 	}
 	_, wSet := r.Properties["width"]
 	_, hSet := r.Properties["height"]
@@ -387,7 +396,7 @@ func chooseSize(r format.Request, label string, q int, look placeholder.Settings
 			return memo{}, err
 		}
 		m := at(w, h)
-		body, err := encodedSize(m)
+		body, err := format.Measure(r.Measured, m.drawing, encodedSize)
 		if err != nil {
 			return memo{}, err
 		}
@@ -398,7 +407,7 @@ func chooseSize(r format.Request, label string, q int, look placeholder.Settings
 	var smallest memo
 	for _, rung := range sizeLadder {
 		m := at(rung[0], rung[1])
-		body, err := encodedSize(m)
+		body, err := format.Measure(r.Measured, m.drawing, encodedSize)
 		if err != nil {
 			return memo{}, err
 		}
@@ -432,7 +441,7 @@ func qualityOf(props map[string]string) (int, error) {
 // picture builds the image. Deterministic from the seed, and smooth, so that
 // it compresses well and the encoded result stays small next to any realistic
 // requested size.
-func picture(m memo) image.Image {
+func picture(m drawing) image.Image {
 	img := image.NewRGBA(image.Rect(0, 0, m.width, m.height))
 	if m.look.Placeholder() {
 		placeholder.Draw(img, m.look.Look(m.text, m.label))
@@ -464,14 +473,14 @@ func picture(m memo) image.Image {
 	return img
 }
 
-func encode(w io.Writer, m memo) error {
+func encode(w io.Writer, m drawing) error {
 	return stdjpeg.Encode(w, picture(m), &stdjpeg.Options{Quality: m.quality})
 }
 
 // encodedSize is how many bytes the picture takes on its own, start marker
 // included. Encoding once during planning is what lets a size this format
 // cannot reach be refused before any file exists.
-func encodedSize(m memo) (int64, error) {
+func encodedSize(m drawing) (int64, error) {
 	c := &counter{}
 	if err := encode(c, m); err != nil {
 		return 0, err
@@ -522,7 +531,7 @@ func declaredMinimum() int64 { return declaredMinimumBytes }
 func minimumBytes() int64 {
 	var worst int64
 	for off := uint64(0); off < 256; off++ {
-		n, err := encodedSize(memo{width: 1, height: 1, quality: defaultQuality, seed: off})
+		n, err := encodedSize(drawing{width: 1, height: 1, quality: defaultQuality, seed: off})
 		if err != nil {
 			// Panics rather than returning a number nobody measured.
 			//

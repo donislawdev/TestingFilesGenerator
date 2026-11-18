@@ -259,6 +259,17 @@ var provenByProbe = map[string]string{
 		"and it asks that it reached the test job of ci.yml and the script that job hands its part to.",
 	"TestAVerdictOfPartsRunsWhateverThePartsDid": "a canary of its own - the test job's verdict read with if: success() " +
 		"has to be found wrong.",
+	"TestTheSmallestPictureIsEncodedOnceWhileItIsPlanned": "a canary of its own - a walk whose generator drops what the " +
+		"walk kept has to be caught in jpg and png. Broken by hand on 2026-11-18 by a walk that makes no Measured: red in " +
+		"all six formats that encode while planning.",
+	"TestAWalkThatRemembersWritesTheBytesOfOneThatMeasuresAgain": "it asks that it reached ten picture formats and three " +
+		"placeholders. Broken by hand on 2026-11-18 by a Measure that hands back what it kept for another key: red in the " +
+		"walk without a size of jpg, png, gif and ico.",
+	"TestAMeasurementIsKeptForAnEqualKeyOnly": "a table whose first row has to be measured, so the rows after it are not " +
+		"a Measure that never measures. Broken by hand on 2026-11-18 with the key comparison taken out: red.",
+	"TestEveryMeasurementIsAFunctionOfItsKeyAlone": "a table of canaries of its own - a closure, a variable and a method " +
+		"value have to be found, a function of the package not - and it asks that it reached jpg and avif. Broken by hand " +
+		"on 2026-11-18 by a closure in jpg's chooseSize: red.",
 	"TestAGridAsksEveryPartOfAFieldForItsSizeOnce": "a canary of its own - a sentence behind a layout that asks it twice " +
 		"has to be found - every counted thing asked exactly once, so a field the grid never reached is red too, and run on " +
 		"2026-11-18 against the grid before the change: red, a field asked 5 times and a field in a group 15.",

@@ -152,11 +152,19 @@ func init() {
 
 type generator struct{}
 
-type memo struct {
+// drawing is everything the picture is drawn and coded from, and nothing
+// else. picture and codePicture read only this, so it is the whole of what the
+// bytes coded in one round of a walk to the smallest file are kept under for
+// the next (format.Measure).
+type drawing struct {
 	width, height int
 	quality       int
 	seed          uint64
 	label         string
+}
+
+type memo struct {
+	drawing
 
 	// coded is the file the encoder produced, and it is filled in only when the
 	// recipe named the picture size. Left out, the picture is chosen from the
@@ -388,7 +396,7 @@ func chooseSize(r format.Request, label string, q int) (memo, error) {
 			break
 		}
 	}
-	return memo{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label}, nil
+	return memo{drawing: drawing{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label}}, nil
 }
 
 // measuredSize walks the ladder coding each step, and takes the first that
@@ -397,7 +405,7 @@ func chooseSize(r format.Request, label string, q int) (memo, error) {
 func measuredSize(r format.Request, label string, q int) (memo, error) {
 	var smallest memo
 	for _, step := range sizeLadder {
-		m, err := coded(memo{width: step.width, height: step.height, quality: q, seed: r.Seed, label: label})
+		m, err := coded(r.Measured, drawing{width: step.width, height: step.height, quality: q, seed: r.Seed, label: label})
 		if err != nil {
 			return memo{}, err
 		}
@@ -424,17 +432,24 @@ func namedSize(r format.Request, label string, q int) (memo, error) {
 	if err := checkJointLimits(w, h); err != nil {
 		return memo{}, err
 	}
-	return coded(memo{width: w, height: h, quality: q, seed: r.Seed, label: label})
+	return coded(r.Measured, drawing{width: w, height: h, quality: q, seed: r.Seed, label: label})
 }
 
 // coded fills in the encoded bytes for a picture that has been settled.
-func coded(m memo) (memo, error) {
-	b, err := encode(picture(m), m.quality)
+//
+// Once in a walk to the smallest file, whose later rounds ask for the same
+// picture: the bytes the first round coded are the bytes the plan carries.
+func coded(measured *format.Measured, d drawing) (memo, error) {
+	b, err := format.Measure(measured, d, codePicture)
 	if err != nil {
 		return memo{}, err
 	}
-	m.coded = b
-	return m, nil
+	return memo{drawing: d, coded: b}, nil
+}
+
+// codePicture is the picture d draws, coded.
+func codePicture(d drawing) ([]byte, error) {
+	return encode(picture(d), d.quality)
 }
 
 // checkJointLimits asks the registry's own declaration about a pair of
@@ -488,7 +503,7 @@ func (generator) Write(ctx context.Context, w io.Writer, p format.Plan) error {
 	if coded == nil {
 		// Planning chose the picture without coding it, so this is where the
 		// work actually happens.
-		b, err := encode(picture(m), m.quality)
+		b, err := codePicture(m.drawing)
 		if err != nil {
 			return err
 		}

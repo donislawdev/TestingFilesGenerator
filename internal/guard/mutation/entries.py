@@ -7432,8 +7432,8 @@ MUTATIONS = [
     (
         "planning codes the picture again, so previewing a large run costs what the run costs",
         "internal/format/avif/avif.go",
-        "\treturn memo{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label}, nil",
-        "\treturn coded(memo{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label})",
+        "\treturn memo{drawing: drawing{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label}}, nil",
+        "\treturn coded(r.Measured, drawing{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label})",
         "TestAvifPlanningDoesNotCodeThePicture",
     ),
     (
@@ -7537,8 +7537,8 @@ MUTATIONS = [
     (
         "JPEG XL planning codes the picture again, so previewing a large run costs what the run costs",
         "internal/format/jxl/jxl.go",
-        "	return memo{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label}, nil",
-        "	return coded(memo{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label})",
+        "	return memo{drawing: drawing{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label}}, nil",
+        "	return coded(r.Measured, drawing{width: pick.width, height: pick.height, quality: q, seed: r.Seed, label: label})",
         "TestJxlPlanningDoesNotCodeThePicture",
     ),
     (

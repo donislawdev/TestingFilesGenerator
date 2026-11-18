@@ -41,7 +41,7 @@ var loopExtensionStart = []byte("\x21\xff\x0bNETSCAPE2.0")
 // every GIF below the ladder ceiling pays at planning today.
 func writeForACut(ctx context.Context, w io.Writer, m memo, whole int64) error {
 	if !m.bodyKnown {
-		body, err := encodedBodySize(m)
+		body, err := encodedBodySize(m.drawing)
 		if err != nil {
 			return err
 		}
@@ -64,7 +64,7 @@ func writeForACut(ctx context.Context, w io.Writer, m memo, whole int64) error {
 		return writePadding(ctx, w, m.seed, front)
 	}}
 	holder := &format.TailHolder{W: split, Keep: trailerSize}
-	if err := encode(holder, m); err != nil {
+	if err := encode(holder, m.drawing); err != nil {
 		return err
 	}
 	if holder.Written != m.body {

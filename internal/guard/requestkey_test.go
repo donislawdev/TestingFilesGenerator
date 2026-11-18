@@ -29,6 +29,16 @@ func TestEveryFieldOfARequestIsInItsKey(t *testing.T) {
 		field := typ.Field(i)
 		var r format.Request
 		v := reflect.ValueOf(&r).Elem().Field(i)
+		// What a walk to the smallest file measured changes how long a plan
+		// takes and never what it says, so it has to stay OUT of the key: in
+		// it, every walk would key its one answer apart from the next.
+		if field.Type == reflect.TypeOf(&format.Measured{}) {
+			v.Set(reflect.ValueOf(&format.Measured{}))
+			if got, _ := format.RequestKey("png", r); got != base {
+				t.Errorf("a request carrying %s has another key than an empty one, and what a walk measured changes no plan", field.Name)
+			}
+			continue
+		}
 		switch field.Type.Kind() {
 		case reflect.Int64, reflect.Int:
 			v.SetInt(1)

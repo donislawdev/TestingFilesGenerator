@@ -540,6 +540,8 @@ func (d Descriptor) SmallestAccepted(r Request) int64 {
 //
 // The same walk as SmallestAccepted, and the plan it ends on rather than the
 // number, so the file is planned once rather than walked to and planned again.
+// The walk plans it a round at a time, and a picture is encoded in the first
+// round only (smallest).
 // A refusal that is not about the size is handed back as it is - a colour the
 // format cannot read is the answer somebody needs, not a floor.
 func (d Descriptor) PlanSmallest(ctx context.Context, r Request) (Plan, error) {
@@ -552,8 +554,13 @@ func (d Descriptor) PlanSmallest(ctx context.Context, r Request) (Plan, error) {
 const SmallestRounds = 64
 
 // smallest walks plan from nought to the first size it accepts.
+//
+// Every round asks for the same file at another size, so what one round
+// measures the next can take: a picture with its width and height set is
+// encoded once rather than once a round (Measured).
 func (d Descriptor) smallest(plan func(Request) (Plan, error), r Request) (Plan, error) {
 	r.SizeFromContents = false
+	r.Measured = &Measured{}
 	size := int64(0)
 	for round := 0; round < SmallestRounds; round++ {
 		r.Bytes = size
@@ -734,6 +741,11 @@ type Request struct {
 	Number int
 	// Properties are format specific settings, straight from the recipe.
 	Properties map[string]string
+	// Measured is what earlier rounds of a walk to the smallest file measured,
+	// handed to the next round (Measure), or nil outside one. It changes how
+	// long a plan takes and never what the plan says, so RequestKey leaves it
+	// out.
+	Measured *Measured
 }
 
 // Note is something that happened and has to stay visible.

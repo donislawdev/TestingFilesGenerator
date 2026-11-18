@@ -16,7 +16,7 @@ import (
 
 // picture builds the image for one file: a gradient that moves with the seed,
 // and the label burned into the top of it when there is room.
-func picture(m memo) *image.RGBA {
+func picture(m drawing) *image.RGBA {
 	off := int(m.seed % 256)
 	img := image.NewRGBA(image.Rect(0, 0, m.width, m.height))
 

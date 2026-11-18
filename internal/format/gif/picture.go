@@ -92,7 +92,7 @@ func makePalette(size int) color.Palette {
 	return p
 }
 
-func picture(m memo) *image.Paletted {
+func picture(m drawing) *image.Paletted {
 	size := paletteSize(m.width, m.height)
 	shades := size - reservedSlots
 	if shades < 1 {
