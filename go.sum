@@ -24,8 +24,8 @@ github.com/fyne-io/oksvg v0.2.1-0.20260918172519-a9af55fa95d9 h1:owsdpq6a2KhaAA/
 github.com/fyne-io/oksvg v0.2.1-0.20260918172519-a9af55fa95d9/go.mod h1:dJ9oEkPiWhnTFNCmRgEze+YNprJF7YRbpjgpWS4kzoI=
 github.com/gen2brain/gav1d v0.2.6 h1:7TSkrWTdE22k5Ul7vYZML7Nu80gNW6OovV7FSCITSE0=
 github.com/gen2brain/gav1d v0.2.6/go.mod h1:ReFKjHq7pvRhEk+pgRPAo9gOlcrf51sdzVcAbbX7e0E=
-github.com/gen2brain/jxl v0.2.0 h1:cXSQnfbcC0JGFzaI344VzPMbe7mh6rYc0tjPcBUsE4U=
-github.com/gen2brain/jxl v0.2.0/go.mod h1:VjJHRai/8I8Es01mULqyiOihRBOjJr1Zo+NoN/MyIwo=
+github.com/gen2brain/jxl v0.2.1 h1:74+8uw2RxUHGDVrDp+727PZ2hvAd5/psyV/mpsOQea0=
+github.com/gen2brain/jxl v0.2.1/go.mod h1:d7VMurg9ek62xfuyZyVAumFcuaQf9U8NlW57j/k5MQI=
 github.com/go-gl/glfw/v3.4/glfw v0.1.0-pre.2 h1:ez76TQInhkDIMobWbOFcPJw6FeB7coXRAVZpKwF8NBg=
 github.com/go-gl/glfw/v3.4/glfw v0.1.0-pre.2/go.mod h1:T5Dn0JwIJOX1euPZ/iT4tq6nFYtmukjcYa7937HuYK8=
 github.com/go-text/render v0.2.1 h1:qwHhxqGUjjg4L0XyJWj7M7bpY75NZM+kBpv2Yfw5mcg=
