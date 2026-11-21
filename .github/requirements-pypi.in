@@ -27,4 +27,4 @@
 #   docker run --rm -v "$PWD/.github:/w" -w /w python:3.10-slim sh -c "pip install -q pip==26.1.1 pip-tools==7.5.3 && pip-compile --strip-extras --no-emit-index-url --output-file=requirements-pypi.txt requirements-pypi.in"
 pytest==9.2.0
 tomli==2.5.0 ; python_version < "3.11"
-uv==0.13.7
+uv==0.13.8
