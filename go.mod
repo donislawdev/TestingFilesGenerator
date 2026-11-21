@@ -96,7 +96,7 @@ require (
 	github.com/nicksnyder/go-i18n/v2 v2.7.0
 	golang.org/x/image v0.46.0
 	golang.org/x/sys v0.50.0
-	golang.org/x/text v0.43.0
+	golang.org/x/text v0.44.0
 )
 
 require (
