@@ -169,7 +169,7 @@ ruamel-yaml-clib==0.2.15
     # via semgrep
 semantic-version==2.10.0
     # via semgrep
-semgrep==1.184.0
+semgrep==1.185.0
     # via -r requirements-semgrep.in
 sse-starlette==3.5.0
     # via mcp
