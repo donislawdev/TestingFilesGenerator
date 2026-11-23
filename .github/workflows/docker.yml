@@ -16,7 +16,8 @@ name: Container image
 # release published before this file existed: a release event reads the
 # workflow from the tagged commit, and v0.5.0's has none. A pull request that
 # touches the image builds and tries it against the latest release and pushes
-# nothing.
+# nothing, and so does a release candidate: only stable releases become
+# images.
 on:
   release:
     types: [published]
@@ -76,6 +77,19 @@ jobs:
           if [ "$draft" != "false" ]; then
             echo "::error::$tag is not published yet, and an image is only ever made of what people can download"
             exit 1
+          fi
+          # Only stable releases become images. A release candidate stays a
+          # prerelease on GitHub, and its image is built and tried here the
+          # way a pull request's is, with nothing pushed.
+          if [[ "$tag" == *-* ]]; then
+            if [ "$EVENT" = workflow_dispatch ]; then
+              echo "::error::$tag is a release candidate, and only stable releases become images. Run this workflow with the tag of a stable release, such as v0.6.0."
+              exit 1
+            fi
+            if [ "$publish" = true ]; then
+              publish=false
+              echo "::notice::$tag is a release candidate, so its image is built and tried and nothing is pushed. Only stable releases become images."
+            fi
           fi
           is_latest=false
           if [ "$tag" = "$latest" ]; then

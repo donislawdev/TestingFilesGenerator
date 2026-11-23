@@ -11,7 +11,8 @@ name: PyPI packages
 # and the publishing action puts an attestation of each file beside it. A run
 # by hand can send them to TestPyPI instead, to see that PyPI takes them
 # before a release depends on it. A pull request that touches the packages
-# makes and tries them from the latest release and publishes nothing.
+# makes and tries them from the latest release and publishes nothing, and so
+# does a release candidate: PyPI only gets stable releases.
 
 on:
   release:
@@ -79,6 +80,17 @@ jobs:
           if [ "$draft" != "false" ]; then
             echo "::error::$tag is not published yet, and PyPI only ever gets what people can download. Publish the release, and this workflow starts by itself."
             exit 1
+          fi
+          # PyPI only ever gets stable releases. A release candidate stays a
+          # prerelease on GitHub, and its wheels are made and tried here the
+          # way a pull request's are. TestPyPI, by hand, may still take one.
+          if [[ "$tag" == *-* ]] && [ "$index" = pypi ]; then
+            if [ "$EVENT" = workflow_dispatch ]; then
+              echo "::error::$tag is a release candidate, and PyPI only gets stable releases. Run this workflow with the tag of a stable release, such as v0.6.0, or choose testpypi."
+              exit 1
+            fi
+            index=none
+            echo "::notice::$tag is a release candidate, so its wheels are made and tried and nothing goes to PyPI. PyPI only gets stable releases."
           fi
           {
             echo "tag=$tag"

@@ -144,7 +144,14 @@ type Download struct {
 // here means finding the place in the code that owns that fact, not writing
 // the value down.
 type Facts struct {
+	// Version is the build the pages were rendered from, which is what the
+	// example manifest says made it. Released is the release a person can
+	// install: the same while Version is stable, and the last stable release
+	// while Version is a release candidate, because a candidate stays on
+	// GitHub and never reaches the image, npm or PyPI. Commands that fetch a
+	// release name Released.
 	Version   string
+	Released  string
 	Formats   []Format
 	ExitCodes []int
 	Presets   []PresetFacts

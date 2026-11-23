@@ -34,29 +34,69 @@ needs it finds out it exists.
 
 ## ⚡ What it can do
 
+**Make real files**
+
 - **Hit an exact size, to the byte** - ask for 10485761 bytes and get exactly
   that, never a silently rounded file.
-- **Write 32 real formats** - a generated PNG opens in an image viewer, a DOCX
+- **Write 32 real formats** - documents, pictures, text, archives, mail,
+  telemetry, sound and video. A generated PNG opens in an image viewer, a DOCX
   opens in Word, a ZIP extracts. Not padded zeros with an extension.
-- **Say what should happen to each file** - the manifest carries an expected
-  outcome, so your test reads the assertion instead of you writing it out.
-- **Repeat itself byte for byte** - same recipe and seed, same bytes, on any
-  machine. Commit a small recipe instead of large binary fixtures.
-- **Build a boundary set in one command** - one byte under a limit, the limit
-  itself, one byte over. That is where off by one errors live.
-- **Produce ten thousand files at once** - one command, one manifest, and sizes
-  drawn from the seed.
+- **Take settings per format** - image dimensions, JPEG quality, PDF pages,
+  spreadsheet rows and columns, what goes inside an archive.
 - **Fill an archive for real** - a ZIP that holds 200 documents, not a stub with
   the right extension.
-- **Take settings per format** - image dimensions, JPEG quality, PDF pages,
-  spreadsheet rows and columns.
 - **Draw placeholder pictures** - a flat colour with its size written in the
   middle, for laying out a page before the real pictures exist, as PNG, JPG or
   SVG and as small as the picture allows.
+- **Produce ten thousand files at once** - one command, one manifest, and sizes
+  drawn from the seed.
+
+**Break files on purpose**
+
+- **Make corrupt test files** - cut the end off a file the way an interrupted
+  upload does, overwrite its first bytes with zeros, or add junk after its end.
+  Any format, still at the exact size you asked for. See
+  [`tfg damage`](#tfg-damage).
+- **Send a file under a name no disk stores** - such as `../climbed_out.jpg`,
+  to see what your upload does with a path in a file name. The file keeps its
+  own name and the manifest says which one to upload it under.
+
+**Answer a testing question in one command**
+
+- **Start from a preset** - ready-made sets for size limits, unexpected file
+  names, text encodings, table imports, picture sizes, the smallest valid files
+  and upload forms. Every file says what it is for. See [Presets](#-presets).
+- **Build a boundary set** - one byte under a limit, the limit itself, one byte
+  over. That is where off by one errors live.
+- **Say what should happen to each file** - the manifest carries an expected
+  outcome, so your test reads the assertion instead of you writing it out. Where
+  the answer depends on how your system is set up, it says so rather than guess.
+
+**Fit into tests and CI**
+
+- **Repeat itself byte for byte** - same recipe and seed, same bytes, on any
+  machine. Commit a small recipe instead of large binary fixtures.
+- **Plug into your tests** - a pytest plugin, an npm package for Playwright,
+  Vitest and `node:test`, a Docker image, and a ready install step for GitHub
+  Actions. See [Install](#-install).
 - **Fit into CI** - an exit code for every ending, machine readable output, and
   nothing on standard output when a run fails.
 - **Clean up after itself** - `verify` tells you nothing moved, `cleanup`
   removes exactly what it wrote and nothing else.
+
+**Check files you already have**
+
+- **Check an archive before unpacking it** - a ZIP, TAR or gzip file is read
+  without unpacking anything, and you learn whether it would write outside its
+  folder, overwrite a file or fill the disk - the traps known as zip slip and
+  zip bomb. See [`tfg tool`](#tfg-tool).
+- **Check checksums** - of one file against the one a download page gave you,
+  or of a whole folder against its SHA256SUMS, and write one for a folder.
+
+**Your way**
+
+- **Use a window or the command line** - the same engine in both. The window
+  has the presets, several batches at once and the tools, in English or Polish.
 - **Work completely offline** - no account, no cloud, no telemetry, no update
   check. The command line binary has no network stack compiled into it at all.
 - **Cost nothing and stay out of your way** - GPL-3.0, and the files you
@@ -104,7 +144,7 @@ Arm. It holds the program from the release archive and nothing else, and it
 runs with no network:
 
 ```
-docker run --rm --network none -v "${PWD}:/work" ghcr.io/donislawdev/tfg:0.6.0-rc1 generate --format pdf --size 1mb
+docker run --rm --network none -v "${PWD}:/work" ghcr.io/donislawdev/tfg:0.5.0 generate --format pdf --size 1mb
 ```
 
 The files land in the current directory. On Linux add
@@ -906,7 +946,7 @@ On a Linux runner the Docker image needs no install step:
 
 ```yaml
 - name: build the fixtures
-  run: docker run --rm --network none --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/donislawdev/tfg:0.6.0-rc1 generate fixtures.yaml --out fixtures
+  run: docker run --rm --network none --user "$(id -u):$(id -g)" -v "$PWD:/work" ghcr.io/donislawdev/tfg:0.5.0 generate fixtures.yaml --out fixtures
 ```
 
 Name the version rather than `latest`, so the same recipe gives the same bytes
@@ -926,7 +966,7 @@ names the SPDX predicate. On macOS this needs an Apple silicon runner, such as
   env:
     GH_TOKEN: ${{ github.token }}
   run: |
-    version=0.6.0-rc1
+    version=0.5.0
     arch=amd64
     if [ "$RUNNER_ARCH" = ARM64 ]; then arch=arm64; fi
     case "$RUNNER_OS" in

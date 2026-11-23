@@ -18,7 +18,8 @@ name: npm packages
 # It starts when the owner publishes a release, and can be run by hand for the
 # latest one - a run that stopped half way stages only what is not staged or
 # published yet. A pull request that touches the packages tries them against
-# the latest release and stages nothing.
+# the latest release and stages nothing, and so does a release candidate:
+# npm only gets stable releases.
 on:
   release:
     types: [published]
@@ -76,10 +77,22 @@ jobs:
             echo "::error::$tag is not published yet, and npm only ever gets what people can download. Publish the release, and this workflow starts by itself."
             exit 1
           fi
+          # npm only ever gets stable releases. A release candidate stays a
+          # prerelease on GitHub, and its packages are made and tried here the
+          # way a pull request's are, with nothing staged.
+          if [[ "$tag" == *-* ]]; then
+            if [ "$EVENT" = workflow_dispatch ]; then
+              echo "::error::$tag is a release candidate, and npm only gets stable releases. Run this workflow with the tag of a stable release, such as v0.6.0."
+              exit 1
+            fi
+            if [ "$stage" = true ]; then
+              stage=false
+              echo "::notice::$tag is a release candidate, so its packages are made and tried and nothing is staged. npm only gets stable releases."
+            fi
+          fi
           # npm files a release under latest whatever its age, so staging an
-          # older one would take latest away from the newest. A prerelease goes
-          # under next and takes nothing away.
-          if [ "$stage" = true ] && [[ "$tag" != *-* ]] && [ "$tag" != "$latest" ]; then
+          # older one would take latest away from the newest.
+          if [ "$stage" = true ] && [ "$tag" != "$latest" ]; then
             echo "::error::$tag is not the latest release ($latest), and staging it would make npm install give people an older tfg. Run this workflow for $latest instead."
             exit 1
           fi

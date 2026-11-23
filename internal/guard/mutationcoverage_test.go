@@ -273,6 +273,10 @@ var provenByProbe = map[string]string{
 	"TestWindowsHoldsTheTitleBarDarkOnceAsked": "a canary of its own - a window nobody asked about has to read as " +
 		"not dark before the asked one may read as dark - and a window of none has to be refused. What it cannot see, the " +
 		"look of the bar, was measured on Windows Server 2025 on 2026-11-18: 243 before, 32 after.",
+	"TestAReleaseCandidateIsSentNowhereButGitHub": "a canary of its own - a which step that sends whatever it is " +
+		"given has to fail the same cases. Broken by hand on 2026-11-23 by the npm.yml, pypi.yml and docker.yml of " +
+		"main before the change: red six times, each of the three sending a published release candidate and taking " +
+		"one by hand.",
 	"TestTheTitleBarIsAskedForAgainAfterEveryChangeOfSettings": "a canary of its own - an ask made straight from the " +
 		"listener, before the toolkit's answer, has to leave the bar light. Broken by hand on 2026-11-18 by " +
 		"KeepTitleBarDark without fyne.Do: red. On a real window that day a build without KeepTitleBarDark left the bar " +

@@ -120,6 +120,7 @@ func factsFromTheProgram(t *testing.T) site.Facts {
 
 	return site.Facts{
 		Version:   version.Version,
+		Released:  releasedVersionOfThisBuild(t),
 		Formats:   formats,
 		ExitCodes: exitCodesInOrder(),
 		Damages:   damagesTheProgramHas(),
