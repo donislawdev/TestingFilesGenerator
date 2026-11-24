@@ -111,9 +111,6 @@ jobs:
       github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       # The rule below is right about the shape and the condition above is the
       # answer to it: this job only runs for a push, on this repository, so the
@@ -152,5 +149,48 @@ jobs:
         with:
           path: web/public
 
-      - id: deployment
+  # The deployment is a job of its own, after the one that uploaded the site.
+  # deploy-pages finds the artifact by its name, and on 2026-11-24 it twice
+  # listed the sample-files artifact of the earlier job and not the
+  # github-pages one uploaded a moment before in the same job, so both runs
+  # failed with every file ready (actions/deploy-pages#451 reports the same,
+  # and upload-pages-artifact's artifact id cannot be passed to it instead).
+  #
+  # The lookup is also asked again, twice, after a wait. A lookup that finds
+  # nothing creates no deployment, and asking again in the same job uploads
+  # nothing, while re-running the failed job uploads a second github-pages
+  # artifact and then fails on finding two.
+  #
+  # No checkout and nothing of the repository runs here. It needs no if of its
+  # own: when the publish job is skipped, this one is too.
+  deploy:
+    needs: publish
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.third.outputs.page_url || steps.second.outputs.page_url || steps.first.outputs.page_url }}
+    steps:
+      - id: first
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346  # v5.0.1
+        continue-on-error: true
+
+      - name: wait before asking again
+        if: steps.first.outcome == 'failure'
+        run: sleep 30
+
+      - id: second
+        if: steps.first.outcome == 'failure'
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346  # v5.0.1
+        continue-on-error: true
+
+      - name: wait longer before the last try
+        if: steps.first.outcome == 'failure' && steps.second.outcome == 'failure'
+        run: sleep 60
+
+      - id: third
+        if: steps.first.outcome == 'failure' && steps.second.outcome == 'failure'
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346  # v5.0.1

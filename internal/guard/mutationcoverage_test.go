@@ -276,6 +276,13 @@ var provenByProbe = map[string]string{
 	"TestTheSampleFilesPageOffersAFileOfEveryFormat": "a canary of its own - a planted set missing a format and two " +
 		"sections, with an undamaged corrupt file, has to give every gap. Broken by hand on 2026-11-23 by taking the webp " +
 		"target out of web/samples/samples.yaml, and by taking the checksum-check line out of pages.yml: red both times.",
+	"TestTheToolVersionCheckReadsNpmInstallAsACommand": "a canary of its own - an npm install that names no version " +
+		"has to fail the check. Broken by hand on 2026-11-24 by reading npm install as any text holding the words again: " +
+		"red on the message in npm.yml that stopped the weekly runs of 2026-11-16 and 2026-11-23.",
+	"TestOneFailingToolVersionCheckLeavesTheOthersRunning": "its canary is the planted failure of the first check. " +
+		"Broken by hand on 2026-11-24 by ending the run at the first failure again: red, the pins after it unprinted.",
+	"TestTheSiteIsDeployedInAJobAfterTheUploadWithMoreThanOneTry": "a canary of its own - one job that uploads and " +
+		"deploys once has to give two problems. Broken by hand on 2026-11-24 by the pages.yml of main that day: red three times.",
 	"TestAReleaseCandidateIsSentNowhereButGitHub": "a canary of its own - a which step that sends whatever it is " +
 		"given has to fail the same cases. Broken by hand on 2026-11-23 by the npm.yml, pypi.yml and docker.yml of " +
 		"main before the change: red six times, each of the three sending a published release candidate and taking " +
