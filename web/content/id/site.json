@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "Diharapkan",
     "colTool": "Alat",
-    "colQuestion": "Yang dijawabnya"
+    "colQuestion": "Yang dijawabnya",
+    "docsMenuLabel": "Halaman dokumentasi"
   },
   "endings": {
     "0": "Semuanya berjalan.",
@@ -386,5 +387,45 @@
     "checksum": "Apakah file ini benar file yang diakuinya?",
     "checksum-check": "Apakah setiap file masih sesuai dengan yang dinyatakan file checksum-nya?",
     "checksum-write": "Bagaimana nanti saya tahu bahwa tidak satu pun dari file ini berubah?"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "Pemasangan",
+        "text": "Unduh untuk Windows, macOS, atau Linux, periksa arsipnya, atau pasang dengan Docker, npm, pip, atau Go."
+      },
+      "guide-start": {
+        "title": "Memulai",
+        "text": "Berkas pertama dengan ukuran tepat, lalu sepuluh ribu, diperiksa, dihapus, dan ditulis sebagai resep."
+      },
+      "guide-commands": {
+        "title": "Perintah",
+        "text": "Setiap perintah dan setiap opsi beserta nilai bawaannya, dan semua kode keluar."
+      },
+      "guide-recipes": {
+        "title": "Menulis resep",
+        "text": "Setiap kunci resep, ukuran, nama berkas, reaksi yang diharapkan, kerusakan, arsip, dan preset."
+      },
+      "recipes": {
+        "title": "Galeri resep",
+        "text": "Resep siap unduh untuk unggahan, impor, arsip, email, media, CI, dan berkas massal."
+      },
+      "guide-manifest": {
+        "title": "Manifes",
+        "text": "Setiap bidang manifest.json dan cara tes membacanya."
+      },
+      "guide-formats": {
+        "title": "Pengaturan format",
+        "text": "Setiap pengaturan setiap format, dengan nilai yang diterima dan nilai bawaannya."
+      },
+      "guide-frameworks": {
+        "title": "Framework pengujian",
+        "text": "Berkas di dalam pytest, Playwright, Vitest, dan node:test."
+      },
+      "guide-window": {
+        "title": "Aplikasi desktop",
+        "text": "Jendela program, layar demi layar."
+      }
+    }
   }
 }

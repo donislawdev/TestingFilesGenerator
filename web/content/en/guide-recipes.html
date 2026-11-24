@@ -1,0 +1,234 @@
+<h1>Recipes</h1>
+<p class="lead">
+  A recipe is a YAML file that describes a whole run: which files, how many, how large, and what your
+  system should do with each. Commit it beside your tests and the test files stop being binaries in
+  your repository. Anyone rebuilds them from the recipe, byte for byte.
+</p>
+
+<section class="section" id="example">
+  <h2>What a recipe looks like</h2>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Every recipe has a <code>version</code> and a list of <code>targets</code>. A target is one kind of
+    file: it needs an <code>id</code>, a <code>format</code> and exactly one of <code>size</code>,
+    <code>size-range</code>, <code>boundary</code> or <code>contains</code>. Two of them is an error,
+    and so is none.
+  </p>
+  <p>
+    An invalid recipe writes <strong>no files at all</strong>. <code>validate</code> and
+    <code>generate</code> report every problem at once, each naming the key it is about, so one run
+    shows everything to fix.
+  </p>
+</section>
+
+<section class="section" id="top-level-keys">
+  <h2>Keys of the whole recipe</h2>
+  <p>
+    Every key a recipe accepts is listed here, read from the program when this page is built. A key
+    marked as not built yet is refused with a message saying so, never ignored.
+  </p>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Key</th><th>What it does</th></tr></thead>
+    <tbody>
+    {{- range .RecipeKeyRows }}{{ if not .Target }}
+      <tr><td><code>{{ .Key }}</code></td><td>{{ .Text }}</td></tr>
+    {{- end }}{{ end }}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="target-keys">
+  <h2>Keys of a target</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Key</th><th>What it does</th></tr></thead>
+    <tbody>
+    {{- range .RecipeKeyRows }}{{ if .Target }}
+      <tr><td><code>{{ .Key }}</code></td><td>{{ .Text }}</td></tr>
+    {{- end }}{{ end }}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="sizes">
+  <h2>How to write a size</h2>
+  <p>
+    A size is a number with a unit: <code>b</code>, <code>kb</code>, <code>mb</code>, <code>gb</code>
+    or <code>tb</code>. Units count in 1024s, the way a file manager does, so <code>10mb</code> is
+    10 485 760 bytes. <code>kib</code>, <code>mib</code>, <code>gib</code> and <code>tib</code> mean the
+    same and say so. A fraction works, as in <code>1.5mb</code>, and so does a plain byte count, as in
+    <code>10485761</code>.
+  </p>
+  <ul>
+    <li><code>size: 300kb</code> - every file of the target is exactly that large</li>
+    <li><code>size-range: 1kb-8kb</code> - each file gets a size from the range, drawn from the seed</li>
+    <li><code>boundary: 5mb</code> - three files: one byte under, the limit itself, one byte over</li>
+    <li><code>size: smallest</code> - a picture as small as it can be at the <code>width</code> and <code>height</code> you set</li>
+  </ul>
+  <p>
+    When a format cannot reach a size, the run is refused before anything is written, with the
+    smallest size the format can make and what to change. A size is never rounded quietly.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <h2>How to name the files</h2>
+  <p>
+    <code>name</code> is a template. <code>{index:04}</code> is the number of the file, padded to four
+    digits, and it is the only placeholder there is. Without a template a file is named after its target,
+    as <code>invoices_0001.pdf</code>.
+  </p>
+  <pre><code>name: invoice_{index:04}.pdf</code></pre>
+  <p>
+    A name no disk stores, such as <code>../climbed_out.jpg</code>, goes in <code>send-as</code>. The file
+    keeps an ordinary name on disk, and the manifest carries the other one in <code>send_as</code>, for
+    the test to upload it under.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>How to declare what your system should do</h2>
+  <p>Short form, when the outcome is enough. Long form, when the reason matters:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    The outcomes are {{ range $i, $o := .Facts.Docs.Outcomes }}{{ if $i }}, {{ end }}<code>{{ $o }}</code>{{ end }}.
+    The reasons are a closed list, so a report can group by them:
+    {{ range $i, $r := .Facts.Docs.Reasons }}{{ if $i }}, {{ end }}<code>{{ $r }}</code>{{ end }}.
+  </p>
+  <p>
+    A reason names <strong>the rule in play</strong>, not the verdict. That is why one reason can sit
+    under either outcome: a file one byte under a limit is <code>accept</code>, and the rule it is about
+    is still <code>size_limit</code>. Where the right reaction depends on how your system is set up, the
+    manifest says <code>unspecified</code> and explains why, rather than guessing.
+  </p>
+</section>
+
+<section class="section" id="damage">
+  <h2>How to break files on purpose</h2>
+  <p>
+    <code>damage</code> is a list, applied in the order written. Each entry is a name, or a
+    <code>type</code> with its settings. The file still has the size you asked for:
+  </p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: truncate
+        missing: 30
+    expected:
+      outcome: reject
+      reason: content_malformed</code></pre>
+  <p>
+    <code>tfg damage</code> lists the damages and what each takes. Asking for <code>accept</code> beside a
+    damage that breaks the rules of the format is refused, because nothing could meet it. More in
+    <a href="/corrupt-test-files/">Corrupt test files</a>.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>How to fill an archive</h2>
+  <p>
+    <code>contains</code> lists what goes inside a ZIP or a TAR.GZ. Each entry has a format, a count and
+    a size, and every file inside is a real file of its format. The archive is as large as what it
+    holds:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: pdf
+        count: 3
+        size: 200kb
+      - format: csv
+        count: 10
+        size: 8kb</code></pre>
+  <p>
+    The settings of the archive itself, such as compression, depth or a password, are in
+    <a href="/docs/format-settings/">Format settings</a>.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>How to build on a preset</h2>
+  <p>
+    A recipe can start from the set of a preset and add its own targets after it. <code>with</code> gives
+    the preset its settings, written the way its flags take them:
+  </p>
+  <pre><code>version: 1
+seed: 7
+extends: preset:size-boundaries
+with:
+  limit: 5mb
+  format: png
+targets:
+  - id: our-legacy-format
+    format: tiff
+    count: 1
+    size: 3mb</code></pre>
+  <p>
+    This makes the same files as <code>tfg preset eject size-boundaries --limit 5mb --format png</code>
+    with the extra target typed under it. A target whose <code>id</code> the preset already uses is
+    refused, never quietly replaced. The manifest names the preset, and lists the settings you left to
+    its defaults.
+  </p>
+</section>
+
+<section class="section" id="checking">
+  <h2>How to check a recipe before a commit</h2>
+  <pre><code>tfg validate fixtures.yaml
+tfg recipe fmt fixtures.yaml --check</code></pre>
+  <p>
+    <code>validate</code> says whether the recipe makes sense and what it would make, and writes nothing.
+    <code>recipe fmt --check</code> says whether the file is laid out in its settled shape, and
+    <code>recipe fmt -w</code> lays it out, comments kept. Run both in a pre-commit hook.
+  </p>
+  <p>
+    Ready recipes to download and change are in <a href="/recipes/">the recipe gallery</a>.
+  </p>
+</section>

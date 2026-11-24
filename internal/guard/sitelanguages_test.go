@@ -131,6 +131,21 @@ func TestEveryPageSaysWhichLanguageItIsAndWhereItsTranslationsAre(t *testing.T) 
 	title := regexp.MustCompile(`<title>([^<]*)</title>`)
 	description := regexp.MustCompile(`<meta name="description" content="([^"]*)">`)
 
+	untranslatedFiles := map[string]bool{}
+	for _, p := range root.Pages {
+		if p.Untranslated {
+			untranslatedFiles[strings.Trim(p.Slug, "/")+"/index.html"] = true
+		}
+	}
+	if len(untranslatedFiles) == 0 {
+		t.Fatal("no page is marked untranslated, so the rule for one is asked of nothing")
+	}
+	for file := range untranslatedFiles {
+		if _, ok := rendered[file]; !ok {
+			t.Errorf("%s is marked untranslated and was not rendered, so the rule for it is asked of nothing", file)
+		}
+	}
+
 	pages := map[string]map[string]string{}
 	canonicals := map[string]string{}
 	seenTitle, seenDescription := map[string]string{}, map[string]string{}
@@ -158,13 +173,19 @@ func TestEveryPageSaysWhichLanguageItIsAndWhereItsTranslationsAre(t *testing.T) 
 		}
 		pages[file] = found
 
-		for _, l := range s.Languages {
+		// A page written in the root language alone names itself and
+		// x-default, and nothing else, since it has no translation.
+		languages := s.Languages
+		if untranslatedFiles[file] {
+			languages = []site.Language{root}
+		}
+		for _, l := range languages {
 			if _, ok := found[l.Code]; !ok {
 				t.Errorf("%s does not name its %s translation, so a search engine is not told it exists", file, l.Code)
 			}
 		}
-		if _, ok := found["x-default"]; !ok || len(found) != len(s.Languages)+1 {
-			t.Errorf("%s names %d alternates, and the languages are %d plus x-default", file, len(found), len(s.Languages))
+		if _, ok := found["x-default"]; !ok || len(found) != len(languages)+1 {
+			t.Errorf("%s names %d alternates, and the languages are %d plus x-default", file, len(found), len(languages))
 		}
 		for _, field := range []struct {
 			name    string

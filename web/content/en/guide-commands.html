@@ -1,0 +1,71 @@
+<h1>Commands</h1>
+<p class="lead">
+  Every command of <code>tfg</code> with every flag it takes. This page is read from the program's own
+  help when the page is built, so it says what the program says: <code>tfg &lt;command&gt; --help</code>
+  prints the same in your terminal.
+</p>
+
+<div class="tablewrap">
+<table class="data">
+  <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+  <tbody>
+  {{- range .Facts.Docs.Commands }}
+    <tr><td><a href="#{{ .Anchor }}"><code>tfg {{ .Name }}</code></a></td><td>{{ ascii .Summary }}</td></tr>
+  {{- end }}
+  </tbody>
+</table>
+</div>
+<p>
+  A flag is written with two dashes, as <code>--count 10</code>, or with one. A flag that takes no value
+  is on when it is there. Every exit code is <a href="#exit-codes">at the end of this page</a>.
+</p>
+
+{{- range .Facts.Docs.Commands }}
+
+<section class="section" id="{{ .Anchor }}">
+  <h2><code>tfg {{ .Name }}</code></h2>
+  <p>{{ ascii .Summary }}</p>
+  {{- range .About }}
+  <p>{{ ascii . }}</p>
+  {{- end }}
+  {{- if .Usage }}
+  <pre><code>{{ range $i, $u := .Usage }}{{ if $i }}
+{{ end }}{{ ascii $u }}{{ end }}</code></pre>
+  {{- end }}
+  {{- range .Notes }}
+  <p>{{ ascii . }}</p>
+  {{- end }}
+  {{- if .Flags }}
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Flag</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+    {{- range .Flags }}
+      <tr>
+        <td><code>{{ if eq (len .Name) 1 }}-{{ else }}--{{ end }}{{ .Name }}{{ with .Takes }} {{ . }}{{ end }}</code></td>
+        <td>{{ with .Default }}<code>{{ ascii . }}</code>{{ end }}</td>
+        <td>{{ ascii .Text }}</td>
+      </tr>
+    {{- end }}
+    </tbody>
+  </table>
+  </div>
+  {{- end }}
+</section>
+{{- end }}
+
+<section class="section" id="exit-codes">
+  <h2>Exit codes</h2>
+  <p>
+    Every ending has a code of its own, so a script or a pipeline can tell them apart. Output meant for
+    a program goes to standard output, and a run that fails prints nothing there. The meaning of a code
+    never changes within a major version.
+  </p>
+  {{ template "exitCodesTable" . }}
+  <p>
+    A run stopped with Ctrl+C still leaves a manifest and never a half written file, so the next run
+    can clean up after it. In PowerShell, end a script with <code>exit $LASTEXITCODE</code>, because a
+    <code>.ps1</code> file does not pass the code of a program on by itself. More in
+    <a href="/test-files-in-ci/">Test files in CI</a>.
+  </p>
+</section>

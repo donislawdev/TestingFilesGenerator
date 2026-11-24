@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "Kỳ vọng",
     "colTool": "Công cụ",
-    "colQuestion": "Trả lời câu hỏi"
+    "colQuestion": "Trả lời câu hỏi",
+    "docsMenuLabel": "Các trang tài liệu"
   },
   "endings": {
     "0": "Mọi thứ đều chạy tốt.",
@@ -386,5 +387,45 @@
     "checksum": "Tệp này có đúng là tệp mà nó tự nhận không?",
     "checksum-check": "Mọi tệp có còn đúng như tệp checksum của chúng ghi không?",
     "checksum-write": "Sau này làm sao tôi biết không có tệp nào trong số này thay đổi?"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "Cài đặt",
+        "text": "Tải về cho Windows, macOS hoặc Linux, kiểm tra tệp nén, hoặc cài bằng Docker, npm, pip hay Go."
+      },
+      "guide-start": {
+        "title": "Bắt đầu",
+        "text": "Tệp đầu tiên đúng kích thước, rồi mười nghìn tệp, được kiểm tra, xóa đi và ghi lại thành công thức."
+      },
+      "guide-commands": {
+        "title": "Lệnh",
+        "text": "Mọi lệnh và mọi tùy chọn cùng giá trị mặc định, và mọi mã thoát."
+      },
+      "guide-recipes": {
+        "title": "Viết công thức",
+        "text": "Mọi khóa của công thức, kích thước, tên tệp, phản ứng mong đợi, hư hỏng, tệp nén và preset."
+      },
+      "recipes": {
+        "title": "Thư viện công thức",
+        "text": "Công thức sẵn để tải cho tải lên, nhập dữ liệu, tệp nén, email, đa phương tiện, CI và tệp số lượng lớn."
+      },
+      "guide-manifest": {
+        "title": "Manifest",
+        "text": "Mọi trường của manifest.json và cách một bài kiểm thử đọc nó."
+      },
+      "guide-formats": {
+        "title": "Thiết lập định dạng",
+        "text": "Mọi thiết lập của mọi định dạng, với các giá trị được chấp nhận và giá trị mặc định."
+      },
+      "guide-frameworks": {
+        "title": "Framework kiểm thử",
+        "text": "Các tệp bên trong pytest, Playwright, Vitest và node:test."
+      },
+      "guide-window": {
+        "title": "Ứng dụng máy tính",
+        "text": "Cửa sổ chương trình, từng màn hình một."
+      }
+    }
   }
 }

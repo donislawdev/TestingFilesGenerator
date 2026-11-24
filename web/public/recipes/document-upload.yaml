@@ -1,0 +1,126 @@
+# Documents for testing a document upload: invoices, CVs, reports, contracts.
+#
+#   tfg generate document-upload.yaml
+#
+# The files and manifest.json land in ./document-upload. The manifest says
+# which files your form should take and which it should turn away. Change the
+# limit below to the one your form declares before you run it.
+
+version: 1
+seed: 202
+
+# Seven PDF files around the size limit, from 1 MB under it to 1 MB over, with
+# the limit itself among them. They come from the size-boundaries preset.
+extends: preset:size-boundaries
+with:
+  limit: 10mb
+  format: pdf
+
+targets:
+  # PDF and Word, which a document form takes, then Excel, PowerPoint, RTF
+  # and plain text, which some forms refuse. Whether yours does is its
+  # policy, so those say unspecified: set them to what your form does.
+  - id: invoice_pdf
+    format: pdf
+    size: 300kb
+    name: invoice.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+  - id: letter_pdf
+    format: pdf
+    size: 200kb
+    name: letter_size.pdf
+    properties:
+      pages: 2
+      page_size: letter
+    expected: accept
+  - id: cv_docx
+    format: docx
+    size: 200kb
+    name: cv.docx
+    properties:
+      paragraphs: 40
+    expected: accept
+  - id: report_xlsx
+    format: xlsx
+    size: 1mb
+    name: report.xlsx
+    properties:
+      rows: 500
+      columns: 12
+    expected:
+      outcome: unspecified
+      reason: extension_rule
+  - id: slides_pptx
+    format: pptx
+    size: 1mb
+    name: slides.pptx
+    expected:
+      outcome: unspecified
+      reason: extension_rule
+  - id: notes_rtf
+    format: rtf
+    size: 50kb
+    name: notes.rtf
+    expected:
+      outcome: unspecified
+      reason: extension_rule
+  - id: notes_txt
+    format: txt
+    size: 20kb
+    name: notes.txt
+    expected:
+      outcome: unspecified
+      reason: extension_rule
+
+  # A long document: 500 pages in one PDF.
+  - id: long_pdf
+    format: pdf
+    size: 5mb
+    name: long_document.pdf
+    properties:
+      pages: 500
+    expected: accept
+
+  # Broken documents: a PDF with its first bytes zeroed, and a Word file cut in
+  # half the way an interrupted upload leaves it.
+  - id: corrupt_pdf
+    format: pdf
+    size: 300kb
+    name: corrupt.pdf
+    damage:
+      - zero-head
+    expected:
+      outcome: reject
+      reason: content_malformed
+  - id: truncated_docx
+    format: docx
+    size: 300kb
+    name: truncated.docx
+    damage:
+      - truncate
+    expected:
+      outcome: reject
+      reason: content_malformed
+
+  # Files that are not what their names say: a spreadsheet named as a PDF, and
+  # an empty file with a PDF's name.
+  - id: xlsx_named_pdf
+    format: xlsx
+    size: 100kb
+    name: not_a_document.pdf
+    expected:
+      outcome: reject
+      reason: mime_mismatch
+  - id: empty_pdf
+    format: txt
+    size: 0
+    name: empty.pdf
+    expected:
+      outcome: reject
+      reason: size_zero
+
+output:
+  dir: ./document-upload

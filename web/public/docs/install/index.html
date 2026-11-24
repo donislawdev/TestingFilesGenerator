@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="en">
+<title>Install Testing Files Generator on Windows, macOS, Linux or Docker</title>
+<meta name="description" content="Download the command line tool and the desktop window, check that the archive is the one this project published, or run it from Docker, npm, pip or Go.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/docs/install/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/install/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/install/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Install Testing Files Generator on Windows, macOS, Linux or Docker">
+<meta property="og:description" content="Download the command line tool and the desktop window, check that the archive is the one this project published, or run it from Docker, npm, pip or Go.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/docs/install/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Install Testing Files Generator on Windows, macOS, Linux or Docker">
+<meta name="twitter:description" content="Download the command line tool and the desktop window, check that the archive is the one this project published, or run it from Docker, npm, pip or Go.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Documentation",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Install",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/install\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/presets/">Presets</a>
+      <a href="/docs/" aria-current="true">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/">Exact size</a>
+      <a href="/faq/">FAQ</a>
+      <a href="/corrupt-test-files/">Corrupt test files</a>
+      <a href="/sample-files/">Sample files</a>
+      <a href="/test-files-in-ci/">Test files in CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Language: English">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>English</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/ar/docs/" hreflang="ar" lang="ar">العربية</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr">Français</a></li>
+        <li><a href="/hi/docs/" hreflang="hi" lang="hi">हिन्दी</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru">Русский</a></li>
+        <li><a href="/th/docs/" hreflang="th" lang="th">ไทย</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<nav class="docsmenu" aria-label="Documentation pages">
+  <ul>
+    <li><a href="/docs/">Documentation</a></li>
+    <li><a href="/docs/install/" aria-current="page">Install</a></li>
+    <li><a href="/docs/getting-started/">Getting started</a></li>
+    <li><a href="/docs/commands/">Commands</a></li>
+    <li><a href="/docs/recipes/">Writing recipes</a></li>
+    <li><a href="/recipes/">Recipe gallery</a></li>
+    <li><a href="/docs/manifest/">Manifest</a></li>
+    <li><a href="/docs/format-settings/">Format settings</a></li>
+    <li><a href="/docs/test-frameworks/">Test frameworks</a></li>
+    <li><a href="/docs/desktop-app/">Desktop app</a></li>
+    <li><a href="/tools/">Tools</a></li>
+  </ul>
+</nav>
+<h1>Install</h1>
+<p class="lead">
+  There are two programs. <code>tfg</code> is the command line, for scripts and pipelines.
+  <code>tfg-gui</code> is the desktop window, for testing by hand. Both make the same files from the
+  same settings. Pick the way of installing that fits where you will run them.
+</p>
+
+<div class="note">
+  <p class="note-title">The short answer</p>
+  <p>
+    Download the archive for your system from the releases page, unpack it and run
+    <code>tfg version</code>. Everything runs on your machine, and the program never connects to the
+    internet.
+  </p>
+</div>
+
+<section class="section" id="download">
+  <h2>Download a binary</h2>
+  <p>
+    Take the archive for your system from the releases page, unpack it anywhere and run the program
+    inside. Nothing else is needed. These are the systems each program is built for:
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>System</th>
+      <th>Command line</th>
+      <th>Desktop window</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Windows</td>
+      <td><code>amd64, arm64</code></td>
+      <td><code>amd64</code></td>
+    </tr>
+    <tr>
+      <td>Linux</td>
+      <td><code>amd64, arm64</code></td>
+      <td><code>amd64</code></td>
+    </tr>
+    <tr>
+      <td>macOS</td>
+      <td><code>arm64</code></td>
+      <td><code>arm64</code></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <p>
+    The archives are named after the program, the version, the system and the processor, such as
+    <code>tfg_0.5.0_linux_amd64.tar.gz</code> or
+    <code>tfg-gui_0.5.0_windows_amd64.zip</code>. On Windows x64 the release also has an
+    installer, <code>tfg-setup_0.5.0_windows_amd64.msi</code>.
+  </p>
+  <p>
+    The Windows and macOS programs are signed, so they start without a warning about an unknown
+    developer. The Linux ones are not, because desktop Linux has nothing to sign them with.
+  </p>
+  <div class="cta">
+  <a class="button primary" href="https://github.com/donislawdev/TestingFilesGenerator/releases">Download</a>
+  <a class="button ghost" href="https://github.com/donislawdev/TestingFilesGenerator">View the source</a>
+</div>
+<p class="cta-note">Free and open source, GPL-3.0. Nothing to sign up for. The Windows and macOS downloads are signed and start without a warning.</p>
+</section>
+
+<section class="section" id="check">
+  <h2>Check that the archive is the one this project published</h2>
+  <p>
+    Every release has a <code>verify-SHA256SUMS.txt</code> with the checksum of every archive. A
+    matching checksum says the archive arrived whole. With the GitHub command line installed, the
+    attestation also says the release workflow of this project made it.
+  </p>
+  <pre><code>tfg_version=0.5.0
+archive=tfg_${tfg_version}_linux_amd64.tar.gz
+url=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$tfg_version
+curl -fsSLO "$url/$archive"
+curl -fsSLO "$url/verify-SHA256SUMS.txt"
+grep " $archive\$" verify-SHA256SUMS.txt | shasum -a 256 -c
+gh attestation verify "$archive" --repo donislawdev/TestingFilesGenerator --predicate-type https://spdx.dev/Document/v2.3</code></pre>
+  <p>
+    Without <code>shasum</code>, <code>tfg tool checksum</code> does the same on any system once you
+    have one copy of tfg you trust: <code>tfg tool checksum &lt;archive&gt; --expected &lt;sum&gt;</code>.
+  </p>
+</section>
+
+<section class="section" id="docker">
+  <h2>Run it from Docker</h2>
+  <p>
+    The command line also comes as an image for Linux, on x64 and Arm. It holds the program from the
+    release archive and nothing else, and it runs with no network. Name the version rather than
+    <code>latest</code>, so the same recipe gives the same files next month too.
+  </p>
+  <pre><code>docker run --rm --network none -v "${PWD}:/work" ghcr.io/donislawdev/tfg:0.5.0 generate --format pdf --size 1mb</code></pre>
+  <p>
+    The files land in the current directory. On Linux add <code>--user "$(id -u):$(id -g)"</code>, so
+    the image may write there and the files belong to you. With no directory mounted, the run stops
+    with exit code 5 rather than writing files that disappear with the container.
+  </p>
+</section>
+
+<section class="section" id="npm">
+  <h2>Install it with npm, for tests in Node</h2>
+  <p>
+    The <code>testing-files-generator</code> package gives Playwright, Vitest and
+    <code>node:test</code> a generated set of files and what your system should do with each, and
+    installs the tfg of the same release for your system. It comes for Windows and Linux on x64 and
+    Arm, and for macOS on Apple silicon.
+  </p>
+  <pre><code>npm install --save-dev testing-files-generator
+npx tfg version</code></pre>
+  <p>How to use it in a test: <a href="/docs/test-frameworks/">Test frameworks</a>.</p>
+</section>
+
+<section class="section" id="pip">
+  <h2>Install it with pip, for tests in Python</h2>
+  <p>
+    The <code>testing-files-generator</code> package gives pytest and unittest a generated set of
+    files and what your system should do with each, and installs the tfg of the same release for
+    your system. pytest finds its plugin on its own. uv installs it as well.
+  </p>
+  <pre><code>pip install testing-files-generator
+tfg version</code></pre>
+  <p>
+    If <code>tfg</code> is not found, the folder pip puts programs in is not on your
+    <code>PATH</code>, and <code>python -m testing_files_generator version</code> runs the same tfg.
+  </p>
+</section>
+
+<section class="section" id="go">
+  <h2>Install it with Go</h2>
+  <p>With Go installed, this builds the command line and puts it in your Go bin folder:</p>
+  <pre><code>go install -tags noasm github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+  <p>
+    The tag is not optional. It turns off a path of the AVIF encoder that reads past the end of a
+    buffer on some picture sizes. Built without it, the program does not compile, and says why. The
+    files are the same either way.
+  </p>
+</section>
+
+<section class="section" id="source">
+  <h2>Build it from source</h2>
+  <p>It needs Go and nothing else:</p>
+  <pre><code>git clone https://github.com/donislawdev/TestingFilesGenerator
+cd TestingFilesGenerator
+go build -tags "$(cat .github/build-tags)" ./cmd/tfg</code></pre>
+  <p>
+    The window is a second program, <code>go build -tags "$(cat .github/build-tags)" ./cmd/tfg-gui</code>.
+    It draws through OpenGL and reaches it through C, so it needs a C compiler on the system it is
+    built for. Built without one, it still compiles, and says on start that it has no window and
+    that everything is on the command line.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>When the window does not open</h2>
+  <p>
+    The window needs OpenGL 2.1 to draw. On Windows the archive carries a software renderer, in an
+    <code>opengl</code> folder next to <code>tfg-gui.exe</code>, for machines whose graphics driver
+    offers none: a virtual machine without 3D acceleration, a remote desktop, a server. The window
+    uses it by itself when the driver refuses, and says so on its About screen. Keep the folder next
+    to the program.
+  </p>
+  <p>
+    <code>tfg-gui --software-gl</code> uses the software renderer on any Windows machine, which shows
+    the window the way a machine without a driver sees it. Linux and macOS have what the window
+    needs, so there the flag changes nothing. The command line needs no graphics at all and does
+    everything the window does.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+        <li><a href="/corrupt-test-files/">Corrupt test files</a></li>
+        <li><a href="/sample-files/">Sample files</a></li>
+        <li><a href="/test-files-in-ci/">Test files in CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

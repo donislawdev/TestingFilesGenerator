@@ -104,10 +104,11 @@ could post a summary comment on a pull request, which would need
 `pull-requests: write` - that scope is deliberately not granted, because a failing
 check already says what the comment would.
 
-Two workflows hold more. The one that publishes the website has `pages: write`
-and `id-token: write`. It has a single job, and it runs only for a push to this
-repository - a condition added on 2026-08-27 and held by a guard, because the event
-it triggers on fires with this repository's permissions. The weekly vulnerability
+Two workflows hold more. In the one that publishes the website, only the last
+job, which deploys what the jobs before it built and uploaded, has `pages: write`
+and `id-token: write`. Those jobs have read access only. The workflow runs only for
+a push to this repository - a condition added on 2026-08-27 and held by a guard,
+because the event it triggers on fires with this repository's permissions. The weekly vulnerability
 scan has `security-events: write`, on its one job, to put its results in the
 Security tab. It runs on a schedule or by hand, never for a pull request.
 

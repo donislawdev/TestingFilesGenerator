@@ -37,7 +37,7 @@ jobs:
   # checked against the SHA256SUMS the page was rendered with before it may go
   # out, so the sums a visitor reads are the sums of the bytes they download.
   # A job of its own, with nothing but read access, because it builds and runs
-  # repository code and the job that publishes holds pages: write.
+  # repository code and the job that deploys holds pages: write.
   samples:
     if: >-
       github.event_name == 'workflow_dispatch' ||
@@ -84,22 +84,24 @@ jobs:
 
   publish:
     needs: samples
+    # Read access only. It uploads the site, and the deploy job after it is the
+    # one that publishes. configure-pages only reads the Pages settings here.
     permissions:
       contents: read
-      pages: write
-      id-token: write
+      pages: read
     # A dispatch is a person asking on purpose. Everything else has to be CI
     # saying the tree is good, ON THIS REPOSITORY, for a push.
     #
     # The last two conditions were added on 2026-08-27, the day this project
     # started taking pull requests, and they close a hole that opened with it.
     # This job runs on workflow_run, which fires in the base repository with the
-    # base repository's permissions - and it holds pages: write. CI runs on
+    # base repository's permissions - and the deploy job after it, which runs
+    # only when this one does, holds pages: write. CI runs on
     # pull_request, and the branches filter above matches the branch NAME of the
     # run that triggered it, which for a fork is a name the fork chose. A fork
     # whose branch is called main, opening a pull request that passes CI, would
-    # otherwise reach this job, and this job publishes web/public to the project
-    # website.
+    # otherwise reach this job, and the two jobs publish web/public to the
+    # project website.
     #
     # Nothing here executes repository code, so the exposure was defacement
     # rather than anything reaching a secret. That is still not a thing to leave

@@ -1,0 +1,140 @@
+<h1>Install</h1>
+<p class="lead">
+  There are two programs. <code>tfg</code> is the command line, for scripts and pipelines.
+  <code>tfg-gui</code> is the desktop window, for testing by hand. Both make the same files from the
+  same settings. Pick the way of installing that fits where you will run them.
+</p>
+
+<div class="note">
+  <p class="note-title">The short answer</p>
+  <p>
+    Download the archive for your system from the releases page, unpack it and run
+    <code>tfg version</code>. Everything runs on your machine, and the program never connects to the
+    internet.
+  </p>
+</div>
+
+<section class="section" id="download">
+  <h2>Download a binary</h2>
+  <p>
+    Take the archive for your system from the releases page, unpack it anywhere and run the program
+    inside. Nothing else is needed. These are the systems each program is built for:
+  </p>
+  {{ template "downloadsTable" . }}
+  <p>
+    The archives are named after the program, the version, the system and the processor, such as
+    <code>tfg_{{ .Facts.Released }}_linux_amd64.tar.gz</code> or
+    <code>tfg-gui_{{ .Facts.Released }}_windows_amd64.zip</code>. On Windows x64 the release also has an
+    installer, <code>tfg-setup_{{ .Facts.Released }}_windows_amd64.msi</code>.
+  </p>
+  <p>
+    The Windows and macOS programs are signed, so they start without a warning about an unknown
+    developer. The Linux ones are not, because desktop Linux has nothing to sign them with.
+  </p>
+  {{ template "downloadCta" . }}
+</section>
+
+<section class="section" id="check">
+  <h2>Check that the archive is the one this project published</h2>
+  <p>
+    Every release has a <code>verify-SHA256SUMS.txt</code> with the checksum of every archive. A
+    matching checksum says the archive arrived whole. With the GitHub command line installed, the
+    attestation also says the release workflow of this project made it.
+  </p>
+  <pre><code>tfg_version={{ .Facts.Released }}
+archive=tfg_${tfg_version}_linux_amd64.tar.gz
+url=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$tfg_version
+curl -fsSLO "$url/$archive"
+curl -fsSLO "$url/verify-SHA256SUMS.txt"
+grep " $archive\$" verify-SHA256SUMS.txt | shasum -a 256 -c
+gh attestation verify "$archive" --repo donislawdev/TestingFilesGenerator --predicate-type https://spdx.dev/Document/v2.3</code></pre>
+  <p>
+    Without <code>shasum</code>, <code>tfg tool checksum</code> does the same on any system once you
+    have one copy of tfg you trust: <code>tfg tool checksum &lt;archive&gt; --expected &lt;sum&gt;</code>.
+  </p>
+</section>
+
+<section class="section" id="docker">
+  <h2>Run it from Docker</h2>
+  <p>
+    The command line also comes as an image for Linux, on x64 and Arm. It holds the program from the
+    release archive and nothing else, and it runs with no network. Name the version rather than
+    <code>latest</code>, so the same recipe gives the same files next month too.
+  </p>
+  <pre><code>docker run --rm --network none -v "${PWD}:/work" ghcr.io/donislawdev/tfg:{{ .Facts.Released }} generate --format pdf --size 1mb</code></pre>
+  <p>
+    The files land in the current directory. On Linux add <code>--user "$(id -u):$(id -g)"</code>, so
+    the image may write there and the files belong to you. With no directory mounted, the run stops
+    with exit code 5 rather than writing files that disappear with the container.
+  </p>
+</section>
+
+<section class="section" id="npm">
+  <h2>Install it with npm, for tests in Node</h2>
+  <p>
+    The <code>testing-files-generator</code> package gives Playwright, Vitest and
+    <code>node:test</code> a generated set of files and what your system should do with each, and
+    installs the tfg of the same release for your system. It comes for Windows and Linux on x64 and
+    Arm, and for macOS on Apple silicon.
+  </p>
+  <pre><code>npm install --save-dev testing-files-generator
+npx tfg version</code></pre>
+  <p>How to use it in a test: <a href="/docs/test-frameworks/">Test frameworks</a>.</p>
+</section>
+
+<section class="section" id="pip">
+  <h2>Install it with pip, for tests in Python</h2>
+  <p>
+    The <code>testing-files-generator</code> package gives pytest and unittest a generated set of
+    files and what your system should do with each, and installs the tfg of the same release for
+    your system. pytest finds its plugin on its own. uv installs it as well.
+  </p>
+  <pre><code>pip install testing-files-generator
+tfg version</code></pre>
+  <p>
+    If <code>tfg</code> is not found, the folder pip puts programs in is not on your
+    <code>PATH</code>, and <code>python -m testing_files_generator version</code> runs the same tfg.
+  </p>
+</section>
+
+<section class="section" id="go">
+  <h2>Install it with Go</h2>
+  <p>With Go installed, this builds the command line and puts it in your Go bin folder:</p>
+  <pre><code>go install -tags noasm github.com/donislawdev/TestingFilesGenerator/cmd/tfg@latest</code></pre>
+  <p>
+    The tag is not optional. It turns off a path of the AVIF encoder that reads past the end of a
+    buffer on some picture sizes. Built without it, the program does not compile, and says why. The
+    files are the same either way.
+  </p>
+</section>
+
+<section class="section" id="source">
+  <h2>Build it from source</h2>
+  <p>It needs Go and nothing else:</p>
+  <pre><code>git clone https://github.com/donislawdev/TestingFilesGenerator
+cd TestingFilesGenerator
+go build -tags "$(cat .github/build-tags)" ./cmd/tfg</code></pre>
+  <p>
+    The window is a second program, <code>go build -tags "$(cat .github/build-tags)" ./cmd/tfg-gui</code>.
+    It draws through OpenGL and reaches it through C, so it needs a C compiler on the system it is
+    built for. Built without one, it still compiles, and says on start that it has no window and
+    that everything is on the command line.
+  </p>
+</section>
+
+<section class="section" id="window">
+  <h2>When the window does not open</h2>
+  <p>
+    The window needs OpenGL 2.1 to draw. On Windows the archive carries a software renderer, in an
+    <code>opengl</code> folder next to <code>tfg-gui.exe</code>, for machines whose graphics driver
+    offers none: a virtual machine without 3D acceleration, a remote desktop, a server. The window
+    uses it by itself when the driver refuses, and says so on its About screen. Keep the folder next
+    to the program.
+  </p>
+  <p>
+    <code>tfg-gui --software-gl</code> uses the software renderer on any Windows machine, which shows
+    the window the way a machine without a driver sees it. Linux and macOS have what the window
+    needs, so there the flag changes nothing. The command line needs no graphics at all and does
+    everything the window does.
+  </p>
+</section>

@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "Oczekiwane",
     "colTool": "Narzędzie",
-    "colQuestion": "Na co odpowiada"
+    "colQuestion": "Na co odpowiada",
+    "docsMenuLabel": "Strony dokumentacji"
   },
   "endings": {
     "0": "Wszystko się udało.",
@@ -386,5 +387,45 @@
     "checksum": "Czy ten plik jest tym, za który się podaje?",
     "checksum-check": "Czy każdy plik jest wciąż taki, jak podaje jego plik sum kontrolnych?",
     "checksum-write": "Jak później poznam, że żaden z tych plików się nie zmienił?"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "Instalacja",
+        "text": "Pobierz na Windows, macOS albo Linuksa, sprawdź archiwum albo zainstaluj przez Dockera, npm, pip lub Go."
+      },
+      "guide-start": {
+        "title": "Pierwsze kroki",
+        "text": "Pierwszy plik o dokładnym rozmiarze, potem dziesięć tysięcy, sprawdzone, usunięte i zapisane jako przepis."
+      },
+      "guide-commands": {
+        "title": "Komendy",
+        "text": "Każda komenda i każda flaga z wartością domyślną oraz wszystkie kody wyjścia."
+      },
+      "guide-recipes": {
+        "title": "Pisanie przepisów",
+        "text": "Każdy klucz przepisu, rozmiary, nazwy plików, oczekiwane reakcje, uszkodzenia, archiwa i presety."
+      },
+      "recipes": {
+        "title": "Galeria przepisów",
+        "text": "Gotowe przepisy do pobrania: uploady, importy, archiwa, e-maile, multimedia, CI i masowe pliki."
+      },
+      "guide-manifest": {
+        "title": "Manifest",
+        "text": "Każde pole manifest.json i to, jak test je czyta."
+      },
+      "guide-formats": {
+        "title": "Ustawienia formatów",
+        "text": "Każde ustawienie każdego formatu z dopuszczalnymi wartościami i wartością domyślną."
+      },
+      "guide-frameworks": {
+        "title": "Frameworki testowe",
+        "text": "Pliki w testach pytest, Playwright, Vitest i node:test."
+      },
+      "guide-window": {
+        "title": "Aplikacja okienkowa",
+        "text": "Okno programu, ekran po ekranie."
+      }
+    }
   }
 }

@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "預期",
     "colTool": "工具",
-    "colQuestion": "回答的問題"
+    "colQuestion": "回答的問題",
+    "docsMenuLabel": "文件頁面"
   },
   "endings": {
     "0": "一切正常。",
@@ -386,5 +387,45 @@
     "checksum": "這個檔案就是它聲稱的那個檔案嗎？",
     "checksum-check": "每個檔案是否仍與總和檢查碼檔案所記錄的相符？",
     "checksum-write": "之後我要怎麼知道這些檔案一個都沒變？"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "安裝",
+        "text": "下載適用於 Windows、macOS 或 Linux 的版本並驗證壓縮檔，或透過 Docker、npm、pip、Go 安裝。"
+      },
+      "guide-start": {
+        "title": "入門",
+        "text": "先產生一個精確大小的檔案，再產生一萬個，驗證、刪除，並寫成配方。"
+      },
+      "guide-commands": {
+        "title": "指令",
+        "text": "每個指令與每個參數及其預設值，以及所有結束碼。"
+      },
+      "guide-recipes": {
+        "title": "撰寫配方",
+        "text": "配方的每個鍵、大小、檔名、預期反應、損壞、壓縮檔與預設集。"
+      },
+      "recipes": {
+        "title": "配方集",
+        "text": "可直接下載的配方，用於上傳、匯入、壓縮檔、電子郵件、媒體、CI 與大量檔案。"
+      },
+      "guide-manifest": {
+        "title": "清單",
+        "text": "manifest.json 的每個欄位，以及測試如何讀取它。"
+      },
+      "guide-formats": {
+        "title": "格式設定",
+        "text": "每種格式的每個設定，包括可接受的值與預設值。"
+      },
+      "guide-frameworks": {
+        "title": "測試框架",
+        "text": "在 pytest、Playwright、Vitest 與 node:test 中使用這些檔案。"
+      },
+      "guide-window": {
+        "title": "桌面應用程式",
+        "text": "逐一介紹程式視窗的每個畫面。"
+      }
+    }
   }
 }

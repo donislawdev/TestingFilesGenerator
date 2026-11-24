@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "Očekáváno",
     "colTool": "Nástroj",
-    "colQuestion": "Na co odpovídá"
+    "colQuestion": "Na co odpovídá",
+    "docsMenuLabel": "Stránky dokumentace"
   },
   "endings": {
     "0": "Vše fungovalo.",
@@ -386,5 +387,45 @@
     "checksum": "Je tento soubor tím, za který se vydává?",
     "checksum-check": "Odpovídá každý soubor stále tomu, co uvádí jeho soubor kontrolních součtů?",
     "checksum-write": "Jak později poznám, že se žádný z těchto souborů nezměnil?"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "Instalace",
+        "text": "Stažení pro Windows, macOS nebo Linux, kontrola archivu, nebo instalace přes Docker, npm, pip či Go."
+      },
+      "guide-start": {
+        "title": "První kroky",
+        "text": "První soubor přesné velikosti, potom deset tisíc, zkontrolované, smazané a zapsané jako recept."
+      },
+      "guide-commands": {
+        "title": "Příkazy",
+        "text": "Každý příkaz a každý přepínač s výchozí hodnotou a všechny návratové kódy."
+      },
+      "guide-recipes": {
+        "title": "Psaní receptů",
+        "text": "Každý klíč receptu, velikosti, názvy souborů, očekávané reakce, poškození, archivy a presety."
+      },
+      "recipes": {
+        "title": "Galerie receptů",
+        "text": "Hotové recepty ke stažení pro nahrávání, importy, archivy, e-maily, média, CI a hromadné soubory."
+      },
+      "guide-manifest": {
+        "title": "Manifest",
+        "text": "Každé pole manifest.json a jak ho test čte."
+      },
+      "guide-formats": {
+        "title": "Nastavení formátů",
+        "text": "Každé nastavení každého formátu s povolenými hodnotami a výchozí hodnotou."
+      },
+      "guide-frameworks": {
+        "title": "Testovací frameworky",
+        "text": "Soubory v pytest, Playwright, Vitest a node:test."
+      },
+      "guide-window": {
+        "title": "Desktopová aplikace",
+        "text": "Okno programu, obrazovka po obrazovce."
+      }
+    }
   }
 }

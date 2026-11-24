@@ -1,0 +1,117 @@
+<h1>Getting started</h1>
+<p class="lead">
+  Five minutes from an installed <code>tfg</code> to a set of test files your tests can rely on. Every
+  command here runs as it is, on Windows, macOS and Linux. If you have not installed it yet, start
+  with <a href="/docs/install/">Install</a>.
+</p>
+
+<ol class="steps">
+  <li>
+    <h3>Make one file of an exact size</h3>
+    <p>Name the format, the size and the folder. This makes one PNG of exactly two megabytes:</p>
+    <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+    <pre><code>1 file in 1 target, 2 097 152 B total</code></pre>
+    <p>
+      Sizes count in 1024s, the way a file manager does, so <code>2mb</code> is 2 097 152 bytes. A
+      plain byte count works too. The PNG opens in any picture viewer, and beside it is
+      <code>manifest.json</code>, the record of what the run made and how your system should react
+      to each file.
+    </p>
+  </li>
+  <li>
+    <h3>Make many files at once</h3>
+    <p>
+      Ten thousand log files, each between one and eight kilobytes. The sizes are drawn from the seed,
+      so the same command gives the same set tomorrow and on any other machine:
+    </p>
+    <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    <p>
+      <strong>Give each run its own folder.</strong> The manifest is the only record of what a run
+      wrote, so a second run into a folder that holds one is refused rather than written over it. Add
+      <code>--number-if-taken</code> to put the second run beside the first instead.
+    </p>
+  </li>
+  <li>
+    <h3>Check the files, then remove them</h3>
+    <p>
+      <code>verify</code> says whether every file is still there and still the same.
+      <code>cleanup</code> removes the files the manifest lists and nothing else. Without
+      <code>--yes</code> it only says what it would remove:
+    </p>
+    <pre><code>tfg verify ./out/manifest.json
+tfg cleanup ./out/manifest.json
+tfg cleanup ./out/manifest.json --yes</code></pre>
+    <pre><code>out matches ./out/manifest.json: 1 file checked
+1 file would be removed from out:
+  remove files_0001.png
+Nothing was removed. Run the same command with --yes to remove them.
+1 file removed from out</code></pre>
+  </li>
+  <li>
+    <h3>Say what your system should do with the files</h3>
+    <p>
+      A test file is only half a test. The other half is what should happen to it. Write it on the
+      command line and the manifest carries it beside every file:
+    </p>
+    <pre><code>tfg generate --format pdf --size 12mb --expected reject --expected-reason size_limit --out ./too-big</code></pre>
+    <p>
+      For a size limit, the <code>size-boundaries</code> preset makes the whole set at once: files
+      just under the limit, at it and just over it, each with its expected outcome:
+    </p>
+    <pre><code>tfg generate --preset size-boundaries --limit 10mb --format pdf --out ./limit</code></pre>
+  </li>
+  <li>
+    <h3>Make a file that is broken on purpose</h3>
+    <p>
+      A damaged file still has the size you asked for, and the manifest expects your system to turn
+      it away. <code>tfg damage</code> lists the damages this build has:
+    </p>
+    <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./broken</code></pre>
+  </li>
+  <li>
+    <h3>Turn the run into a recipe</h3>
+    <p>
+      Once the set is right, write it down. A recipe is a short YAML file you commit beside your
+      tests, so the files never have to be committed: anyone rebuilds them, byte for byte.
+    </p>
+    <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    expected: accept
+
+  - id: too_big
+    format: pdf
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+output:
+  dir: ./fixtures</code></pre>
+    <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+    <p>
+      <code>validate</code> checks the recipe and writes nothing. Every key is in
+      <a href="/docs/recipes/">the recipe reference</a>, and <a href="/recipes/">the recipe gallery</a>
+      has ready recipes to start from.
+    </p>
+  </li>
+</ol>
+
+<section class="section" id="next">
+  <h2>Where to go next</h2>
+  <ul>
+    <li><a href="/test-files-in-ci/">Test files in CI</a> - a GitHub Actions workflow and a GitLab job that build the set in the pipeline</li>
+    <li><a href="/docs/test-frameworks/">Test frameworks</a> - the set inside pytest, Playwright, Vitest and <code>node:test</code></li>
+    <li><a href="/docs/manifest/">The manifest</a> - every field a test can read</li>
+    <li><a href="/docs/commands/">Commands</a> - every flag of every command</li>
+    <li><a href="/presets/">Presets</a> - ready sets for common testing questions</li>
+  </ul>
+</section>

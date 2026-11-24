@@ -233,6 +233,40 @@ NPM_VALUE_OPTIONS = {"--prefix", "--registry", "--tag", "--cache", "-C"}
 # the registry: a path, or a shell variable holding one.
 LOCAL_ARGUMENT = (".", "/", "~", "$")
 
+# A file name npm installs as a tarball, with or without a path in front. The
+# same suffixes npm-package-arg reads as a file rather than a package name.
+NPM_TARBALL = re.compile(r"[.](?:tgz|tar[.]gz|tar)$", re.IGNORECASE)
+
+
+def shell_commands(line):
+    """The simple commands of one shell line, each as its list of words.
+
+    Split where the shell would split, at &&, ||, ;, | and the like, and never
+    inside quotes: a quoted path holding a ; is one word, as it is to the shell.
+    A redirection does not end a command. It and the file it names are left
+    out, with the number of a stream before it, so in
+    `npm install >log mailparser` the package is still a word of the install.
+    """
+    lexer = shlex.shlex(line, posix=True, punctuation_chars=True)
+    lexer.whitespace_split = True
+    commands, words, target_next = [], [], False
+    for token in lexer:
+        if target_next:
+            target_next = False
+            continue
+        if token and set(token) <= set("<>&") and token not in ("&", "&&"):
+            target_next = True
+            if words and words[-1].isdigit():
+                words.pop()
+            continue
+        if token and all(c in lexer.punctuation_chars for c in token):
+            commands.append(words)
+            words = []
+            continue
+        words.append(token)
+    commands.append(words)
+    return [c for c in commands if c]
+
 
 def npm_pins(texts):
     """Every registry package an `npm install` in the workflows names, with its pin.
@@ -252,24 +286,30 @@ def npm_pins(texts):
     for name, text in texts.items():
         for line in text.splitlines():
             command = re.sub(r"^(-\s*)?run:\s*", "", line.strip())
-            if command.startswith("#"):
+            # Only a line where npm install can begin a command is read as
+            # shell. Any other line, a step name with an apostrophe among
+            # them, is not shell and must not fail the check.
+            if not re.search(r"(?:^|[;&|(]\s*)npm\s+install\b", command):
                 continue
-            for part in re.split(r"&&|\|\||;|\|", command):
-                if part.split()[:2] != ["npm", "install"]:
+            try:
+                commands = shell_commands(command)
+            except ValueError as exc:
+                raise RuntimeError(f"{name} runs an npm install this cannot read ({exc}): {line.strip()}") from exc
+            for words in commands:
+                if words[:2] != ["npm", "install"]:
                     continue
-                try:
-                    words = shlex.split(part)[2:]
-                except ValueError as exc:
-                    raise RuntimeError(f"{name} runs an npm install this cannot read ({exc}): {line.strip()}") from exc
                 value_next = False
-                for word in words:
+                for word in words[2:]:
                     if value_next:
                         value_next = False
                         continue
                     if word in NPM_VALUE_OPTIONS:
                         value_next = True
                         continue
-                    if word.startswith("-") or word.startswith(LOCAL_ARGUMENT):
+                    # A name starting with @ is a scoped package of the
+                    # registry whatever it ends with, as npm-package-arg reads it.
+                    tarball = NPM_TARBALL.search(word) and not word.startswith("@")
+                    if word.startswith("-") or word.startswith(LOCAL_ARGUMENT) or tarball:
                         continue
                     m = re.fullmatch(r"(@?[\w./-]+)@(\d[\w.+-]*)", word)
                     if not m:

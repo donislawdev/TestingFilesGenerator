@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "期待される結果",
     "colTool": "ツール",
-    "colQuestion": "答える問い"
+    "colQuestion": "答える問い",
+    "docsMenuLabel": "ドキュメントのページ"
   },
   "endings": {
     "0": "すべて正常に動作しました。",
@@ -386,5 +387,45 @@
     "checksum": "このファイルは、名乗っているとおりのファイルでしょうか。",
     "checksum-check": "どのファイルも、チェックサムファイルに書かれたとおりのままでしょうか。",
     "checksum-write": "これらのファイルがどれも変わっていないことを、後でどう確かめればよいでしょうか。"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "インストール",
+        "text": "Windows、macOS、Linux 用をダウンロードしてアーカイブを確認するか、Docker、npm、pip、Go でインストールします。"
+      },
+      "guide-start": {
+        "title": "はじめに",
+        "text": "正確なサイズの最初のファイル、次に一万個のファイルを作り、確認し、削除し、レシピとして書き残します。"
+      },
+      "guide-commands": {
+        "title": "コマンド",
+        "text": "すべてのコマンドとすべてのフラグ、その既定値、そしてすべての終了コード。"
+      },
+      "guide-recipes": {
+        "title": "レシピの書き方",
+        "text": "レシピのすべてのキー、サイズ、ファイル名、期待される反応、破損、アーカイブ、プリセット。"
+      },
+      "recipes": {
+        "title": "レシピ集",
+        "text": "アップロード、インポート、アーカイブ、メール、メディア、CI、大量ファイル向けの、ダウンロードしてすぐ使えるレシピ。"
+      },
+      "guide-manifest": {
+        "title": "マニフェスト",
+        "text": "manifest.json のすべてのフィールドと、テストでの読み方。"
+      },
+      "guide-formats": {
+        "title": "形式の設定",
+        "text": "すべての形式のすべての設定と、受け付ける値、既定値。"
+      },
+      "guide-frameworks": {
+        "title": "テストフレームワーク",
+        "text": "pytest、Playwright、Vitest、node:test の中でファイルを使う方法。"
+      },
+      "guide-window": {
+        "title": "デスクトップアプリ",
+        "text": "ウィンドウを画面ごとに説明します。"
+      }
+    }
   }
 }

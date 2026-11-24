@@ -1,0 +1,22 @@
+# Ten thousand small files, for testing what a system does with many files at
+# once: a sync folder, a backup, a file browser, a search index, a batch job.
+#
+#   tfg generate bulk-files.yaml
+#
+# The files and manifest.json land in ./bulk-files, about 45 MB in all. The
+# sizes are drawn from the seed, so the same recipe gives the same set every
+# time. Raise the count for a larger set.
+
+version: 1
+seed: 606
+
+targets:
+  - id: logs
+    format: log
+    count: 10000
+    size-range: 1kb-8kb
+    name: log_{index:04}.log
+    expected: accept
+
+output:
+  dir: ./bulk-files

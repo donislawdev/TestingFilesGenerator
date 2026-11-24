@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "Beklenen",
     "colTool": "Araç",
-    "colQuestion": "Neyi yanıtlar"
+    "colQuestion": "Neyi yanıtlar",
+    "docsMenuLabel": "Dokümantasyon sayfaları"
   },
   "endings": {
     "0": "Her şey çalıştı.",
@@ -386,5 +387,45 @@
     "checksum": "Bu dosya, olduğunu söylediği dosya mı?",
     "checksum-check": "Her dosya hâlâ sağlama toplamı dosyasının söylediği gibi mi?",
     "checksum-write": "Bu dosyaların hiçbirinin değişmediğini sonradan nasıl anlarım?"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "Kurulum",
+        "text": "Windows, macOS veya Linux için indirin, arşivi doğrulayın ya da Docker, npm, pip veya Go ile kurun."
+      },
+      "guide-start": {
+        "title": "Başlarken",
+        "text": "Tam boyutta ilk dosya, sonra on bin dosya, doğrulanmış, silinmiş ve tarif olarak yazılmış."
+      },
+      "guide-commands": {
+        "title": "Komutlar",
+        "text": "Her komut ve her seçenek varsayılan değeriyle, ve tüm çıkış kodları."
+      },
+      "guide-recipes": {
+        "title": "Tarif yazmak",
+        "text": "Bir tarifin her anahtarı, boyutlar, dosya adları, beklenen tepkiler, bozmalar, arşivler ve hazır ayarlar."
+      },
+      "recipes": {
+        "title": "Tarif galerisi",
+        "text": "Yüklemeler, içe aktarmalar, arşivler, e-posta, medya, CI ve toplu dosyalar için indirilmeye hazır tarifler."
+      },
+      "guide-manifest": {
+        "title": "Manifest",
+        "text": "manifest.json dosyasının her alanı ve bir testin onu nasıl okuduğu."
+      },
+      "guide-formats": {
+        "title": "Biçim ayarları",
+        "text": "Her biçimin her ayarı, kabul ettiği değerler ve varsayılan değeriyle."
+      },
+      "guide-frameworks": {
+        "title": "Test çatıları",
+        "text": "pytest, Playwright, Vitest ve node:test içindeki dosyalar."
+      },
+      "guide-window": {
+        "title": "Masaüstü uygulaması",
+        "text": "Pencere, ekran ekran."
+      }
+    }
   }
 }

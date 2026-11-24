@@ -1,0 +1,69 @@
+<h1>Recipe gallery</h1>
+<p class="lead">
+  Ready recipes for test sets people build again and again. Download one, run it, and change it to fit
+  your system. Each is a short YAML file with a comment on every part, and each writes into a folder of
+  its own name, so several can run one after another.
+</p>
+
+<div class="note">
+  <p class="note-title">How to use one</p>
+  <p>
+    Download the file, then run <code>tfg generate image-upload.yaml</code>. The files and the manifest
+    land in <code>./image-upload</code>. Change a limit, a size or a count in the file, and
+    <code>tfg validate image-upload.yaml</code> checks it before anything is written.
+  </p>
+</div>
+
+<section class="section" id="gallery">
+  <h2>Recipes for common tests</h2>
+  <p>
+    The number of files and bytes below is what the recipe makes as it is, counted by the program when
+    this page is built.
+  </p>
+  <ul class="cards">
+  {{- range .GalleryRecipes }}
+    <li class="card" id="{{ .ID }}">
+      <p class="card-title"><a href="{{ .URL }}" download>{{ .Title }}</a></p>
+      <p>{{ .Text }}</p>
+      <p class="muted">{{ .Files }} files, {{ .Bytes }} B. {{ range $i, $f := .Formats }}{{ if $i }} {{ end }}<code>{{ $f }}</code>{{ end }}</p>
+      <p><code>tfg generate {{ .File }}</code></p>
+    </li>
+  {{- end }}
+  </ul>
+</section>
+
+<section class="section" id="presets">
+  <h2>Every preset as a recipe</h2>
+  <p>
+    A preset is a recipe with a name. These are the recipes the presets stand for, as
+    <code>tfg preset eject</code> prints them with their default settings. They name no output folder, so
+    give them one with <code>--out</code>. Each preset has <a href="/presets/">a page of its own</a> with
+    what it finds and every setting it takes.
+  </p>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Preset</th><th>The question it answers</th><th class="num">Files</th><th class="num">Bytes</th></tr></thead>
+    <tbody>
+    {{- range .PresetRecipes }}
+      <tr>
+        <td><a href="{{ .URL }}" download>{{ .File }}</a><br><a class="muted" href="{{ .Page }}">{{ .Title }}</a></td>
+        <td>{{ .Text }}</td>
+        <td class="num">{{ .Files }}</td>
+        <td class="num">{{ .Bytes }}</td>
+      </tr>
+    {{- end }}
+    </tbody>
+  </table>
+  </div>
+  <pre><code>tfg generate size-boundaries.yaml --out ./size-boundaries</code></pre>
+</section>
+
+<section class="section" id="write-your-own">
+  <h2>Write your own</h2>
+  <p>
+    Every key a recipe takes is in <a href="/docs/recipes/">the recipe reference</a>, and every setting of
+    every format in <a href="/docs/format-settings/">Format settings</a>. A recipe can also start from a
+    preset with <code>extends</code>, as the image, document and media recipes here do, and add its own
+    files after the set of the preset.
+  </p>
+</section>

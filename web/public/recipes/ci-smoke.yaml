@@ -1,0 +1,71 @@
+# One small file of each common format, for a quick check in CI that a system
+# reads what it should. Runs in a second and writes well under a megabyte.
+#
+#   tfg generate ci-smoke.yaml
+#   tfg verify ci-smoke/manifest.json
+#
+# The files and manifest.json land in ./ci-smoke. The same seed gives the same
+# bytes on every machine, so the set never has to be committed.
+
+version: 1
+seed: 505
+
+targets:
+  - id: txt
+    format: txt
+    size: 4kb
+    name: smoke.txt
+    expected: accept
+  - id: csv
+    format: csv
+    size: 8kb
+    name: smoke.csv
+    expected: accept
+  - id: json
+    format: json
+    size: 8kb
+    name: smoke.json
+    expected: accept
+  - id: xml
+    format: xml
+    size: 8kb
+    name: smoke.xml
+    expected: accept
+  - id: html
+    format: html
+    size: 8kb
+    name: smoke.html
+    expected: accept
+  - id: pdf
+    format: pdf
+    size: 16kb
+    name: smoke.pdf
+    expected: accept
+  - id: docx
+    format: docx
+    size: 16kb
+    name: smoke.docx
+    expected: accept
+  - id: xlsx
+    format: xlsx
+    size: 16kb
+    name: smoke.xlsx
+    expected: accept
+  - id: png
+    format: png
+    size: 16kb
+    name: smoke.png
+    expected: accept
+  - id: jpg
+    format: jpg
+    size: 16kb
+    name: smoke.jpg
+    expected: accept
+  - id: zip
+    format: zip
+    size: 16kb
+    name: smoke.zip
+    expected: accept
+
+output:
+  dir: ./ci-smoke

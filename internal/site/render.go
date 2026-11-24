@@ -92,6 +92,14 @@ func (s Site) Render() (map[string][]byte, error) {
 	if len(s.Facts.Samples) > 0 {
 		out[SamplesDir+"/SHA256SUMS"] = s.sampleSums()
 	}
+	for _, r := range s.Facts.Docs.Recipes {
+		// The id becomes a path on disk and an address, and nothing before
+		// this asks what it looks like.
+		if !addressable.MatchString(r.ID) {
+			return nil, fmt.Errorf("the recipe %q cannot be part of an address - an id of lower case letters, digits and single dashes can", r.ID)
+		}
+		out[r.File()] = r.Body
+	}
 	out["sitemap.xml"] = s.sitemap()
 	out["robots.txt"] = s.robots()
 	out["CNAME"] = []byte(s.Host() + "\n")
@@ -184,6 +192,13 @@ func (s Site) viewFor(lang Language, page Page) (view, error) {
 	}
 	for _, other := range s.Languages {
 		mate, ok := find(other, page.Key)
+		if !ok && page.Untranslated {
+			// No alternate, since there is none. The menu still leads the
+			// reader somewhere in their language.
+			near := nearestIn(other, lang, page)
+			v.Switches = append(v.Switches, Switch{Name: other.Name, URL: pageURL(other, near), Code: other.Code, Locale: other.Locale, Elsewhere: true})
+			continue
+		}
 		if !ok {
 			return view{}, fmt.Errorf("the %s page %q has no %s translation, so its language link would lead nowhere", lang.Code, page.Key, other.Code)
 		}
@@ -196,6 +211,13 @@ func (s Site) viewFor(lang Language, page Page) (view, error) {
 		if mate, found := find(root, page.Key); found {
 			v.Alternates = append(v.Alternates, Alternate{Lang: "x-default", URL: s.Origin() + pageURL(root, mate)})
 		}
+	}
+	if page.Key == docsKey || page.Parent == docsKey {
+		docs, err := s.docLinks(lang, page)
+		if err != nil {
+			return view{}, err
+		}
+		v.Docs = docs
 	}
 	return v, nil
 }
@@ -400,7 +422,14 @@ func funcs() template.FuncMap {
 	return template.FuncMap{
 		"join":   strings.Join,
 		"sorted": sortedStrings,
+		"ascii":  asciiText,
 	}
+}
+
+// asciiText is text from the program on a page held to ASCII: escaped, with
+// every character above ASCII as a numeric reference (entities).
+func asciiText(s string) template.HTML {
+	return entities(template.HTML(template.HTMLEscapeString(s))) //nolint:gosec // escaped here
 }
 
 // sortedStrings returns a sorted copy, so a template never sorts in place.

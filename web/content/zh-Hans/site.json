@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "预期",
     "colTool": "工具",
-    "colQuestion": "回答的问题"
+    "colQuestion": "回答的问题",
+    "docsMenuLabel": "文档页面"
   },
   "endings": {
     "0": "一切正常。",
@@ -386,5 +387,45 @@
     "checksum": "这个文件就是它声称的那个文件吗？",
     "checksum-check": "每个文件是否仍与校验和文件所记录的一致？",
     "checksum-write": "以后我怎么知道这些文件一个都没变？"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "安装",
+        "text": "下载适用于 Windows、macOS 或 Linux 的版本并校验压缩包，或通过 Docker、npm、pip、Go 安装。"
+      },
+      "guide-start": {
+        "title": "入门",
+        "text": "先生成一个精确大小的文件，再生成一万个，校验、删除，并写成配方。"
+      },
+      "guide-commands": {
+        "title": "命令",
+        "text": "每个命令和每个参数及其默认值，以及所有退出码。"
+      },
+      "guide-recipes": {
+        "title": "编写配方",
+        "text": "配方的每个键、大小、文件名、预期反应、损坏、压缩包和预设。"
+      },
+      "recipes": {
+        "title": "配方库",
+        "text": "可直接下载的配方，用于上传、导入、压缩包、邮件、媒体、CI 和大量文件。"
+      },
+      "guide-manifest": {
+        "title": "清单",
+        "text": "manifest.json 的每个字段，以及测试如何读取它。"
+      },
+      "guide-formats": {
+        "title": "格式设置",
+        "text": "每种格式的每个设置，包括可接受的值和默认值。"
+      },
+      "guide-frameworks": {
+        "title": "测试框架",
+        "text": "在 pytest、Playwright、Vitest 和 node:test 中使用这些文件。"
+      },
+      "guide-window": {
+        "title": "桌面应用",
+        "text": "逐个界面介绍程序窗口。"
+      }
+    }
   }
 }

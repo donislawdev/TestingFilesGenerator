@@ -20,9 +20,9 @@
 <meta property="og:image:width" content="1280">
 <meta property="og:image:height" content="640">
 <meta property="og:image:alt" content="{{ .Word "imageAlt" }}">
-{{- range .Switches }}
+{{- range .Switches }}{{ if not .Elsewhere }}
 <meta property="og:locale:alternate" content="{{ .Locale }}">
-{{- end }}
+{{- end }}{{ end }}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ .Page.Title }}">
 <meta name="twitter:description" content="{{ .Page.Description }}">
@@ -63,7 +63,7 @@
       </summary>
       <ul class="langlist">
         {{- range .Switches }}
-        <li><a href="{{ .URL }}" hreflang="{{ .Code }}" lang="{{ .Code }}" rel="alternate">{{ .Name }}</a></li>
+        <li><a href="{{ .URL }}" hreflang="{{ .Code }}" lang="{{ .Code }}"{{ if not .Elsewhere }} rel="alternate"{{ end }}>{{ .Name }}</a></li>
         {{- end }}
       </ul>
     </details>
@@ -72,6 +72,9 @@
 </header>
 
 <main id="main" class="wrap">
+{{- if and .Docs .Up }}
+{{ template "docsMenu" . }}
+{{- end }}
 {{ .Body }}
 </main>
 

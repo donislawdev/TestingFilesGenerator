@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "Atteso",
     "colTool": "Strumento",
-    "colQuestion": "A cosa risponde"
+    "colQuestion": "A cosa risponde",
+    "docsMenuLabel": "Pagine della documentazione"
   },
   "endings": {
     "0": "Tutto ha funzionato.",
@@ -386,5 +387,45 @@
     "checksum": "Questo file è davvero quello che dichiara di essere?",
     "checksum-check": "Ogni file è ancora come dice il suo file di checksum?",
     "checksum-write": "Come saprò più tardi che nessuno di questi file è cambiato?"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "Installazione",
+        "text": "Scaricare per Windows, macOS o Linux, verificare l'archivio o installare con Docker, npm, pip o Go."
+      },
+      "guide-start": {
+        "title": "Primi passi",
+        "text": "Un primo file di dimensione esatta, poi diecimila, verificati, rimossi e scritti come ricetta."
+      },
+      "guide-commands": {
+        "title": "Comandi",
+        "text": "Ogni comando e ogni opzione con il valore predefinito, e tutti i codici di uscita."
+      },
+      "guide-recipes": {
+        "title": "Scrivere ricette",
+        "text": "Ogni chiave di una ricetta, dimensioni, nomi dei file, reazioni attese, danni, archivi e preset."
+      },
+      "recipes": {
+        "title": "Raccolta di ricette",
+        "text": "Ricette pronte da scaricare per upload, importazioni, archivi, email, contenuti multimediali, CI e file in massa."
+      },
+      "guide-manifest": {
+        "title": "Manifest",
+        "text": "Ogni campo di manifest.json e come lo legge un test."
+      },
+      "guide-formats": {
+        "title": "Impostazioni dei formati",
+        "text": "Ogni impostazione di ogni formato, con i valori accettati e il valore predefinito."
+      },
+      "guide-frameworks": {
+        "title": "Framework di test",
+        "text": "I file dentro pytest, Playwright, Vitest e node:test."
+      },
+      "guide-window": {
+        "title": "Applicazione desktop",
+        "text": "La finestra, schermata per schermata."
+      }
+    }
   }
 }

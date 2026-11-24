@@ -28,26 +28,6 @@ import (
 // generate, so they get guards - and both are asked with a rule rather than a
 // list of exceptions, because a list of exceptions is a guard with a hole.
 
-// commandsTheToolPrints is the command names out of tfg --help, which is the
-// text the page is a copy of.
-//
-// Asked of the help rather than of the router beside it on purpose: the help
-// is what a visitor compares the page against, so agreeing with anything else
-// would prove the wrong thing.
-func commandsTheToolPrints(t *testing.T) []string {
-	t.Helper()
-	var out, errOut bytes.Buffer
-	if code := cli.Run(context.Background(), []string{"--help"}, &out, &errOut); code != cli.ExitOK {
-		t.Fatalf("tfg --help ended with %d rather than %d, so there is no list to compare against",
-			code, cli.ExitOK)
-	}
-	names, err := commandNamesIn(out.String())
-	if err != nil {
-		t.Fatalf("reading the command block out of tfg --help: %v", err)
-	}
-	return names
-}
-
 // commandNamesIn takes the names out of the Commands: block of a help text.
 //
 // Split on two spaces rather than on the first one, because "recipe fmt" is a

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="en">
+<title>Manifest Reference - What manifest.json Says About Each Test File</title>
+<meta name="description" content="Every field of the manifest written beside the files: the run, the summary, and each file with its hash, its settings and how your system should react to it.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/docs/manifest/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/manifest/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/manifest/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Manifest Reference - What manifest.json Says About Each Test File">
+<meta property="og:description" content="Every field of the manifest written beside the files: the run, the summary, and each file with its hash, its settings and how your system should react to it.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/docs/manifest/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Manifest Reference - What manifest.json Says About Each Test File">
+<meta name="twitter:description" content="Every field of the manifest written beside the files: the run, the summary, and each file with its hash, its settings and how your system should react to it.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Documentation",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Manifest",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/manifest\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/presets/">Presets</a>
+      <a href="/docs/" aria-current="true">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/">Exact size</a>
+      <a href="/faq/">FAQ</a>
+      <a href="/corrupt-test-files/">Corrupt test files</a>
+      <a href="/sample-files/">Sample files</a>
+      <a href="/test-files-in-ci/">Test files in CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Language: English">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>English</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/ar/docs/" hreflang="ar" lang="ar">العربية</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr">Français</a></li>
+        <li><a href="/hi/docs/" hreflang="hi" lang="hi">हिन्दी</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru">Русский</a></li>
+        <li><a href="/th/docs/" hreflang="th" lang="th">ไทย</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<nav class="docsmenu" aria-label="Documentation pages">
+  <ul>
+    <li><a href="/docs/">Documentation</a></li>
+    <li><a href="/docs/install/">Install</a></li>
+    <li><a href="/docs/getting-started/">Getting started</a></li>
+    <li><a href="/docs/commands/">Commands</a></li>
+    <li><a href="/docs/recipes/">Writing recipes</a></li>
+    <li><a href="/recipes/">Recipe gallery</a></li>
+    <li><a href="/docs/manifest/" aria-current="page">Manifest</a></li>
+    <li><a href="/docs/format-settings/">Format settings</a></li>
+    <li><a href="/docs/test-frameworks/">Test frameworks</a></li>
+    <li><a href="/docs/desktop-app/">Desktop app</a></li>
+    <li><a href="/tools/">Tools</a></li>
+  </ul>
+</nav>
+<h1>Manifest</h1>
+<p class="lead">
+  Every run writes <code>manifest.json</code> beside its files. It lists every file with its size, its
+  SHA-256 and what your system should do with it, so a test reads the expectation instead of hard
+  coding it. It is written even when a run is stopped part way.
+</p>
+
+<section class="section" id="example">
+  <h2>What a manifest looks like</h2>
+  <p>This is the manifest of <code>tfg generate --format png --size 2mb --out ./out</code>, shortened:</p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "0.6.0-rc1" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+</section>
+
+<section class="section" id="in-a-test">
+  <h2>How a test reads it</h2>
+  <p>
+    Go through <code>files</code>, give each file to your system, and compare what it did with
+    <code>expected.outcome</code>. When <code>send_as</code> is there, give the file under that name. A
+    sketch in Python, with your own upload in place of <code>upload</code>:
+  </p>
+  <pre><code>import json, pathlib
+
+folder = pathlib.Path("fixtures")
+manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
+for f in manifest["files"]:
+    if f["expected"]["outcome"] == "unspecified":
+        continue
+    result = upload(folder / f["path"], name=f.get("send_as", f["name"]))
+    assert result == f["expected"]["outcome"], f["path"]</code></pre>
+  <p>
+    The packages for pytest and Node do this for you: <a href="/docs/test-frameworks/">Test frameworks</a>.
+    An outcome of <code>unspecified</code> means the right reaction depends on how your system is set up.
+    <code>policy_options</code> lists the answers left open, for a test that settles them by your policy.
+  </p>
+</section>
+
+<section class="section" id="fields">
+  <h2>Every field</h2>
+  <p>
+    Every field a manifest can carry, read from the program when this page is built. <code>[]</code>
+    stands for each entry of a list, and <code>*</code> for each key of an object whose keys are yours,
+    such as the names of the flags in <code>run.overrides</code>. A field marked as present only in some
+    runs is left out of the others rather than written empty.
+  </p>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Field</th><th>What it holds</th></tr></thead>
+    <tbody>
+      <tr><td><code>manifest_version</code></td><td>The version of the manifest format, <code>1.0</code>. New fields are added without changing it, so a reader ignores the fields it does not know.</td></tr>
+      <tr><td><code>generated_at</code></td><td>When the manifest was written, in UTC.</td></tr>
+      <tr><td><code>tool</code></td><td>What made the files.</td></tr>
+      <tr><td><code>tool.name</code></td><td>Always <code>testing-files-generator</code>.</td></tr>
+      <tr><td><code>tool.version</code></td><td>The version of tfg that made the files.</td></tr>
+      <tr><td><code>tool.go</code></td><td>The version of Go tfg was built with, so a hash that changed after an upgrade can be traced to it.</td></tr>
+      <tr><td><code>tool.generators</code></td><td>The version of the generator of each format the run used, by format. It moves when the bytes a generator writes change.</td></tr>
+      <tr><td><code>run</code></td><td>The settings that shaped this run.</td></tr>
+      <tr><td><code>run.id</code></td><td>An identifier of this run.</td></tr>
+      <tr><td><code>run.seed</code></td><td>The seed of the run. The same seed and the same settings give the same files.</td></tr>
+      <tr><td><code>run.command</code></td><td>The command that started the run, as it was typed.</td></tr>
+      <tr><td><code>run.platform</code></td><td>Where the run happened.</td></tr>
+      <tr><td><code>run.platform.os</code></td><td>The operating system, such as <code>windows</code>, <code>linux</code> or <code>darwin</code>.</td></tr>
+      <tr><td><code>run.platform.arch</code></td><td>The processor architecture, such as <code>amd64</code> or <code>arm64</code>.</td></tr>
+      <tr><td><code>run.complete</code></td><td><code>false</code> when the run stopped early, for example after Ctrl+C. The manifest is written even then, so <code>cleanup</code> can remove what was made.</td></tr>
+      <tr><td><code>run.recipe_hash</code></td><td>The hash of the recipe in its settled shape, so reformatting the recipe keeps it. Present when the run came from a recipe.</td></tr>
+      <tr><td><code>run.overrides</code></td><td>The values a flag took over from the recipe, by name. Present when a flag replaced a value of the recipe.</td></tr>
+      <tr><td><code>run.overrides.*.from_recipe</code></td><td>The value the recipe gave.</td></tr>
+      <tr><td><code>run.overrides.*.from_flag</code></td><td>The value the flag gave, which the run used.</td></tr>
+      <tr><td><code>run.preset</code></td><td>The preset the run came from. Present only for a run of a preset.</td></tr>
+      <tr><td><code>run.preset.id</code></td><td>The id of the preset.</td></tr>
+      <tr><td><code>run.preset.question</code></td><td>The question the preset answers.</td></tr>
+      <tr><td><code>run.preset.parameters</code></td><td>Every setting of the preset as the run used it, the ones you gave and its defaults together.</td></tr>
+      <tr><td><code>run.preset.defaulted</code></td><td>The settings you did not give, which took the default of the preset. A limit that came from a default is not the limit of your system.</td></tr>
+      <tr><td><code>run.instructions</code></td><td>The name of the file written beside the manifest that says in words what each file is and why it is in the set. Present when a file has a purpose.</td></tr>
+      <tr><td><code>summary</code></td><td>Counts over the whole run, for a quick check.</td></tr>
+      <tr><td><code>summary.file_count</code></td><td>How many entries the manifest has. A run stopped part way lists only the files it finished or that failed, so it can be lower than the files that were planned.</td></tr>
+      <tr><td><code>summary.total_bytes</code></td><td>How many bytes the run wrote to disk, in all.</td></tr>
+      <tr><td><code>summary.materialized</code></td><td>How many files are on disk. Lower than <code>file_count</code> when a name could not be written or a file failed.</td></tr>
+      <tr><td><code>summary.by_format</code></td><td>How many files of each format.</td></tr>
+      <tr><td><code>summary.by_expected</code></td><td>How many files of each outcome.</td></tr>
+      <tr><td><code>summary.by_target</code></td><td>How many files each target made, by target id.</td></tr>
+      <tr><td><code>files</code></td><td>One entry for each file of the run.</td></tr>
+      <tr><td><code>files[].id</code></td><td>The handle of the file in this manifest, such as <code>f_0001</code>, numbered across the whole run.</td></tr>
+      <tr><td><code>files[].path</code></td><td>Where the file is, relative to the directory of the manifest. <code>verify</code> and <code>cleanup</code> find the file by this.</td></tr>
+      <tr><td><code>files[].name</code></td><td>The file name, the last part of <code>path</code>.</td></tr>
+      <tr><td><code>files[].send_as</code></td><td>The name to give the file to your system under, when the recipe asked for one no disk stores. Present only then.</td></tr>
+      <tr><td><code>files[].materialized</code></td><td>Whether the file is on disk. A name the system refused is still a test case, and still has its entry.</td></tr>
+      <tr><td><code>files[].target_id</code></td><td>The id of the target the file came from.</td></tr>
+      <tr><td><code>files[].bytes</code></td><td>The size of the file in bytes.</td></tr>
+      <tr><td><code>files[].format</code></td><td>The format of the file.</td></tr>
+      <tr><td><code>files[].fidelity</code></td><td>How faithful the file is to its format. <code>tfg formats</code> says it for each format.</td></tr>
+      <tr><td><code>files[].hashes</code></td><td>The hashes of the file.</td></tr>
+      <tr><td><code>files[].hashes.sha256</code></td><td>The SHA-256 of the file, which <code>verify</code> compares.</td></tr>
+      <tr><td><code>files[].seed</code></td><td>The seed this file was made from, which comes from the seed of the run and the id of the target.</td></tr>
+      <tr><td><code>files[].generator</code></td><td>The generator that made the file.</td></tr>
+      <tr><td><code>files[].generator.name</code></td><td>The name of the generator.</td></tr>
+      <tr><td><code>files[].generator.version</code></td><td>The version of the generator.</td></tr>
+      <tr><td><code>files[].determinism</code></td><td>Whether the same seed gives the same bytes, <code>byte</code>, or only the same size.</td></tr>
+      <tr><td><code>files[].properties</code></td><td>The settings of the format the file was made with, such as its width and height.</td></tr>
+      <tr><td><code>files[].expected</code></td><td>What your system should do with the file.</td></tr>
+      <tr><td><code>files[].expected.outcome</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> or <code>unspecified</code>.</td></tr>
+      <tr><td><code>files[].expected.reason</code></td><td>The rule in play, from the closed list, such as <code>size_limit</code>.</td></tr>
+      <tr><td><code>files[].expected.detail</code></td><td>The expectation in words.</td></tr>
+      <tr><td><code>files[].expected.confidence</code></td><td><code>certain</code>, or <code>policy_dependent</code> when the right reaction depends on how your system is set up.</td></tr>
+      <tr><td><code>files[].expected.policy_options</code></td><td>The answers an outcome that depends on your system leaves open, for a test that settles it by your own policy.</td></tr>
+      <tr><td><code>files[].group</code></td><td>The group the recipe or the preset gave the file.</td></tr>
+      <tr><td><code>files[].purpose</code></td><td>What the file is and why it is in the set, in words.</td></tr>
+      <tr><td><code>files[].label_embedded</code></td><td>Whether the file carries the label that says which run made it.</td></tr>
+      <tr><td><code>files[].damage</code></td><td>What was broken on purpose, in the order it was done. Absent for a file nothing damaged.</td></tr>
+      <tr><td><code>files[].damage[].type</code></td><td>The damage, such as <code>truncate</code>.</td></tr>
+      <tr><td><code>files[].damage[].settings</code></td><td>Its settings as the run used them, the defaults included.</td></tr>
+      <tr><td><code>files[].damage[].cut</code></td><td>Where a cut fell in the file. Present for <code>truncate</code>.</td></tr>
+      <tr><td><code>files[].damage[].cut.in</code></td><td>What the first byte cut away was part of: <code>content</code>, <code>padding</code>, <code>structure</code> or <code>end</code>.</td></tr>
+      <tr><td><code>files[].damage[].cut.content_bytes</code></td><td>How long the content of the whole file was, where that is known.</td></tr>
+      <tr><td><code>files[].damage[].cut.content_kept_bytes</code></td><td>How much of the content is still in the file.</td></tr>
+      <tr><td><code>files[].notes</code></td><td>Things worth knowing about this file, such as a label that did not fit.</td></tr>
+      <tr><td><code>files[].notes[].code</code></td><td>A short code for the note, such as <code>cut_in_padding</code>.</td></tr>
+      <tr><td><code>files[].notes[].detail</code></td><td>The note in words.</td></tr>
+      <tr><td><code>files[].failed</code></td><td><code>true</code> for a file the run could not make. The run carries on and ends with exit code <code>8</code>.</td></tr>
+      <tr><td><code>files[].error</code></td><td>Why the file could not be made.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="beside">
+  <h2>What else is written beside it</h2>
+  <p>
+    When the files of a run have a purpose, from a preset or from <code>purpose</code> in a recipe, a
+    second file is written beside the manifest, <code>manifest.instructions.md</code>. It says in words
+    what each file is and why it is in the set, for the person running the test by hand.
+    <code>verify</code> and <code>cleanup</code> know about it.
+  </p>
+  <p>
+    <code>tfg verify manifest.json</code> checks that every file is still there and still has its SHA-256.
+    <code>tfg cleanup manifest.json --yes</code> removes exactly the files the manifest lists, and
+    nothing else, so it is safe in a folder that holds other things too.
+  </p>
+</section>
+
+<section class="section" id="stable">
+  <h2>Can I rely on the format?</h2>
+  <p>
+    Yes. <code>manifest_version</code> is <code>1.0</code>, and the format grows only by adding fields.
+    A field never changes its meaning within a version, so a reader written today keeps working if it
+    ignores the fields it does not know.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+        <li><a href="/corrupt-test-files/">Corrupt test files</a></li>
+        <li><a href="/sample-files/">Sample files</a></li>
+        <li><a href="/test-files-in-ci/">Test files in CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

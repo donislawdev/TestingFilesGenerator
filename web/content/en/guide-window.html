@@ -1,0 +1,95 @@
+<h1>Desktop app</h1>
+<p class="lead">
+  <code>tfg-gui</code> is the same program with a window on it, for the testing that is not scripted.
+  It makes the same files from the same settings as the command line, and a test compares the two
+  screen by screen, so nothing one of them can do quietly goes missing from the other.
+</p>
+
+<div class="note">
+  <p class="note-title">Before anything is written</p>
+  <p>
+    Every screen shows what a run would make before you start it: how many files, how many bytes, which
+    formats and where they go. Preview lists the files without writing any. A run shows its progress
+    and can be cancelled part way without leaving a half written file behind.
+  </p>
+</div>
+
+<section class="section" id="single-batch">
+  <h2>Single batch</h2>
+  <p>
+    Files of one format: choose the format, how the size is given, the size and how many files. The
+    settings of the format open under the form, and a box beside every field says what it does. A value
+    the format cannot take is marked under its field, with the value that would work.
+  </p>
+  <figure class="shot">
+    <img src="/assets/window/single-batch.png" width="1100" height="1300" loading="lazy" alt="The Single batch screen: format, size, how many files, damage, batch name and the output folder">
+  </figure>
+</section>
+
+<section class="section" id="presets">
+  <h2>Presets</h2>
+  <p>
+    A ready set that answers one question about the system you test, such as whether a size limit is
+    enforced exactly where it is declared. The screen says what each preset typically finds, takes its
+    settings, and shows the cost of the set before it is made.
+    <a href="/presets/">Presets</a> describes every one.
+  </p>
+  <figure class="shot">
+    <img src="/assets/window/presets.png" width="1100" height="1300" loading="lazy" alt="The Presets screen with a preset chosen, what it typically finds, its settings and the output folder">
+  </figure>
+</section>
+
+<section class="section" id="several-batches">
+  <h2>Several batches</h2>
+  <p>
+    Batches of different formats and sizes made together in one run, with one manifest. A batch can be
+    duplicated and changed, can carry notes for the manifest, and the whole run can start from a preset,
+    whose files come first.
+  </p>
+  <figure class="shot">
+    <img src="/assets/window/several-batches.png" width="1100" height="1300" loading="lazy" alt="The Several batches screen with one batch, the choice to build on a preset, and the output settings">
+  </figure>
+</section>
+
+<section class="section" id="tools">
+  <h2>Tools</h2>
+  <p>
+    The tools for files you already have, with the same settings as <code>tfg tool</code>: a checksum
+    compared with the one you were given, checksums for a whole folder, and whether an archive is safe to
+    unpack. A file or a folder dropped on the screen goes into the box of the chosen tool.
+    <a href="/tools/">Tools</a> says what each one finds.
+  </p>
+  <figure class="shot">
+    <img src="/assets/window/tools.png" width="1100" height="1300" loading="lazy" alt="The Tools screen with a checksum worked out and matching the one that was expected">
+  </figure>
+</section>
+
+<section class="section" id="preferences">
+  <h2>Preferences and About</h2>
+  <p>
+    Preferences sets the language of the window, how much memory a run may take, and shows what the
+    window keeps between runs and where. Forget clears what it keeps. Only the window changes language.
+    The files, recipes, manifests and the command line stay in English. About shows the version, how to
+    use the window in three steps, and the licence.
+  </p>
+</section>
+
+<section class="section" id="output">
+  <h2>The output folder</h2>
+  <p>
+    A folder dropped on the window becomes the output folder. A run into a folder that holds an earlier
+    run is added beside it: every name of the run, its manifest too, gets a number, as
+    <code>files-2_0001.pdf</code> and <code>manifest-2.json</code>, and nothing already there changes. The
+    switch for this, Add beside earlier runs, stays on unless you turn it off. With it off, such a run is
+    refused, the same as on the command line without <code>--number-if-taken</code>.
+  </p>
+</section>
+
+<section class="section" id="limits">
+  <h2>What it does not do yet</h2>
+  <p>
+    The window does not open a recipe file. Recipes are a command line thing for now, and the window
+    builds its batches in the form. If the window does not open at all, see
+    <a href="/docs/install/#window">when the window does not open</a>.
+  </p>
+</section>

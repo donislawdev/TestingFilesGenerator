@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "Verwacht",
     "colTool": "Hulpmiddel",
-    "colQuestion": "Wat het beantwoordt"
+    "colQuestion": "Wat het beantwoordt",
+    "docsMenuLabel": "Pagina's van de documentatie"
   },
   "endings": {
     "0": "Alles werkte.",
@@ -386,5 +387,45 @@
     "checksum": "Is dit bestand het bestand dat het beweert te zijn?",
     "checksum-check": "Is elk bestand nog wat zijn checksumbestand zegt?",
     "checksum-write": "Hoe weet ik later dat geen van deze bestanden is veranderd?"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "Installeren",
+        "text": "Downloaden voor Windows, macOS of Linux, het archief controleren, of installeren met Docker, npm, pip of Go."
+      },
+      "guide-start": {
+        "title": "Aan de slag",
+        "text": "Een eerste bestand van een exacte grootte, daarna tienduizend, gecontroleerd, verwijderd en vastgelegd als recept."
+      },
+      "guide-commands": {
+        "title": "Opdrachten",
+        "text": "Elke opdracht en elke optie met de standaardwaarde, en alle afsluitcodes."
+      },
+      "guide-recipes": {
+        "title": "Recepten schrijven",
+        "text": "Elke sleutel van een recept, groottes, bestandsnamen, verwachte reacties, beschadigingen, archieven en presets."
+      },
+      "recipes": {
+        "title": "Receptengalerij",
+        "text": "Kant-en-klare recepten om te downloaden voor uploads, imports, archieven, e-mail, media, CI en bulkbestanden."
+      },
+      "guide-manifest": {
+        "title": "Manifest",
+        "text": "Elk veld van manifest.json en hoe een test het leest."
+      },
+      "guide-formats": {
+        "title": "Formaatinstellingen",
+        "text": "Elke instelling van elk formaat, met de toegestane waarden en de standaardwaarde."
+      },
+      "guide-frameworks": {
+        "title": "Testframeworks",
+        "text": "De bestanden in pytest, Playwright, Vitest en node:test."
+      },
+      "guide-window": {
+        "title": "Desktopapp",
+        "text": "Het venster, scherm voor scherm."
+      }
+    }
   }
 }

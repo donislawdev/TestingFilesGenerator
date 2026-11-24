@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="en">
+<title>Recipe Reference - Every Key of a Test File Recipe in YAML</title>
+<meta name="description" content="How to write a recipe: every key it accepts, the ways to give a size, name templates, expected outcomes and reasons, damage, archive contents and presets.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/docs/recipes/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/recipes/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/recipes/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Recipe Reference - Every Key of a Test File Recipe in YAML">
+<meta property="og:description" content="How to write a recipe: every key it accepts, the ways to give a size, name templates, expected outcomes and reasons, damage, archive contents and presets.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/docs/recipes/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Recipe Reference - Every Key of a Test File Recipe in YAML">
+<meta name="twitter:description" content="How to write a recipe: every key it accepts, the ways to give a size, name templates, expected outcomes and reasons, damage, archive contents and presets.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Documentation",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Writing recipes",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/recipes\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/presets/">Presets</a>
+      <a href="/docs/" aria-current="true">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/">Exact size</a>
+      <a href="/faq/">FAQ</a>
+      <a href="/corrupt-test-files/">Corrupt test files</a>
+      <a href="/sample-files/">Sample files</a>
+      <a href="/test-files-in-ci/">Test files in CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Language: English">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>English</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/ar/docs/" hreflang="ar" lang="ar">العربية</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr">Français</a></li>
+        <li><a href="/hi/docs/" hreflang="hi" lang="hi">हिन्दी</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru">Русский</a></li>
+        <li><a href="/th/docs/" hreflang="th" lang="th">ไทย</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<nav class="docsmenu" aria-label="Documentation pages">
+  <ul>
+    <li><a href="/docs/">Documentation</a></li>
+    <li><a href="/docs/install/">Install</a></li>
+    <li><a href="/docs/getting-started/">Getting started</a></li>
+    <li><a href="/docs/commands/">Commands</a></li>
+    <li><a href="/docs/recipes/" aria-current="page">Writing recipes</a></li>
+    <li><a href="/recipes/">Recipe gallery</a></li>
+    <li><a href="/docs/manifest/">Manifest</a></li>
+    <li><a href="/docs/format-settings/">Format settings</a></li>
+    <li><a href="/docs/test-frameworks/">Test frameworks</a></li>
+    <li><a href="/docs/desktop-app/">Desktop app</a></li>
+    <li><a href="/tools/">Tools</a></li>
+  </ul>
+</nav>
+<h1>Recipes</h1>
+<p class="lead">
+  A recipe is a YAML file that describes a whole run: which files, how many, how large, and what your
+  system should do with each. Commit it beside your tests and the test files stop being binaries in
+  your repository. Anyone rebuilds them from the recipe, byte for byte.
+</p>
+
+<section class="section" id="example">
+  <h2>What a recipe looks like</h2>
+  <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+defaults:
+  label: true
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    properties:
+      pages: 3
+      page_size: a4
+    expected: accept
+
+  - id: over_the_limit
+    format: png
+    count: 2
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+  - id: bundle
+    format: zip
+    contains:
+      - format: txt
+        count: 200
+        size: 4kb
+
+output:
+  dir: ./fixtures
+  manifest: manifest.json</code></pre>
+  <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+  <p>
+    Every recipe has a <code>version</code> and a list of <code>targets</code>. A target is one kind of
+    file: it needs an <code>id</code>, a <code>format</code> and exactly one of <code>size</code>,
+    <code>size-range</code>, <code>boundary</code> or <code>contains</code>. Two of them is an error,
+    and so is none.
+  </p>
+  <p>
+    An invalid recipe writes <strong>no files at all</strong>. <code>validate</code> and
+    <code>generate</code> report every problem at once, each naming the key it is about, so one run
+    shows everything to fix.
+  </p>
+</section>
+
+<section class="section" id="top-level-keys">
+  <h2>Keys of the whole recipe</h2>
+  <p>
+    Every key a recipe accepts is listed here, read from the program when this page is built. A key
+    marked as not built yet is refused with a message saying so, never ignored.
+  </p>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Key</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>allow_nondeterministic</code></td><td>Consent to formats whose bytes differ from run to run. Every format of this build repeats to the byte, so <code>true</code> is refused for now and the line can be left out.</td></tr>
+      <tr><td><code>defaults</code></td><td>Settings every target takes unless it says otherwise.</td></tr>
+      <tr><td><code>defaults.fill</code></td><td>How the content of the files is made. Not built yet: a recipe with this key is refused, and the content always comes from the seed.</td></tr>
+      <tr><td><code>defaults.label</code></td><td>Whether each file carries a short label saying which run made it. <code>true</code> unless you say otherwise. The label is written so that the file stays valid.</td></tr>
+      <tr><td><code>engine</code></td><td>The version of tfg the recipe needs. Not built yet: a recipe with this key is refused, and the manifest records the version that ran.</td></tr>
+      <tr><td><code>extends</code></td><td>A preset to build on, written as <code>preset:size-boundaries</code>. Its files come first, and the targets of the recipe are added after them.</td></tr>
+      <tr><td><code>locale</code></td><td>The language of the generated content. Only <code>en</code> is available, so any other value is refused, and the line can be left out.</td></tr>
+      <tr><td><code>output</code></td><td>Where the run writes.</td></tr>
+      <tr><td><code>output.dir</code></td><td>The directory for the files and the manifest. A relative path is read from the directory you run in, not from the one the recipe is in. <code>--out</code> replaces it.</td></tr>
+      <tr><td><code>output.manifest</code></td><td>The file name of the manifest. <code>manifest.json</code> unless you say otherwise.</td></tr>
+      <tr><td><code>output.split_threshold</code></td><td>Splitting a large manifest into several files. Not built yet: a recipe with this key is refused, and the manifest is always one file.</td></tr>
+      <tr><td><code>policy</code></td><td>Rules for settling the expectations that depend on your system. Not built yet: a recipe with this key is refused. Write <code>expected</code> on each target instead.</td></tr>
+      <tr><td><code>seed</code></td><td>The number every byte of the run comes from. The same seed gives the same files on any machine. <code>0</code> unless you say otherwise.</td></tr>
+      <tr><td><code>targets</code></td><td>The list of things to produce. Every target needs an <code>id</code>, a <code>format</code> and exactly one of <code>size</code>, <code>size-range</code>, <code>boundary</code> or <code>contains</code>.</td></tr>
+      <tr><td><code>version</code></td><td>The version of the recipe format. Required, and <code>1</code> in this build.</td></tr>
+      <tr><td><code>with</code></td><td>The settings of the preset named in <code>extends</code>, written the way its flags take them, such as <code>limit: 5mb</code>. A setting left out takes its default, and the manifest says so.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="target-keys">
+  <h2>Keys of a target</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Key</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>targets.boundary</code></td><td>Three files around a limit: one byte under it, the limit itself and one byte over it. Written as a size, such as <code>5mb</code>.</td></tr>
+      <tr><td><code>targets.contains</code></td><td>For an archive: the files inside it, as a list of entries, each with a <code>format</code>, a <code>count</code> and a <code>size</code>.</td></tr>
+      <tr><td><code>targets.count</code></td><td>How many files the target makes. <code>1</code> unless you say otherwise.</td></tr>
+      <tr><td><code>targets.damage</code></td><td>Ways to break the files on purpose, applied in the order listed. Each one is a name, such as <code>zero-head</code>, or a <code>type</code> with its settings. <code>tfg damage</code> lists them.</td></tr>
+      <tr><td><code>targets.expected</code></td><td>What your system should do with these files: <code>accept</code>, <code>reject</code>, <code>sanitize</code> or <code>unspecified</code>, alone or with a <code>reason</code>. The manifest carries it beside every file.</td></tr>
+      <tr><td><code>targets.fill</code></td><td>How the content of these files is made. Not built yet: a recipe with this key is refused.</td></tr>
+      <tr><td><code>targets.format</code></td><td>The format of the files, by its id, such as <code>pdf</code> or <code>png</code>. <code>tfg formats</code> lists them.</td></tr>
+      <tr><td><code>targets.group</code></td><td>A name of your own for the kind of case these files are. The manifest carries it, so a report can group by it.</td></tr>
+      <tr><td><code>targets.id</code></td><td>The name of the target. It is unique in the recipe, the seeds of its files come from it, and the manifest names it beside every file in <code>target_id</code>.</td></tr>
+      <tr><td><code>targets.label</code></td><td>Whether these files carry the label. Overrides <code>defaults.label</code> for this target alone.</td></tr>
+      <tr><td><code>targets.name</code></td><td>The template for the file names, such as <code>invoice_{index:04}.pdf</code>. <code>{index:04}</code> is the number of the file, four digits or more, and the only placeholder there is.</td></tr>
+      <tr><td><code>targets.properties</code></td><td>The settings of the format, such as <code>pages</code> for a PDF or <code>width</code> and <code>height</code> for a picture. The page of format settings lists every one.</td></tr>
+      <tr><td><code>targets.purpose</code></td><td>A sentence or two on what these files are and why they are in the set. The manifest carries it, and the instructions written beside the manifest are made from it.</td></tr>
+      <tr><td><code>targets.send-as</code></td><td>The name to give these files to your system under, when it is one no disk stores, such as <code>../climbed_out.jpg</code>. The file keeps an ordinary name on disk, and the manifest carries this one in <code>send_as</code>.</td></tr>
+      <tr><td><code>targets.size</code></td><td>The exact size of every file, such as <code>300kb</code>, <code>10mb</code> or a plain byte count. Units count in 1024s. <code>smallest</code> makes a picture as small as it can be at its <code>width</code> and <code>height</code>.</td></tr>
+      <tr><td><code>targets.size-range</code></td><td>A size drawn for each file from a range, such as <code>1kb-8kb</code>. The draw comes from the seed, so the same seed gives the same sizes.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="sizes">
+  <h2>How to write a size</h2>
+  <p>
+    A size is a number with a unit: <code>b</code>, <code>kb</code>, <code>mb</code>, <code>gb</code>
+    or <code>tb</code>. Units count in 1024s, the way a file manager does, so <code>10mb</code> is
+    10 485 760 bytes. <code>kib</code>, <code>mib</code>, <code>gib</code> and <code>tib</code> mean the
+    same and say so. A fraction works, as in <code>1.5mb</code>, and so does a plain byte count, as in
+    <code>10485761</code>.
+  </p>
+  <ul>
+    <li><code>size: 300kb</code> - every file of the target is exactly that large</li>
+    <li><code>size-range: 1kb-8kb</code> - each file gets a size from the range, drawn from the seed</li>
+    <li><code>boundary: 5mb</code> - three files: one byte under, the limit itself, one byte over</li>
+    <li><code>size: smallest</code> - a picture as small as it can be at the <code>width</code> and <code>height</code> you set</li>
+  </ul>
+  <p>
+    When a format cannot reach a size, the run is refused before anything is written, with the
+    smallest size the format can make and what to change. A size is never rounded quietly.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <h2>How to name the files</h2>
+  <p>
+    <code>name</code> is a template. <code>{index:04}</code> is the number of the file, padded to four
+    digits, and it is the only placeholder there is. Without a template a file is named after its target,
+    as <code>invoices_0001.pdf</code>.
+  </p>
+  <pre><code>name: invoice_{index:04}.pdf</code></pre>
+  <p>
+    A name no disk stores, such as <code>../climbed_out.jpg</code>, goes in <code>send-as</code>. The file
+    keeps an ordinary name on disk, and the manifest carries the other one in <code>send_as</code>, for
+    the test to upload it under.
+  </p>
+</section>
+
+<section class="section" id="expectations">
+  <h2>How to declare what your system should do</h2>
+  <p>Short form, when the outcome is enough. Long form, when the reason matters:</p>
+  <pre><code>expected: accept</code></pre>
+  <pre><code>expected:
+  outcome: reject
+  reason: size_limit</code></pre>
+  <p>
+    The outcomes are <code>accept</code>, <code>reject</code>, <code>sanitize</code>, <code>unspecified</code>.
+    The reasons are a closed list, so a report can group by them:
+    <code>content_malformed</code>, <code>count_limit</code>, <code>dimensions_limit</code>, <code>duplicate</code>, <code>encoding_invalid</code>, <code>extension_rule</code>, <code>filename_invalid</code>, <code>filename_too_long</code>, <code>filename_traversal</code>, <code>malware_signature</code>, <code>mime_mismatch</code>, <code>nesting_depth</code>, <code>none</code>, <code>size_limit</code>, <code>size_zero</code>.
+  </p>
+  <p>
+    A reason names <strong>the rule in play</strong>, not the verdict. That is why one reason can sit
+    under either outcome: a file one byte under a limit is <code>accept</code>, and the rule it is about
+    is still <code>size_limit</code>. Where the right reaction depends on how your system is set up, the
+    manifest says <code>unspecified</code> and explains why, rather than guessing.
+  </p>
+</section>
+
+<section class="section" id="damage">
+  <h2>How to break files on purpose</h2>
+  <p>
+    <code>damage</code> is a list, applied in the order written. Each entry is a name, or a
+    <code>type</code> with its settings. The file still has the size you asked for:
+  </p>
+  <pre><code>targets:
+  - id: broken
+    format: png
+    count: 5
+    size: 2mb
+    damage:
+      - zero-head
+      - type: truncate
+        missing: 30
+    expected:
+      outcome: reject
+      reason: content_malformed</code></pre>
+  <p>
+    <code>tfg damage</code> lists the damages and what each takes. Asking for <code>accept</code> beside a
+    damage that breaks the rules of the format is refused, because nothing could meet it. More in
+    <a href="/corrupt-test-files/">Corrupt test files</a>.
+  </p>
+</section>
+
+<section class="section" id="archives">
+  <h2>How to fill an archive</h2>
+  <p>
+    <code>contains</code> lists what goes inside a ZIP or a TAR.GZ. Each entry has a format, a count and
+    a size, and every file inside is a real file of its format. The archive is as large as what it
+    holds:
+  </p>
+  <pre><code>targets:
+  - id: bundle
+    format: zip
+    contains:
+      - format: pdf
+        count: 3
+        size: 200kb
+      - format: csv
+        count: 10
+        size: 8kb</code></pre>
+  <p>
+    The settings of the archive itself, such as compression, depth or a password, are in
+    <a href="/docs/format-settings/">Format settings</a>.
+  </p>
+</section>
+
+<section class="section" id="presets">
+  <h2>How to build on a preset</h2>
+  <p>
+    A recipe can start from the set of a preset and add its own targets after it. <code>with</code> gives
+    the preset its settings, written the way its flags take them:
+  </p>
+  <pre><code>version: 1
+seed: 7
+extends: preset:size-boundaries
+with:
+  limit: 5mb
+  format: png
+targets:
+  - id: our-legacy-format
+    format: tiff
+    count: 1
+    size: 3mb</code></pre>
+  <p>
+    This makes the same files as <code>tfg preset eject size-boundaries --limit 5mb --format png</code>
+    with the extra target typed under it. A target whose <code>id</code> the preset already uses is
+    refused, never quietly replaced. The manifest names the preset, and lists the settings you left to
+    its defaults.
+  </p>
+</section>
+
+<section class="section" id="checking">
+  <h2>How to check a recipe before a commit</h2>
+  <pre><code>tfg validate fixtures.yaml
+tfg recipe fmt fixtures.yaml --check</code></pre>
+  <p>
+    <code>validate</code> says whether the recipe makes sense and what it would make, and writes nothing.
+    <code>recipe fmt --check</code> says whether the file is laid out in its settled shape, and
+    <code>recipe fmt -w</code> lays it out, comments kept. Run both in a pre-commit hook.
+  </p>
+  <p>
+    Ready recipes to download and change are in <a href="/recipes/">the recipe gallery</a>.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+        <li><a href="/corrupt-test-files/">Corrupt test files</a></li>
+        <li><a href="/sample-files/">Sample files</a></li>
+        <li><a href="/test-files-in-ci/">Test files in CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

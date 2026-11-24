@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "Attendu",
     "colTool": "Outil",
-    "colQuestion": "La question à laquelle il répond"
+    "colQuestion": "La question à laquelle il répond",
+    "docsMenuLabel": "Pages de la documentation"
   },
   "endings": {
     "0": "Tout a fonctionné.",
@@ -386,5 +387,45 @@
     "checksum": "Ce fichier est-il bien celui qu'il prétend être ?",
     "checksum-check": "Chaque fichier est-il toujours ce que dit son fichier de sommes de contrôle ?",
     "checksum-write": "Comment saurai-je plus tard qu'aucun de ces fichiers n'a changé ?"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "Installation",
+        "text": "Télécharger pour Windows, macOS ou Linux, vérifier l'archive, ou installer avec Docker, npm, pip ou Go."
+      },
+      "guide-start": {
+        "title": "Premiers pas",
+        "text": "Un premier fichier de taille exacte, puis dix mille, vérifiés, supprimés et décrits dans une recette."
+      },
+      "guide-commands": {
+        "title": "Commandes",
+        "text": "Chaque commande et chaque option avec sa valeur par défaut, et tous les codes de sortie."
+      },
+      "guide-recipes": {
+        "title": "Écrire une recette",
+        "text": "Chaque clé d'une recette, les tailles, les noms de fichiers, les réactions attendues, les dommages, les archives et les presets."
+      },
+      "recipes": {
+        "title": "Galerie de recettes",
+        "text": "Des recettes prêtes à télécharger pour les envois, les imports, les archives, les e-mails, les médias, la CI et les fichiers en masse."
+      },
+      "guide-manifest": {
+        "title": "Manifeste",
+        "text": "Chaque champ de manifest.json, et comment un test le lit."
+      },
+      "guide-formats": {
+        "title": "Réglages des formats",
+        "text": "Chaque réglage de chaque format, avec les valeurs acceptées et la valeur par défaut."
+      },
+      "guide-frameworks": {
+        "title": "Frameworks de test",
+        "text": "Les fichiers dans pytest, Playwright, Vitest et node:test."
+      },
+      "guide-window": {
+        "title": "Application de bureau",
+        "text": "La fenêtre, écran par écran."
+      }
+    }
   }
 }

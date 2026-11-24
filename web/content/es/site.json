@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "Esperado",
     "colTool": "Herramienta",
-    "colQuestion": "Qué responde"
+    "colQuestion": "Qué responde",
+    "docsMenuLabel": "Páginas de la documentación"
   },
   "endings": {
     "0": "Todo ha funcionado.",
@@ -386,5 +387,45 @@
     "checksum": "¿Es este archivo el que dice ser?",
     "checksum-check": "¿Sigue cada archivo coincidiendo con lo que dice su archivo de sumas de comprobación?",
     "checksum-write": "¿Cómo sabré más tarde que ninguno de estos archivos ha cambiado?"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "Instalación",
+        "text": "Descargar para Windows, macOS o Linux, comprobar el archivo o instalar con Docker, npm, pip o Go."
+      },
+      "guide-start": {
+        "title": "Primeros pasos",
+        "text": "Un primer archivo de tamaño exacto, luego diez mil, comprobados, borrados y escritos como receta."
+      },
+      "guide-commands": {
+        "title": "Comandos",
+        "text": "Cada comando y cada opción con su valor por defecto, y todos los códigos de salida."
+      },
+      "guide-recipes": {
+        "title": "Escribir recetas",
+        "text": "Cada clave de una receta, tamaños, nombres de archivo, reacciones esperadas, daños, archivos comprimidos y presets."
+      },
+      "recipes": {
+        "title": "Galería de recetas",
+        "text": "Recetas listas para descargar para subidas, importaciones, archivos comprimidos, correo, multimedia, CI y archivos en masa."
+      },
+      "guide-manifest": {
+        "title": "Manifiesto",
+        "text": "Cada campo de manifest.json y cómo lo lee una prueba."
+      },
+      "guide-formats": {
+        "title": "Ajustes de formato",
+        "text": "Cada ajuste de cada formato, con los valores que acepta y su valor por defecto."
+      },
+      "guide-frameworks": {
+        "title": "Frameworks de pruebas",
+        "text": "Los archivos dentro de pytest, Playwright, Vitest y node:test."
+      },
+      "guide-window": {
+        "title": "Aplicación de escritorio",
+        "text": "La ventana, pantalla por pantalla."
+      }
+    }
   }
 }

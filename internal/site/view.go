@@ -72,6 +72,7 @@ func (l Language) expand(f Facts) (Language, error) {
 	out.Outcomes = everyValue(l.Outcomes)
 	out.Damages = everyValue(l.Damages)
 	out.Tools = everyValue(l.Tools)
+	out.Docs = l.Docs.expanded(through)
 	if l.Presets != nil {
 		out.Presets = make(map[string]PresetText, len(l.Presets))
 		for id, text := range l.Presets {
@@ -112,6 +113,9 @@ type view struct {
 	// Up is the page this one sits under, for the link back to it and the
 	// middle step of the breadcrumb. Nil for a page in the header.
 	Up *NavItem
+	// Docs is every page of the documentation, for the hub and for the menu
+	// on each page under it. Empty on every other page.
+	Docs []DocLink
 }
 
 // Word looks up a piece of interface text.
@@ -156,14 +160,15 @@ func (v view) Endings() ([]Ending, error) {
 // name - so an eleventh command longer than the tenth widens the column by
 // itself instead of leaving a template to be remembered.
 func (v view) CommandList() ([]Command, error) {
+	names := v.Facts.Docs.CommandNames()
 	widest := 0
-	for _, name := range v.Facts.Commands {
+	for _, name := range names {
 		if len(name) > widest {
 			widest = len(name)
 		}
 	}
-	out := make([]Command, 0, len(v.Facts.Commands))
-	for _, name := range v.Facts.Commands {
+	out := make([]Command, 0, len(names))
+	for _, name := range names {
 		summary, ok := v.Lang.Commands[name]
 		if !ok {
 			return nil, fmt.Errorf("the command %q has no summary written in %s", name, v.Lang.Code)

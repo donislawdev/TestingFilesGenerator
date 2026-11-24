@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "기대 결과",
     "colTool": "도구",
-    "colQuestion": "답하는 질문"
+    "colQuestion": "답하는 질문",
+    "docsMenuLabel": "문서 페이지"
   },
   "endings": {
     "0": "모두 정상적으로 동작했습니다.",
@@ -386,5 +387,45 @@
     "checksum": "이 파일이 주장하는 바로 그 파일일까요?",
     "checksum-check": "모든 파일이 아직 체크섬 파일에 적힌 그대로일까요?",
     "checksum-write": "이 파일들 중 어느 것도 바뀌지 않았다는 것을 나중에 어떻게 알 수 있을까요?"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "설치",
+        "text": "Windows, macOS, Linux용으로 내려받고 압축 파일을 확인하거나 Docker, npm, pip, Go로 설치합니다."
+      },
+      "guide-start": {
+        "title": "시작하기",
+        "text": "정확한 크기의 첫 파일, 이어서 만 개의 파일을 만들고 확인하고 지운 뒤 레시피로 남깁니다."
+      },
+      "guide-commands": {
+        "title": "명령",
+        "text": "모든 명령과 모든 플래그, 그 기본값, 그리고 모든 종료 코드."
+      },
+      "guide-recipes": {
+        "title": "레시피 작성",
+        "text": "레시피의 모든 키, 크기, 파일 이름, 기대 반응, 손상, 압축 파일, 프리셋."
+      },
+      "recipes": {
+        "title": "레시피 모음",
+        "text": "업로드, 가져오기, 압축 파일, 이메일, 미디어, CI, 대량 파일을 위해 바로 내려받을 수 있는 레시피."
+      },
+      "guide-manifest": {
+        "title": "매니페스트",
+        "text": "manifest.json의 모든 필드와 테스트에서 읽는 방법."
+      },
+      "guide-formats": {
+        "title": "형식 설정",
+        "text": "모든 형식의 모든 설정과 허용되는 값, 기본값."
+      },
+      "guide-frameworks": {
+        "title": "테스트 프레임워크",
+        "text": "pytest, Playwright, Vitest, node:test 안에서 파일을 쓰는 방법."
+      },
+      "guide-window": {
+        "title": "데스크톱 앱",
+        "text": "프로그램 창을 화면별로 설명합니다."
+      }
+    }
   }
 }

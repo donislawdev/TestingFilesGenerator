@@ -83,6 +83,87 @@
       "parent": "use-cases"
     },
     {
+      "key": "guide-install",
+      "slug": "docs/install",
+      "nav": "Install",
+      "title": "Install Testing Files Generator on Windows, macOS, Linux or Docker",
+      "description": "Download the command line tool and the desktop window, check that the archive is the one this project published, or run it from Docker, npm, pip or Go.",
+      "parent": "docs",
+      "untranslated": true
+    },
+    {
+      "key": "guide-start",
+      "slug": "docs/getting-started",
+      "nav": "Getting started",
+      "title": "Getting Started - Your First Test Files in Five Minutes",
+      "description": "Make one file of an exact size, then ten thousand, check them against the manifest, remove them, and turn the run into a recipe you can commit.",
+      "parent": "docs",
+      "untranslated": true
+    },
+    {
+      "key": "guide-commands",
+      "slug": "docs/commands",
+      "nav": "Commands",
+      "title": "Command Reference - Every tfg Command, Flag and Exit Code",
+      "description": "Every command of the tfg command line with every flag it takes, its default and what it does, read from the program's own help, and every exit code.",
+      "parent": "docs",
+      "untranslated": true
+    },
+    {
+      "key": "guide-recipes",
+      "slug": "docs/recipes",
+      "nav": "Writing recipes",
+      "title": "Recipe Reference - Every Key of a Test File Recipe in YAML",
+      "description": "How to write a recipe: every key it accepts, the ways to give a size, name templates, expected outcomes and reasons, damage, archive contents and presets.",
+      "parent": "docs",
+      "untranslated": true
+    },
+    {
+      "key": "recipes",
+      "slug": "recipes",
+      "nav": "Recipe gallery",
+      "title": "Test File Recipes to Download - Ready YAML for Uploads, Imports and CI",
+      "description": "Ready recipes for common test sets: image and document uploads, table imports, archives, email, media, CI and bulk files. Download one, run it, change it.",
+      "parent": "docs",
+      "untranslated": true
+    },
+    {
+      "key": "guide-manifest",
+      "slug": "docs/manifest",
+      "nav": "Manifest",
+      "title": "Manifest Reference - What manifest.json Says About Each Test File",
+      "description": "Every field of the manifest written beside the files: the run, the summary, and each file with its hash, its settings and how your system should react to it.",
+      "parent": "docs",
+      "untranslated": true
+    },
+    {
+      "key": "guide-formats",
+      "slug": "docs/format-settings",
+      "nav": "Format settings",
+      "title": "Format Settings - Every Option of Every Test File Format",
+      "description": "Every setting each format takes, such as pages, picture size, delimiter or encoding, with the values it accepts, its default and what it changes in the file.",
+      "parent": "docs",
+      "untranslated": true
+    },
+    {
+      "key": "guide-frameworks",
+      "slug": "docs/test-frameworks",
+      "nav": "Test frameworks",
+      "title": "Test Files in pytest, Playwright, Vitest and node:test",
+      "description": "Use generated test files inside your tests: the pytest plugin and the npm package for Playwright, Vitest and node:test, with what each file should be met with.",
+      "parent": "docs",
+      "untranslated": true
+    },
+    {
+      "key": "guide-window",
+      "slug": "docs/desktop-app",
+      "nav": "Desktop app",
+      "title": "Desktop App - Generate Test Files Without the Command Line",
+      "description": "The window of Testing Files Generator screen by screen: one batch, presets, several batches, tools and preferences, with what each of them does.",
+      "parent": "docs",
+      "untranslated": true
+    },
+    {
       "key": "tools",
       "slug": "tools",
       "nav": "Tools",
@@ -138,7 +219,8 @@
     "colSha256": "SHA-256",
     "colExpected": "Expected",
     "colTool": "Tool",
-    "colQuestion": "What it answers"
+    "colQuestion": "What it answers",
+    "docsMenuLabel": "Documentation pages"
   },
   "endings": {
     "0": "Everything worked.",
@@ -386,5 +468,148 @@
     "checksum": "Is this file the one it claims to be?",
     "checksum-check": "Is every file still what its checksum file says?",
     "checksum-write": "How will I know later that none of these files changed?"
+  },
+  "docs": {
+    "recipeKeys": {
+      "allow_nondeterministic": "Consent to formats whose bytes differ from run to run. Every format of this build repeats to the byte, so `true` is refused for now and the line can be left out.",
+      "defaults": "Settings every target takes unless it says otherwise.",
+      "defaults.fill": "How the content of the files is made. Not built yet: a recipe with this key is refused, and the content always comes from the seed.",
+      "defaults.label": "Whether each file carries a short label saying which run made it. `true` unless you say otherwise. The label is written so that the file stays valid.",
+      "engine": "The version of tfg the recipe needs. Not built yet: a recipe with this key is refused, and the manifest records the version that ran.",
+      "extends": "A preset to build on, written as `preset:size-boundaries`. Its files come first, and the targets of the recipe are added after them.",
+      "locale": "The language of the generated content. Only `en` is available, so any other value is refused, and the line can be left out.",
+      "output": "Where the run writes.",
+      "output.dir": "The directory for the files and the manifest. A relative path is read from the directory you run in, not from the one the recipe is in. `--out` replaces it.",
+      "output.manifest": "The file name of the manifest. `manifest.json` unless you say otherwise.",
+      "output.split_threshold": "Splitting a large manifest into several files. Not built yet: a recipe with this key is refused, and the manifest is always one file.",
+      "policy": "Rules for settling the expectations that depend on your system. Not built yet: a recipe with this key is refused. Write `expected` on each target instead.",
+      "seed": "The number every byte of the run comes from. The same seed gives the same files on any machine. `0` unless you say otherwise.",
+      "targets": "The list of things to produce. Every target needs an `id`, a `format` and exactly one of `size`, `size-range`, `boundary` or `contains`.",
+      "targets.boundary": "Three files around a limit: one byte under it, the limit itself and one byte over it. Written as a size, such as `5mb`.",
+      "targets.contains": "For an archive: the files inside it, as a list of entries, each with a `format`, a `count` and a `size`.",
+      "targets.count": "How many files the target makes. `1` unless you say otherwise.",
+      "targets.damage": "Ways to break the files on purpose, applied in the order listed. Each one is a name, such as `zero-head`, or a `type` with its settings. `tfg damage` lists them.",
+      "targets.expected": "What your system should do with these files: `accept`, `reject`, `sanitize` or `unspecified`, alone or with a `reason`. The manifest carries it beside every file.",
+      "targets.fill": "How the content of these files is made. Not built yet: a recipe with this key is refused.",
+      "targets.format": "The format of the files, by its id, such as `pdf` or `png`. `tfg formats` lists them.",
+      "targets.group": "A name of your own for the kind of case these files are. The manifest carries it, so a report can group by it.",
+      "targets.id": "The name of the target. It is unique in the recipe, the seeds of its files come from it, and the manifest names it beside every file in `target_id`.",
+      "targets.label": "Whether these files carry the label. Overrides `defaults.label` for this target alone.",
+      "targets.name": "The template for the file names, such as `invoice_{index:04}.pdf`. `{index:04}` is the number of the file, four digits or more, and the only placeholder there is.",
+      "targets.properties": "The settings of the format, such as `pages` for a PDF or `width` and `height` for a picture. The page of format settings lists every one.",
+      "targets.purpose": "A sentence or two on what these files are and why they are in the set. The manifest carries it, and the instructions written beside the manifest are made from it.",
+      "targets.send-as": "The name to give these files to your system under, when it is one no disk stores, such as `../climbed_out.jpg`. The file keeps an ordinary name on disk, and the manifest carries this one in `send_as`.",
+      "targets.size": "The exact size of every file, such as `300kb`, `10mb` or a plain byte count. Units count in 1024s. `smallest` makes a picture as small as it can be at its `width` and `height`.",
+      "targets.size-range": "A size drawn for each file from a range, such as `1kb-8kb`. The draw comes from the seed, so the same seed gives the same sizes.",
+      "version": "The version of the recipe format. Required, and `1` in this build.",
+      "with": "The settings of the preset named in `extends`, written the way its flags take them, such as `limit: 5mb`. A setting left out takes its default, and the manifest says so."
+    },
+    "manifestFields": {
+      "manifest_version": "The version of the manifest format, `1.0`. New fields are added without changing it, so a reader ignores the fields it does not know.",
+      "generated_at": "When the manifest was written, in UTC.",
+      "tool": "What made the files.",
+      "tool.name": "Always `testing-files-generator`.",
+      "tool.version": "The version of tfg that made the files.",
+      "tool.go": "The version of Go tfg was built with, so a hash that changed after an upgrade can be traced to it.",
+      "tool.generators": "The version of the generator of each format the run used, by format. It moves when the bytes a generator writes change.",
+      "run": "The settings that shaped this run.",
+      "run.id": "An identifier of this run.",
+      "run.seed": "The seed of the run. The same seed and the same settings give the same files.",
+      "run.command": "The command that started the run, as it was typed.",
+      "run.platform": "Where the run happened.",
+      "run.platform.os": "The operating system, such as `windows`, `linux` or `darwin`.",
+      "run.platform.arch": "The processor architecture, such as `amd64` or `arm64`.",
+      "run.complete": "`false` when the run stopped early, for example after Ctrl+C. The manifest is written even then, so `cleanup` can remove what was made.",
+      "run.recipe_hash": "The hash of the recipe in its settled shape, so reformatting the recipe keeps it. Present when the run came from a recipe.",
+      "run.overrides": "The values a flag took over from the recipe, by name. Present when a flag replaced a value of the recipe.",
+      "run.overrides.*.from_recipe": "The value the recipe gave.",
+      "run.overrides.*.from_flag": "The value the flag gave, which the run used.",
+      "run.preset": "The preset the run came from. Present only for a run of a preset.",
+      "run.preset.id": "The id of the preset.",
+      "run.preset.question": "The question the preset answers.",
+      "run.preset.parameters": "Every setting of the preset as the run used it, the ones you gave and its defaults together.",
+      "run.preset.defaulted": "The settings you did not give, which took the default of the preset. A limit that came from a default is not the limit of your system.",
+      "run.instructions": "The name of the file written beside the manifest that says in words what each file is and why it is in the set. Present when a file has a purpose.",
+      "summary": "Counts over the whole run, for a quick check.",
+      "summary.file_count": "How many entries the manifest has. A run stopped part way lists only the files it finished or that failed, so it can be lower than the files that were planned.",
+      "summary.total_bytes": "How many bytes the run wrote to disk, in all.",
+      "summary.materialized": "How many files are on disk. Lower than `file_count` when a name could not be written or a file failed.",
+      "summary.by_format": "How many files of each format.",
+      "summary.by_expected": "How many files of each outcome.",
+      "summary.by_target": "How many files each target made, by target id.",
+      "files": "One entry for each file of the run.",
+      "files[].id": "The handle of the file in this manifest, such as `f_0001`, numbered across the whole run.",
+      "files[].path": "Where the file is, relative to the directory of the manifest. `verify` and `cleanup` find the file by this.",
+      "files[].name": "The file name, the last part of `path`.",
+      "files[].send_as": "The name to give the file to your system under, when the recipe asked for one no disk stores. Present only then.",
+      "files[].materialized": "Whether the file is on disk. A name the system refused is still a test case, and still has its entry.",
+      "files[].target_id": "The id of the target the file came from.",
+      "files[].bytes": "The size of the file in bytes.",
+      "files[].format": "The format of the file.",
+      "files[].fidelity": "How faithful the file is to its format. `tfg formats` says it for each format.",
+      "files[].hashes": "The hashes of the file.",
+      "files[].hashes.sha256": "The SHA-256 of the file, which `verify` compares.",
+      "files[].seed": "The seed this file was made from, which comes from the seed of the run and the id of the target.",
+      "files[].generator": "The generator that made the file.",
+      "files[].generator.name": "The name of the generator.",
+      "files[].generator.version": "The version of the generator.",
+      "files[].determinism": "Whether the same seed gives the same bytes, `byte`, or only the same size.",
+      "files[].properties": "The settings of the format the file was made with, such as its width and height.",
+      "files[].expected": "What your system should do with the file.",
+      "files[].expected.outcome": "`accept`, `reject`, `sanitize` or `unspecified`.",
+      "files[].expected.reason": "The rule in play, from the closed list, such as `size_limit`.",
+      "files[].expected.detail": "The expectation in words.",
+      "files[].expected.confidence": "`certain`, or `policy_dependent` when the right reaction depends on how your system is set up.",
+      "files[].expected.policy_options": "The answers an outcome that depends on your system leaves open, for a test that settles it by your own policy.",
+      "files[].group": "The group the recipe or the preset gave the file.",
+      "files[].purpose": "What the file is and why it is in the set, in words.",
+      "files[].label_embedded": "Whether the file carries the label that says which run made it.",
+      "files[].damage": "What was broken on purpose, in the order it was done. Absent for a file nothing damaged.",
+      "files[].damage[].type": "The damage, such as `truncate`.",
+      "files[].damage[].settings": "Its settings as the run used them, the defaults included.",
+      "files[].damage[].cut": "Where a cut fell in the file. Present for `truncate`.",
+      "files[].damage[].cut.in": "What the first byte cut away was part of: `content`, `padding`, `structure` or `end`.",
+      "files[].damage[].cut.content_bytes": "How long the content of the whole file was, where that is known.",
+      "files[].damage[].cut.content_kept_bytes": "How much of the content is still in the file.",
+      "files[].notes": "Things worth knowing about this file, such as a label that did not fit.",
+      "files[].notes[].code": "A short code for the note, such as `cut_in_padding`.",
+      "files[].notes[].detail": "The note in words.",
+      "files[].failed": "`true` for a file the run could not make. The run carries on and ends with exit code `8`.",
+      "files[].error": "Why the file could not be made."
+    },
+    "recipes": {
+      "archive-upload": {
+        "title": "Archive upload",
+        "text": "ZIP and TAR.GZ archives with real files inside: many entries, files five folders deep, folders listed as entries, an empty archive, one locked with a password and one cut short."
+      },
+      "bulk-files": {
+        "title": "Bulk files",
+        "text": "Ten thousand small log files of 1 to 8 KB, for a sync folder, a backup, a file browser or a batch job that meets many files at once."
+      },
+      "ci-smoke": {
+        "title": "CI smoke test",
+        "text": "One small file of each common format, well under a megabyte in all, for a quick check in a pipeline that a system reads what it should."
+      },
+      "document-upload": {
+        "title": "Document upload",
+        "text": "PDF, Word, Excel, PowerPoint, RTF and text around a 10 MB limit, a 500 page PDF, a corrupt PDF, a Word file cut short, a wrong type and an empty file."
+      },
+      "email-attachments": {
+        "title": "Email messages",
+        "text": "EML files with attachments, an inline picture, HTML and plain text, quoted-printable, base64 and windows-1250, a thousand recipients and forwarded mail."
+      },
+      "image-upload": {
+        "title": "Image upload",
+        "text": "JPEG, PNG, WebP and GIF around a 5 MB limit, one pixel and 36 megapixels, a corrupt JPEG, a PNG cut short, a PDF named as a photo and a name that climbs out of the folder."
+      },
+      "media-upload": {
+        "title": "Video and sound upload",
+        "text": "MP4, WebM and WAV around a 10 MB limit, a portrait phone video, ten minutes of video, silence and a video cut short."
+      },
+      "spreadsheet-import": {
+        "title": "Spreadsheet import",
+        "text": "One table as CSV with commas, semicolons and tabs, CRLF, no header and every field quoted, a wide and a large CSV, Excel sheets and two broken files."
+      }
+    }
   }
 }

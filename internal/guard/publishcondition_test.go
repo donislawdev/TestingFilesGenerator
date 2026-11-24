@@ -9,13 +9,14 @@ import (
 
 // Publishing the website happens for a push to this repository, and nothing else.
 //
-// The job that deploys web/public triggers on workflow_run. That event fires in
-// the BASE repository, with the base repository's permissions, and this job
-// holds pages: write. CI runs on pull_request, and the branches filter on
+// The job that uploads web/public triggers on workflow_run, and the deploy job
+// that publishes it runs only after that one. The event fires in the BASE
+// repository, with the base repository's permissions, and the deploy job holds
+// pages: write. CI runs on pull_request, and the branches filter on
 // workflow_run matches the branch NAME of the run that triggered it - which for
 // a pull request from a fork is a name the fork chose. A fork whose branch was
 // called main, opening a pull request that passed CI, would otherwise satisfy
-// every condition this job had before 2026-08-27.
+// every condition the upload job had before 2026-08-27.
 //
 // Nothing in the job executes repository code. It checks three files exist and
 // uploads a directory, so what was reachable was the content of the published
@@ -58,7 +59,7 @@ func TestTheSiteIsPublishedOnlyForAPushToThisRepository(t *testing.T) {
 		if !strings.Contains(text, want.needle) {
 			t.Errorf("the publish job does not ask for %q.\n"+
 				"That condition is there because %s.\n"+
-				"This job runs with the base repository's permissions and holds pages: write.",
+				"It runs with the base repository's permissions, and the deploy job after it holds pages: write.",
 				want.needle, want.why)
 		}
 	}

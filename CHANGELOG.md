@@ -27,6 +27,17 @@ because it turns other people's test suites red.
   and the outcome to expect, in every language of the site.
 - **A page about the tools on the website.** Checking an archive for zip slip
   and zip bombs before unpacking it, and checking or writing SHA-256 checksums.
+- **Documentation on the website, in English.** Install, getting started,
+  every command with every flag and its default, every key of a recipe, every
+  field of the manifest, every setting of every format, the packages for
+  pytest and Node, and the desktop window screen by screen. The lists come
+  from the program when the site is built, so they say what the version you
+  download does. The documentation page in the other languages leads to them,
+  with a line about each page in your language.
+- **Recipes to download.** Ready recipes for an image upload, a document
+  upload, a spreadsheet import, archives, email, video and sound, a CI smoke
+  test and ten thousand files, and every preset as a recipe. Each writes into a
+  folder of its own name, so several can run one after another.
 
 ### Changed
 

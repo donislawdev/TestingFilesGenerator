@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "Erwartet",
     "colTool": "Werkzeug",
-    "colQuestion": "Was es beantwortet"
+    "colQuestion": "Was es beantwortet",
+    "docsMenuLabel": "Seiten der Dokumentation"
   },
   "endings": {
     "0": "Alles hat funktioniert.",
@@ -386,5 +387,45 @@
     "checksum": "Ist diese Datei die, die sie zu sein vorgibt?",
     "checksum-check": "Ist jede Datei noch so, wie ihre Prüfsummendatei sagt?",
     "checksum-write": "Woran erkenne ich später, dass sich keine dieser Dateien geändert hat?"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "Installation",
+        "text": "Für Windows, macOS oder Linux herunterladen, das Archiv prüfen oder mit Docker, npm, pip oder Go installieren."
+      },
+      "guide-start": {
+        "title": "Erste Schritte",
+        "text": "Die erste Datei mit exakter Größe, dann zehntausend, geprüft, entfernt und als Rezept festgehalten."
+      },
+      "guide-commands": {
+        "title": "Befehle",
+        "text": "Jeder Befehl und jede Option mit ihrem Standardwert, dazu alle Exit-Codes."
+      },
+      "guide-recipes": {
+        "title": "Rezepte schreiben",
+        "text": "Jeder Schlüssel eines Rezepts, Größen, Dateinamen, erwartete Reaktionen, Beschädigungen, Archive und Presets."
+      },
+      "recipes": {
+        "title": "Rezeptsammlung",
+        "text": "Fertige Rezepte zum Herunterladen für Uploads, Importe, Archive, E-Mails, Medien, CI und Massendateien."
+      },
+      "guide-manifest": {
+        "title": "Manifest",
+        "text": "Jedes Feld von manifest.json und wie ein Test es liest."
+      },
+      "guide-formats": {
+        "title": "Formateinstellungen",
+        "text": "Jede Einstellung jedes Formats mit den erlaubten Werten und dem Standardwert."
+      },
+      "guide-frameworks": {
+        "title": "Test-Frameworks",
+        "text": "Die Dateien in pytest, Playwright, Vitest und node:test."
+      },
+      "guide-window": {
+        "title": "Desktop-Anwendung",
+        "text": "Das Fenster, Bildschirm für Bildschirm."
+      }
+    }
   }
 }

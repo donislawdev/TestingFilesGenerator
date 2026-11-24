@@ -281,8 +281,18 @@ var provenByProbe = map[string]string{
 		"red on the message in npm.yml that stopped the weekly runs of 2026-11-16 and 2026-11-23.",
 	"TestOneFailingToolVersionCheckLeavesTheOthersRunning": "its canary is the planted failure of the first check. " +
 		"Broken by hand on 2026-11-24 by ending the run at the first failure again: red, the pins after it unprinted.",
-	"TestTheSiteIsDeployedInAJobAfterTheUploadWithMoreThanOneTry": "a canary of its own - one job that uploads and " +
-		"deploys once has to give two problems. Broken by hand on 2026-11-24 by the pages.yml of main that day: red three times.",
+	"TestTheSiteIsDeployedInAJobAfterTheUploadWithMoreThanOneTry": "two canaries of its own, the old layout and a retry " +
+		"reading the conclusion. Broken by hand on 2026-11-24 by main's pages.yml and by that retry: red both times.",
+	"TestTheCommandReferenceIsReadFromTheHelp": "a canary help of every shape it reads, and one it cannot. Broken by hand " +
+		"on 2026-11-24 by reading flags only after three spaces: red.",
+	"TestTheReferenceDescribesEveryKeyFieldAndRecipe": "a canary of an item without a sentence and a sentence without an " +
+		"item. Broken by hand on 2026-11-24 by taking files[].send_as out of the English reference: red.",
+	"TestEveryRecipeOfTheGalleryIsValidAndWritesToItsOwnFolder": "a canary recipe writing into another folder. Broken " +
+		"by hand on 2026-11-24 by pointing ci-smoke.yaml at ./out: red.",
+	"TestEveryLanguageLeadsToTheEnglishDocumentation": "the canary of the comparison it shares, and English pages must " +
+		"exist. Broken by hand on 2026-11-24 by taking one guide out of the Polish language file: red.",
+	"TestEveryHeldBackAdvisoryHasAnEndDateAndAReason": "a canary of its own - an entry without a date and one without " +
+		"a reason have to give two problems. Broken by hand on 2026-11-24 by taking one ignoreUntil out of the real file: red.",
 	"TestAReleaseCandidateIsSentNowhereButGitHub": "a canary of its own - a which step that sends whatever it is " +
 		"given has to fail the same cases. Broken by hand on 2026-11-23 by the npm.yml, pypi.yml and docker.yml of " +
 		"main before the change: red six times, each of the three sending a published release candidate and taking " +

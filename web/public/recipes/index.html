@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="en">
+<title>Test File Recipes to Download - Ready YAML for Uploads, Imports and CI</title>
+<meta name="description" content="Ready recipes for common test sets: image and document uploads, table imports, archives, email, media, CI and bulk files. Download one, run it, change it.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/recipes/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/recipes/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/recipes/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Test File Recipes to Download - Ready YAML for Uploads, Imports and CI">
+<meta property="og:description" content="Ready recipes for common test sets: image and document uploads, table imports, archives, email, media, CI and bulk files. Download one, run it, change it.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/recipes/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Test File Recipes to Download - Ready YAML for Uploads, Imports and CI">
+<meta name="twitter:description" content="Ready recipes for common test sets: image and document uploads, table imports, archives, email, media, CI and bulk files. Download one, run it, change it.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Documentation",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Recipe gallery",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/recipes\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/presets/">Presets</a>
+      <a href="/docs/" aria-current="true">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/">Exact size</a>
+      <a href="/faq/">FAQ</a>
+      <a href="/corrupt-test-files/">Corrupt test files</a>
+      <a href="/sample-files/">Sample files</a>
+      <a href="/test-files-in-ci/">Test files in CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Language: English">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>English</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/ar/docs/" hreflang="ar" lang="ar">العربية</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr">Français</a></li>
+        <li><a href="/hi/docs/" hreflang="hi" lang="hi">हिन्दी</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru">Русский</a></li>
+        <li><a href="/th/docs/" hreflang="th" lang="th">ไทย</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<nav class="docsmenu" aria-label="Documentation pages">
+  <ul>
+    <li><a href="/docs/">Documentation</a></li>
+    <li><a href="/docs/install/">Install</a></li>
+    <li><a href="/docs/getting-started/">Getting started</a></li>
+    <li><a href="/docs/commands/">Commands</a></li>
+    <li><a href="/docs/recipes/">Writing recipes</a></li>
+    <li><a href="/recipes/" aria-current="page">Recipe gallery</a></li>
+    <li><a href="/docs/manifest/">Manifest</a></li>
+    <li><a href="/docs/format-settings/">Format settings</a></li>
+    <li><a href="/docs/test-frameworks/">Test frameworks</a></li>
+    <li><a href="/docs/desktop-app/">Desktop app</a></li>
+    <li><a href="/tools/">Tools</a></li>
+  </ul>
+</nav>
+<h1>Recipe gallery</h1>
+<p class="lead">
+  Ready recipes for test sets people build again and again. Download one, run it, and change it to fit
+  your system. Each is a short YAML file with a comment on every part, and each writes into a folder of
+  its own name, so several can run one after another.
+</p>
+
+<div class="note">
+  <p class="note-title">How to use one</p>
+  <p>
+    Download the file, then run <code>tfg generate image-upload.yaml</code>. The files and the manifest
+    land in <code>./image-upload</code>. Change a limit, a size or a count in the file, and
+    <code>tfg validate image-upload.yaml</code> checks it before anything is written.
+  </p>
+</div>
+
+<section class="section" id="gallery">
+  <h2>Recipes for common tests</h2>
+  <p>
+    The number of files and bytes below is what the recipe makes as it is, counted by the program when
+    this page is built.
+  </p>
+  <ul class="cards">
+    <li class="card" id="archive-upload">
+      <p class="card-title"><a href="/recipes/archive-upload.yaml" download>Archive upload</a></p>
+      <p>ZIP and TAR.GZ archives with real files inside: many entries, files five folders deep, folders listed as entries, an empty archive, one locked with a password and one cut short.</p>
+      <p class="muted">9 files, 26 293 248 B. <code>targz</code> <code>zip</code></p>
+      <p><code>tfg generate archive-upload.yaml</code></p>
+    </li>
+    <li class="card" id="bulk-files">
+      <p class="card-title"><a href="/recipes/bulk-files.yaml" download>Bulk files</a></p>
+      <p>Ten thousand small log files of 1 to 8 KB, for a sync folder, a backup, a file browser or a batch job that meets many files at once.</p>
+      <p class="muted">10000 files, 45 977 300 B. <code>log</code></p>
+      <p><code>tfg generate bulk-files.yaml</code></p>
+    </li>
+    <li class="card" id="ci-smoke">
+      <p class="card-title"><a href="/recipes/ci-smoke.yaml" download>CI smoke test</a></p>
+      <p>One small file of each common format, well under a megabyte in all, for a quick check in a pipeline that a system reads what it should.</p>
+      <p class="muted">11 files, 135 168 B. <code>csv</code> <code>docx</code> <code>html</code> <code>jpg</code> <code>json</code> <code>pdf</code> <code>png</code> <code>txt</code> <code>xlsx</code> <code>xml</code> <code>zip</code></p>
+      <p><code>tfg generate ci-smoke.yaml</code></p>
+    </li>
+    <li class="card" id="document-upload">
+      <p class="card-title"><a href="/recipes/document-upload.yaml" download>Document upload</a></p>
+      <p>PDF, Word, Excel, PowerPoint, RTF and text around a 10 MB limit, a 500 page PDF, a corrupt PDF, a Word file cut short, a wrong type and an empty file.</p>
+      <p class="muted">19 files, 82 245 632 B. <code>docx</code> <code>pdf</code> <code>pptx</code> <code>rtf</code> <code>txt</code> <code>xlsx</code></p>
+      <p><code>tfg generate document-upload.yaml</code></p>
+    </li>
+    <li class="card" id="email-attachments">
+      <p class="card-title"><a href="/recipes/email-attachments.yaml" download>Email messages</a></p>
+      <p>EML files with attachments, an inline picture, HTML and plain text, quoted-printable, base64 and windows-1250, a thousand recipients and forwarded mail.</p>
+      <p class="muted">12 files, 17 633 280 B. <code>eml</code></p>
+      <p><code>tfg generate email-attachments.yaml</code></p>
+    </li>
+    <li class="card" id="image-upload">
+      <p class="card-title"><a href="/recipes/image-upload.yaml" download>Image upload</a></p>
+      <p>JPEG, PNG, WebP and GIF around a 5 MB limit, one pixel and 36 megapixels, a corrupt JPEG, a PNG cut short, a PDF named as a photo and a name that climbs out of the folder.</p>
+      <p class="muted">18 files, 43 465 732 B. <code>gif</code> <code>jpg</code> <code>pdf</code> <code>png</code> <code>txt</code> <code>webp</code></p>
+      <p><code>tfg generate image-upload.yaml</code></p>
+    </li>
+    <li class="card" id="media-upload">
+      <p class="card-title"><a href="/recipes/media-upload.yaml" download>Video and sound upload</a></p>
+      <p>MP4, WebM and WAV around a 10 MB limit, a portrait phone video, ten minutes of video, silence and a video cut short.</p>
+      <p class="muted">14 files, 89 640 960 B. <code>mp4</code> <code>wav</code> <code>webm</code></p>
+      <p><code>tfg generate media-upload.yaml</code></p>
+    </li>
+    <li class="card" id="spreadsheet-import">
+      <p class="card-title"><a href="/recipes/spreadsheet-import.yaml" download>Spreadsheet import</a></p>
+      <p>One table as CSV with commas, semicolons and tabs, CRLF, no header and every field quoted, a wide and a large CSV, Excel sheets and two broken files.</p>
+      <p class="muted">13 files, 36 683 776 B. <code>csv</code> <code>txt</code> <code>xlsx</code></p>
+      <p><code>tfg generate spreadsheet-import.yaml</code></p>
+    </li>
+  </ul>
+</section>
+
+<section class="section" id="presets">
+  <h2>Every preset as a recipe</h2>
+  <p>
+    A preset is a recipe with a name. These are the recipes the presets stand for, as
+    <code>tfg preset eject</code> prints them with their default settings. They name no output folder, so
+    give them one with <code>--out</code>. Each preset has <a href="/presets/">a page of its own</a> with
+    what it finds and every setting it takes.
+  </p>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Preset</th><th>The question it answers</th><th class="num">Files</th><th class="num">Bytes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><a href="/recipes/presets/empty-and-minimal.yaml" download>empty-and-minimal.yaml</a><br><a class="muted" href="/presets/empty-and-minimal/">Empty and minimal</a></td>
+        <td>Does a file that is valid and as small as the format allows get through?</td>
+        <td class="num">34</td>
+        <td class="num">41 762</td>
+      </tr>
+      <tr>
+        <td><a href="/recipes/presets/filename-handling.yaml" download>filename-handling.yaml</a><br><a class="muted" href="/presets/filename-handling/">File name handling</a></td>
+        <td>Will my system store, show and give back a file name it did not expect?</td>
+        <td class="num">50</td>
+        <td class="num">51 200</td>
+      </tr>
+      <tr>
+        <td><a href="/recipes/presets/picture-sizes.yaml" download>picture-sizes.yaml</a><br><a class="muted" href="/presets/picture-sizes/">Picture sizes</a></td>
+        <td>Does my system take pictures at the sizes screens and platforms use?</td>
+        <td class="num">21</td>
+        <td class="num">4 178 420</td>
+      </tr>
+      <tr>
+        <td><a href="/recipes/presets/size-boundaries.yaml" download>size-boundaries.yaml</a><br><a class="muted" href="/presets/size-boundaries/">Size boundaries</a></td>
+        <td>Is a size limit enforced exactly where it is declared?</td>
+        <td class="num">7</td>
+        <td class="num">73 400 320</td>
+      </tr>
+      <tr>
+        <td><a href="/recipes/presets/tabular-import.yaml" download>tabular-import.yaml</a><br><a class="muted" href="/presets/tabular-import/">Tabular import</a></td>
+        <td>Does my table import survive what real tools export?</td>
+        <td class="num">13</td>
+        <td class="num">3 080 060</td>
+      </tr>
+      <tr>
+        <td><a href="/recipes/presets/text-encoding.yaml" download>text-encoding.yaml</a><br><a class="muted" href="/presets/text-encoding/">Text encoding</a></td>
+        <td>Does my reader know which encoding a file is in, or is it guessing?</td>
+        <td class="num">20</td>
+        <td class="num">81 920</td>
+      </tr>
+      <tr>
+        <td><a href="/recipes/presets/upload-validation.yaml" download>upload-validation.yaml</a><br><a class="muted" href="/presets/upload-validation/">Upload validation</a></td>
+        <td>Does my upload form take what it should and turn the rest away?</td>
+        <td class="num">75</td>
+        <td class="num">120 655 872</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <pre><code>tfg generate size-boundaries.yaml --out ./size-boundaries</code></pre>
+</section>
+
+<section class="section" id="write-your-own">
+  <h2>Write your own</h2>
+  <p>
+    Every key a recipe takes is in <a href="/docs/recipes/">the recipe reference</a>, and every setting of
+    every format in <a href="/docs/format-settings/">Format settings</a>. A recipe can also start from a
+    preset with <code>extends</code>, as the image, document and media recipes here do, and add its own
+    files after the set of the preset.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+        <li><a href="/corrupt-test-files/">Corrupt test files</a></li>
+        <li><a href="/sample-files/">Sample files</a></li>
+        <li><a href="/test-files-in-ci/">Test files in CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

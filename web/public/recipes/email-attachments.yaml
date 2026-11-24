@@ -1,0 +1,123 @@
+# Email messages for testing a system that reads mail: a support inbox, a mail
+# import, an archive, an attachment scanner.
+#
+#   tfg generate email-attachments.yaml
+#
+# The files and manifest.json land in ./email-attachments. Each .eml file opens
+# in a mail program, and every attachment inside it is a real file of its
+# format.
+
+version: 1
+seed: 707
+
+targets:
+  # Plain messages, and one written in HTML with a plain text part beside it.
+  - id: plain
+    format: eml
+    size: 8kb
+    name: plain.eml
+    expected: accept
+  - id: html
+    format: eml
+    size: 32kb
+    name: html_and_text.eml
+    properties:
+      body: alternative
+    expected: accept
+
+  # Attachments: a PDF, several pictures, and one large file.
+  - id: pdf_attached
+    format: eml
+    size: 500kb
+    name: invoice_attached.eml
+    properties:
+      attachments: 1
+      attachment_format: pdf
+      attachment_size: 300kb
+    expected: accept
+  - id: pictures_attached
+    format: eml
+    size: 1mb
+    name: five_pictures.eml
+    properties:
+      attachments: 5
+      attachment_format: jpg
+      attachment_size: 100kb
+    expected: accept
+  - id: large_attachment
+    format: eml
+    size: 15mb
+    name: large_attachment.eml
+    properties:
+      attachments: 1
+      attachment_format: zip
+      attachment_size: 10mb
+    expected:
+      outcome: unspecified
+      reason: size_limit
+
+  # A picture shown inside the message rather than attached to it.
+  - id: inline_picture
+    format: eml
+    size: 100kb
+    name: inline_picture.eml
+    properties:
+      body: html
+      inline: 1
+      inline_format: png
+      inline_size: 40kb
+    expected: accept
+
+  # Encodings a reader has to get right: quoted-printable and base64 text, a
+  # message in windows-1250, and headers with words outside ASCII.
+  - id: quoted_printable
+    format: eml
+    size: 16kb
+    name: quoted_printable.eml
+    properties:
+      text_encoding: quoted-printable
+      charset: utf-8
+    expected: accept
+  - id: base64
+    format: eml
+    size: 16kb
+    name: base64.eml
+    properties:
+      text_encoding: base64
+      charset: utf-8
+    expected: accept
+  - id: windows_1250
+    format: eml
+    size: 16kb
+    name: windows_1250.eml
+    properties:
+      text_encoding: 8bit
+      charset: windows-1250
+    expected: accept
+  - id: encoded_headers
+    format: eml
+    size: 16kb
+    name: encoded_headers.eml
+    properties:
+      headers: encoded
+    expected: accept
+
+  # Unusual shapes: a message sent to a thousand people, and a message
+  # forwarded inside a message, three deep.
+  - id: many_recipients
+    format: eml
+    size: 100kb
+    name: thousand_recipients.eml
+    properties:
+      recipients: 1000
+    expected: accept
+  - id: forwarded
+    format: eml
+    size: 32kb
+    name: forwarded_3_deep.eml
+    properties:
+      message_depth: 3
+    expected: accept
+
+output:
+  dir: ./email-attachments
