@@ -92,3 +92,27 @@ reason = "semgrep pins mcp==1.29.0 in every release, and the advisory is about t
 id = "GHSA-w4fh-qvv9-3v23"
 ignoreUntil = 2026-12-14
 reason = "semgrep pins mcp==1.29.0 in every release, and the advisory is about an MCP server checking bearer tokens, which semgrep scan never starts"
+
+# Two more, published 2026-11-20 and read 2026-11-24. semgrep 1.186.0, the
+# newest that day, still asks for mcp==1.29.0 and for wcmatch~=8.3, so no set
+# pip can install holds either fix (mcp 1.30.0, wcmatch 11.2).
+#
+# The mcp one is about an MCP client over HTTP sending its OAuth credentials
+# to an authorization server the MCP server names. semgrep scan starts no MCP
+# client and holds no OAuth credentials.
+#
+# The wcmatch one is a slow match: a pattern with several stars takes minutes
+# to reject a crafted name of 255 bytes. semgrep matches its include and
+# exclude patterns against the paths of the tree it scans, so the only names
+# it sees are the files of the change under review. The most a crafted name
+# can do is slow the scan of the change that adds it, and the job's
+# timeout-minutes of 15 ends that. The job holds no secret.
+[[IgnoredVulns]]
+id = "GHSA-qx49-fqc8-xw99"
+ignoreUntil = 2026-12-14
+reason = "semgrep pins mcp==1.29.0 in every release, and the advisory is about an MCP client sending OAuth credentials, which semgrep scan never starts"
+
+[[IgnoredVulns]]
+id = "GHSA-53pm-wgxf-c6qf"
+ignoreUntil = 2026-12-14
+reason = "semgrep asks for wcmatch~=8.3 and the fix is in 11.2. The advisory is a slow match of crafted file names, and semgrep scan only matches the paths of the tree it scans, under a 15 minute job timeout"
