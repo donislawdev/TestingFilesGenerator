@@ -1,0 +1,110 @@
+# Archives for testing an upload or an import that unpacks what it is given.
+#
+#   tfg generate archive-upload.yaml
+#
+# The files and manifest.json land in ./archive-upload. Every entry inside an
+# archive is a real file of its format. Run "tfg tool archive-scan" on any of
+# them to see what is inside without unpacking it.
+
+version: 1
+seed: 404
+
+targets:
+  # Ordinary archives: text files, PDF files and pictures inside.
+  - id: texts_zip
+    format: zip
+    size: 200kb
+    name: texts.zip
+    properties:
+      entries: 20
+      entry_format: txt
+      entry_size: 8kb
+    expected: accept
+  - id: documents_zip
+    format: zip
+    size: 2mb
+    name: documents.zip
+    properties:
+      entries: 5
+      entry_format: pdf
+      entry_size: 300kb
+      compression: default
+    expected: accept
+  - id: pictures_targz
+    format: targz
+    size: 2mb
+    name: pictures.tar.gz
+    properties:
+      entries: 10
+      entry_format: png
+      entry_size: 100kb
+    expected: accept
+
+  # Shapes an unpacker meets less often: many entries, archives inside
+  # archives, folders as entries of their own, and an archive with nothing in
+  # it.
+  - id: many_entries
+    format: zip
+    size: 20mb
+    name: many_entries.zip
+    properties:
+      entries: 5000
+      entry_format: txt
+      entry_size: 1kb
+    expected:
+      outcome: unspecified
+      reason: count_limit
+  - id: nested
+    format: zip
+    size: 200kb
+    name: nested_5_deep.zip
+    properties:
+      depth: 5
+    expected:
+      outcome: unspecified
+      reason: nesting_depth
+  - id: with_folders
+    format: zip
+    size: 100kb
+    name: with_folders.zip
+    properties:
+      entries: 4
+      depth: 2
+      directory_entries: true
+    expected: accept
+  - id: empty_zip
+    format: zip
+    size: 10kb
+    name: empty.zip
+    properties:
+      entries: 0
+    expected:
+      outcome: unspecified
+      reason: count_limit
+
+  # An archive locked with a password, which an unpacker cannot read without
+  # being given it. The password is test.
+  - id: encrypted
+    format: zip
+    size: 100kb
+    name: encrypted.zip
+    properties:
+      encryption: aes-256
+      password: test
+    expected:
+      outcome: unspecified
+      reason: content_malformed
+
+  # Broken on purpose: a ZIP cut short the way an interrupted upload leaves it.
+  - id: truncated_zip
+    format: zip
+    size: 500kb
+    name: truncated.zip
+    damage:
+      - truncate
+    expected:
+      outcome: reject
+      reason: content_malformed
+
+output:
+  dir: ./archive-upload

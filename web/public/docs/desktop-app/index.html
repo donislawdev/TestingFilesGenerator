@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="en">
+<title>Desktop App - Generate Test Files Without the Command Line</title>
+<meta name="description" content="The window of Testing Files Generator screen by screen: one batch, presets, several batches, tools and preferences, with what each of them does.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/docs/desktop-app/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/desktop-app/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/desktop-app/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Desktop App - Generate Test Files Without the Command Line">
+<meta property="og:description" content="The window of Testing Files Generator screen by screen: one batch, presets, several batches, tools and preferences, with what each of them does.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/docs/desktop-app/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Desktop App - Generate Test Files Without the Command Line">
+<meta name="twitter:description" content="The window of Testing Files Generator screen by screen: one batch, presets, several batches, tools and preferences, with what each of them does.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Documentation",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Desktop app",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/desktop-app\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/presets/">Presets</a>
+      <a href="/docs/" aria-current="true">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/">Exact size</a>
+      <a href="/faq/">FAQ</a>
+      <a href="/corrupt-test-files/">Corrupt test files</a>
+      <a href="/sample-files/">Sample files</a>
+      <a href="/test-files-in-ci/">Test files in CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Language: English">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>English</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/ar/docs/" hreflang="ar" lang="ar">العربية</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr">Français</a></li>
+        <li><a href="/hi/docs/" hreflang="hi" lang="hi">हिन्दी</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru">Русский</a></li>
+        <li><a href="/th/docs/" hreflang="th" lang="th">ไทย</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<nav class="docsmenu" aria-label="Documentation pages">
+  <ul>
+    <li><a href="/docs/">Documentation</a></li>
+    <li><a href="/docs/install/">Install</a></li>
+    <li><a href="/docs/getting-started/">Getting started</a></li>
+    <li><a href="/docs/commands/">Commands</a></li>
+    <li><a href="/docs/recipes/">Recipes</a></li>
+    <li><a href="/recipes/">Recipe gallery</a></li>
+    <li><a href="/docs/manifest/">Manifest</a></li>
+    <li><a href="/docs/format-settings/">Format settings</a></li>
+    <li><a href="/docs/test-frameworks/">Test frameworks</a></li>
+    <li><a href="/docs/desktop-app/" aria-current="page">Desktop app</a></li>
+    <li><a href="/tools/">Tools</a></li>
+  </ul>
+</nav>
+<h1>Desktop app</h1>
+<p class="lead">
+  <code>tfg-gui</code> is the same program with a window on it, for the testing that is not scripted.
+  It makes the same files from the same settings as the command line, and a test compares the two
+  screen by screen, so nothing one of them can do quietly goes missing from the other.
+</p>
+
+<div class="note">
+  <p class="note-title">Before anything is written</p>
+  <p>
+    Every screen shows what a run would make before you start it: how many files, how many bytes, which
+    formats and where they go. Preview lists the files without writing any. A run shows its progress
+    and can be cancelled part way without leaving a half written file behind.
+  </p>
+</div>
+
+<section class="section" id="single-batch">
+  <h2>Single batch</h2>
+  <p>
+    Files of one format: choose the format, how the size is given, the size and how many files. The
+    settings of the format open under the form, and a box beside every field says what it does. A value
+    the format cannot take is marked under its field, with the value that would work.
+  </p>
+  <figure class="shot">
+    <img src="/assets/window/single-batch.png" width="1100" height="1300" loading="lazy" alt="The Single batch screen: format, size, how many files, damage, batch name and the output folder">
+  </figure>
+</section>
+
+<section class="section" id="presets">
+  <h2>Presets</h2>
+  <p>
+    A ready set that answers one question about the system you test, such as whether a size limit is
+    enforced exactly where it is declared. The screen says what each preset typically finds, takes its
+    settings, and shows the cost of the set before it is made.
+    <a href="/presets/">Presets</a> describes every one.
+  </p>
+  <figure class="shot">
+    <img src="/assets/window/presets.png" width="1100" height="1300" loading="lazy" alt="The Presets screen with a preset chosen, what it typically finds, its settings and the output folder">
+  </figure>
+</section>
+
+<section class="section" id="several-batches">
+  <h2>Several batches</h2>
+  <p>
+    Batches of different formats and sizes made together in one run, with one manifest. A batch can be
+    duplicated and changed, can carry notes for the manifest, and the whole run can start from a preset,
+    whose files come first.
+  </p>
+  <figure class="shot">
+    <img src="/assets/window/several-batches.png" width="1100" height="1300" loading="lazy" alt="The Several batches screen with one batch, the choice to build on a preset, and the output settings">
+  </figure>
+</section>
+
+<section class="section" id="tools">
+  <h2>Tools</h2>
+  <p>
+    The tools for files you already have, with the same settings as <code>tfg tool</code>: a checksum
+    compared with the one you were given, checksums for a whole folder, and whether an archive is safe to
+    unpack. A file or a folder dropped on the screen goes into the box of the chosen tool.
+    <a href="/tools/">Tools</a> says what each one finds.
+  </p>
+  <figure class="shot">
+    <img src="/assets/window/tools.png" width="1100" height="1300" loading="lazy" alt="The Tools screen with a checksum worked out and matching the one that was expected">
+  </figure>
+</section>
+
+<section class="section" id="preferences">
+  <h2>Preferences and About</h2>
+  <p>
+    Preferences sets the language of the window, how much memory a run may take, and shows what the
+    window keeps between runs and where, with a button that forgets it. Only the window changes language.
+    The files, recipes, manifests and the command line stay in English. About shows the version, how to
+    use the window in three steps, and the licence.
+  </p>
+</section>
+
+<section class="section" id="output">
+  <h2>The output folder</h2>
+  <p>
+    A folder dropped on the window becomes the output folder. A run into a folder that holds an earlier
+    run is added beside it: every name of the run, its manifest too, gets a number, as
+    <code>files-2_0001.pdf</code> and <code>manifest-2.json</code>, and nothing already there changes. The
+    switch for this, Add beside earlier runs, stays on unless you turn it off. With it off, such a run is
+    refused, the same as on the command line without <code>--number-if-taken</code>.
+  </p>
+</section>
+
+<section class="section" id="limits">
+  <h2>What it does not do yet</h2>
+  <p>
+    The window does not open a recipe file. Recipes are a command line thing for now, and the window
+    builds its batches in the form. If the window does not open at all, see
+    <a href="/docs/install/#window">when the window does not open</a>.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+        <li><a href="/corrupt-test-files/">Corrupt test files</a></li>
+        <li><a href="/sample-files/">Sample files</a></li>
+        <li><a href="/test-files-in-ci/">Test files in CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

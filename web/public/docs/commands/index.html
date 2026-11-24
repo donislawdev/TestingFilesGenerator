@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="en">
+<title>Command Reference - Every tfg Command, Flag and Exit Code</title>
+<meta name="description" content="Every command of the tfg command line with every flag it takes, its default and what it does, read from the program&#39;s own help, and every exit code.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/docs/commands/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/commands/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/commands/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Command Reference - Every tfg Command, Flag and Exit Code">
+<meta property="og:description" content="Every command of the tfg command line with every flag it takes, its default and what it does, read from the program&#39;s own help, and every exit code.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/docs/commands/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Command Reference - Every tfg Command, Flag and Exit Code">
+<meta name="twitter:description" content="Every command of the tfg command line with every flag it takes, its default and what it does, read from the program&#39;s own help, and every exit code.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Documentation",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Commands",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/commands\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/presets/">Presets</a>
+      <a href="/docs/" aria-current="true">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/">Exact size</a>
+      <a href="/faq/">FAQ</a>
+      <a href="/corrupt-test-files/">Corrupt test files</a>
+      <a href="/sample-files/">Sample files</a>
+      <a href="/test-files-in-ci/">Test files in CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Language: English">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>English</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/ar/docs/" hreflang="ar" lang="ar">العربية</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr">Français</a></li>
+        <li><a href="/hi/docs/" hreflang="hi" lang="hi">हिन्दी</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru">Русский</a></li>
+        <li><a href="/th/docs/" hreflang="th" lang="th">ไทย</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<nav class="docsmenu" aria-label="Documentation pages">
+  <ul>
+    <li><a href="/docs/">Documentation</a></li>
+    <li><a href="/docs/install/">Install</a></li>
+    <li><a href="/docs/getting-started/">Getting started</a></li>
+    <li><a href="/docs/commands/" aria-current="page">Commands</a></li>
+    <li><a href="/docs/recipes/">Recipes</a></li>
+    <li><a href="/recipes/">Recipe gallery</a></li>
+    <li><a href="/docs/manifest/">Manifest</a></li>
+    <li><a href="/docs/format-settings/">Format settings</a></li>
+    <li><a href="/docs/test-frameworks/">Test frameworks</a></li>
+    <li><a href="/docs/desktop-app/">Desktop app</a></li>
+    <li><a href="/tools/">Tools</a></li>
+  </ul>
+</nav>
+<h1>Commands</h1>
+<p class="lead">
+  Every command of <code>tfg</code> with every flag it takes. This page is read from the program's own
+  help when the page is built, so it says what the program says: <code>tfg &lt;command&gt; --help</code>
+  prints the same in your terminal.
+</p>
+
+<div class="tablewrap">
+<table class="data">
+  <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><a href="#tfg-generate"><code>tfg generate</code></a></td><td>Produce files.</td></tr>
+    <tr><td><a href="#tfg-validate"><code>tfg validate</code></a></td><td>Check a recipe and write nothing.</td></tr>
+    <tr><td><a href="#tfg-verify"><code>tfg verify</code></a></td><td>Check that a directory still matches a manifest.</td></tr>
+    <tr><td><a href="#tfg-cleanup"><code>tfg cleanup</code></a></td><td>Remove the files a manifest lists.</td></tr>
+    <tr><td><a href="#tfg-recipe-fmt"><code>tfg recipe fmt</code></a></td><td>Print a recipe in its settled shape, comments kept.</td></tr>
+    <tr><td><a href="#tfg-preset"><code>tfg preset</code></a></td><td>Build a set of files from a named test question.</td></tr>
+    <tr><td><a href="#tfg-formats"><code>tfg formats</code></a></td><td>List the formats this build supports.</td></tr>
+    <tr><td><a href="#tfg-damage"><code>tfg damage</code></a></td><td>List the ways this build can break a file on purpose.</td></tr>
+    <tr><td><a href="#tfg-tool"><code>tfg tool</code></a></td><td>Small things to do with files you already have.</td></tr>
+    <tr><td><a href="#tfg-version"><code>tfg version</code></a></td><td>Print the tool version.</td></tr>
+    <tr><td><a href="#tfg-license"><code>tfg license</code></a></td><td>Print the licence and what it means for generated files.</td></tr>
+  </tbody>
+</table>
+</div>
+<p>
+  A flag is written with two dashes, as <code>--count 10</code>, or with one. A flag that takes no value
+  is on when it is there. Every exit code is <a href="#exit-codes">at the end of this page</a>.
+</p>
+
+<section class="section" id="tfg-generate">
+  <h2><code>tfg generate</code></h2>
+  <p>Produce files.</p>
+  <pre><code>tfg generate &lt;recipe.yaml&gt; [flags]   settings come from the file
+tfg generate --format txt --size 1mb  settings come from the flags</code></pre>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Flag</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>--boundary string</code></td>
+        <td></td>
+        <td>three files around a limit: one byte under it, the limit itself, one byte over</td>
+      </tr>
+      <tr>
+        <td><code>--clean</code></td>
+        <td></td>
+        <td>turn off the self describing label</td>
+      </tr>
+      <tr>
+        <td><code>--count int</code></td>
+        <td><code>1</code></td>
+        <td>how many files to produce</td>
+      </tr>
+      <tr>
+        <td><code>--damage value</code></td>
+        <td></td>
+        <td>break the files on purpose, repeatable and applied in order: --damage zero-head, or --damage zero-head:bytes=16. This build has: append-junk, truncate, zero-head. Run &#34;tfg damage&#34; for what each one does</td>
+      </tr>
+      <tr>
+        <td><code>--dry-run</code></td>
+        <td></td>
+        <td>count and show, write nothing at all</td>
+      </tr>
+      <tr>
+        <td><code>--expected string</code></td>
+        <td></td>
+        <td>declared expectation: accept, reject, sanitize or unspecified</td>
+      </tr>
+      <tr>
+        <td><code>--expected-reason string</code></td>
+        <td></td>
+        <td>why that outcome is expected, from the closed list. Run with an unknown value to see it</td>
+      </tr>
+      <tr>
+        <td><code>--format string</code></td>
+        <td></td>
+        <td>format of the files to produce, for example txt</td>
+      </tr>
+      <tr>
+        <td><code>--id string</code></td>
+        <td><code>files</code></td>
+        <td>target id, the anchor the seeds are derived from</td>
+      </tr>
+      <tr>
+        <td><code>--json</code></td>
+        <td></td>
+        <td>write the manifest to standard output</td>
+      </tr>
+      <tr>
+        <td><code>--memory value</code></td>
+        <td></td>
+        <td>how much memory this run may use: auto (half of what this machine gives the program), a size such as 8gb, or off for no limit. Pictures wait for room rather than all being held at once, and a plan larger than this is refused before anything is written. When a run gets close to this amount, the program frees memory more often, which makes the run slower. A run that needs more memory than this still gets it. Under auto, a plan of up to 2.0 GB is never refused</td>
+      </tr>
+      <tr>
+        <td><code>--name string</code></td>
+        <td></td>
+        <td>name template, for example invoice_{index:04}.txt</td>
+      </tr>
+      <tr>
+        <td><code>--number-if-taken</code></td>
+        <td></td>
+        <td>when --out already holds names this run would write, an earlier run&#39;s manifest above all, give every name of this run a number such as -2 rather than stopping. Nothing already there is changed. Without it such a run stops with exit code 5</td>
+      </tr>
+      <tr>
+        <td><code>--out string</code></td>
+        <td><code>.</code></td>
+        <td>directory to write into</td>
+      </tr>
+      <tr>
+        <td><code>--preset string</code></td>
+        <td></td>
+        <td>build the set a named test question calls for. Run &#34;tfg preset list&#34; to see them</td>
+      </tr>
+      <tr>
+        <td><code>--seed int</code></td>
+        <td></td>
+        <td>run seed, the same seed gives the same bytes</td>
+      </tr>
+      <tr>
+        <td><code>--send-as string</code></td>
+        <td></td>
+        <td>the name to give the file to your system under, when it is one no disk stores, for example ../climbed_out.jpg. The file keeps its own name here and the manifest carries this one</td>
+      </tr>
+      <tr>
+        <td><code>--set value</code></td>
+        <td></td>
+        <td>format property, repeatable: --set width=1920 --set height=1080</td>
+      </tr>
+      <tr>
+        <td><code>--size string</code></td>
+        <td></td>
+        <td>exact size of each file. Units count in 1024s, so 10mb is 10485760 bytes. Also accepts a plain byte count, or smallest for a picture with its width and height set</td>
+      </tr>
+      <tr>
+        <td><code>--size-range string</code></td>
+        <td></td>
+        <td>a size drawn from a range for each file, as 1kb-8kb. The draw comes from the seed, so the same seed gives the same sizes</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="tfg-validate">
+  <h2><code>tfg validate</code></h2>
+  <p>Check a recipe and write nothing.</p>
+  <pre><code>tfg validate &lt;recipe.yaml&gt;</code></pre>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Flag</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>--json</code></td>
+        <td></td>
+        <td>write the result as JSON, with every problem separately</td>
+      </tr>
+      <tr>
+        <td><code>--memory value</code></td>
+        <td></td>
+        <td>how much memory this run may use: auto (half of what this machine gives the program), a size such as 8gb, or off for no limit. Pictures wait for room rather than all being held at once, and a plan larger than this is refused before anything is written. When a run gets close to this amount, the program frees memory more often, which makes the run slower. A run that needs more memory than this still gets it. Under auto, a plan of up to 2.0 GB is never refused</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="tfg-verify">
+  <h2><code>tfg verify</code></h2>
+  <p>Check that a directory still matches a manifest.</p>
+  <p>Reports files that are missing, files nobody asked for, and files whose content has changed. The directory is always a local one.</p>
+  <pre><code>tfg verify &lt;manifest.json&gt; [--against &lt;dir&gt;]</code></pre>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Flag</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>--against string</code></td>
+        <td></td>
+        <td>directory to check. Defaults to the directory holding the manifest</td>
+      </tr>
+      <tr>
+        <td><code>--json</code></td>
+        <td></td>
+        <td>write the report to stdout as JSON</td>
+      </tr>
+      <tr>
+        <td><code>--memory value</code></td>
+        <td></td>
+        <td>how much memory checking may use: auto (half of what this machine gives the program), a size such as 8gb, or off for no limit. A manifest listing more files than that can check is refused before any file is looked at. When checking gets close to this amount, the program frees memory more often, which makes it slower</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="tfg-cleanup">
+  <h2><code>tfg cleanup</code></h2>
+  <p>Remove the files a manifest lists.</p>
+  <p>Removes what the manifest lists and nothing else. Without --yes it deletes nothing and prints what it would remove. A file whose content has changed since it was written is left alone and reported, because it may not be ours.</p>
+  <pre><code>tfg cleanup &lt;manifest.json&gt; [--yes]</code></pre>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Flag</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>--against string</code></td>
+        <td></td>
+        <td>directory to clean. Defaults to the directory holding the manifest</td>
+      </tr>
+      <tr>
+        <td><code>--force</code></td>
+        <td></td>
+        <td>remove files whose content has changed since they were written</td>
+      </tr>
+      <tr>
+        <td><code>--json</code></td>
+        <td></td>
+        <td>write the report as JSON instead of prose</td>
+      </tr>
+      <tr>
+        <td><code>--memory value</code></td>
+        <td></td>
+        <td>how much memory checking may use: auto (half of what this machine gives the program), a size such as 8gb, or off for no limit. A manifest listing more files than that can check is refused before any file is looked at. When checking gets close to this amount, the program frees memory more often, which makes it slower</td>
+      </tr>
+      <tr>
+        <td><code>--with-manifest</code></td>
+        <td></td>
+        <td>remove the manifest and the instructions beside it as well, once every file it lists is gone</td>
+      </tr>
+      <tr>
+        <td><code>--yes</code></td>
+        <td></td>
+        <td>actually remove the files. Without this nothing is deleted and the list is printed</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="tfg-recipe-fmt">
+  <h2><code>tfg recipe fmt</code></h2>
+  <p>Print a recipe in its settled shape, comments kept.</p>
+  <p>This settles the layout of a file. It does not check that the recipe makes sense - a file with a key nobody recognises or a format that does not exist still has a settled shape, and this will print it. Run &#34;tfg validate&#34; for that, and run both if you are checking recipes before a commit.</p>
+  <pre><code>tfg recipe fmt &lt;recipe.yaml&gt;</code></pre>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Flag</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>--check</code></td>
+        <td></td>
+        <td>print nothing and end with code 3 when the layout is not settled. It says nothing about whether the recipe is valid - use tfg validate for that</td>
+      </tr>
+      <tr>
+        <td><code>-w</code></td>
+        <td></td>
+        <td>write the result back to the file instead of printing it</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="tfg-preset">
+  <h2><code>tfg preset</code></h2>
+  <p>Build a set of files from a named test question.</p>
+  <pre><code>tfg preset list                       what this build offers
+tfg preset show &lt;id&gt;                  what it takes and what it would produce
+tfg preset eject &lt;id&gt; -o my.yaml      the recipe it stands for, to edit</code></pre>
+  <p>A preset is a recipe with a name. Ejecting one gives back an ordinary recipe file, so nothing here is a closed box.</p>
+  <p>Run &#34;tfg generate --preset &lt;id&gt;&#34; to produce the files.</p>
+</section>
+
+<section class="section" id="tfg-formats">
+  <h2><code>tfg formats</code></h2>
+  <p>List the formats this build supports.</p>
+  <p>Says three things a request depends on and that nobody can guess: how faithful the file will be, whether it repeats to the byte, and how small it can go.</p>
+  <pre><code>tfg formats
+tfg formats --json</code></pre>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Flag</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>--json</code></td>
+        <td></td>
+        <td>write the list as JSON to standard output</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="tfg-damage">
+  <h2><code>tfg damage</code></h2>
+  <p>List the ways this build can break a file on purpose.</p>
+  <p>A damaged file comes out exactly the size you asked for. Where the damage breaks the rules of the format, the manifest expects the file to be rejected. Where readers differ - a text cut short is still text - it says the outcome depends on your system, and why. Use them with &#34;tfg generate --damage &lt;id&gt;&#34; or with the damage key of a recipe.</p>
+  <pre><code>tfg damage
+tfg damage --json
+tfg damage &lt;id&gt;</code></pre>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Flag</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>--json</code></td>
+        <td></td>
+        <td>write the list as JSON to standard output</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="tfg-tool">
+  <h2><code>tfg tool</code></h2>
+  <p>Small things to do with files you already have.</p>
+  <pre><code>tfg tool list                    the tools this build has
+tfg tool show &lt;id&gt;               what one tool works on and takes
+tfg tool &lt;id&gt; &lt;path&gt; [flags]     run it</code></pre>
+  <p>Every tool is also on the Tools tab of the window, with the same settings.</p>
+</section>
+
+<section class="section" id="tfg-version">
+  <h2><code>tfg version</code></h2>
+  <p>Print the tool version.</p>
+</section>
+
+<section class="section" id="tfg-license">
+  <h2><code>tfg license</code></h2>
+  <p>Print the licence and what it means for generated files.</p>
+</section>
+
+<section class="section" id="exit-codes">
+  <h2>Exit codes</h2>
+  <p>
+    Every ending has a code of its own, so a script or a pipeline can tell them apart. Output meant for
+    a program goes to standard output, and a run that fails prints nothing there. The meaning of a code
+    never changes within a major version.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th class="num">Code</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num"><code>0</code></td>
+      <td>Everything worked.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>1</code></td>
+      <td>An unexpected error inside the tool.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>2</code></td>
+      <td>Wrong command or flag.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>3</code></td>
+      <td>The recipe is not valid.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>4</code></td>
+      <td>The format cannot do what was asked.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>5</code></td>
+      <td>A read or a write failed.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>6</code></td>
+      <td>Not enough disk space.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>7</code></td>
+      <td>verify found a mismatch.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>8</code></td>
+      <td>The run finished but not everything was produced.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>130</code></td>
+      <td>Interrupted with Ctrl&#43;C.</td>
+    </tr>
+    <tr>
+      <td class="num"><code>143</code></td>
+      <td>Stopped by a signal, which is what a CI timeout looks like.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+  <p>
+    A run stopped with Ctrl+C still leaves a manifest and never a half written file, so the next run
+    can clean up after it. In PowerShell, end a script with <code>exit $LASTEXITCODE</code>, because a
+    <code>.ps1</code> file does not pass the code of a program on by itself. More in
+    <a href="/test-files-in-ci/">Test files in CI</a>.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+        <li><a href="/corrupt-test-files/">Corrupt test files</a></li>
+        <li><a href="/sample-files/">Sample files</a></li>
+        <li><a href="/test-files-in-ci/">Test files in CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

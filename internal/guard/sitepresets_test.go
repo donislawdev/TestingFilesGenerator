@@ -92,6 +92,8 @@ func siteProperty(p format.Property) site.Property {
 		Unit:    p.Unit,
 		Choices: append([]string(nil), p.Choices...),
 		Shape:   p.Shape,
+		Default: p.Default,
+		Detail:  p.Detail,
 	}
 }
 

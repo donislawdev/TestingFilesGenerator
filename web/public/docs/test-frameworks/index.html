@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="en">
+<title>Test Files in pytest, Playwright, Vitest and node:test</title>
+<meta name="description" content="Use generated test files inside your tests: the pytest plugin and the npm package for Playwright, Vitest and node:test, with what each file should be met with.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/docs/test-frameworks/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/test-frameworks/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/test-frameworks/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Test Files in pytest, Playwright, Vitest and node:test">
+<meta property="og:description" content="Use generated test files inside your tests: the pytest plugin and the npm package for Playwright, Vitest and node:test, with what each file should be met with.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/docs/test-frameworks/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Test Files in pytest, Playwright, Vitest and node:test">
+<meta name="twitter:description" content="Use generated test files inside your tests: the pytest plugin and the npm package for Playwright, Vitest and node:test, with what each file should be met with.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Documentation",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Test frameworks",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/test-frameworks\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/presets/">Presets</a>
+      <a href="/docs/" aria-current="true">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/">Exact size</a>
+      <a href="/faq/">FAQ</a>
+      <a href="/corrupt-test-files/">Corrupt test files</a>
+      <a href="/sample-files/">Sample files</a>
+      <a href="/test-files-in-ci/">Test files in CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Language: English">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>English</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/ar/docs/" hreflang="ar" lang="ar">العربية</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr">Français</a></li>
+        <li><a href="/hi/docs/" hreflang="hi" lang="hi">हिन्दी</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru">Русский</a></li>
+        <li><a href="/th/docs/" hreflang="th" lang="th">ไทย</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<nav class="docsmenu" aria-label="Documentation pages">
+  <ul>
+    <li><a href="/docs/">Documentation</a></li>
+    <li><a href="/docs/install/">Install</a></li>
+    <li><a href="/docs/getting-started/">Getting started</a></li>
+    <li><a href="/docs/commands/">Commands</a></li>
+    <li><a href="/docs/recipes/">Recipes</a></li>
+    <li><a href="/recipes/">Recipe gallery</a></li>
+    <li><a href="/docs/manifest/">Manifest</a></li>
+    <li><a href="/docs/format-settings/">Format settings</a></li>
+    <li><a href="/docs/test-frameworks/" aria-current="page">Test frameworks</a></li>
+    <li><a href="/docs/desktop-app/">Desktop app</a></li>
+    <li><a href="/tools/">Tools</a></li>
+  </ul>
+</nav>
+<h1>Test frameworks</h1>
+<p class="lead">
+  Two packages bring the files into your tests: <code>testing-files-generator</code> on PyPI for pytest
+  and unittest, and the package of the same name on npm for Playwright, Vitest and
+  <code>node:test</code>. Each gives you one test for each file of a set, named by what the file should
+  meet, and fails a test with a sentence that says what went wrong.
+</p>
+
+<div class="note">
+  <p class="note-title">How it works</p>
+  <p>
+    You choose a set, usually a preset. The package plans it and gives you its files. Each test hands
+    its file to your system and ends with one line saying what your system did. A file with no right
+    answer is skipped, never passed. tfg comes inside both packages, works offline and never connects
+    to the network.
+  </p>
+</div>
+
+<section class="section" id="pytest">
+  <h2>pytest</h2>
+  <pre><code>pip install testing-files-generator</code></pre>
+  <p>
+    pytest finds the plugin on its own. Python 3.10 or later. This test sends every file of the
+    <code>upload-validation</code> preset to an upload endpoint with
+    <a href="https://pypi.org/project/requests/">requests</a>, around a limit of 2 MB:
+  </p>
+  <pre><code># tests/test_upload.py
+import pytest
+import requests
+from testing_files_generator import file_set
+
+uploads = file_set(preset="upload-validation", options={"limit": "2mb", "bulk": 0})
+
+
+@pytest.mark.parametrize("file", uploads.params())
+def test_upload(file):
+    with open(file.path(), "rb") as body:
+        response = requests.post("http://localhost:3000/upload", files={"file": (file.send_as, body)}, timeout=30)
+    assert response.status_code &lt; 500, "a server error is not a refusal"
+    file.check("accept" if response.ok else "reject")</code></pre>
+  <p>Each test is named by its file and what the file expects. Listing them writes no file:</p>
+  <pre><code>pytest --collect-only -q</code></pre>
+  <pre><code>tests/test_upload.py::test_upload[2mb_under_1b.jpg - expected accept]
+tests/test_upload.py::test_upload[2mb_at_limit.jpg - expected accept]
+tests/test_upload.py::test_upload[2mb_over_1b.jpg - expected reject (size_limit)]
+tests/test_upload.py::test_upload[pdf_as_jpg.jpg - expected reject (mime_mismatch)]
+...</code></pre>
+  <p>
+    Every test carries its outcome and its group as markers, so <code>pytest -m reject</code> or
+    <code>pytest -m size-limit</code> runs part of the set. Without pytest, the same set works in
+    unittest or any runner that makes tests in a loop.
+  </p>
+</section>
+
+<section class="section" id="playwright">
+  <h2>Playwright</h2>
+  <pre><code>npm install --save-dev testing-files-generator</code></pre>
+  <p>This spec uploads every file through the form, the way a person does:</p>
+  <pre><code>// tests/upload.spec.ts
+import { test, expect } from '@playwright/test';
+import { fileSet } from 'testing-files-generator';
+
+const uploads = fileSet({ preset: 'upload-validation', options: { limit: '2mb', bulk: 0 } });
+
+for (const file of uploads.files) {
+  test(file.title, file.details, async ({ page }) => {
+    test.skip(file.unspecified, file.whyUnspecified);
+    await page.goto('/upload');
+    await page.getByLabel('File').setInputFiles(await file.path());
+    await page.getByRole('button', { name: 'Upload' }).click();
+    const status = page.getByRole('status');
+    await expect(status).toHaveText(/Uploaded|Refused/);
+    file.check((await status.textContent())?.includes('Uploaded') ? 'accept' : 'reject');
+  });
+}</code></pre>
+  <p>
+    Only the lines that upload and read the answer are about your app. Change them to however your
+    app takes a file. Wait for an answer your app gives on purpose, as <code>Uploaded</code> or
+    <code>Refused</code> here, so a page that shows an error fails the test rather than passing as a
+    refusal. <code>npx playwright test --grep @reject</code> runs part of the set.
+  </p>
+</section>
+
+<section class="section" id="vitest">
+  <h2>Vitest and node:test</h2>
+  <p>
+    The package imports nothing from Playwright, so any runner that declares tests in a loop works.
+    With Vitest:
+  </p>
+  <pre><code>import { test, expect } from 'vitest';
+import { openAsBlob } from 'node:fs';
+import { fileSet } from 'testing-files-generator';
+
+const uploads = fileSet({ preset: 'upload-validation', options: { limit: '2mb', bulk: 0 } });
+
+for (const file of uploads.files) {
+  test.skipIf(file.unspecified)(file.title, async () => {
+    const body = new FormData();
+    body.append('file', await openAsBlob(await file.path()), file.sendAs);
+    const response = await fetch('http://localhost:3000/upload', { method: 'POST', body });
+    expect(response.status, 'a server error is not a refusal').toBeLessThan(500);
+    file.check(response.ok ? 'accept' : 'reject');
+  });
+}</code></pre>
+  <p>
+    With the runner built into Node, <code>node --test</code>, the loop is the same, with
+    <code>test(file.title, { skip: file.unspecified &amp;&amp; file.whyUnspecified }, ...)</code>.
+  </p>
+</section>
+
+<section class="section" id="check">
+  <h2>Telling the set what your system did</h2>
+  <p>
+    <code>check</code> takes <code>accept</code>, <code>reject</code> or <code>sanitize</code> and fails
+    the test when the file expected something else. When your system says why it turned a file away,
+    pass the reason as well, and a file turned away for the wrong rule fails too. In Python:
+  </p>
+  <pre><code>file.check({"outcome": "reject", "reason": response.json().get("reason")})</code></pre>
+  <p>
+    A server error is not a refusal, so check the status before <code>check</code>, as the examples do.
+    A file sent under another name, such as <code>../climbed_out.jpg</code>, gives that name in
+    <code>send_as</code>, or <code>sendAs</code> in Node, and the examples upload it under that name.
+  </p>
+</section>
+
+<section class="section" id="own-files">
+  <h2>Your own set</h2>
+  <p>
+    Any preset works in place of <code>upload-validation</code>, with its settings in
+    <code>options</code>. For a set of your own, write a recipe and name it:
+  </p>
+  <pre><code>uploads = file_set(recipe="tests/fixtures.yaml")</code></pre>
+  <pre><code>const uploads = fileSet({ recipe: path.join(__dirname, 'fixtures.yaml') });</code></pre>
+  <p>
+    <a href="/docs/recipes/">Recipes</a> says how to write one, and <a href="/recipes/">the recipe
+    gallery</a> has ready ones to start from.
+  </p>
+</section>
+
+<section class="section" id="more">
+  <h2>Everything else</h2>
+  <p>
+    Each package has a full guide of its own, with where the files are kept, CI, every option and what
+    to do when something goes wrong:
+    <a href="https://pypi.org/project/testing-files-generator/">testing-files-generator on PyPI</a> and
+    <a href="https://www.npmjs.com/package/testing-files-generator">testing-files-generator on npm</a>.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+        <li><a href="/corrupt-test-files/">Corrupt test files</a></li>
+        <li><a href="/sample-files/">Sample files</a></li>
+        <li><a href="/test-files-in-ci/">Test files in CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

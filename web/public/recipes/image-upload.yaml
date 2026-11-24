@@ -1,0 +1,116 @@
+# Pictures for testing an image upload: a profile photo, an avatar, a gallery.
+#
+#   tfg generate image-upload.yaml
+#
+# The files and manifest.json land in ./image-upload. The manifest says which
+# files your form should take and which it should turn away. Change the limit
+# below to the one your form declares before you run it.
+
+version: 1
+seed: 101
+
+# Seven pictures around the size limit, from 1 MB under it to 1 MB over, with
+# the limit itself among them. They come from the size-boundaries preset.
+extends: preset:size-boundaries
+with:
+  limit: 5mb
+  format: jpg
+
+targets:
+  # One picture of each format most forms take.
+  - id: photo_jpg
+    format: jpg
+    size: 500kb
+    name: photo.jpg
+    expected: accept
+  - id: screenshot_png
+    format: png
+    size: 500kb
+    name: screenshot.png
+    expected: accept
+  - id: picture_webp
+    format: webp
+    size: 500kb
+    name: picture.webp
+    expected: accept
+  - id: picture_gif
+    format: gif
+    size: 200kb
+    name: picture.gif
+    expected: accept
+
+  # The sizes in pixels a form may refuse: one pixel, and a picture of 36
+  # megapixels. Whether either is welcome is your form's decision.
+  - id: one_pixel
+    format: png
+    size: smallest
+    name: one_pixel.png
+    properties:
+      width: 1
+      height: 1
+    expected:
+      outcome: unspecified
+      reason: dimensions_limit
+  - id: huge_picture
+    format: jpg
+    size: smallest
+    name: huge_picture.jpg
+    properties:
+      width: 6000
+      height: 6000
+    expected:
+      outcome: unspecified
+      reason: dimensions_limit
+
+  # Broken pictures at an ordinary size: the first bytes zeroed, and a PNG
+  # cut in half the way an interrupted upload leaves it.
+  - id: corrupt_jpg
+    format: jpg
+    size: 300kb
+    name: corrupt.jpg
+    damage:
+      - zero-head
+    expected:
+      outcome: reject
+      reason: content_malformed
+  - id: truncated_png
+    format: png
+    size: 300kb
+    name: truncated.png
+    damage:
+      - truncate
+    expected:
+      outcome: reject
+      reason: content_malformed
+
+  # Files that are not pictures: a PDF with a picture's name, and an empty
+  # file named like a photo.
+  - id: pdf_named_jpg
+    format: pdf
+    size: 100kb
+    name: not_a_photo.jpg
+    expected:
+      outcome: reject
+      reason: mime_mismatch
+  - id: empty_jpg
+    format: txt
+    size: 0
+    name: empty.jpg
+    expected:
+      outcome: reject
+      reason: size_zero
+
+  # A real picture to upload under a name that climbs out of the upload
+  # folder. It is written as climbs_out.jpg, and the manifest gives the name
+  # to send it under in send_as.
+  - id: climbs_out
+    format: jpg
+    size: 100kb
+    name: climbs_out.jpg
+    send-as: ../../climbs_out.jpg
+    expected:
+      outcome: reject
+      reason: filename_traversal
+
+output:
+  dir: ./image-upload

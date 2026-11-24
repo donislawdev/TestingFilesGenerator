@@ -147,392 +147,93 @@
 <main id="main" class="wrap">
 <h1>Dokumentation</h1>
 <p class="lead">
-  Alles, was das Tool kann, geordnet nach den Fragen, mit denen die Leute tatsächlich kommen. Die
-  <a href="https://github.com/donislawdev/TestingFilesGenerator">README im Repository</a> ist die vollständige Referenz und passt immer
-  zu dem Build, den du heruntergeladen hast.
+  Wie Sie tfg installieren, Ihre ersten Testdateien erzeugen und alles, was das Programm annimmt und schreibt: jeder Befehl und jede Option, jeder Schlüssel eines Rezepts, jedes Feld des Manifests und jede Einstellung jedes Formats. Diese Seiten sind auf Englisch, weil sie bei jedem Bau der Website aus dem Programm selbst entstehen und deshalb immer sagen, was die Version tut, die Sie herunterladen.
 </p>
 
-<section class="section" id="commands">
-  <h2>Welche Befehle gibt es?</h2>
-  <p>Jeder tut genau eine Sache:</p>
-  <pre><code>tfg generate    Dateien erzeugen, aus einem Rezept oder über Flags
-tfg validate    ein Rezept prüfen und nichts schreiben
-tfg verify      ein Verzeichnis gegen ein Manifest prüfen
-tfg cleanup     die Dateien entfernen, die ein Manifest auflistet
-tfg recipe fmt  ein Rezept in seiner festen Form ausgeben
-tfg preset      ein Set von Dateien aus einer benannten Testfrage erzeugen
-tfg formats     die Formate dieses Builds auflisten
-tfg damage      die Arten auflisten, wie dieser Build eine Datei absichtlich beschädigen kann
-tfg tool        kleine Helfer für Dateien, die du schon hast
-tfg version     die Version des Tools ausgeben
-tfg license     die Lizenz ausgeben und was sie für erzeugte Dateien bedeutet</code></pre>
-  <p>
-    <code>tfg tool</code> enthält die Werkzeuge für Dateien, die du schon hast, etwa die Prüfung eines
-    Archivs vor dem Entpacken. Die Seite <a href="/de/werkzeuge/">Werkzeuge</a> beschreibt jedes davon.
-  </p>
-</section>
-
-<section class="section" id="one-file">
-  <h2>Wie erzeuge ich eine einzelne Datei in exakter Größe?</h2>
-  <p>
-    Nenne das Format, die Größe und das Ziel. Größen zählen in 1024ern, <code>2mb</code> sind also
-    2097152 Bytes. Eine einfache Byte-Zahl funktioniert auch, <code>--size 10485761</code> verlangt
-    also genau so viele.
-  </p>
-  <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
-  <p>Die nützlichen Flags von <code>generate</code>:</p>
-  <div class="tablewrap">
-    <table class="data">
-      <thead><tr><th>Flag</th><th>Was es tut</th></tr></thead>
-      <tbody>
-        <tr><td><code>--format &lt;id&gt;</code></td><td>Format der Dateien, zum Beispiel <code>txt</code></td></tr>
-        <tr><td><code>--size &lt;size&gt;</code></td><td>exakte Größe jeder Datei, etwa <code>10mb</code> oder eine einfache Byte-Zahl</td></tr>
-        <tr><td><code>--size-range &lt;a-b&gt;</code></td><td>eine Größe, die pro Datei aus einem Bereich gezogen wird, etwa <code>1kb-8kb</code>. Die Ziehung kommt aus dem Seed</td></tr>
-        <tr><td><code>--boundary &lt;size&gt;</code></td><td>drei Dateien rund um ein Limit: ein Byte darunter, das Limit, ein Byte darüber</td></tr>
-        <tr><td><code>--count &lt;n&gt;</code></td><td>wie viele Dateien erzeugt werden. Standard <code>1</code></td></tr>
-        <tr><td><code>--name &lt;template&gt;</code></td><td>Namensvorlage, zum Beispiel <code>invoice_{index:04}.txt</code></td></tr>
-        <tr><td><code>--out &lt;dir&gt;</code></td><td>Verzeichnis, in das geschrieben wird</td></tr>
-        <tr><td><code>--seed &lt;n&gt;</code></td><td>Seed des Laufs. Derselbe Seed ergibt dieselben Bytes</td></tr>
-        <tr><td><code>--set &lt;k&gt;=&lt;v&gt;</code></td><td>eine Formateinstellung, wiederholbar</td></tr>
-        <tr><td><code>--damage &lt;name&gt;</code></td><td>Dateien absichtlich beschädigen, wiederholbar und der Reihe nach angewendet. Mit <code>tfg damage</code> bekommst du die Liste</td></tr>
-        <tr><td><code>--expected &lt;outcome&gt;</code></td><td><code>accept</code>, <code>reject</code>, <code>sanitize</code> oder <code>unspecified</code></td></tr>
-        <tr><td><code>--dry-run</code></td><td>zählen und anzeigen, überhaupt nichts schreiben</td></tr>
-        <tr><td><code>--json</code></td><td>das Manifest auf die Standardausgabe schreiben</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<section class="section" id="damage">
-  <h2>Wie erzeuge ich eine absichtlich kaputte Datei?</h2>
-  <p>
-    Jede andere Datei, die dieses Tool schreibt, ist per Konstruktion korrekt, was zwei der drei Fragen
-    beantwortet, die ein Upload-Validator stellt. <code>--damage</code> beantwortet die dritte -
-    lässt sich die Datei überhaupt öffnen. Die Datei wird normal erzeugt und dann beschädigt, sie
-    hat also weiterhin die verlangte Größe.
-  </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
-  <p>
-    Einstellungen stehen hinter einem Doppelpunkt. Das Flag lässt sich wiederholen, und die Reihenfolge,
-    in der du sie schreibst, ist die Reihenfolge, in der sie angewendet werden. <code>tfg
-    damage</code> listet auf, was dieser Build kann und was jede Variante annimmt.
-  </p>
-  <p>In einem Rezept ist der Schlüssel eine Liste, aus Namen oder aus Einstellungen:</p>
-  <pre><code>targets:
-  - id: broken
-    format: png
-    count: 5
-    size: 2mb
-    damage:
-      - zero-head
-      - type: zero-head
-        bytes: 16</code></pre>
-  <p>
-    Eine beschädigte Datei bekommt im Manifest <code>expected: reject</code>, mit der daneben
-    festgehaltenen Beschädigung. Zwei Dinge werden abgelehnt, bevor etwas geschrieben wird, weil
-    sonst jeweils eine Datei auf die Platte käme, die das Manifest falsch beschreibt:
-  </p>
-  <ul>
-    <li>eine Datei, die kleiner ist, als die Beschädigung braucht, weil sie unverändert herauskäme</li>
-    <li>
-      <code>expected: accept</code> neben einer Beschädigung, weil es keine Datei geben kann, die das
-      erfüllt. Schreibe <code>sanitize</code>, wenn das getestete System die Datei reparieren soll,
-      oder <code>unspecified</code>, wenn genau das die Frage ist, die du stellst
-    </li>
-  </ul>
-  <p>
-    Eine dritte lässt sich nicht im Voraus wissen. Wenn eine Beschädigung läuft und kein Byte verändert,
-    wird diese Datei verworfen statt geschrieben - der Lauf macht weiter, sagt, um welche Datei es
-    ging, und endet mit dem Exit-Code für teilweise erfolgreiche Läufe.
-  </p>
-  <p>
-    Schritt für Schritt, mit einem Test, der das Manifest liest:
-    <a href="/de/beschaedigte-testdateien/">So erzeugen Sie eine beschädigte Datei zum Testen</a>.
-  </p>
-</section>
-
-<section class="section" id="recipes">
-  <h2>Wie sieht ein Rezept aus?</h2>
-  <p>
-    Ein Rezept ist eine YAML-Datei, die einen ganzen Lauf beschreibt. Checke sie neben deinen Tests ein,
-    und die Fixtures sind keine Binärdateien mehr in deinem Repository - jeder kann sie Byte für
-    Byte aus einer Datei von wenigen hundert Zeichen neu erzeugen.
-  </p>
-  <pre><code># fixtures.yaml
-version: 1
-seed: 7741
-
-defaults:
-  label: true
-
-targets:
-  - id: invoices
-    format: pdf
-    count: 25
-    size: 300kb
-    name: invoice_{index:04}.pdf
-    properties:
-      pages: 3
-      page_size: a4
-    expected: accept
-
-  - id: over_the_limit
-    format: png
-    count: 2
-    size: 12mb
-    expected:
-      outcome: reject
-      reason: size_limit
-
-  - id: bundle
-    format: zip
-    contains:
-      - format: txt
-        count: 200
-        size: 4kb
-
-output:
-  dir: ./fixtures
-  manifest: manifest.json</code></pre>
-  <pre><code>tfg validate fixtures.yaml
-tfg generate fixtures.yaml</code></pre>
-  <p>
-    Jedes Target braucht genau eines von <code>size</code>, <code>size-range</code>,
-    <code>boundary</code> oder <code>contains</code>. Zwei davon sind ein Fehler, und keines
-    ebenfalls. Ein ungültiges Rezept schreibt <strong>überhaupt keine Dateien</strong> und meldet
-    alle Probleme auf einmal statt nur das erste, jedes mit der Einstellung, um die es geht.
-  </p>
-</section>
-
-<section class="section" id="expectations">
-  <h2>Wie lege ich fest, was mein System mit einer Datei tun soll?</h2>
-  <p>Kurzform, wenn das Ergebnis reicht, Langform, wenn der Grund zählt:</p>
-  <pre><code>expected: accept</code></pre>
-  <pre><code>expected:
-  outcome: reject
-  reason: size_limit</code></pre>
-  <p>
-    Die Ergebnisse sind <code>accept</code>, <code>reject</code>, <code>sanitize</code> und
-    <code>unspecified</code>. Die Gründe sind eine geschlossene Liste, damit ein Report danach
-    gruppieren kann: <code>content_malformed</code>, <code>count_limit</code>,
-    <code>dimensions_limit</code>, <code>duplicate</code>, <code>encoding_invalid</code>,
-    <code>extension_rule</code>, <code>filename_invalid</code>, <code>filename_too_long</code>,
-    <code>filename_traversal</code>, <code>malware_signature</code>, <code>mime_mismatch</code>,
-    <code>nesting_depth</code>, <code>none</code>, <code>size_limit</code> und
-    <code>size_zero</code>.
-  </p>
-  <p>
-    Ein Grund benennt <strong>die Regel, um die es geht</strong>, nicht das Urteil. Deshalb kann
-    derselbe Grund unter beiden Ergebnissen stehen - eine Datei ein Byte unter einem Limit ist
-    <code>accept</code>, und die Regel, um die es geht, ist trotzdem <code>size_limit</code>.
-  </p>
-</section>
-
-<section class="section" id="manifest">
-  <h2>Was steht im Manifest?</h2>
-  <p>
-    Es wird am Ende jedes Laufs neben die Dateien geschrieben, auch bei einem unterbrochenen Lauf. Ein
-    Eintrag pro Datei:
-  </p>
-  <pre><code>{
-  "manifest_version": "1.0",
-  "tool": { "name": "testing-files-generator", "version": "0.6.0-rc1" },
-  "run": {
-    "id": "run_b359aa8d94",
-    "seed": 0,
-    "command": "tfg generate --format png --size 2mb --out ./out",
-    "platform": { "os": "windows", "arch": "amd64" },
-    "complete": true
-  },
-  "summary": {
-    "file_count": 1,
-    "total_bytes": 2097152,
-    "by_format": { "png": 1 },
-    "by_expected": { "unspecified": 1 }
-  },
-  "files": [
-    {
-      "path": "files_0001.png",
-      "bytes": 2097152,
-      "format": "png",
-      "fidelity": "full",
-      "determinism": "byte",
-      "seed": "8dc2d18c",
-      "hashes": { "sha256": "1a1f7c..." },
-      "properties": { "width": 640, "height": 480 },
-      "expected": {
-        "outcome": "unspecified",
-        "detail": "No expectation was declared for this file.",
-        "confidence": "policy_dependent"
-      }
-    }
-  ]
-}</code></pre>
-  <p>
-    Ein <code>recipe_hash</code> kommt hinzu, wenn der Lauf aus einem Rezept stammt, und
-    <code>preset</code> mit <code>overrides</code>, wenn er aus einem Preset stammt, sodass sich ein
-    Manifest immer auf das zurückführen lässt, was es erzeugt hat.
-  </p>
-  <p>
-    Jeder Eintrag trägt außerdem <code>target_id</code>, die ID des Targets im Rezept, das die Datei
-    erzeugt hat, und <code>summary.by_target</code> zählt, auf wie viele Dateien jedes Target kam.
-    Ein Rezept mit mehreren Targets lässt sich so Target für Target prüfen, ohne Dateinamen zu
-    lesen.
-  </p>
-</section>
-
-<section class="section" id="presets">
-  <h2>Was ist ein Preset?</h2>
-  <p>
-    Ein fertiges Set aus Dateien, das eine gängige Testfrage beantwortet, damit du das Set nicht selbst
-    entwerfen musst. Presets sind darunter ganz normale Rezepte, und <code>eject</code> gibt das
-    Rezept aus, damit du es von dort aus bearbeiten kannst. Jedes Preset hat
-    <a href="/de/presets/">eine eigene Seite</a> mit dem, was es meist findet, was im Set steckt und
-    welche Einstellungen es kennt.
-  </p>
+<section class="section" id="pages">
+  <h2>Seiten der Dokumentation</h2>
   <ul class="cards">
   <li class="card">
-    <p class="card-title"><a href="/de/presets/empty-and-minimal/">Leer und minimal</a></p>
-    <p class="muted">Kommt eine gültige Datei durch, die so klein ist, wie das Format es erlaubt?</p>
-    <p><code>empty-and-minimal</code></p>
+    <p class="card-title"><a href="/docs/install/" hreflang="en">Installation</a> <span class="tag" lang="en">EN</span></p>
+    <p class="muted">Für Windows, macOS oder Linux herunterladen, das Archiv prüfen oder mit Docker, npm, pip oder Go installieren.</p>
+  </li>
+  <li class="card" id="one-file">
+    <p class="card-title"><a href="/docs/getting-started/" hreflang="en">Erste Schritte</a> <span class="tag" lang="en">EN</span></p>
+    <p class="muted">Die erste Datei mit exakter Größe, dann zehntausend, geprüft, entfernt und als Rezept festgehalten.</p>
+  </li>
+  <li class="card" id="ci"><span id="commands"></span>
+    <p class="card-title"><a href="/docs/commands/" hreflang="en">Befehle</a> <span class="tag" lang="en">EN</span></p>
+    <p class="muted">Jeder Befehl und jede Option mit ihrem Standardwert, dazu alle Exit-Codes.</p>
+  </li>
+  <li class="card" id="expectations"><span id="recipes"></span>
+    <p class="card-title"><a href="/docs/recipes/" hreflang="en">Rezepte</a> <span class="tag" lang="en">EN</span></p>
+    <p class="muted">Jeder Schlüssel eines Rezepts, Größen, Dateinamen, erwartete Reaktionen, Beschädigungen, Archive und Presets.</p>
   </li>
   <li class="card">
-    <p class="card-title"><a href="/de/presets/filename-handling/">Umgang mit Dateinamen</a></p>
-    <p class="muted">Speichert, zeigt und liefert mein System einen Dateinamen korrekt, mit dem es nicht gerechnet hat?</p>
-    <p><code>filename-handling</code></p>
+    <p class="card-title"><a href="/recipes/" hreflang="en">Rezeptsammlung</a> <span class="tag" lang="en">EN</span></p>
+    <p class="muted">Fertige Rezepte zum Herunterladen für Uploads, Importe, Archive, E-Mails, Medien, CI und Massendateien.</p>
+  </li>
+  <li class="card" id="manifest">
+    <p class="card-title"><a href="/docs/manifest/" hreflang="en">Manifest</a> <span class="tag" lang="en">EN</span></p>
+    <p class="muted">Jedes Feld von manifest.json und wie ein Test es liest.</p>
   </li>
   <li class="card">
-    <p class="card-title"><a href="/de/presets/picture-sizes/">Bildgrößen</a></p>
-    <p class="muted">Nimmt mein System Bilder in den Größen an, die Bildschirme und Plattformen verwenden?</p>
-    <p><code>picture-sizes</code></p>
+    <p class="card-title"><a href="/docs/format-settings/" hreflang="en">Formateinstellungen</a> <span class="tag" lang="en">EN</span></p>
+    <p class="muted">Jede Einstellung jedes Formats mit den erlaubten Werten und dem Standardwert.</p>
   </li>
   <li class="card">
-    <p class="card-title"><a href="/de/presets/size-boundaries/">Größengrenzen</a></p>
-    <p class="muted">Wird ein Größenlimit genau dort durchgesetzt, wo es angegeben ist?</p>
-    <p><code>size-boundaries</code></p>
+    <p class="card-title"><a href="/docs/test-frameworks/" hreflang="en">Test-Frameworks</a> <span class="tag" lang="en">EN</span></p>
+    <p class="muted">Die Dateien in pytest, Playwright, Vitest und node:test.</p>
+  </li>
+  <li class="card" id="window">
+    <p class="card-title"><a href="/docs/desktop-app/" hreflang="en">Desktop-Anwendung</a> <span class="tag" lang="en">EN</span></p>
+    <p class="muted">Das Fenster, Bildschirm für Bildschirm.</p>
   </li>
   <li class="card">
-    <p class="card-title"><a href="/de/presets/tabular-import/">Tabellenimport</a></p>
-    <p class="muted">Übersteht mein Tabellenimport das, was echte Tools exportieren?</p>
-    <p><code>tabular-import</code></p>
-  </li>
-  <li class="card">
-    <p class="card-title"><a href="/de/presets/text-encoding/">Textkodierung</a></p>
-    <p class="muted">Weiß mein Leser, in welcher Kodierung eine Datei vorliegt, oder rät er?</p>
-    <p><code>text-encoding</code></p>
-  </li>
-  <li class="card">
-    <p class="card-title"><a href="/de/presets/upload-validation/">Upload-Validierung</a></p>
-    <p class="muted">Nimmt mein Upload-Formular an, was es soll, und weist den Rest ab?</p>
-    <p><code>upload-validation</code></p>
+    <p class="card-title"><a href="/de/werkzeuge/">Werkzeuge</a></p>
+    <p class="muted">Offline-Werkzeuge für vorhandene Dateien: prüfen, ob ein Archiv sicher zu entpacken ist, samt Zip Slip und Zip-Bombe, und SHA-256-Summen prüfen oder schreiben.</p>
   </li>
 </ul>
-  <pre><code>tfg preset list
-tfg preset show size-boundaries
-tfg generate --preset size-boundaries --limit 10mb --out ./edges
-tfg preset eject size-boundaries &gt; my.yaml</code></pre>
-  <p>
-    <code>show</code> sagt dir, was das Set kosten würde, bevor du es baust, und sagt
-    unmissverständlich, wenn eine Zahl ein Platzhalter von uns statt ein Limit von dir ist.
-  </p>
 </section>
 
-<section class="section" id="ci">
-  <h2>Was bedeuten die Exit-Codes?</h2>
-  <p>
-    Jedes Ende hat einen eigenen Code, maschinenlesbare Ausgabe geht auf die Standardausgabe, und ein
-    fehlgeschlagener Lauf gibt dort nichts aus. Die Tabelle ist ein eingefrorener Vertrag - die
-    Bedeutung eines Codes zu ändern erfordert einen Major-Versionssprung.
-  </p>
-  <div class="tablewrap">
-<table class="data">
-  <thead>
-    <tr>
-      <th class="num">Code</th>
-      <th>Bedeutung</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td class="num"><code>0</code></td>
-      <td>Alles hat funktioniert.</td>
-    </tr>
-    <tr>
-      <td class="num"><code>1</code></td>
-      <td>Ein unerwarteter Fehler im Tool.</td>
-    </tr>
-    <tr>
-      <td class="num"><code>2</code></td>
-      <td>Falscher Befehl oder falsches Flag.</td>
-    </tr>
-    <tr>
-      <td class="num"><code>3</code></td>
-      <td>Das Rezept ist ungültig.</td>
-    </tr>
-    <tr>
-      <td class="num"><code>4</code></td>
-      <td>Das Format kann nicht, was verlangt wurde.</td>
-    </tr>
-    <tr>
-      <td class="num"><code>5</code></td>
-      <td>Lesen oder Schreiben ist fehlgeschlagen.</td>
-    </tr>
-    <tr>
-      <td class="num"><code>6</code></td>
-      <td>Nicht genug Speicherplatz.</td>
-    </tr>
-    <tr>
-      <td class="num"><code>7</code></td>
-      <td>verify hat eine Abweichung gefunden.</td>
-    </tr>
-    <tr>
-      <td class="num"><code>8</code></td>
-      <td>Der Lauf ist beendet, aber nicht alles wurde erzeugt.</td>
-    </tr>
-    <tr>
-      <td class="num"><code>130</code></td>
-      <td>Mit Strg&#43;C abgebrochen.</td>
-    </tr>
-    <tr>
-      <td class="num"><code>143</code></td>
-      <td>Durch ein Signal beendet, so sieht ein CI-Timeout aus.</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-  <pre><code>- name: build the fixtures
-  run: tfg generate fixtures.yaml --out ./fixtures
-
-- name: run the tests
-  run: pytest tests/
-
-- name: nothing moved
-  run: tfg verify ./fixtures/manifest.json</code></pre>
-  <p>
-    Ein mit Strg+C gestoppter Lauf hinterlässt trotzdem ein Manifest und nie eine halb geschriebene
-    Datei, sodass ein abgebrochener Job vom nächsten noch aufgeräumt werden kann.
-  </p>
-  <p>
-    Fertige Workflows für GitHub Actions und GitLab CI: <a href="/de/testdateien-in-ci/">So erzeugen Sie
-    Testdateien in einer CI-Pipeline</a>.
-  </p>
+<section class="section" id="topics">
+  <h2>Was das Werkzeug tut, nach Thema</h2>
+  <ul class="cards">
+  <li class="card">
+    <p class="card-title"><a href="/de/formate/">Formate</a></p>
+    <p class="muted">Alle Dateiformate dieses Generators, die kleinste mögliche Datei je Format und die Einstellungen, die es kennt. Alle 32 öffnen sich in ihrer Software.</p>
+  </li>
+  <li class="card" id="presets">
+    <p class="card-title"><a href="/de/presets/">Presets</a></p>
+    <p class="muted">Fertige Sets aus Testdateien, jedes beantwortet eine Testfrage: Upload-Limits, Dateinamen, Zeichenkodierungen, Tabellenimporte, leere Dateien und Upload-Validierung.</p>
+  </li>
+  <li class="card" id="damage">
+    <p class="card-title"><a href="/de/beschaedigte-testdateien/">Beschädigte Dateien</a></p>
+    <p class="muted">Eine absichtlich kaputte Datei in exakt der verlangten Größe, mit einem Manifest, das sagt, dass Ihr System sie ablehnen soll. Für Upload-Validierung und Parser.</p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/de/beispieldateien/">Beispieldateien</a></p>
+    <p class="muted">Testdateien und Beispieldateien zum Download: jedes Format mit 1 MB, beschädigte PDF-, Word- und Excel-Dateien, CSV-Tabellen und Platzhalterbilder, mit SHA-256.</p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/de/testfaelle-datei-upload/">Upload-Testfälle</a></p>
+    <p class="muted">Testfälle für einen Datei-Upload: Größenlimit, leere und beschädigte Dateien, falscher Typ, ungewöhnliche Dateinamen und Archive, jeder mit der passenden Datei.</p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/de/testdateien-in-ci/">Testdateien in CI</a></p>
+    <p class="muted">Testdateien in der Pipeline erzeugen statt einzuchecken: GitHub-Actions-Workflow, GitLab-Job, Exit-Codes, die den Build scheitern lassen, und die PowerShell-Falle.</p>
+  </li>
+  <li class="card">
+    <p class="card-title"><a href="/de/datei-bestimmter-groesse-erstellen/">Dateigröße</a></p>
+    <p class="muted">fsutil, dd, truncate und mkfile, jeweils auf dem passenden System gemessen - und warum eine so erzeugte Datei kein PDF und kein PNG ist, wenn ein Test eines braucht.</p>
+  </li>
+</ul>
 </section>
 
-<section class="section" id="window">
-  <h2>Gibt es ein Desktop-Fenster?</h2>
+<section class="section" id="help">
+  <h2>Immer noch nicht weiter?</h2>
   <p>
-    Ja, dieselbe Engine mit einem Fenster davor, für das Testen, das nicht skriptbar ist. Es ist keine
-    abgespeckte Version: Ein Test vergleicht die beiden Oberflächen Fähigkeit für Fähigkeit, und
-    alles, was nur eine von beiden kann, muss deklariert und begründet werden, statt unbemerkt
-    auseinanderzudriften.
-  </p>
-  <p>
-    Die Bildschirme sind ein Stapel, Presets, mehrere Stapel gleichzeitig und Info. Es zeigt, was ein
-    Lauf kosten würde, bevor etwas geschrieben wird, meldet den Fortschritt während des Laufs und
-    lässt sich mittendrin abbrechen, ohne eine halb geschriebene Datei zu hinterlassen. Eine
-    Rezeptdatei öffnet es noch nicht - Rezepte gibt es vorerst nur auf der Kommandozeile, und das
-    Fenster baut seine Stapel im Formular.
+    <code>tfg &lt;command&gt; --help</code> zeigt im Terminal, was ein Befehl annimmt. Jede Ablehnung nennt die Einstellung, um die es geht, den Grund und einen Wert, der funktioniert. Wenn sich etwas anders verhält, als eine Seite hier sagt, <a href="https://github.com/donislawdev/TestingFilesGenerator/issues">melden Sie es</a>. Dann ist die Seite oder das Programm fehlerhaft.
   </p>
 </section>
 

@@ -19,6 +19,7 @@ import (
 	"github.com/donislawdev/TestingFilesGenerator/internal/damage"
 	"github.com/donislawdev/TestingFilesGenerator/internal/format"
 	_ "github.com/donislawdev/TestingFilesGenerator/internal/format/all"
+	"github.com/donislawdev/TestingFilesGenerator/internal/recipe"
 	"github.com/donislawdev/TestingFilesGenerator/internal/site"
 	"github.com/donislawdev/TestingFilesGenerator/internal/version"
 )
@@ -118,6 +119,8 @@ func factsFromTheProgram(t *testing.T) site.Facts {
 		})
 	}
 
+	presets := presetFactsFromTheProgram(t)
+	docs, recipes := commandDocsAndRecipes(t, presets)
 	return site.Facts{
 		Version:   version.Version,
 		Released:  releasedVersionOfThisBuild(t),
@@ -126,8 +129,9 @@ func factsFromTheProgram(t *testing.T) site.Facts {
 		Damages:   damagesTheProgramHas(),
 		Samples:   samplesFromTheRecipe(t),
 		Tools:     toolsTheProgramHas(),
-		Presets:   presetFactsFromTheProgram(t),
-		Commands:  commandsTheToolPrints(t),
+		Presets:   presets,
+		Docs: site.DocsFacts{Commands: docs, RecipeKeys: recipe.Keys(), Outcomes: recipe.Outcomes(),
+			Reasons: recipe.Reasons(), ManifestFields: manifestFieldsOf(), Recipes: recipes},
 		Downloads: declaredDownloads(),
 		// Fixed on purpose. See the comment on the field.
 		Year: 2026,
@@ -203,6 +207,13 @@ func siteUnderTest(t *testing.T) site.Site {
 		Extra: map[string]string{
 			"assets/window.png": filepath.Join(repoRoot(t), ".github", "window.png"),
 			"assets/icon.png":   filepath.Join(repoRoot(t), "internal", "gui", "icon", "chickpea.png"),
+			// The screens of the desktop app page are the references the
+			// window guards render with the real toolkit, so a change to a
+			// screen is a change to the page and turns the site guard red.
+			"assets/window/single-batch.png":    filepath.Join(repoRoot(t), "internal", "guard", "testdata", "screens", "generate.png"),
+			"assets/window/presets.png":         filepath.Join(repoRoot(t), "internal", "guard", "testdata", "screens", "preset.png"),
+			"assets/window/several-batches.png": filepath.Join(repoRoot(t), "internal", "guard", "testdata", "screens", "recipe.png"),
+			"assets/window/tools.png":           filepath.Join(repoRoot(t), "internal", "guard", "testdata", "screens", "tools-result.png"),
 			// Published beside the files it makes, so the command on the page
 			// has its recipe one click away.
 			site.SamplesDir + "/samples.yaml": filepath.Join(repoRoot(t), filepath.FromSlash(sampleFilesRecipe)),
@@ -409,7 +420,7 @@ func TestEveryLanguageDescribesEverythingTheProgramCanProduce(t *testing.T) {
 		// command dropped from the program leaves its summary behind in both
 		// language files, and the page would then be a list of what the tool
 		// used to have - the same defect as a missing one, read backwards.
-		for _, name := range facts.Commands {
+		for _, name := range facts.Docs.CommandNames() {
 			if _, ok := lang.Commands[name]; !ok {
 				t.Errorf("the command %q has no summary in %s, so the page would list it blank", name, lang.Code)
 			}
@@ -435,7 +446,7 @@ func TestEveryLanguageDescribesEverythingTheProgramCanProduce(t *testing.T) {
 			}
 		}
 		for name := range lang.Commands {
-			if !slices.Contains(facts.Commands, name) {
+			if !slices.Contains(facts.Docs.CommandNames(), name) {
 				t.Errorf("%s describes a command %q that tfg --help does not print", lang.Code, name)
 			}
 		}
@@ -482,13 +493,23 @@ func TestEveryPageExistsInEveryLanguage(t *testing.T) {
 		t.Skip("one language, so nothing can be missing from another")
 	}
 	keys := map[string]int{}
+	// A page marked untranslated exists in the root language alone, on purpose
+	// (internal/site/docs.go), and has to exist nowhere else - the render
+	// refuses that as well, and this says it without rendering.
+	untranslated := map[string]bool{}
 	for _, l := range langs {
 		for _, p := range l.Pages {
 			keys[p.Key]++
+			if p.Untranslated && l.Dir == "" {
+				untranslated[p.Key] = true
+			}
 		}
 	}
 	for key, count := range keys {
-		if count != len(langs) {
+		switch {
+		case untranslated[key] && count != 1:
+			t.Errorf("the page %q is marked untranslated and exists in %d languages", key, count)
+		case !untranslated[key] && count != len(langs):
 			t.Errorf("the page %q exists in %d of %d languages, so its language switch leads nowhere", key, count, len(langs))
 		}
 	}

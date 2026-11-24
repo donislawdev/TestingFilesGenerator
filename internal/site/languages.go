@@ -14,6 +14,7 @@ package site
 import (
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 var (
@@ -49,7 +50,19 @@ func checkLanguages(langs []Language) error {
 	if roots != 1 {
 		return fmt.Errorf("%d languages are served at the root and exactly one has to be, because x-default points at it", roots)
 	}
-	return nil
+	return checkUntranslated(langs)
+}
+
+// addressablePath is a slug of one or more addressable parts joined by
+// slashes, as docs/install, so a page written by hand can sit under the
+// address of another.
+func addressablePath(slug string) bool {
+	for _, part := range strings.Split(slug, "/") {
+		if !addressable.MatchString(part) {
+			return false
+		}
+	}
+	return true
 }
 
 // claimed remembers which language holds each value that has to be unique.
@@ -88,8 +101,8 @@ func checkLanguage(l Language) error {
 	}
 	seen := map[string]string{}
 	for _, p := range l.Pages {
-		if p.Slug != "" && !addressable.MatchString(p.Slug) {
-			return fmt.Errorf("the %s page %q has the slug %q, which cannot be part of an address - lower case letters, digits and single dashes can", l.Code, p.Key, p.Slug)
+		if p.Slug != "" && !addressablePath(p.Slug) {
+			return fmt.Errorf("the %s page %q has the slug %q, which cannot be part of an address - lower case letters, digits and single dashes can, in parts joined by slashes", l.Code, p.Key, p.Slug)
 		}
 		if other, taken := seen[p.Slug]; taken {
 			return fmt.Errorf("the %s pages %q and %q share the address %q, so one would be written over the other", l.Code, other, p.Key, p.Slug)

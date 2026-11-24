@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "Așteptat",
     "colTool": "Instrument",
-    "colQuestion": "La ce răspunde"
+    "colQuestion": "La ce răspunde",
+    "docsMenuLabel": "Paginile documentației"
   },
   "endings": {
     "0": "Totul a mers.",
@@ -386,5 +387,45 @@
     "checksum": "Este acest fișier cel care pretinde că este?",
     "checksum-check": "Corespunde fiecare fișier în continuare cu fișierul lui de sume de control?",
     "checksum-write": "Cum voi ști mai târziu că niciunul dintre aceste fișiere nu s-a schimbat?"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "Instalare",
+        "text": "Descărcare pentru Windows, macOS sau Linux, verificarea arhivei sau instalare cu Docker, npm, pip ori Go."
+      },
+      "guide-start": {
+        "title": "Primii pași",
+        "text": "Un prim fișier de dimensiune exactă, apoi zece mii, verificate, șterse și scrise ca rețetă."
+      },
+      "guide-commands": {
+        "title": "Comenzi",
+        "text": "Fiecare comandă și fiecare opțiune cu valoarea implicită, și toate codurile de ieșire."
+      },
+      "guide-recipes": {
+        "title": "Rețete",
+        "text": "Fiecare cheie a unei rețete, dimensiuni, nume de fișiere, reacții așteptate, deteriorări, arhive și presetări."
+      },
+      "recipes": {
+        "title": "Galeria de rețete",
+        "text": "Rețete gata de descărcat pentru încărcări, importuri, arhive, e-mail, media, CI și fișiere în masă."
+      },
+      "guide-manifest": {
+        "title": "Manifest",
+        "text": "Fiecare câmp din manifest.json și cum îl citește un test."
+      },
+      "guide-formats": {
+        "title": "Setările formatelor",
+        "text": "Fiecare setare a fiecărui format, cu valorile acceptate și valoarea implicită."
+      },
+      "guide-frameworks": {
+        "title": "Framework-uri de test",
+        "text": "Fișierele în pytest, Playwright, Vitest și node:test."
+      },
+      "guide-window": {
+        "title": "Aplicația desktop",
+        "text": "Fereastra, ecran cu ecran."
+      }
+    }
   }
 }

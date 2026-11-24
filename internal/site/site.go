@@ -45,6 +45,10 @@ type Property struct {
 	// states it in English. Without it a text setting is described as "text",
 	// which says nothing about the value it wants.
 	Shape string
+	// Default and Detail are the registry's own, in English, and only the
+	// page of format settings shows them, which is written in English alone.
+	Default string
+	Detail  string
 }
 
 // Format is one entry of the registry, flattened for display.
@@ -170,11 +174,10 @@ type Facts struct {
 	// about them cannot leave one out.
 	Tools []string
 
-	// Commands is what tfg --help prints, in the order it prints it, read out
-	// of that help rather than out of a list beside it. Taking it from the
-	// help is the point: it is the text a visitor is comparing the page
-	// against, so agreeing with anything else would prove the wrong thing.
-	Commands []string
+	// Docs is what the documentation lists: every command tfg --help prints
+	// and its own help, the keys of a recipe, the fields of a manifest and the
+	// recipes of the gallery (reference.go).
+	Docs DocsFacts
 
 	// Year is fixed rather than taken from the clock. A footer that rendered
 	// the current year would make the committed pages differ from freshly
@@ -247,6 +250,12 @@ type Page struct {
 	// code, and a page written by hand may name its own in site.json.
 	Parent string `json:"parent,omitempty"`
 
+	// Untranslated marks a page written in the root language alone, as the
+	// pages of the documentation are (docs.go). It names no translation to a
+	// search engine, and its language menu leads a reader of another language
+	// to the closest page above it that their language has.
+	Untranslated bool `json:"untranslated,omitempty"`
+
 	// The two below are never written in site.json. They are set on the
 	// pages made from a list, and say which content file holds their text and
 	// which item of the list they are about.
@@ -292,6 +301,9 @@ type Language struct {
 	Tools    map[string]string     `json:"tools"`
 	Pages    []Page                `json:"pages"`
 	Faq      []QA                  `json:"faq"`
+
+	// Docs is the text of the documentation in this language (reference.go).
+	Docs *DocsText `json:"docs,omitempty"`
 }
 
 // Site is everything needed to render.
@@ -333,11 +345,16 @@ type NavItem struct {
 }
 
 // Switch is the link to this page in another language.
+//
+// Elsewhere says the link leads to another page, because this one is not
+// translated. Such a link is no alternate of the page, so it carries no
+// rel=alternate and no og:locale:alternate.
 type Switch struct {
-	Name   string
-	URL    string
-	Code   string
-	Locale string
+	Name      string
+	URL       string
+	Code      string
+	Locale    string
+	Elsewhere bool
 }
 
 // Origin is the address the site is served from, without a trailing slash.

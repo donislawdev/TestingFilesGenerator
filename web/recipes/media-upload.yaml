@@ -1,0 +1,92 @@
+# Video and sound for testing a media upload: a video message, a voice note, a
+# course platform, a transcoding queue.
+#
+#   tfg generate media-upload.yaml
+#
+# The files and manifest.json land in ./media-upload. Every file plays in an
+# ordinary player. Change the limit below to the one your form declares before
+# you run it.
+
+version: 1
+seed: 808
+
+# Seven videos around the size limit, from 1 MB under it to 1 MB over, with the
+# limit itself among them. They come from the size-boundaries preset.
+extends: preset:size-boundaries
+with:
+  limit: 10mb
+  format: mp4
+
+targets:
+  # One file of each kind most forms take.
+  - id: video_mp4
+    format: mp4
+    size: 2mb
+    name: video.mp4
+    properties:
+      width: 1280
+      height: 720
+      duration: 5s
+    expected: accept
+  - id: video_webm
+    format: webm
+    size: 2mb
+    name: video.webm
+    properties:
+      width: 1280
+      height: 720
+      duration: 5s
+    expected: accept
+  - id: voice_wav
+    format: wav
+    size: 1mb
+    name: voice_note.wav
+    properties:
+      sample_rate: 16000
+      channels: 1
+    expected: accept
+
+  # Shapes a player or a transcoder meets less often: a portrait phone video,
+  # ten minutes of video at one frame a second, and sound that is only
+  # silence. Whether ten minutes is too long is your platform's decision.
+  - id: portrait
+    format: mp4
+    size: 2mb
+    name: portrait_phone.mp4
+    properties:
+      width: 720
+      height: 1280
+      duration: 5s
+    expected: accept
+  - id: long_video
+    format: mp4
+    size: 6mb
+    name: ten_minutes.mp4
+    properties:
+      width: 320
+      height: 240
+      duration: 10m
+      frame_rate: 1
+    expected: unspecified
+  - id: silence
+    format: wav
+    size: 500kb
+    name: silence.wav
+    properties:
+      content: silence
+    expected: accept
+
+  # Broken on purpose: a video cut short the way an interrupted upload leaves
+  # it.
+  - id: truncated_mp4
+    format: mp4
+    size: 2mb
+    name: truncated.mp4
+    damage:
+      - truncate
+    expected:
+      outcome: reject
+      reason: content_malformed
+
+output:
+  dir: ./media-upload

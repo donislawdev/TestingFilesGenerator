@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="en">
+<title>Getting Started - Your First Test Files in Five Minutes</title>
+<meta name="description" content="Make one file of an exact size, then ten thousand, check them against the manifest, remove them, and turn the run into a recipe you can commit.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/docs/getting-started/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/getting-started/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/getting-started/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Getting Started - Your First Test Files in Five Minutes">
+<meta property="og:description" content="Make one file of an exact size, then ten thousand, check them against the manifest, remove them, and turn the run into a recipe you can commit.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/docs/getting-started/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Getting Started - Your First Test Files in Five Minutes">
+<meta name="twitter:description" content="Make one file of an exact size, then ten thousand, check them against the manifest, remove them, and turn the run into a recipe you can commit.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Documentation",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Getting started",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/getting-started\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/presets/">Presets</a>
+      <a href="/docs/" aria-current="true">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/">Exact size</a>
+      <a href="/faq/">FAQ</a>
+      <a href="/corrupt-test-files/">Corrupt test files</a>
+      <a href="/sample-files/">Sample files</a>
+      <a href="/test-files-in-ci/">Test files in CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Language: English">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>English</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/ar/docs/" hreflang="ar" lang="ar">العربية</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr">Français</a></li>
+        <li><a href="/hi/docs/" hreflang="hi" lang="hi">हिन्दी</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru">Русский</a></li>
+        <li><a href="/th/docs/" hreflang="th" lang="th">ไทย</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<nav class="docsmenu" aria-label="Documentation pages">
+  <ul>
+    <li><a href="/docs/">Documentation</a></li>
+    <li><a href="/docs/install/">Install</a></li>
+    <li><a href="/docs/getting-started/" aria-current="page">Getting started</a></li>
+    <li><a href="/docs/commands/">Commands</a></li>
+    <li><a href="/docs/recipes/">Recipes</a></li>
+    <li><a href="/recipes/">Recipe gallery</a></li>
+    <li><a href="/docs/manifest/">Manifest</a></li>
+    <li><a href="/docs/format-settings/">Format settings</a></li>
+    <li><a href="/docs/test-frameworks/">Test frameworks</a></li>
+    <li><a href="/docs/desktop-app/">Desktop app</a></li>
+    <li><a href="/tools/">Tools</a></li>
+  </ul>
+</nav>
+<h1>Getting started</h1>
+<p class="lead">
+  Five minutes from an installed <code>tfg</code> to a set of test files your tests can rely on. Every
+  command here runs as it is, on Windows, macOS and Linux. If you have not installed it yet, start
+  with <a href="/docs/install/">Install</a>.
+</p>
+
+<ol class="steps">
+  <li>
+    <h3>Make one file of an exact size</h3>
+    <p>Name the format, the size and the folder. This makes one PNG of exactly two megabytes:</p>
+    <pre><code>tfg generate --format png --size 2mb --out ./out</code></pre>
+    <pre><code>1 file in 1 target, 2 097 152 B total</code></pre>
+    <p>
+      Sizes count in 1024s, the way a file manager does, so <code>2mb</code> is 2 097 152 bytes. A
+      plain byte count works too. The PNG opens in any picture viewer, and beside it is
+      <code>manifest.json</code>, the record of what the run made and how your system should react
+      to each file.
+    </p>
+  </li>
+  <li>
+    <h3>Make many files at once</h3>
+    <p>
+      Ten thousand log files, each between one and eight kilobytes. The sizes are drawn from the seed,
+      so the same command gives the same set tomorrow and on any other machine:
+    </p>
+    <pre><code>tfg generate --format log --size-range 1kb-8kb --count 10000 --out ./logs</code></pre>
+    <p>
+      <strong>Give each run its own folder.</strong> The manifest is the only record of what a run
+      wrote, so a second run into a folder that holds one is refused rather than written over it. Add
+      <code>--number-if-taken</code> to put the second run beside the first instead.
+    </p>
+  </li>
+  <li>
+    <h3>Check the files, then remove them</h3>
+    <p>
+      <code>verify</code> says whether every file is still there and still the same.
+      <code>cleanup</code> removes the files the manifest lists and nothing else. Without
+      <code>--yes</code> it only says what it would remove:
+    </p>
+    <pre><code>tfg verify ./out/manifest.json
+tfg cleanup ./out/manifest.json
+tfg cleanup ./out/manifest.json --yes</code></pre>
+    <pre><code>out matches ./out/manifest.json: 1 file checked
+1 file would be removed from out:
+  remove files_0001.png
+Nothing was removed. Run the same command with --yes to remove them.
+1 file removed from out</code></pre>
+  </li>
+  <li>
+    <h3>Say what your system should do with the files</h3>
+    <p>
+      A test file is only half a test. The other half is what should happen to it. Write it on the
+      command line and the manifest carries it beside every file:
+    </p>
+    <pre><code>tfg generate --format pdf --size 12mb --expected reject --expected-reason size_limit --out ./too-big</code></pre>
+    <p>
+      For a size limit, the <code>size-boundaries</code> preset makes the whole set at once: files
+      just under the limit, at it and just over it, each with its expected outcome:
+    </p>
+    <pre><code>tfg generate --preset size-boundaries --limit 10mb --format pdf --out ./limit</code></pre>
+  </li>
+  <li>
+    <h3>Make a file that is broken on purpose</h3>
+    <p>
+      A damaged file still has the size you asked for, and the manifest expects your system to turn
+      it away. <code>tfg damage</code> lists the damages this build has:
+    </p>
+    <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./broken</code></pre>
+  </li>
+  <li>
+    <h3>Turn the run into a recipe</h3>
+    <p>
+      Once the set is right, write it down. A recipe is a short YAML file you commit beside your
+      tests, so the files never have to be committed: anyone rebuilds them, byte for byte.
+    </p>
+    <pre><code># fixtures.yaml
+version: 1
+seed: 7741
+
+targets:
+  - id: invoices
+    format: pdf
+    count: 25
+    size: 300kb
+    name: invoice_{index:04}.pdf
+    expected: accept
+
+  - id: too_big
+    format: pdf
+    size: 12mb
+    expected:
+      outcome: reject
+      reason: size_limit
+
+output:
+  dir: ./fixtures</code></pre>
+    <pre><code>tfg validate fixtures.yaml
+tfg generate fixtures.yaml</code></pre>
+    <p>
+      <code>validate</code> checks the recipe and writes nothing. Every key is in
+      <a href="/docs/recipes/">the recipe reference</a>, and <a href="/recipes/">the recipe gallery</a>
+      has ready recipes to start from.
+    </p>
+  </li>
+</ol>
+
+<section class="section" id="next">
+  <h2>Where to go next</h2>
+  <ul>
+    <li><a href="/test-files-in-ci/">Test files in CI</a> - a GitHub Actions workflow and a GitLab job that build the set in the pipeline</li>
+    <li><a href="/docs/test-frameworks/">Test frameworks</a> - the set inside pytest, Playwright, Vitest and <code>node:test</code></li>
+    <li><a href="/docs/manifest/">The manifest</a> - every field a test can read</li>
+    <li><a href="/docs/commands/">Commands</a> - every flag of every command</li>
+    <li><a href="/presets/">Presets</a> - ready sets for common testing questions</li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+        <li><a href="/corrupt-test-files/">Corrupt test files</a></li>
+        <li><a href="/sample-files/">Sample files</a></li>
+        <li><a href="/test-files-in-ci/">Test files in CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

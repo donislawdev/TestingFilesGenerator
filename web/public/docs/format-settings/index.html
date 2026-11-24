@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="en">
+<title>Format Settings - Every Option of Every Test File Format</title>
+<meta name="description" content="Every setting each format takes, such as pages, picture size, delimiter or encoding, with the values it accepts, its default and what it changes in the file.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/docs/format-settings/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/docs/format-settings/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/docs/format-settings/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="Format Settings - Every Option of Every Test File Format">
+<meta property="og:description" content="Every setting each format takes, such as pages, picture size, delimiter or encoding, with the values it accepts, its default and what it changes in the file.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/docs/format-settings/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Format Settings - Every Option of Every Test File Format">
+<meta name="twitter:description" content="Every setting each format takes, such as pages, picture size, delimiter or encoding, with the values it accepts, its default and what it changes in the file.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - real test files at any exact size, with a manifest saying how your system should react to each one">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Documentation",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Format settings",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/docs\/format-settings\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Main">
+      <a href="/">Home</a>
+      <a href="/formats/">Formats</a>
+      <a href="/presets/">Presets</a>
+      <a href="/docs/" aria-current="true">Documentation</a>
+      <a href="/use-cases/">Use cases</a>
+      <a href="/create-file-exact-size/">Exact size</a>
+      <a href="/faq/">FAQ</a>
+      <a href="/corrupt-test-files/">Corrupt test files</a>
+      <a href="/sample-files/">Sample files</a>
+      <a href="/test-files-in-ci/">Test files in CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Language: English">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>English</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/ar/docs/" hreflang="ar" lang="ar">العربية</a></li>
+        <li><a href="/cs/dokumentace/" hreflang="cs" lang="cs">Čeština</a></li>
+        <li><a href="/de/dokumentation/" hreflang="de" lang="de">Deutsch</a></li>
+        <li><a href="/es/documentacion/" hreflang="es" lang="es">Español</a></li>
+        <li><a href="/fr/documentation/" hreflang="fr" lang="fr">Français</a></li>
+        <li><a href="/hi/docs/" hreflang="hi" lang="hi">हिन्दी</a></li>
+        <li><a href="/id/dokumentasi/" hreflang="id" lang="id">Bahasa Indonesia</a></li>
+        <li><a href="/it/documentazione/" hreflang="it" lang="it">Italiano</a></li>
+        <li><a href="/ja/docs/" hreflang="ja" lang="ja">日本語</a></li>
+        <li><a href="/ko/docs/" hreflang="ko" lang="ko">한국어</a></li>
+        <li><a href="/nl/documentatie/" hreflang="nl" lang="nl">Nederlands</a></li>
+        <li><a href="/pl/dokumentacja/" hreflang="pl" lang="pl">Polski</a></li>
+        <li><a href="/pt-br/documentacao/" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li>
+        <li><a href="/ro/documentatie/" hreflang="ro" lang="ro">Română</a></li>
+        <li><a href="/ru/docs/" hreflang="ru" lang="ru">Русский</a></li>
+        <li><a href="/th/docs/" hreflang="th" lang="th">ไทย</a></li>
+        <li><a href="/tr/dokumantasyon/" hreflang="tr" lang="tr">Türkçe</a></li>
+        <li><a href="/uk/docs/" hreflang="uk" lang="uk">Українська</a></li>
+        <li><a href="/vi/tai-lieu/" hreflang="vi" lang="vi">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/docs/" hreflang="zh-Hans" lang="zh-Hans">简体中文</a></li>
+        <li><a href="/zh-hant/docs/" hreflang="zh-Hant" lang="zh-Hant">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<nav class="docsmenu" aria-label="Documentation pages">
+  <ul>
+    <li><a href="/docs/">Documentation</a></li>
+    <li><a href="/docs/install/">Install</a></li>
+    <li><a href="/docs/getting-started/">Getting started</a></li>
+    <li><a href="/docs/commands/">Commands</a></li>
+    <li><a href="/docs/recipes/">Recipes</a></li>
+    <li><a href="/recipes/">Recipe gallery</a></li>
+    <li><a href="/docs/manifest/">Manifest</a></li>
+    <li><a href="/docs/format-settings/" aria-current="page">Format settings</a></li>
+    <li><a href="/docs/test-frameworks/">Test frameworks</a></li>
+    <li><a href="/docs/desktop-app/">Desktop app</a></li>
+    <li><a href="/tools/">Tools</a></li>
+  </ul>
+</nav>
+<h1>Format settings</h1>
+<p class="lead">
+  Every setting each format takes, with the values it accepts, its default and what it changes in the
+  file. The list is read from the program when this page is built, in the program's own words:
+  <code>tfg formats &lt;id&gt;</code> prints the same for one format.
+</p>
+
+<section class="section" id="how">
+  <h2>How to give a setting</h2>
+  <p>On the command line, <code>--set</code> takes one setting and repeats. In a recipe, the settings go under <code>properties</code>:</p>
+  <pre><code>tfg generate --format pdf --size 1mb --set pages=20 --set page_size=letter --out ./pdf</code></pre>
+  <pre><code>targets:
+  - id: report
+    format: pdf
+    size: 1mb
+    properties:
+      pages: 20
+      page_size: letter</code></pre>
+  <p>
+    A setting left out takes its default. A value outside what the setting accepts is refused before
+    anything is written, with the values that would work. Some settings also limit the smallest size a
+    file can be, and a size below it is refused with the size that would work. The list of formats
+    themselves, with the smallest file of each, is on <a href="/formats/">Formats</a>.
+  </p>
+  <p>
+    <a href="#avif"><code>avif</code></a> <a href="#bmp"><code>bmp</code></a> <a href="#csv"><code>csv</code></a> <a href="#docx"><code>docx</code></a> <a href="#eml"><code>eml</code></a> <a href="#geojson"><code>geojson</code></a> <a href="#gif"><code>gif</code></a> <a href="#html"><code>html</code></a> <a href="#ico"><code>ico</code></a> <a href="#jpg"><code>jpg</code></a> <a href="#json"><code>json</code></a> <a href="#jxl"><code>jxl</code></a> <a href="#log"><code>log</code></a> <a href="#md"><code>md</code></a> <a href="#mp4"><code>mp4</code></a> <a href="#otlp"><code>otlp</code></a> <a href="#pdf"><code>pdf</code></a> <a href="#png"><code>png</code></a> <a href="#pptx"><code>pptx</code></a> <a href="#rtf"><code>rtf</code></a> <a href="#svg"><code>svg</code></a> <a href="#targz"><code>targz</code></a> <a href="#tiff"><code>tiff</code></a> <a href="#txt"><code>txt</code></a> <a href="#wav"><code>wav</code></a> <a href="#webm"><code>webm</code></a> <a href="#webp"><code>webp</code></a> <a href="#xlsx"><code>xlsx</code></a> <a href="#xml"><code>xml</code></a> <a href="#zip"><code>zip</code></a>
+  </p>
+</section>
+
+<section class="section" id="avif">
+  <h2><code>avif</code> AV1 Image File Format</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>width</code></td>
+        <td>1 - 16384 pixels</td>
+        <td></td>
+        <td>How wide the picture is. Left out, a size is chosen that fits the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>height</code></td>
+        <td>1 - 16384 pixels</td>
+        <td></td>
+        <td>How tall the picture is. Left out, a size is chosen that fits the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>quality</code></td>
+        <td>1 - 100</td>
+        <td><code>60</code></td>
+        <td>How much detail the picture keeps. Higher looks better and takes more of the file, leaving less room for padding.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="bmp">
+  <h2><code>bmp</code> Windows Bitmap</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>width</code></td>
+        <td>1 - 20000 pixels</td>
+        <td></td>
+        <td>How wide the picture is. Left out, the picture is sized to fill the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>height</code></td>
+        <td>1 - 20000 pixels</td>
+        <td></td>
+        <td>How tall the picture is. Left out, the picture is sized to fill the bytes you asked for.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="csv">
+  <h2><code>csv</code> Comma-Separated Values</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>delimiter</code></td>
+        <td><code>comma</code>, <code>pipe</code>, <code>semicolon</code>, <code>tab</code></td>
+        <td><code>comma</code></td>
+        <td>What separates the fields. Choose semicolon for the shape a European spreadsheet exports.</td>
+      </tr>
+      <tr>
+        <td><code>line_ending</code></td>
+        <td><code>crlf</code>, <code>lf</code></td>
+        <td><code>lf</code></td>
+        <td>How each row ends. Choose crlf for the shape RFC 4180 asks for and Excel writes.</td>
+      </tr>
+      <tr>
+        <td><code>header</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>true</code></td>
+        <td>Whether the first row names the columns. Turn it off for a table dumped straight out of a database.</td>
+      </tr>
+      <tr>
+        <td><code>quote_style</code></td>
+        <td><code>all</code>, <code>minimal</code>, <code>none</code></td>
+        <td><code>minimal</code></td>
+        <td>Which fields carry quotes. With none the description stops carrying separators as well, because an unquoted field cannot hold one.</td>
+      </tr>
+      <tr>
+        <td><code>columns</code></td>
+        <td>2 - 32768 columns</td>
+        <td><code>6</code></td>
+        <td>How many columns each row has. Above 16384 a spreadsheet may show only the first 16384 and drop the rest without a word.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="docx">
+  <h2><code>docx</code> Word (Office Open XML)</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>paragraphs</code></td>
+        <td>1 - 50000 paragraphs</td>
+        <td><code>1</code></td>
+        <td>How many paragraphs of text the document holds. The rest of the size you asked for is carried by a part of the package that is not shown.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="eml">
+  <h2><code>eml</code> Email message</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>body</code></td>
+        <td><code>alternative</code>, <code>html</code>, <code>plain</code></td>
+        <td><code>plain</code></td>
+        <td>Which text the message carries. With plain text and HTML the same words go in both, and a mail program shows one of them.</td>
+      </tr>
+      <tr>
+        <td><code>layout</code></td>
+        <td><code>newsletter</code>, <code>simple</code></td>
+        <td><code>simple</code></td>
+        <td>How the text is laid out. simple is the text alone. newsletter wraps it the way a mailing list does - a title, a Read more button and a footer with an unsubscribe link, in a table 600 pixels wide styled both by a style sheet and by style attributes, and the plain text writes out the addresses the HTML puts behind its links. It adds List-Id, List-Unsubscribe and List-Unsubscribe-Post, by which mail systems tell bulk mail apart, and the manifest gives the unsubscribe address as unsubscribe_url. The message has no DKIM signature, so a mail program that follows RFC 8058 offers no one-click unsubscribe. Messages inside stay simple.</td>
+      </tr>
+      <tr>
+        <td><code>text_encoding</code></td>
+        <td><code>7bit</code>, <code>8bit</code>, <code>base64</code>, <code>quoted-printable</code></td>
+        <td><code>7bit</code></td>
+        <td>How the text is written. 7bit keeps it to plain ASCII. quoted-printable, 8bit and base64 add a line in Polish, and in Japanese when the charset is utf-8, because that is what they are for. quoted-printable spells those letters as =C5=BC, 8bit writes them as they are, and base64 writes the whole text in base64. To reach every size base64 ends the text with empty lines, and with crlf an odd size gives the Message-ID one more digit.</td>
+      </tr>
+      <tr>
+        <td><code>charset</code></td>
+        <td><code>iso-8859-2</code>, <code>utf-8</code>, <code>windows-1250</code></td>
+        <td><code>utf-8</code></td>
+        <td>The character set of the text when the text encoding is not 7bit. iso-8859-2 and windows-1250 hold Polish and no Japanese, and they write &#261;, &#347; and &#378; as different bytes, so a program that takes one for the other shows the wrong letters. MimeKit with no code page provider registered tries UTF-8 and then Latin-1, which shows the Polish letters of both wrong, and reads them right once one is. Go&#39;s standard library converts no character set at all. With 7bit the text is plain ASCII and says us-ascii, whatever this is set to.</td>
+      </tr>
+      <tr>
+        <td><code>headers</code></td>
+        <td><code>ascii</code>, <code>encoded</code>, <code>utf8</code></td>
+        <td><code>ascii</code></td>
+        <td>Whether the subject, the names of the sender and the recipient and the names of attached files carry letters outside ASCII, and how. encoded writes them the way RFC 2047 and RFC 2231 say. utf8 writes them as they are (RFC 6532), and Python&#39;s email package reads that and reports a defect in the From and To lines.</td>
+      </tr>
+      <tr>
+        <td><code>recipients</code></td>
+        <td>1 - 100000</td>
+        <td><code>1</code></td>
+        <td>How many addresses the To line carries, each on a line of its own. mailparser refuses a header of more than 1 MiB, which about 33 800 addresses reach with crlf and 34 900 with lf, and Python 3.14&#39;s email package takes minutes over tens of thousands of them.</td>
+      </tr>
+      <tr>
+        <td><code>line_endings</code></td>
+        <td><code>crlf</code>, <code>lf</code></td>
+        <td><code>crlf</code></td>
+        <td>How every line of the file ends. The standard is crlf. Python, MimeKit, mailparser and Go&#39;s standard library all read lf too, so the difference shows in programs that split the lines themselves.</td>
+      </tr>
+      <tr>
+        <td><code>attachments</code></td>
+        <td>0 - 10000</td>
+        <td><code>0</code></td>
+        <td>How many files the message carries. When the files are not all alike, describe each kind on its own instead - with Add files inside on Several batches, or contains in a recipe. mailparser refuses a message of more than 1000 MIME entities, and the manifest gives this one&#39;s count as mime_entities.</td>
+      </tr>
+      <tr>
+        <td><code>attachment_format</code></td>
+        <td>the id of a format, such as <code>png</code> or <code>csv</code></td>
+        <td><code>txt</code></td>
+        <td>The format of the attached files. <code>eml</code> attaches a message as it is, the way mail is forwarded, with no base64 around it.</td>
+      </tr>
+      <tr>
+        <td><code>attachment_size</code></td>
+        <td>a size such as <code>2mb</code></td>
+        <td><code>8kb</code></td>
+        <td>How big each attached file is. The message grows by about a third more, because attached files travel in base64.</td>
+      </tr>
+      <tr>
+        <td><code>filename_style</code></td>
+        <td><code>both</code>, <code>content-type</code>, <code>none</code>, <code>rfc2047</code>, <code>rfc2231</code></td>
+        <td><code>rfc2231</code></td>
+        <td>How the names of attached files and pictures are written. rfc2231 is the standard way. rfc2047 is the encoded form RFC 2047 forbids inside a name, and many readers decode it anyway. both writes the two, and content-type puts the name only where old mail programs looked for it. none writes no name at all, and a program that needs one has to make one up - Thunderbird 157 calls them Part 1.2, Part 1.3 and so on. Go&#39;s standard library reads no name from content-type and the encoded text itself from rfc2047. Unless the headers are encoded, a name is written as it is and only where it goes changes, so rfc2047 and both write the same bytes.</td>
+      </tr>
+      <tr>
+        <td><code>message_depth</code></td>
+        <td>1 - 2000</td>
+        <td><code>1</code></td>
+        <td>How many messages deep the message goes. 1 is a message alone. 2 carries a forwarded message as an attachment, and each step adds one more inside the last, the smallest message each can be. Python 3.14&#39;s email package runs out of recursion at around 490, and MimeKit stops taking them apart past 513 without a word. Thunderbird 157 shows up to 32 in full. Past that the 32nd message inside shows only its headers and nothing under it appears, without a word.</td>
+      </tr>
+      <tr>
+        <td><code>inline</code></td>
+        <td>0 - 10000</td>
+        <td><code>0</code></td>
+        <td>How many pictures the text shows. With html and alternative each one sits beside the HTML and the HTML points at it through cid:. With plain there is no HTML to point from, so they travel after the text as pictures to show inline. mailparser lists them among the attachments, and so does Python&#39;s email package when the HTML is alone. MimeKit never does.</td>
+      </tr>
+      <tr>
+        <td><code>inline_format</code></td>
+        <td>the id of a picture format, such as <code>png</code> or <code>jpg</code></td>
+        <td><code>png</code></td>
+        <td>The format of the pictures. Any format whose files are pictures, such as <code>png</code>, <code>jpg</code> or <code>gif</code>.</td>
+      </tr>
+      <tr>
+        <td><code>inline_size</code></td>
+        <td>a size such as <code>2mb</code></td>
+        <td><code>8kb</code></td>
+        <td>How big each picture is. Like an attached file it travels in base64, about a third larger.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="geojson">
+  <h2><code>geojson</code> GeoJSON</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>geometry</code></td>
+        <td><code>geometrycollection</code>, <code>linestring</code>, <code>mixed</code>, <code>multilinestring</code>, <code>multipoint</code>, <code>multipolygon</code>, <code>point</code>, <code>polygon</code></td>
+        <td><code>mixed</code></td>
+        <td>Which kind of geometry each feature carries. With mixed the seven kinds take turns, so a file of seven features or more holds every one of them.</td>
+      </tr>
+      <tr>
+        <td><code>formatting</code></td>
+        <td><code>indented</code>, <code>minified</code>, <code>record-per-line</code></td>
+        <td><code>record-per-line</code></td>
+        <td>How the document is laid out. Every reader accepts all three - minified puts the whole file on one line and ends without a newline, and indented puts every number on its own line, which makes the same features several times larger.</td>
+      </tr>
+      <tr>
+        <td><code>precision</code></td>
+        <td>0 - 15 decimal places</td>
+        <td><code>6</code></td>
+        <td>How many decimal places every coordinate is written with. Six is about ten centimetres on the ground, the figure RFC 7946 gives.</td>
+      </tr>
+      <tr>
+        <td><code>altitude</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Whether every position carries a third number, the height in metres from -400 to 8848. A program that reads two numbers a position has to ignore it or refuse the file.</td>
+      </tr>
+      <tr>
+        <td><code>vertices</code></td>
+        <td>3 - 1000000 points</td>
+        <td><code>8</code></td>
+        <td>How many points every line, outline and MultiPoint has. A feature larger than 1 MiB is followed by spaces that fill the last bytes, and at precision 3 or less fewer points fit, because each needs its own step of longitude.</td>
+      </tr>
+      <tr>
+        <td><code>holes</code></td>
+        <td>0 - 100000 holes</td>
+        <td><code>0</code></td>
+        <td>How many holes every polygon has inside its outline. Each hole has four points and runs the other way round to its outline, as RFC 7946 asks. Holes need 6 or more vertices, fewer of them fit at precision 3 or less, and points and lines do not change.</td>
+      </tr>
+      <tr>
+        <td><code>winding</code></td>
+        <td><code>reversed</code>, <code>rfc7946</code></td>
+        <td><code>rfc7946</code></td>
+        <td>Which way polygon outlines run - rfc7946 is counter-clockwise and reversed is clockwise, and holes always run the other way. RFC 7946 tells readers to accept both, and they disagree about which side of the outline is inside. Points and lines do not change.</td>
+      </tr>
+      <tr>
+        <td><code>antimeridian</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Whether every line and outline crosses the 180th meridian without being cut in two. RFC 7946 asks for such shapes to be cut, and readers differ - read as flat coordinates, a crossing outline crosses itself and runs the other way round. A single point cannot cross and is placed beside it.</td>
+      </tr>
+      <tr>
+        <td><code>unlocated</code></td>
+        <td><code>all</code>, <code>none</code>, <code>some</code></td>
+        <td><code>none</code></td>
+        <td>How many features have no place - RFC 7946 writes their geometry as null. some takes the place of every fifth feature, from the fifth on, and all takes it from every one, so the settings that shape a geometry change nothing.</td>
+      </tr>
+      <tr>
+        <td><code>ids</code></td>
+        <td><code>mixed</code>, <code>none</code>, <code>number</code>, <code>string</code></td>
+        <td><code>number</code></td>
+        <td>Which type every feature id has. RFC 7946 allows a number or a string, mixed gives odd features a number and even ones a string such as f2, and none leaves the id out. Readers that turn the id into a key may keep only one of the two types.</td>
+      </tr>
+      <tr>
+        <td><code>bbox</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Whether the collection and every feature with a place carry a bbox, the box their coordinates lie in. The collection&#39;s bbox follows its features, because its extent is known only after the last one, and a box across the antimeridian has a west edge greater than its east edge, as RFC 7946 asks.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="gif">
+  <h2><code>gif</code> Graphics Interchange Format</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>width</code></td>
+        <td>1 - 20000 pixels</td>
+        <td></td>
+        <td>How wide the picture is. Left out, a size is chosen that fits the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>height</code></td>
+        <td>1 - 20000 pixels</td>
+        <td></td>
+        <td>How tall the picture is. Left out, a size is chosen that fits the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>frames</code></td>
+        <td>1 - 60</td>
+        <td><code>3</code></td>
+        <td>How many frames the animation has. Set it to 1 for a still picture.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="html">
+  <h2><code>html</code> HyperText Markup Language</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>structure</code></td>
+        <td><code>document</code>, <code>fragment</code></td>
+        <td><code>document</code></td>
+        <td>Whether the file is a whole page or only the blocks that would sit inside one. A fragment has no doctype, no html element and no body, which is what a content field or the body of an email really holds. It is far smaller, so the smallest fragment sits well below the smallest page.</td>
+      </tr>
+      <tr>
+        <td><code>nesting</code></td>
+        <td>0 - 100000</td>
+        <td><code>0</code></td>
+        <td>How many div elements the content sits inside, each one inside the last. 0 puts it straight in the body, and the label stays outside so the page still says what it is. Chromium keeps 511 levels and moves the deeper ones out, and the Nu HTML Checker calls a page that deep an error. lxml drops the content of a page nested about 250 deep and keeps only the label, and jsdom, parse5 and DOMPurify can run out of stack writing out a page from about 2 000 deep.</td>
+      </tr>
+      <tr>
+        <td><code>characters</code></td>
+        <td><code>ascii</code>, <code>international</code></td>
+        <td><code>ascii</code></td>
+        <td>Whether the page carries text outside ASCII. international adds paragraphs in Polish, Russian, Japanese and Arabic, the Arabic right to left, with emoji, a letter written as two code points and named and numbered entities. A program without a Japanese or Arabic font shows boxes in their place.</td>
+      </tr>
+      <tr>
+        <td><code>elements</code></td>
+        <td><code>basic</code>, <code>every</code></td>
+        <td><code>basic</code></td>
+        <td>Which elements the page uses. basic is headings, paragraphs, lists, tables and quotes. every adds a block that uses every element of the HTML standard at least once, all 22 kinds of input and small pictures and a sound inside the page, with no script and nothing fetched from a network. A fragment has no head, so it leaves out the eight elements that only a whole page holds.</td>
+      </tr>
+      <tr>
+        <td><code>links</code></td>
+        <td>0 - 1000000</td>
+        <td><code>0</code></td>
+        <td>How many links the page carries, in a list above the pictures and the blocks. They go through 18 kinds in turn and then repeat - a link to the list itself, relative, to the folder above, from the root, a query alone, absolute with a query and a fragment, http, without a scheme, percent encoded, an international domain, a port, mailto:, tel:, ftp:, a download, a new window, nofollow and data: - and the text of each says which it is. Every address is on a domain kept for examples. DOMPurify with its defaults takes out the data: address and the target that opens a new window, and it ran out of 8 GB of memory over a million links, which lxml read in 3 seconds. The catalogue of every element has six links of its own, which this does not count.</td>
+      </tr>
+      <tr>
+        <td><code>bom</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Whether the file opens with a byte order mark. A reader that has to guess the encoding needs one, and a reader that does not expect it shows it as stray characters at the start of the file.</td>
+      </tr>
+      <tr>
+        <td><code>formatting</code></td>
+        <td><code>indented</code>, <code>lines</code>, <code>minified</code></td>
+        <td><code>lines</code></td>
+        <td>How the page is laid out. minified puts the whole file on one line and ends without a newline. indented puts two spaces in front of a line for every element it sits in, and leaves the text of pre as it is. All three show the same. A program reading line by line gets a minified page as one line - Go&#39;s bufio.Scanner refuses a line past 64 KB unless given a larger buffer - and text read by joining what the elements hold runs the last word of one block into the first word of the next. Indented with nesting puts more spaces in front of every line with each level, so nesting 1000 makes a page of at least 1.9 MB.</td>
+      </tr>
+      <tr>
+        <td><code>styles</code></td>
+        <td><code>embedded</code>, <code>inline</code>, <code>none</code></td>
+        <td><code>none</code></td>
+        <td>Whether the page carries CSS, and where. embedded puts the rules in a style element, in the head of a page and at the very start of a fragment. inline puts the same rules in a style attribute on every heading, paragraph, list, table and quote the page is filled with, and the page looks the same. DOMPurify with its defaults drops the style element without listing it as removed and keeps the attributes. lxml&#39;s text_content and BeautifulSoup on html5lib count the rules as text of the page. The catalogue of every element takes the embedded rules and no attributes.</td>
+      </tr>
+      <tr>
+        <td><code>inline</code></td>
+        <td>0 - 10000</td>
+        <td><code>0</code></td>
+        <td>How many pictures the page shows, each one a real file of its format written into the page as a data: URL, so opening the page fetches nothing. They sit above the blocks, each in a paragraph of its own, and each says which it is in its alt text.</td>
+      </tr>
+      <tr>
+        <td><code>inline_format</code></td>
+        <td>the id of a picture format, such as <code>png</code> or <code>jpg</code></td>
+        <td><code>png</code></td>
+        <td>The format of the pictures. Any format whose files are pictures, such as <code>png</code>, <code>jpg</code> or <code>gif</code>. Chromium shows every one of them but tiff.</td>
+      </tr>
+      <tr>
+        <td><code>inline_size</code></td>
+        <td>a size such as <code>2mb</code></td>
+        <td><code>8kb</code></td>
+        <td>How big each picture is. Inside the page it is base64 on one line, about a third larger. lxml, and BeautifulSoup on top of it, leave out a picture past about 7.1 MB unless told to read huge trees. On Linux lxml took over 20 seconds over such a page, and with a 15 MB picture it lost the rest of the page as well.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="ico">
+  <h2><code>ico</code> Windows Icon</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>width</code></td>
+        <td>1 - 256 pixels</td>
+        <td></td>
+        <td>How wide the icon is. Left out, the largest standard icon size that fits is used.</td>
+      </tr>
+      <tr>
+        <td><code>height</code></td>
+        <td>1 - 256 pixels</td>
+        <td></td>
+        <td>How tall the icon is. Left out, the largest standard icon size that fits is used.</td>
+      </tr>
+      <tr>
+        <td><code>embed</code></td>
+        <td><code>bmp</code>, <code>png</code></td>
+        <td><code>bmp</code></td>
+        <td>What sits inside the icon. A bitmap is read by every version of Windows. A PNG makes the file much smaller and needs Windows Vista or newer.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="jpg">
+  <h2><code>jpg</code> JPEG</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>width</code></td>
+        <td>1 - 20000 pixels</td>
+        <td></td>
+        <td>How wide the picture is. Left out, a size is chosen that fits the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>height</code></td>
+        <td>1 - 20000 pixels</td>
+        <td></td>
+        <td>How tall the picture is. Left out, a size is chosen that fits the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>quality</code></td>
+        <td>1 - 100</td>
+        <td><code>90</code></td>
+        <td>How much detail survives compression, from 1 to 100. JPEG throws detail away by design, so a low number gives a visibly softer picture. It changes how large the picture encodes to, not the size of the file you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>content</code></td>
+        <td><code>placeholder</code>, <code>test</code></td>
+        <td><code>test</code></td>
+        <td>What the picture shows. A test pattern is for checking how a file is read. A placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist.</td>
+      </tr>
+      <tr>
+        <td><code>text</code></td>
+        <td>one line of up to 100 characters</td>
+        <td><code>{width} &#215; {height}</code></td>
+        <td>The words in the middle of a placeholder. <code>{width}</code> and <code>{height}</code> become the size of the picture, <code>{index}</code> the number of the file and <code>{index:04}</code> the same number with four digits.</td>
+      </tr>
+      <tr>
+        <td><code>background</code></td>
+        <td>a colour such as <code>cccccc</code> or <code>ccc</code></td>
+        <td><code>cccccc</code></td>
+        <td>The colour of a placeholder, such as <code>cccccc</code> or <code>ccc</code>. In a recipe write it without <code>#</code> or in quotes, because <code>#</code> starts a comment there.</td>
+      </tr>
+      <tr>
+        <td><code>foreground</code></td>
+        <td>a colour such as <code>cccccc</code> or <code>ccc</code></td>
+        <td><code>555555</code></td>
+        <td>The colour of the words and the guides on a placeholder, written the same way as background.</td>
+      </tr>
+      <tr>
+        <td><code>guides</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Draws a frame along the edges of a placeholder, both diagonals and a circle touching its shorter sides, so you can see where a page crops or stretches the picture.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="json">
+  <h2><code>json</code> JavaScript Object Notation</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>formatting</code></td>
+        <td><code>indented</code>, <code>minified</code>, <code>record-per-line</code></td>
+        <td><code>record-per-line</code></td>
+        <td>How the document is laid out. Every reader accepts all three, so this changes what meets everything around the parser rather than the parser itself - minified puts the whole file on one line and ends without a newline, and indented makes the same records several times larger.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="jxl">
+  <h2><code>jxl</code> JPEG XL</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>width</code></td>
+        <td>1 - 16384 pixels</td>
+        <td></td>
+        <td>How wide the picture is. Left out, a size is chosen that fits the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>height</code></td>
+        <td>1 - 16384 pixels</td>
+        <td></td>
+        <td>How tall the picture is. Left out, a size is chosen that fits the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>quality</code></td>
+        <td>1 - 100</td>
+        <td><code>90</code></td>
+        <td>How much detail the picture keeps. Higher looks better and takes more of the file, leaving less room for padding.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="log">
+  <h2><code>log</code> Server and application log</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>entry_format</code></td>
+        <td><code>apache-combined</code>, <code>apache-common</code>, <code>json-lines</code>, <code>nginx</code>, <code>plain</code>, <code>syslog</code></td>
+        <td><code>apache-combined</code></td>
+        <td>Which kind of log to write. Web server shapes carry a request and a status, the others carry a level and a message.</td>
+      </tr>
+      <tr>
+        <td><code>timestamps</code></td>
+        <td><code>advancing</code>, <code>fixed</code></td>
+        <td><code>advancing</code></td>
+        <td>Whether each entry happens later than the one before it. Fixed puts every entry at the same instant, which is what this format did before it could advance.</td>
+      </tr>
+      <tr>
+        <td><code>rate</code></td>
+        <td>1 - 1000000 entries per second</td>
+        <td><code>1</code></td>
+        <td>How fast the entries arrive. Only means anything while timestamps advance.</td>
+      </tr>
+      <tr>
+        <td><code>methods</code></td>
+        <td><code>get</code>, <code>mixed</code>, <code>read</code></td>
+        <td><code>get</code></td>
+        <td>Which request methods appear: GET only, GET and HEAD, or mixed, which adds POST, PUT, PATCH and DELETE to those two.</td>
+      </tr>
+      <tr>
+        <td><code>status_mix</code></td>
+        <td><code>client-errors</code>, <code>realistic</code>, <code>server-errors</code>, <code>success</code></td>
+        <td><code>realistic</code></td>
+        <td>Which response codes appear. Realistic is mostly success with a tail of errors.</td>
+      </tr>
+      <tr>
+        <td><code>level_mix</code></td>
+        <td><code>debug</code>, <code>errors</code>, <code>quiet</code>, <code>realistic</code></td>
+        <td><code>realistic</code></td>
+        <td>Which severities appear. Only the plain and JSON Lines shapes carry one, and asking for it beside another shape is refused.</td>
+      </tr>
+      <tr>
+        <td><code>ip_version</code></td>
+        <td><code>mixed</code>, <code>v4</code>, <code>v6</code></td>
+        <td><code>v4</code></td>
+        <td>Which kind of client address appears. Choose v6 to find out whether a reader handles it.</td>
+      </tr>
+      <tr>
+        <td><code>line_ending</code></td>
+        <td><code>crlf</code>, <code>lf</code></td>
+        <td><code>lf</code></td>
+        <td>How each line ends. Choose crlf for a log written by a Windows service.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="md">
+  <h2><code>md</code> Markdown</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>encoding</code></td>
+        <td><code>utf-16be</code>, <code>utf-16le</code>, <code>utf-8</code></td>
+        <td><code>utf-8</code></td>
+        <td>Which encoding the characters are written in. UTF-16 stores two bytes per character, so a file in it always has an even number of bytes and an odd size is refused.</td>
+      </tr>
+      <tr>
+        <td><code>bom</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Whether the file opens with a byte order mark. A reader that has to guess the encoding needs one, and a reader that does not expect it shows it as stray characters at the start of the file.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="mp4">
+  <h2><code>mp4</code> MP4 video</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>width</code></td>
+        <td>1 - 16384 pixels</td>
+        <td></td>
+        <td>How wide the picture is. Left out, a size is chosen that fits the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>height</code></td>
+        <td>1 - 16384 pixels</td>
+        <td></td>
+        <td>How tall the picture is. Left out, a size is chosen that fits the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>duration</code></td>
+        <td>a length of time such as <code>10s</code></td>
+        <td><code>10s</code></td>
+        <td>How long the film plays. It has to end on a frame, so at 30 frames a second it goes in steps of 100ms.</td>
+      </tr>
+      <tr>
+        <td><code>change_interval</code></td>
+        <td>a length of time such as <code>10s</code></td>
+        <td><code>1s</code></td>
+        <td>How often the picture changes: the clock in it moves on and the square takes a step. Each change costs a whole picture in bytes. An interval as long as the film or longer keeps one picture throughout.</td>
+      </tr>
+      <tr>
+        <td><code>frame_rate</code></td>
+        <td><code>1</code>, <code>5</code>, <code>10</code>, <code>12</code>, <code>15</code>, <code>24</code>, <code>25</code>, <code>30</code>, <code>48</code>, <code>50</code>, <code>60</code></td>
+        <td><code>30</code></td>
+        <td>How many frames the film shows each second.</td>
+      </tr>
+      <tr>
+        <td><code>keyframe_interval</code></td>
+        <td>a length of time such as <code>10s</code></td>
+        <td><code>1m</code></td>
+        <td>How far apart the frames are that a player can start from. Shorter makes skipping through a long film faster and the file bigger, because each of them carries the whole picture twice.</td>
+      </tr>
+      <tr>
+        <td><code>quality</code></td>
+        <td>1 - 100</td>
+        <td><code>60</code></td>
+        <td>How much detail the picture keeps. Higher looks better and takes more of the file, leaving less room for padding.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="otlp">
+  <h2><code>otlp</code> OpenTelemetry Protocol JSON</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>signal</code></td>
+        <td><code>logs</code>, <code>metrics</code>, <code>traces</code></td>
+        <td><code>traces</code></td>
+        <td>Which kind of telemetry the file holds. traces writes spans, logs writes log records and metrics writes the measurements of a service, collected every interval. A file holds one kind, as the OTLP file format asks.</td>
+      </tr>
+      <tr>
+        <td><code>formatting</code></td>
+        <td><code>indented</code>, <code>minified</code>, <code>record-per-line</code></td>
+        <td><code>record-per-line</code></td>
+        <td>How the file is laid out. Record per line puts one batch on each line, which is what the OTLP file exporter writes and the file receiver of the OpenTelemetry Collector reads, and the file name ends in .jsonl. Minified and indented make the whole file one request, the body to post to an OTLP endpoint, and the file name ends in .json. Posted as a body, a file of several lines loses every line after the first in the Collector, and its file receiver reads nothing from an indented file.</td>
+      </tr>
+      <tr>
+        <td><code>bom</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Whether the file opens with a byte order mark. A reader that has to guess the encoding needs one, and a reader that does not expect it shows it as stray characters at the start of the file.</td>
+      </tr>
+      <tr>
+        <td><code>batch</code></td>
+        <td>1 - 1000</td>
+        <td><code>512</code></td>
+        <td>How many spans or log records each line holds. 512 is the batch an OpenTelemetry SDK sends by default. Only the formatting record per line has batches. Beside other formatting, or beside the signal metrics, where a line holds one collection, a batch is refused.</td>
+      </tr>
+      <tr>
+        <td><code>start</code></td>
+        <td>a moment in UTC such as <code>2026-08-01T12:00:00Z</code></td>
+        <td><code>2026-08-01T12:00:00Z</code></td>
+        <td>The moment the first span or log record is dated, and the moment a service writing metrics started. The later ones follow it at the rate or every interval. Change it when the system that receives the file refuses or hides data that is too old.</td>
+      </tr>
+      <tr>
+        <td><code>rate</code></td>
+        <td>1 - 1000000 entries per second</td>
+        <td><code>1</code></td>
+        <td>How many traces or log records begin each second. Metrics are collected every interval instead, and beside signal metrics a rate is refused.</td>
+      </tr>
+      <tr>
+        <td><code>depth</code></td>
+        <td>1 - 100</td>
+        <td><code>3</code></td>
+        <td>How many spans each trace has, each one the child of the one before it. 1 leaves every span without a parent. It shapes spans, and beside signal logs or metrics it is refused.</td>
+      </tr>
+      <tr>
+        <td><code>status_mix</code></td>
+        <td><code>client-errors</code>, <code>realistic</code>, <code>server-errors</code>, <code>success</code></td>
+        <td><code>realistic</code></td>
+        <td>Which response codes the requests end with. A code of 500 or above marks its span as an error, as the HTTP conventions of OpenTelemetry ask, and every other code leaves the status unset. It shapes spans, and beside signal logs or metrics it is refused.</td>
+      </tr>
+      <tr>
+        <td><code>level_mix</code></td>
+        <td><code>debug</code>, <code>errors</code>, <code>quiet</code>, <code>realistic</code></td>
+        <td><code>realistic</code></td>
+        <td>Which severities the log records carry. Realistic is mostly INFO with some of the others. It shapes log records, and beside signal traces or metrics it is refused.</td>
+      </tr>
+      <tr>
+        <td><code>trace_context</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>true</code></td>
+        <td>Whether every log record names the trace and the span it was written in. The file holds no spans, so those ids match nothing in it. It shapes log records, and beside signal traces or metrics it is refused.</td>
+      </tr>
+      <tr>
+        <td><code>metric_kind</code></td>
+        <td><code>exponential-histogram</code>, <code>gauge</code>, <code>histogram</code>, <code>mixed</code>, <code>sum</code>, <code>summary</code></td>
+        <td><code>mixed</code></td>
+        <td>Which metrics the file holds. gauge writes jvm.cpu.recent_utilization and shop.orders.pending, sum writes jvm.cpu.time, jvm.class.loaded and jvm.memory.used, histogram writes http.server.request.duration in the buckets the OpenTelemetry conventions name, exponential histogram writes jvm.gc.duration in buckets that double every eight, and summary writes http.server.requests as three percentiles, the way Micrometer writes a timer. mixed writes all of them. gauge and sum each hold whole numbers and fractions.</td>
+      </tr>
+      <tr>
+        <td><code>temporality</code></td>
+        <td><code>cumulative</code>, <code>delta</code></td>
+        <td><code>cumulative</code></td>
+        <td>Whether a sum or a histogram counts everything since the service started or only what came since the collection before. cumulative is what an SDK sends by default. delta leaves jvm.memory.used cumulative, as the delta setting of an SDK does. Beside the metric kind gauge or summary it is refused.</td>
+      </tr>
+      <tr>
+        <td><code>exemplars</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Whether the durations of requests name the trace and the span a measurement was taken in, one for each bucket a collection measured in. The file holds no spans, so those ids match nothing in it. Only http.server.request.duration has them, and beside a metric kind without it they are refused.</td>
+      </tr>
+      <tr>
+        <td><code>interval</code></td>
+        <td>1 - 86400 seconds</td>
+        <td><code>60</code></td>
+        <td>How long a service waits between two collections of its metrics. 60 is what an SDK uses by default. Every point of a collection is dated at the same moment, and with the formatting record per line a line holds one collection.</td>
+      </tr>
+      <tr>
+        <td><code>id_encoding</code></td>
+        <td><code>base64</code>, <code>hex</code>, <code>upper-hex</code></td>
+        <td><code>hex</code></td>
+        <td>How trace and span ids are written. hex is what the OTLP specification asks for. Upper-case hex writes the same digits in capitals, which the specification allows, and the OpenTelemetry Collector writes them back in lower case. base64 writes them the way the JSON mapping of protobuf writes bytes, which the specification forbids - the file receiver of the Collector drops every batch that holds an id without a word and its HTTP receiver answers 400. A reader built on the protobuf library reads base64 ids right and hex ids as something else.</td>
+      </tr>
+      <tr>
+        <td><code>enum_encoding</code></td>
+        <td><code>name</code>, <code>number</code></td>
+        <td><code>number</code></td>
+        <td>How the kind of a span, the code of its status, the severity of a log record and the temporality of a sum or a histogram are written. number is what the OTLP specification asks for. name writes names such as SPAN_KIND_SERVER, which the specification forbids. The OpenTelemetry Collector reads them anyway and writes numbers back, and the Rust crate opentelemetry-proto refuses a span written that way.</td>
+      </tr>
+      <tr>
+        <td><code>key_case</code></td>
+        <td><code>camel</code>, <code>snake</code></td>
+        <td><code>camel</code></td>
+        <td>How the keys of the file are written. camelCase is what the OTLP specification asks for, such as traceId. snake_case writes the names the .proto files give the fields, such as trace_id, which the specification calls not valid. The OpenTelemetry Collector reads them and writes camelCase back, and the Rust crate opentelemetry-proto refuses the file.</td>
+      </tr>
+      <tr>
+        <td><code>large_numbers</code></td>
+        <td><code>number</code>, <code>text</code></td>
+        <td><code>text</code></td>
+        <td>How times and the other numbers of 64 bits are written. text is what the OTLP specification asks a writer for, such as &#34;1785585600000000000&#34;. number writes them as JSON numbers, which a reader is told to take as well, and the OpenTelemetry Collector does. A reader that holds every JSON number as a double, as JavaScript does, gets every time to the nearest 256 nanoseconds.</td>
+      </tr>
+      <tr>
+        <td><code>time_order</code></td>
+        <td><code>in-order</code>, <code>out-of-order</code></td>
+        <td><code>in-order</code></td>
+        <td>Whether every trace, log record or collection is dated later than the one before it. Out of order swaps the times of every two neighbours, so every second one is dated before the one in front of it. The specification of the OTLP file promises no order, and the OpenTelemetry Collector reads the file and writes it back unchanged. What the system storing the data does with what comes late is the question this file asks.</td>
+      </tr>
+      <tr>
+        <td><code>end_before_start</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Whether every span is dated with its end before its start, the two times changed places. The OpenTelemetry Collector reads such a span and writes it back unchanged. It shapes spans, and beside signal logs or metrics it is refused.</td>
+      </tr>
+      <tr>
+        <td><code>empty_envelope</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Whether the file opens with a line holding a batch with nothing in it, which the OTLP specification asks senders not to write. The file receiver of the OpenTelemetry Collector reads the line and writes nothing for it. Only the formatting record per line has a line to spare, and beside other formatting it is refused.</td>
+      </tr>
+      <tr>
+        <td><code>body</code></td>
+        <td><code>any-value</code>, <code>text</code></td>
+        <td><code>text</code></td>
+        <td>What the body of a log record holds. Text is a sentence. Every kind of value gives the seven kinds of value OTLP has in turn - text, a boolean, the whole number 2^53 + 1, a fraction, a list, a map and bytes - and the OpenTelemetry Collector reads them and writes them back unchanged. With large numbers written as JSON numbers, a reader that holds numbers as doubles reads that whole number one less. It shapes log records, and beside signal traces or metrics it is refused.</td>
+      </tr>
+      <tr>
+        <td><code>non_finite</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Whether jvm.cpu.recent_utilization reports values that are not numbers: NaN in the second of every four collections, and Infinity and -Infinity in turn in the fourth, written as text the way the JSON mapping of protobuf writes them. The OpenTelemetry Collector reads them and writes them back unchanged. Beside a metric kind without that gauge it is refused.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="pdf">
+  <h2><code>pdf</code> Portable Document Format</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>pages</code></td>
+        <td>1 - 5000</td>
+        <td><code>1</code></td>
+        <td>How many pages the document has.</td>
+      </tr>
+      <tr>
+        <td><code>page_size</code></td>
+        <td><code>a3</code>, <code>a4</code>, <code>a5</code>, <code>legal</code>, <code>letter</code>, <code>mixed</code></td>
+        <td><code>a4</code></td>
+        <td>The paper size every page uses. Mixed goes through a4, letter, legal, a3 and a5 in turn, one a page, and needs at least two pages.</td>
+      </tr>
+      <tr>
+        <td><code>orientation</code></td>
+        <td><code>landscape</code>, <code>mixed</code>, <code>portrait</code></td>
+        <td><code>portrait</code></td>
+        <td>Whether pages stand upright or lie wide. Mixed alternates the two, starting upright, and needs at least two pages.</td>
+      </tr>
+      <tr>
+        <td><code>rotate</code></td>
+        <td><code>0</code>, <code>90</code>, <code>180</code>, <code>270</code></td>
+        <td><code>0</code></td>
+        <td>Asks the reader to turn every page clockwise by this many degrees when it shows it. The page itself stays upright, so a reader that ignores the request shows it unturned.</td>
+      </tr>
+      <tr>
+        <td><code>pdf_version</code></td>
+        <td><code>1.4</code>, <code>1.7</code></td>
+        <td><code>1.7</code></td>
+        <td>The version written at the start of the file. Nothing else changes, because the document uses nothing newer than 1.4.</td>
+      </tr>
+      <tr>
+        <td><code>title</code></td>
+        <td>any text</td>
+        <td></td>
+        <td>The title a reader shows in its title bar and in the document properties. Left empty, the title is the self describing label, or the name of this tool without one.</td>
+      </tr>
+      <tr>
+        <td><code>author</code></td>
+        <td>any text</td>
+        <td></td>
+        <td>The author in the document properties. Left empty, the document names none.</td>
+      </tr>
+      <tr>
+        <td><code>subject</code></td>
+        <td>any text</td>
+        <td></td>
+        <td>The subject in the document properties. Left empty, the document has none.</td>
+      </tr>
+      <tr>
+        <td><code>keywords</code></td>
+        <td>any text</td>
+        <td></td>
+        <td>The keywords in the document properties, as one line of text. Left empty, the document has none.</td>
+      </tr>
+      <tr>
+        <td><code>creator</code></td>
+        <td>any text</td>
+        <td></td>
+        <td>The program the document says it was written in, such as Microsoft Word. Left empty, the document names none.</td>
+      </tr>
+      <tr>
+        <td><code>producer</code></td>
+        <td>any text</td>
+        <td><code>Testing Files Generator</code></td>
+        <td>The program the document says turned it into a PDF.</td>
+      </tr>
+      <tr>
+        <td><code>created</code></td>
+        <td>a date such as <code>2024-02-29</code> or <code>2024-02-29T13:45:00+02:00</code>, or <code>none</code></td>
+        <td><code>2020-01-01T00:00:00Z</code></td>
+        <td>When the document says it was created. A time written without a zone is kept without one, and <code>none</code> leaves the date out.</td>
+      </tr>
+      <tr>
+        <td><code>modified</code></td>
+        <td>a date such as <code>2024-02-29</code> or <code>2024-02-29T13:45:00+02:00</code>, or <code>none</code></td>
+        <td></td>
+        <td>When the document says it was last changed, written the same way as created. Left empty, the document has no such date.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="png">
+  <h2><code>png</code> Portable Network Graphics</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>width</code></td>
+        <td>1 - 20000 pixels</td>
+        <td></td>
+        <td>How wide the picture is. Left out, a size is chosen that fits the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>height</code></td>
+        <td>1 - 20000 pixels</td>
+        <td></td>
+        <td>How tall the picture is. Left out, a size is chosen that fits the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>content</code></td>
+        <td><code>placeholder</code>, <code>test</code></td>
+        <td><code>test</code></td>
+        <td>What the picture shows. A test pattern is for checking how a file is read. A placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist.</td>
+      </tr>
+      <tr>
+        <td><code>text</code></td>
+        <td>one line of up to 100 characters</td>
+        <td><code>{width} &#215; {height}</code></td>
+        <td>The words in the middle of a placeholder. <code>{width}</code> and <code>{height}</code> become the size of the picture, <code>{index}</code> the number of the file and <code>{index:04}</code> the same number with four digits.</td>
+      </tr>
+      <tr>
+        <td><code>background</code></td>
+        <td>a colour such as <code>cccccc</code> or <code>ccc</code></td>
+        <td><code>cccccc</code></td>
+        <td>The colour of a placeholder, such as <code>cccccc</code> or <code>ccc</code>. In a recipe write it without <code>#</code> or in quotes, because <code>#</code> starts a comment there.</td>
+      </tr>
+      <tr>
+        <td><code>foreground</code></td>
+        <td>a colour such as <code>cccccc</code> or <code>ccc</code></td>
+        <td><code>555555</code></td>
+        <td>The colour of the words and the guides on a placeholder, written the same way as background.</td>
+      </tr>
+      <tr>
+        <td><code>guides</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Draws a frame along the edges of a placeholder, both diagonals and a circle touching its shorter sides, so you can see where a page crops or stretches the picture.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="pptx">
+  <h2><code>pptx</code> PowerPoint (Office Open XML)</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>slides</code></td>
+        <td>1 - 500 slides</td>
+        <td><code>1</code></td>
+        <td>How many slides the presentation holds. The rest of the size you asked for is carried by a part of the package that is not shown.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="rtf">
+  <h2><code>rtf</code> Rich Text Format</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>characters</code></td>
+        <td><code>ascii</code>, <code>international</code></td>
+        <td><code>ascii</code></td>
+        <td>Whether the document carries text outside ASCII. international adds paragraphs in Polish, Russian, Japanese and Arabic, the Arabic right to left, and one with emoji, a letter written as two code points, the three characters RTF escapes and the ones it names, such as the dashes and the quotes. A program without a Japanese or Arabic font shows boxes in their place.</td>
+      </tr>
+      <tr>
+        <td><code>text_encoding</code></td>
+        <td><code>both</code>, <code>codepage</code>, <code>literal</code>, <code>unicode</code></td>
+        <td><code>unicode</code></td>
+        <td>How the letters outside ASCII are written, which changes nothing while the characters are ascii. unicode writes each one as a number with a question mark after it for a reader that does not know numbers. Unicode and code page also puts the letter in the code page of its font after the number, two bytes for Japanese, the way Word writes it. Code page writes only the code page bytes, and the emoji still as numbers, since no code page holds them. literal writes the question mark as a plain character. LibreOffice, Tika and the RichEdit control of Windows read all four. pandoc shows code page text in the wrong letters. pandoc before 3.13 also drops the character after every letter written literal, and pandoc 3.1 and 3.7 drop the emoji in all four. striprtf returns an emoji as two halves, which Python refuses to write as UTF-8.</td>
+      </tr>
+      <tr>
+        <td><code>elements</code></td>
+        <td><code>basic</code>, <code>every</code></td>
+        <td><code>basic</code></td>
+        <td>Which parts the document uses. basic is headings, paragraphs with bold and italic words, lists, tables and indented quotes. every adds document properties, a page header and footer, a footnote, a comment, hidden text, a link, a bookmark, a group every reader has to skip, a word no reader knows and line, tab, page and section breaks, and each part says where it is. Tika returns the most of them, the header, the footer and the comment among them. LibreOffice, striprtf and RichEdit return the hidden text as text, RichEdit with the address of the link, and pandoc returns the footnote and leaves the hidden text out.</td>
+      </tr>
+      <tr>
+        <td><code>nesting</code></td>
+        <td>0 - 10000000</td>
+        <td><code>0</code></td>
+        <td>How many groups the content sits inside, each one inside the last. 0 puts it straight in the document, and the label stays outside so the file still says what it is. No reader measured lost the content at 10 000 000 levels, but LibreOffice took 18.5 GB of memory over them and pandoc 14.5 GB, against about 2 GB each at 1 000 000.</td>
+      </tr>
+      <tr>
+        <td><code>links</code></td>
+        <td>0 - 1000000</td>
+        <td><code>0</code></td>
+        <td>How many links the document carries, each a HYPERLINK field in a paragraph of its own, above the pictures and the blocks. They go through 17 kinds in turn and then repeat - a link to a bookmark in the document, relative, to the folder above, from the root, absolute with a query and a fragment, absolute with a location, http, without a scheme, percent encoded, an international domain, a port, mailto:, tel:, ftp:, a new window, a screen tip and data: - and the text of each says which it is. Every address is on a domain kept for examples. LibreOffice turns the link without a scheme into a file:// address and rewrites the relative ones from where it saves the document. pandoc 3.12 leaves the bookmark link without an address, pandoc 3.1 and 3.7 drop every link with its text, and RichEdit returns the address of each link in front of its text. LibreOffice took over 11 minutes over a million links. The catalogue of every part has one link of its own, which this does not count.</td>
+      </tr>
+      <tr>
+        <td><code>inline</code></td>
+        <td>0 - 10000</td>
+        <td><code>0</code></td>
+        <td>How many pictures the document shows, each a real file of its format in a paragraph of its own that starts with its name, such as inline_0001.png. They sit above the blocks, at 96 pixels to the inch and never wider than 6 inches. LibreOffice, pandoc and Tika return each file as it was written. RichEdit shows the same picture and writes it out again smaller.</td>
+      </tr>
+      <tr>
+        <td><code>inline_format</code></td>
+        <td>the id of a picture format, such as <code>png</code> or <code>jpg</code></td>
+        <td><code>png</code></td>
+        <td>The format of the pictures, <code>png</code> or <code>jpg</code> - the two picture formats RTF has a name for. Any other format is refused.</td>
+      </tr>
+      <tr>
+        <td><code>inline_size</code></td>
+        <td>a size such as <code>2mb</code></td>
+        <td><code>8kb</code></td>
+        <td>How big each picture is. Written in hex it takes twice as many bytes in the document, with a line end every 128 characters. Written binary it takes its own size.</td>
+      </tr>
+      <tr>
+        <td><code>picture_data</code></td>
+        <td><code>binary</code>, <code>hex</code></td>
+        <td><code>hex</code></td>
+        <td>How the bytes of each picture are written, which changes nothing while the document has no pictures. hex writes them as text, twice as large, the way LibreOffice writes them. binary writes them as they are, so the document is no longer text, and a program that counts braces or reads it as text loses its place. pandoc changes the line ends inside a binary picture, so no png comes out whole, and it can lose the text after the picture or refuse the whole document. LibreOffice, Tika and RichEdit read both.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="svg">
+  <h2><code>svg</code> Scalable Vector Graphics</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>width</code></td>
+        <td>1 - 20000 pixels</td>
+        <td><code>800</code></td>
+        <td>How wide the drawing says it is. Nothing is drawn into pixels here, so a large number costs a few bytes in the file and a great deal of memory in whatever opens it.</td>
+      </tr>
+      <tr>
+        <td><code>height</code></td>
+        <td>1 - 20000 pixels</td>
+        <td><code>600</code></td>
+        <td>How tall the drawing says it is. The label sits along the bottom edge, so a drawing shorter than that strip carries no visible label.</td>
+      </tr>
+      <tr>
+        <td><code>content</code></td>
+        <td><code>placeholder</code>, <code>test</code></td>
+        <td><code>test</code></td>
+        <td>What the picture shows. A test pattern is for checking how a file is read. A placeholder is a flat colour with words in the middle, for laying out a page before the real pictures exist.</td>
+      </tr>
+      <tr>
+        <td><code>text</code></td>
+        <td>one line of up to 100 characters</td>
+        <td><code>{width} &#215; {height}</code></td>
+        <td>The words in the middle of a placeholder. <code>{width}</code> and <code>{height}</code> become the size of the picture, <code>{index}</code> the number of the file and <code>{index:04}</code> the same number with four digits.</td>
+      </tr>
+      <tr>
+        <td><code>background</code></td>
+        <td>a colour such as <code>cccccc</code> or <code>ccc</code></td>
+        <td><code>cccccc</code></td>
+        <td>The colour of a placeholder, such as <code>cccccc</code> or <code>ccc</code>. In a recipe write it without <code>#</code> or in quotes, because <code>#</code> starts a comment there.</td>
+      </tr>
+      <tr>
+        <td><code>foreground</code></td>
+        <td>a colour such as <code>cccccc</code> or <code>ccc</code></td>
+        <td><code>555555</code></td>
+        <td>The colour of the words and the guides on a placeholder, written the same way as background.</td>
+      </tr>
+      <tr>
+        <td><code>guides</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Draws a frame along the edges of a placeholder, both diagonals and a circle touching its shorter sides, so you can see where a page crops or stretches the picture.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="targz">
+  <h2><code>targz</code> tar &#43; gzip</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>entries</code></td>
+        <td>0 - 10000</td>
+        <td><code>1</code></td>
+        <td>How many files the archive holds. When the files are not all alike, describe each kind on its own instead - with Add files inside on Several batches, or contains in a recipe.</td>
+      </tr>
+      <tr>
+        <td><code>entry_format</code></td>
+        <td>the id of a format, such as <code>png</code> or <code>csv</code></td>
+        <td><code>txt</code></td>
+        <td>The format of the files inside.</td>
+      </tr>
+      <tr>
+        <td><code>entry_size</code></td>
+        <td>a size such as <code>2mb</code></td>
+        <td><code>8kb</code></td>
+        <td>How big each file inside is.</td>
+      </tr>
+      <tr>
+        <td><code>compression</code></td>
+        <td><code>best</code>, <code>default</code>, <code>fast</code>, <code>none</code></td>
+        <td><code>none</code></td>
+        <td>How hard the files inside are squeezed. The archive still comes out the size you asked for - what changes is how much of it is real content and how much is padding.</td>
+      </tr>
+      <tr>
+        <td><code>depth</code></td>
+        <td>0 - 50</td>
+        <td><code>0</code></td>
+        <td>How many directories deep the files inside sit. 0 puts them all at the top.</td>
+      </tr>
+      <tr>
+        <td><code>directory_entries</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Whether the archive also lists the directories themselves. Most file browsers show the same folders either way, so the difference is in the entry list rather than on screen. It matters for readers that only create a directory the archive names.</td>
+      </tr>
+      <tr>
+        <td><code>entry_mode</code></td>
+        <td><code>000</code>, <code>400</code>, <code>444</code>, <code>600</code>, <code>644</code>, <code>664</code>, <code>666</code>, <code>700</code>, <code>755</code>, <code>777</code></td>
+        <td><code>644</code></td>
+        <td>The permissions recorded for each file inside. It is what the archive says, not what the file gets - that depends on who unpacks it and how.</td>
+      </tr>
+      <tr>
+        <td><code>entry_owner</code></td>
+        <td><code>root</code>, <code>unset</code>, <code>user</code></td>
+        <td><code>unset</code></td>
+        <td>Who each file inside belongs to. Leave it unset and the archive names nobody, which is what most archives written by a build carry.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="tiff">
+  <h2><code>tiff</code> Tagged Image File Format</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>width</code></td>
+        <td>1 - 20000 pixels</td>
+        <td></td>
+        <td>How wide the picture is. Left out, the picture is sized to fill the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>height</code></td>
+        <td>1 - 20000 pixels</td>
+        <td></td>
+        <td>How tall the picture is. Left out, the picture is sized to fill the bytes you asked for.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="txt">
+  <h2><code>txt</code> Plain text</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>encoding</code></td>
+        <td><code>utf-16be</code>, <code>utf-16le</code>, <code>utf-8</code></td>
+        <td><code>utf-8</code></td>
+        <td>Which encoding the characters are written in. UTF-16 stores two bytes per character, so a file in it always has an even number of bytes and an odd size is refused.</td>
+      </tr>
+      <tr>
+        <td><code>bom</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Whether the file opens with a byte order mark. A reader that has to guess the encoding needs one, and a reader that does not expect it shows it as stray characters at the start of the file.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="wav">
+  <h2><code>wav</code> Waveform Audio</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>sample_rate</code></td>
+        <td>8000 - 192000 hertz</td>
+        <td><code>44100</code></td>
+        <td>How many samples a second the signal carries.</td>
+      </tr>
+      <tr>
+        <td><code>bit_depth</code></td>
+        <td><code>8</code>, <code>16</code>, <code>24</code>, <code>32</code></td>
+        <td><code>16</code></td>
+        <td>How many bits each sample uses.</td>
+      </tr>
+      <tr>
+        <td><code>channels</code></td>
+        <td>1 - 8</td>
+        <td><code>2</code></td>
+        <td>How many channels the signal has, so 1 for mono and 2 for stereo.</td>
+      </tr>
+      <tr>
+        <td><code>content</code></td>
+        <td><code>noise</code>, <code>silence</code>, <code>sweep</code>, <code>tone</code></td>
+        <td><code>tone</code></td>
+        <td>What the sound is. A steady tone holds one pitch between 220 and 1099 Hz, chosen by the seed. A rising tone starts at such a pitch and climbs as the file plays. Noise is random hiss, and silence is nothing at all.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="webm">
+  <h2><code>webm</code> WebM video</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>width</code></td>
+        <td>1 - 16384 pixels</td>
+        <td></td>
+        <td>How wide the picture is. Left out, a size is chosen that fits the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>height</code></td>
+        <td>1 - 16384 pixels</td>
+        <td></td>
+        <td>How tall the picture is. Left out, a size is chosen that fits the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>duration</code></td>
+        <td>a length of time such as <code>10s</code></td>
+        <td><code>10s</code></td>
+        <td>How long the film plays. It has to end on a frame, so at 30 frames a second it goes in steps of 100ms.</td>
+      </tr>
+      <tr>
+        <td><code>change_interval</code></td>
+        <td>a length of time such as <code>10s</code></td>
+        <td><code>1s</code></td>
+        <td>How often the picture changes: the clock in it moves on and the square takes a step. Each change costs a whole picture in bytes. An interval as long as the film or longer keeps one picture throughout.</td>
+      </tr>
+      <tr>
+        <td><code>frame_rate</code></td>
+        <td><code>1</code>, <code>5</code>, <code>10</code>, <code>12</code>, <code>15</code>, <code>24</code>, <code>25</code>, <code>30</code>, <code>48</code>, <code>50</code>, <code>60</code></td>
+        <td><code>30</code></td>
+        <td>How many frames the film shows each second.</td>
+      </tr>
+      <tr>
+        <td><code>keyframe_interval</code></td>
+        <td>a length of time such as <code>10s</code></td>
+        <td><code>1m</code></td>
+        <td>How far apart the frames are that a player can start from. Shorter makes skipping through a long film faster and the file bigger, because each of them carries the whole picture twice.</td>
+      </tr>
+      <tr>
+        <td><code>quality</code></td>
+        <td>1 - 100</td>
+        <td><code>60</code></td>
+        <td>How much detail the picture keeps. Higher looks better and takes more of the file, leaving less room for padding.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="webp">
+  <h2><code>webp</code> WebP</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>width</code></td>
+        <td>1 - 16383 pixels</td>
+        <td></td>
+        <td>How wide the picture is. Left out, the picture is sized to fill the bytes you asked for.</td>
+      </tr>
+      <tr>
+        <td><code>height</code></td>
+        <td>1 - 16383 pixels</td>
+        <td></td>
+        <td>How tall the picture is. Left out, the picture is sized to fill the bytes you asked for.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="xlsx">
+  <h2><code>xlsx</code> Excel (Office Open XML)</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>rows</code></td>
+        <td>1 - 200000 rows</td>
+        <td><code>1</code></td>
+        <td>How many rows of cells the sheet holds. The rest of the size you asked for is carried by a part of the package that is not shown.</td>
+      </tr>
+      <tr>
+        <td><code>columns</code></td>
+        <td>1 - 32768 columns</td>
+        <td><code>1</code></td>
+        <td>How many columns each row has. Above 16384 a spreadsheet may show only the first 16384 and drop the rest without a word.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="xml">
+  <h2><code>xml</code> Extensible Markup Language</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>encoding</code></td>
+        <td><code>utf-16be</code>, <code>utf-16le</code>, <code>utf-8</code></td>
+        <td><code>utf-8</code></td>
+        <td>Which encoding the characters are written in. UTF-16 stores two bytes per character, so a file in it always has an even number of bytes and an odd size is refused.</td>
+      </tr>
+      <tr>
+        <td><code>bom</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Whether the file opens with a byte order mark. A reader that has to guess the encoding needs one, and a reader that does not expect it shows it as stray characters at the start of the file.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="zip">
+  <h2><code>zip</code> ZIP</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>entries</code></td>
+        <td>0 - 10000</td>
+        <td><code>1</code></td>
+        <td>How many files the archive holds. When the files are not all alike, describe each kind on its own instead - with Add files inside on Several batches, or contains in a recipe.</td>
+      </tr>
+      <tr>
+        <td><code>entry_format</code></td>
+        <td>the id of a format, such as <code>png</code> or <code>csv</code></td>
+        <td><code>txt</code></td>
+        <td>The format of the files inside.</td>
+      </tr>
+      <tr>
+        <td><code>entry_size</code></td>
+        <td>a size such as <code>2mb</code></td>
+        <td><code>8kb</code></td>
+        <td>How big each file inside is.</td>
+      </tr>
+      <tr>
+        <td><code>compression</code></td>
+        <td><code>best</code>, <code>default</code>, <code>fast</code>, <code>none</code></td>
+        <td><code>none</code></td>
+        <td>How hard the files inside are squeezed. The archive still comes out the size you asked for - what changes is how much of it is real content and how much is padding.</td>
+      </tr>
+      <tr>
+        <td><code>depth</code></td>
+        <td>0 - 50</td>
+        <td><code>0</code></td>
+        <td>How many directories deep the files inside sit. 0 puts them all at the top.</td>
+      </tr>
+      <tr>
+        <td><code>directory_entries</code></td>
+        <td><code>true</code> or <code>false</code></td>
+        <td><code>false</code></td>
+        <td>Whether the archive also lists the directories themselves. Most file browsers show the same folders either way, so the difference is in the entry list rather than on screen. It matters for readers that only create a directory the archive names.</td>
+      </tr>
+      <tr>
+        <td><code>password</code></td>
+        <td>the password, in plain text</td>
+        <td></td>
+        <td>The password the archive is locked with. It is written into the manifest as you typed it, because a test that cannot open the file cannot check anything.</td>
+      </tr>
+      <tr>
+        <td><code>encryption</code></td>
+        <td><code>aes-128</code>, <code>aes-192</code>, <code>aes-256</code>, <code>none</code>, <code>zipcrypto</code></td>
+        <td><code>none</code></td>
+        <td>How the archive is locked. AES is the WinZip scheme, and some readers cannot open it at all. ZipCrypto is the old one every reader opens and nothing modern trusts, and some of them hand back the encrypted bytes without saying so. A locked archive from this tool is a fixture rather than protection - the key is worked out from the run seed, so the same recipe gives the same archive on any machine, and the password is written into the manifest beside it.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Source on GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Report a problem</a></li>
+        <li><a href="https://donislawdev.com/support/">Support the project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pages</p>
+      <ul class="plain">
+        <li><a href="/">Home</a></li>
+        <li><a href="/formats/">Formats</a></li>
+        <li><a href="/presets/">Presets</a></li>
+        <li><a href="/docs/">Documentation</a></li>
+        <li><a href="/use-cases/">Use cases</a></li>
+        <li><a href="/create-file-exact-size/">Exact size</a></li>
+        <li><a href="/faq/">FAQ</a></li>
+        <li><a href="/corrupt-test-files/">Corrupt test files</a></li>
+        <li><a href="/sample-files/">Sample files</a></li>
+        <li><a href="/test-files-in-ci/">Test files in CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Released under the GNU General Public License, version 3. The files you generate are yours - the licence covers the tool, not its output.</p>
+    <p class="muted">This site loads no fonts, no scripts and no trackers from anywhere. It sets no cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

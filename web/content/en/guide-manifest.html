@@ -1,0 +1,112 @@
+<h1>Manifest</h1>
+<p class="lead">
+  Every run writes <code>manifest.json</code> beside its files. It lists every file with its size, its
+  SHA-256 and what your system should do with it, so a test reads the expectation instead of hard
+  coding it. It is written even when a run is stopped part way.
+</p>
+
+<section class="section" id="example">
+  <h2>What a manifest looks like</h2>
+  <p>This is the manifest of <code>tfg generate --format png --size 2mb --out ./out</code>, shortened:</p>
+  <pre><code>{
+  "manifest_version": "1.0",
+  "tool": { "name": "testing-files-generator", "version": "{{ .Facts.Version }}" },
+  "run": {
+    "id": "run_b359aa8d94",
+    "seed": 0,
+    "command": "tfg generate --format png --size 2mb --out ./out",
+    "platform": { "os": "windows", "arch": "amd64" },
+    "complete": true
+  },
+  "summary": {
+    "file_count": 1,
+    "total_bytes": 2097152,
+    "by_format": { "png": 1 },
+    "by_expected": { "unspecified": 1 }
+  },
+  "files": [
+    {
+      "path": "files_0001.png",
+      "bytes": 2097152,
+      "format": "png",
+      "fidelity": "full",
+      "determinism": "byte",
+      "seed": "8dc2d18c",
+      "hashes": { "sha256": "1a1f7c..." },
+      "properties": { "width": 640, "height": 480 },
+      "expected": {
+        "outcome": "unspecified",
+        "detail": "No expectation was declared for this file.",
+        "confidence": "policy_dependent"
+      }
+    }
+  ]
+}</code></pre>
+</section>
+
+<section class="section" id="in-a-test">
+  <h2>How a test reads it</h2>
+  <p>
+    Go through <code>files</code>, give each file to your system, and compare what it did with
+    <code>expected.outcome</code>. When <code>send_as</code> is there, give the file under that name. A
+    sketch in Python, with your own upload in place of <code>upload</code>:
+  </p>
+  <pre><code>import json, pathlib
+
+folder = pathlib.Path("fixtures")
+manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
+for f in manifest["files"]:
+    if f["expected"]["outcome"] == "unspecified":
+        continue
+    result = upload(folder / f["path"], name=f.get("send_as", f["name"]))
+    assert result == f["expected"]["outcome"], f["path"]</code></pre>
+  <p>
+    The packages for pytest and Node do this for you: <a href="/docs/test-frameworks/">Test frameworks</a>.
+    An outcome of <code>unspecified</code> means the right reaction depends on how your system is set up.
+    <code>policy_options</code> lists the answers left open, for a test that settles them by your policy.
+  </p>
+</section>
+
+<section class="section" id="fields">
+  <h2>Every field</h2>
+  <p>
+    Every field a manifest can carry, read from the program when this page is built. <code>[]</code>
+    stands for each entry of a list, and <code>*</code> for each key of an object whose keys are yours,
+    such as the names of the flags in <code>run.overrides</code>. A field marked as present only in some
+    runs is left out of the others rather than written empty.
+  </p>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Field</th><th>What it holds</th></tr></thead>
+    <tbody>
+    {{- range .ManifestRows }}
+      <tr><td><code>{{ .Key }}</code></td><td>{{ .Text }}</td></tr>
+    {{- end }}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section" id="beside">
+  <h2>What else is written beside it</h2>
+  <p>
+    When the files of a run have a purpose, from a preset or from <code>purpose</code> in a recipe, a
+    second file is written beside the manifest, <code>manifest.instructions.md</code>. It says in words
+    what each file is and why it is in the set, for the person running the test by hand.
+    <code>verify</code> and <code>cleanup</code> know about it.
+  </p>
+  <p>
+    <code>tfg verify manifest.json</code> checks that every file is still there and still has its SHA-256.
+    <code>tfg cleanup manifest.json --yes</code> removes exactly the files the manifest lists, and
+    nothing else, so it is safe in a folder that holds other things too.
+  </p>
+</section>
+
+<section class="section" id="stable">
+  <h2>Can I rely on the format?</h2>
+  <p>
+    Yes. <code>manifest_version</code> is <code>1.0</code>, and the format grows only by adding fields.
+    A field never changes its meaning within a version, so a reader written today keeps working if it
+    ignores the fields it does not know.
+  </p>
+</section>

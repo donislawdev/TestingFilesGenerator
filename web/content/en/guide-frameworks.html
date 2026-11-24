@@ -1,0 +1,148 @@
+<h1>Test frameworks</h1>
+<p class="lead">
+  Two packages bring the files into your tests: <code>testing-files-generator</code> on PyPI for pytest
+  and unittest, and the package of the same name on npm for Playwright, Vitest and
+  <code>node:test</code>. Each gives you one test for each file of a set, named by what the file should
+  meet, and fails a test with a sentence that says what went wrong.
+</p>
+
+<div class="note">
+  <p class="note-title">How it works</p>
+  <p>
+    You choose a set, usually a preset. The package plans it and gives you its files. Each test hands
+    its file to your system and ends with one line saying what your system did. A file with no right
+    answer is skipped, never passed. tfg comes inside both packages, works offline and never connects
+    to the network.
+  </p>
+</div>
+
+<section class="section" id="pytest">
+  <h2>pytest</h2>
+  <pre><code>pip install testing-files-generator</code></pre>
+  <p>
+    pytest finds the plugin on its own. Python 3.10 or later. This test sends every file of the
+    <code>upload-validation</code> preset to an upload endpoint with
+    <a href="https://pypi.org/project/requests/">requests</a>, around a limit of 2 MB:
+  </p>
+  <pre><code># tests/test_upload.py
+import pytest
+import requests
+from testing_files_generator import file_set
+
+uploads = file_set(preset="upload-validation", options={"limit": "2mb", "bulk": 0})
+
+
+@pytest.mark.parametrize("file", uploads.params())
+def test_upload(file):
+    with open(file.path(), "rb") as body:
+        response = requests.post("http://localhost:3000/upload", files={"file": (file.send_as, body)}, timeout=30)
+    assert response.status_code &lt; 500, "a server error is not a refusal"
+    file.check("accept" if response.ok else "reject")</code></pre>
+  <p>Each test is named by its file and what the file expects. Listing them writes no file:</p>
+  <pre><code>pytest --collect-only -q</code></pre>
+  <pre><code>tests/test_upload.py::test_upload[2mb_under_1b.jpg - expected accept]
+tests/test_upload.py::test_upload[2mb_at_limit.jpg - expected accept]
+tests/test_upload.py::test_upload[2mb_over_1b.jpg - expected reject (size_limit)]
+tests/test_upload.py::test_upload[pdf_as_jpg.jpg - expected reject (mime_mismatch)]
+...</code></pre>
+  <p>
+    Every test carries its outcome and its group as markers, so <code>pytest -m reject</code> or
+    <code>pytest -m size-limit</code> runs part of the set. Without pytest, the same set works in
+    unittest or any runner that makes tests in a loop.
+  </p>
+</section>
+
+<section class="section" id="playwright">
+  <h2>Playwright</h2>
+  <pre><code>npm install --save-dev testing-files-generator</code></pre>
+  <p>This spec uploads every file through the form, the way a person does:</p>
+  <pre><code>// tests/upload.spec.ts
+import { test, expect } from '@playwright/test';
+import { fileSet } from 'testing-files-generator';
+
+const uploads = fileSet({ preset: 'upload-validation', options: { limit: '2mb', bulk: 0 } });
+
+for (const file of uploads.files) {
+  test(file.title, file.details, async ({ page }) => {
+    test.skip(file.unspecified, file.whyUnspecified);
+    await page.goto('/upload');
+    await page.getByLabel('File').setInputFiles(await file.path());
+    await page.getByRole('button', { name: 'Upload' }).click();
+    const status = page.getByRole('status');
+    await expect(status).toHaveText(/Uploaded|Refused/);
+    file.check((await status.textContent())?.includes('Uploaded') ? 'accept' : 'reject');
+  });
+}</code></pre>
+  <p>
+    Only the lines that upload and read the answer are about your app. Change them to however your
+    app takes a file. Wait for an answer your app gives on purpose, as <code>Uploaded</code> or
+    <code>Refused</code> here, so a page that shows an error fails the test rather than passing as a
+    refusal. <code>npx playwright test --grep @reject</code> runs part of the set.
+  </p>
+</section>
+
+<section class="section" id="vitest">
+  <h2>Vitest and node:test</h2>
+  <p>
+    The package imports nothing from Playwright, so any runner that declares tests in a loop works.
+    With Vitest:
+  </p>
+  <pre><code>import { test, expect } from 'vitest';
+import { openAsBlob } from 'node:fs';
+import { fileSet } from 'testing-files-generator';
+
+const uploads = fileSet({ preset: 'upload-validation', options: { limit: '2mb', bulk: 0 } });
+
+for (const file of uploads.files) {
+  test.skipIf(file.unspecified)(file.title, async () => {
+    const body = new FormData();
+    body.append('file', await openAsBlob(await file.path()), file.sendAs);
+    const response = await fetch('http://localhost:3000/upload', { method: 'POST', body });
+    expect(response.status, 'a server error is not a refusal').toBeLessThan(500);
+    file.check(response.ok ? 'accept' : 'reject');
+  });
+}</code></pre>
+  <p>
+    With the runner built into Node, <code>node --test</code>, the loop is the same, with
+    <code>test(file.title, { skip: file.unspecified &amp;&amp; file.whyUnspecified }, ...)</code>.
+  </p>
+</section>
+
+<section class="section" id="check">
+  <h2>Telling the set what your system did</h2>
+  <p>
+    <code>check</code> takes <code>accept</code>, <code>reject</code> or <code>sanitize</code> and fails
+    the test when the file expected something else. When your system says why it turned a file away,
+    pass the reason as well, and a file turned away for the wrong rule fails too. In Python:
+  </p>
+  <pre><code>file.check({"outcome": "reject", "reason": response.json().get("reason")})</code></pre>
+  <p>
+    A server error is not a refusal, so check the status before <code>check</code>, as the examples do.
+    A file sent under another name, such as <code>../climbed_out.jpg</code>, gives that name in
+    <code>send_as</code>, or <code>sendAs</code> in Node, and the examples upload it under that name.
+  </p>
+</section>
+
+<section class="section" id="own-files">
+  <h2>Your own set</h2>
+  <p>
+    Any preset works in place of <code>upload-validation</code>, with its settings in
+    <code>options</code>. For a set of your own, write a recipe and name it:
+  </p>
+  <pre><code>uploads = file_set(recipe="tests/fixtures.yaml")</code></pre>
+  <pre><code>const uploads = fileSet({ recipe: path.join(__dirname, 'fixtures.yaml') });</code></pre>
+  <p>
+    <a href="/docs/recipes/">Recipes</a> says how to write one, and <a href="/recipes/">the recipe
+    gallery</a> has ready ones to start from.
+  </p>
+</section>
+
+<section class="section" id="more">
+  <h2>Everything else</h2>
+  <p>
+    Each package has a full guide of its own, with where the files are kept, CI, every option and what
+    to do when something goes wrong:
+    <a href="https://pypi.org/project/testing-files-generator/">testing-files-generator on PyPI</a> and
+    <a href="https://www.npmjs.com/package/testing-files-generator">testing-files-generator on npm</a>.
+  </p>
+</section>

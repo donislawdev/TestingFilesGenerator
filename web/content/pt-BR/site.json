@@ -138,7 +138,8 @@
     "colSha256": "SHA-256",
     "colExpected": "Esperado",
     "colTool": "Ferramenta",
-    "colQuestion": "O que responde"
+    "colQuestion": "O que responde",
+    "docsMenuLabel": "Páginas da documentação"
   },
   "endings": {
     "0": "Tudo funcionou.",
@@ -386,5 +387,45 @@
     "checksum": "Este arquivo é mesmo o que diz ser?",
     "checksum-check": "Cada arquivo ainda é o que diz o seu arquivo de somas de verificação?",
     "checksum-write": "Como vou saber depois que nenhum destes arquivos mudou?"
+  },
+  "docs": {
+    "guides": {
+      "guide-install": {
+        "title": "Instalação",
+        "text": "Baixar para Windows, macOS ou Linux, verificar o arquivo ou instalar com Docker, npm, pip ou Go."
+      },
+      "guide-start": {
+        "title": "Primeiros passos",
+        "text": "Um primeiro arquivo de tamanho exato, depois dez mil, verificados, removidos e escritos como receita."
+      },
+      "guide-commands": {
+        "title": "Comandos",
+        "text": "Cada comando e cada opção com seu valor padrão, e todos os códigos de saída."
+      },
+      "guide-recipes": {
+        "title": "Receitas",
+        "text": "Cada chave de uma receita, tamanhos, nomes de arquivo, reações esperadas, danos, arquivos compactados e presets."
+      },
+      "recipes": {
+        "title": "Galeria de receitas",
+        "text": "Receitas prontas para baixar para uploads, importações, arquivos compactados, e-mail, mídia, CI e arquivos em massa."
+      },
+      "guide-manifest": {
+        "title": "Manifesto",
+        "text": "Cada campo do manifest.json e como um teste o lê."
+      },
+      "guide-formats": {
+        "title": "Configurações dos formatos",
+        "text": "Cada configuração de cada formato, com os valores aceitos e o valor padrão."
+      },
+      "guide-frameworks": {
+        "title": "Frameworks de teste",
+        "text": "Os arquivos dentro do pytest, Playwright, Vitest e node:test."
+      },
+      "guide-window": {
+        "title": "Aplicativo de desktop",
+        "text": "A janela, tela por tela."
+      }
+    }
   }
 }

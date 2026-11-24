@@ -1,0 +1,50 @@
+<h1>Format settings</h1>
+<p class="lead">
+  Every setting each format takes, with the values it accepts, its default and what it changes in the
+  file. The list is read from the program when this page is built, in the program's own words:
+  <code>tfg formats &lt;id&gt;</code> prints the same for one format.
+</p>
+
+<section class="section" id="how">
+  <h2>How to give a setting</h2>
+  <p>On the command line, <code>--set</code> takes one setting and repeats. In a recipe, the settings go under <code>properties</code>:</p>
+  <pre><code>tfg generate --format pdf --size 1mb --set pages=20 --set page_size=letter --out ./pdf</code></pre>
+  <pre><code>targets:
+  - id: report
+    format: pdf
+    size: 1mb
+    properties:
+      pages: 20
+      page_size: letter</code></pre>
+  <p>
+    A setting left out takes its default. A value outside what the setting accepts is refused before
+    anything is written, with the values that would work. Some settings also limit the smallest size a
+    file can be, and a size below it is refused with the size that would work. The list of formats
+    themselves, with the smallest file of each, is on <a href="/formats/">Formats</a>.
+  </p>
+  <p>
+    {{ range $i, $f := .FormatSettingsList }}{{ if $i }} {{ end }}<a href="#{{ $f.ID }}"><code>{{ $f.ID }}</code></a>{{ end }}
+  </p>
+</section>
+
+{{- range .FormatSettingsList }}
+
+<section class="section" id="{{ .ID }}">
+  <h2><code>{{ .ID }}</code> {{ .Name }}</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Setting</th><th>Accepts</th><th>Default</th><th>What it does</th></tr></thead>
+    <tbody>
+    {{- range .Settings }}
+      <tr>
+        <td><code>{{ .Name }}</code></td>
+        <td>{{ .Takes }}</td>
+        <td>{{ with .Default }}<code>{{ . }}</code>{{ end }}</td>
+        <td>{{ .Detail }}</td>
+      </tr>
+    {{- end }}
+    </tbody>
+  </table>
+  </div>
+</section>
+{{- end }}

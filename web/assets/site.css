@@ -496,6 +496,67 @@ figcaption {
   margin-bottom: 0;
 }
 
+/* ------------------------------------------------------ documentation menu */
+
+/* The pages of the documentation, on every page under the hub. A row of short
+ * links that wraps, so a phone needs no script and no second layout. */
+.docsmenu {
+  margin: 0 0 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.docsmenu ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.docsmenu a {
+  display: inline-block;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--surface);
+}
+
+.docsmenu a:hover,
+.docsmenu a[aria-current] {
+  color: var(--text);
+  background: var(--surface-3);
+}
+
+/* Beside a link from a translated page to a page written in English only, so
+ * the reader knows before following it. */
+.tag {
+  display: inline-block;
+  margin-inline-start: 6px;
+  padding: 0 5px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  vertical-align: middle;
+}
+
+/* A screen of the window on the page about it: real size on a wide screen,
+ * never wider than the column. */
+.shot img {
+  display: block;
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+}
+
 /* ------------------------------------------------------------------- lists */
 
 ul.plain {
@@ -824,6 +885,15 @@ pre code {
     order: 3;
     flex-basis: 100%;
     width: 100%;
+  }
+
+  /* A file name or a command in a sentence can be wider than a phone, and a
+   * span that cannot break pushes the page sideways, the same as in a note.
+   * On a wide screen code keeps to one line. */
+  main p code,
+  main li code {
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .footer-inner {

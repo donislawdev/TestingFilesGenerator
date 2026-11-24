@@ -288,6 +288,31 @@
 {{ end }}tfg {{ $c.Name }}{{ $c.Pad }}{{ $c.Summary }}{{ end }}</code></pre>
 {{- end -}}
 
+{{- define "docsMenu" -}}
+<nav class="docsmenu" aria-label="{{ .Word "docsMenuLabel" }}">
+  <ul>
+    {{- with .Up }}
+    <li><a href="{{ .URL }}">{{ .Label }}</a></li>
+    {{- end }}
+    {{- range .Docs }}
+    <li><a href="{{ .URL }}"{{ if .Current }} aria-current="page"{{ end }}{{ if .English }} hreflang="en"{{ end }}>{{ .Title }}{{ if .English }} <span class="tag" lang="en">EN</span>{{ end }}</a></li>
+    {{- end }}
+  </ul>
+</nav>
+{{- end -}}
+
+{{- define "linkCards" -}}
+<ul class="cards">
+{{- range . }}
+  <li class="card"{{ with .Anchors }} id="{{ index . 0 }}"{{ end }}>
+    {{- range $i, $a := .Anchors }}{{ if $i }}<span id="{{ $a }}"></span>{{ end }}{{ end }}
+    <p class="card-title"><a href="{{ .URL }}"{{ if .English }} hreflang="en"{{ end }}>{{ .Title }}</a>{{ if .English }} <span class="tag" lang="en">EN</span>{{ end }}</p>
+    <p class="muted">{{ .Text }}</p>
+  </li>
+{{- end }}
+</ul>
+{{- end -}}
+
 {{- define "downloadCta" -}}
 <div class="cta">
   <a class="button primary" href="{{ .Facts.Releases }}">{{ .Word "ctaDownload" }}</a>
