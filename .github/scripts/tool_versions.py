@@ -56,6 +56,7 @@ import json
 import os
 import pathlib
 import re
+import shlex
 import sys
 import time
 import urllib.request
@@ -224,20 +225,62 @@ def renderer(now):
     return [(RENDERER_PROJECT, pinned) + due(pinned, released, now)]
 
 
-def npm_packages(texts, now):
-    """`npm install package@version` - asked of the npm registry."""
-    # An npm install that names no version is a failure, not a line skipped:
-    # without this a pin taken off the command would take the package off this
-    # check with it, and the run would stay green (review of #205).
+# The options of npm install the workflows pass a value to, so the word after
+# one is that value and not a package.
+NPM_VALUE_OPTIONS = {"--prefix", "--registry", "--tag", "--cache", "-C"}
+
+# What starts an argument that names files of this run rather than a package of
+# the registry: a path, or a shell variable holding one.
+LOCAL_ARGUMENT = (".", "/", "~", "$")
+
+
+def npm_pins(texts):
+    """Every registry package an `npm install` in the workflows names, with its pin.
+
+    Only a command counts: a line, or a part of one after &&, ||, ; or |, whose
+    first two words are `npm install`. A sentence that mentions npm install is
+    not one. `echo "... make npm install give people an older tfg"` in npm.yml
+    stopped this whole check on 2026-11-16 and 2026-11-23 before it read a pin.
+
+    An argument that is a path or a variable installs files this run built, so
+    there is no registry to ask about it. A registry package that names no
+    version is a failure, not a line skipped: without this a pin taken off the
+    command would take the package off this check with it, and the run would
+    stay green (review of #205).
+    """
     found = {}
     for name, text in texts.items():
         for line in text.splitlines():
-            if "npm install" not in line or line.lstrip().startswith("#"):
+            command = re.sub(r"^(-\s*)?run:\s*", "", line.strip())
+            if command.startswith("#"):
                 continue
-            m = re.search(r"\s([@\w./-]+)@(\d[\w.+-]*)\s*$", line)
-            if not m:
-                raise RuntimeError(f"{name} runs an npm install that pins no version: {line.strip()}")
-            found[m.group(1)] = m.group(2)
+            for part in re.split(r"&&|\|\||;|\|", command):
+                if part.split()[:2] != ["npm", "install"]:
+                    continue
+                try:
+                    words = shlex.split(part)[2:]
+                except ValueError as exc:
+                    raise RuntimeError(f"{name} runs an npm install this cannot read ({exc}): {line.strip()}") from exc
+                value_next = False
+                for word in words:
+                    if value_next:
+                        value_next = False
+                        continue
+                    if word in NPM_VALUE_OPTIONS:
+                        value_next = True
+                        continue
+                    if word.startswith("-") or word.startswith(LOCAL_ARGUMENT):
+                        continue
+                    m = re.fullmatch(r"(@?[\w./-]+)@(\d[\w.+-]*)", word)
+                    if not m:
+                        raise RuntimeError(f"{name} runs an npm install that pins no version for {word}: {line.strip()}")
+                    found[m.group(1)] = m.group(2)
+    return found
+
+
+def npm_packages(texts, now):
+    """`npm install package@version` - asked of the npm registry."""
+    found = npm_pins(texts)
     rows = []
     for package, pinned in sorted(found.items()):
         times = ask(f"https://registry.npmjs.org/{package}")["time"]
@@ -276,22 +319,31 @@ def main():
     now = datetime.datetime.now(datetime.timezone.utc)
     texts = workflow_text()
     rows = []
+    failed = 0
+    # Every check runs even after one fails. A failure that ended the run left
+    # every pin after it unread, and on 2026-11-16 and 2026-11-23 that was all
+    # of them while the job said only what the first failure was.
     for check in (lambda: go_tools(texts, now), lambda: go_toolchain(texts), lambda: renderer(now),
                   lambda: npm_packages(texts, now), lambda: held(texts)):
         try:
             rows.extend(check())
         except Exception as exc:  # noqa: BLE001 - any failure here has to be loud
+            failed += 1
             print(f"FAIL: {exc}")
-            print("Run the workflow again. If it fails the same way, the registry or the pin")
-            print("named above has changed shape, and this script has to follow it.")
-            return 1
 
     for name, pinned, state, _ in rows:
         print(f"  {name:<42} {pinned:<10} {state}")
     behind = [(name, pinned, to) for name, pinned, _, to in rows if to]
 
     print()
+    if failed:
+        print(f"{failed} check(s) failed, and the pins they read are not in the list above.")
+        print("Run the workflow again. If it fails the same way, the registry or the pin")
+        print("named above has changed shape, and this script has to follow it.")
+        print()
     if not behind:
+        if failed:
+            return 1
         print(f"all {len(rows)} pin(s) are current or held on purpose")
         return 0
 
