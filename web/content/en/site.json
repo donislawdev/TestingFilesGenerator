@@ -112,7 +112,7 @@
     {
       "key": "guide-recipes",
       "slug": "docs/recipes",
-      "nav": "Recipes",
+      "nav": "Writing recipes",
       "title": "Recipe Reference - Every Key of a Test File Recipe in YAML",
       "description": "How to write a recipe: every key it accepts, the ways to give a size, name templates, expected outcomes and reasons, damage, archive contents and presets.",
       "parent": "docs",
@@ -531,7 +531,7 @@
       "run.preset.defaulted": "The settings you did not give, which took the default of the preset. A limit that came from a default is not the limit of your system.",
       "run.instructions": "The name of the file written beside the manifest that says in words what each file is and why it is in the set. Present when a file has a purpose.",
       "summary": "Counts over the whole run, for a quick check.",
-      "summary.file_count": "How many entries the manifest has, one for each file the run planned.",
+      "summary.file_count": "How many entries the manifest has. A run stopped part way lists only the files it finished or that failed, so it can be lower than the files that were planned.",
       "summary.total_bytes": "How many bytes the run wrote to disk, in all.",
       "summary.materialized": "How many files are on disk. Lower than `file_count` when a name could not be written or a file failed.",
       "summary.by_format": "How many files of each format.",
@@ -580,7 +580,7 @@
     "recipes": {
       "archive-upload": {
         "title": "Archive upload",
-        "text": "ZIP and TAR.GZ archives with real files inside: many entries, archives five deep, folders, an empty archive, one locked with a password and one cut short."
+        "text": "ZIP and TAR.GZ archives with real files inside: many entries, files five folders deep, folders listed as entries, an empty archive, one locked with a password and one cut short."
       },
       "bulk-files": {
         "title": "Bulk files",

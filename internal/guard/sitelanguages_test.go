@@ -140,6 +140,11 @@ func TestEveryPageSaysWhichLanguageItIsAndWhereItsTranslationsAre(t *testing.T) 
 	if len(untranslatedFiles) == 0 {
 		t.Fatal("no page is marked untranslated, so the rule for one is asked of nothing")
 	}
+	for file := range untranslatedFiles {
+		if _, ok := rendered[file]; !ok {
+			t.Errorf("%s is marked untranslated and was not rendered, so the rule for it is asked of nothing", file)
+		}
+	}
 
 	pages := map[string]map[string]string{}
 	canonicals := map[string]string{}

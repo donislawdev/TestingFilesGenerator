@@ -403,7 +403,7 @@
         "text": "Cada comando e cada opção com seu valor padrão, e todos os códigos de saída."
       },
       "guide-recipes": {
-        "title": "Receitas",
+        "title": "Escrever receitas",
         "text": "Cada chave de uma receita, tamanhos, nomes de arquivo, reações esperadas, danos, arquivos compactados e presets."
       },
       "recipes": {

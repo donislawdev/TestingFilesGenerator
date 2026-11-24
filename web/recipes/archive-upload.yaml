@@ -10,7 +10,8 @@ version: 1
 seed: 404
 
 targets:
-  # Ordinary archives: text files, PDF files and pictures inside.
+  # Ordinary archives: text files and PDF files in a ZIP, and pictures in a
+  # TAR.GZ, which a form that takes ZIP files may or may not take as well.
   - id: texts_zip
     format: zip
     size: 200kb
@@ -38,11 +39,13 @@ targets:
       entries: 10
       entry_format: png
       entry_size: 100kb
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: extension_rule
 
-  # Shapes an unpacker meets less often: many entries, archives inside
-  # archives, folders as entries of their own, and an archive with nothing in
-  # it.
+  # Shapes an unpacker meets less often: many entries, files five folders
+  # deep, folders listed as entries of their own, and an archive with nothing
+  # in it.
   - id: many_entries
     format: zip
     size: 20mb
@@ -57,7 +60,7 @@ targets:
   - id: nested
     format: zip
     size: 200kb
-    name: nested_5_deep.zip
+    name: five_folders_deep.zip
     properties:
       depth: 5
     expected:
@@ -72,9 +75,11 @@ targets:
       depth: 2
       directory_entries: true
     expected: accept
+  # Kept at 1 KB. A larger empty archive needs a filler entry to reach its
+  # size, and would no longer be empty.
   - id: empty_zip
     format: zip
-    size: 10kb
+    size: 1kb
     name: empty.zip
     properties:
       entries: 0
@@ -91,9 +96,7 @@ targets:
     properties:
       encryption: aes-256
       password: test
-    expected:
-      outcome: unspecified
-      reason: content_malformed
+    expected: unspecified
 
   # Broken on purpose: a ZIP cut short the way an interrupted upload leaves it.
   - id: truncated_zip

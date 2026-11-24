@@ -4,8 +4,10 @@
 #   tfg generate spreadsheet-import.yaml
 #
 # The files and manifest.json land in ./spreadsheet-import. Every file here is
-# a well formed table, so a refusal is a gap in the importer, apart from the
-# two at the end, which are broken on purpose.
+# a well formed table. The ones marked accept are what most tools export, and
+# an importer should take them. The others are shapes and sizes an importer may
+# refuse on purpose, so they say unspecified: set them to what your importer
+# does. The two at the end are broken on purpose.
 
 version: 1
 seed: 303
@@ -30,21 +32,27 @@ targets:
     name: semicolon.csv
     properties:
       delimiter: semicolon
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: none
   - id: tab
     format: csv
     size: 50kb
     name: tab_separated.csv
     properties:
       delimiter: tab
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: none
   - id: no_header
     format: csv
     size: 50kb
     name: no_header.csv
     properties:
       header: false
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: none
   - id: every_field_quoted
     format: csv
     size: 50kb
@@ -60,12 +68,16 @@ targets:
     name: wide_200_columns.csv
     properties:
       columns: 200
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: count_limit
   - id: large
     format: csv
     size: 20mb
     name: large.csv
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: size_limit
 
   # Excel files: a small sheet, a long one and a single cell.
   - id: sheet
@@ -83,7 +95,9 @@ targets:
     properties:
       rows: 10000
       columns: 6
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: count_limit
   - id: one_cell
     format: xlsx
     size: 8kb

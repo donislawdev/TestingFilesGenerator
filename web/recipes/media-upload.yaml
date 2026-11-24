@@ -18,7 +18,9 @@ with:
   format: mp4
 
 targets:
-  # One file of each kind most forms take.
+  # MP4, which a video form takes, then WebM and a WAV voice note, which
+  # some forms refuse. Whether yours does is its policy, so those two say
+  # unspecified: set them to what your form does.
   - id: video_mp4
     format: mp4
     size: 2mb
@@ -36,7 +38,9 @@ targets:
       width: 1280
       height: 720
       duration: 5s
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: extension_rule
   - id: voice_wav
     format: wav
     size: 1mb
@@ -44,7 +48,9 @@ targets:
     properties:
       sample_rate: 16000
       channels: 1
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: extension_rule
 
   # Shapes a player or a transcoder meets less often: a portrait phone video,
   # ten minutes of video at one frame a second, and sound that is only
@@ -74,7 +80,7 @@ targets:
     name: silence.wav
     properties:
       content: silence
-    expected: accept
+    expected: unspecified
 
   # Broken on purpose: a video cut short the way an interrupted upload leaves
   # it.

@@ -403,7 +403,7 @@
         "text": "Jeder Befehl und jede Option mit ihrem Standardwert, dazu alle Exit-Codes."
       },
       "guide-recipes": {
-        "title": "Rezepte",
+        "title": "Rezepte schreiben",
         "text": "Jeder Schlüssel eines Rezepts, Größen, Dateinamen, erwartete Reaktionen, Beschädigungen, Archive und Presets."
       },
       "recipes": {

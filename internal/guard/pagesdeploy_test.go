@@ -29,7 +29,8 @@ type pagesJob struct {
 // holds no write access to Pages.
 func pagesDeployProblems(body []byte) []string {
 	var workflow struct {
-		Jobs map[string]pagesJob `yaml:"jobs"`
+		Permissions any                 `yaml:"permissions"`
+		Jobs        map[string]pagesJob `yaml:"jobs"`
 	}
 	if err := yaml.Unmarshal(body, &workflow); err != nil {
 		return []string{"the workflow does not parse: " + err.Error()}
@@ -50,7 +51,12 @@ func pagesDeployProblems(body []byte) []string {
 	}
 	var problems []string
 	for name := range uploads {
-		if _, deploys := deploys[name]; !deploys && writesPages(workflow.Jobs[name].Permissions) {
+		// A job without permissions of its own has the workflow's.
+		held := workflow.Jobs[name].Permissions
+		if held == nil {
+			held = workflow.Permissions
+		}
+		if _, deploys := deploys[name]; !deploys && writesPages(held) {
 			problems = append(problems, "the job "+name+" only uploads the site and still holds pages: write or "+
 				"id-token: write, which only the deploy job needs")
 		}
@@ -85,8 +91,8 @@ func pagesDeployProblems(body []byte) []string {
 				problems = append(problems, "try "+s.ID+" of "+name+" ends the job when it fails, so the tries after it never run")
 			}
 		}
-		for i, s := range steps[1:] {
-			problems = append(problems, retryConditionProblems(name, steps[i], s)...)
+		for i := 1; i < len(steps); i++ {
+			problems = append(problems, retryConditionProblems(name, steps[:i], steps[i])...)
 		}
 		if steps[len(steps)-1].ContinueOnError {
 			problems = append(problems, "the last try of "+name+" may fail without failing the job, so a site that never went out would look published")
@@ -108,17 +114,24 @@ func writesPages(permissions any) bool {
 }
 
 // retryConditionProblems is what is wrong with the condition of a try that
-// should run only when the try before it failed.
+// should run exactly when every try before it failed.
 //
-// It has to ask for the outcome. A step with continue-on-error that failed has
-// the conclusion success, so a try that waited for the conclusion failure of
-// the one before would never run, and the job would end green with nothing
-// deployed.
-func retryConditionProblems(job string, before, try pagesStep) []string {
-	asks := "steps." + before.ID + ".outcome == 'failure'"
+// The whole condition is compared, not a part of it: one that also says
+// "&& false" never runs, and one that also says "|| true" runs after a try
+// that worked. It has to ask for the outcome. A step with continue-on-error
+// that failed has the conclusion success, so a try that waited for the
+// conclusion failure of the one before would never run, and the job would end
+// green with nothing deployed.
+func retryConditionProblems(job string, before []pagesStep, try pagesStep) []string {
+	asks := make([]string, len(before))
+	for i, b := range before {
+		asks[i] = "steps." + b.ID + ".outcome == 'failure'"
+	}
+	want := strings.Join(asks, " && ")
+	said := strings.Join(strings.Fields(strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(try.If), "${{"), "}}")), " ")
 	var problems []string
-	if before.ID == "" || !strings.Contains(try.If, asks) {
-		problems = append(problems, "try "+try.ID+" of "+job+" does not wait for "+asks+
+	if said != want {
+		problems = append(problems, "try "+try.ID+" of "+job+" runs on "+said+" rather than exactly "+want+
 			", so it runs when it should not or never runs at all")
 	}
 	if strings.Contains(try.If, ".conclusion") {
@@ -126,6 +139,25 @@ func retryConditionProblems(job string, before, try pagesStep) []string {
 			"continue-on-error concludes as success, so this try never runs")
 	}
 	return problems
+}
+
+// pagesCanary is a workflow that uploads in one job and deploys twice in the
+// next, with the permissions and the condition of the second try given.
+func pagesCanary(workflowPermissions, uploadPermissions, retryIf string) []byte {
+	return []byte(workflowPermissions + `jobs:
+  publish:
+` + uploadPermissions + `    steps:
+      - uses: actions/upload-pages-artifact@abc
+  deploy:
+    needs: publish
+    steps:
+      - id: first
+        uses: actions/deploy-pages@abc
+        continue-on-error: true
+      - id: second
+        if: ` + retryIf + `
+        uses: actions/deploy-pages@abc
+`)
 }
 
 // The site is deployed in a job of its own, after the upload, with more than
@@ -137,11 +169,10 @@ func retryConditionProblems(job string, before, try pagesStep) []string {
 // (actions/deploy-pages#451). Re-running the failed job cannot recover it,
 // because the re-run uploads a second github-pages artifact.
 //
-// Two canaries: the job as it stood on main that day, uploading and deploying
-// once in the same job, and a deploy job split off from an upload job that kept
-// pages: write, with a retry that waits for the conclusion of the try before it
-// rather than its outcome and so would never run. Every problem has to be
-// reported.
+// Its canaries: the job as it stood on main that day, uploading and deploying
+// once in the same job, retries whose condition is not exactly "every try
+// before me failed", and an upload job holding pages: write, its own or the
+// workflow's. Every problem has to be reported, and a correct layout none.
 func TestTheSiteIsDeployedInAJobAfterTheUploadWithMoreThanOneTry(t *testing.T) {
 	canary := []byte(`jobs:
   publish:
@@ -155,30 +186,26 @@ func TestTheSiteIsDeployedInAJobAfterTheUploadWithMoreThanOneTry(t *testing.T) {
 		t.Fatalf("the canary, one job that uploads and deploys once, gave %d problem(s) and has two: %v", len(got), got)
 	}
 
-	// The second canary: a retry that waits for the conclusion of the try
-	// before it, which is success for a failed step with continue-on-error,
-	// and an upload job that kept the write access only the deploy job needs.
-	conclusion := []byte(`jobs:
-  publish:
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    steps:
-      - uses: actions/upload-pages-artifact@abc
-  deploy:
-    needs: publish
-    steps:
-      - id: first
-        uses: actions/deploy-pages@abc
-        continue-on-error: true
-      - id: second
-        if: steps.first.conclusion == 'failure'
-        uses: actions/deploy-pages@abc
-`)
-	if got := pagesDeployProblems(conclusion); len(got) != 3 {
-		t.Fatalf("the canary of a retry that reads the conclusion, after an upload job that holds pages: write, "+
-			"gave %d problem(s) and has three: %v", len(got), got)
+	// The other canaries: retries that read the conclusion or say more than
+	// they should, and an upload job that holds the write access only the
+	// deploy job needs, by its own permissions or by the workflow's. A correct
+	// layout and an empty override of the workflow's permissions pass.
+	const retry, write, wide = "steps.first.outcome == 'failure'", "    permissions:\n      pages: write\n      id-token: write\n", "permissions:\n  pages: write\n"
+	for _, c := range []struct {
+		why                  string
+		workflow, upload, at string
+		problems             int
+	}{
+		{"a correct layout", "", "", retry, 0},
+		{"a retry reading the conclusion after an upload job with pages: write", "", write, "steps.first.conclusion == 'failure'", 3},
+		{"a retry that never runs", "", "", retry + " && false", 1},
+		{"a retry that runs after a try that worked", "", "", retry + " || true", 1},
+		{"an upload job inheriting pages: write", wide, "", retry, 1},
+		{"an upload job overriding the workflow with nothing", wide, "    permissions: {}\n", retry, 0},
+	} {
+		if got := pagesDeployProblems(pagesCanary(c.workflow, c.upload, c.at)); len(got) != c.problems {
+			t.Fatalf("the canary of %s gave %d problem(s) and has %d: %v", c.why, len(got), c.problems, got)
+		}
 	}
 
 	for _, p := range pagesDeployProblems([]byte(workflowText(t, "pages.yml"))) {

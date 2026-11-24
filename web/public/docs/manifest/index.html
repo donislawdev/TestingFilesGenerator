@@ -115,7 +115,7 @@
     <li><a href="/docs/install/">Install</a></li>
     <li><a href="/docs/getting-started/">Getting started</a></li>
     <li><a href="/docs/commands/">Commands</a></li>
-    <li><a href="/docs/recipes/">Recipes</a></li>
+    <li><a href="/docs/recipes/">Writing recipes</a></li>
     <li><a href="/recipes/">Recipe gallery</a></li>
     <li><a href="/docs/manifest/" aria-current="page">Manifest</a></li>
     <li><a href="/docs/format-settings/">Format settings</a></li>
@@ -231,7 +231,7 @@ for f in manifest["files"]:
       <tr><td><code>run.preset.defaulted</code></td><td>The settings you did not give, which took the default of the preset. A limit that came from a default is not the limit of your system.</td></tr>
       <tr><td><code>run.instructions</code></td><td>The name of the file written beside the manifest that says in words what each file is and why it is in the set. Present when a file has a purpose.</td></tr>
       <tr><td><code>summary</code></td><td>Counts over the whole run, for a quick check.</td></tr>
-      <tr><td><code>summary.file_count</code></td><td>How many entries the manifest has, one for each file the run planned.</td></tr>
+      <tr><td><code>summary.file_count</code></td><td>How many entries the manifest has. A run stopped part way lists only the files it finished or that failed, so it can be lower than the files that were planned.</td></tr>
       <tr><td><code>summary.total_bytes</code></td><td>How many bytes the run wrote to disk, in all.</td></tr>
       <tr><td><code>summary.materialized</code></td><td>How many files are on disk. Lower than <code>file_count</code> when a name could not be written or a file failed.</td></tr>
       <tr><td><code>summary.by_format</code></td><td>How many files of each format.</td></tr>

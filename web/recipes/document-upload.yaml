@@ -17,7 +17,9 @@ with:
   format: pdf
 
 targets:
-  # One document of each kind most forms take.
+  # PDF and Word, which a document form takes, then Excel, PowerPoint, RTF
+  # and plain text, which some forms refuse. Whether yours does is its
+  # policy, so those say unspecified: set them to what your form does.
   - id: invoice_pdf
     format: pdf
     size: 300kb
@@ -48,22 +50,30 @@ targets:
     properties:
       rows: 500
       columns: 12
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: extension_rule
   - id: slides_pptx
     format: pptx
     size: 1mb
     name: slides.pptx
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: extension_rule
   - id: notes_rtf
     format: rtf
     size: 50kb
     name: notes.rtf
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: extension_rule
   - id: notes_txt
     format: txt
     size: 20kb
     name: notes.txt
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: extension_rule
 
   # A long document: 500 pages in one PDF.
   - id: long_pdf

@@ -17,7 +17,9 @@ with:
   format: jpg
 
 targets:
-  # One picture of each format most forms take.
+  # JPEG and PNG, which an image form takes, and WebP and GIF, which some
+  # forms refuse. Whether yours does is its policy, so those two say
+  # unspecified: set them to what your form does.
   - id: photo_jpg
     format: jpg
     size: 500kb
@@ -32,12 +34,16 @@ targets:
     format: webp
     size: 500kb
     name: picture.webp
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: extension_rule
   - id: picture_gif
     format: gif
     size: 200kb
     name: picture.gif
-    expected: accept
+    expected:
+      outcome: unspecified
+      reason: extension_rule
 
   # The sizes in pixels a form may refuse: one pixel, and a picture of 36
   # megapixels. Whether either is welcome is your form's decision.
