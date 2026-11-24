@@ -385,6 +385,6 @@
     "archive-scan": "Questo archivio si può decomprimere in sicurezza?",
     "checksum": "Questo file è davvero quello che dichiara di essere?",
     "checksum-check": "Ogni file è ancora come dice il suo file di checksum?",
-    "checksum-write": "Come saprò più tardi che in questa cartella non è cambiato nulla?"
+    "checksum-write": "Come saprò più tardi che nessuno di questi file è cambiato?"
   }
 }

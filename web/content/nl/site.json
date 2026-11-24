@@ -385,6 +385,6 @@
     "archive-scan": "Is dit archief veilig om uit te pakken?",
     "checksum": "Is dit bestand het bestand dat het beweert te zijn?",
     "checksum-check": "Is elk bestand nog wat zijn checksumbestand zegt?",
-    "checksum-write": "Hoe weet ik later dat er in deze map niets is veranderd?"
+    "checksum-write": "Hoe weet ik later dat geen van deze bestanden is veranderd?"
   }
 }

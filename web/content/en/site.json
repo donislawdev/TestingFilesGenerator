@@ -77,7 +77,7 @@
     {
       "key": "upload-tests",
       "slug": "file-upload-test-cases",
-      "nav": "Upload test cases",
+      "nav": "File upload test cases",
       "title": "File Upload Test Cases - With the Files to Run Them",
       "description": "Test cases for a file upload: the size limit, empty and corrupt files, the wrong type, unexpected file names and archives, each with the file that tests it.",
       "parent": "use-cases"
@@ -385,6 +385,6 @@
     "archive-scan": "Is this archive safe to unpack?",
     "checksum": "Is this file the one it claims to be?",
     "checksum-check": "Is every file still what its checksum file says?",
-    "checksum-write": "How will I know later that nothing in this folder changed?"
+    "checksum-write": "How will I know later that none of these files changed?"
   }
 }

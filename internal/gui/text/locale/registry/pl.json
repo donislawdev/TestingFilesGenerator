@@ -726,7 +726,7 @@
   "Tool.checksum-write.Note.others": { "hash": "sha256-71cbbcf6dd9f", "other": "Pominięte, bo to nie pliki - potok, urządzenie, gniazdo albo junction - a ich czytanie może się nigdy nie skończyć:" },
   "Tool.checksum-write.Note.ours": { "hash": "sha256-4d087172bfc7", "other": "Pominięte, bo to niedokończone pliki po przerwanym przebiegu tego programu:" },
   "Tool.checksum-write.Note.written": { "hash": "sha256-a460d3635ba3", "other": "Zapisano:" },
-  "Tool.checksum-write.Question": { "hash": "sha256-3d55c8d03d3a", "other": "Jak później poznam, że nic w tym folderze się nie zmieniło?" },
+  "Tool.checksum-write.Question": { "hash": "sha256-c18c47d5b2fe", "other": "Jak później poznam, że żaden z tych plików się nie zmienił?" },
   "Tool.checksum.Detail": { "hash": "sha256-f3e1a6e1c983", "other": "Liczy sumę kontrolną pliku i porównuje ją z tą, którą dostałeś - ze strony pobierania, z opisu wydania albo od kogoś z zespołu." },
   "Tool.checksum.Question": { "hash": "sha256-f7c87f2771e3", "other": "Czy ten plik jest tym, za który się podaje?" },
   "Unit.bytes": { "hash": "sha256-277089d91c0b", "other": "bajtów" },

@@ -385,6 +385,6 @@
     "archive-scan": "Je bezpečné tento archiv rozbalit?",
     "checksum": "Je tento soubor tím, za který se vydává?",
     "checksum-check": "Odpovídá každý soubor stále tomu, co uvádí jeho soubor kontrolních součtů?",
-    "checksum-write": "Jak později poznám, že se v této složce nic nezměnilo?"
+    "checksum-write": "Jak později poznám, že se žádný z těchto souborů nezměnil?"
   }
 }

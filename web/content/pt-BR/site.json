@@ -385,6 +385,6 @@
     "archive-scan": "Este arquivo compactado é seguro para descompactar?",
     "checksum": "Este arquivo é mesmo o que diz ser?",
     "checksum-check": "Cada arquivo ainda é o que diz o seu arquivo de somas de verificação?",
-    "checksum-write": "Como vou saber depois que nada mudou nesta pasta?"
+    "checksum-write": "Como vou saber depois que nenhum destes arquivos mudou?"
   }
 }

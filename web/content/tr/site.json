@@ -385,6 +385,6 @@
     "archive-scan": "Bu arşivi açmak güvenli mi?",
     "checksum": "Bu dosya, olduğunu söylediği dosya mı?",
     "checksum-check": "Her dosya hâlâ sağlama toplamı dosyasının söylediği gibi mi?",
-    "checksum-write": "Bu klasörde hiçbir şeyin değişmediğini sonradan nasıl anlarım?"
+    "checksum-write": "Bu dosyaların hiçbirinin değişmediğini sonradan nasıl anlarım?"
   }
 }

@@ -385,6 +385,6 @@
     "archive-scan": "Tệp nén này có an toàn để giải nén không?",
     "checksum": "Tệp này có đúng là tệp mà nó tự nhận không?",
     "checksum-check": "Mọi tệp có còn đúng như tệp checksum của chúng ghi không?",
-    "checksum-write": "Sau này làm sao tôi biết không có gì trong thư mục này thay đổi?"
+    "checksum-write": "Sau này làm sao tôi biết không có tệp nào trong số này thay đổi?"
   }
 }

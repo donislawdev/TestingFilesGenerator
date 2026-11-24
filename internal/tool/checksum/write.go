@@ -40,7 +40,7 @@ const (
 func init() {
 	tool.Register(tool.Descriptor{
 		ID:       WriteID,
-		Question: "How will I know later that nothing in this folder changed?",
+		Question: "How will I know later that none of these files changed?",
 		Detail: "Writes the checksum of every file in a folder into one file beside them, SHA256SUMS for sha256. " +
 			"Check it later with tfg tool checksum-check, or with sha256sum -c in that folder.",
 		Inputs: []tool.Input{{

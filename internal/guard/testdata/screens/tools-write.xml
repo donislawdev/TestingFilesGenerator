@@ -105,7 +105,7 @@
 																	<rectangle fillColor="inputBackground" radius="6" size="587x26"/>
 																	<rectangle size="0x0"/>
 																	<widget pos="4,3" size="557x20" type="*widget.RichText">
-																		<text pos="2,2" size="495x16">checksum-write - How will I know later that nothing in this folder changed?</text>
+																		<text pos="2,2" size="482x16">checksum-write - How will I know later that none of these files changed?</text>
 																	</widget>
 																	<widget pos="561,3" size="20x20" type="*widget.Icon">
 																		<image fillMode="contain" rsc="menuDropDownIcon" size="iconInlineSize" themed="primary"/>

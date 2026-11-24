@@ -385,6 +385,6 @@
     "archive-scan": "¿Es seguro descomprimir este archivo comprimido?",
     "checksum": "¿Es este archivo el que dice ser?",
     "checksum-check": "¿Sigue cada archivo coincidiendo con lo que dice su archivo de sumas de comprobación?",
-    "checksum-write": "¿Cómo sabré más tarde que nada ha cambiado en esta carpeta?"
+    "checksum-write": "¿Cómo sabré más tarde que ninguno de estos archivos ha cambiado?"
   }
 }

@@ -385,6 +385,6 @@
     "archive-scan": "Cette archive se décompresse-t-elle sans danger ?",
     "checksum": "Ce fichier est-il bien celui qu'il prétend être ?",
     "checksum-check": "Chaque fichier est-il toujours ce que dit son fichier de sommes de contrôle ?",
-    "checksum-write": "Comment saurai-je plus tard que rien n'a changé dans ce dossier ?"
+    "checksum-write": "Comment saurai-je plus tard qu'aucun de ces fichiers n'a changé ?"
   }
 }

@@ -385,6 +385,6 @@
     "archive-scan": "Lässt sich dieses Archiv sicher entpacken?",
     "checksum": "Ist diese Datei die, die sie zu sein vorgibt?",
     "checksum-check": "Ist jede Datei noch so, wie ihre Prüfsummendatei sagt?",
-    "checksum-write": "Woran erkenne ich später, dass sich in diesem Ordner nichts geändert hat?"
+    "checksum-write": "Woran erkenne ich später, dass sich keine dieser Dateien geändert hat?"
   }
 }

@@ -48,11 +48,19 @@ jobs:
     timeout-minutes: 10
     steps:
       # The same commit the publish job checks out, for the same reason.
+      #
+      # CodeQL reports this checkout as actions/untrusted-checkout/medium. That
+      # query flags every checkout of a workflow_run head_sha in a job without
+      # write access, and by design it does not read the job's if. The if above
+      # lets only a push to main of this repository, or a person who can
+      # dispatch, reach this step, so the commit is never a fork's. Giving the
+      # job write access would move it under the queries that do read the if,
+      # which is the wrong trade for a job that runs repository code.
       # nosemgrep: yaml.github-actions.security.workflow-run-target-code-checkout.workflow-run-target-code-checkout
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
-          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
         with:
@@ -115,8 +123,12 @@ jobs:
         with:
           persist-credentials: false
           # The commit CI passed on, not whatever main happens to be now. On a
-          # dispatch there is no such commit and the default ref is right.
-          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+          # dispatch there is no such commit, and github.sha is the commit the
+          # branch was at when the run started - fixed for the whole run, so a
+          # push while the samples job works cannot pair its files with the
+          # pages of a newer commit, the way the branch name resolved twice
+          # could.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: refuse to publish an empty site
         # A misplaced path here would deploy nothing and take the site down

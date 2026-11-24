@@ -385,6 +385,6 @@
     "archive-scan": "Czy to archiwum można bezpiecznie rozpakować?",
     "checksum": "Czy ten plik jest tym, za który się podaje?",
     "checksum-check": "Czy każdy plik jest wciąż taki, jak podaje jego plik sum kontrolnych?",
-    "checksum-write": "Jak później poznam, że nic w tym folderze się nie zmieniło?"
+    "checksum-write": "Jak później poznam, że żaden z tych plików się nie zmienił?"
   }
 }

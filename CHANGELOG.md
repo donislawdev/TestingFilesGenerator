@@ -38,6 +38,13 @@ because it turns other people's test suites red.
 - **The README says what the tool can do in full**: presets, damaged files, a
   name no disk stores, the tools, and the packages for pytest and Node.
 
+### Fixed
+
+- **`tfg tool checksum-write` no longer promises to notice any change in the
+  folder.** Its question is now "How will I know later that none of these files
+  changed?". `checksum-check` checks the files the checksum file lists, so a
+  file added to the folder later is not noticed.
+
 ## [0.6.0-rc1] - 2026-11-18
 
 ### Breaking

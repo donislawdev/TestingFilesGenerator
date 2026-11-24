@@ -385,6 +385,6 @@
     "archive-scan": "Apakah arsip ini aman diekstrak?",
     "checksum": "Apakah file ini benar file yang diakuinya?",
     "checksum-check": "Apakah setiap file masih sesuai dengan yang dinyatakan file checksum-nya?",
-    "checksum-write": "Bagaimana nanti saya tahu bahwa tidak ada yang berubah di folder ini?"
+    "checksum-write": "Bagaimana nanti saya tahu bahwa tidak satu pun dari file ini berubah?"
   }
 }
