@@ -37,6 +37,8 @@
     Dokumenty, obrázky, text, data, archivy, pošta, telemetrie, zvuk a video, každý soubor má přesně
     1 048 576 bajtů a každý je skutečným souborem svého formátu. PDF se otevře v prohlížeči PDF, DOCX
     ve Wordu, XLSX v Excelu a ZIP se rozbalí.
+    Server posílá textové soubory a některé obrázky komprimované, proto může prohlížeč během stahování
+    ukázat menší velikost než tabulka. Uložený soubor má velikost z tabulky a odpovídá svému SHA-256.
   </p>
   {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
   <p>

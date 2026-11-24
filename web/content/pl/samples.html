@@ -35,6 +35,9 @@
     Dokumenty, obrazki, tekst, dane, archiwa, poczta, telemetria, dźwięk i wideo, każdy plik ma
     dokładnie 1 048 576 bajtów i każdy jest prawdziwym plikiem swojego formatu. PDF otwiera się
     w czytniku PDF, DOCX w Wordzie, XLSX w Excelu, a ZIP się rozpakowuje.
+    Serwer wysyła pliki tekstowe i niektóre obrazki skompresowane, więc w trakcie pobierania
+    przeglądarka może pokazać mniejszy rozmiar niż tabela. Zapisany plik ma rozmiar z tabeli i zgadza
+    się ze swoim SHA-256.
   </p>
   {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
   <p>
