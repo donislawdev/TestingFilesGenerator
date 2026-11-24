@@ -1,0 +1,360 @@
+# The sample files of https://testingfilesgenerator.donislawdev.com/sample-files/
+#
+# Every file on that page comes from this recipe. Run it and you get the same
+# bytes on any machine, which the SHA256SUMS beside the files lets you check:
+#
+#   tfg generate samples.yaml --out samples
+#   tfg tool checksum-check samples/SHA256SUMS
+#
+# The tables for an import come from the tabular-import preset, so they are
+# built first. The files of this recipe follow it, in four groups.
+
+version: 1
+seed: 2026
+extends: preset:tabular-import
+
+targets:
+  # One file of every format, 1 MB each, that opens in the software that owns it.
+  - id: sample_avif
+    format: avif
+    size: 1mb
+    name: sample.avif
+    group: formats
+    expected: accept
+  - id: sample_bmp
+    format: bmp
+    size: 1mb
+    name: sample.bmp
+    group: formats
+    expected: accept
+  - id: sample_csv
+    format: csv
+    size: 1mb
+    name: sample.csv
+    group: formats
+    expected: accept
+  - id: sample_docx
+    format: docx
+    size: 1mb
+    name: sample.docx
+    group: formats
+    expected: accept
+  - id: sample_eml
+    format: eml
+    size: 1mb
+    name: sample.eml
+    group: formats
+    expected: accept
+  - id: sample_geojson
+    format: geojson
+    size: 1mb
+    name: sample.geojson
+    group: formats
+    expected: accept
+  - id: sample_gif
+    format: gif
+    size: 1mb
+    name: sample.gif
+    group: formats
+    expected: accept
+  - id: sample_html
+    format: html
+    size: 1mb
+    name: sample.html
+    group: formats
+    expected: accept
+  - id: sample_ico
+    format: ico
+    size: 1mb
+    name: sample.ico
+    group: formats
+    expected: accept
+  - id: sample_jpg
+    format: jpg
+    size: 1mb
+    name: sample.jpg
+    group: formats
+    expected: accept
+  - id: sample_json
+    format: json
+    size: 1mb
+    name: sample.json
+    group: formats
+    expected: accept
+  - id: sample_jxl
+    format: jxl
+    size: 1mb
+    name: sample.jxl
+    group: formats
+    expected: accept
+  - id: sample_log
+    format: log
+    size: 1mb
+    name: sample.log
+    group: formats
+    expected: accept
+  - id: sample_md
+    format: md
+    size: 1mb
+    name: sample.md
+    group: formats
+    expected: accept
+  - id: sample_mp4
+    format: mp4
+    size: 1mb
+    name: sample.mp4
+    group: formats
+    expected: accept
+  - id: sample_otlp
+    format: otlp
+    size: 1mb
+    name: sample-otlp.jsonl
+    group: formats
+    expected: accept
+  - id: sample_pdf
+    format: pdf
+    size: 1mb
+    name: sample.pdf
+    group: formats
+    expected: accept
+  - id: sample_png
+    format: png
+    size: 1mb
+    name: sample.png
+    group: formats
+    expected: accept
+  - id: sample_pptx
+    format: pptx
+    size: 1mb
+    name: sample.pptx
+    group: formats
+    expected: accept
+  - id: sample_rtf
+    format: rtf
+    size: 1mb
+    name: sample.rtf
+    group: formats
+    expected: accept
+  - id: sample_svg
+    format: svg
+    size: 1mb
+    name: sample.svg
+    group: formats
+    expected: accept
+  - id: sample_targz
+    format: targz
+    size: 1mb
+    name: sample.tar.gz
+    group: formats
+    expected: accept
+  - id: sample_tiff
+    format: tiff
+    size: 1mb
+    name: sample.tiff
+    group: formats
+    expected: accept
+  - id: sample_toml
+    format: toml
+    size: 1mb
+    name: sample.toml
+    group: formats
+    expected: accept
+  - id: sample_txt
+    format: txt
+    size: 1mb
+    name: sample.txt
+    group: formats
+    expected: accept
+  - id: sample_wav
+    format: wav
+    size: 1mb
+    name: sample.wav
+    group: formats
+    expected: accept
+  - id: sample_webm
+    format: webm
+    size: 1mb
+    name: sample.webm
+    group: formats
+    expected: accept
+  - id: sample_webp
+    format: webp
+    size: 1mb
+    name: sample.webp
+    group: formats
+    expected: accept
+  - id: sample_xlsx
+    format: xlsx
+    size: 1mb
+    name: sample.xlsx
+    group: formats
+    expected: accept
+  - id: sample_xml
+    format: xml
+    size: 1mb
+    name: sample.xml
+    group: formats
+    expected: accept
+  - id: sample_yaml
+    format: yaml
+    size: 1mb
+    name: sample.yaml
+    group: formats
+    expected: accept
+  - id: sample_zip
+    format: zip
+    size: 1mb
+    name: sample.zip
+    group: formats
+    expected: accept
+
+  # Files broken on purpose, still 1 MB. The manifest says how a reader should react.
+  - id: corrupt_pdf
+    format: pdf
+    size: 1mb
+    name: corrupt-truncate.pdf
+    group: corrupt
+    damage: [truncate]
+  - id: corrupt_docx
+    format: docx
+    size: 1mb
+    name: corrupt-truncate.docx
+    group: corrupt
+    damage: [truncate]
+  - id: corrupt_xlsx
+    format: xlsx
+    size: 1mb
+    name: corrupt-truncate.xlsx
+    group: corrupt
+    damage: [truncate]
+  - id: corrupt_pptx
+    format: pptx
+    size: 1mb
+    name: corrupt-truncate.pptx
+    group: corrupt
+    damage: [truncate]
+  - id: corrupt_jpg
+    format: jpg
+    size: 1mb
+    name: corrupt-truncate.jpg
+    group: corrupt
+    damage: [truncate]
+  - id: corrupt_png
+    format: png
+    size: 1mb
+    name: corrupt-zero-head.png
+    group: corrupt
+    damage: [zero-head]
+  - id: corrupt_mp4
+    format: mp4
+    size: 1mb
+    name: corrupt-truncate.mp4
+    group: corrupt
+    damage: [truncate]
+  - id: corrupt_zip
+    format: zip
+    size: 1mb
+    name: corrupt-truncate.zip
+    group: corrupt
+    damage: [truncate]
+
+  # Placeholder pictures at sizes a page lays out, as small as each picture can be.
+  - id: placeholder_png_100x100
+    format: png
+    size: smallest
+    name: placeholder-100x100.png
+    group: placeholders
+    label: false
+    expected: accept
+    properties:
+      content: placeholder
+      width: 100
+      height: 100
+  - id: placeholder_png_150x150
+    format: png
+    size: smallest
+    name: placeholder-150x150.png
+    group: placeholders
+    label: false
+    expected: accept
+    properties:
+      content: placeholder
+      width: 150
+      height: 150
+  - id: placeholder_png_300x250
+    format: png
+    size: smallest
+    name: placeholder-300x250.png
+    group: placeholders
+    label: false
+    expected: accept
+    properties:
+      content: placeholder
+      width: 300
+      height: 250
+  - id: placeholder_png_728x90
+    format: png
+    size: smallest
+    name: placeholder-728x90.png
+    group: placeholders
+    label: false
+    expected: accept
+    properties:
+      content: placeholder
+      width: 728
+      height: 90
+  - id: placeholder_png_1200x630
+    format: png
+    size: smallest
+    name: placeholder-1200x630.png
+    group: placeholders
+    label: false
+    expected: accept
+    properties:
+      content: placeholder
+      width: 1200
+      height: 630
+  - id: placeholder_png_1920x1080
+    format: png
+    size: smallest
+    name: placeholder-1920x1080.png
+    group: placeholders
+    label: false
+    expected: accept
+    properties:
+      content: placeholder
+      width: 1920
+      height: 1080
+  - id: placeholder_svg_300x250
+    format: svg
+    size: smallest
+    name: placeholder-300x250.svg
+    group: placeholders
+    label: false
+    expected: accept
+    properties:
+      content: placeholder
+      width: 300
+      height: 250
+  - id: placeholder_svg_1200x630
+    format: svg
+    size: smallest
+    name: placeholder-1200x630.svg
+    group: placeholders
+    label: false
+    expected: accept
+    properties:
+      content: placeholder
+      width: 1200
+      height: 630
+  - id: placeholder_jpg_1920x1080
+    format: jpg
+    size: smallest
+    name: placeholder-1920x1080.jpg
+    group: placeholders
+    label: false
+    expected: accept
+    properties:
+      content: placeholder
+      width: 1920
+      height: 1080

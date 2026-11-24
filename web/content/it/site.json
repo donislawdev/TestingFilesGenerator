@@ -61,11 +61,34 @@
       "description": "Un file rotto di proposito, della dimensione esatta, con un manifest che dice che il tuo sistema deve rifiutarlo. Per testare validazione degli upload e parser."
     },
     {
+      "key": "samples",
+      "slug": "file-di-esempio",
+      "nav": "File di esempio",
+      "title": "File di esempio per test - scarica PDF, CSV, DOCX e altri",
+      "description": "File di test e di esempio da scaricare: ogni formato da 1 MB, PDF, Word ed Excel corrotti, tabelle CSV e immagini segnaposto, ognuno con il suo SHA-256."
+    },
+    {
       "key": "ci",
       "slug": "file-di-test-in-ci",
       "nav": "File di test in CI",
       "title": "File di test in CI - GitHub Actions, GitLab CI e PowerShell",
       "description": "Genera file di test nella pipeline invece di committare binari: workflow GitHub Actions, job GitLab, codici di uscita e la trappola di PowerShell."
+    },
+    {
+      "key": "upload-tests",
+      "slug": "casi-di-test-upload-file",
+      "nav": "Casi di test upload",
+      "title": "Casi di test per l'upload di file - con i file per eseguirli",
+      "description": "Casi di test per l'upload di file: limite di dimensione, file vuoti e corrotti, tipo sbagliato, nomi inattesi e archivi, ognuno con il file che lo verifica.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "strumenti",
+      "nav": "Strumenti",
+      "title": "Controllare uno ZIP prima di decomprimerlo, checksum SHA-256",
+      "description": "Strumenti offline per i file che hai già: se un archivio si decomprime in sicurezza, zip slip e zip bomb compresi, e verificare o scrivere checksum SHA-256.",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "Danno",
     "colEffect": "Cosa fa ai byte",
     "colSettings": "Impostazioni",
-    "noSettings": "nessuna"
+    "noSettings": "nessuna",
+    "colFile": "File",
+    "colSize": "Dimensione",
+    "colSha256": "SHA-256",
+    "colExpected": "Atteso",
+    "colTool": "Strumento",
+    "colQuestion": "A cosa risponde"
   },
   "endings": {
     "0": "Tutto ha funzionato.",
@@ -224,8 +253,8 @@
     "picture-sizes": {
       "question": "Il mio sistema accetta immagini nelle dimensioni usate da schermi e piattaforme?",
       "title": "Dimensioni delle immagini",
-      "pageTitle": "Immagini di test in dimensioni comuni - schermi, avatar, social media",
-      "description": "Immagini nelle dimensioni di schermi HD, Full HD, QHD e 4K, delle foto profilo e di copertine, post e miniature richieste dalle piattaforme social, ognuna piccola quanto può esserlo.",
+      "pageTitle": "Immagini di test in dimensioni comuni - schermi e social",
+      "description": "Immagini nelle dimensioni di schermi HD, Full HD, QHD e 4K, delle foto profilo e di copertine, post e miniature richieste dalle piattaforme social.",
       "catches": [
         "un limite di larghezza o di altezza pensato per una forma che ne rifiuta un'altra, come uno sfondo del profilo largo 1584 px",
         "una miniatura tagliata o schiacciata perché il codice si aspetta un'immagine orizzontale e ne arriva una verticale",
@@ -351,5 +380,11 @@
       "q": "Perché un'esecuzione su migliaia di file è più lenta su Windows?",
       "a": "Perché Windows fa pagare di più ogni percorso che esamina, e un comando che passa su migliaia di file esamina migliaia di percorsi. Misurato su una macchina con 3000 file da 1 kB, verify impiega circa 0,9 secondi su Windows e circa 0,2 secondi su Linux in un container. Un percorso di output più corto abbassa il valore di Windows, perché ogni cartella sopra i file fa parte di ciò che viene esaminato."
     }
-  ]
+  ],
+  "tools": {
+    "archive-scan": "Questo archivio si può decomprimere in sicurezza?",
+    "checksum": "Questo file è davvero quello che dichiara di essere?",
+    "checksum-check": "Ogni file è ancora come dice il suo file di checksum?",
+    "checksum-write": "Come saprò più tardi che in questa cartella non è cambiato nulla?"
+  }
 }

@@ -61,11 +61,34 @@
       "description": "Eine absichtlich kaputte Datei in exakt der verlangten Größe, mit einem Manifest, das sagt, dass Ihr System sie ablehnen soll. Für Upload-Validierung und Parser."
     },
     {
+      "key": "samples",
+      "slug": "beispieldateien",
+      "nav": "Beispieldateien",
+      "title": "Testdateien zum Download - Beispieldateien PDF, CSV, DOCX",
+      "description": "Testdateien und Beispieldateien zum Download: jedes Format mit 1 MB, beschädigte PDF-, Word- und Excel-Dateien, CSV-Tabellen und Platzhalterbilder, mit SHA-256."
+    },
+    {
       "key": "ci",
       "slug": "testdateien-in-ci",
       "nav": "Testdateien in CI",
       "title": "Testdateien in CI - GitHub Actions, GitLab CI und PowerShell",
       "description": "Testdateien in der Pipeline erzeugen statt einzuchecken: GitHub-Actions-Workflow, GitLab-Job, Exit-Codes, die den Build scheitern lassen, und die PowerShell-Falle."
+    },
+    {
+      "key": "upload-tests",
+      "slug": "testfaelle-datei-upload",
+      "nav": "Upload-Testfälle",
+      "title": "Testfälle für den Datei-Upload - mit den Dateien dazu",
+      "description": "Testfälle für einen Datei-Upload: Größenlimit, leere und beschädigte Dateien, falscher Typ, ungewöhnliche Dateinamen und Archive, jeder mit der passenden Datei.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "werkzeuge",
+      "nav": "Werkzeuge",
+      "title": "ZIP vor dem Entpacken prüfen, SHA-256-Prüfsummen abgleichen",
+      "description": "Offline-Werkzeuge für vorhandene Dateien: prüfen, ob ein Archiv sicher zu entpacken ist, samt Zip Slip und Zip-Bombe, und SHA-256-Summen prüfen oder schreiben.",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "Beschädigung",
     "colEffect": "Was sie mit den Bytes macht",
     "colSettings": "Einstellungen",
-    "noSettings": "keine"
+    "noSettings": "keine",
+    "colFile": "Datei",
+    "colSize": "Größe",
+    "colSha256": "SHA-256",
+    "colExpected": "Erwartet",
+    "colTool": "Werkzeug",
+    "colQuestion": "Was es beantwortet"
   },
   "endings": {
     "0": "Alles hat funktioniert.",
@@ -224,8 +253,8 @@
     "picture-sizes": {
       "question": "Nimmt mein System Bilder in den Größen an, die Bildschirme und Plattformen verwenden?",
       "title": "Bildgrößen",
-      "pageTitle": "Testbilder in gängigen Größen - Bildschirme, Avatare, soziale Medien",
-      "description": "Bilder in den Größen von HD-, Full-HD-, QHD- und 4K-Bildschirmen, von Profilbildern und von den Titelbildern, Beiträgen und Vorschaubildern, die soziale Plattformen verlangen, jedes so klein wie möglich.",
+      "pageTitle": "Testbilder in gängigen Größen für Bildschirme und Social Media",
+      "description": "Bilder in den Größen von HD-, Full-HD-, QHD- und 4K-Bildschirmen, von Profilbildern sowie von Titelbildern, Beiträgen und Vorschaubildern sozialer Plattformen.",
       "catches": [
         "eine Grenze für Breite oder Höhe, die für eine Bildform gedacht war und eine andere abweist, etwa einen Profilhintergrund mit 1584 px Breite",
         "ein Vorschaubild, das beschnitten oder gestaucht wird, weil der Code ein Querformat erwartet und ein Hochformat ankommt",
@@ -351,5 +380,11 @@
       "q": "Warum ist ein Lauf über Tausende Dateien unter Windows langsamer?",
       "a": "Weil Windows für jeden Pfad, den es ansieht, mehr verlangt, und ein Befehl über Tausende Dateien sieht sich Tausende Pfade an. Gemessen auf einem Rechner mit 3000 Dateien zu je 1 kB braucht verify unter Windows etwa 0,9 Sekunden und unter Linux in einem Container etwa 0,2 Sekunden. Ein kürzerer Ausgabepfad verkleinert den Windows-Wert, denn jeder Ordner über den Dateien gehört zu dem, was angesehen wird."
     }
-  ]
+  ],
+  "tools": {
+    "archive-scan": "Lässt sich dieses Archiv sicher entpacken?",
+    "checksum": "Ist diese Datei die, die sie zu sein vorgibt?",
+    "checksum-check": "Ist jede Datei noch so, wie ihre Prüfsummendatei sagt?",
+    "checksum-write": "Woran erkenne ich später, dass sich in diesem Ordner nichts geändert hat?"
+  }
 }

@@ -1,0 +1,136 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>文件上传测试用例，附带运行它们的文件</h1>
+<p class="lead">
+  一份文件上传测试用例的检查表，从大小限制到试图离开所在文件夹的文件名。每个用例都写明测试它的文件，以及你的系统应如何处理该文件，所以这份列表不只能读，还能直接运行。
+</p>
+
+<div class="note">
+  <p class="note-title">一条命令生成整个列表</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code> 会为下面几乎每个用例写出一个文件，并附带一份清单，说明每个文件应该得到什么结果。把限制和类型换成你的表单声明的值。
+  </p>
+</div>
+
+<p>
+  <code>accept</code> 表示你的系统应该接受该文件，<code>reject</code> 表示应该拒绝它并给出清楚的消息。<code>unspecified</code> 表示两种答案都可能正确，所以请写下你的系统采用哪一种，并检查它每次都这样做。结果后面的词是清单给出的原因。
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">大小</p>
+  <h2>大小限制是否在声明的位置生效？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>测试用例</th><th>文件</th><th>预期</th></tr></thead>
+    <tbody>
+      <tr><td>比限制小一个字节</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>恰好等于限制</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>比限制大一个字节</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>限制的两倍，用来确认服务器会提前停止读取，而不是全部读进内存</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>0 字节的空文件</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    限制最常出错的两种情况是：只在浏览器中检查的限制，以及按 MB 声明、代码却按 MiB 计算的限制。<a href="/zh-hans/presets/size-boundaries/">size-boundaries 预设</a>会在你选定的限制周围的每个距离上各放一个文件，即两侧各相差一个字节、一个千字节和一个兆字节。
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">类型</p>
+  <h2>表单是否接受该接受的类型，并拒绝其余类型？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>测试用例</th><th>文件</th><th>预期</th></tr></thead>
+    <tbody>
+      <tr><td>表单接受的每种类型，各用一个该类型的真实文件</td><td><code>allowed_jpg.jpg</code>、<code>allowed_png.png</code>、<code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>表单不接受的类型</td><td><code>denied.svg</code>、<code>denied.html</code>、<code>denied.exe</code>、<code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>扩展名是一种类型，内容却是另一种，例如命名为 .jpg 的 PDF</td><td><code>pdf_as_jpg.jpg</code>、<code>png_as_pdf.pdf</code>、<code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>两个扩展名，最后一个不被允许</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>完全没有扩展名</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>大写的扩展名</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    被当作图片或纯文本接受的 SVG 或 HTML 文件，是让脚本绕过表单的一种办法。所以除非你的表单本来就要接受它们，否则它们都在应拒绝的类型列表中。
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">内容</p>
+  <h2>系统是打开文件，还是只看文件名？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>测试用例</th><th>文件</th><th>预期</th></tr></thead>
+    <tbody>
+      <tr><td>被截短的文件，就像中断的上传留下的那样</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>开头字节是零的文件，因此没有任何信息说明它是什么</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>格式允许的最小文件，合法且极小</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    一个只有名字和大小正确的文件，能通过所有不打开它的检查。<a href="/zh-hans/sample-files/#corrupt">损坏的示例文件</a>有 PDF、Word、Excel、PowerPoint、JPG、PNG、MP4 和 ZIP 格式，<a href="/zh-hans/corrupt-test-files/">损坏的测试文件</a>介绍如何以任意格式、任意大小制作它们。
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">文件名</p>
+  <h2>文件取回时还是原来的名字吗？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>测试用例</th><th>文件</th><th>预期</th></tr></thead>
+    <tbody>
+      <tr><td>空格和括号</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>非 ASCII 字母和 emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>超过 200 个字符的文件名</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>用 <code>../</code> 或 <code>..\</code> 跳出所在文件夹的文件名</td><td><code>climbing_name.jpg</code>，以 <code>../tfg_climbed_out.jpg</code> 的名字上传</td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Linux 或 Windows 上的绝对路径</td><td><code>absolute_name.jpg</code>，以 <code>/tmp/tfg_climbed_out.jpg</code> 的名字上传</td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    带路径的名字无法保存到磁盘上，所以文件本身用普通的名字，清单会说明上传时用什么名字。接受文件并只保留名字的最后一部分，是好的处理方式。把它写到上传文件夹之外，正是这个用例要找出的缺陷。<a href="/zh-hans/presets/filename-handling/">filename-handling 预设</a>还有更多文件名：形似的字母、不可见字符、Windows 保留的名字，以及按字节计算的长度。
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">数量与压缩包</p>
+  <h2>文件很多，或一个文件里装着很多文件时，会发生什么？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>测试用例</th><th>文件</th><th>预期</th></tr></thead>
+    <tbody>
+      <tr><td>一次上传 50 个文件</td><td><code>bulk_0001.jpg</code> 到 <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>真正包含 200 个文档的 ZIP</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>你的系统会解压的压缩包，先检查 zip slip 和 zip 炸弹</td><td><code>tfg tool archive-scan upload.zip</code></td><td>安全，或列出发现的问题</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> 设置批量上传包含多少个文件，最多一万个。<a href="/zh-hans/tools/">工具</a>说明压缩包检查会查找什么。
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">在测试中</p>
+  <h2>把列表作为测试运行</h2>
+  <p>
+    清单包含每个文件的预期结果和上传时使用的名字，所以一个循环就能跑完整个列表：
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    标为 <code>unspecified</code> 的文件在这里被跳过，因为它们的答案取决于你自己的策略。确定策略，用 <code>expected</code> 写进配方，循环就会一并检查它们。<a href="/zh-hans/test-files-in-ci/">CI 中的测试文件</a>会在流水线中运行这段代码。
+  </p>
+</section>

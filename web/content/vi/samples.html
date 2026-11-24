@@ -1,0 +1,112 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Tệp mẫu để kiểm thử</h1>
+<p class="lead">
+  Tệp thật để tải xuống, dùng kiểm thử biểu mẫu tải lên, trình phân tích cú pháp hay chức năng nhập:
+  mỗi định dạng mà trình tạo này ghi được có một tệp, các tệp cố ý làm hỏng, bảng theo đúng cách các
+  chương trình bảng tính xuất ra, và ảnh giữ chỗ. Không cần cài đặt gì và không cần đăng ký.
+</p>
+
+<div class="note">
+  <p class="note-title">Tạo từ một công thức</p>
+  <p>
+    Mọi tệp trên trang này đều đến từ một công thức,
+    <a href="/samples/samples.yaml">samples.yaml</a>. Chạy nó bằng <code>tfg</code> và bạn nhận được
+    đúng các byte đó trên bất kỳ máy nào, nên mã SHA-256 cạnh mỗi tệp là thứ bạn tự kiểm tra được thay vì
+    phải tin suông.
+  </p>
+  <pre><code>tfg generate samples.yaml --out samples</code></pre>
+  <p>
+    Mọi checksum nằm trong <a href="/samples/SHA256SUMS">SHA256SUMS</a>. Đặt tệp này vào thư mục đó, rồi
+    <code>tfg tool checksum-check samples/SHA256SUMS</code> hoặc <code>sha256sum -c SHA256SUMS</code>
+    sẽ cho biết từng tệp có khớp không.
+  </p>
+</div>
+
+<p>
+  Cột cuối của mỗi bảng là điều <a href="/samples/manifest.json">manifest</a> mong hệ thống của bạn làm
+  với tệp. <code>accept</code> nghĩa là hệ thống nên nhận tệp, <code>reject</code> là nên từ chối tệp,
+  và <code>unspecified</code> là việc đó tùy vào quy tắc của hệ thống bạn.
+</p>
+
+<section class="section" id="formats">
+  <p class="eyebrow">Mọi định dạng</p>
+  <h2>Mỗi định dạng một tệp, mỗi tệp 1 MB</h2>
+  <p>
+    Tài liệu, hình ảnh, văn bản, dữ liệu, tệp nén, thư, telemetry, âm thanh và video, mỗi tệp đúng
+    1 048 576 byte và mỗi tệp là một tệp thật của định dạng của nó. Tệp PDF mở được trong trình đọc
+    PDF, DOCX trong Word, XLSX trong Excel, còn ZIP giải nén được.
+  </p>
+  {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Kích thước khác chỉ cần một lệnh. <code>tfg generate --format pdf --size 10mb</code> ghi một tệp PDF
+    đúng 10 MB, và tệp 1 GB cũng được tạo theo cách đó. Tệp lớn như vậy không được giữ trên trang này,
+    vì một lệnh tạo ra chúng nhanh hơn một lần tải xuống.
+  </p>
+</section>
+
+<section class="section" id="corrupt">
+  <p class="eyebrow">Cố ý làm hỏng</p>
+  <h2>Tệp bị hỏng: PDF, Word, Excel, hình ảnh, video và ZIP</h2>
+  <p>
+    Mỗi tệp được tạo lành rồi mới bị làm hỏng, và vẫn đúng 1 MB. <code>truncate</code> cắt bỏ phần cuối
+    giống như một lần tải lên bị ngắt, còn <code>zero-head</code> ghi số không đè lên các byte đầu, nơi
+    trình đọc nhìn vào để biết tệp là gì. Manifest mong hệ thống của bạn từ chối từng tệp một.
+  </p>
+  {{ with .SampleTable "corrupt" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    <a href="/vi/tep-kiem-thu-bi-hong/">Tệp kiểm thử bị hỏng</a> cho biết cách tự tạo tệp như vậy, ở bất
+    kỳ định dạng và kích thước nào, và có những kiểu hỏng nào.
+  </p>
+</section>
+
+<section class="section" id="tables">
+  <p class="eyebrow">Cho chức năng nhập</p>
+  <h2>Bảng CSV, JSON và Excel</h2>
+  <p>
+    Cùng một bảng được ghi theo các cách mà công cụ thật ghi nó: với dấu phẩy, dấu chấm phẩy, tab hoặc
+    dấu gạch đứng giữa các giá trị, với kiểu xuống dòng của Windows, không có dòng tiêu đề, mọi giá trị
+    trong dấu ngoặc kép hoặc không giá trị nào, một CSV rộng, một trang tính Excel và JSON theo ba bố
+    cục. Một số được đánh dấu <code>unspecified</code>, vì việc chức năng nhập của bạn có nhận dấu chấm
+    phẩy hay không là lựa chọn của chính nó. Điều nó không được làm là chỉ đọc được nửa bảng.
+  </p>
+  {{ with .SampleTable "tables" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Đây là các tệp của <a href="/vi/preset/tabular-import/">preset tabular-import</a>, preset tạo ra
+    chúng với số dòng và số cột bạn yêu cầu.
+  </p>
+</section>
+
+<section class="section" id="placeholders">
+  <p class="eyebrow">Cho bố cục</p>
+  <h2>Ảnh giữ chỗ ở các kích thước phổ biến</h2>
+  <p>
+    Một ảnh xám trơn có kích thước của nó viết ở giữa, để dàn trang trước khi có ảnh thật: ảnh thu nhỏ
+    vuông, quảng cáo 300 x 250, banner 728 x 90, thẻ mạng xã hội 1200 x 630 và màn hình Full HD. Mỗi
+    tệp ảnh nhỏ hết mức có thể.
+  </p>
+  {{ with .SampleTable "placeholders" }}{{ template "samplesTable" . }}{{ end }}
+  <p>Mọi kích thước hay màu khác:</p>
+  <pre><code>tfg generate --format png --size smallest --set content=placeholder --set width=640 --set height=360 --set background=1e293b</code></pre>
+  <p>
+    <a href="/vi/preset/picture-sizes/">Preset picture-sizes</a> tạo trong một lần chạy mọi kích thước
+    mà màn hình và nền tảng dùng, với <code>--content placeholder</code>.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Tiếp theo</p>
+  <h2>Đi đâu từ đây</h2>
+  <ul>
+    <li>
+      <a href="/vi/truong-hop-kiem-thu-tai-len/">Trường hợp kiểm thử tải lên tệp</a> cho biết tệp nào
+      trong số này kiểm tra điều gì trong một biểu mẫu tải lên.
+    </li>
+    <li>
+      <a href="/vi/preset/">Preset</a> là các bộ dựng sẵn, mỗi bộ cho một câu hỏi kiểm thử.
+    </li>
+    <li>
+      <a href="/vi/tep-kiem-thu-trong-ci/">Tệp kiểm thử trong CI</a> tạo các tệp như thế này trong
+      pipeline thay vì giữ chúng trong kho mã.
+    </li>
+  </ul>
+</section>

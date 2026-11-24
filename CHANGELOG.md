@@ -14,6 +14,30 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
+### Added
+
+- **Sample files to download on the website.** One file of every format at
+  exactly 1 MB, corrupt PDF, Word, Excel, PowerPoint, JPG, PNG, MP4 and ZIP
+  files, CSV, JSON and Excel tables for an import, and placeholder pictures in
+  common sizes. Each comes with its SHA-256 and what the manifest expects a
+  system to do with it. All of them come from one recipe published beside
+  them, so `tfg generate samples.yaml` makes the same bytes on any machine.
+- **File upload test cases on the website.** A checklist from the size limit
+  to a file name that leaves its folder, each case with the file that tests it
+  and the outcome to expect, in every language of the site.
+- **A page about the tools on the website.** Checking an archive for zip slip
+  and zip bombs before unpacking it, and checking or writing SHA-256 checksums.
+
+### Changed
+
+- **npm, PyPI and the container image get stable releases only.** A release
+  candidate stays a prerelease on GitHub, so `npm install`, `pip install` and
+  the image never give you one. While the code on `main` is a release
+  candidate, the README and the website name the last stable release in their
+  install commands.
+- **The README says what the tool can do in full**: presets, damaged files, a
+  name no disk stores, the tools, and the packages for pytest and Node.
+
 ## [0.6.0-rc1] - 2026-11-18
 
 ### Breaking

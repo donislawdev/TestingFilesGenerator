@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="hi">
+<title>फ़ाइल अपलोड टेस्ट केस - उन्हें चलाने वाली फ़ाइलों के साथ</title>
+<meta name="description" content="फ़ाइल अपलोड के टेस्ट केस: आकार सीमा, खाली और खराब फ़ाइलें, गलत प्रकार, अनपेक्षित फ़ाइल नाम और आर्काइव, हर केस के साथ वह फ़ाइल जो उसे परखती है।">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/hi/file-upload-test-cases/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/file-upload-test-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-pripady-nahravani-souboru/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testfaelle-datei-upload/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-prueba-de-subida-de-archivos/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-de-test-envoi-de-fichiers/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/file-upload-test-cases/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-uji-unggah-file/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-di-test-upload-file/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/file-upload-test-cases/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/file-upload-test-cases/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testgevallen-bestandsupload/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/przypadki-testowe-uploadu/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-teste-de-upload-de-arquivos/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-test-incarcare-fisiere/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/file-upload-test-cases/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/file-upload-test-cases/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dosya-yukleme-test-senaryolari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/file-upload-test-cases/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-kiem-thu-tai-len/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/file-upload-test-cases/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/file-upload-test-cases/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="hi_IN">
+<meta property="og:title" content="फ़ाइल अपलोड टेस्ट केस - उन्हें चलाने वाली फ़ाइलों के साथ">
+<meta property="og:description" content="फ़ाइल अपलोड के टेस्ट केस: आकार सीमा, खाली और खराब फ़ाइलें, गलत प्रकार, अनपेक्षित फ़ाइल नाम और आर्काइव, हर केस के साथ वह फ़ाइल जो उसे परखती है।">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/hi/file-upload-test-cases/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - सटीक आकार की असली टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="फ़ाइल अपलोड टेस्ट केस - उन्हें चलाने वाली फ़ाइलों के साथ">
+<meta name="twitter:description" content="फ़ाइल अपलोड के टेस्ट केस: आकार सीमा, खाली और खराब फ़ाइलें, गलत प्रकार, अनपेक्षित फ़ाइल नाम और आर्काइव, हर केस के साथ वह फ़ाइल जो उसे परखती है।">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - सटीक आकार की असली टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "होम",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/hi/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "उपयोग के मामले",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/hi\/use-cases\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "अपलोड टेस्ट केस",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/hi\/file-upload-test-cases\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">सामग्री पर जाएँ</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/hi/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="मुख्य मेनू">
+      <a href="/hi/">होम</a>
+      <a href="/hi/formats/">फ़ॉर्मैट</a>
+      <a href="/hi/presets/">प्रीसेट</a>
+      <a href="/hi/docs/">दस्तावेज़ीकरण</a>
+      <a href="/hi/use-cases/" aria-current="true">उपयोग के मामले</a>
+      <a href="/hi/create-file-exact-size/">सटीक आकार</a>
+      <a href="/hi/faq/">FAQ</a>
+      <a href="/hi/corrupt-test-files/">खराब फ़ाइलें</a>
+      <a href="/hi/sample-files/">सैंपल फ़ाइलें</a>
+      <a href="/hi/test-files-in-ci/">CI में टेस्ट फ़ाइलें</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="भाषा: हिन्दी">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>हिन्दी</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/file-upload-test-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/file-upload-test-cases/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-pripady-nahravani-souboru/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testfaelle-datei-upload/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-prueba-de-subida-de-archivos/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-de-test-envoi-de-fichiers/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/kasus-uji-unggah-file/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-di-test-upload-file/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/file-upload-test-cases/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/file-upload-test-cases/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testgevallen-bestandsupload/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/przypadki-testowe-uploadu/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-teste-de-upload-de-arquivos/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-test-incarcare-fisiere/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/file-upload-test-cases/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/file-upload-test-cases/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/dosya-yukleme-test-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/file-upload-test-cases/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/truong-hop-kiem-thu-tai-len/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/file-upload-test-cases/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/file-upload-test-cases/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/hi/use-cases/">उपयोग के मामले</a></p>
+<h1>फ़ाइल अपलोड टेस्ट केस, उन्हें चलाने वाली फ़ाइलों के साथ</h1>
+<p class="lead">
+  फ़ाइल अपलोड के टेस्ट केस की चेकलिस्ट, आकार सीमा से लेकर ऐसे फ़ाइल नाम तक जो अपने फ़ोल्डर से बाहर
+  निकलने की कोशिश करता है। हर केस उस फ़ाइल का नाम बताता है जो उसे परखती है, और यह भी कि आपके सिस्टम
+  को उसके साथ क्या करना चाहिए, ताकि सूची सिर्फ़ पढ़ी ही नहीं, चलाई भी जा सके।
+</p>
+
+<div class="note">
+  <p class="note-title">पूरी सूची एक कमांड में</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    नीचे के लगभग हर केस के लिए एक फ़ाइल लिखता है, साथ में एक मैनिफ़ेस्ट जो बताता है कि हर फ़ाइल के साथ
+    क्या होना चाहिए। वही सीमा और प्रकार डालें जो आपका फ़ॉर्म घोषित करता है।
+  </p>
+</div>
+
+<p>
+  <code>accept</code> का मतलब है कि आपके सिस्टम को फ़ाइल मंज़ूर करनी चाहिए, और <code>reject</code> का
+  कि उसे साफ़ संदेश के साथ फ़ाइल अस्वीकार करनी चाहिए। <code>unspecified</code> का मतलब है कि दोनों में
+  से कोई भी जवाब सही हो सकता है, इसलिए लिख लें कि आपका सिस्टम कौन-सा जवाब चाहता है, और जाँचें कि वह
+  हर बार वही करता है। नतीजे के बाद वाला शब्द वह कारण है जो मैनिफ़ेस्ट देता है।
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">आकार</p>
+  <h2>क्या आकार सीमा वहीं लागू होती है जहाँ उसकी घोषणा की गई है?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>टेस्ट केस</th><th>फ़ाइल</th><th>अपेक्षित</th></tr></thead>
+    <tbody>
+      <tr><td>सीमा से एक बाइट कम</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ठीक सीमा पर</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>सीमा से एक बाइट ज़्यादा</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>सीमा का दोगुना, यह देखने के लिए कि सर्वर पूरी फ़ाइल मेमोरी में लेने के बजाय जल्दी पढ़ना बंद कर देता है</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>0 बाइट की खाली फ़ाइल</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    सीमा में सबसे ज़्यादा होने वाली दो गलतियाँ हैं: ऐसी सीमा जो सिर्फ़ ब्राउज़र में जाँची जाती है, और
+    MB में गिनी गई सीमा जबकि कोड MiB में गिनता है। <a href="/hi/presets/size-boundaries/">size-boundaries
+    प्रीसेट</a> आपकी चुनी हुई सीमा से हर दूरी पर एक फ़ाइल रखता है, दोनों ओर एक बाइट, एक किलोबाइट और एक
+    मेगाबाइट।
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">प्रकार</p>
+  <h2>क्या फ़ॉर्म सही प्रकार लेता है और बाकी को लौटा देता है?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>टेस्ट केस</th><th>फ़ाइल</th><th>अपेक्षित</th></tr></thead>
+    <tbody>
+      <tr><td>फ़ॉर्म जो भी प्रकार लेता है, उस प्रकार की असली फ़ाइल के रूप में</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>ऐसा प्रकार जो फ़ॉर्म नहीं लेता</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>एक्सटेंशन एक प्रकार बताता है और सामग्री दूसरे प्रकार की है, जैसे .jpg नाम वाली PDF</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>दो एक्सटेंशन, आखिरी वाला अनुमत नहीं</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>कोई एक्सटेंशन नहीं</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>बड़े अक्षरों में एक्सटेंशन</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    तस्वीर या सादा टेक्स्ट समझ ली गई SVG या HTML फ़ाइल फ़ॉर्म से स्क्रिप्ट निकाल ले जाने का एक तरीका है,
+    इसीलिए वे लौटाए जाने वाले प्रकारों की सूची में हैं, जब तक आपका फ़ॉर्म उन्हें लेने के लिए ही न बना हो।
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">सामग्री</p>
+  <h2>क्या सिस्टम फ़ाइल खोलता है, या सिर्फ़ उसका नाम देखता है?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>टेस्ट केस</th><th>फ़ाइल</th><th>अपेक्षित</th></tr></thead>
+    <tbody>
+      <tr><td>बीच में कटी फ़ाइल, जैसी टूटा हुआ अपलोड छोड़ता है</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>ऐसी फ़ाइल जिसके शुरुआती बाइट शून्य हैं, इसलिए कुछ नहीं बताता कि वह क्या है</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>किसी फ़ॉर्मैट में अनुमत सबसे छोटी फ़ाइल, मान्य और बहुत छोटी</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    जिस फ़ाइल का सिर्फ़ नाम और आकार सही है, वह हर उस जाँच से निकल जाती है जो उसे कभी खोलती नहीं।
+    <a href="/hi/sample-files/#corrupt">खराब सैंपल फ़ाइलें</a> PDF, Word, Excel, PowerPoint, JPG, PNG,
+    MP4 और ZIP में हैं, और <a href="/hi/corrupt-test-files/">खराब टेस्ट फ़ाइलें</a> पेज बताता है कि उन्हें
+    किसी भी फ़ॉर्मैट और किसी भी आकार में कैसे बनाएँ।
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">नाम</p>
+  <h2>क्या फ़ाइल उसी नाम से वापस आती है जो उसे दिया गया था?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>टेस्ट केस</th><th>फ़ाइल</th><th>अपेक्षित</th></tr></thead>
+    <tbody>
+      <tr><td>रिक्त स्थान और कोष्ठक</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ASCII से बाहर के अक्षर और एक इमोजी</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>200 अक्षरों से लंबा नाम</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>अपने फ़ोल्डर से बाहर निकलने वाला नाम, <code>../</code> या <code>..\</code></td><td><code>climbing_name.jpg</code>, <code>../tfg_climbed_out.jpg</code> नाम से अपलोड</td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Linux या Windows पर पूरा पथ</td><td><code>absolute_name.jpg</code>, <code>/tmp/tfg_climbed_out.jpg</code> नाम से अपलोड</td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    पथ वाला नाम डिस्क पर सहेजा नहीं जा सकता, इसलिए फ़ाइल का नाम सादा रहता है और मैनिफ़ेस्ट बताता है कि
+    उसे किस नाम से अपलोड करना है। फ़ाइल लेकर नाम का सिर्फ़ आखिरी हिस्सा रखना अच्छा जवाब है। उसे अपलोड
+    फ़ोल्डर के बाहर लिखना वही खराबी है जिसे ढूँढ़ने के लिए यह केस बना है।
+    <a href="/hi/presets/filename-handling/">filename-handling प्रीसेट</a> में और बहुत से नाम हैं: मिलते-जुलते
+    दिखने वाले अक्षर, अदृश्य अक्षर, Windows के आरक्षित नाम और बाइट में गिनी गई लंबाई।
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">मात्रा और आर्काइव</p>
+  <h2>बहुत सारी फ़ाइलों के साथ, या बहुत सारी फ़ाइलें रखने वाली एक फ़ाइल के साथ क्या होता है?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>टेस्ट केस</th><th>फ़ाइल</th><th>अपेक्षित</th></tr></thead>
+    <tbody>
+      <tr><td>एक अपलोड में पचास फ़ाइलें</td><td><code>bulk_0001.jpg</code> से <code>bulk_0050.jpg</code> तक</td><td><code>accept</code></td></tr>
+      <tr><td>ऐसा ZIP जिसमें सचमुच 200 दस्तावेज़ हैं</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>ऐसा आर्काइव जिसे आपका सिस्टम एक्सट्रैक्ट करता है, पहले zip slip और zip bomb के लिए जाँचा गया</td><td><code>tfg tool archive-scan upload.zip</code></td><td>सुरक्षित, या जो मिला</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> तय करता है कि एक साथ अपलोड में कितनी फ़ाइलें हों, दस हज़ार तक।
+    <a href="/hi/tools/">टूल</a> पेज बताता है कि आर्काइव की जाँच किन चीज़ों को ढूँढ़ती है।
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">टेस्ट में</p>
+  <h2>सूची को टेस्ट की तरह चलाना</h2>
+  <p>
+    मैनिफ़ेस्ट में हर फ़ाइल का अपेक्षित नतीजा और वह नाम है जिससे उसे अपलोड करना है, इसलिए एक ही लूप
+    पूरी सूची चला देता है:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    <code>unspecified</code> वाली फ़ाइलें यहाँ छोड़ दी गई हैं, क्योंकि उनका जवाब आपकी अपनी नीति है। उसे
+    तय करें, रेसिपी में <code>expected</code> के साथ लिखें, और लूप उन्हें भी जाँचेगा।
+    <a href="/hi/test-files-in-ci/">CI में टेस्ट फ़ाइलें</a> इसे पाइपलाइन में चलाती हैं।
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">QA के लिए सटीक आकार की टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए।</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">प्रोजेक्ट</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub पर सोर्स कोड</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">डाउनलोड</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">समस्या बताएँ</a></li>
+        <li><a href="https://donislawdev.com/support/">प्रोजेक्ट का समर्थन करें</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">पेज</p>
+      <ul class="plain">
+        <li><a href="/hi/">होम</a></li>
+        <li><a href="/hi/formats/">फ़ॉर्मैट</a></li>
+        <li><a href="/hi/presets/">प्रीसेट</a></li>
+        <li><a href="/hi/docs/">दस्तावेज़ीकरण</a></li>
+        <li><a href="/hi/use-cases/">उपयोग के मामले</a></li>
+        <li><a href="/hi/create-file-exact-size/">सटीक आकार</a></li>
+        <li><a href="/hi/faq/">FAQ</a></li>
+        <li><a href="/hi/corrupt-test-files/">खराब फ़ाइलें</a></li>
+        <li><a href="/hi/sample-files/">सैंपल फ़ाइलें</a></li>
+        <li><a href="/hi/test-files-in-ci/">CI में टेस्ट फ़ाइलें</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev। GNU जनरल पब्लिक लाइसेंस, संस्करण 3 के तहत जारी। आपकी बनाई फ़ाइलें आपकी हैं - लाइसेंस टूल पर लागू होता है, उसके आउटपुट पर नहीं।</p>
+    <p class="muted">यह साइट कहीं से भी फ़ॉन्ट, स्क्रिप्ट या ट्रैकर लोड नहीं करती। यह कोई कुकी नहीं लगाती।</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,119 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Fichiers d'exemple pour vos tests</h1>
+<p class="lead">
+  De vrais fichiers à télécharger pour tester un formulaire d'envoi, un parseur ou un import&nbsp;: un
+  fichier de chaque format que ce générateur écrit, des fichiers cassés volontairement, des tableaux
+  tels que les tableurs les exportent et des images de substitution. Rien à installer, aucune
+  inscription.
+</p>
+
+<div class="note">
+  <p class="note-title">Produits par une seule recette</p>
+  <p>
+    Tous les fichiers de cette page viennent d'une seule recette,
+    <a href="/samples/samples.yaml">samples.yaml</a>. Lancez-la avec <code>tfg</code> et vous obtenez
+    les mêmes octets sur n'importe quelle machine. Le SHA-256 affiché à côté de chaque fichier se
+    vérifie donc, au lieu d'être pris sur parole.
+  </p>
+  <pre><code>tfg generate samples.yaml --out samples</code></pre>
+  <p>
+    Toutes les sommes sont dans <a href="/samples/SHA256SUMS">SHA256SUMS</a>. Placez ce fichier dans ce
+    dossier, et <code>tfg tool checksum-check samples/SHA256SUMS</code> ou
+    <code>sha256sum -c SHA256SUMS</code> vous dit si chaque fichier correspond.
+  </p>
+</div>
+
+<p>
+  La dernière colonne de chaque tableau indique ce que le <a href="/samples/manifest.json">manifeste</a>
+  attend de votre système pour ce fichier. <code>accept</code> signifie qu'il doit accepter le fichier,
+  <code>reject</code> qu'il doit le refuser, et <code>unspecified</code> que cela dépend des règles de
+  votre système.
+</p>
+
+<section class="section" id="formats">
+  <p class="eyebrow">Chaque format</p>
+  <h2>Un fichier de chaque format, de 1 Mo chacun</h2>
+  <p>
+    Documents, images, texte, données, archives, courrier, télémétrie, son et vidéo, chacun d'exactement
+    1 048 576 octets et chacun un vrai fichier de son format. Le PDF s'ouvre dans un lecteur PDF, le DOCX
+    dans Word, le XLSX dans Excel, et le ZIP se décompresse.
+  </p>
+  {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Une autre taille, c'est une commande. <code>tfg generate --format pdf --size 10mb</code> écrit un
+    PDF d'exactement 10 Mo, et un fichier de 1 Go se fait de la même façon. Des fichiers aussi gros ne
+    sont pas proposés sur cette page, car une commande les produit plus vite qu'un téléchargement.
+  </p>
+</section>
+
+<section class="section" id="corrupt">
+  <p class="eyebrow">Cassés volontairement</p>
+  <h2>Fichiers corrompus&nbsp;: PDF, Word, Excel, images, vidéo et ZIP</h2>
+  <p>
+    Chacun a été produit sain puis cassé, et fait toujours exactement 1 Mo. <code>truncate</code> coupe
+    la fin, comme le fait un envoi interrompu, et <code>zero-head</code> écrit des zéros sur les premiers
+    octets, là où un lecteur regarde pour savoir ce qu'est le fichier. Le manifeste attend de votre
+    système qu'il les refuse tous.
+  </p>
+  {{ with .SampleTable "corrupt" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    <a href="/fr/fichiers-de-test-corrompus/">Fichiers de test corrompus</a> explique comment fabriquer
+    les vôtres, dans n'importe quel format et à n'importe quelle taille, et quels dommages existent.
+  </p>
+</section>
+
+<section class="section" id="tables">
+  <p class="eyebrow">Pour un import</p>
+  <h2>Tableaux CSV, JSON et Excel</h2>
+  <p>
+    Le même tableau écrit comme l'écrivent les vrais outils&nbsp;: avec une virgule, un point-virgule,
+    une tabulation ou une barre verticale entre les valeurs, avec des fins de ligne Windows, sans ligne
+    d'en-tête, avec toutes les valeurs entre guillemets ou aucune, un CSV large, une feuille Excel et du
+    JSON en trois dispositions. Certains sont marqués <code>unspecified</code>, car accepter ou non un
+    point-virgule est le choix de votre import. Ce qu'il ne doit pas faire, c'est lire la moitié du
+    tableau.
+  </p>
+  {{ with .SampleTable "tables" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Ce sont les fichiers du <a href="/fr/prereglages/tabular-import/">préréglage tabular-import</a>, qui
+    les produit avec autant de lignes et de colonnes que vous en demandez.
+  </p>
+</section>
+
+<section class="section" id="placeholders">
+  <p class="eyebrow">Pour une maquette</p>
+  <h2>Images de substitution aux tailles courantes</h2>
+  <p>
+    Une image grise unie avec sa taille écrite au milieu, pour mettre une page en forme avant que les
+    vraies images existent&nbsp;: des miniatures carrées, une publicité de 300 sur 250, une bannière de
+    728 sur 90, une carte pour les réseaux sociaux de 1200 sur 630 et un écran Full HD. Chacune est
+    aussi petite que l'image peut l'être.
+  </p>
+  {{ with .SampleTable "placeholders" }}{{ template "samplesTable" . }}{{ end }}
+  <p>Toute autre taille ou couleur&nbsp;:</p>
+  <pre><code>tfg generate --format png --size smallest --set content=placeholder --set width=640 --set height=360 --set background=1e293b</code></pre>
+  <p>
+    Le <a href="/fr/prereglages/picture-sizes/">préréglage picture-sizes</a> produit en une exécution
+    toutes les tailles qu'utilisent les écrans et les plateformes, avec
+    <code>--content placeholder</code>.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Suite</p>
+  <h2>Où aller ensuite</h2>
+  <ul>
+    <li>
+      <a href="/fr/cas-de-test-envoi-de-fichiers/">Cas de test pour l'envoi de fichiers</a> dit lequel de
+      ces fichiers teste quoi dans un formulaire d'envoi.
+    </li>
+    <li>
+      <a href="/fr/prereglages/">Les préréglages</a> sont des jeux prêts à l'emploi, chacun pour une
+      question de test.
+    </li>
+    <li>
+      <a href="/fr/fichiers-de-test-en-ci/">Fichiers de test en CI</a> produit des fichiers comme ceux-ci
+      dans un pipeline au lieu de les garder dans le dépôt.
+    </li>
+  </ul>
+</section>

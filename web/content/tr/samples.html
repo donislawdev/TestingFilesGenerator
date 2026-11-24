@@ -1,0 +1,114 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Test için örnek dosyalar</h1>
+<p class="lead">
+  Bir yükleme formunu, bir ayrıştırıcıyı veya bir içe aktarmayı test etmek için indirilebilir gerçek
+  dosyalar: bu oluşturucunun yazdığı her biçimden bir tane, kasıtlı bozulmuş dosyalar, elektronik tablo
+  programlarının dışa aktardığı biçimde tablolar ve yer tutucu resimler. Kurulacak bir şey yok, kayıt
+  gerekmez.
+</p>
+
+<div class="note">
+  <p class="note-title">Tek bir tariften</p>
+  <p>
+    Bu sayfadaki tüm dosyalar tek bir tariften, <a href="/samples/samples.yaml">samples.yaml</a>
+    dosyasından gelir. Onu <code>tfg</code> ile çalıştırın, her makinede aynı baytları alırsınız. Bu
+    yüzden her dosyanın yanındaki SHA-256, güvenip geçmek yerine denetleyebileceğiniz bir şeydir.
+  </p>
+  <pre><code>tfg generate samples.yaml --out samples</code></pre>
+  <p>
+    Tüm toplamlar <a href="/samples/SHA256SUMS">SHA256SUMS</a> dosyasındadır. Onu o klasöre koyun,
+    <code>tfg tool checksum-check samples/SHA256SUMS</code> veya <code>sha256sum -c SHA256SUMS</code>
+    her dosyanın eşleşip eşleşmediğini söyler.
+  </p>
+</div>
+
+<p>
+  Her tablonun son sütunu, <a href="/samples/manifest.json">manifestin</a> sisteminizden dosyayla ne
+  yapmasını beklediğini gösterir. <code>accept</code> dosyayı kabul etmesi, <code>reject</code>
+  reddetmesi, <code>unspecified</code> ise bunun sisteminizin kurallarına bağlı olduğu anlamına gelir.
+</p>
+
+<section class="section" id="formats">
+  <p class="eyebrow">Her biçim</p>
+  <h2>Her biçimden bir dosya, her biri 1 MB</h2>
+  <p>
+    Belgeler, resimler, metin, veri, arşivler, e-posta, telemetri, ses ve video, her biri tam
+    1 048 576 bayt ve her biri kendi biçiminde gerçek bir dosya. PDF bir PDF okuyucuda, DOCX Word'de,
+    XLSX Excel'de açılır, ZIP'in içeriği de çıkarılabilir.
+  </p>
+  {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Başka bir boyut tek bir komuttur. <code>tfg generate --format pdf --size 10mb</code> tam 10 MB'lık
+    bir PDF yazar, 1 GB'lık bir dosya da aynı şekilde yapılır. Bu kadar büyük dosyalar bu sayfada
+    tutulmaz, çünkü bir komut onları bir indirmeden daha hızlı üretir.
+  </p>
+</section>
+
+<section class="section" id="corrupt">
+  <p class="eyebrow">Kasıtlı bozulmuş</p>
+  <h2>Bozuk dosyalar: PDF, Word, Excel, resimler, video ve ZIP</h2>
+  <p>
+    Her biri sağlam üretilip sonra bozuldu ve hâlâ tam 1 MB. <code>truncate</code>, yarıda kalan bir
+    yüklemenin bıraktığı gibi sonu keser. <code>zero-head</code> ise bir okuyucunun dosyanın ne olduğunu
+    anlamak için baktığı ilk baytların üzerine sıfır yazar. Manifest, sisteminizin hepsini reddetmesini
+    bekler.
+  </p>
+  {{ with .SampleTable "corrupt" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    <a href="/tr/bozuk-test-dosyalari/">Bozuk test dosyaları</a> sayfası, kendi dosyalarınızı her
+    biçimde ve her boyutta nasıl yapacağınızı ve hangi hasarların olduğunu anlatır.
+  </p>
+</section>
+
+<section class="section" id="tables">
+  <p class="eyebrow">İçe aktarma için</p>
+  <h2>CSV, JSON ve Excel tabloları</h2>
+  <p>
+    Aynı tablo, gerçek araçların yazdığı şekillerde: değerler arasında virgül, noktalı virgül, sekme veya
+    dikey çizgiyle, Windows satır sonlarıyla, başlık satırı olmadan, tüm değerler tırnak içinde ya da
+    tırnaksız, geniş bir CSV, bir Excel sayfası ve üç düzende JSON. Bazıları <code>unspecified</code>
+    olarak işaretlidir, çünkü noktalı virgülü kabul edip etmemek içe aktarmanızın kendi tercihidir.
+    Yapmaması gereken şey tablonun yarısını okumaktır.
+  </p>
+  {{ with .SampleTable "tables" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Bunlar <a href="/tr/hazir-ayarlar/tabular-import/">tabular-import hazır ayarının</a> dosyalarıdır. O
+    hazır ayar bu dosyaları istediğiniz kadar satır ve sütunla üretir.
+  </p>
+</section>
+
+<section class="section" id="placeholders">
+  <p class="eyebrow">Sayfa düzeni için</p>
+  <h2>Yaygın boyutlarda yer tutucu resimler</h2>
+  <p>
+    Ortasında kendi boyutu yazan düz gri bir resim, gerçek resimler hazır olmadan bir sayfayı düzenlemek
+    için: kare küçük resimler, 300 x 250 bir reklam, 728 x 90 bir afiş, 1200 x 630 bir sosyal medya kartı
+    ve bir Full HD ekran. Her dosya, o resmin olabileceği kadar küçüktür.
+  </p>
+  {{ with .SampleTable "placeholders" }}{{ template "samplesTable" . }}{{ end }}
+  <p>Başka her boyut veya renk:</p>
+  <pre><code>tfg generate --format png --size smallest --set content=placeholder --set width=640 --set height=360 --set background=1e293b</code></pre>
+  <p>
+    <a href="/tr/hazir-ayarlar/picture-sizes/">picture-sizes hazır ayarı</a>, ekranların ve platformların
+    kullandığı her boyutu tek çalıştırmada, <code>--content placeholder</code> ile üretir.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Sonraki</p>
+  <h2>Buradan nereye gidilir</h2>
+  <ul>
+    <li>
+      <a href="/tr/dosya-yukleme-test-senaryolari/">Dosya yükleme test senaryoları</a>, bu dosyalardan
+      hangisinin bir yükleme formunda neyi test ettiğini söyler.
+    </li>
+    <li>
+      <a href="/tr/hazir-ayarlar/">Hazır ayarlar</a>, her biri tek bir test sorusu için hazırlanmış
+      setlerdir.
+    </li>
+    <li>
+      <a href="/tr/ci-icinde-test-dosyalari/">CI'da test dosyaları</a>, bunlar gibi dosyaları depoda tutmak
+      yerine bir hatta üretir.
+    </li>
+  </ul>
+</section>

@@ -1,0 +1,163 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Cas de test pour l'envoi de fichiers, avec les fichiers pour les exécuter</h1>
+<p class="lead">
+  Une liste de contrôle des cas de test d'un envoi de fichiers, de la limite de taille au nom de fichier
+  qui tente de sortir de son dossier. Chaque cas nomme le fichier qui le teste et ce que votre système
+  doit en faire, si bien que la liste peut être exécutée, pas seulement lue.
+</p>
+
+<div class="note">
+  <p class="note-title">Toute la liste en une commande</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    écrit un fichier pour presque chaque cas ci-dessous, avec un manifeste qui dit ce qui doit arriver à
+    chacun. Indiquez la limite et les types que déclare votre formulaire.
+  </p>
+</div>
+
+<p>
+  <code>accept</code> signifie que votre système doit accepter le fichier, et <code>reject</code> qu'il
+  doit le refuser avec un message clair. <code>unspecified</code> signifie que les deux réponses peuvent
+  être justes. Notez donc celle que votre système retient, et vérifiez qu'il s'y tient à chaque fois. Le
+  mot qui suit le résultat est la raison donnée par le manifeste.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">Taille</p>
+  <h2>La limite de taille est-elle appliquée là où elle est déclarée&nbsp;?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Cas de test</th><th>Fichier</th><th>Attendu</th></tr></thead>
+    <tbody>
+      <tr><td>Un octet sous la limite</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Pile à la limite</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Un octet au-dessus de la limite</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Deux fois la limite, pour voir que le serveur arrête de lire tôt au lieu de tout prendre en mémoire</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Un fichier vide de 0 octet</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Une limite se trompe le plus souvent de deux façons&nbsp;: elle n'est vérifiée que dans le navigateur,
+    ou elle est comptée en Mo là où le code compte en Mio. Le
+    <a href="/fr/prereglages/size-boundaries/">préréglage size-boundaries</a> place un fichier à chaque
+    distance de la limite que vous choisissez, un octet, un kilo-octet et un mégaoctet de part et
+    d'autre.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">Type</p>
+  <h2>Le formulaire accepte-t-il les bons types et refuse-t-il le reste&nbsp;?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Cas de test</th><th>Fichier</th><th>Attendu</th></tr></thead>
+    <tbody>
+      <tr><td>Chaque type que le formulaire accepte, sous forme d'un vrai fichier de ce type</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Un type que le formulaire n'accepte pas</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Une extension qui annonce un type sur le contenu d'un autre, comme un PDF nommé .jpg</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>Deux extensions, la dernière non autorisée</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Aucune extension</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>L'extension en majuscules</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Un fichier SVG ou HTML pris pour une image ou pour du texte brut est un moyen de faire passer un
+    script à travers un formulaire. C'est pourquoi ils figurent dans la liste des types à refuser, sauf
+    si votre formulaire est censé les accepter.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">Contenu</p>
+  <h2>Le système ouvre-t-il le fichier, ou ne regarde-t-il que son nom&nbsp;?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Cas de test</th><th>Fichier</th><th>Attendu</th></tr></thead>
+    <tbody>
+      <tr><td>Un fichier coupé, comme le laisse un envoi interrompu</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Un fichier dont les premiers octets sont des zéros, si bien que rien ne dit ce qu'il est</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Le plus petit fichier qu'un format autorise, valide et minuscule</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Un fichier qui n'a que le bon nom et la bonne taille passe tous les contrôles qui ne l'ouvrent
+    jamais. Les <a href="/fr/fichiers-d-exemple/#corrupt">fichiers d'exemple corrompus</a> existent en
+    PDF, Word, Excel, PowerPoint, JPG, PNG, MP4 et ZIP, et
+    <a href="/fr/fichiers-de-test-corrompus/">fichiers de test corrompus</a> explique comment en
+    fabriquer dans n'importe quel format et à n'importe quelle taille.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">Nom</p>
+  <h2>Le fichier revient-il sous le nom qu'on lui a donné&nbsp;?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Cas de test</th><th>Fichier</th><th>Attendu</th></tr></thead>
+    <tbody>
+      <tr><td>Espaces et parenthèses</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Lettres hors ASCII et un emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>Un nom de plus de 200 caractères</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>Un nom qui remonte hors de son dossier, <code>../</code> ou <code>..\</code></td><td><code>climbing_name.jpg</code>, envoyé sous le nom <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Un chemin absolu, sous Linux ou Windows</td><td><code>absolute_name.jpg</code>, envoyé sous le nom <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Un chemin dans un nom ne peut pas être enregistré sur un disque, donc le fichier garde un nom simple
+    et le manifeste indique sous quel nom l'envoyer. Accepter le fichier et ne garder que la dernière
+    partie du nom est une bonne réponse. L'écrire hors du dossier d'envoi est le défaut que ce cas
+    existe pour trouver. Le <a href="/fr/prereglages/filename-handling/">préréglage filename-handling</a>
+    a bien d'autres noms&nbsp;: des lettres qui se ressemblent, des caractères invisibles, des noms
+    réservés par Windows et des longueurs comptées en octets.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">Volume et archives</p>
+  <h2>Que se passe-t-il avec beaucoup de fichiers, ou un fichier qui en contient beaucoup&nbsp;?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Cas de test</th><th>Fichier</th><th>Attendu</th></tr></thead>
+    <tbody>
+      <tr><td>Cinquante fichiers dans un même envoi</td><td>de <code>bulk_0001.jpg</code> à <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Un ZIP qui contient vraiment 200 documents</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Une archive que votre système décompresse, vérifiée d'abord contre le zip slip et les bombes zip</td><td><code>tfg tool archive-scan upload.zip</code></td><td>sûre, ou ce qui a été trouvé</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> fixe le nombre de fichiers de l'envoi en masse, jusqu'à dix mille.
+    <a href="/fr/outils/">Outils</a> explique ce que cherche la vérification d'archive.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">Dans un test</p>
+  <h2>Exécuter la liste comme un test</h2>
+  <p>
+    Le manifeste contient le résultat attendu de chaque fichier et le nom sous lequel l'envoyer, donc une
+    seule boucle exécute toute la liste&nbsp;:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    Les fichiers marqués <code>unspecified</code> sont laissés de côté ici, car leur réponse relève de
+    votre propre politique. Décidez-la, écrivez-la dans la recette avec <code>expected</code>, et la
+    boucle les vérifie aussi. <a href="/fr/fichiers-de-test-en-ci/">Fichiers de test en CI</a> exécute
+    cela dans un pipeline.
+  </p>
+</section>

@@ -61,11 +61,34 @@
       "description": "Um arquivo quebrado de propósito, com o tamanho exato que você pede e um manifesto dizendo que o seu sistema deve rejeitá-lo. Para testar validação de upload e parsers."
     },
     {
+      "key": "samples",
+      "slug": "arquivos-de-exemplo",
+      "nav": "Arquivos de exemplo",
+      "title": "Arquivos de teste para download - PDF, CSV, DOCX e mais",
+      "description": "Arquivos de teste para download: um de cada formato com 1 MB, PDF, Word e Excel corrompidos, tabelas CSV e imagens de espaço reservado, cada um com seu SHA-256."
+    },
+    {
       "key": "ci",
       "slug": "arquivos-de-teste-no-ci",
       "nav": "Arquivos de teste no CI",
       "title": "Arquivos de teste no CI - GitHub Actions, GitLab CI e PowerShell",
       "description": "Gere arquivos de teste no pipeline em vez de commitar binários: workflow do GitHub Actions, job do GitLab, códigos de saída e a pegadinha do PowerShell."
+    },
+    {
+      "key": "upload-tests",
+      "slug": "casos-de-teste-de-upload-de-arquivos",
+      "nav": "Casos de teste de upload",
+      "title": "Casos de teste de upload de arquivos - arquivos incluídos",
+      "description": "Casos de teste de upload de arquivos: limite de tamanho, arquivo vazio e corrompido, tipo errado, nomes inesperados e ZIP, cada um com o arquivo que o testa.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "ferramentas",
+      "nav": "Ferramentas",
+      "title": "Checar um ZIP antes de descompactar e verificar o SHA-256",
+      "description": "Ferramentas offline para os seus arquivos: veja se um arquivo compactado é seguro para descompactar (zip slip, zip bomb) e confira ou grave somas SHA-256.",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "Dano",
     "colEffect": "O que faz com os bytes",
     "colSettings": "Configurações",
-    "noSettings": "nenhuma"
+    "noSettings": "nenhuma",
+    "colFile": "Arquivo",
+    "colSize": "Tamanho",
+    "colSha256": "SHA-256",
+    "colExpected": "Esperado",
+    "colTool": "Ferramenta",
+    "colQuestion": "O que responde"
   },
   "endings": {
     "0": "Tudo funcionou.",
@@ -224,8 +253,8 @@
     "picture-sizes": {
       "question": "Meu sistema aceita imagens nos tamanhos que telas e plataformas usam?",
       "title": "Tamanhos de imagem",
-      "pageTitle": "Imagens de teste em tamanhos comuns - telas, avatares, redes sociais",
-      "description": "Imagens nos tamanhos de telas HD, Full HD, QHD e 4K, de fotos de perfil e das capas, publicações e miniaturas que as redes sociais pedem, cada uma tão pequena quanto pode ser.",
+      "pageTitle": "Imagens de teste em tamanhos comuns - telas e redes sociais",
+      "description": "Imagens nos tamanhos de telas HD, Full HD, QHD e 4K, de fotos de perfil e das capas, publicações e miniaturas que as redes sociais pedem.",
       "catches": [
         "um limite de largura ou altura pensado para um formato de imagem que recusa outro, como um fundo de perfil com 1584 px de largura",
         "uma miniatura cortada ou achatada porque o código espera uma imagem horizontal e chega uma vertical",
@@ -351,5 +380,11 @@
       "q": "Por que uma execução sobre milhares de arquivos é mais lenta no Windows?",
       "a": "Porque o Windows cobra mais por cada caminho que examina, e um comando que percorre milhares de arquivos examina milhares de caminhos. Medido em uma máquina com 3000 arquivos de 1 kB, o verify leva cerca de 0,9 segundo no Windows e cerca de 0,2 segundo no Linux em um contêiner. Um caminho de saída mais curto reduz o valor do Windows, porque cada pasta acima dos arquivos faz parte do que é examinado."
     }
-  ]
+  ],
+  "tools": {
+    "archive-scan": "Este arquivo compactado é seguro para descompactar?",
+    "checksum": "Este arquivo é mesmo o que diz ser?",
+    "checksum-check": "Cada arquivo ainda é o que diz o seu arquivo de somas de verificação?",
+    "checksum-write": "Como vou saber depois que nada mudou nesta pasta?"
+  }
 }

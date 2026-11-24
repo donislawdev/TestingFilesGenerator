@@ -1,0 +1,114 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Sample files for testing</h1>
+<p class="lead">
+  Real files to download for testing an upload form, a parser or an import: one of every format
+  this generator writes, files broken on purpose, tables the way spreadsheet programs export them,
+  and placeholder pictures. Nothing to install and nothing to sign up for.
+</p>
+
+<div class="note">
+  <p class="note-title">Made by one recipe</p>
+  <p>
+    All {{ .Facts.SampleCount }} files come from one recipe,
+    <a href="/samples/samples.yaml">samples.yaml</a>. Run it with <code>tfg</code> and you get the
+    same bytes on any machine, so the SHA-256 beside each file is something you can check rather
+    than take on trust.
+  </p>
+  <pre><code>tfg generate samples.yaml --out samples</code></pre>
+  <p>
+    Every sum is in <a href="/samples/SHA256SUMS">SHA256SUMS</a>. Put it in that folder and
+    <code>tfg tool checksum-check samples/SHA256SUMS</code> or <code>sha256sum -c SHA256SUMS</code>
+    tells you whether every file matches.
+  </p>
+</div>
+
+<p>
+  The last column of each table is what the
+  <a href="/samples/manifest.json">manifest</a> expects your system to do with the file.
+  <code>accept</code> means it should take the file, <code>reject</code> that it should turn the
+  file away, and <code>unspecified</code> that it depends on the rules of your system.
+</p>
+
+<section class="section" id="formats">
+  <p class="eyebrow">Every format</p>
+  <h2>One file of every format, 1 MB each</h2>
+  <p>
+    Documents, pictures, text, data, archives, mail, telemetry, sound and video, each exactly
+    1 048 576 bytes and each a real file of its format. The PDF opens in a PDF reader, the DOCX in
+    Word, the XLSX in Excel and the ZIP extracts.
+  </p>
+  {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Another size is one command. <code>tfg generate --format pdf --size 10mb</code> writes a PDF of
+    exactly 10 MB, and a 1 GB file is made the same way. Files that large are not kept on this page,
+    because a command makes them faster than a download.
+  </p>
+</section>
+
+<section class="section" id="corrupt">
+  <p class="eyebrow">Broken on purpose</p>
+  <h2>Corrupt files: PDF, Word, Excel, pictures, video and ZIP</h2>
+  <p>
+    Each one was made healthy and then broken, and is still exactly 1 MB. <code>truncate</code> cuts
+    the end off the way an interrupted upload does, and <code>zero-head</code> writes zeros over the
+    first bytes, where a reader looks to see what the file is. The manifest expects your system to
+    turn every one of them away.
+  </p>
+  {{ with .SampleTable "corrupt" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    <a href="/corrupt-test-files/">Corrupt test files</a> says how to make your own, in any format
+    and at any size, and which damages there are.
+  </p>
+</section>
+
+<section class="section" id="tables">
+  <p class="eyebrow">For an import</p>
+  <h2>CSV, JSON and Excel tables</h2>
+  <p>
+    The same table written the ways real tools write it: with a comma, a semicolon, a tab or a pipe
+    between values, with Windows line endings, without a header row, with every value in quotes or
+    none, a wide CSV, an Excel sheet and JSON in three layouts. Some are marked
+    <code>unspecified</code>, because whether your import takes a semicolon is its own choice. What it
+    must not do is read half of the table.
+  </p>
+  {{ with .SampleTable "tables" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    They are the files of the <a href="/presets/tabular-import/">tabular-import preset</a>, which
+    makes them with as many rows and columns as you ask for.
+  </p>
+</section>
+
+<section class="section" id="placeholders">
+  <p class="eyebrow">For a layout</p>
+  <h2>Placeholder images in common sizes</h2>
+  <p>
+    A flat grey picture with its size written in the middle, for laying out a page before the real
+    pictures exist: square thumbnails, a 300 by 250 ad, a 728 by 90 banner, a 1200 by 630 social
+    card and a full HD screen. Each is as small as the picture can be.
+  </p>
+  {{ with .SampleTable "placeholders" }}{{ template "samplesTable" . }}{{ end }}
+  <p>Any other size or colour:</p>
+  <pre><code>tfg generate --format png --size smallest --set content=placeholder --set width=640 --set height=360 --set background=1e293b</code></pre>
+  <p>
+    The <a href="/presets/picture-sizes/">picture-sizes preset</a> makes every size screens and
+    platforms use in one run, with <code>--content placeholder</code>.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Next</p>
+  <h2>Where to go from here</h2>
+  <ul>
+    <li>
+      <a href="/file-upload-test-cases/">File upload test cases</a> says which of these files tests
+      what in an upload form.
+    </li>
+    <li>
+      <a href="/presets/">Presets</a> are ready-made sets for one testing question each.
+    </li>
+    <li>
+      <a href="/test-files-in-ci/">Test files in CI</a> makes files like these in a pipeline instead of
+      keeping them in the repository.
+    </li>
+  </ul>
+</section>

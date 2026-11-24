@@ -89,6 +89,9 @@ func (s Site) Render() (map[string][]byte, error) {
 	}
 	out["social.html"] = social
 
+	if len(s.Facts.Samples) > 0 {
+		out[SamplesDir+"/SHA256SUMS"] = s.sampleSums()
+	}
 	out["sitemap.xml"] = s.sitemap()
 	out["robots.txt"] = s.robots()
 	out["CNAME"] = []byte(s.Host() + "\n")

@@ -1,0 +1,86 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>测试用示例文件</h1>
+<p class="lead">
+  可直接下载的真实文件，用来测试上传表单、解析器或导入功能：本生成器能写出的每种格式各一个文件、故意弄坏的文件、按电子表格程序的导出方式写成的表格，以及占位图片。无需安装，也无需注册。
+</p>
+
+<div class="note">
+  <p class="note-title">由一个配方生成</p>
+  <p>
+    本页所有文件都来自同一个配方 <a href="/samples/samples.yaml">samples.yaml</a>。用 <code>tfg</code> 运行它，在任何机器上都会得到相同的字节，所以每个文件旁边的 SHA-256 是你可以自己核对的，而不是只能相信的。
+  </p>
+  <pre><code>tfg generate samples.yaml --out samples</code></pre>
+  <p>
+    所有校验和都在 <a href="/samples/SHA256SUMS">SHA256SUMS</a> 中。把它放进那个文件夹，<code>tfg tool checksum-check samples/SHA256SUMS</code> 或 <code>sha256sum -c SHA256SUMS</code> 就会告诉你每个文件是否一致。
+  </p>
+</div>
+
+<p>
+  每张表的最后一列，是<a href="/samples/manifest.json">清单</a>期望你的系统如何处理该文件。<code>accept</code> 表示应该接受，<code>reject</code> 表示应该拒绝，<code>unspecified</code> 表示取决于你的系统规则。
+</p>
+
+<section class="section" id="formats">
+  <p class="eyebrow">每种格式</p>
+  <h2>每种格式一个文件，每个 1 MB</h2>
+  <p>
+    文档、图片、文本、数据、压缩包、邮件、遥测、音频和视频，每个都恰好 1048576 字节，并且都是该格式的真实文件。PDF 能在 PDF 阅读器中打开，DOCX 能在 Word 中打开，XLSX 能在 Excel 中打开，ZIP 能解压。
+  </p>
+  {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    其他大小只需一条命令。<code>tfg generate --format pdf --size 10mb</code> 会写出一个恰好 10 MB 的 PDF，1 GB 的文件也用同样的方法生成。这么大的文件不放在本页，因为用命令生成比下载更快。
+  </p>
+</section>
+
+<section class="section" id="corrupt">
+  <p class="eyebrow">故意损坏</p>
+  <h2>损坏的 PDF、Word、Excel 文件，以及图片、视频和 ZIP</h2>
+  <p>
+    每个文件都先以完好状态生成，然后被弄坏，大小仍然恰好是 1 MB。<code>truncate</code> 像中断的上传那样截掉末尾，<code>zero-head</code> 用零覆盖开头的字节，而读取器正是靠这些字节判断文件是什么。清单期望你的系统拒绝其中每一个。
+  </p>
+  {{ with .SampleTable "corrupt" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    <a href="/zh-hans/corrupt-test-files/">损坏的测试文件</a>介绍如何以任意格式、任意大小自己制作，以及有哪些损坏方式。
+  </p>
+</section>
+
+<section class="section" id="tables">
+  <p class="eyebrow">用于导入</p>
+  <h2>CSV、JSON 和 Excel 表格</h2>
+  <p>
+    同一张表格，按真实工具的各种写法写出：值之间用逗号、分号、制表符或竖线分隔，使用 Windows 换行，没有表头行，每个值都加引号或都不加，一个很宽的 CSV，一个 Excel 工作表，以及三种布局的 JSON。有些标为 <code>unspecified</code>，因为是否接受分号由你的导入功能自己决定。它不能做的，是只读进半张表格。
+  </p>
+  {{ with .SampleTable "tables" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    它们是 <a href="/zh-hans/presets/tabular-import/">tabular-import 预设</a>的文件，这个预设可以按你要求的行数和列数生成它们。
+  </p>
+</section>
+
+<section class="section" id="placeholders">
+  <p class="eyebrow">用于排版</p>
+  <h2>常用尺寸的占位图片</h2>
+  <p>
+    一张中间写着尺寸的纯灰色图片，用于在真实图片出现之前排版页面：正方形缩略图、300 x 250 的广告、728 x 90 的横幅、1200 x 630 的社交卡片和 Full HD 屏幕。每张都尽可能小。
+  </p>
+  {{ with .SampleTable "placeholders" }}{{ template "samplesTable" . }}{{ end }}
+  <p>任何其他尺寸或颜色：</p>
+  <pre><code>tfg generate --format png --size smallest --set content=placeholder --set width=640 --set height=360 --set background=1e293b</code></pre>
+  <p>
+    <a href="/zh-hans/presets/picture-sizes/">picture-sizes 预设</a>配合 <code>--content placeholder</code>，一次运行即可生成屏幕和平台使用的所有尺寸。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">接下来</p>
+  <h2>从这里去哪里</h2>
+  <ul>
+    <li>
+      <a href="/zh-hans/file-upload-test-cases/">文件上传测试用例</a>说明这些文件中的哪一个测试上传表单的哪一点。
+    </li>
+    <li>
+      <a href="/zh-hans/presets/">预设</a>是现成的文件集，每套回答一个测试问题。
+    </li>
+    <li>
+      <a href="/zh-hans/test-files-in-ci/">CI 中的测试文件</a>在流水线中生成这样的文件，而不是把它们放在仓库里。
+    </li>
+  </ul>
+</section>

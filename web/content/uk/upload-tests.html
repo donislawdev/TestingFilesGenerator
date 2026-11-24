@@ -1,0 +1,161 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Тест-кейси для завантаження файлів і файли для їх запуску</h1>
+<p class="lead">
+  Чек-лист тест-кейсів для завантаження файлів, від ліміту розміру до імені файлу, яке намагається
+  вийти зі своєї теки. Для кожного кейсу вказано файл, який його перевіряє, і те, що ваша система має
+  з ним зробити, тож список можна запустити, а не лише прочитати.
+</p>
+
+<div class="note">
+  <p class="note-title">Увесь список однією командою</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    записує файл майже для кожного кейсу нижче разом із маніфестом, у якому сказано, що має статися
+    з кожним із них. Вкажіть ліміт і типи, які оголошує ваша форма.
+  </p>
+</div>
+
+<p>
+  <code>accept</code> означає, що ваша система має прийняти файл, а <code>reject</code> - що вона має
+  відхилити його зі зрозумілим повідомленням. <code>unspecified</code> означає, що правильною може бути
+  будь-яка відповідь, тож запишіть, яку з них обирає ваша система, і перевіряйте, що вона робить так
+  щоразу. Слово після результату - це причина, яку вказує маніфест.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">Розмір</p>
+  <h2>Чи застосовується ліміт розміру там, де його оголошено?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Тест-кейс</th><th>Файл</th><th>Очікується</th></tr></thead>
+    <tbody>
+      <tr><td>На байт менше за ліміт</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Рівно за лімітом</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>На байт більше за ліміт</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Удвічі більше за ліміт, щоб переконатися, що сервер припиняє читання рано, а не завантажує все в пам'ять</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Порожній файл розміром 0 байтів</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Найчастіше ліміт помиляється у двох випадках: коли його перевіряють лише в браузері і коли його
+    рахують у МБ там, де код рахує МіБ. <a href="/uk/presets/size-boundaries/">Пресет
+    size-boundaries</a> кладе файл на кожній відстані від обраного вами ліміту: байт, кілобайт
+    і мегабайт в обидва боки.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">Тип</p>
+  <h2>Чи приймає форма потрібні типи й відхиляє решту?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Тест-кейс</th><th>Файл</th><th>Очікується</th></tr></thead>
+    <tbody>
+      <tr><td>Кожен тип, який приймає форма, у вигляді справжнього файлу цього типу</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Тип, який форма не приймає</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Розширення каже про один тип, а вміст іншого, наприклад PDF з ім'ям .jpg</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>Два розширення, останнє не дозволене</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Розширення немає зовсім</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>Розширення великими літерами</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Файл SVG або HTML, прийнятий за зображення чи простий текст, дає змогу провести скрипт крізь
+    форму. Тому вони в списку типів, які треба відхиляти, якщо ваша форма не має їх приймати.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">Вміст</p>
+  <h2>Чи відкриває система файл, чи дивиться лише на ім'я?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Тест-кейс</th><th>Файл</th><th>Очікується</th></tr></thead>
+    <tbody>
+      <tr><td>Файл, обрізаний так, як його залишає перерване завантаження</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Файл, перші байти якого - нулі, тож ніщо не каже, що це за файл</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Найменший файл, який допускає формат, коректний і крихітний</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Файл, у якого правильні лише ім'я і розмір, проходить будь-яку перевірку, яка його не відкриває.
+    <a href="/uk/sample-files/#corrupt">Пошкоджені приклади файлів</a> є у форматах PDF, Word, Excel,
+    PowerPoint, JPG, PNG, MP4 і ZIP, а на сторінці
+    <a href="/uk/corrupt-test-files/">Пошкоджені тестові файли</a> описано, як зробити їх у будь-якому
+    форматі й будь-якого розміру.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">Ім'я</p>
+  <h2>Чи повертається файл під тим ім'ям, яке йому дали?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Тест-кейс</th><th>Файл</th><th>Очікується</th></tr></thead>
+    <tbody>
+      <tr><td>Пробіли й дужки</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Літери поза ASCII та емодзі</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>Ім'я, довше за 200 символів</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>Ім'я, яке вибирається зі своєї теки, <code>../</code> або <code>..\</code></td><td><code>climbing_name.jpg</code>, завантажується як <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Абсолютний шлях, у Linux або Windows</td><td><code>absolute_name.jpg</code>, завантажується як <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Ім'я зі шляхом не можна зберегти на диск, тому файл має звичайне ім'я, а маніфест каже, під яким
+    ім'ям його завантажити. Прийняти файл і залишити лише останню частину імені - гарна відповідь.
+    Записати його поза текою завантаження - той дефект, заради якого цей кейс і існує.
+    <a href="/uk/presets/filename-handling/">Пресет filename-handling</a> містить набагато більше
+    імен: схожі одна на одну літери, невидимі символи, імена, зарезервовані Windows, і довжини, які
+    рахуються в байтах.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">Обсяг і архіви</p>
+  <h2>Що відбувається з багатьма файлами або з файлом, у якому їх багато?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Тест-кейс</th><th>Файл</th><th>Очікується</th></tr></thead>
+    <tbody>
+      <tr><td>П'ятдесят файлів в одному завантаженні</td><td>від <code>bulk_0001.jpg</code> до <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ZIP, у якому справді 200 документів</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Архів, який розпаковує ваша система, спершу перевірений на zip slip і zip-бомби</td><td><code>tfg tool archive-scan upload.zip</code></td><td>безпечний або що знайдено</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> задає, скільки файлів входить у масове завантаження, до десяти тисяч. На
+    сторінці <a href="/uk/tools/">Інструменти</a> описано, що шукає перевірка архіву.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">У тесті</p>
+  <h2>Запуск списку як тесту</h2>
+  <p>
+    Маніфест містить очікуваний результат для кожного файлу та ім'я, під яким його завантажувати, тому
+    один цикл проходить увесь список:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    Файли з позначкою <code>unspecified</code> тут пропускаються, бо відповідь для них - ваша власна
+    політика. Ухваліть рішення, запишіть його в рецепт через <code>expected</code>, і цикл перевірить
+    і їх. <a href="/uk/test-files-in-ci/">Тестові файли в CI</a> показують, як запустити це в
+    конвеєрі.
+  </p>
+</section>

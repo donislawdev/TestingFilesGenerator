@@ -71,6 +71,7 @@ func (l Language) expand(f Facts) (Language, error) {
 	out.Commands = everyValue(l.Commands)
 	out.Outcomes = everyValue(l.Outcomes)
 	out.Damages = everyValue(l.Damages)
+	out.Tools = everyValue(l.Tools)
 	if l.Presets != nil {
 		out.Presets = make(map[string]PresetText, len(l.Presets))
 		for id, text := range l.Presets {

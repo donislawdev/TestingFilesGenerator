@@ -1,0 +1,114 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>File di esempio per i test</h1>
+<p class="lead">
+  File reali da scaricare per testare un modulo di upload, un parser o un'importazione: un file per ogni
+  formato che questo generatore scrive, file rotti di proposito, tabelle come le esportano i fogli di
+  calcolo e immagini segnaposto. Niente da installare e nessuna registrazione.
+</p>
+
+<div class="note">
+  <p class="note-title">Prodotti da una sola ricetta</p>
+  <p>
+    Tutti i file di questa pagina vengono da una sola ricetta,
+    <a href="/samples/samples.yaml">samples.yaml</a>. Eseguila con <code>tfg</code> e ottieni gli stessi
+    byte su qualsiasi macchina. Lo SHA-256 accanto a ogni file è quindi qualcosa che puoi verificare,
+    invece di fidarti sulla parola.
+  </p>
+  <pre><code>tfg generate samples.yaml --out samples</code></pre>
+  <p>
+    Tutti gli hash sono in <a href="/samples/SHA256SUMS">SHA256SUMS</a>. Mettilo in quella cartella, e
+    <code>tfg tool checksum-check samples/SHA256SUMS</code> oppure <code>sha256sum -c SHA256SUMS</code>
+    ti dice se ogni file corrisponde.
+  </p>
+</div>
+
+<p>
+  L'ultima colonna di ogni tabella è ciò che il <a href="/samples/manifest.json">manifest</a> si aspetta
+  che il tuo sistema faccia con il file. <code>accept</code> significa che deve accettarlo,
+  <code>reject</code> che deve rifiutarlo, e <code>unspecified</code> che dipende dalle regole del tuo
+  sistema.
+</p>
+
+<section class="section" id="formats">
+  <p class="eyebrow">Ogni formato</p>
+  <h2>Un file per ogni formato, da 1 MB ciascuno</h2>
+  <p>
+    Documenti, immagini, testo, dati, archivi, posta, telemetria, audio e video, ognuno di esattamente
+    1 048 576 byte e ognuno un file reale del suo formato. Il PDF si apre in un lettore PDF, il DOCX in
+    Word, l'XLSX in Excel e lo ZIP si decomprime.
+  </p>
+  {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Un'altra dimensione è un solo comando. <code>tfg generate --format pdf --size 10mb</code> scrive un
+    PDF di esattamente 10 MB, e un file da 1 GB si fa allo stesso modo. File così grandi non sono tenuti
+    su questa pagina, perché un comando li produce più in fretta di un download.
+  </p>
+</section>
+
+<section class="section" id="corrupt">
+  <p class="eyebrow">Rotti di proposito</p>
+  <h2>File corrotti: PDF, Word, Excel, immagini, video e ZIP</h2>
+  <p>
+    Ognuno è stato prodotto sano e poi rotto, e pesa ancora esattamente 1 MB. <code>truncate</code>
+    taglia la fine come fa un upload interrotto, e <code>zero-head</code> scrive zeri sui primi byte,
+    dove un lettore guarda per capire che file è. Il manifest si aspetta che il tuo sistema li rifiuti
+    tutti.
+  </p>
+  {{ with .SampleTable "corrupt" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    <a href="/it/file-di-test-corrotti/">File di test corrotti</a> spiega come crearne di tuoi, in
+    qualsiasi formato e di qualsiasi dimensione, e quali danni esistono.
+  </p>
+</section>
+
+<section class="section" id="tables">
+  <p class="eyebrow">Per un'importazione</p>
+  <h2>Tabelle CSV, JSON ed Excel</h2>
+  <p>
+    La stessa tabella scritta come la scrivono gli strumenti reali: con una virgola, un punto e virgola,
+    una tabulazione o una barra verticale tra i valori, con fine riga di Windows, senza riga di
+    intestazione, con ogni valore tra virgolette o nessuno, un CSV largo, un foglio Excel e JSON in tre
+    layout. Alcuni sono marcati <code>unspecified</code>, perché accettare o no un punto e virgola è una
+    scelta della tua importazione. Ciò che non deve fare è leggere metà della tabella.
+  </p>
+  {{ with .SampleTable "tables" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Sono i file del <a href="/it/preset/tabular-import/">preset tabular-import</a>, che li produce con
+    tante righe e colonne quante ne chiedi.
+  </p>
+</section>
+
+<section class="section" id="placeholders">
+  <p class="eyebrow">Per un layout</p>
+  <h2>Immagini segnaposto nelle dimensioni comuni</h2>
+  <p>
+    Un'immagine grigia uniforme con la sua dimensione scritta al centro, per impaginare prima che
+    esistano le immagini vere: miniature quadrate, un annuncio 300 per 250, un banner 728 per 90, una
+    card social 1200 per 630 e uno schermo Full HD. Ognuna è piccola quanto l'immagine può esserlo.
+  </p>
+  {{ with .SampleTable "placeholders" }}{{ template "samplesTable" . }}{{ end }}
+  <p>Qualsiasi altra dimensione o colore:</p>
+  <pre><code>tfg generate --format png --size smallest --set content=placeholder --set width=640 --set height=360 --set background=1e293b</code></pre>
+  <p>
+    Il <a href="/it/preset/picture-sizes/">preset picture-sizes</a> produce in una sola esecuzione ogni
+    dimensione usata da schermi e piattaforme, con <code>--content placeholder</code>.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Avanti</p>
+  <h2>Dove andare da qui</h2>
+  <ul>
+    <li>
+      <a href="/it/casi-di-test-upload-file/">Casi di test per l'upload di file</a> dice quale di questi
+      file verifica cosa in un modulo di upload.
+    </li>
+    <li>
+      <a href="/it/preset/">I preset</a> sono set pronti, ognuno per una domanda di test.
+    </li>
+    <li>
+      <a href="/it/file-di-test-in-ci/">File di test in CI</a> produce file come questi in una pipeline,
+      invece di tenerli nel repository.
+    </li>
+  </ul>
+</section>

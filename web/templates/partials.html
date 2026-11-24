@@ -149,6 +149,58 @@
 </div>
 {{- end -}}
 
+{{- define "samplesTable" -}}
+<div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>{{ .File }}</th>
+      {{- if .Damaged }}
+      <th>{{ .Harm }}</th>
+      {{- end }}
+      <th class="num">{{ .Size }}</th>
+      <th>{{ .SHA256 }}</th>
+      <th>{{ .Expected }}</th>
+    </tr>
+  </thead>
+  <tbody>
+  {{- range .Rows }}
+    <tr>
+      <td><a href="{{ .URL }}" download>{{ .Name }}</a></td>
+      {{- if $.Damaged }}
+      <td>{{ range $i, $d := .Damages }}{{ if $i }}, {{ end }}<code>{{ $d }}</code>{{ end }}</td>
+      {{- end }}
+      <td class="num">{{ .Size }}</td>
+      <td><code title="{{ .SHA256 }}">{{ .Short }}</code></td>
+      <td><code>{{ .Outcome }}</code></td>
+    </tr>
+  {{- end }}
+  </tbody>
+</table>
+</div>
+{{- end -}}
+
+{{- define "toolsTable" -}}
+<div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>{{ .Word "colTool" }}</th>
+      <th>{{ .Word "colQuestion" }}</th>
+    </tr>
+  </thead>
+  <tbody>
+  {{- range .ToolList }}
+    <tr>
+      <td><code>{{ .ID }}</code></td>
+      <td>{{ .Question }}</td>
+    </tr>
+  {{- end }}
+  </tbody>
+</table>
+</div>
+{{- end -}}
+
 {{- define "propertiesTable" -}}
 <div class="tablewrap">
 <table class="data">

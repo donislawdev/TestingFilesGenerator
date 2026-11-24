@@ -1,0 +1,103 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Checar um arquivo compactado antes de descompactá-lo e conferir somas de verificação</h1>
+<p class="lead">
+  Além do gerador, <code>tfg</code> tem pequenas ferramentas para arquivos que você já tem: se um arquivo
+  compactado é seguro para descompactar, e se um arquivo ou uma pasta inteira ainda é o que diz a sua
+  soma de verificação. Elas rodam na sua máquina, sem upload e sem conta.
+</p>
+
+<div class="note">
+  <p class="note-title">A resposta curta</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> lê o arquivo compactado sem descompactar nada e
+    termina com o código 0 quando ele é seguro, ou 7 com uma lista do que encontrou.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> diz se um arquivo confere com a soma
+    que uma página de download informou.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">O que existe</p>
+  <h2>Quais ferramentas existem?</h2>
+  <p>
+    Esta é a lista que o programa imprime, lida dele quando esta página é construída.
+    <code>tfg tool list</code> imprime a mesma, e <code>tfg tool show &lt;id&gt;</code> diz o que cada uma
+    aceita. Cada ferramenta também está na tela Tools da janela, com as mesmas configurações.
+  </p>
+  {{ template "toolsTable" . }}
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Arquivos compactados</p>
+  <h2>Este arquivo compactado é seguro para descompactar? Zip slip e zip bombs</h2>
+  <p>
+    <code>archive-scan</code> olha dentro de um arquivo ZIP, TAR, TAR.GZ ou gzip sem gravar nada em disco
+    e diz se descompactá-lo é seguro. Ele aponta:
+  </p>
+  <ul>
+    <li>uma entrada que seria gravada fora da pasta, a armadilha conhecida como zip slip</li>
+    <li>um link, um dispositivo, ou dois nomes que cairiam no mesmo arquivo</li>
+    <li>um nome que um sistema não consegue gravar</li>
+    <li>uma entrada feita para explodir ao ser descompactada, a armadilha conhecida como zip bomb</li>
+    <li>uma entrada danificada</li>
+  </ul>
+  <p>
+    Arquivos compactados dentro do arquivo compactado, como um ZIP dentro de um ZIP ou um DOCX dentro de
+    um TAR, são lidos do mesmo jeito, na memória, até 16 níveis de profundidade. Uma armadilha em um
+    deles é uma armadilha no todo, porque um programa que descompacta tudo descompacta esses também.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> também aponta um arquivo compactado que, descompactado, ocupa mais do que
+    você permite. Se for seguro, termina com o código 0, e se encontrar algo, com 7, então um pipeline
+    pode parar aí.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Um arquivo</p>
+  <h2>Este arquivo é mesmo o que diz ser?</h2>
+  <p>
+    <code>checksum</code> calcula a soma de verificação de um arquivo e, se você der uma para comparar, diz
+    se elas batem. Aceita md5, sha1, sha256, sha512 e crc32, sha256 se você não pedir outra, e reconhece
+    pelo comprimento qual delas você deu.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    Uma soma que não bate termina com o código 7. Responde à mesma pergunta que <code>Get-FileHash</code>
+    no Windows ou <code>sha256sum</code> no Linux, com a comparação feita para você.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Uma pasta inteira</p>
+  <h2>Alguma coisa mudou nesta pasta?</h2>
+  <p>
+    <code>checksum-write</code> grava a soma de verificação de cada arquivo de uma pasta em um SHA256SUMS
+    ao lado deles, com os mesmos bytes que o <code>sha256sum</code> grava, e nunca por cima de um que já
+    exista. <code>checksum-check</code> depois confere cada arquivo que o SHA256SUMS lista.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    Arquivos que ele não lista não são examinados, como no <code>sha256sum -c</code>, e um caminho que sai
+    da pasta é recusado em vez de lido. Os <a href="/pt-br/arquivos-de-exemplo/">arquivos de exemplo</a>
+    vêm com um SHA256SUMS que você pode conferir assim.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">A seguir</p>
+  <h2>Para onde ir daqui</h2>
+  <ul>
+    <li>
+      <a href="/pt-br/casos-de-teste-de-upload-de-arquivos/">Casos de teste de upload de arquivos</a> coloca
+      a checagem de arquivos compactados entre os outros casos de um upload.
+    </li>
+    <li>
+      <a href="/pt-br/documentacao/">A documentação</a> traz cada comando e cada código de saída.
+    </li>
+  </ul>
+</section>

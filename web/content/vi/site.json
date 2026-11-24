@@ -61,11 +61,34 @@
       "description": "Một tệp cố ý làm hỏng, đúng kích thước, với manifest nói hệ thống của bạn phải từ chối nó. Để kiểm thử xác thực tải lên và trình phân tích cú pháp."
     },
     {
+      "key": "samples",
+      "slug": "tep-mau",
+      "nav": "Tệp mẫu",
+      "title": "Tệp mẫu để kiểm thử - tải xuống PDF, CSV, DOCX và hơn nữa",
+      "description": "Tải xuống tệp mẫu để kiểm thử: mỗi định dạng một tệp 1 MB, tệp PDF, Word và Excel bị hỏng, bảng CSV và ảnh giữ chỗ, mỗi tệp kèm mã SHA-256."
+    },
+    {
       "key": "ci",
       "slug": "tep-kiem-thu-trong-ci",
       "nav": "Tệp kiểm thử trong CI",
       "title": "Tệp kiểm thử trong CI - GitHub Actions, GitLab CI và PowerShell",
       "description": "Tạo tệp kiểm thử trong pipeline thay vì commit tệp nhị phân: workflow GitHub Actions, job GitLab, mã thoát và cái bẫy của PowerShell."
+    },
+    {
+      "key": "upload-tests",
+      "slug": "truong-hop-kiem-thu-tai-len",
+      "nav": "Kiểm thử tải lên",
+      "title": "Trường hợp kiểm thử tải lên tệp - kèm tệp để chạy",
+      "description": "Các trường hợp kiểm thử tải tệp lên: giới hạn kích thước, tệp rỗng và tệp hỏng, sai loại tệp, tên tệp bất ngờ và tệp nén, mỗi trường hợp kèm tệp kiểm thử nó.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "cong-cu",
+      "nav": "Công cụ",
+      "title": "Kiểm tra ZIP trước khi giải nén và xác minh checksum SHA-256",
+      "description": "Công cụ ngoại tuyến cho tệp bạn đã có: xem một tệp nén có an toàn để giải nén không, gồm cả zip slip và zip bomb, và kiểm tra hoặc ghi checksum SHA-256.",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "Hỏng hóc",
     "colEffect": "Nó làm gì với các byte",
     "colSettings": "Cài đặt",
-    "noSettings": "không có"
+    "noSettings": "không có",
+    "colFile": "Tệp",
+    "colSize": "Kích thước",
+    "colSha256": "SHA-256",
+    "colExpected": "Kỳ vọng",
+    "colTool": "Công cụ",
+    "colQuestion": "Trả lời câu hỏi"
   },
   "endings": {
     "0": "Mọi thứ đều chạy tốt.",
@@ -224,8 +253,8 @@
     "picture-sizes": {
       "question": "Hệ thống của tôi có nhận hình ảnh ở các kích thước mà màn hình và nền tảng dùng không?",
       "title": "Kích thước hình ảnh",
-      "pageTitle": "Hình ảnh thử ở kích thước phổ biến - màn hình, ảnh đại diện, mạng xã hội",
-      "description": "Hình ảnh ở kích thước của màn hình HD, Full HD, QHD và 4K, của ảnh đại diện, và của ảnh bìa, bài đăng và hình thu nhỏ mà các nền tảng mạng xã hội yêu cầu, mỗi ảnh nhỏ nhất có thể.",
+      "pageTitle": "Hình ảnh thử ở kích thước phổ biến - màn hình và mạng xã hội",
+      "description": "Hình ảnh ở kích thước của màn hình HD, Full HD, QHD và 4K, của ảnh đại diện, và của ảnh bìa, bài đăng và hình thu nhỏ mà các nền tảng mạng xã hội yêu cầu.",
       "catches": [
         "giới hạn chiều rộng hoặc chiều cao đặt cho một dạng ảnh nhưng từ chối dạng khác, chẳng hạn ảnh nền hồ sơ rộng 1584 px",
         "hình thu nhỏ bị cắt hoặc bị bóp méo vì mã chờ ảnh ngang mà ảnh đến lại là ảnh dọc",
@@ -351,5 +380,11 @@
       "q": "Vì sao chạy trên hàng nghìn tệp chậm hơn trên Windows?",
       "a": "Vì Windows tính phí nhiều hơn cho mỗi đường dẫn nó xem, và một lệnh duyệt hàng nghìn tệp xem hàng nghìn đường dẫn. Đo trên một máy với 3000 tệp 1 kB, verify mất khoảng 0,9 giây trên Windows và khoảng 0,2 giây trên Linux trong container. Đường dẫn đầu ra ngắn hơn làm con số Windows nhỏ đi, vì mỗi thư mục phía trên các tệp đều nằm trong thứ được xem."
     }
-  ]
+  ],
+  "tools": {
+    "archive-scan": "Tệp nén này có an toàn để giải nén không?",
+    "checksum": "Tệp này có đúng là tệp mà nó tự nhận không?",
+    "checksum-check": "Mọi tệp có còn đúng như tệp checksum của chúng ghi không?",
+    "checksum-write": "Sau này làm sao tôi biết không có gì trong thư mục này thay đổi?"
+  }
 }

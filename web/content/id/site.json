@@ -61,11 +61,34 @@
       "description": "File yang sengaja dirusak, berukuran tepat, dengan manifes yang menyatakan sistem Anda harus menolaknya. Untuk menguji validasi unggahan dan parser."
     },
     {
+      "key": "samples",
+      "slug": "contoh-file",
+      "nav": "Contoh file",
+      "title": "Contoh File untuk Pengujian - Unduh PDF, CSV, DOCX",
+      "description": "Unduh contoh file untuk pengujian: satu file 1 MB per format, PDF, Word, dan Excel yang rusak, tabel CSV, dan gambar placeholder, masing-masing dengan SHA-256."
+    },
+    {
       "key": "ci",
       "slug": "file-uji-di-ci",
       "nav": "File uji di CI",
       "title": "File uji di CI - GitHub Actions, GitLab CI, dan PowerShell",
       "description": "Buat file uji di pipeline alih-alih meng-commit biner: workflow GitHub Actions, job GitLab, kode keluar, dan jebakan PowerShell."
+    },
+    {
+      "key": "upload-tests",
+      "slug": "kasus-uji-unggah-file",
+      "nav": "Kasus uji unggah",
+      "title": "Kasus Uji Unggah File - Lengkap dengan File untuk Mengujinya",
+      "description": "Kasus uji untuk unggah file: batas ukuran, file kosong dan rusak, tipe yang salah, nama file tak terduga, dan arsip, masing-masing dengan file yang mengujinya.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "alat",
+      "nav": "Alat",
+      "title": "Periksa ZIP Sebelum Diekstrak dan Verifikasi Checksum SHA-256",
+      "description": "Alat offline untuk file yang sudah Anda miliki: periksa apakah arsip aman diekstrak, termasuk zip slip dan zip bomb, serta periksa atau tulis checksum SHA-256.",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "Kerusakan",
     "colEffect": "Yang dilakukannya pada byte",
     "colSettings": "Pengaturan",
-    "noSettings": "tidak ada"
+    "noSettings": "tidak ada",
+    "colFile": "File",
+    "colSize": "Ukuran",
+    "colSha256": "SHA-256",
+    "colExpected": "Diharapkan",
+    "colTool": "Alat",
+    "colQuestion": "Yang dijawabnya"
   },
   "endings": {
     "0": "Semuanya berjalan.",
@@ -225,7 +254,7 @@
       "question": "Apakah sistem saya menerima gambar dalam ukuran yang dipakai layar dan platform?",
       "title": "Ukuran gambar",
       "pageTitle": "Gambar uji dalam ukuran umum - layar, avatar, media sosial",
-      "description": "Gambar dalam ukuran layar HD, Full HD, QHD, dan 4K, foto profil, serta sampul, postingan, dan thumbnail yang diminta platform media sosial, masing-masing sekecil mungkin.",
+      "description": "Gambar dalam ukuran layar HD, Full HD, QHD, dan 4K, foto profil, serta sampul, postingan, dan thumbnail yang diminta platform media sosial.",
       "catches": [
         "batas lebar atau tinggi yang dibuat untuk satu bentuk dan menolak bentuk lain, misalnya latar profil selebar 1584 px",
         "thumbnail terpotong atau tergencet karena kode mengharapkan gambar mendatar dan yang datang gambar tegak",
@@ -351,5 +380,11 @@
       "q": "Mengapa run atas ribuan file lebih lambat di Windows?",
       "a": "Karena Windows membebankan lebih banyak untuk setiap path yang diperiksanya, dan perintah yang menelusuri ribuan file memeriksa ribuan path. Diukur di satu mesin dengan 3000 file berukuran 1 kB, verify memakan sekitar 0,9 detik di Windows dan sekitar 0,2 detik di Linux dalam container. Path keluaran yang lebih pendek memperkecil angka Windows, karena setiap folder di atas file ikut diperiksa."
     }
-  ]
+  ],
+  "tools": {
+    "archive-scan": "Apakah arsip ini aman diekstrak?",
+    "checksum": "Apakah file ini benar file yang diakuinya?",
+    "checksum-check": "Apakah setiap file masih sesuai dengan yang dinyatakan file checksum-nya?",
+    "checksum-write": "Bagaimana nanti saya tahu bahwa tidak ada yang berubah di folder ini?"
+  }
 }

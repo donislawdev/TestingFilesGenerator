@@ -25,7 +25,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/corrupt-test-files/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/sample-files/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/test-files-in-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/tools/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/presets/empty-and-minimal/</loc>
@@ -73,7 +82,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/ar/corrupt-test-files/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/sample-files/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/ar/test-files-in-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/file-upload-test-cases/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ar/tools/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/ar/presets/empty-and-minimal/</loc>
@@ -121,7 +139,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/cs/poskozene-testovaci-soubory/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/cs/ukazkove-soubory/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/cs/testovaci-soubory-v-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/cs/testovaci-pripady-nahravani-souboru/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/cs/nastroje/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/cs/predvolby/empty-and-minimal/</loc>
@@ -169,7 +196,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/de/beschaedigte-testdateien/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/de/beispieldateien/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/de/testdateien-in-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/de/testfaelle-datei-upload/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/de/werkzeuge/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/de/presets/empty-and-minimal/</loc>
@@ -217,7 +253,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-corruptos/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/es/archivos-de-ejemplo/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/es/archivos-de-prueba-en-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/es/casos-de-prueba-de-subida-de-archivos/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/es/herramientas/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/es/presets/empty-and-minimal/</loc>
@@ -265,7 +310,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-corrompus/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/fr/fichiers-d-exemple/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/fr/fichiers-de-test-en-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/fr/cas-de-test-envoi-de-fichiers/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/fr/outils/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/fr/prereglages/empty-and-minimal/</loc>
@@ -313,7 +367,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/hi/corrupt-test-files/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/sample-files/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/hi/test-files-in-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/file-upload-test-cases/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/hi/tools/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/hi/presets/empty-and-minimal/</loc>
@@ -361,7 +424,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/id/file-uji-rusak/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/id/contoh-file/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/id/file-uji-di-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/id/kasus-uji-unggah-file/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/id/alat/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/id/preset/empty-and-minimal/</loc>
@@ -409,7 +481,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/it/file-di-test-corrotti/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/it/file-di-esempio/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/it/file-di-test-in-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/it/casi-di-test-upload-file/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/it/strumenti/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/it/preset/empty-and-minimal/</loc>
@@ -457,7 +538,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/ja/corrupt-test-files/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ja/sample-files/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/ja/test-files-in-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ja/file-upload-test-cases/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ja/tools/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/ja/presets/empty-and-minimal/</loc>
@@ -505,7 +595,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/ko/corrupt-test-files/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ko/sample-files/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/ko/test-files-in-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ko/file-upload-test-cases/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ko/tools/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/ko/presets/empty-and-minimal/</loc>
@@ -553,7 +652,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/nl/beschadigde-testbestanden/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/nl/voorbeeldbestanden/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/nl/testbestanden-in-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/nl/testgevallen-bestandsupload/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/nl/hulpmiddelen/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/nl/presets/empty-and-minimal/</loc>
@@ -601,7 +709,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/pl/uszkodzone-pliki-testowe/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/pl/przykladowe-pliki/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/pl/pliki-testowe-w-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/pl/przypadki-testowe-uploadu/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/pl/narzedzia/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/pl/presety/empty-and-minimal/</loc>
@@ -649,7 +766,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-corrompidos/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-exemplo/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/pt-br/arquivos-de-teste-no-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-teste-de-upload-de-arquivos/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/pt-br/ferramentas/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/pt-br/presets/empty-and-minimal/</loc>
@@ -697,7 +823,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-corupte/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-exemplu/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/ro/fisiere-de-test-in-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-test-incarcare-fisiere/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ro/instrumente/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/ro/presetari/empty-and-minimal/</loc>
@@ -745,7 +880,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/ru/corrupt-test-files/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ru/sample-files/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/ru/test-files-in-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ru/file-upload-test-cases/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/ru/tools/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/ru/presets/empty-and-minimal/</loc>
@@ -793,7 +937,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/th/corrupt-test-files/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/sample-files/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/th/test-files-in-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/file-upload-test-cases/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/th/tools/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/th/presets/empty-and-minimal/</loc>
@@ -841,7 +994,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/tr/bozuk-test-dosyalari/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/tr/ornek-dosyalar/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/tr/ci-icinde-test-dosyalari/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/tr/dosya-yukleme-test-senaryolari/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/tr/araclar/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/tr/hazir-ayarlar/empty-and-minimal/</loc>
@@ -889,7 +1051,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/uk/corrupt-test-files/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/uk/sample-files/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/uk/test-files-in-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/uk/file-upload-test-cases/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/uk/tools/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/uk/presets/empty-and-minimal/</loc>
@@ -937,7 +1108,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-bi-hong/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/vi/tep-mau/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/vi/tep-kiem-thu-trong-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/vi/truong-hop-kiem-thu-tai-len/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/vi/cong-cu/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/vi/preset/empty-and-minimal/</loc>
@@ -985,7 +1165,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/zh-hans/corrupt-test-files/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/zh-hans/sample-files/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/zh-hans/test-files-in-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/zh-hans/file-upload-test-cases/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/zh-hans/tools/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/zh-hans/presets/empty-and-minimal/</loc>
@@ -1033,7 +1222,16 @@
     <loc>https://testingfilesgenerator.donislawdev.com/zh-hant/corrupt-test-files/</loc>
   </url>
   <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/zh-hant/sample-files/</loc>
+  </url>
+  <url>
     <loc>https://testingfilesgenerator.donislawdev.com/zh-hant/test-files-in-ci/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/zh-hant/file-upload-test-cases/</loc>
+  </url>
+  <url>
+    <loc>https://testingfilesgenerator.donislawdev.com/zh-hant/tools/</loc>
   </url>
   <url>
     <loc>https://testingfilesgenerator.donislawdev.com/zh-hant/presets/empty-and-minimal/</loc>

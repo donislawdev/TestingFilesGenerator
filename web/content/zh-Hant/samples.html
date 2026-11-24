@@ -1,0 +1,86 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>測試用範例檔案</h1>
+<p class="lead">
+  可直接下載的真實檔案，用來測試上傳表單、剖析器或匯入功能：本產生器能寫出的每種格式各一個檔案、刻意弄壞的檔案、依試算表程式的匯出方式寫成的表格，以及佔位圖片。無需安裝，也無需註冊。
+</p>
+
+<div class="note">
+  <p class="note-title">由一個配方產生</p>
+  <p>
+    本頁所有檔案都來自同一個配方 <a href="/samples/samples.yaml">samples.yaml</a>。用 <code>tfg</code> 執行它，在任何電腦上都會得到相同的位元組，所以每個檔案旁邊的 SHA-256 是你可以自己核對的，而不是只能相信的。
+  </p>
+  <pre><code>tfg generate samples.yaml --out samples</code></pre>
+  <p>
+    所有總和檢查碼都在 <a href="/samples/SHA256SUMS">SHA256SUMS</a> 中。把它放進那個資料夾，<code>tfg tool checksum-check samples/SHA256SUMS</code> 或 <code>sha256sum -c SHA256SUMS</code> 就會告訴你每個檔案是否相符。
+  </p>
+</div>
+
+<p>
+  每張表的最後一欄，是<a href="/samples/manifest.json">清單</a>期望你的系統如何處理該檔案。<code>accept</code> 表示應該接受，<code>reject</code> 表示應該拒絕，<code>unspecified</code> 表示取決於你的系統規則。
+</p>
+
+<section class="section" id="formats">
+  <p class="eyebrow">每種格式</p>
+  <h2>每種格式一個檔案，每個 1 MB</h2>
+  <p>
+    文件、圖片、文字、資料、壓縮檔、郵件、遙測、音訊和影片，每個都恰好 1048576 位元組，而且都是該格式的真實檔案。PDF 能在 PDF 閱讀器中開啟，DOCX 能在 Word 中開啟，XLSX 能在 Excel 中開啟，ZIP 能解壓縮。
+  </p>
+  {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    其他大小只需一道指令。<code>tfg generate --format pdf --size 10mb</code> 會寫出一個恰好 10 MB 的 PDF，1 GB 的檔案也用同樣的方法產生。這麼大的檔案不放在本頁，因為用指令產生比下載更快。
+  </p>
+</section>
+
+<section class="section" id="corrupt">
+  <p class="eyebrow">刻意損毀</p>
+  <h2>損毀的 PDF、Word、Excel 檔案，以及圖片、影片和 ZIP</h2>
+  <p>
+    每個檔案都先以完好狀態產生，然後被弄壞，大小仍然恰好是 1 MB。<code>truncate</code> 像中斷的上傳那樣截掉結尾，<code>zero-head</code> 用零覆蓋開頭的位元組，而讀取器正是靠這些位元組判斷檔案是什麼。清單期望你的系統拒絕其中每一個。
+  </p>
+  {{ with .SampleTable "corrupt" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    <a href="/zh-hant/corrupt-test-files/">損毀的測試檔案</a>說明如何以任意格式、任意大小自己製作，以及有哪些損毀方式。
+  </p>
+</section>
+
+<section class="section" id="tables">
+  <p class="eyebrow">用於匯入</p>
+  <h2>CSV、JSON 和 Excel 表格</h2>
+  <p>
+    同一張表格，依真實工具的各種寫法寫出：值之間用逗號、分號、定位字元或直線符號分隔，使用 Windows 換行，沒有標題列，每個值都加引號或都不加，一個很寬的 CSV，一個 Excel 工作表，以及三種版面的 JSON。有些標為 <code>unspecified</code>，因為是否接受分號由你的匯入功能自己決定。它不能做的，是只讀進半張表格。
+  </p>
+  {{ with .SampleTable "tables" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    它們是 <a href="/zh-hant/presets/tabular-import/">tabular-import 預設集</a>的檔案，這個預設集可以依你要求的列數和欄數產生它們。
+  </p>
+</section>
+
+<section class="section" id="placeholders">
+  <p class="eyebrow">用於排版</p>
+  <h2>常用尺寸的佔位圖片</h2>
+  <p>
+    一張中間寫著尺寸的純灰色圖片，用來在真實圖片出現之前排版頁面：正方形縮圖、300 x 250 的廣告、728 x 90 的橫幅、1200 x 630 的社群卡片和 Full HD 螢幕。每張都盡可能小。
+  </p>
+  {{ with .SampleTable "placeholders" }}{{ template "samplesTable" . }}{{ end }}
+  <p>任何其他尺寸或顏色：</p>
+  <pre><code>tfg generate --format png --size smallest --set content=placeholder --set width=640 --set height=360 --set background=1e293b</code></pre>
+  <p>
+    <a href="/zh-hant/presets/picture-sizes/">picture-sizes 預設集</a>搭配 <code>--content placeholder</code>，執行一次即可產生螢幕和平台使用的所有尺寸。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">接下來</p>
+  <h2>從這裡去哪裡</h2>
+  <ul>
+    <li>
+      <a href="/zh-hant/file-upload-test-cases/">檔案上傳測試案例</a>說明這些檔案中的哪一個測試上傳表單的哪一點。
+    </li>
+    <li>
+      <a href="/zh-hant/presets/">預設集</a>是現成的檔案組，每組回答一個測試問題。
+    </li>
+    <li>
+      <a href="/zh-hant/test-files-in-ci/">CI 中的測試檔案</a>在流程中產生這樣的檔案，而不是把它們放在儲存庫裡。
+    </li>
+  </ul>
+</section>

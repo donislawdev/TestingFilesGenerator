@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="cs">
+<title>Testovací případy pro nahrávání souborů - se soubory k testu</title>
+<meta name="description" content="Testovací případy nahrávání souborů: limit velikosti, prázdné a poškozené soubory, špatný typ, nečekané názvy a archivy, každý se souborem, který ho testuje.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-pripady-nahravani-souboru/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/file-upload-test-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-pripady-nahravani-souboru/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testfaelle-datei-upload/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-prueba-de-subida-de-archivos/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-de-test-envoi-de-fichiers/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/file-upload-test-cases/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-uji-unggah-file/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-di-test-upload-file/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/file-upload-test-cases/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/file-upload-test-cases/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testgevallen-bestandsupload/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/przypadki-testowe-uploadu/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-teste-de-upload-de-arquivos/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-test-incarcare-fisiere/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/file-upload-test-cases/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/file-upload-test-cases/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dosya-yukleme-test-senaryolari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/file-upload-test-cases/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-kiem-thu-tai-len/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/file-upload-test-cases/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/file-upload-test-cases/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Testovací případy pro nahrávání souborů - se soubory k testu">
+<meta property="og:description" content="Testovací případy nahrávání souborů: limit velikosti, prázdné a poškozené soubory, špatný typ, nečekané názvy a archivy, každý se souborem, který ho testuje.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/cs/testovaci-pripady-nahravani-souboru/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Testovací případy pro nahrávání souborů - se soubory k testu">
+<meta name="twitter:description" content="Testovací případy nahrávání souborů: limit velikosti, prázdné a poškozené soubory, špatný typ, nečekané názvy a archivy, každý se souborem, který ho testuje.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Úvod",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/cs/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Případy použití",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/cs\/pripady-pouziti\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Testovací případy nahrávání",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/cs\/testovaci-pripady-nahravani-souboru\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Přejít na obsah</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/cs/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hlavní">
+      <a href="/cs/">Úvod</a>
+      <a href="/cs/formaty/">Formáty</a>
+      <a href="/cs/predvolby/">Předvolby</a>
+      <a href="/cs/dokumentace/">Dokumentace</a>
+      <a href="/cs/pripady-pouziti/" aria-current="true">Případy použití</a>
+      <a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a>
+      <a href="/cs/faq/">FAQ</a>
+      <a href="/cs/poskozene-testovaci-soubory/">Poškozené soubory</a>
+      <a href="/cs/ukazkove-soubory/">Ukázkové soubory</a>
+      <a href="/cs/testovaci-soubory-v-ci/">Testovací soubory v CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Jazyk: Čeština">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Čeština</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/file-upload-test-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/file-upload-test-cases/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/de/testfaelle-datei-upload/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-prueba-de-subida-de-archivos/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-de-test-envoi-de-fichiers/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/file-upload-test-cases/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/kasus-uji-unggah-file/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-di-test-upload-file/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/file-upload-test-cases/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/file-upload-test-cases/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testgevallen-bestandsupload/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/przypadki-testowe-uploadu/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-teste-de-upload-de-arquivos/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-test-incarcare-fisiere/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/file-upload-test-cases/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/file-upload-test-cases/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/dosya-yukleme-test-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/file-upload-test-cases/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/truong-hop-kiem-thu-tai-len/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/file-upload-test-cases/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/file-upload-test-cases/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/cs/pripady-pouziti/">Případy použití</a></p>
+<h1>Testovací případy pro nahrávání souborů, se soubory k jejich spuštění</h1>
+<p class="lead">
+  Kontrolní seznam testovacích případů pro nahrávání souborů, od limitu velikosti po název souboru,
+  který se snaží opustit svou složku. U každého případu je soubor, který ho testuje, a co s ním má
+  váš systém udělat, takže seznam lze spustit, a ne jen přečíst.
+</p>
+
+<div class="note">
+  <p class="note-title">Celý seznam jedním příkazem</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    zapíše soubor téměř pro každý případ níže, s manifestem, který říká, co se má s každým z nich
+    stát. Zadejte limit a typy, které deklaruje váš formulář.
+  </p>
+</div>
+
+<p>
+  <code>accept</code> znamená, že váš systém má soubor přijmout, a <code>reject</code>, že ho má
+  odmítnout se srozumitelnou zprávou. <code>unspecified</code> znamená, že správná může být kterákoli
+  odpověď, takže si zapište, kterou z nich váš systém volí, a ověřujte, že to tak dělá pokaždé. Slovo
+  za výsledkem je důvod, který uvádí manifest.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">Velikost</p>
+  <h2>Je limit velikosti vynucován tam, kde je deklarován?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Testovací případ</th><th>Soubor</th><th>Očekáváno</th></tr></thead>
+    <tbody>
+      <tr><td>O bajt pod limitem</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Přesně na limitu</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>O bajt nad limitem</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Dvojnásobek limitu, aby se ukázalo, že server přestane číst včas, místo aby vše načetl do paměti</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Prázdný soubor o 0 bajtech</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Dva případy, ve kterých limit nejčastěji selže, jsou limit kontrolovaný jen v prohlížeči a limit
+    počítaný v MB tam, kde kód počítá MiB. <a href="/cs/predvolby/size-boundaries/">Předvolba
+    size-boundaries</a> položí soubor do každé vzdálenosti od zvoleného limitu, o bajt, kilobajt
+    a megabajt na obě strany.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">Typ</p>
+  <h2>Přijímá formulář typy, které má, a zbytek odmítá?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Testovací případ</th><th>Soubor</th><th>Očekáváno</th></tr></thead>
+    <tbody>
+      <tr><td>Každý typ, který formulář přijímá, jako skutečný soubor toho typu</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Typ, který formulář nepřijímá</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Přípona říká jeden typ, ale obsah je jiného typu, například PDF s názvem .jpg</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>Dvě přípony, poslední z nich nepovolená</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Žádná přípona</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>Přípona velkými písmeny</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Soubor SVG nebo HTML považovaný za obrázek nebo prostý text je způsob, jak protlačit skript
+    formulářem. Proto jsou na seznamu typů k odmítnutí, pokud je váš formulář nemá přijímat.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">Obsah</p>
+  <h2>Otevře systém soubor, nebo se dívá jen na jeho název?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Testovací případ</th><th>Soubor</th><th>Očekáváno</th></tr></thead>
+    <tbody>
+      <tr><td>Soubor zkrácený tak, jak ho nechá přerušené nahrávání</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Soubor, jehož první bajty jsou nuly, takže nic neříká, co je zač</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Nejmenší soubor, který formát dovolí, platný a drobný</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Soubor, který má jen správný název a správnou velikost, projde každou kontrolou, která ho nikdy
+    neotevře. <a href="/cs/ukazkove-soubory/#corrupt">Poškozené ukázkové soubory</a> jsou ve formátech
+    PDF, Word, Excel, PowerPoint, JPG, PNG, MP4 a ZIP a
+    <a href="/cs/poskozene-testovaci-soubory/">poškozené testovací soubory</a> popisují, jak je
+    vytvořit v libovolném formátu a libovolné velikosti.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">Název</p>
+  <h2>Vrátí se soubor pod názvem, který dostal?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Testovací případ</th><th>Soubor</th><th>Očekáváno</th></tr></thead>
+    <tbody>
+      <tr><td>Mezery a závorky</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Písmena mimo ASCII a emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>Název delší než 200 znaků</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>Název, který vyleze ze své složky, <code>../</code> nebo <code>..\</code></td><td><code>climbing_name.jpg</code>, nahraný jako <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Absolutní cesta, z Linuxu nebo z Windows</td><td><code>absolute_name.jpg</code>, nahraný jako <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Název s cestou nelze uložit na disk, takže soubor má prostý název a manifest říká, pod jakým
+    názvem ho nahrát. Přijmout soubor a ponechat jen poslední část názvu je dobrá odpověď. Zapsat ho
+    mimo složku pro nahrávání je vada, kvůli které tento případ existuje.
+    <a href="/cs/predvolby/filename-handling/">Předvolba filename-handling</a> má mnohem víc názvů:
+    podobně vypadající písmena, neviditelné znaky, názvy vyhrazené systémem Windows a délky počítané
+    v bajtech.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">Množství a archivy</p>
+  <h2>Co se stane s mnoha soubory nebo se souborem, který jich obsahuje mnoho?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Testovací případ</th><th>Soubor</th><th>Očekáváno</th></tr></thead>
+    <tbody>
+      <tr><td>Padesát souborů v jednom nahrání</td><td><code>bulk_0001.jpg</code> až <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ZIP, který opravdu obsahuje 200 dokumentů</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Archiv, který váš systém rozbaluje, nejprve zkontrolovaný na zip slip a zip bomby</td><td><code>tfg tool archive-scan upload.zip</code></td><td>bezpečný, nebo co se našlo</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> nastavuje, kolik souborů hromadné nahrání obsahuje, až deset tisíc.
+    <a href="/cs/nastroje/">Nástroje</a> popisují, co kontrola archivu hledá.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">V testu</p>
+  <h2>Seznam spuštěný jako test</h2>
+  <p>
+    Manifest obsahuje očekávaný výsledek každého souboru a název, pod kterým ho nahrát, takže jedna
+    smyčka projde celý seznam:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    Soubory označené <code>unspecified</code> se tu vynechávají, protože odpověď na ně je vaše vlastní
+    pravidlo. Rozhodněte ho, zapište ho do receptu pomocí <code>expected</code> a smyčka je zkontroluje
+    také. <a href="/cs/testovaci-soubory-v-ci/">Testovací soubory v CI</a> to spouštějí v pipeline.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Testovací soubory pro QA v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Zdrojový kód na GitHubu</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Stažení</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Nahlásit problém</a></li>
+        <li><a href="https://donislawdev.com/support/">Podpořit projekt</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Stránky</p>
+      <ul class="plain">
+        <li><a href="/cs/">Úvod</a></li>
+        <li><a href="/cs/formaty/">Formáty</a></li>
+        <li><a href="/cs/predvolby/">Předvolby</a></li>
+        <li><a href="/cs/dokumentace/">Dokumentace</a></li>
+        <li><a href="/cs/pripady-pouziti/">Případy použití</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a></li>
+        <li><a href="/cs/faq/">FAQ</a></li>
+        <li><a href="/cs/poskozene-testovaci-soubory/">Poškozené soubory</a></li>
+        <li><a href="/cs/ukazkove-soubory/">Ukázkové soubory</a></li>
+        <li><a href="/cs/testovaci-soubory-v-ci/">Testovací soubory v CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Vydáno pod licencí GNU General Public License, verze 3. Soubory, které vygenerujete, jsou vaše - licence se vztahuje na nástroj, ne na jeho výstup.</p>
+    <p class="muted">Tento web odnikud nenačítá písma, skripty ani sledovače. Nenastavuje cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

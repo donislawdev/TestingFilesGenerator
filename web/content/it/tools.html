@@ -1,0 +1,106 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Controllare un archivio prima di decomprimerlo, e verificare i checksum</h1>
+<p class="lead">
+  Accanto al generatore, <code>tfg</code> ha piccoli strumenti per i file che hai già: se un archivio si
+  può decomprimere in sicurezza, e se un file o un'intera cartella è ancora ciò che dice il suo
+  checksum. Girano sulla tua macchina, senza upload e senza account.
+</p>
+
+<div class="note">
+  <p class="note-title">La risposta breve</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> legge l'archivio senza decomprimere nulla e termina
+    con il codice 0 se è sicuro, oppure 7 con l'elenco di ciò che ha trovato.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> dice se un file corrisponde al
+    checksum che ti ha dato una pagina di download.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">Cosa c'è</p>
+  <h2>Quali strumenti ci sono?</h2>
+  <p>
+    Questa è la lista che il programma stampa, letta da lui quando si costruisce questa pagina.
+    <code>tfg tool list</code> stampa la stessa, e <code>tfg tool show &lt;id&gt;</code> dice cosa accetta
+    ciascuno. Ogni strumento è anche nella finestra desktop, nella schermata Tools, con le stesse
+    impostazioni.
+  </p>
+  {{ template "toolsTable" . }}
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Archivi</p>
+  <h2>Questo archivio si può decomprimere in sicurezza? Zip slip e zip bomb</h2>
+  <p>
+    <code>archive-scan</code> guarda dentro un file ZIP, TAR, TAR.GZ o gzip senza scrivere nulla su disco
+    e dice se decomprimerlo è sicuro. Segnala:
+  </p>
+  <ul>
+    <li>una voce che verrebbe scritta fuori dalla cartella, la trappola nota come zip slip</li>
+    <li>un link, un dispositivo, o due nomi che finirebbero sullo stesso file</li>
+    <li>un nome che un sistema non può scrivere</li>
+    <li>una voce costruita per esplodere quando viene decompressa, la trappola nota come zip bomb</li>
+    <li>una voce danneggiata</li>
+  </ul>
+  <p>
+    Gli archivi dentro l'archivio, come uno ZIP in uno ZIP o un DOCX in un TAR, vengono letti allo stesso
+    modo, in memoria, fino a 16 livelli di profondità. Una trappola in uno di essi è una trappola
+    nell'insieme, perché un programma che decomprime tutto decomprime anche quelli.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> segnala anche un archivio che, una volta decompresso, occupa più di
+    quanto consenti. Un archivio sicuro termina con il codice 0 e qualsiasi problema trovato con 7, così
+    una pipeline può fermarsi lì.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Un file</p>
+  <h2>Questo file è davvero quello che dichiara di essere?</h2>
+  <p>
+    <code>checksum</code> calcola il checksum di un file e, se gliene dai uno da confrontare, dice se
+    corrispondono. Supporta md5, sha1, sha256, sha512 e crc32, sha256 se non chiedi altro, e riconosce
+    dalla lunghezza quale tipo di checksum gli hai dato.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    Un checksum che non corrisponde termina con il codice 7. Risponde alla stessa domanda di
+    <code>Get-FileHash</code> su Windows o di <code>sha256sum</code> su Linux, con il confronto già
+    fatto per te.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Un'intera cartella</p>
+  <h2>È cambiato qualcosa in questa cartella?</h2>
+  <p>
+    <code>checksum-write</code> scrive il checksum di ogni file di una cartella in un SHA256SUMS accanto
+    ai file, con gli stessi byte che scrive <code>sha256sum</code>, e mai sopra uno già presente.
+    <code>checksum-check</code> controlla poi ogni file elencato in SHA256SUMS.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    I file che non elenca non vengono esaminati, come con <code>sha256sum -c</code>, e un percorso che
+    esce dalla cartella viene rifiutato invece di essere letto. I
+    <a href="/it/file-di-esempio/">file di esempio</a> hanno un SHA256SUMS che puoi verificare in questo
+    modo.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Avanti</p>
+  <h2>Dove andare da qui</h2>
+  <ul>
+    <li>
+      <a href="/it/casi-di-test-upload-file/">Casi di test per l'upload di file</a> mette il controllo
+      degli archivi tra gli altri casi di un upload.
+    </li>
+    <li>
+      <a href="/it/documentazione/">La documentazione</a> riporta ogni comando e ogni codice di uscita.
+    </li>
+  </ul>
+</section>

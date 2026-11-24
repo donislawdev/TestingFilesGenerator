@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="vi">
+<title>Kiểm tra ZIP trước khi giải nén và xác minh checksum SHA-256</title>
+<meta name="description" content="Công cụ ngoại tuyến cho tệp bạn đã có: xem một tệp nén có an toàn để giải nén không, gồm cả zip slip và zip bomb, và kiểm tra hoặc ghi checksum SHA-256.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/vi/cong-cu/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/tools/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/nastroje/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/werkzeuge/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/herramientas/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/outils/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/tools/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/alat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/strumenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/tools/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/tools/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/hulpmiddelen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/narzedzia/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/ferramentas/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/instrumente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/tools/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/tools/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/araclar/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/tools/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/cong-cu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/tools/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/tools/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:title" content="Kiểm tra ZIP trước khi giải nén và xác minh checksum SHA-256">
+<meta property="og:description" content="Công cụ ngoại tuyến cho tệp bạn đã có: xem một tệp nén có an toàn để giải nén không, gồm cả zip slip và zip bomb, và kiểm tra hoặc ghi checksum SHA-256.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/vi/cong-cu/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - tệp kiểm thử thật đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Kiểm tra ZIP trước khi giải nén và xác minh checksum SHA-256">
+<meta name="twitter:description" content="Công cụ ngoại tuyến cho tệp bạn đã có: xem một tệp nén có an toàn để giải nén không, gồm cả zip slip và zip bomb, và kiểm tra hoặc ghi checksum SHA-256.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - tệp kiểm thử thật đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Trang chủ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/vi/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Tài liệu",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/vi\/tai-lieu\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Công cụ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/vi\/cong-cu\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Chuyển đến nội dung</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/vi/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Chính">
+      <a href="/vi/">Trang chủ</a>
+      <a href="/vi/dinh-dang/">Định dạng</a>
+      <a href="/vi/preset/">Preset</a>
+      <a href="/vi/tai-lieu/" aria-current="true">Tài liệu</a>
+      <a href="/vi/truong-hop-su-dung/">Trường hợp sử dụng</a>
+      <a href="/vi/tao-tep-kich-thuoc-chinh-xac/">Kích thước chính xác</a>
+      <a href="/vi/faq/">FAQ</a>
+      <a href="/vi/tep-kiem-thu-bi-hong/">Tệp bị hỏng</a>
+      <a href="/vi/tep-mau/">Tệp mẫu</a>
+      <a href="/vi/tep-kiem-thu-trong-ci/">Tệp kiểm thử trong CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Ngôn ngữ: Tiếng Việt">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Tiếng Việt</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/tools/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/tools/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/nastroje/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/werkzeuge/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/herramientas/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/outils/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/tools/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/alat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/strumenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/tools/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/tools/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/hulpmiddelen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/narzedzia/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/ferramentas/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/instrumente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/tools/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/tools/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/araclar/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/tools/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/zh-hans/tools/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/tools/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/vi/tai-lieu/">Tài liệu</a></p>
+<h1>Kiểm tra tệp nén trước khi giải nén và xác minh checksum</h1>
+<p class="lead">
+  Bên cạnh trình tạo, <code>tfg</code> có các công cụ nhỏ cho tệp bạn đã có: một tệp nén có an toàn để
+  giải nén không, và một tệp hay cả một thư mục có còn đúng như checksum của nó nói không. Chúng chạy
+  trên máy của bạn, không tải gì lên và không cần tài khoản.
+</p>
+
+<div class="note">
+  <p class="note-title">Câu trả lời ngắn</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> đọc tệp nén mà không giải nén thứ gì, rồi kết thúc
+    với mã 0 khi nó an toàn, hoặc mã 7 kèm danh sách những gì nó tìm thấy.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> cho biết một tệp có khớp với checksum
+    mà trang tải xuống đưa cho bạn không.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">Có những gì</p>
+  <h2>Có những công cụ nào?</h2>
+  <p>
+    Đây là danh sách chương trình in ra, được đọc từ chính nó khi trang này được dựng.
+    <code>tfg tool list</code> in ra cùng danh sách đó, và <code>tfg tool show &lt;id&gt;</code> cho biết
+    một công cụ nhận những gì. Mọi công cụ cũng có trên màn hình Tools của cửa sổ desktop, với cùng các
+    thiết lập.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>Công cụ</th>
+      <th>Trả lời câu hỏi</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>archive-scan</code></td>
+      <td>Tệp nén này có an toàn để giải nén không?</td>
+    </tr>
+    <tr>
+      <td><code>checksum</code></td>
+      <td>Tệp này có đúng là tệp mà nó tự nhận không?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-check</code></td>
+      <td>Mọi tệp có còn đúng như tệp checksum của chúng ghi không?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-write</code></td>
+      <td>Sau này làm sao tôi biết không có gì trong thư mục này thay đổi?</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Tệp nén</p>
+  <h2>Tệp nén này có an toàn để giải nén không? Zip slip và zip bomb</h2>
+  <p>
+    <code>archive-scan</code> xem bên trong một tệp ZIP, TAR, TAR.GZ hoặc gzip mà không ghi gì xuống đĩa
+    và cho biết giải nén nó có an toàn không. Nó báo cáo:
+  </p>
+  <ul>
+    <li>một mục sẽ được ghi ra ngoài thư mục, cái bẫy có tên zip slip</li>
+    <li>một liên kết, một thiết bị, hoặc hai tên sẽ rơi vào cùng một tệp</li>
+    <li>một tên mà một hệ thống không ghi được</li>
+    <li>một mục được dựng để phình nổ khi giải nén, cái bẫy có tên zip bomb</li>
+    <li>một mục bị hỏng</li>
+  </ul>
+  <p>
+    Tệp nén nằm trong tệp nén, chẳng hạn ZIP trong ZIP hay DOCX trong TAR, được đọc theo cùng cách, trong
+    bộ nhớ, sâu tới 16 tầng. Một cái bẫy ở một trong số đó là cái bẫy của cả tệp, vì một chương trình
+    giải nén mọi thứ cũng sẽ giải nén chúng.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> cũng báo cáo một tệp nén mà khi giải nén ra lớn hơn mức bạn cho phép.
+    An toàn thì kết thúc với mã 0, còn tìm thấy bất cứ điều gì thì kết thúc với mã 7, nên pipeline có
+    thể dừng lại ở đó.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Một tệp</p>
+  <h2>Tệp này có đúng là tệp mà nó tự nhận không?</h2>
+  <p>
+    <code>checksum</code> tính checksum của một tệp và, khi được đưa một giá trị để so, cho biết chúng có
+    khớp không. Nó nhận md5, sha1, sha256, sha512 và crc32, mặc định là sha256, và nhận ra bạn đưa loại
+    nào dựa vào độ dài của giá trị đó.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    Một checksum không khớp sẽ kết thúc với mã 7. Nó trả lời cùng câu hỏi với <code>Get-FileHash</code>
+    trên Windows hay <code>sha256sum</code> trên Linux, chỉ khác là phần so sánh được làm sẵn cho bạn.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Cả một thư mục</p>
+  <h2>Có gì trong thư mục này đã thay đổi không?</h2>
+  <p>
+    <code>checksum-write</code> ghi checksum của mọi tệp trong một thư mục vào SHA256SUMS đặt cạnh
+    chúng, đúng các byte mà <code>sha256sum</code> ghi, và không bao giờ ghi đè lên tệp đã có.
+    <code>checksum-check</code> sau đó kiểm tra mọi tệp mà SHA256SUMS liệt kê.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    Những tệp không có trong danh sách sẽ không được xem tới, giống <code>sha256sum -c</code>, và một
+    đường dẫn đi ra ngoài thư mục sẽ bị từ chối thay vì được đọc. <a href="/vi/tep-mau/">Tệp mẫu</a> có
+    kèm một SHA256SUMS mà bạn kiểm tra được theo cách này.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Tiếp theo</p>
+  <h2>Đi đâu từ đây</h2>
+  <ul>
+    <li>
+      <a href="/vi/truong-hop-kiem-thu-tai-len/">Trường hợp kiểm thử tải lên tệp</a> đặt bước kiểm tra
+      tệp nén giữa các trường hợp khác của một lần tải lên.
+    </li>
+    <li>
+      <a href="/vi/tai-lieu/">Tài liệu</a> có mọi lệnh và mọi mã thoát.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Tệp kiểm thử cho QA, đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Dự án</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Mã nguồn trên GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Tải xuống</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Báo lỗi</a></li>
+        <li><a href="https://donislawdev.com/support/">Ủng hộ dự án</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Trang</p>
+      <ul class="plain">
+        <li><a href="/vi/">Trang chủ</a></li>
+        <li><a href="/vi/dinh-dang/">Định dạng</a></li>
+        <li><a href="/vi/preset/">Preset</a></li>
+        <li><a href="/vi/tai-lieu/">Tài liệu</a></li>
+        <li><a href="/vi/truong-hop-su-dung/">Trường hợp sử dụng</a></li>
+        <li><a href="/vi/tao-tep-kich-thuoc-chinh-xac/">Kích thước chính xác</a></li>
+        <li><a href="/vi/faq/">FAQ</a></li>
+        <li><a href="/vi/tep-kiem-thu-bi-hong/">Tệp bị hỏng</a></li>
+        <li><a href="/vi/tep-mau/">Tệp mẫu</a></li>
+        <li><a href="/vi/tep-kiem-thu-trong-ci/">Tệp kiểm thử trong CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Phát hành theo Giấy phép Công cộng GNU, phiên bản 3. Tệp bạn tạo ra là của bạn - giấy phép áp dụng cho công cụ, không áp dụng cho kết quả của nó.</p>
+    <p class="muted">Trang này không tải phông chữ, tập lệnh hay công cụ theo dõi từ bất kỳ đâu. Nó không đặt cookie.</p>
+  </div>
+</footer>
+</body>
+</html>

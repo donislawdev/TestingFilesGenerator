@@ -7,6 +7,9 @@
   <h2>有哪些命令？</h2>
   <p>每个命令只做一件事：</p>
   {{ template "commandList" . }}
+  <p>
+    <code>tfg tool</code> 包含处理现有文件的工具，例如在解压前检查压缩包。<a href="/zh-hans/tools/">工具</a>介绍了其中每一个。
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -67,7 +70,7 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     <li>文件小于破坏所需的大小，因为它会原样输出</li>
     <li>
       在破坏旁边写 <code>expected: accept</code>，因为没有任何文件能满足它。如果被测系统应该修复该文件，请写
-      <code>sanitize</code>；如果你问的正是这个问题，请写 <code>unspecified</code>
+      <code>sanitize</code>，如果你问的正是这个问题，请写 <code>unspecified</code>
     </li>
   </ul>
   <p>

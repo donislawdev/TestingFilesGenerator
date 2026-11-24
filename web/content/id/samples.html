@@ -1,0 +1,115 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Contoh file untuk pengujian</h1>
+<p class="lead">
+  File sungguhan untuk diunduh, untuk menguji formulir unggah, parser, atau impor: satu file dari
+  setiap format yang ditulis generator ini, file yang sengaja dirusak, tabel seperti yang diekspor
+  program spreadsheet, dan gambar placeholder. Tanpa instalasi dan tanpa pendaftaran.
+</p>
+
+<div class="note">
+  <p class="note-title">Dari satu resep</p>
+  <p>
+    Semua file di halaman ini berasal dari satu resep,
+    <a href="/samples/samples.yaml">samples.yaml</a>. Jalankan dengan <code>tfg</code> dan Anda
+    mendapat byte yang sama di mesin mana pun, sehingga SHA-256 di samping setiap file bisa Anda
+    periksa sendiri, bukan sekadar dipercaya.
+  </p>
+  <pre><code>tfg generate samples.yaml --out samples</code></pre>
+  <p>
+    Semua checksum ada di <a href="/samples/SHA256SUMS">SHA256SUMS</a>. Taruh file itu di folder
+    tersebut, lalu <code>tfg tool checksum-check samples/SHA256SUMS</code> atau
+    <code>sha256sum -c SHA256SUMS</code> memberi tahu apakah setiap file cocok.
+  </p>
+</div>
+
+<p>
+  Kolom terakhir setiap tabel adalah apa yang diharapkan <a href="/samples/manifest.json">manifes</a>
+  dari sistem Anda terhadap file itu. <code>accept</code> berarti sistem harus menerima file,
+  <code>reject</code> berarti harus menolaknya, dan <code>unspecified</code> berarti tergantung pada
+  aturan sistem Anda.
+</p>
+
+<section class="section" id="formats">
+  <p class="eyebrow">Setiap format</p>
+  <h2>Satu file dari setiap format, masing-masing 1 MB</h2>
+  <p>
+    Dokumen, gambar, teks, data, arsip, e-mail, telemetri, audio, dan video, masing-masing tepat
+    1 048 576 byte dan masing-masing file asli dari formatnya. PDF terbuka di pembaca PDF, DOCX di
+    Word, XLSX di Excel, dan ZIP bisa diekstrak.
+  </p>
+  {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Ukuran lain cukup satu perintah. <code>tfg generate --format pdf --size 10mb</code> menulis PDF
+    berukuran tepat 10 MB, dan file 1 GB dibuat dengan cara yang sama. File sebesar itu tidak disimpan
+    di halaman ini, karena perintah membuatnya lebih cepat daripada mengunduhnya.
+  </p>
+</section>
+
+<section class="section" id="corrupt">
+  <p class="eyebrow">Sengaja dirusak</p>
+  <h2>File rusak: PDF, Word, Excel, gambar, video, dan ZIP</h2>
+  <p>
+    Setiap file dibuat sehat lalu dirusak, dan tetap berukuran tepat 1 MB. <code>truncate</code>
+    memotong ujung file seperti yang dilakukan unggahan yang terputus, dan <code>zero-head</code>
+    menimpa byte pertama dengan nol, yaitu bagian yang dilihat pembaca untuk mengetahui jenis file
+    itu. Manifes mengharapkan sistem Anda menolak semuanya.
+  </p>
+  {{ with .SampleTable "corrupt" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    <a href="/id/file-uji-rusak/">File uji yang rusak</a> menjelaskan cara membuat sendiri, dalam
+    format apa pun dan ukuran berapa pun, serta kerusakan apa saja yang ada.
+  </p>
+</section>
+
+<section class="section" id="tables">
+  <p class="eyebrow">Untuk impor</p>
+  <h2>Tabel CSV, JSON, dan Excel</h2>
+  <p>
+    Tabel yang sama ditulis dengan cara alat sungguhan menulisnya: dengan koma, titik koma, tab, atau
+    garis tegak di antara nilai, dengan akhir baris Windows, tanpa baris header, dengan setiap nilai
+    dalam tanda kutip atau tanpa kutip sama sekali, CSV yang lebar, sheet Excel, dan JSON dalam tiga
+    tata letak. Sebagian ditandai <code>unspecified</code>, karena apakah impor Anda menerima titik
+    koma adalah pilihannya sendiri. Yang tidak boleh terjadi adalah impor hanya membaca separuh tabel.
+  </p>
+  {{ with .SampleTable "tables" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Ini adalah file dari <a href="/id/preset/tabular-import/">preset tabular-import</a>, yang
+    membuatnya dengan jumlah baris dan kolom sebanyak yang Anda minta.
+  </p>
+</section>
+
+<section class="section" id="placeholders">
+  <p class="eyebrow">Untuk tata letak</p>
+  <h2>Gambar placeholder dalam ukuran umum</h2>
+  <p>
+    Gambar abu-abu polos dengan ukurannya tertulis di tengah, untuk menata halaman sebelum gambar
+    aslinya ada: thumbnail persegi, iklan 300 x 250, banner 728 x 90, kartu media sosial 1200 x 630,
+    dan layar Full HD. Masing-masing sekecil yang dimungkinkan untuk gambar itu.
+  </p>
+  {{ with .SampleTable "placeholders" }}{{ template "samplesTable" . }}{{ end }}
+  <p>Ukuran atau warna lain apa pun:</p>
+  <pre><code>tfg generate --format png --size smallest --set content=placeholder --set width=640 --set height=360 --set background=1e293b</code></pre>
+  <p>
+    <a href="/id/preset/picture-sizes/">Preset picture-sizes</a> membuat setiap ukuran yang dipakai
+    layar dan platform dalam satu proses, dengan <code>--content placeholder</code>.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Berikutnya</p>
+  <h2>Ke mana dari sini</h2>
+  <ul>
+    <li>
+      <a href="/id/kasus-uji-unggah-file/">Kasus uji unggah file</a> menjelaskan file mana yang menguji
+      apa pada formulir unggah.
+    </li>
+    <li>
+      <a href="/id/preset/">Preset</a> adalah set siap pakai, masing-masing untuk satu pertanyaan
+      pengujian.
+    </li>
+    <li>
+      <a href="/id/file-uji-di-ci/">File uji di CI</a> membuat file seperti ini di pipeline alih-alih
+      menyimpannya di repositori.
+    </li>
+  </ul>
+</section>

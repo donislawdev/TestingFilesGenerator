@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="vi">
+<title>Trường hợp kiểm thử tải lên tệp - kèm tệp để chạy</title>
+<meta name="description" content="Các trường hợp kiểm thử tải tệp lên: giới hạn kích thước, tệp rỗng và tệp hỏng, sai loại tệp, tên tệp bất ngờ và tệp nén, mỗi trường hợp kèm tệp kiểm thử nó.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-kiem-thu-tai-len/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/file-upload-test-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-pripady-nahravani-souboru/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testfaelle-datei-upload/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-prueba-de-subida-de-archivos/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-de-test-envoi-de-fichiers/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/file-upload-test-cases/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-uji-unggah-file/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-di-test-upload-file/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/file-upload-test-cases/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/file-upload-test-cases/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testgevallen-bestandsupload/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/przypadki-testowe-uploadu/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-teste-de-upload-de-arquivos/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-test-incarcare-fisiere/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/file-upload-test-cases/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/file-upload-test-cases/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dosya-yukleme-test-senaryolari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/file-upload-test-cases/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-kiem-thu-tai-len/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/file-upload-test-cases/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/file-upload-test-cases/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:title" content="Trường hợp kiểm thử tải lên tệp - kèm tệp để chạy">
+<meta property="og:description" content="Các trường hợp kiểm thử tải tệp lên: giới hạn kích thước, tệp rỗng và tệp hỏng, sai loại tệp, tên tệp bất ngờ và tệp nén, mỗi trường hợp kèm tệp kiểm thử nó.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-kiem-thu-tai-len/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - tệp kiểm thử thật đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Trường hợp kiểm thử tải lên tệp - kèm tệp để chạy">
+<meta name="twitter:description" content="Các trường hợp kiểm thử tải tệp lên: giới hạn kích thước, tệp rỗng và tệp hỏng, sai loại tệp, tên tệp bất ngờ và tệp nén, mỗi trường hợp kèm tệp kiểm thử nó.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - tệp kiểm thử thật đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Trang chủ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/vi/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Trường hợp sử dụng",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/vi\/truong-hop-su-dung\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Kiểm thử tải lên",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/vi\/truong-hop-kiem-thu-tai-len\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Chuyển đến nội dung</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/vi/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Chính">
+      <a href="/vi/">Trang chủ</a>
+      <a href="/vi/dinh-dang/">Định dạng</a>
+      <a href="/vi/preset/">Preset</a>
+      <a href="/vi/tai-lieu/">Tài liệu</a>
+      <a href="/vi/truong-hop-su-dung/" aria-current="true">Trường hợp sử dụng</a>
+      <a href="/vi/tao-tep-kich-thuoc-chinh-xac/">Kích thước chính xác</a>
+      <a href="/vi/faq/">FAQ</a>
+      <a href="/vi/tep-kiem-thu-bi-hong/">Tệp bị hỏng</a>
+      <a href="/vi/tep-mau/">Tệp mẫu</a>
+      <a href="/vi/tep-kiem-thu-trong-ci/">Tệp kiểm thử trong CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Ngôn ngữ: Tiếng Việt">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Tiếng Việt</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/file-upload-test-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/file-upload-test-cases/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-pripady-nahravani-souboru/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testfaelle-datei-upload/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-prueba-de-subida-de-archivos/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-de-test-envoi-de-fichiers/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/file-upload-test-cases/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/kasus-uji-unggah-file/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-di-test-upload-file/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/file-upload-test-cases/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/file-upload-test-cases/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testgevallen-bestandsupload/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/przypadki-testowe-uploadu/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-teste-de-upload-de-arquivos/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-test-incarcare-fisiere/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/file-upload-test-cases/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/file-upload-test-cases/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/dosya-yukleme-test-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/file-upload-test-cases/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/zh-hans/file-upload-test-cases/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/file-upload-test-cases/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/vi/truong-hop-su-dung/">Trường hợp sử dụng</a></p>
+<h1>Trường hợp kiểm thử tải lên tệp, kèm tệp để chạy chúng</h1>
+<p class="lead">
+  Danh sách kiểm tra các trường hợp kiểm thử cho chức năng tải tệp lên, từ giới hạn kích thước đến một
+  tên tệp tìm cách ra khỏi thư mục của nó. Mỗi trường hợp nêu tệp dùng để kiểm thử nó và điều hệ thống
+  của bạn nên làm với tệp đó, nên danh sách này chạy được chứ không chỉ để đọc.
+</p>
+
+<div class="note">
+  <p class="note-title">Cả danh sách trong một lệnh</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    ghi một tệp cho gần như mọi trường hợp bên dưới, kèm một manifest nói điều nên xảy ra với từng tệp.
+    Điền giới hạn và các loại tệp mà biểu mẫu của bạn khai báo.
+  </p>
+</div>
+
+<p>
+  <code>accept</code> nghĩa là hệ thống của bạn nên nhận tệp, còn <code>reject</code> là nên từ chối tệp
+  với một thông báo rõ ràng. <code>unspecified</code> nghĩa là câu trả lời nào cũng có thể đúng, nên hãy
+  ghi lại hệ thống của bạn chọn câu nào và kiểm tra rằng nó làm đúng như vậy mọi lần. Từ đứng sau kết
+  quả là lý do mà manifest đưa ra.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">Kích thước</p>
+  <h2>Giới hạn kích thước có được áp dụng ở đúng nơi khai báo không?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Trường hợp kiểm thử</th><th>Tệp</th><th>Kỳ vọng</th></tr></thead>
+    <tbody>
+      <tr><td>Dưới giới hạn một byte</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Đúng bằng giới hạn</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Vượt giới hạn một byte</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Gấp đôi giới hạn, để xem máy chủ có ngừng đọc sớm thay vì nạp tất cả vào bộ nhớ không</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Một tệp rỗng 0 byte</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Hai trường hợp giới hạn hay sai nhất là giới hạn chỉ được kiểm tra trong trình duyệt, và giới hạn
+    tính bằng MB trong khi mã tính bằng MiB. <a href="/vi/preset/size-boundaries/">Preset
+    size-boundaries</a> đặt một tệp ở mọi khoảng cách so với giới hạn bạn chọn, một byte, một kilobyte
+    và một megabyte về mỗi phía.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">Loại tệp</p>
+  <h2>Biểu mẫu có nhận đúng loại cần nhận và từ chối phần còn lại không?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Trường hợp kiểm thử</th><th>Tệp</th><th>Kỳ vọng</th></tr></thead>
+    <tbody>
+      <tr><td>Mỗi loại mà biểu mẫu nhận, dưới dạng một tệp thật của loại đó</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Một loại mà biểu mẫu không nhận</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Phần mở rộng nói một loại nhưng nội dung là loại khác, chẳng hạn PDF đặt tên .jpg</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>Hai phần mở rộng, phần cuối không được phép</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Hoàn toàn không có phần mở rộng</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>Phần mở rộng viết hoa</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Một tệp SVG hay HTML bị tưởng là ảnh hay văn bản thuần là một cách để lách tập lệnh qua biểu mẫu,
+    nên chúng nằm trong danh sách loại cần từ chối, trừ khi biểu mẫu của bạn chủ ý nhận chúng.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">Nội dung</p>
+  <h2>Hệ thống có mở tệp ra không, hay chỉ nhìn tên của nó?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Trường hợp kiểm thử</th><th>Tệp</th><th>Kỳ vọng</th></tr></thead>
+    <tbody>
+      <tr><td>Một tệp bị cắt cụt, như một lần tải lên bị ngắt để lại</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Một tệp có các byte đầu là số không, nên không gì cho biết nó là gì</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Tệp nhỏ nhất mà một định dạng cho phép, hợp lệ và rất nhỏ</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Một tệp chỉ có tên đúng và kích thước đúng sẽ qua mọi bước kiểm tra không bao giờ mở nó ra.
+    <a href="/vi/tep-mau/#corrupt">Tệp mẫu bị hỏng</a> có ở dạng PDF, Word, Excel, PowerPoint, JPG, PNG,
+    MP4 và ZIP, và <a href="/vi/tep-kiem-thu-bi-hong/">tệp kiểm thử bị hỏng</a> cho biết cách tạo chúng
+    ở bất kỳ định dạng và kích thước nào.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">Tên</p>
+  <h2>Tệp có quay lại với đúng tên nó được đặt không?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Trường hợp kiểm thử</th><th>Tệp</th><th>Kỳ vọng</th></tr></thead>
+    <tbody>
+      <tr><td>Dấu cách và dấu ngoặc</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Chữ cái ngoài ASCII và một emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>Tên dài hơn 200 ký tự</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>Tên trèo ra khỏi thư mục của nó, <code>../</code> hoặc <code>..\</code></td><td><code>climbing_name.jpg</code>, tải lên dưới tên <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Một đường dẫn tuyệt đối, trên Linux hoặc Windows</td><td><code>absolute_name.jpg</code>, tải lên dưới tên <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Một tên có đường dẫn không thể lưu xuống đĩa, nên tệp giữ một tên thường và manifest cho biết phải
+    tải nó lên dưới tên nào. Nhận tệp và chỉ giữ phần cuối của tên là một câu trả lời tốt. Ghi nó ra
+    ngoài thư mục tải lên là khiếm khuyết mà trường hợp này sinh ra để tìm.
+    <a href="/vi/preset/filename-handling/">Preset filename-handling</a> có nhiều tên hơn nữa: chữ cái
+    trông giống nhau, ký tự vô hình, tên mà Windows dành riêng và độ dài tính bằng byte.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">Số lượng và tệp nén</p>
+  <h2>Chuyện gì xảy ra với nhiều tệp, hay với một tệp chứa nhiều tệp?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Trường hợp kiểm thử</th><th>Tệp</th><th>Kỳ vọng</th></tr></thead>
+    <tbody>
+      <tr><td>Năm mươi tệp trong một lần tải lên</td><td>từ <code>bulk_0001.jpg</code> đến <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Một tệp ZIP thực sự chứa 200 tài liệu</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Một tệp nén mà hệ thống của bạn giải nén, được kiểm tra zip slip và zip bomb trước</td><td><code>tfg tool archive-scan upload.zip</code></td><td>an toàn, hoặc những gì nó tìm thấy</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> đặt số tệp trong lần tải lên hàng loạt, tối đa mười nghìn.
+    <a href="/vi/cong-cu/">Công cụ</a> cho biết bước kiểm tra tệp nén tìm những gì.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">Trong một bài kiểm thử</p>
+  <h2>Chạy danh sách như một bài kiểm thử</h2>
+  <p>
+    Manifest chứa kết quả kỳ vọng của mọi tệp và tên để tải tệp lên, nên một vòng lặp chạy được cả danh
+    sách:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    Các tệp đánh dấu <code>unspecified</code> được bỏ qua ở đây, vì câu trả lời cho chúng là chính sách
+    của riêng bạn. Hãy quyết định, ghi nó vào công thức bằng <code>expected</code>, và vòng lặp sẽ kiểm
+    tra cả chúng. <a href="/vi/tep-kiem-thu-trong-ci/">Tệp kiểm thử trong CI</a> chạy việc này trong
+    pipeline.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Tệp kiểm thử cho QA, đúng kích thước, kèm manifest nêu cách hệ thống của bạn cần phản ứng với từng tệp.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Dự án</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Mã nguồn trên GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Tải xuống</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Báo lỗi</a></li>
+        <li><a href="https://donislawdev.com/support/">Ủng hộ dự án</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Trang</p>
+      <ul class="plain">
+        <li><a href="/vi/">Trang chủ</a></li>
+        <li><a href="/vi/dinh-dang/">Định dạng</a></li>
+        <li><a href="/vi/preset/">Preset</a></li>
+        <li><a href="/vi/tai-lieu/">Tài liệu</a></li>
+        <li><a href="/vi/truong-hop-su-dung/">Trường hợp sử dụng</a></li>
+        <li><a href="/vi/tao-tep-kich-thuoc-chinh-xac/">Kích thước chính xác</a></li>
+        <li><a href="/vi/faq/">FAQ</a></li>
+        <li><a href="/vi/tep-kiem-thu-bi-hong/">Tệp bị hỏng</a></li>
+        <li><a href="/vi/tep-mau/">Tệp mẫu</a></li>
+        <li><a href="/vi/tep-kiem-thu-trong-ci/">Tệp kiểm thử trong CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Phát hành theo Giấy phép Công cộng GNU, phiên bản 3. Tệp bạn tạo ra là của bạn - giấy phép áp dụng cho công cụ, không áp dụng cho kết quả của nó.</p>
+    <p class="muted">Trang này không tải phông chữ, tập lệnh hay công cụ theo dõi từ bất kỳ đâu. Nó không đặt cookie.</p>
+  </div>
+</footer>
+</body>
+</html>

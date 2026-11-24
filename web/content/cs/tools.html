@@ -1,0 +1,102 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Kontrola archivu před rozbalením a ověření kontrolních součtů</h1>
+<p class="lead">
+  Vedle generátoru má <code>tfg</code> drobné nástroje pro soubory, které už máte: zda je bezpečné
+  archiv rozbalit a zda soubor nebo celá složka stále odpovídá svému kontrolnímu součtu. Běží na vašem
+  počítači, bez nahrávání a bez účtu.
+</p>
+
+<div class="note">
+  <p class="note-title">Stručná odpověď</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> přečte archiv, aniž by cokoli rozbalil, a skončí
+    kódem 0, když je bezpečný, nebo kódem 7 se seznamem toho, co našel.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> řekne, zda soubor odpovídá součtu,
+    který vám dala stránka ke stažení.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">Co je k dispozici</p>
+  <h2>Jaké nástroje existují?</h2>
+  <p>
+    Toto je seznam, který program vypisuje, načtený z něj při sestavení této stránky.
+    <code>tfg tool list</code> vypíše totéž a <code>tfg tool show &lt;id&gt;</code> řekne, co který
+    z nich přijímá. Každý nástroj je také na obrazovce Tools v okně programu, se stejnými nastaveními.
+  </p>
+  {{ template "toolsTable" . }}
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Archivy</p>
+  <h2>Je bezpečné tento archiv rozbalit? Zip slip a zip bomby</h2>
+  <p>
+    <code>archive-scan</code> nahlédne do souboru ZIP, TAR, TAR.GZ nebo gzip, aniž by cokoli zapsal
+    na disk, a řekne, zda je jeho rozbalení bezpečné. Hlásí:
+  </p>
+  <ul>
+    <li>položku, která by se zapsala mimo složku, past známou jako zip slip</li>
+    <li>odkaz, zařízení nebo dva názvy, které by skončily v jednom souboru</li>
+    <li>název, který systém nedokáže zapsat</li>
+    <li>položku sestavenou tak, aby při rozbalení explodovala, past známou jako zip bomba</li>
+    <li>poškozenou položku</li>
+  </ul>
+  <p>
+    Archivy uvnitř archivu, například ZIP v ZIPu nebo DOCX v TARu, se čtou stejně, v paměti, až do
+    hloubky 16 úrovní. Past v jednom z nich je pastí celku, protože program, který rozbaluje všechno,
+    rozbalí i je.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> nahlásí také archiv, který se rozbalí na víc, než dovolíte. Bezpečný
+    archiv skončí kódem 0 a jakýkoli nález kódem 7, takže se na něm pipeline může zastavit.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Jeden soubor</p>
+  <h2>Je tento soubor tím, za který se vydává?</h2>
+  <p>
+    <code>checksum</code> spočítá kontrolní součet souboru, a když dostane součet k porovnání, řekne,
+    zda se shodují. Umí md5, sha1, sha256, sha512 a crc32, výchozí je sha256, a podle délky pozná,
+    který z nich jste dostali.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    Součet, který nesouhlasí, skončí kódem 7. Odpovídá na stejnou otázku jako <code>Get-FileHash</code>
+    ve Windows nebo <code>sha256sum</code> v Linuxu, jen porovnání udělá za vás.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Celá složka</p>
+  <h2>Změnilo se v této složce něco?</h2>
+  <p>
+    <code>checksum-write</code> zapíše kontrolní součet každého souboru ve složce do souboru SHA256SUMS
+    vedle nich, stejnými bajty, jaké zapisuje <code>sha256sum</code>, a nikdy nepřepíše soubor, který
+    už tam je. <code>checksum-check</code> později zkontroluje každý soubor, který SHA256SUMS uvádí.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    Soubory, které neuvádí, se nekontrolují, stejně jako u <code>sha256sum -c</code>, a cesta, která
+    vede mimo složku, se odmítne, místo aby se četla. <a href="/cs/ukazkove-soubory/">Ukázkové
+    soubory</a> mají SHA256SUMS, který takto můžete zkontrolovat.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Dál</p>
+  <h2>Kam jít odtud</h2>
+  <ul>
+    <li>
+      <a href="/cs/testovaci-pripady-nahravani-souboru/">Testovací případy pro nahrávání souborů</a>
+      zařazují kontrolu archivu mezi ostatní případy nahrávání.
+    </li>
+    <li>
+      <a href="/cs/dokumentace/">Dokumentace</a> obsahuje každý příkaz a návratový kód.
+    </li>
+  </ul>
+</section>

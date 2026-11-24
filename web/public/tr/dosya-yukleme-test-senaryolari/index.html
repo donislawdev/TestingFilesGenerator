@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="tr">
+<title>Dosya yükleme test senaryoları - çalıştırılacak dosyalarla</title>
+<meta name="description" content="Dosya yükleme test senaryoları: boyut sınırı, boş ve bozuk dosyalar, yanlış tür, beklenmedik dosya adları ve arşivler, her biri onu sınayan dosyayla birlikte.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/tr/dosya-yukleme-test-senaryolari/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/file-upload-test-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-pripady-nahravani-souboru/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testfaelle-datei-upload/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-prueba-de-subida-de-archivos/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-de-test-envoi-de-fichiers/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/file-upload-test-cases/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-uji-unggah-file/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-di-test-upload-file/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/file-upload-test-cases/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/file-upload-test-cases/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testgevallen-bestandsupload/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/przypadki-testowe-uploadu/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-teste-de-upload-de-arquivos/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-test-incarcare-fisiere/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/file-upload-test-cases/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/file-upload-test-cases/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dosya-yukleme-test-senaryolari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/file-upload-test-cases/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-kiem-thu-tai-len/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/file-upload-test-cases/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/file-upload-test-cases/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:title" content="Dosya yükleme test senaryoları - çalıştırılacak dosyalarla">
+<meta property="og:description" content="Dosya yükleme test senaryoları: boyut sınırı, boş ve bozuk dosyalar, yanlış tür, beklenmedik dosya adları ve arşivler, her biri onu sınayan dosyayla birlikte.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/tr/dosya-yukleme-test-senaryolari/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - tam boyutta gerçek test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Dosya yükleme test senaryoları - çalıştırılacak dosyalarla">
+<meta name="twitter:description" content="Dosya yükleme test senaryoları: boyut sınırı, boş ve bozuk dosyalar, yanlış tür, beklenmedik dosya adları ve arşivler, her biri onu sınayan dosyayla birlikte.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - tam boyutta gerçek test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Ana sayfa",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/tr/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Kullanım senaryoları",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/tr\/kullanim-senaryolari\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Yükleme test senaryoları",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/tr\/dosya-yukleme-test-senaryolari\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">İçeriğe geç</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/tr/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Ana">
+      <a href="/tr/">Ana sayfa</a>
+      <a href="/tr/bicimler/">Biçimler</a>
+      <a href="/tr/hazir-ayarlar/">Hazır ayarlar</a>
+      <a href="/tr/dokumantasyon/">Dokümantasyon</a>
+      <a href="/tr/kullanim-senaryolari/" aria-current="true">Kullanım senaryoları</a>
+      <a href="/tr/tam-boyutta-dosya-olusturma/">Tam boyut</a>
+      <a href="/tr/sss/">SSS</a>
+      <a href="/tr/bozuk-test-dosyalari/">Bozuk dosyalar</a>
+      <a href="/tr/ornek-dosyalar/">Örnek dosyalar</a>
+      <a href="/tr/ci-icinde-test-dosyalari/">CI&#39;da test dosyaları</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Dil: Türkçe">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Türkçe</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/file-upload-test-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/file-upload-test-cases/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-pripady-nahravani-souboru/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testfaelle-datei-upload/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-prueba-de-subida-de-archivos/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-de-test-envoi-de-fichiers/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/file-upload-test-cases/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/kasus-uji-unggah-file/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-di-test-upload-file/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/file-upload-test-cases/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/file-upload-test-cases/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testgevallen-bestandsupload/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/przypadki-testowe-uploadu/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-teste-de-upload-de-arquivos/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-test-incarcare-fisiere/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/file-upload-test-cases/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/file-upload-test-cases/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/uk/file-upload-test-cases/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/truong-hop-kiem-thu-tai-len/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/file-upload-test-cases/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/file-upload-test-cases/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/tr/kullanim-senaryolari/">Kullanım senaryoları</a></p>
+<h1>Dosya yükleme test senaryoları ve onları çalıştıracak dosyalar</h1>
+<p class="lead">
+  Dosya yükleme için, boyut sınırından klasöründen çıkmaya çalışan bir dosya adına kadar test
+  senaryolarından oluşan bir kontrol listesi. Her senaryo, onu sınayan dosyayı ve sisteminizin onunla ne
+  yapması gerektiğini söyler. Böylece liste yalnızca okunmaz, çalıştırılabilir de.
+</p>
+
+<div class="note">
+  <p class="note-title">Tüm liste tek komutla</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    aşağıdaki senaryoların neredeyse her biri için bir dosya ve her birine ne olması gerektiğini söyleyen
+    bir manifest yazar. Formunuzun bildirdiği sınırı ve türleri girin.
+  </p>
+</div>
+
+<p>
+  <code>accept</code>, sisteminizin dosyayı kabul etmesi, <code>reject</code> ise anlaşılır bir iletiyle
+  reddetmesi gerektiği anlamına gelir. <code>unspecified</code>, iki yanıtın da doğru olabileceği
+  anlamına gelir. Bu yüzden sisteminizin hangisini seçtiğini not edin ve bunu her seferinde yaptığını
+  denetleyin. Sonucun ardından gelen sözcük, manifestin verdiği nedendir.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">Boyut</p>
+  <h2>Boyut sınırı bildirildiği yerde uygulanıyor mu?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test senaryosu</th><th>Dosya</th><th>Beklenen</th></tr></thead>
+    <tbody>
+      <tr><td>Sınırın bir bayt altında</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Tam sınırda</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Sınırın bir bayt üstünde</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Sınırın iki katı, sunucunun hepsini belleğe almak yerine okumayı erken bıraktığını görmek için</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>0 baytlık boş bir dosya</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Bir sınırın en sık yanlış yapıldığı iki durum, yalnızca tarayıcıda denetlenen bir sınır ve kodun MiB
+    saydığı yerde MB ile sayılan bir sınırdır.
+    <a href="/tr/hazir-ayarlar/size-boundaries/">size-boundaries hazır ayarı</a>, seçtiğiniz sınırdan her
+    uzaklığa bir dosya koyar, iki yanda birer bayt, kilobayt ve megabayt.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">Tür</p>
+  <h2>Form alması gereken türleri alıp gerisini reddediyor mu?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test senaryosu</th><th>Dosya</th><th>Beklenen</th></tr></thead>
+    <tbody>
+      <tr><td>Formun kabul ettiği her tür, o türden gerçek bir dosya olarak</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Formun kabul etmediği bir tür</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Uzantısı bir türü söyleyen ama içeriği başka türden bir dosya, örneğin .jpg adlı bir PDF</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>İki uzantı, sonuncusuna izin verilmiyor</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Hiç uzantı yok</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>Büyük harfli uzantı</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Resim veya düz metin sanılan bir SVG ya da HTML dosyası, bir betiği formdan geçirmenin yoludur. Bu
+    yüzden, formunuz onları almak için tasarlanmadıysa, reddedilecek türler listesindedirler.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">İçerik</p>
+  <h2>Sistem dosyayı açıyor mu, yoksa yalnızca adına mı bakıyor?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test senaryosu</th><th>Dosya</th><th>Beklenen</th></tr></thead>
+    <tbody>
+      <tr><td>Yarıda kalan bir yüklemenin bıraktığı gibi kesilmiş bir dosya</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>İlk baytları sıfır olan, bu yüzden ne olduğunu hiçbir şeyin söylemediği bir dosya</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Bir biçimin izin verdiği en küçük dosya, geçerli ve minicik</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Yalnızca doğru ada ve doğru boyuta sahip bir dosya, onu hiç açmayan her denetimden geçer.
+    <a href="/tr/ornek-dosyalar/#corrupt">Bozuk örnek dosyalar</a> PDF, Word, Excel, PowerPoint, JPG, PNG,
+    MP4 ve ZIP olarak hazırdır. <a href="/tr/bozuk-test-dosyalari/">Bozuk test dosyaları</a> sayfası da
+    onları her biçimde ve her boyutta nasıl yapacağınızı anlatır.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">Ad</p>
+  <h2>Dosya kendisine verilen adla geri geliyor mu?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test senaryosu</th><th>Dosya</th><th>Beklenen</th></tr></thead>
+    <tbody>
+      <tr><td>Boşluklar ve parantezler</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ASCII dışı harfler ve bir emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>200 karakterden uzun bir ad</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>Klasöründen dışarı çıkan bir ad, <code>../</code> veya <code>..\</code></td><td><code>climbing_name.jpg</code>, yüklenirken adı <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Linux'ta veya Windows'ta mutlak bir yol</td><td><code>absolute_name.jpg</code>, yüklenirken adı <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Ad içindeki bir yol diske kaydedilemez, bu yüzden dosyanın düz bir adı vardır ve manifest hangi adla
+    yükleneceğini söyler. Dosyayı kabul edip adın yalnızca son parçasını tutmak iyi bir yanıttır. Onu
+    yükleme klasörünün dışına yazmak, bu senaryonun bulmak için var olduğu kusurdur.
+    <a href="/tr/hazir-ayarlar/filename-handling/">filename-handling hazır ayarında</a> çok daha fazla ad
+    vardır: birbirine benzeyen harfler, görünmez karakterler, Windows'un ayırdığı adlar ve bayt olarak
+    sayılan uzunluklar.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">Miktar ve arşivler</p>
+  <h2>Çok sayıda dosyayla ya da çok sayıda dosya içeren bir dosyayla ne olur?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test senaryosu</th><th>Dosya</th><th>Beklenen</th></tr></thead>
+    <tbody>
+      <tr><td>Tek yüklemede elli dosya</td><td><code>bulk_0001.jpg</code> ile <code>bulk_0050.jpg</code> arası</td><td><code>accept</code></td></tr>
+      <tr><td>Gerçekten 200 belge içeren bir ZIP</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Sisteminizin açtığı bir arşiv, önce zip slip ve zip bomb için taranmış</td><td><code>tfg tool archive-scan upload.zip</code></td><td>güvenli ya da bulduğu şeyler</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> toplu yüklemenin kaç dosya içereceğini belirler, en fazla on bin.
+    <a href="/tr/araclar/">Araçlar</a> sayfası arşiv denetiminin neye baktığını anlatır.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">Bir testte</p>
+  <h2>Listeyi bir test olarak çalıştırmak</h2>
+  <p>
+    Manifest her dosyanın beklenen sonucunu ve hangi adla yükleneceğini tutar, bu yüzden tek bir döngü
+    tüm listeyi çalıştırır:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    <code>unspecified</code> olarak işaretli dosyalar burada atlanır, çünkü yanıtları kendi
+    politikanızdır. Kararınızı verin, tarife <code>expected</code> ile yazın, döngü onları da denetler.
+    <a href="/tr/ci-icinde-test-dosyalari/">CI'da test dosyaları</a> bunu bir hatta çalıştırır.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">QA için tam boyutta test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proje</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub&#39;da kaynak kod</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">İndirmeler</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Sorun bildir</a></li>
+        <li><a href="https://donislawdev.com/support/">Projeyi destekle</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Sayfalar</p>
+      <ul class="plain">
+        <li><a href="/tr/">Ana sayfa</a></li>
+        <li><a href="/tr/bicimler/">Biçimler</a></li>
+        <li><a href="/tr/hazir-ayarlar/">Hazır ayarlar</a></li>
+        <li><a href="/tr/dokumantasyon/">Dokümantasyon</a></li>
+        <li><a href="/tr/kullanim-senaryolari/">Kullanım senaryoları</a></li>
+        <li><a href="/tr/tam-boyutta-dosya-olusturma/">Tam boyut</a></li>
+        <li><a href="/tr/sss/">SSS</a></li>
+        <li><a href="/tr/bozuk-test-dosyalari/">Bozuk dosyalar</a></li>
+        <li><a href="/tr/ornek-dosyalar/">Örnek dosyalar</a></li>
+        <li><a href="/tr/ci-icinde-test-dosyalari/">CI&#39;da test dosyaları</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Telif (C) 2026 DonislawDev. GNU Genel Kamu Lisansı sürüm 3 altında yayımlanmıştır. Ürettiğiniz dosyalar sizindir - lisans aracı kapsar, çıktısını değil.</p>
+    <p class="muted">Bu site hiçbir yerden yazı tipi, betik veya izleyici yüklemez. Çerez bırakmaz.</p>
+  </div>
+</footer>
+</body>
+</html>

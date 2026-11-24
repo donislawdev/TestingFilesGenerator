@@ -1,0 +1,160 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Kasus uji unggah file, lengkap dengan file untuk menjalankannya</h1>
+<p class="lead">
+  Daftar periksa kasus uji untuk unggah file, dari batas ukuran sampai nama file yang mencoba keluar
+  dari foldernya. Setiap kasus menyebut file yang mengujinya dan apa yang harus dilakukan sistem Anda
+  terhadapnya, sehingga daftar ini bisa dijalankan, bukan hanya dibaca.
+</p>
+
+<div class="note">
+  <p class="note-title">Seluruh daftar dalam satu perintah</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    menulis file untuk hampir setiap kasus di bawah, beserta manifes yang menyatakan apa yang harus
+    terjadi pada masing-masing. Isi batas dan tipe yang dinyatakan formulir Anda.
+  </p>
+</div>
+
+<p>
+  <code>accept</code> berarti sistem Anda harus menerima file, dan <code>reject</code> berarti harus
+  menolaknya dengan pesan yang jelas. <code>unspecified</code> berarti kedua jawaban bisa benar, jadi
+  catat jawaban mana yang dipilih sistem Anda, lalu periksa bahwa sistem melakukannya setiap kali. Kata
+  setelah hasil adalah alasan yang diberikan manifes.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">Ukuran</p>
+  <h2>Apakah batas ukuran ditegakkan di tempat batas itu dinyatakan?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Kasus uji</th><th>File</th><th>Diharapkan</th></tr></thead>
+    <tbody>
+      <tr><td>Satu byte di bawah batas</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Tepat di batas</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Satu byte di atas batas</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Dua kali batas, untuk melihat bahwa server berhenti membaca lebih awal alih-alih memuat semuanya ke memori</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>File kosong berukuran 0 byte</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Dua kasus yang paling sering membuat batas keliru adalah batas yang hanya diperiksa di browser, dan
+    batas yang dihitung dalam MB padahal kode menghitung MiB.
+    <a href="/id/preset/size-boundaries/">Preset size-boundaries</a> menaruh file di setiap jarak dari
+    batas yang Anda pilih, satu byte, satu kilobyte, dan satu megabyte di kedua sisi.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">Tipe</p>
+  <h2>Apakah formulir menerima tipe yang seharusnya dan menolak sisanya?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Kasus uji</th><th>File</th><th>Diharapkan</th></tr></thead>
+    <tbody>
+      <tr><td>Setiap tipe yang diterima formulir, sebagai file asli bertipe itu</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Tipe yang tidak diterima formulir</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Ekstensi menyebut satu tipe, tetapi isinya tipe lain, misalnya PDF bernama .jpg</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>Dua ekstensi, yang terakhir tidak diizinkan</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Tanpa ekstensi sama sekali</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>Ekstensi dalam huruf kapital</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    File SVG atau HTML yang dianggap gambar atau teks biasa adalah cara meloloskan skrip lewat
+    formulir. Karena itu keduanya ada di daftar tipe yang harus ditolak, kecuali formulir Anda memang
+    dimaksudkan untuk menerimanya.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">Isi</p>
+  <h2>Apakah sistem membuka file, atau hanya melihat namanya?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Kasus uji</th><th>File</th><th>Diharapkan</th></tr></thead>
+    <tbody>
+      <tr><td>File yang terpotong, seperti yang ditinggalkan unggahan yang terputus</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>File yang byte pertamanya nol, sehingga tidak ada yang menyatakan file apa itu</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>File terkecil yang diizinkan suatu format, valid dan sangat kecil</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    File yang hanya punya nama dan ukuran yang benar lolos dari setiap pemeriksaan yang tidak pernah
+    membukanya. <a href="/id/contoh-file/#corrupt">Contoh file rusak</a> tersedia dalam PDF, Word,
+    Excel, PowerPoint, JPG, PNG, MP4, dan ZIP, dan <a href="/id/file-uji-rusak/">file uji yang
+    rusak</a> menjelaskan cara membuatnya dalam format apa pun dan ukuran berapa pun.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">Nama</p>
+  <h2>Apakah file kembali dengan nama yang diberikan padanya?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Kasus uji</th><th>File</th><th>Diharapkan</th></tr></thead>
+    <tbody>
+      <tr><td>Spasi dan tanda kurung</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Huruf di luar ASCII dan emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>Nama lebih dari 200 karakter</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>Nama yang memanjat keluar dari foldernya, <code>../</code> atau <code>..\</code></td><td><code>climbing_name.jpg</code>, diunggah sebagai <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Path absolut, di Linux atau Windows</td><td><code>absolute_name.jpg</code>, diunggah sebagai <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Path di dalam nama tidak bisa disimpan ke disk, jadi file memakai nama biasa dan manifes menyatakan
+    dengan nama apa file itu diunggah. Menerima file dan hanya menyimpan bagian terakhir namanya adalah
+    jawaban yang baik. Menulisnya di luar folder unggahan adalah cacat yang dicari kasus ini.
+    <a href="/id/preset/filename-handling/">Preset filename-handling</a> punya jauh lebih banyak nama:
+    huruf yang mirip, karakter tak terlihat, nama yang dicadangkan Windows, dan panjang yang dihitung
+    dalam byte.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">Jumlah dan arsip</p>
+  <h2>Apa yang terjadi dengan banyak file, atau satu file yang berisi banyak file?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Kasus uji</th><th>File</th><th>Diharapkan</th></tr></thead>
+    <tbody>
+      <tr><td>Lima puluh file dalam satu unggahan</td><td><code>bulk_0001.jpg</code> sampai <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ZIP yang benar-benar berisi 200 dokumen</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Arsip yang diekstrak sistem Anda, diperiksa dulu untuk zip slip dan zip bomb</td><td><code>tfg tool archive-scan upload.zip</code></td><td>aman, atau apa yang ditemukan</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> mengatur berapa banyak file dalam unggahan massal, sampai sepuluh ribu.
+    <a href="/id/alat/">Alat</a> menjelaskan apa yang dicari pemeriksaan arsip.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">Dalam tes</p>
+  <h2>Menjalankan daftar ini sebagai tes</h2>
+  <p>
+    Manifes memuat hasil yang diharapkan untuk setiap file dan nama untuk mengunggahnya, jadi satu loop
+    menjalankan seluruh daftar:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    File yang ditandai <code>unspecified</code> dilewati di sini, karena jawabannya adalah kebijakan
+    Anda sendiri. Putuskan, tulis ke dalam resep dengan <code>expected</code>, dan loop akan
+    memeriksanya juga. <a href="/id/file-uji-di-ci/">File uji di CI</a> menjalankan ini di pipeline.
+  </p>
+</section>

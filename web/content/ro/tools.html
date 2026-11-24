@@ -1,0 +1,106 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Verifică o arhivă înainte de dezarhivare și sumele de control</h1>
+<p class="lead">
+  Pe lângă generator, <code>tfg</code> are mici instrumente pentru fișiere pe care le ai deja: dacă o
+  arhivă poate fi dezarhivată în siguranță și dacă un fișier sau un folder întreg este încă ce spune
+  suma lui de control. Rulează pe calculatorul tău, fără să încarci nimic și fără cont.
+</p>
+
+<div class="note">
+  <p class="note-title">Răspunsul scurt</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> citește arhiva fără să dezarhiveze nimic și se
+    termină cu codul 0 când este sigură sau cu 7 și o listă cu ce a găsit.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> spune dacă un fișier se potrivește cu
+    suma dată de o pagină de descărcare.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">Ce există</p>
+  <h2>Ce instrumente există?</h2>
+  <p>
+    Aceasta este lista pe care o afișează programul, citită din el când se construiește pagina.
+    <code>tfg tool list</code> o afișează pe aceeași, iar <code>tfg tool show &lt;id&gt;</code> spune ce
+    primește fiecare dintre ele. Fiecare instrument este și pe ecranul Tools al ferestrei, cu aceleași
+    setări.
+  </p>
+  {{ template "toolsTable" . }}
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Arhive</p>
+  <h2>Poate fi dezarhivată în siguranță această arhivă? Zip slip și zip bombs</h2>
+  <p>
+    <code>archive-scan</code> se uită într-un fișier ZIP, TAR, TAR.GZ sau gzip fără să scrie nimic pe
+    disc și spune dacă dezarhivarea lui este sigură. Raportează:
+  </p>
+  <ul>
+    <li>o intrare care ar fi scrisă în afara folderului, capcana cunoscută drept zip slip</li>
+    <li>o legătură, un dispozitiv sau două nume care ar ajunge în același fișier</li>
+    <li>un nume pe care un sistem nu îl poate scrie</li>
+    <li>o intrare construită ca să explodeze la dezarhivare, capcana cunoscută drept zip bomb</li>
+    <li>o intrare deteriorată</li>
+  </ul>
+  <p>
+    Arhivele din interiorul arhivei, de exemplu un ZIP într-un ZIP sau un DOCX într-un TAR, sunt citite
+    la fel, în memorie, până la 16 niveluri în adâncime. O capcană în una dintre ele este o capcană în
+    întreg, pentru că un program care dezarhivează totul le dezarhivează și pe ele.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> raportează și o arhivă care, dezarhivată, ocupă mai mult decât permiți.
+    Pentru o arhivă sigură comanda se termină cu codul 0, iar dacă găsește ceva, cu 7, așa că un
+    pipeline se poate opri aici.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Un fișier</p>
+  <h2>Este acest fișier cel care pretinde că este?</h2>
+  <p>
+    <code>checksum</code> calculează suma de control a unui fișier și, dacă îi dai una cu care să o
+    compare, spune dacă se potrivesc. Acceptă md5, sha1, sha256, sha512 și crc32, sha256 dacă nu ceri
+    altceva, și recunoaște după lungime ce fel de sumă i-ai dat.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    O sumă care nu se potrivește se termină cu codul 7. Răspunde la aceeași întrebare ca
+    <code>Get-FileHash</code> pe Windows sau <code>sha256sum</code> pe Linux, dar face comparația în locul
+    tău.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Un folder întreg</p>
+  <h2>S-a schimbat ceva în acest folder?</h2>
+  <p>
+    <code>checksum-write</code> scrie suma de control a fiecărui fișier dintr-un folder într-un SHA256SUMS
+    de lângă ele, cu aceiași octeți pe care îi scrie <code>sha256sum</code>, și niciodată peste unul care
+    există deja. <code>checksum-check</code> verifică apoi fiecare fișier pe care îl listează SHA256SUMS.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    Fișierele pe care nu le listează nu sunt verificate, la fel ca la <code>sha256sum -c</code>, iar o
+    cale care iese din folder este refuzată în loc să fie citită.
+    <a href="/ro/fisiere-de-exemplu/">Fișierele de exemplu</a> vin cu un SHA256SUMS pe care îl poți
+    verifica așa.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Mai departe</p>
+  <h2>Unde să mergi de aici</h2>
+  <ul>
+    <li>
+      <a href="/ro/cazuri-de-test-incarcare-fisiere/">Cazuri de test pentru încărcarea fișierelor</a> pune
+      verificarea arhivelor printre celelalte cazuri ale unei încărcări.
+    </li>
+    <li>
+      <a href="/ro/documentatie/">Documentația</a> cuprinde fiecare comandă și fiecare cod de ieșire.
+    </li>
+  </ul>
+</section>

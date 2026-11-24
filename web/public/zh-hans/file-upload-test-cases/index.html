@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="zh-Hans">
+<title>文件上传测试用例 - 附带可运行的测试文件</title>
+<meta name="description" content="文件上传的测试用例：大小限制、空文件和损坏文件、错误的类型、意外的文件名和压缩包，每个用例都附带用来测试它的文件。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/zh-hans/file-upload-test-cases/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/file-upload-test-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-pripady-nahravani-souboru/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testfaelle-datei-upload/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-prueba-de-subida-de-archivos/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-de-test-envoi-de-fichiers/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/file-upload-test-cases/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-uji-unggah-file/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-di-test-upload-file/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/file-upload-test-cases/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/file-upload-test-cases/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testgevallen-bestandsupload/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/przypadki-testowe-uploadu/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-teste-de-upload-de-arquivos/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-test-incarcare-fisiere/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/file-upload-test-cases/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/file-upload-test-cases/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dosya-yukleme-test-senaryolari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/file-upload-test-cases/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-kiem-thu-tai-len/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/file-upload-test-cases/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/file-upload-test-cases/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="文件上传测试用例 - 附带可运行的测试文件">
+<meta property="og:description" content="文件上传的测试用例：大小限制、空文件和损坏文件、错误的类型、意外的文件名和压缩包，每个用例都附带用来测试它的文件。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/zh-hans/file-upload-test-cases/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 精确大小的真实测试文件，并附带说明系统应如何响应每个文件的清单">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="文件上传测试用例 - 附带可运行的测试文件">
+<meta name="twitter:description" content="文件上传的测试用例：大小限制、空文件和损坏文件、错误的类型、意外的文件名和压缩包，每个用例都附带用来测试它的文件。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 精确大小的真实测试文件，并附带说明系统应如何响应每个文件的清单">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "首页",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/zh-hans/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "使用场景",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hans\/use-cases\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "上传测试用例",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hans\/file-upload-test-cases\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/zh-hans/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="主导航">
+      <a href="/zh-hans/">首页</a>
+      <a href="/zh-hans/formats/">格式</a>
+      <a href="/zh-hans/presets/">预设</a>
+      <a href="/zh-hans/docs/">文档</a>
+      <a href="/zh-hans/use-cases/" aria-current="true">使用场景</a>
+      <a href="/zh-hans/create-file-exact-size/">精确大小</a>
+      <a href="/zh-hans/faq/">常见问题</a>
+      <a href="/zh-hans/corrupt-test-files/">损坏文件</a>
+      <a href="/zh-hans/sample-files/">示例文件</a>
+      <a href="/zh-hans/test-files-in-ci/">CI 中的测试文件</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="语言: 简体中文">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>简体中文</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/file-upload-test-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/file-upload-test-cases/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-pripady-nahravani-souboru/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testfaelle-datei-upload/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-prueba-de-subida-de-archivos/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-de-test-envoi-de-fichiers/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/file-upload-test-cases/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/kasus-uji-unggah-file/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-di-test-upload-file/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/file-upload-test-cases/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/file-upload-test-cases/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testgevallen-bestandsupload/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/przypadki-testowe-uploadu/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-teste-de-upload-de-arquivos/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-test-incarcare-fisiere/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/file-upload-test-cases/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/file-upload-test-cases/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/dosya-yukleme-test-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/file-upload-test-cases/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/truong-hop-kiem-thu-tai-len/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hant/file-upload-test-cases/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/zh-hans/use-cases/">使用场景</a></p>
+<h1>文件上传测试用例，附带运行它们的文件</h1>
+<p class="lead">
+  一份文件上传测试用例的检查表，从大小限制到试图离开所在文件夹的文件名。每个用例都写明测试它的文件，以及你的系统应如何处理该文件，所以这份列表不只能读，还能直接运行。
+</p>
+
+<div class="note">
+  <p class="note-title">一条命令生成整个列表</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code> 会为下面几乎每个用例写出一个文件，并附带一份清单，说明每个文件应该得到什么结果。把限制和类型换成你的表单声明的值。
+  </p>
+</div>
+
+<p>
+  <code>accept</code> 表示你的系统应该接受该文件，<code>reject</code> 表示应该拒绝它并给出清楚的消息。<code>unspecified</code> 表示两种答案都可能正确，所以请写下你的系统采用哪一种，并检查它每次都这样做。结果后面的词是清单给出的原因。
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">大小</p>
+  <h2>大小限制是否在声明的位置生效？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>测试用例</th><th>文件</th><th>预期</th></tr></thead>
+    <tbody>
+      <tr><td>比限制小一个字节</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>恰好等于限制</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>比限制大一个字节</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>限制的两倍，用来确认服务器会提前停止读取，而不是全部读进内存</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>0 字节的空文件</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    限制最常出错的两种情况是：只在浏览器中检查的限制，以及按 MB 声明、代码却按 MiB 计算的限制。<a href="/zh-hans/presets/size-boundaries/">size-boundaries 预设</a>会在你选定的限制周围的每个距离上各放一个文件，即两侧各相差一个字节、一个千字节和一个兆字节。
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">类型</p>
+  <h2>表单是否接受该接受的类型，并拒绝其余类型？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>测试用例</th><th>文件</th><th>预期</th></tr></thead>
+    <tbody>
+      <tr><td>表单接受的每种类型，各用一个该类型的真实文件</td><td><code>allowed_jpg.jpg</code>、<code>allowed_png.png</code>、<code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>表单不接受的类型</td><td><code>denied.svg</code>、<code>denied.html</code>、<code>denied.exe</code>、<code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>扩展名是一种类型，内容却是另一种，例如命名为 .jpg 的 PDF</td><td><code>pdf_as_jpg.jpg</code>、<code>png_as_pdf.pdf</code>、<code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>两个扩展名，最后一个不被允许</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>完全没有扩展名</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>大写的扩展名</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    被当作图片或纯文本接受的 SVG 或 HTML 文件，是让脚本绕过表单的一种办法。所以除非你的表单本来就要接受它们，否则它们都在应拒绝的类型列表中。
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">内容</p>
+  <h2>系统是打开文件，还是只看文件名？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>测试用例</th><th>文件</th><th>预期</th></tr></thead>
+    <tbody>
+      <tr><td>被截短的文件，就像中断的上传留下的那样</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>开头字节是零的文件，因此没有任何信息说明它是什么</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>格式允许的最小文件，合法且极小</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    一个只有名字和大小正确的文件，能通过所有不打开它的检查。<a href="/zh-hans/sample-files/#corrupt">损坏的示例文件</a>有 PDF、Word、Excel、PowerPoint、JPG、PNG、MP4 和 ZIP 格式，<a href="/zh-hans/corrupt-test-files/">损坏的测试文件</a>介绍如何以任意格式、任意大小制作它们。
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">文件名</p>
+  <h2>文件取回时还是原来的名字吗？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>测试用例</th><th>文件</th><th>预期</th></tr></thead>
+    <tbody>
+      <tr><td>空格和括号</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>非 ASCII 字母和 emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>超过 200 个字符的文件名</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>用 <code>../</code> 或 <code>..\</code> 跳出所在文件夹的文件名</td><td><code>climbing_name.jpg</code>，以 <code>../tfg_climbed_out.jpg</code> 的名字上传</td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Linux 或 Windows 上的绝对路径</td><td><code>absolute_name.jpg</code>，以 <code>/tmp/tfg_climbed_out.jpg</code> 的名字上传</td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    带路径的名字无法保存到磁盘上，所以文件本身用普通的名字，清单会说明上传时用什么名字。接受文件并只保留名字的最后一部分，是好的处理方式。把它写到上传文件夹之外，正是这个用例要找出的缺陷。<a href="/zh-hans/presets/filename-handling/">filename-handling 预设</a>还有更多文件名：形似的字母、不可见字符、Windows 保留的名字，以及按字节计算的长度。
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">数量与压缩包</p>
+  <h2>文件很多，或一个文件里装着很多文件时，会发生什么？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>测试用例</th><th>文件</th><th>预期</th></tr></thead>
+    <tbody>
+      <tr><td>一次上传 50 个文件</td><td><code>bulk_0001.jpg</code> 到 <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>真正包含 200 个文档的 ZIP</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>你的系统会解压的压缩包，先检查 zip slip 和 zip 炸弹</td><td><code>tfg tool archive-scan upload.zip</code></td><td>安全，或列出发现的问题</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> 设置批量上传包含多少个文件，最多一万个。<a href="/zh-hans/tools/">工具</a>说明压缩包检查会查找什么。
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">在测试中</p>
+  <h2>把列表作为测试运行</h2>
+  <p>
+    清单包含每个文件的预期结果和上传时使用的名字，所以一个循环就能跑完整个列表：
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    标为 <code>unspecified</code> 的文件在这里被跳过，因为它们的答案取决于你自己的策略。确定策略，用 <code>expected</code> 写进配方，循环就会一并检查它们。<a href="/zh-hans/test-files-in-ci/">CI 中的测试文件</a>会在流水线中运行这段代码。
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">面向 QA 的精确大小测试文件，并附带说明系统应如何响应每个文件的清单。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">项目</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub 上的源代码</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">下载</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">报告问题</a></li>
+        <li><a href="https://donislawdev.com/support/">支持本项目</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">页面</p>
+      <ul class="plain">
+        <li><a href="/zh-hans/">首页</a></li>
+        <li><a href="/zh-hans/formats/">格式</a></li>
+        <li><a href="/zh-hans/presets/">预设</a></li>
+        <li><a href="/zh-hans/docs/">文档</a></li>
+        <li><a href="/zh-hans/use-cases/">使用场景</a></li>
+        <li><a href="/zh-hans/create-file-exact-size/">精确大小</a></li>
+        <li><a href="/zh-hans/faq/">常见问题</a></li>
+        <li><a href="/zh-hans/corrupt-test-files/">损坏文件</a></li>
+        <li><a href="/zh-hans/sample-files/">示例文件</a></li>
+        <li><a href="/zh-hans/test-files-in-ci/">CI 中的测试文件</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev。以 GNU 通用公共许可证第 3 版发布。你生成的文件归你所有，许可证涵盖的是工具本身，而不是它的输出。</p>
+    <p class="muted">本站不会从任何地方加载字体、脚本或跟踪器，也不设置 Cookie。</p>
+  </div>
+</footer>
+</body>
+</html>

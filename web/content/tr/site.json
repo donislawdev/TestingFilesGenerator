@@ -61,11 +61,34 @@
       "description": "Kasıtlı bozulmuş, tam boyutta bir dosya ve sisteminizin onu reddetmesi gerektiğini söyleyen bir bildirim. Yükleme doğrulaması ve ayrıştırıcıları sınamak için."
     },
     {
+      "key": "samples",
+      "slug": "ornek-dosyalar",
+      "nav": "Örnek dosyalar",
+      "title": "Test için örnek dosyalar - PDF, CSV, DOCX ve daha fazlası",
+      "description": "İndirilebilir test dosyaları: her biçimden 1 MB'lık birer dosya, bozuk PDF, Word ve Excel dosyaları, CSV tabloları ve yer tutucu resimler, hepsi SHA-256 ile."
+    },
+    {
       "key": "ci",
       "slug": "ci-icinde-test-dosyalari",
       "nav": "CI'da test dosyaları",
       "title": "CI'da test dosyaları - GitHub Actions, GitLab CI ve PowerShell",
       "description": "İkili dosya commit etmek yerine test dosyalarını hat içinde üretin: GitHub Actions iş akışı, GitLab işi, çıkış kodları ve PowerShell tuzağı."
+    },
+    {
+      "key": "upload-tests",
+      "slug": "dosya-yukleme-test-senaryolari",
+      "nav": "Yükleme test senaryoları",
+      "title": "Dosya yükleme test senaryoları - çalıştırılacak dosyalarla",
+      "description": "Dosya yükleme test senaryoları: boyut sınırı, boş ve bozuk dosyalar, yanlış tür, beklenmedik dosya adları ve arşivler, her biri onu sınayan dosyayla birlikte.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "araclar",
+      "nav": "Araçlar",
+      "title": "Bir ZIP'i açmadan önce denetleme ve SHA-256 doğrulama",
+      "description": "Elinizdeki dosyalar için çevrimdışı araçlar: bir arşivi açmanın güvenli olup olmadığı (zip slip, zip bomb) ve SHA-256 toplamlarını denetleme ya da yazma.",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "Hasar",
     "colEffect": "Baytlara ne yapar",
     "colSettings": "Ayarlar",
-    "noSettings": "yok"
+    "noSettings": "yok",
+    "colFile": "Dosya",
+    "colSize": "Boyut",
+    "colSha256": "SHA-256",
+    "colExpected": "Beklenen",
+    "colTool": "Araç",
+    "colQuestion": "Neyi yanıtlar"
   },
   "endings": {
     "0": "Her şey çalıştı.",
@@ -224,8 +253,8 @@
     "picture-sizes": {
       "question": "Sistemim ekranların ve platformların kullandığı boyutlardaki resimleri kabul ediyor mu?",
       "title": "Resim boyutları",
-      "pageTitle": "Yaygın boyutlarda test resimleri - ekranlar, avatarlar, sosyal medya",
-      "description": "HD, Full HD, QHD ve 4K ekranların, profil fotoğraflarının ve sosyal platformların istediği kapak, gönderi ve küçük resimlerin boyutlarında resimler, her biri olabildiğince küçük.",
+      "pageTitle": "Yaygın boyutlarda test resimleri - ekranlar ve sosyal medya",
+      "description": "HD, Full HD, QHD ve 4K ekranların, profil fotoğraflarının ve sosyal platformların istediği kapak, gönderi ve küçük resimlerin boyutlarında resimler.",
       "catches": [
         "bir şekil düşünülerek konmuş ve başka bir şekli reddeden genişlik ya da yükseklik sınırı, örneğin 1584 px genişliğinde bir profil arka planı",
         "kod yatay bir resim beklediği hâlde dikey bir resim geldiği için kırpılan ya da ezilen küçük resim",
@@ -351,5 +380,11 @@
       "q": "Binlerce dosya üzerindeki çalıştırma Windows'ta neden daha yavaş?",
       "a": "Çünkü Windows baktığı her yol için daha fazla bedel ister ve binlerce dosyayı dolaşan bir komut binlerce yola bakar. Her biri 1 kB'lık 3000 dosyalı bir makinede ölçüldü: verify Windows'ta yaklaşık 0,9 saniye, bir konteynerdeki Linux'ta yaklaşık 0,2 saniye sürer. Daha kısa bir çıktı yolu Windows rakamını küçültür, çünkü dosyaların üstündeki her klasör bakılanın parçasıdır."
     }
-  ]
+  ],
+  "tools": {
+    "archive-scan": "Bu arşivi açmak güvenli mi?",
+    "checksum": "Bu dosya, olduğunu söylediği dosya mı?",
+    "checksum-check": "Her dosya hâlâ sağlama toplamı dosyasının söylediği gibi mi?",
+    "checksum-write": "Bu klasörde hiçbir şeyin değişmediğini sonradan nasıl anlarım?"
+  }
 }

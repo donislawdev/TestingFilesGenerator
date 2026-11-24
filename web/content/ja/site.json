@@ -61,11 +61,34 @@
       "description": "意図的に壊した、サイズが正確なファイル。システムが拒否すべきことを示すマニフェスト付き。アップロード検証やパーサーのテスト用。"
     },
     {
+      "key": "samples",
+      "slug": "sample-files",
+      "nav": "サンプルファイル",
+      "title": "テスト用サンプルファイル - PDF、CSV、DOCXなどをダウンロード",
+      "description": "テスト用のサンプルファイルをダウンロード。全形式を1MBずつ、破損したPDF、Word、Excel、CSVの表、プレースホルダー画像。どれもSHA-256付きです。"
+    },
+    {
       "key": "ci",
       "slug": "test-files-in-ci",
       "nav": "CIでのテストファイル",
       "title": "CIでのテストファイル - GitHub Actions、GitLab CI、PowerShell",
       "description": "バイナリをコミットする代わりに、パイプラインでテストファイルを生成。GitHub Actionsのワークフロー、GitLabのジョブ、終了コード、PowerShellの落とし穴。"
+    },
+    {
+      "key": "upload-tests",
+      "slug": "file-upload-test-cases",
+      "nav": "アップロードのテストケース",
+      "title": "ファイルアップロードのテストケース - 実行用のファイル付き",
+      "description": "ファイルアップロードのテストケース一覧。サイズ制限、空のファイルと破損ファイル、誤った種類、想定外のファイル名、アーカイブ。各ケースに検証用のファイルがあります。",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "tools",
+      "nav": "ツール",
+      "title": "展開前にZIPを検査し、SHA-256チェックサムを確認",
+      "description": "手元のファイル向けのオフラインツール。zip slipやzip爆弾を含め、アーカイブを安全に展開できるかを調べ、SHA-256チェックサムを確認、作成します。",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "破損",
     "colEffect": "バイトへの作用",
     "colSettings": "設定",
-    "noSettings": "なし"
+    "noSettings": "なし",
+    "colFile": "ファイル",
+    "colSize": "サイズ",
+    "colSha256": "SHA-256",
+    "colExpected": "期待される結果",
+    "colTool": "ツール",
+    "colQuestion": "答える問い"
   },
   "endings": {
     "0": "すべて正常に動作しました。",
@@ -351,5 +380,11 @@
       "q": "数千ファイルの実行がWindowsで遅いのはなぜですか。",
       "a": "Windowsは調べるパス1つあたりのコストが高く、数千ファイルを走査するコマンドは数千のパスを調べるからです。1kBのファイル3000個があるマシンで測定したところ、verifyはWindowsで約0.9秒、コンテナ内のLinuxで約0.2秒かかりました。出力パスを短くするとWindowsの数値は小さくなります。ファイルより上のフォルダーもすべて調べる対象に含まれるためです。"
     }
-  ]
+  ],
+  "tools": {
+    "archive-scan": "このアーカイブは安全に展開できるでしょうか。",
+    "checksum": "このファイルは、名乗っているとおりのファイルでしょうか。",
+    "checksum-check": "どのファイルも、チェックサムファイルに書かれたとおりのままでしょうか。",
+    "checksum-write": "このフォルダーの中が何も変わっていないことを、後でどう確かめればよいでしょうか。"
+  }
 }

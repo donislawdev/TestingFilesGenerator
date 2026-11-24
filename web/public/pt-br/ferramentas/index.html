@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="pt-BR">
+<title>Checar um ZIP antes de descompactar e verificar o SHA-256</title>
+<meta name="description" content="Ferramentas offline para os seus arquivos: veja se um arquivo compactado é seguro para descompactar (zip slip, zip bomb) e confira ou grave somas SHA-256.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/pt-br/ferramentas/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/tools/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/nastroje/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/werkzeuge/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/herramientas/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/outils/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/tools/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/alat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/strumenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/tools/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/tools/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/hulpmiddelen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/narzedzia/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/ferramentas/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/instrumente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/tools/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/tools/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/araclar/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/tools/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/cong-cu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/tools/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/tools/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Checar um ZIP antes de descompactar e verificar o SHA-256">
+<meta property="og:description" content="Ferramentas offline para os seus arquivos: veja se um arquivo compactado é seguro para descompactar (zip slip, zip bomb) e confira ou grave somas SHA-256.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/pt-br/ferramentas/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - arquivos de teste reais no tamanho exato, com um manifesto que diz como seu sistema deve reagir a cada um">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Checar um ZIP antes de descompactar e verificar o SHA-256">
+<meta name="twitter:description" content="Ferramentas offline para os seus arquivos: veja se um arquivo compactado é seguro para descompactar (zip slip, zip bomb) e confira ou grave somas SHA-256.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - arquivos de teste reais no tamanho exato, com um manifesto que diz como seu sistema deve reagir a cada um">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Início",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/pt-br/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Documentação",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/pt-br\/documentacao\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Ferramentas",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/pt-br\/ferramentas\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Ir para o conteúdo</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/pt-br/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Principal">
+      <a href="/pt-br/">Início</a>
+      <a href="/pt-br/formatos/">Formatos</a>
+      <a href="/pt-br/presets/">Presets</a>
+      <a href="/pt-br/documentacao/" aria-current="true">Documentação</a>
+      <a href="/pt-br/casos-de-uso/">Casos de uso</a>
+      <a href="/pt-br/criar-arquivo-de-tamanho-exato/">Tamanho exato</a>
+      <a href="/pt-br/perguntas-frequentes/">FAQ</a>
+      <a href="/pt-br/arquivos-de-teste-corrompidos/">Arquivos corrompidos</a>
+      <a href="/pt-br/arquivos-de-exemplo/">Arquivos de exemplo</a>
+      <a href="/pt-br/arquivos-de-teste-no-ci/">Arquivos de teste no CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Idioma: Português (Brasil)">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Português (Brasil)</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/tools/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/tools/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/nastroje/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/werkzeuge/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/herramientas/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/outils/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/tools/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/alat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/strumenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/tools/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/tools/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/hulpmiddelen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/narzedzia/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/ro/instrumente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/tools/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/tools/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/araclar/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/tools/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/cong-cu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/tools/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/tools/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/pt-br/documentacao/">Documentação</a></p>
+<h1>Checar um arquivo compactado antes de descompactá-lo e conferir somas de verificação</h1>
+<p class="lead">
+  Além do gerador, <code>tfg</code> tem pequenas ferramentas para arquivos que você já tem: se um arquivo
+  compactado é seguro para descompactar, e se um arquivo ou uma pasta inteira ainda é o que diz a sua
+  soma de verificação. Elas rodam na sua máquina, sem upload e sem conta.
+</p>
+
+<div class="note">
+  <p class="note-title">A resposta curta</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> lê o arquivo compactado sem descompactar nada e
+    termina com o código 0 quando ele é seguro, ou 7 com uma lista do que encontrou.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> diz se um arquivo confere com a soma
+    que uma página de download informou.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">O que existe</p>
+  <h2>Quais ferramentas existem?</h2>
+  <p>
+    Esta é a lista que o programa imprime, lida dele quando esta página é construída.
+    <code>tfg tool list</code> imprime a mesma, e <code>tfg tool show &lt;id&gt;</code> diz o que cada uma
+    aceita. Cada ferramenta também está na tela Tools da janela, com as mesmas configurações.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>Ferramenta</th>
+      <th>O que responde</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>archive-scan</code></td>
+      <td>Este arquivo compactado é seguro para descompactar?</td>
+    </tr>
+    <tr>
+      <td><code>checksum</code></td>
+      <td>Este arquivo é mesmo o que diz ser?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-check</code></td>
+      <td>Cada arquivo ainda é o que diz o seu arquivo de somas de verificação?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-write</code></td>
+      <td>Como vou saber depois que nada mudou nesta pasta?</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Arquivos compactados</p>
+  <h2>Este arquivo compactado é seguro para descompactar? Zip slip e zip bombs</h2>
+  <p>
+    <code>archive-scan</code> olha dentro de um arquivo ZIP, TAR, TAR.GZ ou gzip sem gravar nada em disco
+    e diz se descompactá-lo é seguro. Ele aponta:
+  </p>
+  <ul>
+    <li>uma entrada que seria gravada fora da pasta, a armadilha conhecida como zip slip</li>
+    <li>um link, um dispositivo, ou dois nomes que cairiam no mesmo arquivo</li>
+    <li>um nome que um sistema não consegue gravar</li>
+    <li>uma entrada feita para explodir ao ser descompactada, a armadilha conhecida como zip bomb</li>
+    <li>uma entrada danificada</li>
+  </ul>
+  <p>
+    Arquivos compactados dentro do arquivo compactado, como um ZIP dentro de um ZIP ou um DOCX dentro de
+    um TAR, são lidos do mesmo jeito, na memória, até 16 níveis de profundidade. Uma armadilha em um
+    deles é uma armadilha no todo, porque um programa que descompacta tudo descompacta esses também.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> também aponta um arquivo compactado que, descompactado, ocupa mais do que
+    você permite. Se for seguro, termina com o código 0, e se encontrar algo, com 7, então um pipeline
+    pode parar aí.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Um arquivo</p>
+  <h2>Este arquivo é mesmo o que diz ser?</h2>
+  <p>
+    <code>checksum</code> calcula a soma de verificação de um arquivo e, se você der uma para comparar, diz
+    se elas batem. Aceita md5, sha1, sha256, sha512 e crc32, sha256 se você não pedir outra, e reconhece
+    pelo comprimento qual delas você deu.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    Uma soma que não bate termina com o código 7. Responde à mesma pergunta que <code>Get-FileHash</code>
+    no Windows ou <code>sha256sum</code> no Linux, com a comparação feita para você.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Uma pasta inteira</p>
+  <h2>Alguma coisa mudou nesta pasta?</h2>
+  <p>
+    <code>checksum-write</code> grava a soma de verificação de cada arquivo de uma pasta em um SHA256SUMS
+    ao lado deles, com os mesmos bytes que o <code>sha256sum</code> grava, e nunca por cima de um que já
+    exista. <code>checksum-check</code> depois confere cada arquivo que o SHA256SUMS lista.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    Arquivos que ele não lista não são examinados, como no <code>sha256sum -c</code>, e um caminho que sai
+    da pasta é recusado em vez de lido. Os <a href="/pt-br/arquivos-de-exemplo/">arquivos de exemplo</a>
+    vêm com um SHA256SUMS que você pode conferir assim.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">A seguir</p>
+  <h2>Para onde ir daqui</h2>
+  <ul>
+    <li>
+      <a href="/pt-br/casos-de-teste-de-upload-de-arquivos/">Casos de teste de upload de arquivos</a> coloca
+      a checagem de arquivos compactados entre os outros casos de um upload.
+    </li>
+    <li>
+      <a href="/pt-br/documentacao/">A documentação</a> traz cada comando e cada código de saída.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Arquivos de teste para QA, no tamanho exato, com um manifesto que diz como seu sistema deve reagir a cada um.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projeto</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Código no GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Relatar um problema</a></li>
+        <li><a href="https://donislawdev.com/support/">Apoiar o projeto</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Páginas</p>
+      <ul class="plain">
+        <li><a href="/pt-br/">Início</a></li>
+        <li><a href="/pt-br/formatos/">Formatos</a></li>
+        <li><a href="/pt-br/presets/">Presets</a></li>
+        <li><a href="/pt-br/documentacao/">Documentação</a></li>
+        <li><a href="/pt-br/casos-de-uso/">Casos de uso</a></li>
+        <li><a href="/pt-br/criar-arquivo-de-tamanho-exato/">Tamanho exato</a></li>
+        <li><a href="/pt-br/perguntas-frequentes/">FAQ</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-corrompidos/">Arquivos corrompidos</a></li>
+        <li><a href="/pt-br/arquivos-de-exemplo/">Arquivos de exemplo</a></li>
+        <li><a href="/pt-br/arquivos-de-teste-no-ci/">Arquivos de teste no CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Distribuído sob a Licença Pública Geral GNU, versão 3. Os arquivos que você gera são seus - a licença cobre a ferramenta, não a sua saída.</p>
+    <p class="muted">Este site não carrega fontes, scripts nem rastreadores de lugar nenhum. Não usa cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

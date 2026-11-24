@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="hi">
+<title>एक्सट्रैक्ट से पहले ZIP जाँचें और SHA-256 चेकसम सत्यापित करें</title>
+<meta name="description" content="आपके पास मौजूद फ़ाइलों के लिए ऑफ़लाइन टूल: देखें कि आर्काइव को एक्सट्रैक्ट करना सुरक्षित है या नहीं, zip slip और zip bomb समेत, और SHA-256 चेकसम जाँचें या लिखें।">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/hi/tools/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/tools/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/nastroje/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/werkzeuge/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/herramientas/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/outils/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/tools/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/alat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/strumenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/tools/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/tools/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/hulpmiddelen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/narzedzia/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/ferramentas/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/instrumente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/tools/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/tools/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/araclar/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/tools/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/cong-cu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/tools/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/tools/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="hi_IN">
+<meta property="og:title" content="एक्सट्रैक्ट से पहले ZIP जाँचें और SHA-256 चेकसम सत्यापित करें">
+<meta property="og:description" content="आपके पास मौजूद फ़ाइलों के लिए ऑफ़लाइन टूल: देखें कि आर्काइव को एक्सट्रैक्ट करना सुरक्षित है या नहीं, zip slip और zip bomb समेत, और SHA-256 चेकसम जाँचें या लिखें।">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/hi/tools/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - सटीक आकार की असली टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="एक्सट्रैक्ट से पहले ZIP जाँचें और SHA-256 चेकसम सत्यापित करें">
+<meta name="twitter:description" content="आपके पास मौजूद फ़ाइलों के लिए ऑफ़लाइन टूल: देखें कि आर्काइव को एक्सट्रैक्ट करना सुरक्षित है या नहीं, zip slip और zip bomb समेत, और SHA-256 चेकसम जाँचें या लिखें।">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - सटीक आकार की असली टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "होम",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/hi/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "दस्तावेज़ीकरण",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/hi\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "टूल",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/hi\/tools\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">सामग्री पर जाएँ</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/hi/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="मुख्य मेनू">
+      <a href="/hi/">होम</a>
+      <a href="/hi/formats/">फ़ॉर्मैट</a>
+      <a href="/hi/presets/">प्रीसेट</a>
+      <a href="/hi/docs/" aria-current="true">दस्तावेज़ीकरण</a>
+      <a href="/hi/use-cases/">उपयोग के मामले</a>
+      <a href="/hi/create-file-exact-size/">सटीक आकार</a>
+      <a href="/hi/faq/">FAQ</a>
+      <a href="/hi/corrupt-test-files/">खराब फ़ाइलें</a>
+      <a href="/hi/sample-files/">सैंपल फ़ाइलें</a>
+      <a href="/hi/test-files-in-ci/">CI में टेस्ट फ़ाइलें</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="भाषा: हिन्दी">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>हिन्दी</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/tools/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/tools/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/nastroje/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/werkzeuge/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/herramientas/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/outils/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/id/alat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/strumenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/tools/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/tools/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/hulpmiddelen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/narzedzia/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/ferramentas/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/instrumente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/tools/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/tools/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/araclar/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/tools/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/cong-cu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/tools/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/tools/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/hi/docs/">दस्तावेज़ीकरण</a></p>
+<h1>एक्सट्रैक्ट करने से पहले आर्काइव जाँचें, और चेकसम सत्यापित करें</h1>
+<p class="lead">
+  जनरेटर के अलावा, <code>tfg</code> में आपके पास पहले से मौजूद फ़ाइलों के लिए छोटे टूल हैं: क्या किसी
+  आर्काइव को एक्सट्रैक्ट करना सुरक्षित है, और क्या कोई फ़ाइल या पूरा फ़ोल्डर अब भी वैसा ही है जैसा
+  उसका चेकसम कहता है। ये आपकी मशीन पर चलते हैं, बिना कुछ अपलोड किए और बिना खाते के।
+</p>
+
+<div class="note">
+  <p class="note-title">छोटा जवाब</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> कुछ भी एक्सट्रैक्ट किए बिना आर्काइव पढ़ता है, और
+    सुरक्षित होने पर कोड 0 पर, या जो मिला उसकी सूची के साथ कोड 7 पर खत्म होता है।
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> बताता है कि फ़ाइल उस चेकसम से मेल
+    खाती है या नहीं जो डाउनलोड पेज ने आपको दिया।
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">क्या-क्या है</p>
+  <h2>कौन-कौन से टूल हैं?</h2>
+  <p>
+    यह वह सूची है जो प्रोग्राम छापता है, इस पेज को बनाते समय उसी से पढ़ी गई। <code>tfg tool list</code>
+    यही सूची छापता है, और <code>tfg tool show &lt;id&gt;</code> बताता है कि उनमें से एक क्या लेता है।
+    हर टूल डेस्कटॉप विंडो की Tools स्क्रीन पर भी है, उन्हीं सेटिंग के साथ।
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>टूल</th>
+      <th>किस सवाल का जवाब देता है</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>archive-scan</code></td>
+      <td>क्या इस आर्काइव को एक्सट्रैक्ट करना सुरक्षित है?</td>
+    </tr>
+    <tr>
+      <td><code>checksum</code></td>
+      <td>क्या यह फ़ाइल वही है जो होने का दावा करती है?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-check</code></td>
+      <td>क्या हर फ़ाइल अब भी वैसी ही है जैसा उसकी चेकसम फ़ाइल कहती है?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-write</code></td>
+      <td>बाद में मुझे कैसे पता चलेगा कि इस फ़ोल्डर में कुछ नहीं बदला?</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">आर्काइव</p>
+  <h2>क्या इस आर्काइव को एक्सट्रैक्ट करना सुरक्षित है? zip slip और zip bomb</h2>
+  <p>
+    <code>archive-scan</code> डिस्क पर कुछ भी लिखे बिना ZIP, TAR, TAR.GZ या gzip फ़ाइल के अंदर देखता है
+    और बताता है कि उसे एक्सट्रैक्ट करना सुरक्षित है या नहीं। यह इनकी रिपोर्ट करता है:
+  </p>
+  <ul>
+    <li>ऐसी प्रविष्टि जो फ़ोल्डर के बाहर लिखी जाएगी, वह जाल जिसे zip slip कहते हैं</li>
+    <li>लिंक, डिवाइस, या ऐसे दो नाम जो एक ही फ़ाइल पर पहुँचेंगे</li>
+    <li>ऐसा नाम जिसे कोई सिस्टम लिख नहीं सकता</li>
+    <li>एक्सट्रैक्ट होते ही फट पड़ने के लिए बनाई गई प्रविष्टि, वह जाल जिसे zip bomb कहते हैं</li>
+    <li>खराब प्रविष्टि</li>
+  </ul>
+  <p>
+    आर्काइव के अंदर के आर्काइव, जैसे ZIP में ZIP या TAR में DOCX, उसी तरह पढ़े जाते हैं, मेमोरी में,
+    16 स्तर की गहराई तक। उनमें से किसी एक में छिपा जाल पूरे आर्काइव का जाल है, क्योंकि जो प्रोग्राम सब
+    कुछ एक्सट्रैक्ट करता है, वह उन्हें भी एक्सट्रैक्ट करता है।
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> ऐसे आर्काइव की भी रिपोर्ट करता है जो एक्सट्रैक्ट होने पर आपकी तय सीमा
+    से बड़ा हो जाता है। सुरक्षित होने पर कोड 0 मिलता है और कुछ भी मिलने पर कोड 7, ताकि पाइपलाइन वहीं
+    रुक सके।
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">एक फ़ाइल</p>
+  <h2>क्या यह फ़ाइल वही है जो होने का दावा करती है?</h2>
+  <p>
+    <code>checksum</code> किसी फ़ाइल का चेकसम निकालता है और, तुलना के लिए चेकसम दिए जाने पर, बताता है
+    कि दोनों मेल खाते हैं या नहीं। यह md5, sha1, sha256, sha512 और crc32 लेता है, आप कुछ और न कहें तो
+    sha256, और दिया गया चेकसम किस प्रकार का है, यह उसकी लंबाई से पहचान लेता है।
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    मेल न खाने वाला चेकसम कोड 7 पर खत्म होता है। यह वही सवाल हल करता है जो Windows पर
+    <code>Get-FileHash</code> या Linux पर <code>sha256sum</code>, बस तुलना आपके लिए कर दी जाती है।
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">पूरा फ़ोल्डर</p>
+  <h2>क्या इस फ़ोल्डर में कुछ बदला?</h2>
+  <p>
+    <code>checksum-write</code> किसी फ़ोल्डर की हर फ़ाइल का चेकसम उनके बगल में SHA256SUMS में लिखता है,
+    ठीक वही बाइट जो <code>sha256sum</code> लिखता है, और पहले से मौजूद फ़ाइल के ऊपर कभी नहीं लिखता।
+    <code>checksum-check</code> बाद में हर वह फ़ाइल जाँचता है जिसे SHA256SUMS सूचीबद्ध करता है।
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    जो फ़ाइलें सूची में नहीं हैं, उन्हें देखा नहीं जाता, ठीक <code>sha256sum -c</code> की तरह, और
+    फ़ोल्डर से बाहर जाने वाला पथ पढ़ा नहीं जाता, ठुकरा दिया जाता है।
+    <a href="/hi/sample-files/">सैंपल फ़ाइलें</a> एक SHA256SUMS के साथ आती हैं जिसे आप इसी तरह जाँच
+    सकते हैं।
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">आगे</p>
+  <h2>यहाँ से कहाँ जाएँ</h2>
+  <ul>
+    <li>
+      <a href="/hi/file-upload-test-cases/">फ़ाइल अपलोड टेस्ट केस</a> आर्काइव की जाँच को अपलोड के बाकी
+      केस के बीच रखते हैं।
+    </li>
+    <li>
+      <a href="/hi/docs/">दस्तावेज़ीकरण</a> में हर कमांड और हर एग्ज़िट कोड है।
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">QA के लिए सटीक आकार की टेस्ट फ़ाइलें, और एक मैनिफ़ेस्ट जो बताता है कि आपके सिस्टम को हर फ़ाइल पर क्या प्रतिक्रिया देनी चाहिए।</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">प्रोजेक्ट</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub पर सोर्स कोड</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">डाउनलोड</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">समस्या बताएँ</a></li>
+        <li><a href="https://donislawdev.com/support/">प्रोजेक्ट का समर्थन करें</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">पेज</p>
+      <ul class="plain">
+        <li><a href="/hi/">होम</a></li>
+        <li><a href="/hi/formats/">फ़ॉर्मैट</a></li>
+        <li><a href="/hi/presets/">प्रीसेट</a></li>
+        <li><a href="/hi/docs/">दस्तावेज़ीकरण</a></li>
+        <li><a href="/hi/use-cases/">उपयोग के मामले</a></li>
+        <li><a href="/hi/create-file-exact-size/">सटीक आकार</a></li>
+        <li><a href="/hi/faq/">FAQ</a></li>
+        <li><a href="/hi/corrupt-test-files/">खराब फ़ाइलें</a></li>
+        <li><a href="/hi/sample-files/">सैंपल फ़ाइलें</a></li>
+        <li><a href="/hi/test-files-in-ci/">CI में टेस्ट फ़ाइलें</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev। GNU जनरल पब्लिक लाइसेंस, संस्करण 3 के तहत जारी। आपकी बनाई फ़ाइलें आपकी हैं - लाइसेंस टूल पर लागू होता है, उसके आउटपुट पर नहीं।</p>
+    <p class="muted">यह साइट कहीं से भी फ़ॉन्ट, स्क्रिप्ट या ट्रैकर लोड नहीं करती। यह कोई कुकी नहीं लगाती।</p>
+  </div>
+</footer>
+</body>
+</html>

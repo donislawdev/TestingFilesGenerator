@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="id">
+<title>Kasus Uji Unggah File - Lengkap dengan File untuk Mengujinya</title>
+<meta name="description" content="Kasus uji untuk unggah file: batas ukuran, file kosong dan rusak, tipe yang salah, nama file tak terduga, dan arsip, masing-masing dengan file yang mengujinya.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/id/kasus-uji-unggah-file/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/file-upload-test-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-pripady-nahravani-souboru/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testfaelle-datei-upload/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-prueba-de-subida-de-archivos/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-de-test-envoi-de-fichiers/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/file-upload-test-cases/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-uji-unggah-file/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-di-test-upload-file/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/file-upload-test-cases/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/file-upload-test-cases/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testgevallen-bestandsupload/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/przypadki-testowe-uploadu/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-teste-de-upload-de-arquivos/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-test-incarcare-fisiere/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/file-upload-test-cases/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/file-upload-test-cases/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dosya-yukleme-test-senaryolari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/file-upload-test-cases/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-kiem-thu-tai-len/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/file-upload-test-cases/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/file-upload-test-cases/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="id_ID">
+<meta property="og:title" content="Kasus Uji Unggah File - Lengkap dengan File untuk Mengujinya">
+<meta property="og:description" content="Kasus uji untuk unggah file: batas ukuran, file kosong dan rusak, tipe yang salah, nama file tak terduga, dan arsip, masing-masing dengan file yang mengujinya.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/id/kasus-uji-unggah-file/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - file uji asli dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Kasus Uji Unggah File - Lengkap dengan File untuk Mengujinya">
+<meta name="twitter:description" content="Kasus uji untuk unggah file: batas ukuran, file kosong dan rusak, tipe yang salah, nama file tak terduga, dan arsip, masing-masing dengan file yang mengujinya.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - file uji asli dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Beranda",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/id/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Kasus Penggunaan",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/id\/kasus-penggunaan\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Kasus uji unggah",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/id\/kasus-uji-unggah-file\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Lompat ke konten</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/id/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Utama">
+      <a href="/id/">Beranda</a>
+      <a href="/id/format/">Format</a>
+      <a href="/id/preset/">Preset</a>
+      <a href="/id/dokumentasi/">Dokumentasi</a>
+      <a href="/id/kasus-penggunaan/" aria-current="true">Kasus Penggunaan</a>
+      <a href="/id/membuat-file-ukuran-tepat/">Ukuran Tepat</a>
+      <a href="/id/faq/">FAQ</a>
+      <a href="/id/file-uji-rusak/">File rusak</a>
+      <a href="/id/contoh-file/">Contoh file</a>
+      <a href="/id/file-uji-di-ci/">File uji di CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Bahasa: Bahasa Indonesia">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Bahasa Indonesia</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/file-upload-test-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/file-upload-test-cases/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-pripady-nahravani-souboru/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testfaelle-datei-upload/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-prueba-de-subida-de-archivos/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-de-test-envoi-de-fichiers/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/file-upload-test-cases/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/it/casi-di-test-upload-file/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/file-upload-test-cases/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/file-upload-test-cases/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testgevallen-bestandsupload/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/przypadki-testowe-uploadu/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-teste-de-upload-de-arquivos/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-test-incarcare-fisiere/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/file-upload-test-cases/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/file-upload-test-cases/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/dosya-yukleme-test-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/file-upload-test-cases/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/truong-hop-kiem-thu-tai-len/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/file-upload-test-cases/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/file-upload-test-cases/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/id/kasus-penggunaan/">Kasus Penggunaan</a></p>
+<h1>Kasus uji unggah file, lengkap dengan file untuk menjalankannya</h1>
+<p class="lead">
+  Daftar periksa kasus uji untuk unggah file, dari batas ukuran sampai nama file yang mencoba keluar
+  dari foldernya. Setiap kasus menyebut file yang mengujinya dan apa yang harus dilakukan sistem Anda
+  terhadapnya, sehingga daftar ini bisa dijalankan, bukan hanya dibaca.
+</p>
+
+<div class="note">
+  <p class="note-title">Seluruh daftar dalam satu perintah</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    menulis file untuk hampir setiap kasus di bawah, beserta manifes yang menyatakan apa yang harus
+    terjadi pada masing-masing. Isi batas dan tipe yang dinyatakan formulir Anda.
+  </p>
+</div>
+
+<p>
+  <code>accept</code> berarti sistem Anda harus menerima file, dan <code>reject</code> berarti harus
+  menolaknya dengan pesan yang jelas. <code>unspecified</code> berarti kedua jawaban bisa benar, jadi
+  catat jawaban mana yang dipilih sistem Anda, lalu periksa bahwa sistem melakukannya setiap kali. Kata
+  setelah hasil adalah alasan yang diberikan manifes.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">Ukuran</p>
+  <h2>Apakah batas ukuran ditegakkan di tempat batas itu dinyatakan?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Kasus uji</th><th>File</th><th>Diharapkan</th></tr></thead>
+    <tbody>
+      <tr><td>Satu byte di bawah batas</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Tepat di batas</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Satu byte di atas batas</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Dua kali batas, untuk melihat bahwa server berhenti membaca lebih awal alih-alih memuat semuanya ke memori</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>File kosong berukuran 0 byte</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Dua kasus yang paling sering membuat batas keliru adalah batas yang hanya diperiksa di browser, dan
+    batas yang dihitung dalam MB padahal kode menghitung MiB.
+    <a href="/id/preset/size-boundaries/">Preset size-boundaries</a> menaruh file di setiap jarak dari
+    batas yang Anda pilih, satu byte, satu kilobyte, dan satu megabyte di kedua sisi.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">Tipe</p>
+  <h2>Apakah formulir menerima tipe yang seharusnya dan menolak sisanya?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Kasus uji</th><th>File</th><th>Diharapkan</th></tr></thead>
+    <tbody>
+      <tr><td>Setiap tipe yang diterima formulir, sebagai file asli bertipe itu</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Tipe yang tidak diterima formulir</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Ekstensi menyebut satu tipe, tetapi isinya tipe lain, misalnya PDF bernama .jpg</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>Dua ekstensi, yang terakhir tidak diizinkan</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Tanpa ekstensi sama sekali</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>Ekstensi dalam huruf kapital</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    File SVG atau HTML yang dianggap gambar atau teks biasa adalah cara meloloskan skrip lewat
+    formulir. Karena itu keduanya ada di daftar tipe yang harus ditolak, kecuali formulir Anda memang
+    dimaksudkan untuk menerimanya.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">Isi</p>
+  <h2>Apakah sistem membuka file, atau hanya melihat namanya?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Kasus uji</th><th>File</th><th>Diharapkan</th></tr></thead>
+    <tbody>
+      <tr><td>File yang terpotong, seperti yang ditinggalkan unggahan yang terputus</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>File yang byte pertamanya nol, sehingga tidak ada yang menyatakan file apa itu</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>File terkecil yang diizinkan suatu format, valid dan sangat kecil</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    File yang hanya punya nama dan ukuran yang benar lolos dari setiap pemeriksaan yang tidak pernah
+    membukanya. <a href="/id/contoh-file/#corrupt">Contoh file rusak</a> tersedia dalam PDF, Word,
+    Excel, PowerPoint, JPG, PNG, MP4, dan ZIP, dan <a href="/id/file-uji-rusak/">file uji yang
+    rusak</a> menjelaskan cara membuatnya dalam format apa pun dan ukuran berapa pun.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">Nama</p>
+  <h2>Apakah file kembali dengan nama yang diberikan padanya?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Kasus uji</th><th>File</th><th>Diharapkan</th></tr></thead>
+    <tbody>
+      <tr><td>Spasi dan tanda kurung</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Huruf di luar ASCII dan emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>Nama lebih dari 200 karakter</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>Nama yang memanjat keluar dari foldernya, <code>../</code> atau <code>..\</code></td><td><code>climbing_name.jpg</code>, diunggah sebagai <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Path absolut, di Linux atau Windows</td><td><code>absolute_name.jpg</code>, diunggah sebagai <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Path di dalam nama tidak bisa disimpan ke disk, jadi file memakai nama biasa dan manifes menyatakan
+    dengan nama apa file itu diunggah. Menerima file dan hanya menyimpan bagian terakhir namanya adalah
+    jawaban yang baik. Menulisnya di luar folder unggahan adalah cacat yang dicari kasus ini.
+    <a href="/id/preset/filename-handling/">Preset filename-handling</a> punya jauh lebih banyak nama:
+    huruf yang mirip, karakter tak terlihat, nama yang dicadangkan Windows, dan panjang yang dihitung
+    dalam byte.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">Jumlah dan arsip</p>
+  <h2>Apa yang terjadi dengan banyak file, atau satu file yang berisi banyak file?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Kasus uji</th><th>File</th><th>Diharapkan</th></tr></thead>
+    <tbody>
+      <tr><td>Lima puluh file dalam satu unggahan</td><td><code>bulk_0001.jpg</code> sampai <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ZIP yang benar-benar berisi 200 dokumen</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Arsip yang diekstrak sistem Anda, diperiksa dulu untuk zip slip dan zip bomb</td><td><code>tfg tool archive-scan upload.zip</code></td><td>aman, atau apa yang ditemukan</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> mengatur berapa banyak file dalam unggahan massal, sampai sepuluh ribu.
+    <a href="/id/alat/">Alat</a> menjelaskan apa yang dicari pemeriksaan arsip.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">Dalam tes</p>
+  <h2>Menjalankan daftar ini sebagai tes</h2>
+  <p>
+    Manifes memuat hasil yang diharapkan untuk setiap file dan nama untuk mengunggahnya, jadi satu loop
+    menjalankan seluruh daftar:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    File yang ditandai <code>unspecified</code> dilewati di sini, karena jawabannya adalah kebijakan
+    Anda sendiri. Putuskan, tulis ke dalam resep dengan <code>expected</code>, dan loop akan
+    memeriksanya juga. <a href="/id/file-uji-di-ci/">File uji di CI</a> menjalankan ini di pipeline.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">File uji untuk QA dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proyek</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Kode sumber di GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Unduhan</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Laporkan masalah</a></li>
+        <li><a href="https://donislawdev.com/support/">Dukung proyek ini</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Halaman</p>
+      <ul class="plain">
+        <li><a href="/id/">Beranda</a></li>
+        <li><a href="/id/format/">Format</a></li>
+        <li><a href="/id/preset/">Preset</a></li>
+        <li><a href="/id/dokumentasi/">Dokumentasi</a></li>
+        <li><a href="/id/kasus-penggunaan/">Kasus Penggunaan</a></li>
+        <li><a href="/id/membuat-file-ukuran-tepat/">Ukuran Tepat</a></li>
+        <li><a href="/id/faq/">FAQ</a></li>
+        <li><a href="/id/file-uji-rusak/">File rusak</a></li>
+        <li><a href="/id/contoh-file/">Contoh file</a></li>
+        <li><a href="/id/file-uji-di-ci/">File uji di CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Dirilis di bawah Lisensi Publik Umum GNU versi 3. File yang Anda buat adalah milik Anda - lisensi mencakup alatnya, bukan keluarannya.</p>
+    <p class="muted">Situs ini tidak memuat font, skrip, atau pelacak dari mana pun. Situs ini tidak memasang cookie.</p>
+  </div>
+</footer>
+</body>
+</html>

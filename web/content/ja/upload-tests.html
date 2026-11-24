@@ -1,0 +1,136 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>ファイルアップロードのテストケースと、実行するためのファイル</h1>
+<p class="lead">
+  ファイルアップロードのテストケースのチェックリストです。サイズ制限から、自分のフォルダーの外に出ようとするファイル名まであります。どのケースにも、それをテストするファイルと、システムがそのファイルをどう扱うべきかが書かれているので、読むだけでなく実行できるリストです。
+</p>
+
+<div class="note">
+  <p class="note-title">リスト全体をコマンド1つで</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>は、以下のほぼすべてのケースのファイルを、各ファイルがどうなるべきかを示すマニフェストと一緒に書き出します。制限値と種類には、フォームが宣言しているものを入れてください。
+  </p>
+</div>
+
+<p>
+  <code>accept</code>は、システムがファイルを受け入れるべきことを、<code>reject</code>は、わかりやすいメッセージとともに拒否するべきことを意味します。<code>unspecified</code>は、どちらの答えも正しくありうるという意味です。システムがどちらを意図しているかを書き留め、毎回そのとおりに動くかを確認してください。結果の後ろの語は、マニフェストが示す理由です。
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">サイズ</p>
+  <h2>サイズ制限は、宣言した位置で適用されていますか。</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>テストケース</th><th>ファイル</th><th>期待される結果</th></tr></thead>
+    <tbody>
+      <tr><td>制限より1バイト小さい</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ちょうど制限値</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>制限より1バイト大きい</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>制限の2倍。サーバーが全体をメモリに読み込まず、早い段階で読み取りを止めるかを確かめます</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>0バイトの空のファイル</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    制限で最も多い間違いは2つです。ブラウザーだけで確認している制限と、MBで宣言した制限をコードがMiBで数えているケースです。<a href="/ja/presets/size-boundaries/">size-boundariesプリセット</a>は、選んだ制限からのあらゆる距離、つまり両側に1バイト、1キロバイト、1メガバイトの位置にファイルを置きます。
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">種類</p>
+  <h2>フォームは受け入れるべき種類を受け入れ、それ以外を拒否しますか。</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>テストケース</th><th>ファイル</th><th>期待される結果</th></tr></thead>
+    <tbody>
+      <tr><td>フォームが受け入れる各種類を、その種類の本物のファイルで</td><td><code>allowed_jpg.jpg</code>、<code>allowed_png.png</code>、<code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>フォームが受け入れない種類</td><td><code>denied.svg</code>、<code>denied.html</code>、<code>denied.exe</code>、<code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>拡張子はある種類を示し、中身は別の種類のもの。たとえば.jpgという名前のPDF</td><td><code>pdf_as_jpg.jpg</code>、<code>png_as_pdf.pdf</code>、<code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>拡張子が2つあり、最後のものが許可されていない</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>拡張子がまったくない</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>大文字の拡張子</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    画像やプレーンテキストとして受け入れられたSVGやHTMLファイルは、スクリプトにフォームをすり抜けさせる手口になります。そのため、フォームが意図して受け入れるのでない限り、拒否すべき種類のリストに入っています。
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">中身</p>
+  <h2>システムはファイルを開いていますか。それとも名前だけを見ていますか。</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>テストケース</th><th>ファイル</th><th>期待される結果</th></tr></thead>
+    <tbody>
+      <tr><td>途中で止まったアップロードが残すような、途中で切れたファイル</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>先頭のバイトがゼロで、何のファイルかを示すものがないファイル</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>形式が許す最小のファイル。有効で、ごく小さいもの</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    名前とサイズだけが正しいファイルは、ファイルを開かない検査をすべて通過します。<a href="/ja/sample-files/#corrupt">破損したサンプルファイル</a>はPDF、Word、Excel、PowerPoint、JPG、PNG、MP4、ZIPで用意しています。<a href="/ja/corrupt-test-files/">破損したテストファイル</a>では、任意の形式と任意のサイズで作る方法を説明しています。
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">名前</p>
+  <h2>ファイルは、付けられた名前のまま戻ってきますか。</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>テストケース</th><th>ファイル</th><th>期待される結果</th></tr></thead>
+    <tbody>
+      <tr><td>スペースとかっこ</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ASCII以外の文字と絵文字</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>200文字を超える名前</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td><code>../</code>や<code>..\</code>でフォルダーの外へ出る名前</td><td><code>climbing_name.jpg</code>、<code>../tfg_climbed_out.jpg</code>としてアップロード</td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>LinuxまたはWindowsの絶対パス</td><td><code>absolute_name.jpg</code>、<code>/tmp/tfg_climbed_out.jpg</code>としてアップロード</td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    パスを含む名前はディスクに保存できないため、ファイルには普通の名前が付いていて、どの名前でアップロードするかはマニフェストに書かれています。ファイルを受け入れて名前の最後の部分だけを残すのは、よい答えです。アップロードフォルダーの外に書き込むことこそ、このケースが見つけるための欠陥です。<a href="/ja/presets/filename-handling/">filename-handlingプリセット</a>には、さらに多くの名前があります。よく似た文字、不可視文字、Windowsが予約している名前、バイトで数える長さなどです。
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">量とアーカイブ</p>
+  <h2>多数のファイルや、多数のファイルを含むファイルではどうなりますか。</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>テストケース</th><th>ファイル</th><th>期待される結果</th></tr></thead>
+    <tbody>
+      <tr><td>1回のアップロードで50ファイル</td><td><code>bulk_0001.jpg</code>から<code>bulk_0050.jpg</code>まで</td><td><code>accept</code></td></tr>
+      <tr><td>実際に200個の文書を含むZIP</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>システムが展開するアーカイブ。先にzip slipとzip爆弾を確認</td><td><code>tfg tool archive-scan upload.zip</code></td><td>安全、または見つかったもの</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code>で、一括アップロードのファイル数を最大1万まで指定できます。アーカイブの検査が何を探すかは<a href="/ja/tools/">ツール</a>で説明しています。
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">テストで</p>
+  <h2>リストをテストとして実行する</h2>
+  <p>
+    マニフェストには、各ファイルの期待される結果と、アップロードするときの名前が入っているので、1つのループでリスト全体を実行できます。
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    <code>unspecified</code>のファイルはここでは除外しています。その答えはあなた自身の方針で決まるからです。方針を決めてレシピに<code>expected</code>として書けば、ループはそれらも確認します。<a href="/ja/test-files-in-ci/">CIでのテストファイル</a>では、これをパイプラインで実行します。
+  </p>
+</section>

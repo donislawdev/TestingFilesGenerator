@@ -1,0 +1,83 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>展開する前にアーカイブを検査し、チェックサムを確認する</h1>
+<p class="lead">
+  <code>tfg</code>には、生成ツールのほかに、手元にあるファイル向けの小さなツールがあります。アーカイブを安全に展開できるか、ファイルやフォルダー全体がチェックサムのとおりのままかを確かめます。どれも自分のマシンで動き、アップロードもアカウントも不要です。
+</p>
+
+<div class="note">
+  <p class="note-title">短い答え</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code>は、何も展開せずにアーカイブを読み、安全ならコード0で、そうでなければ見つかったものの一覧とともにコード7で終了します。<code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code>は、ファイルがダウンロードページに書かれたチェックサムと一致するかを示します。
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">あるもの</p>
+  <h2>どんなツールがありますか。</h2>
+  <p>
+    これはプログラムが出力する一覧で、このページを作るときにプログラムから読み取っています。<code>tfg tool list</code>は同じ一覧を出力し、<code>tfg tool show &lt;id&gt;</code>はそのうちの1つが受け取る設定を示します。どのツールも、デスクトップウィンドウのツール画面に同じ設定で用意されています。
+  </p>
+  {{ template "toolsTable" . }}
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">アーカイブ</p>
+  <h2>このアーカイブは安全に展開できますか。zip slipとzip爆弾</h2>
+  <p>
+    <code>archive-scan</code>は、ディスクに何も書き込まずにZIP、TAR、TAR.GZ、gzipファイルの中を調べ、展開しても安全かを示します。報告するものは次のとおりです。
+  </p>
+  <ul>
+    <li>フォルダーの外に書き込まれるエントリ。zip slipと呼ばれる罠です</li>
+    <li>リンク、デバイス、または同じ1つのファイルに書き込まれることになる2つの名前</li>
+    <li>システムが書き込めない名前</li>
+    <li>展開すると爆発的に大きくなるように作られたエントリ。zip爆弾と呼ばれる罠です</li>
+    <li>破損したエントリ</li>
+  </ul>
+  <p>
+    ZIPの中のZIPやTARの中のDOCXのような、アーカイブの中のアーカイブも、同じようにメモリ内で16階層まで読みます。その1つにある罠はアーカイブ全体の罠です。すべてを展開するプログラムは、それらも展開するからです。
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code>を指定すると、展開後のサイズが許容量を超えるアーカイブも報告します。安全ならコード0、何か見つかればコード7で終了するので、パイプラインはそこで止められます。
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">1つのファイル</p>
+  <h2>このファイルは、名乗っているとおりのファイルですか。</h2>
+  <p>
+    <code>checksum</code>はファイルのチェックサムを計算し、比較する値を渡せば一致するかどうかを示します。md5、sha1、sha256、sha512、crc32に対応し、指定しなければsha256を使います。渡された値がどの種類かは、その長さから判断します。
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    一致しないチェックサムはコード7で終了します。Windowsの<code>Get-FileHash</code>やLinuxの<code>sha256sum</code>と同じ問いに答えますが、比較まで自動で行います。
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">フォルダー全体</p>
+  <h2>このフォルダーの中で何か変わりましたか。</h2>
+  <p>
+    <code>checksum-write</code>は、フォルダー内のすべてのファイルのチェックサムを、その横のSHA256SUMSに書き込みます。<code>sha256sum</code>が書くのと同じバイトで、既存のSHA256SUMSを上書きすることはありません。<code>checksum-check</code>は、後でSHA256SUMSに載っているすべてのファイルを確認します。
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    載っていないファイルは<code>sha256sum -c</code>と同じく確認しません。フォルダーの外に出るパスは、読まずに拒否します。<a href="/ja/sample-files/">サンプルファイル</a>には、この方法で確認できるSHA256SUMSが付いています。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">次へ</p>
+  <h2>ここからどこへ</h2>
+  <ul>
+    <li>
+      <a href="/ja/file-upload-test-cases/">ファイルアップロードのテストケース</a>では、アーカイブの検査をアップロードのほかのケースと並べて扱っています。
+    </li>
+    <li>
+      <a href="/ja/docs/">ドキュメント</a>には、すべてのコマンドと終了コードが載っています。
+    </li>
+  </ul>
+</section>

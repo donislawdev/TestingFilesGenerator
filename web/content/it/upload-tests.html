@@ -1,0 +1,160 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Casi di test per l'upload di file, con i file per eseguirli</h1>
+<p class="lead">
+  Una checklist di casi di test per l'upload di file, dal limite di dimensione a un nome di file che
+  cerca di uscire dalla sua cartella. Ogni caso indica il file che lo verifica e cosa il tuo sistema
+  deve farne, così la lista si può eseguire e non solo leggere.
+</p>
+
+<div class="note">
+  <p class="note-title">Tutta la lista con un comando</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    scrive un file per quasi ogni caso qui sotto, con un manifest che dice cosa deve succedere a
+    ciascuno. Inserisci il limite e i tipi che il tuo modulo dichiara.
+  </p>
+</div>
+
+<p>
+  <code>accept</code> significa che il tuo sistema deve accettare il file e <code>reject</code> che deve
+  rifiutarlo con un messaggio chiaro. <code>unspecified</code> significa che entrambe le risposte possono
+  essere giuste, quindi annota quale intende il tuo sistema e controlla che si comporti così ogni volta.
+  La parola dopo l'esito è il motivo indicato dal manifest.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">Dimensione</p>
+  <h2>Il limite di dimensione è applicato dove è dichiarato?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caso di test</th><th>File</th><th>Atteso</th></tr></thead>
+    <tbody>
+      <tr><td>Un byte sotto il limite</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Esattamente al limite</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Un byte sopra il limite</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Il doppio del limite, per vedere che il server smette presto di leggere invece di caricare tutto in memoria</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Un file vuoto di 0 byte</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    I due casi in cui un limite sbaglia più spesso sono un limite controllato solo nel browser e un limite
+    contato in MB dove il codice conta MiB. Il
+    <a href="/it/preset/size-boundaries/">preset size-boundaries</a> mette un file a ogni distanza dal
+    limite che scegli, un byte, un kilobyte e un megabyte per lato.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">Tipo</p>
+  <h2>Il modulo accetta i tipi giusti e rifiuta il resto?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caso di test</th><th>File</th><th>Atteso</th></tr></thead>
+    <tbody>
+      <tr><td>Ogni tipo che il modulo accetta, come file reale di quel tipo</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Un tipo che il modulo non accetta</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Un'estensione che dichiara un tipo su un contenuto di un altro, come un PDF chiamato .jpg</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>Due estensioni, l'ultima non consentita</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Nessuna estensione</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>L'estensione in maiuscolo</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Un SVG o un HTML scambiato per un'immagine o per testo semplice è un modo per far passare uno script
+    attraverso un modulo. Per questo sono nella lista dei tipi da rifiutare, a meno che il tuo modulo non
+    debba accettarli.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">Contenuto</p>
+  <h2>Il sistema apre il file, o guarda solo il nome?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caso di test</th><th>File</th><th>Atteso</th></tr></thead>
+    <tbody>
+      <tr><td>Un file troncato, come lo lascia un upload interrotto</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Un file i cui primi byte sono zeri, così nulla dice cosa sia</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Il file più piccolo che un formato consente, valido e minuscolo</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Un file che ha solo il nome giusto e la dimensione giusta supera ogni controllo che non lo apre mai.
+    I <a href="/it/file-di-esempio/#corrupt">file di esempio corrotti</a> ci sono in PDF, Word, Excel,
+    PowerPoint, JPG, PNG, MP4 e ZIP, e <a href="/it/file-di-test-corrotti/">file di test corrotti</a>
+    spiega come crearli in qualsiasi formato e di qualsiasi dimensione.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">Nome</p>
+  <h2>Il file torna con il nome che gli è stato dato?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caso di test</th><th>File</th><th>Atteso</th></tr></thead>
+    <tbody>
+      <tr><td>Spazi e parentesi</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Lettere fuori dall'ASCII e un'emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>Un nome più lungo di 200 caratteri</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>Un nome che risale fuori dalla sua cartella, <code>../</code> o <code>..\</code></td><td><code>climbing_name.jpg</code>, caricato come <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Un percorso assoluto, su Linux o Windows</td><td><code>absolute_name.jpg</code>, caricato come <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Un percorso dentro un nome non si può salvare su disco, quindi il file ha un nome semplice e il
+    manifest dice con quale nome caricarlo. Accettare il file e tenere solo l'ultima parte del nome è
+    una buona risposta. Scriverlo fuori dalla cartella di upload è il difetto che questo caso esiste per
+    trovare. Il <a href="/it/preset/filename-handling/">preset filename-handling</a> ha molti altri nomi:
+    lettere che si somigliano, caratteri invisibili, nomi riservati da Windows e lunghezze contate in
+    byte.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">Volume e archivi</p>
+  <h2>Cosa succede con molti file, o con un file che ne contiene molti?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caso di test</th><th>File</th><th>Atteso</th></tr></thead>
+    <tbody>
+      <tr><td>Cinquanta file in un solo upload</td><td>da <code>bulk_0001.jpg</code> a <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Uno ZIP che contiene davvero 200 documenti</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Un archivio che il tuo sistema decomprime, controllato prima contro zip slip e zip bomb</td><td><code>tfg tool archive-scan upload.zip</code></td><td>sicuro, oppure cosa ha trovato</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> imposta quanti file contiene l'upload di massa, fino a diecimila.
+    <a href="/it/strumenti/">Strumenti</a> spiega cosa cerca il controllo degli archivi.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">In un test</p>
+  <h2>Eseguire la lista come test</h2>
+  <p>
+    Il manifest contiene l'esito atteso di ogni file e il nome con cui caricarlo, quindi un solo ciclo
+    esegue tutta la lista:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    I file marcati <code>unspecified</code> sono esclusi qui, perché la loro risposta è la tua politica.
+    Decidila, scrivila nella ricetta con <code>expected</code>, e il ciclo controlla anche quelli.
+    <a href="/it/file-di-test-in-ci/">File di test in CI</a> esegue tutto questo in una pipeline.
+  </p>
+</section>

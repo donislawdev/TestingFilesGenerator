@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="th">
+<title>ตรวจ ZIP ก่อนแตกไฟล์ และตรวจสอบเช็กซัม SHA-256</title>
+<meta name="description" content="เครื่องมือออฟไลน์สำหรับไฟล์ที่คุณมีอยู่แล้ว: ดูว่าไฟล์บีบอัดแตกได้อย่างปลอดภัยไหม รวมถึง zip slip และ zip bomb และตรวจหรือเขียนเช็กซัม SHA-256">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/th/tools/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/tools/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/nastroje/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/werkzeuge/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/herramientas/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/outils/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/tools/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/alat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/strumenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/tools/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/tools/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/hulpmiddelen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/narzedzia/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/ferramentas/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/instrumente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/tools/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/tools/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/araclar/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/tools/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/cong-cu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/tools/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/tools/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="ตรวจ ZIP ก่อนแตกไฟล์ และตรวจสอบเช็กซัม SHA-256">
+<meta property="og:description" content="เครื่องมือออฟไลน์สำหรับไฟล์ที่คุณมีอยู่แล้ว: ดูว่าไฟล์บีบอัดแตกได้อย่างปลอดภัยไหม รวมถึง zip slip และ zip bomb และตรวจหรือเขียนเช็กซัม SHA-256">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/th/tools/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - ไฟล์ทดสอบจริงขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ตรวจ ZIP ก่อนแตกไฟล์ และตรวจสอบเช็กซัม SHA-256">
+<meta name="twitter:description" content="เครื่องมือออฟไลน์สำหรับไฟล์ที่คุณมีอยู่แล้ว: ดูว่าไฟล์บีบอัดแตกได้อย่างปลอดภัยไหม รวมถึง zip slip และ zip bomb และตรวจหรือเขียนเช็กซัม SHA-256">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - ไฟล์ทดสอบจริงขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "หน้าแรก",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/th/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "เอกสาร",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/th\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "เครื่องมือ",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/th\/tools\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">ข้ามไปยังเนื้อหา</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/th/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="เมนูหลัก">
+      <a href="/th/">หน้าแรก</a>
+      <a href="/th/formats/">รูปแบบไฟล์</a>
+      <a href="/th/presets/">พรีเซ็ต</a>
+      <a href="/th/docs/" aria-current="true">เอกสาร</a>
+      <a href="/th/use-cases/">กรณีการใช้งาน</a>
+      <a href="/th/create-file-exact-size/">ขนาดแม่นยำ</a>
+      <a href="/th/faq/">คำถามที่พบบ่อย</a>
+      <a href="/th/corrupt-test-files/">ไฟล์เสียหาย</a>
+      <a href="/th/sample-files/">ไฟล์ตัวอย่าง</a>
+      <a href="/th/test-files-in-ci/">ไฟล์ทดสอบใน CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="ภาษา: ไทย">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>ไทย</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/tools/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/tools/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/nastroje/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/werkzeuge/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/herramientas/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/outils/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/tools/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/alat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/strumenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/tools/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/tools/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/hulpmiddelen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/narzedzia/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/ferramentas/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/instrumente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/tools/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/araclar/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/tools/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/cong-cu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/tools/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/tools/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/th/docs/">เอกสาร</a></p>
+<h1>ตรวจไฟล์บีบอัดก่อนแตกไฟล์ และตรวจสอบเช็กซัม</h1>
+<p class="lead">
+  นอกจากตัวสร้างแล้ว <code>tfg</code> ยังมีเครื่องมือเล็กๆ สำหรับไฟล์ที่คุณมีอยู่แล้ว:
+  ไฟล์บีบอัดแตกได้อย่างปลอดภัยหรือไม่ และไฟล์หนึ่งหรือทั้งโฟลเดอร์ยังตรงกับที่เช็กซัมบอกหรือไม่
+  เครื่องมือเหล่านี้ทำงานบนเครื่องของคุณ ไม่ต้องอัปโหลดและไม่ต้องมีบัญชี
+</p>
+
+<div class="note">
+  <p class="note-title">คำตอบสั้นๆ</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> อ่านไฟล์บีบอัดโดยไม่แตกอะไรออกมาเลย
+    และจบด้วยรหัส 0 เมื่อปลอดภัย หรือรหัส 7 พร้อมรายการสิ่งที่พบ
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code>
+    บอกว่าไฟล์ตรงกับเช็กซัมที่หน้าดาวน์โหลดให้มาหรือไม่
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">มีอะไรบ้าง</p>
+  <h2>มีเครื่องมืออะไรบ้าง</h2>
+  <p>
+    นี่คือรายการที่โปรแกรมพิมพ์ออกมา อ่านจากตัวโปรแกรมเองตอนสร้างหน้านี้ <code>tfg tool list</code>
+    พิมพ์รายการเดียวกัน และ <code>tfg tool show &lt;id&gt;</code> บอกว่าเครื่องมือหนึ่งรับอะไรบ้าง
+    ทุกเครื่องมืออยู่ในหน้าจอ Tools ของหน้าต่างเดสก์ท็อปด้วย พร้อมการตั้งค่าเดียวกัน
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>เครื่องมือ</th>
+      <th>คำถามที่ตอบ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>archive-scan</code></td>
+      <td>ไฟล์บีบอัดนี้แตกได้อย่างปลอดภัยไหม</td>
+    </tr>
+    <tr>
+      <td><code>checksum</code></td>
+      <td>ไฟล์นี้ใช่ไฟล์ที่มันอ้างว่าเป็นหรือไม่</td>
+    </tr>
+    <tr>
+      <td><code>checksum-check</code></td>
+      <td>ทุกไฟล์ยังตรงกับที่ไฟล์เช็กซัมบอกไว้หรือไม่</td>
+    </tr>
+    <tr>
+      <td><code>checksum-write</code></td>
+      <td>ภายหลังจะรู้ได้อย่างไรว่าไม่มีอะไรในโฟลเดอร์นี้เปลี่ยนไป</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">ไฟล์บีบอัด</p>
+  <h2>ไฟล์บีบอัดนี้แตกได้อย่างปลอดภัยไหม - zip slip และ zip bomb</h2>
+  <p>
+    <code>archive-scan</code> ดูข้างในไฟล์ ZIP, TAR, TAR.GZ หรือ gzip โดยไม่เขียนอะไรลงดิสก์
+    และบอกว่าการแตกไฟล์นั้นปลอดภัยหรือไม่ โดยรายงาน:
+  </p>
+  <ul>
+    <li>รายการข้างในที่จะถูกเขียนออกนอกโฟลเดอร์ ซึ่งเป็นกับดักที่เรียกว่า zip slip</li>
+    <li>ลิงก์ อุปกรณ์ หรือสองชื่อที่จะไปลงที่ไฟล์เดียวกัน</li>
+    <li>ชื่อที่ระบบใดระบบหนึ่งเขียนไม่ได้</li>
+    <li>รายการข้างในที่สร้างมาให้ระเบิดเมื่อแตกไฟล์ ซึ่งเป็นกับดักที่เรียกว่า zip bomb</li>
+    <li>รายการข้างในที่เสียหาย</li>
+  </ul>
+  <p>
+    ไฟล์บีบอัดที่อยู่ในไฟล์บีบอัด เช่น ZIP ใน ZIP หรือ DOCX ใน TAR จะถูกอ่านแบบเดียวกันในหน่วยความจำ
+    ลึกได้ถึง 16 ชั้น กับดักในไฟล์ใดไฟล์หนึ่งก็คือกับดักของทั้งไฟล์
+    เพราะโปรแกรมที่แตกทุกอย่างก็จะแตกไฟล์เหล่านั้นด้วย
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> รายงานไฟล์บีบอัดที่แตกออกมาแล้วใหญ่เกินกว่าที่คุณอนุญาตด้วย
+    เมื่อปลอดภัยจะจบด้วยรหัส 0 และเมื่อพบสิ่งใดจะจบด้วยรหัส 7 ไปป์ไลน์จึงหยุดตรงนั้นได้
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">ไฟล์เดียว</p>
+  <h2>ไฟล์นี้ใช่ไฟล์ที่มันอ้างว่าเป็นหรือไม่</h2>
+  <p>
+    <code>checksum</code> คำนวณเช็กซัมของไฟล์ และเมื่อได้รับค่าที่จะเทียบ ก็จะบอกว่าตรงกันหรือไม่
+    รองรับ md5, sha1, sha256, sha512 และ crc32 โดยใช้ sha256 ถ้าคุณไม่ได้ระบุ
+    และรู้ว่าค่าที่ได้รับเป็นแบบไหนจากความยาวของค่านั้น
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    เช็กซัมที่ไม่ตรงกันจะจบด้วยรหัส 7 เครื่องมือนี้ตอบคำถามเดียวกับ <code>Get-FileHash</code> บน Windows
+    หรือ <code>sha256sum</code> บน Linux แต่เปรียบเทียบให้คุณเสร็จในตัว
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">ทั้งโฟลเดอร์</p>
+  <h2>มีอะไรในโฟลเดอร์นี้เปลี่ยนไปหรือไม่</h2>
+  <p>
+    <code>checksum-write</code> เขียนเช็กซัมของทุกไฟล์ในโฟลเดอร์ลงใน SHA256SUMS ข้างๆ ไฟล์เหล่านั้น
+    เป็นไบต์เดียวกับที่ <code>sha256sum</code> เขียน และไม่เขียนทับไฟล์ที่มีอยู่แล้ว
+    ภายหลัง <code>checksum-check</code> จะตรวจทุกไฟล์ที่ SHA256SUMS ระบุไว้
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    ไฟล์ที่ไม่ได้ระบุไว้จะไม่ถูกตรวจ เหมือน <code>sha256sum -c</code>
+    และพาธที่ออกนอกโฟลเดอร์จะถูกปฏิเสธแทนที่จะถูกอ่าน
+    <a href="/th/sample-files/">ไฟล์ตัวอย่าง</a> มาพร้อม SHA256SUMS ที่คุณตรวจด้วยวิธีนี้ได้
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">ถัดไป</p>
+  <h2>จากตรงนี้ไปไหนต่อ</h2>
+  <ul>
+    <li>
+      <a href="/th/file-upload-test-cases/">กรณีทดสอบการอัปโหลดไฟล์</a>
+      วางการตรวจไฟล์บีบอัดไว้ร่วมกับกรณีอื่นๆ ของการอัปโหลด
+    </li>
+    <li>
+      <a href="/th/docs/">เอกสาร</a> มีทุกคำสั่งและทุกรหัสออก
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">ไฟล์ทดสอบสำหรับ QA ขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">โครงการ</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">ซอร์สโค้ดบน GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">ดาวน์โหลด</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">แจ้งปัญหา</a></li>
+        <li><a href="https://donislawdev.com/support/">สนับสนุนโครงการ</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">หน้าเว็บ</p>
+      <ul class="plain">
+        <li><a href="/th/">หน้าแรก</a></li>
+        <li><a href="/th/formats/">รูปแบบไฟล์</a></li>
+        <li><a href="/th/presets/">พรีเซ็ต</a></li>
+        <li><a href="/th/docs/">เอกสาร</a></li>
+        <li><a href="/th/use-cases/">กรณีการใช้งาน</a></li>
+        <li><a href="/th/create-file-exact-size/">ขนาดแม่นยำ</a></li>
+        <li><a href="/th/faq/">คำถามที่พบบ่อย</a></li>
+        <li><a href="/th/corrupt-test-files/">ไฟล์เสียหาย</a></li>
+        <li><a href="/th/sample-files/">ไฟล์ตัวอย่าง</a></li>
+        <li><a href="/th/test-files-in-ci/">ไฟล์ทดสอบใน CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev เผยแพร่ภายใต้ GNU General Public License เวอร์ชัน 3 ไฟล์ที่คุณสร้างเป็นของคุณ - ใบอนุญาตครอบคลุมตัวเครื่องมือ ไม่ใช่ผลลัพธ์ของมัน</p>
+    <p class="muted">เว็บไซต์นี้ไม่โหลดฟอนต์ สคริปต์ หรือตัวติดตามจากที่ใดเลย และไม่ตั้งค่าคุกกี้</p>
+  </div>
+</footer>
+</body>
+</html>

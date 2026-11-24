@@ -1,0 +1,110 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>ملفات اختبار نموذجية للتنزيل</h1>
+<p class="lead">
+  ملفات حقيقية للتنزيل لاختبار نموذج رفع أو محلل أو استيراد: ملف واحد من كل صيغة يكتبها هذا المولّد،
+  وملفات أُتلفت عمدًا، وجداول كما تصدّرها برامج الجداول الحسابية، وصور بديلة. لا شيء للتثبيت ولا حاجة
+  إلى التسجيل.
+</p>
+
+<div class="note">
+  <p class="note-title">من وصفة واحدة</p>
+  <p>
+    كل الملفات في هذه الصفحة تأتي من وصفة واحدة،
+    <a href="/samples/samples.yaml">samples.yaml</a>. شغّلها بـ <code>tfg</code> فتحصل على البايتات
+    نفسها على أي جهاز، لذا فإن SHA-256 بجانب كل ملف شيء يمكنك التحقق منه بدل أن تأخذه على الثقة.
+  </p>
+  <pre><code>tfg generate samples.yaml --out samples</code></pre>
+  <p>
+    كل المجاميع الاختبارية موجودة في <a href="/samples/SHA256SUMS">SHA256SUMS</a>. ضعه في ذلك المجلد،
+    فيخبرك <code>tfg tool checksum-check samples/SHA256SUMS</code> أو <code>sha256sum -c SHA256SUMS</code>
+    هل يطابق كل ملف مجموعه.
+  </p>
+</div>
+
+<p>
+  العمود الأخير في كل جدول هو ما يتوقع <a href="/samples/manifest.json">البيان</a> أن يفعله نظامك
+  بالملف. <code>accept</code> يعني أنه ينبغي أن يقبل الملف، و<code>reject</code> أنه ينبغي أن يرفضه،
+  و<code>unspecified</code> أن ذلك يعتمد على قواعد نظامك.
+</p>
+
+<section class="section" id="formats">
+  <p class="eyebrow">كل الصيغ</p>
+  <h2>ملف واحد من كل صيغة، بحجم 1 MB لكل منها</h2>
+  <p>
+    مستندات وصور ونصوص وبيانات وأرشيفات وبريد وقياسات عن بُعد وصوت وفيديو، كل منها 1048576 بايتًا
+    بالضبط، وكل منها ملف حقيقي من صيغته. يُفتح ملف PDF في قارئ PDF، وDOCX في Word، وXLSX في Excel،
+    ويُفك ضغط ZIP.
+  </p>
+  {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    الحجم الآخر يحتاج أمرًا واحدًا. <code>tfg generate --format pdf --size 10mb</code> يكتب ملف PDF
+    بحجم 10 MB بالضبط، ويُصنع ملف بحجم 1 GB بالطريقة نفسها. لا تُحفظ ملفات بهذا الحجم في هذه الصفحة،
+    لأن الأمر يصنعها أسرع من التنزيل.
+  </p>
+</section>
+
+<section class="section" id="corrupt">
+  <p class="eyebrow">تالفة عمدًا</p>
+  <h2>ملفات PDF وWord وExcel تالفة، وصور وفيديو وZIP أيضًا</h2>
+  <p>
+    صُنع كل منها سليمًا ثم أُتلف، وما زال حجمه 1 MB بالضبط. يقطع <code>truncate</code> النهاية كما
+    يفعل رفع انقطع، ويكتب <code>zero-head</code> أصفارًا فوق البايتات الأولى، حيث تنظر القارئة لتعرف
+    ما هو الملف. ويتوقع البيان أن يرفض نظامك كل واحد منها.
+  </p>
+  {{ with .SampleTable "corrupt" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    تشرح صفحة <a href="/ar/corrupt-test-files/">ملفات اختبار تالفة</a> كيف تصنع ملفاتك الخاصة، بأي صيغة
+    وبأي حجم، وما أنواع التلف المتاحة.
+  </p>
+</section>
+
+<section class="section" id="tables">
+  <p class="eyebrow">للاستيراد</p>
+  <h2>جداول CSV وJSON وExcel</h2>
+  <p>
+    الجدول نفسه مكتوبًا بالطرق التي تكتبه بها الأدوات الحقيقية: بفاصلة أو فاصلة منقوطة أو علامة جدولة
+    أو خط عمودي بين القيم، وبنهايات أسطر ويندوز، وبلا صف ترويسة، وكل قيمة بين علامتي اقتباس أو لا قيمة
+    منها، وملف CSV عريض، وورقة Excel، وJSON بثلاثة تخطيطات. بعضها مُعلَّم بـ <code>unspecified</code>،
+    لأن قبول الاستيراد للفاصلة المنقوطة قراره هو. أما ما لا يجوز له فهو أن يقرأ نصف الجدول.
+  </p>
+  {{ with .SampleTable "tables" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    هي ملفات <a href="/ar/presets/tabular-import/">الإعداد المسبق tabular-import</a>، الذي يصنعها بأي
+    عدد تطلبه من الصفوف والأعمدة.
+  </p>
+</section>
+
+<section class="section" id="placeholders">
+  <p class="eyebrow">للتخطيط</p>
+  <h2>صور بديلة بأحجام شائعة</h2>
+  <p>
+    صورة رمادية بلون واحد مكتوب في وسطها حجمها، لتنسيق صفحة قبل وجود الصور الحقيقية: صور مصغرة مربعة،
+    وإعلان 300 في 250، ولافتة 728 في 90، وبطاقة تواصل اجتماعي 1200 في 630، وشاشة Full HD. كل منها
+    بأصغر حجم ممكن لملف هذه الصورة.
+  </p>
+  {{ with .SampleTable "placeholders" }}{{ template "samplesTable" . }}{{ end }}
+  <p>أي حجم أو لون آخر:</p>
+  <pre><code>tfg generate --format png --size smallest --set content=placeholder --set width=640 --set height=360 --set background=1e293b</code></pre>
+  <p>
+    يصنع <a href="/ar/presets/picture-sizes/">الإعداد المسبق picture-sizes</a> في تشغيل واحد كل حجم
+    تستخدمه الشاشات والمنصات، مع <code>--content placeholder</code>.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">التالي</p>
+  <h2>إلى أين من هنا</h2>
+  <ul>
+    <li>
+      <a href="/ar/file-upload-test-cases/">حالات اختبار رفع الملفات</a> تبيّن أي هذه الملفات يختبر ماذا
+      في نموذج الرفع.
+    </li>
+    <li>
+      <a href="/ar/presets/">الإعدادات المسبقة</a> مجموعات جاهزة، لكل منها سؤال اختبار واحد.
+    </li>
+    <li>
+      <a href="/ar/test-files-in-ci/">ملفات الاختبار في CI</a> تصنع ملفات كهذه في خط البناء بدل حفظها
+      في المستودع.
+    </li>
+  </ul>
+</section>

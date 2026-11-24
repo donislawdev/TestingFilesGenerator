@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ko">
+<title>파일 업로드 테스트 케이스 - 실행할 파일 포함</title>
+<meta name="description" content="파일 업로드 테스트 케이스. 크기 한도, 빈 파일과 손상된 파일, 잘못된 유형, 예상하지 못한 파일 이름, 아카이브까지 케이스마다 확인할 파일이 있습니다.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ko/file-upload-test-cases/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/file-upload-test-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-pripady-nahravani-souboru/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testfaelle-datei-upload/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-prueba-de-subida-de-archivos/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-de-test-envoi-de-fichiers/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/file-upload-test-cases/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-uji-unggah-file/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-di-test-upload-file/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/file-upload-test-cases/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/file-upload-test-cases/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testgevallen-bestandsupload/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/przypadki-testowe-uploadu/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-teste-de-upload-de-arquivos/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-test-incarcare-fisiere/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/file-upload-test-cases/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/file-upload-test-cases/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dosya-yukleme-test-senaryolari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/file-upload-test-cases/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-kiem-thu-tai-len/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/file-upload-test-cases/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/file-upload-test-cases/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="파일 업로드 테스트 케이스 - 실행할 파일 포함">
+<meta property="og:description" content="파일 업로드 테스트 케이스. 크기 한도, 빈 파일과 손상된 파일, 잘못된 유형, 예상하지 못한 파일 이름, 아카이브까지 케이스마다 확인할 파일이 있습니다.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ko/file-upload-test-cases/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 정확한 크기의 실제 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="파일 업로드 테스트 케이스 - 실행할 파일 포함">
+<meta name="twitter:description" content="파일 업로드 테스트 케이스. 크기 한도, 빈 파일과 손상된 파일, 잘못된 유형, 예상하지 못한 파일 이름, 아카이브까지 케이스마다 확인할 파일이 있습니다.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 정확한 크기의 실제 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "홈",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ko/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "활용 사례",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ko\/use-cases\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "업로드 테스트 케이스",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ko\/file-upload-test-cases\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ko/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="메인 메뉴">
+      <a href="/ko/">홈</a>
+      <a href="/ko/formats/">형식</a>
+      <a href="/ko/presets/">프리셋</a>
+      <a href="/ko/docs/">문서</a>
+      <a href="/ko/use-cases/" aria-current="true">활용 사례</a>
+      <a href="/ko/create-file-exact-size/">정확한 크기</a>
+      <a href="/ko/faq/">FAQ</a>
+      <a href="/ko/corrupt-test-files/">손상 파일</a>
+      <a href="/ko/sample-files/">샘플 파일</a>
+      <a href="/ko/test-files-in-ci/">CI의 테스트 파일</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="언어: 한국어">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>한국어</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/file-upload-test-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/file-upload-test-cases/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-pripady-nahravani-souboru/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testfaelle-datei-upload/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-prueba-de-subida-de-archivos/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-de-test-envoi-de-fichiers/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/file-upload-test-cases/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/kasus-uji-unggah-file/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-di-test-upload-file/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/file-upload-test-cases/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/nl/testgevallen-bestandsupload/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/przypadki-testowe-uploadu/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-teste-de-upload-de-arquivos/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-test-incarcare-fisiere/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/file-upload-test-cases/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/file-upload-test-cases/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/dosya-yukleme-test-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/file-upload-test-cases/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/truong-hop-kiem-thu-tai-len/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/file-upload-test-cases/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/file-upload-test-cases/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/ko/use-cases/">활용 사례</a></p>
+<h1>파일 업로드 테스트 케이스와 실행할 파일</h1>
+<p class="lead">
+  크기 한도부터 자기 폴더 밖으로 나가려는 파일 이름까지, 파일 업로드를 위한 테스트 케이스 체크리스트입니다. 케이스마다 그것을 테스트하는 파일과 시스템이 그 파일로 해야 할 일이 적혀 있어서, 읽기만 하는 목록이 아니라 실행할 수 있는 목록입니다.
+</p>
+
+<div class="note">
+  <p class="note-title">명령 하나로 전체 목록을</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>는 아래 거의 모든 케이스의 파일을, 각 파일에 무슨 일이 일어나야 하는지 알려 주는 매니페스트와 함께 씁니다. 한도와 유형에는 업로드 양식이 선언한 값을 넣으세요.
+  </p>
+</div>
+
+<p>
+  <code>accept</code>는 시스템이 파일을 받아야 한다는 뜻이고, <code>reject</code>는 명확한 메시지와 함께 거부해야 한다는 뜻입니다. <code>unspecified</code>는 어느 답이든 맞을 수 있다는 뜻이므로, 시스템이 어느 쪽을 의도하는지 적어 두고 매번 그렇게 동작하는지 확인하세요. 결과 뒤의 단어는 매니페스트가 제시하는 이유입니다.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">크기</p>
+  <h2>크기 한도가 선언한 지점에서 적용되나요?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>테스트 케이스</th><th>파일</th><th>기대 결과</th></tr></thead>
+    <tbody>
+      <tr><td>한도보다 1바이트 작음</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>정확히 한도</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>한도보다 1바이트 큼</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>한도의 두 배. 서버가 전부 메모리에 담지 않고 일찍 읽기를 멈추는지 확인합니다</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>0바이트의 빈 파일</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    한도가 가장 자주 틀리는 경우는 두 가지입니다. 브라우저에서만 검사하는 한도, 그리고 MB로 정한 한도를 코드가 MiB로 세는 경우입니다. <a href="/ko/presets/size-boundaries/">size-boundaries 프리셋</a>은 고른 한도에서 모든 거리, 즉 양쪽으로 1바이트, 1킬로바이트, 1메가바이트 떨어진 곳에 파일을 둡니다.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">유형</p>
+  <h2>양식이 받아야 할 유형은 받고 나머지는 거부하나요?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>테스트 케이스</th><th>파일</th><th>기대 결과</th></tr></thead>
+    <tbody>
+      <tr><td>양식이 받는 각 유형을 해당 유형의 실제 파일로</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>양식이 받지 않는 유형</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>확장자는 한 유형인데 내용은 다른 유형, 예를 들어 .jpg라는 이름의 PDF</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>확장자가 두 개이고 마지막 것이 허용되지 않음</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>확장자가 아예 없음</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>대문자 확장자</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    이미지나 일반 텍스트로 받아들여진 SVG나 HTML 파일은 스크립트가 양식을 통과하는 방법이 됩니다. 그래서 양식이 일부러 받으려는 것이 아니라면 거부할 유형 목록에 들어 있습니다.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">내용</p>
+  <h2>시스템이 파일을 열어 보나요, 아니면 이름만 보나요?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>테스트 케이스</th><th>파일</th><th>기대 결과</th></tr></thead>
+    <tbody>
+      <tr><td>중간에 끊긴 업로드가 남기는 것처럼 짧게 잘린 파일</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>첫 바이트들이 0이라서 무엇인지 알려 주는 것이 없는 파일</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>형식이 허용하는 가장 작은 파일, 유효하고 아주 작은 파일</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    이름과 크기만 맞는 파일은 파일을 열어 보지 않는 모든 검사를 통과합니다. <a href="/ko/sample-files/#corrupt">손상된 샘플 파일</a>은 PDF, Word, Excel, PowerPoint, JPG, PNG, MP4, ZIP으로 준비되어 있고, <a href="/ko/corrupt-test-files/">손상된 테스트 파일</a>에서 어떤 형식, 어떤 크기로든 만드는 방법을 설명합니다.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">이름</p>
+  <h2>파일이 받은 이름 그대로 돌아오나요?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>테스트 케이스</th><th>파일</th><th>기대 결과</th></tr></thead>
+    <tbody>
+      <tr><td>공백과 괄호</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ASCII 이외의 문자와 이모지</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>200자가 넘는 이름</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td><code>../</code> 또는 <code>..\</code>로 폴더 밖으로 나가는 이름</td><td><code>climbing_name.jpg</code>, <code>../tfg_climbed_out.jpg</code>라는 이름으로 업로드</td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Linux 또는 Windows의 절대 경로</td><td><code>absolute_name.jpg</code>, <code>/tmp/tfg_climbed_out.jpg</code>라는 이름으로 업로드</td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    경로가 든 이름은 디스크에 저장할 수 없으므로, 파일은 평범한 이름을 갖고 어떤 이름으로 업로드할지는 매니페스트가 알려 줍니다. 파일을 받고 이름의 마지막 부분만 남기는 것은 좋은 답입니다. 업로드 폴더 밖에 쓰는 것이 바로 이 케이스가 찾으려는 결함입니다. <a href="/ko/presets/filename-handling/">filename-handling 프리셋</a>에는 훨씬 더 많은 이름이 있습니다. 비슷하게 생긴 글자, 보이지 않는 문자, Windows가 예약한 이름, 바이트로 세는 길이 등입니다.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">양과 아카이브</p>
+  <h2>파일이 많거나 파일 하나에 많은 파일이 들어 있으면 어떻게 되나요?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>테스트 케이스</th><th>파일</th><th>기대 결과</th></tr></thead>
+    <tbody>
+      <tr><td>한 번의 업로드에 파일 50개</td><td><code>bulk_0001.jpg</code>부터 <code>bulk_0050.jpg</code>까지</td><td><code>accept</code></td></tr>
+      <tr><td>실제로 문서 200개가 든 ZIP</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>시스템이 압축을 푸는 아카이브, 먼저 zip slip과 zip 폭탄을 검사</td><td><code>tfg tool archive-scan upload.zip</code></td><td>안전함, 또는 발견한 내용</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code>는 대량 업로드에 담을 파일 수를 최대 1만 개까지 정합니다. 아카이브 검사가 무엇을 찾는지는 <a href="/ko/tools/">도구</a>에서 설명합니다.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">테스트에서</p>
+  <h2>목록을 테스트로 실행하기</h2>
+  <p>
+    매니페스트에는 모든 파일의 기대 결과와 업로드할 때 쓸 이름이 있으므로, 반복문 하나로 전체 목록을 실행합니다.
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    <code>unspecified</code>로 표시된 파일은 여기서 빠집니다. 그 답은 여러분의 정책이기 때문입니다. 정책을 정해 레시피에 <code>expected</code>로 적으면 반복문이 그 파일도 확인합니다. <a href="/ko/test-files-in-ci/">CI의 테스트 파일</a>은 이것을 파이프라인에서 실행합니다.
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">QA를 위한 정확한 크기의 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">프로젝트</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub의 소스 코드</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">다운로드</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">문제 신고</a></li>
+        <li><a href="https://donislawdev.com/support/">프로젝트 후원</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">페이지</p>
+      <ul class="plain">
+        <li><a href="/ko/">홈</a></li>
+        <li><a href="/ko/formats/">형식</a></li>
+        <li><a href="/ko/presets/">프리셋</a></li>
+        <li><a href="/ko/docs/">문서</a></li>
+        <li><a href="/ko/use-cases/">활용 사례</a></li>
+        <li><a href="/ko/create-file-exact-size/">정확한 크기</a></li>
+        <li><a href="/ko/faq/">FAQ</a></li>
+        <li><a href="/ko/corrupt-test-files/">손상 파일</a></li>
+        <li><a href="/ko/sample-files/">샘플 파일</a></li>
+        <li><a href="/ko/test-files-in-ci/">CI의 테스트 파일</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. GNU 일반 공중 사용 허가서 버전 3에 따라 배포됩니다. 생성한 파일은 여러분의 것입니다. 라이선스는 도구에 적용되며 도구의 출력물에는 적용되지 않습니다.</p>
+    <p class="muted">이 사이트는 어디에서도 글꼴, 스크립트, 추적기를 불러오지 않습니다. 쿠키도 설정하지 않습니다.</p>
+  </div>
+</footer>
+</body>
+</html>

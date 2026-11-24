@@ -1,0 +1,158 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>File upload test cases, with the files to run them</h1>
+<p class="lead">
+  A checklist of test cases for a file upload, from the size limit to a file name that tries to
+  leave its folder. Every case names the file that tests it and what your system should do with it,
+  so the list can be run and not only read.
+</p>
+
+<div class="note">
+  <p class="note-title">The whole list in one command</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    writes a file for nearly every case below, with a manifest that says what should happen to each.
+    Put in the limit and the types your form declares.
+  </p>
+</div>
+
+<p>
+  <code>accept</code> means your system should take the file and <code>reject</code> that it should
+  turn it away with a clear message. <code>unspecified</code> means either answer can be right, so
+  write down which one your system means, and check that it does that every time. The word after the
+  outcome is the reason the manifest gives.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">Size</p>
+  <h2>Is the size limit enforced where it is declared?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test case</th><th>File</th><th>Expected</th></tr></thead>
+    <tbody>
+      <tr><td>One byte under the limit</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Exactly at the limit</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>One byte over the limit</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Twice the limit, to see that the server stops reading early instead of taking it all into memory</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>An empty file of 0 bytes</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    The two cases a limit most often gets wrong are a limit checked only in the browser, and a limit
+    counted in MB where the code counts MiB. The
+    <a href="/presets/size-boundaries/">size-boundaries preset</a> puts a file at every distance from
+    the limit you choose, a byte, a kilobyte and a megabyte either side.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">Type</p>
+  <h2>Does the form take the types it should and refuse the rest?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test case</th><th>File</th><th>Expected</th></tr></thead>
+    <tbody>
+      <tr><td>Each type the form takes, as a real file of that type</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>A type the form does not take</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>An extension that says one type over content of another, such as a PDF named .jpg</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>Two extensions, the last one not allowed</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>No extension at all</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>The extension in capitals</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    An SVG or an HTML file taken for a picture or for plain text is a way to get a script past a
+    form, which is why they are on the list of types to refuse unless your form means to take them.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">Content</p>
+  <h2>Does the system open the file, or only look at its name?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test case</th><th>File</th><th>Expected</th></tr></thead>
+    <tbody>
+      <tr><td>A file cut short, the way an interrupted upload leaves it</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>A file whose first bytes are zeros, so nothing says what it is</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>The smallest file a format allows, valid and tiny</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    A file that only has the right name and the right size passes every check that never opens it.
+    <a href="/sample-files/#corrupt">Corrupt sample files</a> come in PDF, Word, Excel, PowerPoint,
+    JPG, PNG, MP4 and ZIP, and <a href="/corrupt-test-files/">corrupt test files</a> says how to make
+    them in any format at any size.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">Name</p>
+  <h2>Does the file come back under the name it was given?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test case</th><th>File</th><th>Expected</th></tr></thead>
+    <tbody>
+      <tr><td>Spaces and brackets</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Letters outside ASCII and an emoji</td><td>a Polish word, a Japanese word and an emoji in one name</td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>A name over 200 characters long</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>A name that climbs out of its folder, <code>../</code> or <code>..\</code></td><td><code>climbing_name.jpg</code>, uploaded as <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>An absolute path, on Linux or Windows</td><td><code>absolute_name.jpg</code>, uploaded as <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    A path in a name cannot be saved to a disk, so the file keeps a plain name and the manifest says
+    which name to upload it under. Taking the file and keeping only the last part of the name is a
+    good answer. Writing it outside the upload folder is the defect this case exists to find. The
+    <a href="/presets/filename-handling/">filename-handling preset</a> has many more names: look-alike
+    letters, invisible characters, names reserved by Windows and lengths counted in bytes.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">Volume and archives</p>
+  <h2>What happens with many files, or a file holding many?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test case</th><th>File</th><th>Expected</th></tr></thead>
+    <tbody>
+      <tr><td>Fifty files in one upload</td><td><code>bulk_0001.jpg</code> to <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>A ZIP that really holds 200 documents</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>An archive your system unpacks, checked for zip slip and zip bombs first</td><td><code>tfg tool archive-scan upload.zip</code></td><td>safe, or what it found</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> sets how many files the mass upload holds, up to ten thousand.
+    <a href="/tools/">Tools</a> says what the archive check looks for.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">In a test</p>
+  <h2>Running the list as a test</h2>
+  <p>
+    The manifest holds the expected outcome of every file and the name to upload it under, so one
+    loop runs the whole list:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    The files marked <code>unspecified</code> are left out here, because their answer is your own
+    policy. Decide it, write it into the recipe with <code>expected</code>, and the loop checks them
+    too. <a href="/test-files-in-ci/">Test files in CI</a> runs this in a pipeline.
+  </p>
+</section>

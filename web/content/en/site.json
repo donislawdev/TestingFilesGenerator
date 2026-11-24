@@ -61,11 +61,34 @@
       "description": "Make a file that is broken on purpose, at the exact size you ask for, with a manifest saying your system should reject it. For testing upload validation and parsers."
     },
     {
+      "key": "samples",
+      "slug": "sample-files",
+      "nav": "Sample files",
+      "title": "Sample Files for Testing - Download PDF, CSV, DOCX and More",
+      "description": "Download sample files for testing: one of every format at 1 MB, corrupt PDF, Word and Excel files, CSV tables and placeholder images, each with its SHA-256."
+    },
+    {
       "key": "ci",
       "slug": "test-files-in-ci",
       "nav": "Test files in CI",
       "title": "Test Files in CI - GitHub Actions, GitLab CI and PowerShell",
       "description": "Generate test files in the pipeline instead of committing binaries: a GitHub Actions workflow, a GitLab job, exit codes that fail the build and the PowerShell catch."
+    },
+    {
+      "key": "upload-tests",
+      "slug": "file-upload-test-cases",
+      "nav": "Upload test cases",
+      "title": "File Upload Test Cases - With the Files to Run Them",
+      "description": "Test cases for a file upload: the size limit, empty and corrupt files, the wrong type, unexpected file names and archives, each with the file that tests it.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "tools",
+      "nav": "Tools",
+      "title": "Check a ZIP Before Unpacking and Verify SHA-256 Checksums",
+      "description": "Offline tools for files you already have: see whether an archive is safe to unpack, zip slip and zip bomb included, and check or write SHA-256 checksums.",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "Damage",
     "colEffect": "What it does to the bytes",
     "colSettings": "Settings",
-    "noSettings": "none"
+    "noSettings": "none",
+    "colFile": "File",
+    "colSize": "Size",
+    "colSha256": "SHA-256",
+    "colExpected": "Expected",
+    "colTool": "Tool",
+    "colQuestion": "What it answers"
   },
   "endings": {
     "0": "Everything worked.",
@@ -156,7 +185,7 @@
       "question": "Does my system take pictures at the sizes screens and platforms use?",
       "title": "Picture sizes",
       "pageTitle": "Test Images at Common Sizes - Screens, Avatars, Social Media",
-      "description": "Pictures at the sizes of HD, Full HD, QHD and 4K screens, of profile pictures, and of the covers, posts and thumbnails social platforms ask for, each as small as it can be.",
+      "description": "Pictures at the sizes of HD, Full HD, QHD and 4K screens, of profile pictures, and of the covers, posts and thumbnails social platforms ask for.",
       "catches": [
         "a limit on the width or the height set with one shape in mind that turns away another, such as a profile background 1584 px wide",
         "a thumbnail cut or squashed because the code expects a landscape picture and a portrait one arrives",
@@ -351,5 +380,11 @@
     "append-junk": "Writes random bytes after the end of the file and keeps exactly the size you asked for, the way a file with something stuck to its end arrives.",
     "truncate": "Cuts the end off the file and keeps exactly the size you asked for, the way an interrupted upload or copy leaves it.",
     "zero-head": "Overwrites the first bytes of the file with zeros, leaving its length alone. Most readers look there first, so this is the damage almost anything notices."
+  },
+  "tools": {
+    "archive-scan": "Is this archive safe to unpack?",
+    "checksum": "Is this file the one it claims to be?",
+    "checksum-check": "Is every file still what its checksum file says?",
+    "checksum-write": "How will I know later that nothing in this folder changed?"
   }
 }

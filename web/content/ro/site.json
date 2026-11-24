@@ -61,11 +61,34 @@
       "description": "Un fișier stricat intenționat, de mărime exactă, cu un manifest care spune că sistemul tău trebuie să îl respingă. Pentru validarea încărcărilor și parsere."
     },
     {
+      "key": "samples",
+      "slug": "fisiere-de-exemplu",
+      "nav": "Fișiere de exemplu",
+      "title": "Fișiere de test pentru descărcare - PDF, CSV, DOCX și altele",
+      "description": "Fișiere de test de descărcat: câte unul de 1 MB din fiecare format, PDF, Word și Excel corupte, tabele CSV și imagini substituent, fiecare cu suma SHA-256."
+    },
+    {
       "key": "ci",
       "slug": "fisiere-de-test-in-ci",
       "nav": "Fișiere de test în CI",
       "title": "Fișiere de test în CI - GitHub Actions, GitLab CI și PowerShell",
       "description": "Generează fișiere de test în pipeline în loc să comiți binare: workflow GitHub Actions, job GitLab, coduri de ieșire și capcana PowerShell."
+    },
+    {
+      "key": "upload-tests",
+      "slug": "cazuri-de-test-incarcare-fisiere",
+      "nav": "Cazuri de test pentru încărcare",
+      "title": "Cazuri de test pentru încărcarea fișierelor - cu fișierele",
+      "description": "Cazuri de test pentru încărcarea fișierelor: limita de dimensiune, fișiere goale și corupte, tip greșit, nume neașteptate și arhive, fiecare cu fișierul lui.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "instrumente",
+      "nav": "Instrumente",
+      "title": "Verifică un ZIP înainte de dezarhivare și sumele SHA-256",
+      "description": "Instrumente offline pentru fișierele tale: vezi dacă o arhivă poate fi dezarhivată în siguranță (zip slip, zip bomb) și verifică sau scrie sume SHA-256.",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "Deteriorare",
     "colEffect": "Ce face cu octeții",
     "colSettings": "Setări",
-    "noSettings": "niciuna"
+    "noSettings": "niciuna",
+    "colFile": "Fișier",
+    "colSize": "Dimensiune",
+    "colSha256": "SHA-256",
+    "colExpected": "Așteptat",
+    "colTool": "Instrument",
+    "colQuestion": "La ce răspunde"
   },
   "endings": {
     "0": "Totul a mers.",
@@ -224,8 +253,8 @@
     "picture-sizes": {
       "question": "Acceptă sistemul meu imagini la dimensiunile folosite de ecrane și platforme?",
       "title": "Dimensiuni de imagine",
-      "pageTitle": "Imagini de test la dimensiuni uzuale - ecrane, avatare, rețele sociale",
-      "description": "Imagini la dimensiunile ecranelor HD, Full HD, QHD și 4K, ale fotografiilor de profil și ale copertelor, postărilor și miniaturilor cerute de rețelele sociale, fiecare cât de mică poate fi.",
+      "pageTitle": "Imagini de test la dimensiuni uzuale - ecrane și rețele sociale",
+      "description": "Imagini la dimensiunile ecranelor HD, Full HD, QHD și 4K, ale fotografiilor de profil și ale copertelor, postărilor și miniaturilor cerute de rețelele sociale.",
       "catches": [
         "o limită de lățime sau de înălțime gândită pentru o formă care respinge alta, de exemplu un fundal de profil lat de 1584 px",
         "o miniatură tăiată sau turtită pentru că codul așteaptă o imagine orizontală și sosește una verticală",
@@ -351,5 +380,11 @@
       "q": "De ce o rulare peste mii de fișiere este mai lentă pe Windows?",
       "a": "Pentru că Windows cere mai mult pentru fiecare cale pe care o examinează, iar o comandă care parcurge mii de fișiere examinează mii de căi. Măsurat pe o mașină cu 3000 de fișiere de 1 kB, verify durează aproximativ 0,9 secunde pe Windows și aproximativ 0,2 secunde pe Linux într-un container. O cale de ieșire mai scurtă micșorează cifra de pe Windows, pentru că fiecare folder de deasupra fișierelor face parte din ce se examinează."
     }
-  ]
+  ],
+  "tools": {
+    "archive-scan": "Poate fi dezarhivată în siguranță această arhivă?",
+    "checksum": "Este acest fișier cel care pretinde că este?",
+    "checksum-check": "Corespunde fiecare fișier în continuare cu fișierul lui de sume de control?",
+    "checksum-write": "Cum voi ști mai târziu că nu s-a schimbat nimic în acest folder?"
+  }
 }

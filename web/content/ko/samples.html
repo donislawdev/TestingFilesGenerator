@@ -1,0 +1,86 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>테스트용 샘플 파일</h1>
+<p class="lead">
+  업로드 양식, 파서, 가져오기 기능을 테스트할 때 내려받아 쓰는 실제 파일입니다. 이 생성기가 만드는 모든 형식의 파일 하나씩, 일부러 망가뜨린 파일, 스프레드시트 프로그램이 내보내는 그대로의 표, 자리 표시자 이미지가 있습니다. 설치할 것도, 가입할 것도 없습니다.
+</p>
+
+<div class="note">
+  <p class="note-title">하나의 레시피로 만든 파일</p>
+  <p>
+    이 페이지의 모든 파일은 하나의 레시피 <a href="/samples/samples.yaml">samples.yaml</a>에서 나옵니다. <code>tfg</code>로 실행하면 어느 컴퓨터에서나 같은 바이트를 얻으므로, 각 파일 옆의 SHA-256은 믿고 넘어갈 값이 아니라 직접 확인할 수 있는 값입니다.
+  </p>
+  <pre><code>tfg generate samples.yaml --out samples</code></pre>
+  <p>
+    모든 체크섬은 <a href="/samples/SHA256SUMS">SHA256SUMS</a>에 있습니다. 이 파일을 그 폴더에 두면 <code>tfg tool checksum-check samples/SHA256SUMS</code> 또는 <code>sha256sum -c SHA256SUMS</code>로 모든 파일이 일치하는지 알 수 있습니다.
+  </p>
+</div>
+
+<p>
+  각 표의 마지막 열은 시스템이 그 파일을 어떻게 처리해야 하는지에 대해 <a href="/samples/manifest.json">매니페스트</a>가 기대하는 결과입니다. <code>accept</code>는 파일을 받아야 한다는 뜻, <code>reject</code>는 거부해야 한다는 뜻, <code>unspecified</code>는 시스템의 규칙에 따라 다르다는 뜻입니다.
+</p>
+
+<section class="section" id="formats">
+  <p class="eyebrow">모든 형식</p>
+  <h2>모든 형식의 파일 하나씩, 각 1MB</h2>
+  <p>
+    문서, 이미지, 텍스트, 데이터, 아카이브, 메일, 텔레메트리, 소리, 동영상까지 모두 정확히 1048576바이트이고, 각각 해당 형식의 실제 파일입니다. PDF는 PDF 리더에서, DOCX는 Word에서, XLSX는 Excel에서 열리고, ZIP은 압축이 풀립니다.
+  </p>
+  {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    다른 크기는 명령 하나면 됩니다. <code>tfg generate --format pdf --size 10mb</code>는 정확히 10MB인 PDF를 쓰고, 1GB 파일도 같은 방법으로 만듭니다. 그렇게 큰 파일은 이 페이지에 두지 않습니다. 내려받는 것보다 명령으로 만드는 편이 빠르기 때문입니다.
+  </p>
+</section>
+
+<section class="section" id="corrupt">
+  <p class="eyebrow">일부러 망가뜨린 파일</p>
+  <h2>손상된 PDF, Word, Excel 파일과 이미지, 동영상, ZIP</h2>
+  <p>
+    모두 정상 파일로 만든 뒤 망가뜨렸으며, 크기는 여전히 정확히 1MB입니다. <code>truncate</code>는 중간에 끊긴 업로드처럼 끝을 잘라 내고, <code>zero-head</code>는 리더가 파일이 무엇인지 확인하려고 보는 첫 바이트들을 0으로 덮어씁니다. 매니페스트는 시스템이 이 파일을 모두 거부하기를 기대합니다.
+  </p>
+  {{ with .SampleTable "corrupt" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    <a href="/ko/corrupt-test-files/">손상된 테스트 파일</a>에서 어떤 형식, 어떤 크기로든 직접 만드는 방법과 어떤 손상이 있는지 설명합니다.
+  </p>
+</section>
+
+<section class="section" id="tables">
+  <p class="eyebrow">가져오기용</p>
+  <h2>CSV, JSON, Excel 표</h2>
+  <p>
+    같은 표를 실제 도구가 쓰는 여러 방식으로 담았습니다. 값 사이에 쉼표, 세미콜론, 탭, 파이프를 쓴 것, Windows 줄 끝을 쓴 것, 머리글 행이 없는 것, 모든 값을 따옴표로 감싼 것과 전혀 감싸지 않은 것, 열이 많은 CSV, Excel 시트, 세 가지 구조의 JSON입니다. 일부가 <code>unspecified</code>로 표시된 것은 세미콜론을 받을지가 가져오기 기능이 스스로 정할 일이기 때문입니다. 하지만 표의 절반만 읽어서는 안 됩니다.
+  </p>
+  {{ with .SampleTable "tables" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    이 파일들은 <a href="/ko/presets/tabular-import/">tabular-import 프리셋</a>의 파일이며, 이 프리셋은 원하는 만큼의 행과 열로 파일을 만듭니다.
+  </p>
+</section>
+
+<section class="section" id="placeholders">
+  <p class="eyebrow">레이아웃용</p>
+  <h2>자주 쓰는 크기의 자리 표시자 이미지</h2>
+  <p>
+    가운데에 크기가 적힌 단색 회색 이미지로, 실제 이미지가 생기기 전에 페이지를 배치하는 데 씁니다. 정사각형 썸네일, 300 x 250 광고, 728 x 90 배너, 1200 x 630 소셜 카드, Full HD 화면이 있습니다. 각각 그 이미지가 될 수 있는 가장 작은 크기입니다.
+  </p>
+  {{ with .SampleTable "placeholders" }}{{ template "samplesTable" . }}{{ end }}
+  <p>다른 크기나 색은 다음처럼 만듭니다.</p>
+  <pre><code>tfg generate --format png --size smallest --set content=placeholder --set width=640 --set height=360 --set background=1e293b</code></pre>
+  <p>
+    <a href="/ko/presets/picture-sizes/">picture-sizes 프리셋</a>에 <code>--content placeholder</code>를 주면 화면과 플랫폼이 쓰는 모든 크기를 한 번에 만듭니다.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">다음</p>
+  <h2>여기서 어디로</h2>
+  <ul>
+    <li>
+      <a href="/ko/file-upload-test-cases/">파일 업로드 테스트 케이스</a>는 이 파일 중 어느 것이 업로드 양식의 무엇을 테스트하는지 알려 줍니다.
+    </li>
+    <li>
+      <a href="/ko/presets/">프리셋</a>은 테스트 질문 하나마다 하나씩 있는 기성 세트입니다.
+    </li>
+    <li>
+      <a href="/ko/test-files-in-ci/">CI의 테스트 파일</a>은 이런 파일을 저장소에 두는 대신 파이프라인에서 만듭니다.
+    </li>
+  </ul>
+</section>

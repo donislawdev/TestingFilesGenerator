@@ -1,0 +1,116 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Voorbeeldbestanden om mee te testen</h1>
+<p class="lead">
+  Echte bestanden om te downloaden en een uploadformulier, een parser of een import mee te testen: één
+  van elk formaat dat deze generator schrijft, bestanden die met opzet kapot zijn, tabellen zoals
+  spreadsheetprogramma's ze exporteren en placeholder-afbeeldingen. Niets te installeren en geen
+  account nodig.
+</p>
+
+<div class="note">
+  <p class="note-title">Gemaakt met één recept</p>
+  <p>
+    Alle bestanden op deze pagina komen uit één recept,
+    <a href="/samples/samples.yaml">samples.yaml</a>. Draai het met <code>tfg</code> en je krijgt op
+    elke machine dezelfde bytes. De SHA-256 naast elk bestand kun je dus zelf controleren in plaats van
+    erop te vertrouwen.
+  </p>
+  <pre><code>tfg generate samples.yaml --out samples</code></pre>
+  <p>
+    Alle checksums staan in <a href="/samples/SHA256SUMS">SHA256SUMS</a>. Zet dat bestand in die map,
+    en <code>tfg tool checksum-check samples/SHA256SUMS</code> of <code>sha256sum -c SHA256SUMS</code>
+    vertelt je of elk bestand klopt.
+  </p>
+</div>
+
+<p>
+  De laatste kolom van elke tabel is wat het <a href="/samples/manifest.json">manifest</a> verwacht dat
+  je systeem met het bestand doet. <code>accept</code> betekent dat het het bestand moet aannemen,
+  <code>reject</code> dat het het moet weigeren, en <code>unspecified</code> dat het afhangt van de
+  regels van je systeem.
+</p>
+
+<section class="section" id="formats">
+  <p class="eyebrow">Elk formaat</p>
+  <h2>Eén bestand van elk formaat, elk 1 MB</h2>
+  <p>
+    Documenten, afbeeldingen, tekst, data, archieven, e-mail, telemetrie, geluid en video, elk precies
+    1 048 576 bytes en elk een echt bestand van zijn formaat. De PDF opent in een PDF-lezer, de DOCX in
+    Word, de XLSX in Excel en de ZIP pakt uit.
+  </p>
+  {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Een andere grootte is één opdracht. <code>tfg generate --format pdf --size 10mb</code> schrijft een
+    PDF van precies 10 MB, en een bestand van 1 GB maak je op dezelfde manier. Zulke grote bestanden
+    staan niet op deze pagina, omdat een opdracht ze sneller maakt dan een download duurt.
+  </p>
+</section>
+
+<section class="section" id="corrupt">
+  <p class="eyebrow">Met opzet kapot</p>
+  <h2>Beschadigde bestanden: PDF, Word, Excel, afbeeldingen, video en ZIP</h2>
+  <p>
+    Elk bestand is eerst gezond gemaakt en daarna beschadigd, en is nog steeds precies 1 MB.
+    <code>truncate</code> knipt het einde eraf, zoals een afgebroken upload dat doet, en
+    <code>zero-head</code> schrijft nullen over de eerste bytes, waar een lezer kijkt wat voor bestand
+    het is. Het manifest verwacht dat je systeem elk ervan weigert.
+  </p>
+  {{ with .SampleTable "corrupt" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    <a href="/nl/beschadigde-testbestanden/">Beschadigde testbestanden</a> legt uit hoe je ze zelf maakt,
+    in elk formaat en elke grootte, en welke beschadigingen er zijn.
+  </p>
+</section>
+
+<section class="section" id="tables">
+  <p class="eyebrow">Voor een import</p>
+  <h2>Tabellen in CSV, JSON en Excel</h2>
+  <p>
+    Dezelfde tabel geschreven zoals echte programma's hem schrijven: met een komma, een puntkomma, een
+    tab of een verticale streep tussen de waarden, met Windows-regeleinden, zonder koprij, met elke
+    waarde tussen aanhalingstekens of geen enkele, een brede CSV, een Excel-werkblad en JSON in drie
+    lay-outs. Sommige zijn gemarkeerd als <code>unspecified</code>, omdat het de eigen keuze van je
+    import is of hij een puntkomma aanneemt. Wat hij niet mag doen, is de helft van de tabel inlezen.
+  </p>
+  {{ with .SampleTable "tables" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Het zijn de bestanden van de <a href="/nl/presets/tabular-import/">preset tabular-import</a>, die ze
+    maakt met zoveel rijen en kolommen als je vraagt.
+  </p>
+</section>
+
+<section class="section" id="placeholders">
+  <p class="eyebrow">Voor een ontwerp</p>
+  <h2>Placeholder-afbeeldingen in gangbare formaten</h2>
+  <p>
+    Een egaal grijze afbeelding met de afmetingen in het midden, om een pagina op te maken voordat de
+    echte afbeeldingen er zijn: vierkante miniaturen, een advertentie van 300 bij 250, een banner van
+    728 bij 90, een social card van 1200 bij 630 en een Full HD-scherm. Elk bestand is zo klein als die
+    afbeelding maar kan zijn.
+  </p>
+  {{ with .SampleTable "placeholders" }}{{ template "samplesTable" . }}{{ end }}
+  <p>Elke andere grootte of kleur:</p>
+  <pre><code>tfg generate --format png --size smallest --set content=placeholder --set width=640 --set height=360 --set background=1e293b</code></pre>
+  <p>
+    De <a href="/nl/presets/picture-sizes/">preset picture-sizes</a> maakt in één run elk formaat dat
+    schermen en platforms gebruiken, met <code>--content placeholder</code>.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Verder</p>
+  <h2>Waar je vandaar heen kunt</h2>
+  <ul>
+    <li>
+      <a href="/nl/testgevallen-bestandsupload/">Testgevallen voor bestandsupload</a> zegt welk van deze
+      bestanden wat test in een uploadformulier.
+    </li>
+    <li>
+      <a href="/nl/presets/">Presets</a> zijn kant-en-klare sets, elk voor één testvraag.
+    </li>
+    <li>
+      <a href="/nl/testbestanden-in-ci/">Testbestanden in CI</a> maakt bestanden zoals deze in een
+      pipeline, in plaats van ze in de repository te bewaren.
+    </li>
+  </ul>
+</section>

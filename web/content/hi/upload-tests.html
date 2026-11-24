@@ -1,0 +1,158 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>फ़ाइल अपलोड टेस्ट केस, उन्हें चलाने वाली फ़ाइलों के साथ</h1>
+<p class="lead">
+  फ़ाइल अपलोड के टेस्ट केस की चेकलिस्ट, आकार सीमा से लेकर ऐसे फ़ाइल नाम तक जो अपने फ़ोल्डर से बाहर
+  निकलने की कोशिश करता है। हर केस उस फ़ाइल का नाम बताता है जो उसे परखती है, और यह भी कि आपके सिस्टम
+  को उसके साथ क्या करना चाहिए, ताकि सूची सिर्फ़ पढ़ी ही नहीं, चलाई भी जा सके।
+</p>
+
+<div class="note">
+  <p class="note-title">पूरी सूची एक कमांड में</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    नीचे के लगभग हर केस के लिए एक फ़ाइल लिखता है, साथ में एक मैनिफ़ेस्ट जो बताता है कि हर फ़ाइल के साथ
+    क्या होना चाहिए। वही सीमा और प्रकार डालें जो आपका फ़ॉर्म घोषित करता है।
+  </p>
+</div>
+
+<p>
+  <code>accept</code> का मतलब है कि आपके सिस्टम को फ़ाइल मंज़ूर करनी चाहिए, और <code>reject</code> का
+  कि उसे साफ़ संदेश के साथ फ़ाइल अस्वीकार करनी चाहिए। <code>unspecified</code> का मतलब है कि दोनों में
+  से कोई भी जवाब सही हो सकता है, इसलिए लिख लें कि आपका सिस्टम कौन-सा जवाब चाहता है, और जाँचें कि वह
+  हर बार वही करता है। नतीजे के बाद वाला शब्द वह कारण है जो मैनिफ़ेस्ट देता है।
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">आकार</p>
+  <h2>क्या आकार सीमा वहीं लागू होती है जहाँ उसकी घोषणा की गई है?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>टेस्ट केस</th><th>फ़ाइल</th><th>अपेक्षित</th></tr></thead>
+    <tbody>
+      <tr><td>सीमा से एक बाइट कम</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ठीक सीमा पर</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>सीमा से एक बाइट ज़्यादा</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>सीमा का दोगुना, यह देखने के लिए कि सर्वर पूरी फ़ाइल मेमोरी में लेने के बजाय जल्दी पढ़ना बंद कर देता है</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>0 बाइट की खाली फ़ाइल</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    सीमा में सबसे ज़्यादा होने वाली दो गलतियाँ हैं: ऐसी सीमा जो सिर्फ़ ब्राउज़र में जाँची जाती है, और
+    MB में गिनी गई सीमा जबकि कोड MiB में गिनता है। <a href="/hi/presets/size-boundaries/">size-boundaries
+    प्रीसेट</a> आपकी चुनी हुई सीमा से हर दूरी पर एक फ़ाइल रखता है, दोनों ओर एक बाइट, एक किलोबाइट और एक
+    मेगाबाइट।
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">प्रकार</p>
+  <h2>क्या फ़ॉर्म सही प्रकार लेता है और बाकी को लौटा देता है?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>टेस्ट केस</th><th>फ़ाइल</th><th>अपेक्षित</th></tr></thead>
+    <tbody>
+      <tr><td>फ़ॉर्म जो भी प्रकार लेता है, उस प्रकार की असली फ़ाइल के रूप में</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>ऐसा प्रकार जो फ़ॉर्म नहीं लेता</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>एक्सटेंशन एक प्रकार बताता है और सामग्री दूसरे प्रकार की है, जैसे .jpg नाम वाली PDF</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>दो एक्सटेंशन, आखिरी वाला अनुमत नहीं</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>कोई एक्सटेंशन नहीं</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>बड़े अक्षरों में एक्सटेंशन</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    तस्वीर या सादा टेक्स्ट समझ ली गई SVG या HTML फ़ाइल फ़ॉर्म से स्क्रिप्ट निकाल ले जाने का एक तरीका है,
+    इसीलिए वे लौटाए जाने वाले प्रकारों की सूची में हैं, जब तक आपका फ़ॉर्म उन्हें लेने के लिए ही न बना हो।
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">सामग्री</p>
+  <h2>क्या सिस्टम फ़ाइल खोलता है, या सिर्फ़ उसका नाम देखता है?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>टेस्ट केस</th><th>फ़ाइल</th><th>अपेक्षित</th></tr></thead>
+    <tbody>
+      <tr><td>बीच में कटी फ़ाइल, जैसी टूटा हुआ अपलोड छोड़ता है</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>ऐसी फ़ाइल जिसके शुरुआती बाइट शून्य हैं, इसलिए कुछ नहीं बताता कि वह क्या है</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>किसी फ़ॉर्मैट में अनुमत सबसे छोटी फ़ाइल, मान्य और बहुत छोटी</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    जिस फ़ाइल का सिर्फ़ नाम और आकार सही है, वह हर उस जाँच से निकल जाती है जो उसे कभी खोलती नहीं।
+    <a href="/hi/sample-files/#corrupt">खराब सैंपल फ़ाइलें</a> PDF, Word, Excel, PowerPoint, JPG, PNG,
+    MP4 और ZIP में हैं, और <a href="/hi/corrupt-test-files/">खराब टेस्ट फ़ाइलें</a> पेज बताता है कि उन्हें
+    किसी भी फ़ॉर्मैट और किसी भी आकार में कैसे बनाएँ।
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">नाम</p>
+  <h2>क्या फ़ाइल उसी नाम से वापस आती है जो उसे दिया गया था?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>टेस्ट केस</th><th>फ़ाइल</th><th>अपेक्षित</th></tr></thead>
+    <tbody>
+      <tr><td>रिक्त स्थान और कोष्ठक</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ASCII से बाहर के अक्षर और एक इमोजी</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>200 अक्षरों से लंबा नाम</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>अपने फ़ोल्डर से बाहर निकलने वाला नाम, <code>../</code> या <code>..\</code></td><td><code>climbing_name.jpg</code>, <code>../tfg_climbed_out.jpg</code> नाम से अपलोड</td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Linux या Windows पर पूरा पथ</td><td><code>absolute_name.jpg</code>, <code>/tmp/tfg_climbed_out.jpg</code> नाम से अपलोड</td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    पथ वाला नाम डिस्क पर सहेजा नहीं जा सकता, इसलिए फ़ाइल का नाम सादा रहता है और मैनिफ़ेस्ट बताता है कि
+    उसे किस नाम से अपलोड करना है। फ़ाइल लेकर नाम का सिर्फ़ आखिरी हिस्सा रखना अच्छा जवाब है। उसे अपलोड
+    फ़ोल्डर के बाहर लिखना वही खराबी है जिसे ढूँढ़ने के लिए यह केस बना है।
+    <a href="/hi/presets/filename-handling/">filename-handling प्रीसेट</a> में और बहुत से नाम हैं: मिलते-जुलते
+    दिखने वाले अक्षर, अदृश्य अक्षर, Windows के आरक्षित नाम और बाइट में गिनी गई लंबाई।
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">मात्रा और आर्काइव</p>
+  <h2>बहुत सारी फ़ाइलों के साथ, या बहुत सारी फ़ाइलें रखने वाली एक फ़ाइल के साथ क्या होता है?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>टेस्ट केस</th><th>फ़ाइल</th><th>अपेक्षित</th></tr></thead>
+    <tbody>
+      <tr><td>एक अपलोड में पचास फ़ाइलें</td><td><code>bulk_0001.jpg</code> से <code>bulk_0050.jpg</code> तक</td><td><code>accept</code></td></tr>
+      <tr><td>ऐसा ZIP जिसमें सचमुच 200 दस्तावेज़ हैं</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>ऐसा आर्काइव जिसे आपका सिस्टम एक्सट्रैक्ट करता है, पहले zip slip और zip bomb के लिए जाँचा गया</td><td><code>tfg tool archive-scan upload.zip</code></td><td>सुरक्षित, या जो मिला</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> तय करता है कि एक साथ अपलोड में कितनी फ़ाइलें हों, दस हज़ार तक।
+    <a href="/hi/tools/">टूल</a> पेज बताता है कि आर्काइव की जाँच किन चीज़ों को ढूँढ़ती है।
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">टेस्ट में</p>
+  <h2>सूची को टेस्ट की तरह चलाना</h2>
+  <p>
+    मैनिफ़ेस्ट में हर फ़ाइल का अपेक्षित नतीजा और वह नाम है जिससे उसे अपलोड करना है, इसलिए एक ही लूप
+    पूरी सूची चला देता है:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    <code>unspecified</code> वाली फ़ाइलें यहाँ छोड़ दी गई हैं, क्योंकि उनका जवाब आपकी अपनी नीति है। उसे
+    तय करें, रेसिपी में <code>expected</code> के साथ लिखें, और लूप उन्हें भी जाँचेगा।
+    <a href="/hi/test-files-in-ci/">CI में टेस्ट फ़ाइलें</a> इसे पाइपलाइन में चलाती हैं।
+  </p>
+</section>

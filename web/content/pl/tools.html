@@ -1,0 +1,104 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Sprawdź archiwum przed rozpakowaniem i sumy kontrolne</h1>
+<p class="lead">
+  Obok generatora <code>tfg</code> ma małe narzędzia do plików, które już masz: czy archiwum można
+  bezpiecznie rozpakować i czy plik albo cały folder jest wciąż taki, jak mówi jego suma kontrolna.
+  Działają na Twoim komputerze, bez wysyłania plików i bez konta.
+</p>
+
+<div class="note">
+  <p class="note-title">Krótka odpowiedź</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> czyta archiwum bez rozpakowywania czegokolwiek
+    i kończy się kodem 0, gdy jest bezpieczne, albo kodem 7 z listą tego, co znalazło.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> mówi, czy plik zgadza się z sumą
+    podaną na stronie pobierania.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">Co jest</p>
+  <h2>Jakie są narzędzia?</h2>
+  <p>
+    To lista, którą wypisuje program, odczytana z niego przy budowaniu tej strony.
+    <code>tfg tool list</code> wypisuje to samo, a <code>tfg tool show &lt;id&gt;</code> mówi, co
+    przyjmuje jedno z nich. Każde narzędzie jest też na ekranie Narzędzia w oknie programu, z tymi
+    samymi ustawieniami.
+  </p>
+  {{ template "toolsTable" . }}
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Archiwa</p>
+  <h2>Czy to archiwum można bezpiecznie rozpakować? Zip slip i zip bomb</h2>
+  <p>
+    <code>archive-scan</code> zagląda do pliku ZIP, TAR, TAR.GZ albo gzip bez zapisywania czegokolwiek
+    na dysku i mówi, czy rozpakowanie go jest bezpieczne. Zgłasza:
+  </p>
+  <ul>
+    <li>wpis, który zapisałby się poza folderem, czyli pułapkę zwaną zip slip</li>
+    <li>dowiązanie, urządzenie albo dwie nazwy, które trafiłyby w jeden plik</li>
+    <li>nazwę, której system nie zapisze</li>
+    <li>wpis zbudowany tak, żeby eksplodował przy rozpakowaniu, czyli pułapkę zwaną zip bomb</li>
+    <li>uszkodzony wpis</li>
+  </ul>
+  <p>
+    Archiwa w archiwum, na przykład ZIP w ZIP-ie albo DOCX w TAR-ze, są czytane tak samo, w pamięci,
+    do 16 poziomów w głąb. Pułapka w jednym z nich jest pułapką w całości, bo program, który rozpakowuje
+    wszystko, rozpakuje też je.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> zgłasza też archiwum, które po rozpakowaniu zajmie więcej, niż
+    pozwalasz. Bezpieczne kończy się kodem 0, a każde znalezisko kodem 7, więc potok może się na nim
+    zatrzymać.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Jeden plik</p>
+  <h2>Czy ten plik jest tym, za który się podaje?</h2>
+  <p>
+    <code>checksum</code> liczy sumę kontrolną pliku, a gdy dostanie sumę do porównania, mówi, czy się
+    zgadzają. Obsługuje md5, sha1, sha256, sha512 i crc32, domyślnie sha256, a rodzaj podanej sumy
+    rozpoznaje po jej długości.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    Suma, która się nie zgadza, kończy się kodem 7. To ta sama odpowiedź, co z <code>Get-FileHash</code>
+    w Windows albo <code>sha256sum</code> w Linuksie, tylko porównanie robi się samo.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Cały folder</p>
+  <h2>Czy coś w tym folderze się zmieniło?</h2>
+  <p>
+    <code>checksum-write</code> zapisuje sumę kontrolną każdego pliku folderu do pliku SHA256SUMS obok
+    nich, tymi samymi bajtami, co <code>sha256sum</code>, i nigdy nie nadpisuje istniejącego.
+    <code>checksum-check</code> sprawdza potem każdy plik, który wymienia SHA256SUMS.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    Plików, których nie wymienia, nie sprawdza, tak samo jak <code>sha256sum -c</code>, a ścieżki, która
+    wychodzi poza folder, odmawia zamiast ją czytać. <a href="/pl/przykladowe-pliki/">Przykładowe
+    pliki</a> mają plik SHA256SUMS, który sprawdzisz w ten sposób.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Dalej</p>
+  <h2>Co dalej</h2>
+  <ul>
+    <li>
+      <a href="/pl/przypadki-testowe-uploadu/">Przypadki testowe uploadu</a> stawiają sprawdzanie
+      archiwum obok innych przypadków uploadu.
+    </li>
+    <li>
+      <a href="/pl/dokumentacja/">Dokumentacja</a> opisuje każde polecenie i kod wyjścia.
+    </li>
+  </ul>
+</section>

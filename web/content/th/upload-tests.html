@@ -1,0 +1,155 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>กรณีทดสอบการอัปโหลดไฟล์ พร้อมไฟล์สำหรับรันทดสอบ</h1>
+<p class="lead">
+  รายการตรวจสอบกรณีทดสอบสำหรับการอัปโหลดไฟล์ ตั้งแต่ขีดจำกัดขนาดไปจนถึงชื่อไฟล์ที่พยายามออกไปนอกโฟลเดอร์ของตัวเอง
+  ทุกกรณีระบุไฟล์ที่ใช้ทดสอบและสิ่งที่ระบบของคุณควรทำกับไฟล์นั้น รายการนี้จึงรันได้จริง ไม่ใช่แค่อ่าน
+</p>
+
+<div class="note">
+  <p class="note-title">ทั้งรายการในคำสั่งเดียว</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    เขียนไฟล์สำหรับเกือบทุกกรณีด้านล่าง พร้อมแมนิเฟสต์ที่บอกว่าควรเกิดอะไรขึ้นกับแต่ละไฟล์
+    ใส่ขีดจำกัดและชนิดไฟล์ที่ฟอร์มของคุณประกาศไว้
+  </p>
+</div>
+
+<p>
+  <code>accept</code> หมายความว่าระบบของคุณควรรับไฟล์ และ <code>reject</code>
+  หมายความว่าควรปฏิเสธพร้อมข้อความที่ชัดเจน <code>unspecified</code> หมายความว่าคำตอบไหนก็ถูกได้
+  จึงควรจดไว้ว่าระบบของคุณตั้งใจแบบไหน แล้วตรวจว่ามันทำแบบนั้นทุกครั้ง
+  คำที่ตามหลังผลลัพธ์คือเหตุผลที่แมนิเฟสต์ให้ไว้
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">ขนาด</p>
+  <h2>ขีดจำกัดขนาดถูกบังคับใช้ตรงที่ประกาศไว้หรือไม่</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>กรณีทดสอบ</th><th>ไฟล์</th><th>ผลที่คาดหวัง</th></tr></thead>
+    <tbody>
+      <tr><td>ต่ำกว่าขีดจำกัดหนึ่งไบต์</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>เท่ากับขีดจำกัดพอดี</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>เกินขีดจำกัดหนึ่งไบต์</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>สองเท่าของขีดจำกัด เพื่อดูว่าเซิร์ฟเวอร์หยุดอ่านตั้งแต่เนิ่นๆ แทนที่จะรับทั้งไฟล์เข้าหน่วยความจำ</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>ไฟล์ว่างขนาด 0 ไบต์</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    สองกรณีที่ขีดจำกัดผิดบ่อยที่สุดคือขีดจำกัดที่ตรวจเฉพาะในเบราว์เซอร์ และขีดจำกัดที่นับเป็น MB
+    ขณะที่โค้ดนับเป็น MiB <a href="/th/presets/size-boundaries/">พรีเซ็ต size-boundaries</a>
+    วางไฟล์ไว้ทุกระยะจากขีดจำกัดที่คุณเลือก ทั้งหนึ่งไบต์ หนึ่งกิโลไบต์ และหนึ่งเมกะไบต์ทั้งสองฝั่ง
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">ชนิดไฟล์</p>
+  <h2>ฟอร์มรับชนิดที่ควรรับและปฏิเสธชนิดที่เหลือหรือไม่</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>กรณีทดสอบ</th><th>ไฟล์</th><th>ผลที่คาดหวัง</th></tr></thead>
+    <tbody>
+      <tr><td>ทุกชนิดที่ฟอร์มรับ เป็นไฟล์จริงของชนิดนั้น</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>ชนิดที่ฟอร์มไม่รับ</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>นามสกุลบอกชนิดหนึ่งแต่เนื้อหาเป็นอีกชนิด เช่น PDF ที่ตั้งชื่อเป็น .jpg</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>สองนามสกุล และนามสกุลสุดท้ายไม่ได้รับอนุญาต</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>ไม่มีนามสกุลเลย</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>นามสกุลเป็นตัวพิมพ์ใหญ่</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    ไฟล์ SVG หรือ HTML ที่ถูกเข้าใจว่าเป็นรูปภาพหรือข้อความธรรมดาเป็นวิธีหนึ่งในการลอบส่งสคริปต์ผ่านฟอร์ม
+    จึงอยู่ในรายการชนิดที่ต้องปฏิเสธ เว้นแต่ฟอร์มของคุณตั้งใจจะรับไฟล์เหล่านี้
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">เนื้อหา</p>
+  <h2>ระบบเปิดไฟล์ดู หรือดูแค่ชื่อไฟล์</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>กรณีทดสอบ</th><th>ไฟล์</th><th>ผลที่คาดหวัง</th></tr></thead>
+    <tbody>
+      <tr><td>ไฟล์ที่ถูกตัดสั้น แบบที่การอัปโหลดที่ถูกขัดจังหวะทิ้งไว้</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>ไฟล์ที่ไบต์แรกๆ เป็นศูนย์ จึงไม่มีอะไรบอกว่ามันคือไฟล์อะไร</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>ไฟล์เล็กที่สุดที่รูปแบบยอมให้ ถูกต้องและเล็กมาก</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    ไฟล์ที่มีแค่ชื่อถูกและขนาดถูกจะผ่านทุกการตรวจที่ไม่เคยเปิดไฟล์ดู
+    <a href="/th/sample-files/#corrupt">ไฟล์ตัวอย่างที่เสียหาย</a> มีทั้ง PDF, Word, Excel, PowerPoint,
+    JPG, PNG, MP4 และ ZIP และ <a href="/th/corrupt-test-files/">ไฟล์ทดสอบที่เสียหาย</a>
+    อธิบายวิธีสร้างไฟล์แบบนี้ในทุกรูปแบบและทุกขนาด
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">ชื่อ</p>
+  <h2>ไฟล์กลับมาด้วยชื่อที่ได้รับไปหรือไม่</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>กรณีทดสอบ</th><th>ไฟล์</th><th>ผลที่คาดหวัง</th></tr></thead>
+    <tbody>
+      <tr><td>ช่องว่างและวงเล็บ</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ตัวอักษรนอก ASCII และอีโมจิ</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>ชื่อยาวเกิน 200 อักขระ</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>ชื่อที่ปีนออกนอกโฟลเดอร์ของตัวเอง <code>../</code> หรือ <code>..\</code></td><td><code>climbing_name.jpg</code> อัปโหลดด้วยชื่อ <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>พาธสัมบูรณ์ บน Linux หรือ Windows</td><td><code>absolute_name.jpg</code> อัปโหลดด้วยชื่อ <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    ชื่อที่มีพาธอยู่ข้างในบันทึกลงดิสก์ไม่ได้ ไฟล์จึงใช้ชื่อธรรมดา และแมนิเฟสต์บอกว่าต้องอัปโหลดด้วยชื่ออะไร
+    การรับไฟล์แล้วเก็บไว้แค่ส่วนสุดท้ายของชื่อเป็นคำตอบที่ดี
+    การเขียนไฟล์ออกนอกโฟลเดอร์อัปโหลดคือข้อบกพร่องที่กรณีนี้มีไว้หา
+    <a href="/th/presets/filename-handling/">พรีเซ็ต filename-handling</a> มีชื่ออีกมาก:
+    ตัวอักษรหน้าตาคล้ายกัน อักขระที่มองไม่เห็น ชื่อที่ Windows สงวนไว้ และความยาวที่นับเป็นไบต์
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">ปริมาณและไฟล์บีบอัด</p>
+  <h2>จะเกิดอะไรขึ้นกับไฟล์จำนวนมาก หรือไฟล์ที่บรรจุไฟล์จำนวนมาก</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>กรณีทดสอบ</th><th>ไฟล์</th><th>ผลที่คาดหวัง</th></tr></thead>
+    <tbody>
+      <tr><td>ห้าสิบไฟล์ในการอัปโหลดครั้งเดียว</td><td><code>bulk_0001.jpg</code> ถึง <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ZIP ที่บรรจุเอกสาร 200 ฉบับจริงๆ</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>ไฟล์บีบอัดที่ระบบของคุณแตกไฟล์ ซึ่งตรวจหา zip slip และ zip bomb ก่อน</td><td><code>tfg tool archive-scan upload.zip</code></td><td>ปลอดภัย หรือสิ่งที่พบ</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> กำหนดว่าการอัปโหลดเป็นกลุ่มมีกี่ไฟล์ ได้สูงสุดหนึ่งหมื่นไฟล์
+    <a href="/th/tools/">เครื่องมือ</a> อธิบายว่าการตรวจไฟล์บีบอัดมองหาอะไรบ้าง
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">ในการทดสอบ</p>
+  <h2>รันรายการเป็นการทดสอบ</h2>
+  <p>
+    แมนิเฟสต์เก็บผลที่คาดหวังของทุกไฟล์และชื่อที่ใช้อัปโหลด ลูปเดียวจึงรันทั้งรายการได้:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    ไฟล์ที่มีป้าย <code>unspecified</code> ถูกข้ามไปตรงนี้ เพราะคำตอบของไฟล์เหล่านั้นคือนโยบายของคุณเอง
+    ตัดสินใจ แล้วเขียนลงในสูตรด้วย <code>expected</code> แล้วลูปจะตรวจไฟล์เหล่านั้นด้วย
+    <a href="/th/test-files-in-ci/">ไฟล์ทดสอบใน CI</a> รันสิ่งนี้ในไปป์ไลน์
+  </p>
+</section>
