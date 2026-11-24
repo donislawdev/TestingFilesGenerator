@@ -211,8 +211,8 @@ tfg license     de licentie tonen en wat die betekent voor gegenereerde bestande
     bestand überhaupt open. Het bestand wordt normaal gemaakt en daarna beschadigd, dus het heeft
     nog steeds de grootte die je vroeg.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Instellingen komen na een dubbele punt. De optie herhaalt zich, en de volgorde waarin je ze schrijft
     is de volgorde waarin ze worden toegepast. <code>tfg damage</code> toont wat deze build kan en

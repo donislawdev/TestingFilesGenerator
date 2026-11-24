@@ -211,8 +211,8 @@ tfg license     stampare la licenza e cosa significa per i file generati</code><
     file si apre, almeno. Il file viene prodotto normalmente e poi rotto, quindi ha ancora la
     dimensione che hai chiesto.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Le impostazioni vanno dopo i due punti. L'opzione si ripete, e l'ordine in cui le scrivi è l'ordine
     in cui vengono applicate. <code>tfg damage</code> elenca cosa può fare questa versione e cosa

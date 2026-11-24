@@ -209,8 +209,8 @@ tfg license     طباعة الرخصة ومعناها للملفات المول
     أما <code>--damage</code> فيجيب عن الثالث: هل يُفتح الملف أصلًا. يُنتَج الملف بشكل طبيعي ثم
     يُتلف، فيبقى بالحجم الذي طلبته.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     تُكتب الإعدادات بعد نقطتين. يمكن تكرار الخيار، وترتيب كتابتها هو ترتيب تطبيقها. يسرد <code>tfg
     damage</code> ما يستطيعه هذا الإصدار وما يقبله كل نوع.

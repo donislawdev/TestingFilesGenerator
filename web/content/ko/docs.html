@@ -49,8 +49,8 @@
     이 도구가 쓰는 다른 모든 파일은 구조상 올바르며, 이는 업로드 검증기가 던지는 세 가지 질문 중 두 가지에 답합니다. <code>--damage</code>는 세 번째, 곧
     파일이 아예 열리는지에 답합니다. 파일은 정상적으로 만들어진 뒤 망가지므로 요청한 크기는 그대로입니다.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     설정은 콜론 뒤에 씁니다. 플래그는 반복할 수 있으며, 쓴 순서가 적용 순서입니다. <code>tfg damage</code>는 이 빌드가 할 수 있는 것과 각각이 받는 값을
     나열합니다.

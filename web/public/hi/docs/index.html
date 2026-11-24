@@ -210,8 +210,8 @@ tfg license     लाइसेंस और बनाई गई फ़ाइल
     से दो का जवाब मिल जाता है। <code>--damage</code> तीसरे का जवाब देता है - क्या फ़ाइल खुलती भी है।
     फ़ाइल सामान्य रूप से बनती है और फिर बिगाड़ी जाती है, इसलिए उसका आकार वही रहता है जो आपने माँगा।
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     सेटिंग कोलन के बाद आती हैं। फ़्लैग दोहराया जा सकता है, और आप जिस क्रम में लिखते हैं वही उनके लागू
     होने का क्रम है। <code>tfg damage</code> बताता है कि यह बिल्ड क्या कर सकता है और हर एक क्या लेता

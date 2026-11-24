@@ -212,8 +212,8 @@ tfg license     afficher la licence et ce qu&#39;elle implique pour les fichiers
     fichier s'ouvre-t-il seulement. Le fichier est produit normalement puis abîmé, il garde donc la
     taille demandée.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Les réglages se placent après deux-points. L'option se répète, et l'ordre dans lequel vous les
     écrivez est l'ordre dans lequel ils sont appliqués. <code>tfg damage</code> liste ce que cette

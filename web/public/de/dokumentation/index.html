@@ -211,8 +211,8 @@ tfg license     die Lizenz ausgeben und was sie für erzeugte Dateien bedeutet</
     lässt sich die Datei überhaupt öffnen. Die Datei wird normal erzeugt und dann beschädigt, sie
     hat also weiterhin die verlangte Größe.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Einstellungen stehen hinter einem Doppelpunkt. Das Flag lässt sich wiederholen, und die Reihenfolge,
     in der du sie schreibst, ist die Reihenfolge, in der sie angewendet werden. <code>tfg

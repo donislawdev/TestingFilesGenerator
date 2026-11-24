@@ -562,8 +562,8 @@ Use them with `tfg generate --damage <id>`, repeatable and applied in the order
 given, or with the `damage` key of a target in a recipe:
 
 ```
-tfg generate --format png --size 20kb --count 10 --damage zero-head:bytes=16
-tfg generate --format zip --size 5mb --damage truncate:missing=30
+tfg generate --format png --size 20kb --count 10 --damage zero-head:bytes=16 --out ./zero-head-16
+tfg generate --format zip --size 5mb --damage truncate:missing=30 --out ./cut
 ```
 
 A damaged file names its damage in its label, beside the size it has on disk:
@@ -798,7 +798,7 @@ recipe. `tfg formats <id>` prints the allowed range or list for each:
 | `yaml`, `toml` | none in this build - the document is a fixed shape, and a size is the only thing to ask for |
 
 ```
-tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85
+tfg generate --format jpg --size 500kb --set width=1920 --set height=1080 --set quality=85 --out ./photos
 ```
 
 **Ask for a size a format cannot reach and you get an error, never a file of the
@@ -1074,7 +1074,7 @@ asked for, and the manifest says where a cut fell. [`tfg damage`](#tfg-damage) l
 damage takes, and where the outcome depends on your system.
 
 ```
-tfg generate --format png --size 2mb --damage zero-head --out ./out
+tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
 ```
 
 ### Which formats are coming next?

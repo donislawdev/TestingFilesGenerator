@@ -211,8 +211,8 @@ tfg license     print the licence and what it means for generated files</code></
     open at all. The file is produced normally and then broken, so it still has the size you asked
     for.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Settings go after a colon. The flag repeats, and the order you write them in is the order they
     are applied. <code>tfg damage</code> lists what this build can do and what each one takes.

@@ -54,8 +54,8 @@
     vůbec otevře. Soubor se vytvoří normálně a pak se rozbije, takže má stále velikost, o kterou
     jste požádali.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Nastavení se zadávají za dvojtečku. Přepínač se opakuje a pořadí, v jakém je napíšete, je pořadí, v
     jakém se uplatní. <code>tfg damage</code> vypíše, co tato verze umí a co která varianta přijímá.

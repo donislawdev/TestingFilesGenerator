@@ -54,8 +54,8 @@
     arquivo abre, afinal. O arquivo é produzido normalmente e depois quebrado, então continua com o
     tamanho que você pediu.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     As configurações vão depois de dois-pontos. A opção se repete, e a ordem em que você as escreve é a
     ordem em que são aplicadas. <code>tfg damage</code> lista o que esta versão pode fazer e o que

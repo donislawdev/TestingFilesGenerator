@@ -54,8 +54,8 @@
     się otwiera. Plik powstaje normalnie i dopiero potem zostaje zepsuty, więc dalej ma zamówiony
     rozmiar.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Ustawienia idą po dwukropku. Flagę można powtarzać, a kolejność zapisu jest kolejnością
     stosowania. <code>tfg damage</code> wypisuje, co ta wersja umie i co każde uszkodzenie

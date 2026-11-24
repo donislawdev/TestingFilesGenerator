@@ -44,6 +44,9 @@ because it turns other people's test suites red.
   folder.** Its question is now "How will I know later that none of these files
   changed?". `checksum-check` checks the files the checksum file lists, so a
   file added to the folder later is not noticed.
+- **The examples in the README and on the documentation page each write into a
+  folder of their own.** Run one after another, the second used to stop at the
+  manifest the first had left in the same folder.
 
 ## [0.6.0-rc1] - 2026-11-18
 

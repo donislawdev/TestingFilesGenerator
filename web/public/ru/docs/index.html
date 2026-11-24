@@ -211,8 +211,8 @@ tfg license     вывести лицензию и что она означае�
     - открывается ли файл вообще. Файл создаётся как обычно, а затем портится, поэтому у него
     остаётся запрошенный размер.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Настройки указываются после двоеточия. Флаг можно повторять, и порядок записи - это порядок
     применения. <code>tfg damage</code> перечисляет, что умеет эта сборка и что принимает каждый вид
