@@ -281,8 +281,11 @@ var provenByProbe = map[string]string{
 		"red on the message in npm.yml that stopped the weekly runs of 2026-11-16 and 2026-11-23.",
 	"TestOneFailingToolVersionCheckLeavesTheOthersRunning": "its canary is the planted failure of the first check. " +
 		"Broken by hand on 2026-11-24 by ending the run at the first failure again: red, the pins after it unprinted.",
-	"TestTheSiteIsDeployedInAJobAfterTheUploadWithMoreThanOneTry": "a canary of its own - one job that uploads and " +
-		"deploys once has to give two problems. Broken by hand on 2026-11-24 by the pages.yml of main that day: red three times.",
+	"TestTheSiteIsDeployedInAJobAfterTheUploadWithMoreThanOneTry": "two canaries of its own - one job that uploads and " +
+		"deploys once, and a retry that reads the conclusion after an upload job that kept pages: write. Broken by hand on " +
+		"2026-11-24 by the pages.yml of main that day, red three times, and by a retry reading the conclusion, red twice.",
+	"TestEveryHeldBackAdvisoryHasAnEndDateAndAReason": "a canary of its own - an entry without a date and one without " +
+		"a reason have to give two problems. Broken by hand on 2026-11-24 by taking one ignoreUntil out of the real file: red.",
 	"TestAReleaseCandidateIsSentNowhereButGitHub": "a canary of its own - a which step that sends whatever it is " +
 		"given has to fail the same cases. Broken by hand on 2026-11-23 by the npm.yml, pypi.yml and docker.yml of " +
 		"main before the change: red six times, each of the three sending a published release candidate and taking " +
