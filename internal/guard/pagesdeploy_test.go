@@ -9,17 +9,39 @@ import (
 
 // pagesStep is the part of a workflow step this guard reads.
 type pagesStep struct {
-	ID              string `yaml:"id"`
-	If              string `yaml:"if"`
-	Uses            string `yaml:"uses"`
-	ContinueOnError bool   `yaml:"continue-on-error"`
+	ID              string            `yaml:"id"`
+	If              string            `yaml:"if"`
+	Uses            string            `yaml:"uses"`
+	Run             string            `yaml:"run"`
+	With            map[string]any    `yaml:"with"`
+	Env             map[string]string `yaml:"env"`
+	ContinueOnError bool              `yaml:"continue-on-error"`
 }
 
-// pagesJob is the part of a workflow job this guard reads.
+// pagesJob is the part of a workflow job this guard and the publish
+// condition guard read.
 type pagesJob struct {
-	Needs       any         `yaml:"needs"`
-	Permissions any         `yaml:"permissions"`
-	Steps       []pagesStep `yaml:"steps"`
+	If          string            `yaml:"if"`
+	Needs       any               `yaml:"needs"`
+	Permissions any               `yaml:"permissions"`
+	Outputs     map[string]string `yaml:"outputs"`
+	Steps       []pagesStep       `yaml:"steps"`
+}
+
+// needsOf is the jobs a job waits for, whether it names one or a list.
+func needsOf(job pagesJob) map[string]bool {
+	needs := map[string]bool{}
+	switch n := job.Needs.(type) {
+	case string:
+		needs[n] = true
+	case []any:
+		for _, v := range n {
+			if s, ok := v.(string); ok {
+				needs[s] = true
+			}
+		}
+	}
+	return needs
 }
 
 // pagesDeployProblems is what is wrong with how a workflow uploads and deploys
@@ -66,17 +88,7 @@ func pagesDeployProblems(body []byte) []string {
 			problems = append(problems, "the job "+name+" uploads the site and deploys it, and in one job the "+
 				"lookup by name misses the artifact uploaded a moment before")
 		}
-		needs := map[string]bool{}
-		switch n := workflow.Jobs[name].Needs.(type) {
-		case string:
-			needs[n] = true
-		case []any:
-			for _, v := range n {
-				if s, ok := v.(string); ok {
-					needs[s] = true
-				}
-			}
-		}
+		needs := needsOf(workflow.Jobs[name])
 		for up := range uploads {
 			if !needs[up] {
 				problems = append(problems, "the job "+name+" does not wait for "+up+", which uploads what it deploys")
