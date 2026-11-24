@@ -61,11 +61,34 @@
       "description": "Een bestand dat met opzet kapot is, op exacte grootte, met een manifest dat zegt dat je systeem het moet weigeren. Voor het testen van uploadvalidatie en parsers."
     },
     {
+      "key": "samples",
+      "slug": "voorbeeldbestanden",
+      "nav": "Voorbeeldbestanden",
+      "title": "Voorbeeldbestanden om te testen - PDF, CSV, DOCX downloaden",
+      "description": "Testbestanden en voorbeeldbestanden downloaden: elk formaat in 1 MB, beschadigde PDF-, Word- en Excel-bestanden, CSV-tabellen en placeholders, elk met SHA-256."
+    },
+    {
       "key": "ci",
       "slug": "testbestanden-in-ci",
       "nav": "Testbestanden in CI",
       "title": "Testbestanden in CI - GitHub Actions, GitLab CI en PowerShell",
       "description": "Genereer testbestanden in de pipeline in plaats van binaire bestanden te committen: GitHub Actions-workflow, GitLab-job, afsluitcodes en de PowerShell-valkuil."
+    },
+    {
+      "key": "upload-tests",
+      "slug": "testgevallen-bestandsupload",
+      "nav": "Testgevallen upload",
+      "title": "Testgevallen voor bestandsupload - met de bestanden erbij",
+      "description": "Testgevallen voor bestandsupload: groottelimiet, lege en beschadigde bestanden, verkeerd type, onverwachte namen en archieven, elk met het bestand dat het test.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "hulpmiddelen",
+      "nav": "Hulpmiddelen",
+      "title": "ZIP controleren voor het uitpakken en SHA-256-checksums",
+      "description": "Offline hulpmiddelen voor je eigen bestanden: een archief voor het uitpakken nakijken op zip slip en zip-bommen, en SHA-256-checksums controleren of schrijven.",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "Beschadiging",
     "colEffect": "Wat het met de bytes doet",
     "colSettings": "Instellingen",
-    "noSettings": "geen"
+    "noSettings": "geen",
+    "colFile": "Bestand",
+    "colSize": "Grootte",
+    "colSha256": "SHA-256",
+    "colExpected": "Verwacht",
+    "colTool": "Hulpmiddel",
+    "colQuestion": "Wat het beantwoordt"
   },
   "endings": {
     "0": "Alles werkte.",
@@ -224,8 +253,8 @@
     "picture-sizes": {
       "question": "Neemt mijn systeem afbeeldingen aan in de formaten die schermen en platforms gebruiken?",
       "title": "Afbeeldingsformaten",
-      "pageTitle": "Testafbeeldingen in gangbare formaten - schermen, avatars, sociale media",
-      "description": "Afbeeldingen in de formaten van HD-, Full HD-, QHD- en 4K-schermen, van profielfoto's en van de omslagfoto's, berichten en miniaturen die sociale platforms vragen, elk zo klein als het kan.",
+      "pageTitle": "Testafbeeldingen in gangbare formaten - schermen en social",
+      "description": "Afbeeldingen in de formaten van HD-, Full HD-, QHD- en 4K-schermen, van profielfoto's en van de omslagfoto's, berichten en miniaturen die sociale platforms vragen.",
       "catches": [
         "een grens voor breedte of hoogte die voor één vorm bedoeld was en een andere weigert, zoals een profielachtergrond van 1584 px breed",
         "een miniatuur die wordt bijgesneden of platgedrukt omdat de code een liggende afbeelding verwacht en er een staande binnenkomt",
@@ -351,5 +380,11 @@
       "q": "Waarom is een run over duizenden bestanden trager op Windows?",
       "a": "Omdat Windows meer rekent voor elk pad dat het bekijkt, en een opdracht die over duizenden bestanden gaat bekijkt duizenden paden. Gemeten op één machine met 3000 bestanden van 1 kB doet verify er ongeveer 0,9 seconde over op Windows en ongeveer 0,2 seconde op Linux in een container. Een korter uitvoerpad maakt het cijfer voor Windows kleiner, omdat elke map boven de bestanden deel uitmaakt van wat wordt bekeken."
     }
-  ]
+  ],
+  "tools": {
+    "archive-scan": "Is dit archief veilig om uit te pakken?",
+    "checksum": "Is dit bestand het bestand dat het beweert te zijn?",
+    "checksum-check": "Is elk bestand nog wat zijn checksumbestand zegt?",
+    "checksum-write": "Hoe weet ik later dat geen van deze bestanden is veranderd?"
+  }
 }

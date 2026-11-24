@@ -7,6 +7,9 @@
   <h2>有哪些命令？</h2>
   <p>每个命令只做一件事：</p>
   {{ template "commandList" . }}
+  <p>
+    <code>tfg tool</code> 包含处理现有文件的工具，例如在解压前检查压缩包。<a href="/zh-hans/tools/">工具</a>介绍了其中每一个。
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -45,8 +48,8 @@
     本工具写出的其他所有文件在构造上都是正确的，这回答了上传校验器会问的三个问题中的两个。<code>--damage</code>
     回答第三个，也就是文件到底能不能打开。文件先正常生成，再被破坏，因此仍然保持你请求的大小。
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     设置写在冒号后面。该参数可以重复，写入的顺序就是应用的顺序。<code>tfg damage</code> 会列出此版本能做什么，以及每种破坏接受哪些设置。
   </p>
@@ -67,7 +70,7 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     <li>文件小于破坏所需的大小，因为它会原样输出</li>
     <li>
       在破坏旁边写 <code>expected: accept</code>，因为没有任何文件能满足它。如果被测系统应该修复该文件，请写
-      <code>sanitize</code>；如果你问的正是这个问题，请写 <code>unspecified</code>
+      <code>sanitize</code>，如果你问的正是这个问题，请写 <code>unspecified</code>
     </li>
   </ul>
   <p>

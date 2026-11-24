@@ -1,0 +1,103 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Check an archive before unpacking it, and verify checksums</h1>
+<p class="lead">
+  Beside the generator, <code>tfg</code> has small tools for files you already have: whether an
+  archive is safe to unpack, and whether a file or a whole folder is still what its checksum says.
+  They run on your machine, with no upload and no account.
+</p>
+
+<div class="note">
+  <p class="note-title">The short answer</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> reads the archive without unpacking anything and
+    ends with code 0 when it is safe, or 7 with a list of what it found.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> says whether a file matches the
+    sum a download page gave you.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">What there is</p>
+  <h2>Which tools are there?</h2>
+  <p>
+    This is the list the program prints, read from it when this page is built.
+    <code>tfg tool list</code> prints the same, and <code>tfg tool show &lt;id&gt;</code> says what one
+    of them takes. Every tool is also on the Tools screen of the window, with the same settings.
+  </p>
+  {{ template "toolsTable" . }}
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Archives</p>
+  <h2>Is this archive safe to unpack? Zip slip and zip bombs</h2>
+  <p>
+    <code>archive-scan</code> looks into a ZIP, TAR, TAR.GZ or gzip file without writing anything to
+    disk and says whether unpacking it is safe. It reports:
+  </p>
+  <ul>
+    <li>an entry that would be written outside the folder, the trap known as zip slip</li>
+    <li>a link, a device, or two names that would land on one file</li>
+    <li>a name a system cannot write</li>
+    <li>an entry built to explode when unpacked, the trap known as a zip bomb</li>
+    <li>an entry that is damaged</li>
+  </ul>
+  <p>
+    Archives inside the archive, such as a ZIP in a ZIP or a DOCX in a TAR, are read the same way,
+    in memory, up to 16 deep. A trap in one of them is a trap in the whole, because a program that
+    unpacks everything unpacks those too.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> also reports an archive that unpacks to more than you allow. Safe
+    ends with code 0, and anything found ends with 7, so a pipeline can stop on it.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">One file</p>
+  <h2>Is this file the one it claims to be?</h2>
+  <p>
+    <code>checksum</code> works out the checksum of a file and, given one to compare with, says
+    whether they match. It takes md5, sha1, sha256, sha512 and crc32, sha256 unless you ask, and it
+    tells which one you were given from its length.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    A sum that does not match ends with code 7. It answers the same question as
+    <code>Get-FileHash</code> on Windows or <code>sha256sum</code> on Linux, with the comparison done
+    for you.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">A whole folder</p>
+  <h2>Did anything in this folder change?</h2>
+  <p>
+    <code>checksum-write</code> writes the checksum of every file in a folder into SHA256SUMS beside
+    them, the same bytes <code>sha256sum</code> writes, and never over one that is already there.
+    <code>checksum-check</code> later checks every file that SHA256SUMS lists.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    Files it does not list are not looked at, the same as <code>sha256sum -c</code>, and a path that
+    leaves the folder is refused rather than read. The <a href="/sample-files/">sample files</a> come
+    with a SHA256SUMS you can check this way.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Next</p>
+  <h2>Where to go from here</h2>
+  <ul>
+    <li>
+      <a href="/file-upload-test-cases/">File upload test cases</a> puts the archive check among the
+      other cases of an upload.
+    </li>
+    <li>
+      <a href="/docs/">The documentation</a> has every command and exit code.
+    </li>
+  </ul>
+</section>

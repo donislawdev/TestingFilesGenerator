@@ -109,6 +109,7 @@
       <a href="/zh-hant/create-file-exact-size/">精確大小</a>
       <a href="/zh-hant/faq/">常見問題</a>
       <a href="/zh-hant/corrupt-test-files/">損毀檔案</a>
+      <a href="/zh-hant/sample-files/">範例檔案</a>
       <a href="/zh-hant/test-files-in-ci/">CI 中的測試檔案</a>
     </nav>
     <details class="langmenu">
@@ -163,6 +164,9 @@ tfg damage      列出此版本可以刻意破壞檔案的方式
 tfg tool        處理現有檔案的小工具
 tfg version     列印工具版本
 tfg license     列印授權條款及其對產生檔案的意義</code></pre>
+  <p>
+    <code>tfg tool</code> 包含處理現有檔案的工具，例如在解壓縮前檢查壓縮檔。<a href="/zh-hant/tools/">工具</a>說明了其中每一個。
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -201,8 +205,8 @@ tfg license     列印授權條款及其對產生檔案的意義</code></pre>
     本工具寫出的其他所有檔案在構造上都是正確的，這回答了上傳驗證器會問的三個問題中的兩個。<code>--damage</code>
     回答第三個，也就是檔案到底能不能開啟。檔案先正常產生，再被破壞，因此仍然維持你要求的大小。
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     設定寫在冒號後面。該參數可以重複，寫入的順序就是套用的順序。<code>tfg damage</code> 會列出此版本能做什麼，以及每種破壞接受哪些設定。
   </p>
@@ -495,7 +499,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.6.0-rc1</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">專為 QA 設計的精確大小測試檔案，並附上說明系統應如何回應每個檔案的清單。</p>
     </div>
     <div class="footer-col">
@@ -518,6 +522,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
         <li><a href="/zh-hant/create-file-exact-size/">精確大小</a></li>
         <li><a href="/zh-hant/faq/">常見問題</a></li>
         <li><a href="/zh-hant/corrupt-test-files/">損毀檔案</a></li>
+        <li><a href="/zh-hant/sample-files/">範例檔案</a></li>
         <li><a href="/zh-hant/test-files-in-ci/">CI 中的測試檔案</a></li>
       </ul>
     </div>

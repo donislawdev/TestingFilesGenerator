@@ -109,6 +109,7 @@
       <a href="/create-file-exact-size/">Exact size</a>
       <a href="/faq/">FAQ</a>
       <a href="/corrupt-test-files/">Corrupt test files</a>
+      <a href="/sample-files/">Sample files</a>
       <a href="/test-files-in-ci/">Test files in CI</a>
     </nav>
     <details class="langmenu">
@@ -165,6 +166,10 @@ tfg damage      list the ways this build can break a file on purpose
 tfg tool        small things to do with files you already have
 tfg version     print the tool version
 tfg license     print the licence and what it means for generated files</code></pre>
+  <p>
+    <code>tfg tool</code> holds the tools for files you already have, such as checking an archive before
+    unpacking it. <a href="/tools/">Tools</a> describes each one.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -206,8 +211,8 @@ tfg license     print the licence and what it means for generated files</code></
     open at all. The file is produced normally and then broken, so it still has the size you asked
     for.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Settings go after a colon. The flag repeats, and the order you write them in is the order they
     are applied. <code>tfg damage</code> lists what this build can do and what each one takes.
@@ -528,7 +533,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.6.0-rc1</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
     </div>
     <div class="footer-col">
@@ -551,6 +556,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
         <li><a href="/create-file-exact-size/">Exact size</a></li>
         <li><a href="/faq/">FAQ</a></li>
         <li><a href="/corrupt-test-files/">Corrupt test files</a></li>
+        <li><a href="/sample-files/">Sample files</a></li>
         <li><a href="/test-files-in-ci/">Test files in CI</a></li>
       </ul>
     </div>

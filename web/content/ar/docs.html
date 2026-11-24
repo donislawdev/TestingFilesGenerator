@@ -9,6 +9,10 @@
   <h2>ما الأوامر المتاحة؟</h2>
   <p>كل أمر يؤدي مهمة واحدة:</p>
   {{ template "commandList" . }}
+  <p>
+    يضم <code>tfg tool</code> أدوات للملفات الموجودة لديك، مثل فحص أرشيف قبل فك ضغطه. وتشرح صفحة
+    <a href="/ar/tools/">الأدوات</a> كل واحدة منها.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -48,8 +52,8 @@
     أما <code>--damage</code> فيجيب عن الثالث: هل يُفتح الملف أصلًا. يُنتَج الملف بشكل طبيعي ثم
     يُتلف، فيبقى بالحجم الذي طلبته.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     تُكتب الإعدادات بعد نقطتين. يمكن تكرار الخيار، وترتيب كتابتها هو ترتيب تطبيقها. يسرد <code>tfg
     damage</code> ما يستطيعه هذا الإصدار وما يقبله كل نوع.

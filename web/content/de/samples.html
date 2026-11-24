@@ -1,0 +1,117 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Beispieldateien zum Testen</h1>
+<p class="lead">
+  Echte Dateien zum Herunterladen, um ein Upload-Formular, einen Parser oder einen Import zu testen:
+  eine Datei von jedem Format, das dieser Generator schreibt, absichtlich beschädigte Dateien, Tabellen
+  so, wie Tabellenkalkulationen sie exportieren, und Platzhalterbilder. Nichts zu installieren und
+  keine Anmeldung.
+</p>
+
+<div class="note">
+  <p class="note-title">Aus einem einzigen Rezept</p>
+  <p>
+    Alle Dateien auf dieser Seite stammen aus einem Rezept,
+    <a href="/samples/samples.yaml">samples.yaml</a>. Führst du es mit <code>tfg</code> aus, bekommst
+    du auf jedem Rechner dieselben Bytes. Die SHA-256-Summe neben jeder Datei kannst du also selbst
+    nachprüfen, statt sie einfach zu glauben.
+  </p>
+  <pre><code>tfg generate samples.yaml --out samples</code></pre>
+  <p>
+    Alle Summen stehen in <a href="/samples/SHA256SUMS">SHA256SUMS</a>. Leg die Datei in diesen Ordner,
+    dann sagt dir <code>tfg tool checksum-check samples/SHA256SUMS</code> oder
+    <code>sha256sum -c SHA256SUMS</code>, ob jede Datei passt.
+  </p>
+</div>
+
+<p>
+  Die letzte Spalte jeder Tabelle zeigt, was das <a href="/samples/manifest.json">Manifest</a> von
+  deinem System mit der Datei erwartet. <code>accept</code> heißt, dass es die Datei annehmen soll,
+  <code>reject</code>, dass es sie abweisen soll, und <code>unspecified</code>, dass es von den Regeln
+  deines Systems abhängt.
+</p>
+
+<section class="section" id="formats">
+  <p class="eyebrow">Jedes Format</p>
+  <h2>Eine Datei von jedem Format, jede 1 MB groß</h2>
+  <p>
+    Dokumente, Bilder, Text, Daten, Archive, E-Mail, Telemetrie, Audio und Video, jede Datei genau
+    1 048 576 Bytes groß und jede eine echte Datei ihres Formats. Das PDF öffnet sich in einem
+    PDF-Reader, die DOCX in Word, die XLSX in Excel, und das ZIP lässt sich entpacken.
+  </p>
+  {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Eine andere Größe ist ein einziger Befehl. <code>tfg generate --format pdf --size 10mb</code>
+    schreibt ein PDF von genau 10 MB, und eine Datei mit 1 GB entsteht auf dieselbe Weise. So große
+    Dateien liegen nicht auf dieser Seite, weil ein Befehl sie schneller erzeugt, als ein Download
+    dauern würde.
+  </p>
+</section>
+
+<section class="section" id="corrupt">
+  <p class="eyebrow">Absichtlich kaputt</p>
+  <h2>Beschädigte Dateien: PDF, Word, Excel, Bilder, Video und ZIP</h2>
+  <p>
+    Jede Datei wurde zuerst gesund erzeugt und dann beschädigt, und jede ist trotzdem genau 1 MB groß.
+    <code>truncate</code> schneidet das Ende ab, so wie es ein abgebrochener Upload tut, und
+    <code>zero-head</code> schreibt Nullen über die ersten Bytes, an denen ein Leser erkennt, was die
+    Datei ist. Das Manifest erwartet, dass dein System jede von ihnen abweist.
+  </p>
+  {{ with .SampleTable "corrupt" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    <a href="/de/beschaedigte-testdateien/">Beschädigte Testdateien</a> erklärt, wie du eigene erzeugst,
+    in jedem Format und in jeder Größe, und welche Beschädigungen es gibt.
+  </p>
+</section>
+
+<section class="section" id="tables">
+  <p class="eyebrow">Für einen Import</p>
+  <h2>CSV-, JSON- und Excel-Tabellen</h2>
+  <p>
+    Dieselbe Tabelle so geschrieben, wie echte Programme sie schreiben: mit Komma, Semikolon, Tabulator
+    oder senkrechtem Strich zwischen den Werten, mit Windows-Zeilenenden, ohne Kopfzeile, mit jedem Wert
+    in Anführungszeichen oder mit keinem, eine breite CSV, ein Excel-Blatt und JSON in drei Layouts.
+    Manche sind mit <code>unspecified</code> markiert, weil dein Import selbst entscheidet, ob er ein
+    Semikolon annimmt. Was er nicht tun darf, ist, nur die Hälfte der Tabelle einzulesen.
+  </p>
+  {{ with .SampleTable "tables" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    Es sind die Dateien des <a href="/de/presets/tabular-import/">Presets tabular-import</a>, das sie mit
+    so vielen Zeilen und Spalten erzeugt, wie du willst.
+  </p>
+</section>
+
+<section class="section" id="placeholders">
+  <p class="eyebrow">Für ein Layout</p>
+  <h2>Platzhalterbilder in gängigen Größen</h2>
+  <p>
+    Ein einfarbig graues Bild mit seiner Größe in der Mitte, um eine Seite zu gestalten, bevor es die
+    echten Bilder gibt: quadratische Vorschaubilder, eine Anzeige mit 300 x 250, ein Banner mit 728 x 90,
+    eine Social-Media-Karte mit 1200 x 630 und ein Full-HD-Bildschirm. Jede Datei ist so klein, wie das
+    Bild sein kann.
+  </p>
+  {{ with .SampleTable "placeholders" }}{{ template "samplesTable" . }}{{ end }}
+  <p>Jede andere Größe oder Farbe:</p>
+  <pre><code>tfg generate --format png --size smallest --set content=placeholder --set width=640 --set height=360 --set background=1e293b</code></pre>
+  <p>
+    Das <a href="/de/presets/picture-sizes/">Preset picture-sizes</a> erzeugt in einem Lauf jede Größe,
+    die Bildschirme und Plattformen verwenden, mit <code>--content placeholder</code>.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Weiter</p>
+  <h2>Wohin es von hier geht</h2>
+  <ul>
+    <li>
+      <a href="/de/testfaelle-datei-upload/">Testfälle für den Datei-Upload</a> sagt, welche dieser
+      Dateien was in einem Upload-Formular prüft.
+    </li>
+    <li>
+      <a href="/de/presets/">Presets</a> sind fertige Sets für jeweils eine Testfrage.
+    </li>
+    <li>
+      <a href="/de/testdateien-in-ci/">Testdateien in CI</a> erzeugt Dateien wie diese in einer Pipeline,
+      statt sie im Repository aufzubewahren.
+    </li>
+  </ul>
+</section>

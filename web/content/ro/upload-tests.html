@@ -1,0 +1,160 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Cazuri de test pentru încărcarea fișierelor, cu fișierele pentru a le rula</h1>
+<p class="lead">
+  O listă de verificare cu cazuri de test pentru încărcarea fișierelor, de la limita de dimensiune până
+  la un nume de fișier care încearcă să iasă din folderul lui. Fiecare caz numește fișierul care îl
+  testează și ce trebuie să facă sistemul tău cu el, așa că lista poate fi rulată, nu doar citită.
+</p>
+
+<div class="note">
+  <p class="note-title">Toată lista într-o singură comandă</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    scrie un fișier pentru aproape fiecare caz de mai jos, cu un manifest care spune ce trebuie să se
+    întâmple cu fiecare. Pune limita și tipurile pe care le declară formularul tău.
+  </p>
+</div>
+
+<p>
+  <code>accept</code> înseamnă că sistemul tău trebuie să accepte fișierul, iar <code>reject</code> că
+  trebuie să îl respingă cu un mesaj clar. <code>unspecified</code> înseamnă că oricare dintre răspunsuri
+  poate fi corect, așa că notează pe care îl alege sistemul tău și verifică dacă face asta de fiecare
+  dată. Cuvântul de după rezultat este motivul dat de manifest.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">Dimensiune</p>
+  <h2>Se aplică limita de dimensiune acolo unde este declarată?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caz de test</th><th>Fișier</th><th>Așteptat</th></tr></thead>
+    <tbody>
+      <tr><td>Un octet sub limită</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Exact la limită</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Un octet peste limită</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>De două ori limita, ca să vezi că serverul se oprește din citit devreme în loc să ia totul în memorie</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Un fișier gol, de 0 octeți</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Cele mai frecvente două greșeli ale unei limite sunt o limită verificată doar în browser și o limită
+    numărată în MB acolo unde codul numără MiB.
+    <a href="/ro/presetari/size-boundaries/">Presetarea size-boundaries</a> pune câte un fișier la fiecare
+    distanță de limita pe care o alegi, un octet, un kilobyte și un megabyte de fiecare parte.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">Tip</p>
+  <h2>Acceptă formularul tipurile pe care trebuie și le respinge pe celelalte?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caz de test</th><th>Fișier</th><th>Așteptat</th></tr></thead>
+    <tbody>
+      <tr><td>Fiecare tip pe care îl acceptă formularul, ca fișier real de acel tip</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Un tip pe care formularul nu îl acceptă</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>O extensie de un tip pe un conținut de alt tip, de exemplu un PDF numit .jpg</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>Două extensii, ultima nepermisă</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Nicio extensie</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>Extensia cu majuscule</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Un SVG sau un HTML luat drept imagine sau text simplu este o cale de a strecura un script printr-un
+    formular. De aceea sunt pe lista tipurilor de respins, dacă formularul tău nu trebuie să le accepte.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">Conținut</p>
+  <h2>Deschide sistemul fișierul sau se uită doar la nume?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caz de test</th><th>Fișier</th><th>Așteptat</th></tr></thead>
+    <tbody>
+      <tr><td>Un fișier tăiat, așa cum îl lasă o încărcare întreruptă</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Un fișier ai cărui primi octeți sunt zerouri, așa că nimic nu spune ce este</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Cel mai mic fișier permis de un format, valid și minuscul</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Un fișier care are doar numele potrivit și dimensiunea potrivită trece de orice verificare care nu îl
+    deschide niciodată. <a href="/ro/fisiere-de-exemplu/#corrupt">Fișierele de exemplu corupte</a> sunt în
+    PDF, Word, Excel, PowerPoint, JPG, PNG, MP4 și ZIP, iar
+    <a href="/ro/fisiere-de-test-corupte/">fișiere de test corupte</a> explică cum le faci în orice format
+    și de orice dimensiune.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">Nume</p>
+  <h2>Se întoarce fișierul cu numele pe care l-a primit?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caz de test</th><th>Fișier</th><th>Așteptat</th></tr></thead>
+    <tbody>
+      <tr><td>Spații și paranteze</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Litere în afara ASCII și un emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>Un nume mai lung de 200 de caractere</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>Un nume care iese din folderul lui, <code>../</code> sau <code>..\</code></td><td><code>climbing_name.jpg</code>, încărcat ca <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>O cale absolută, de Linux sau de Windows</td><td><code>absolute_name.jpg</code>, încărcat ca <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    O cale într-un nume nu poate fi salvată pe disc, așa că fișierul are un nume simplu, iar manifestul
+    spune sub ce nume să fie încărcat. Să accepți fișierul și să păstrezi doar ultima parte a numelui este
+    un răspuns bun. Să îl scrii în afara folderului de încărcare este defectul pe care acest caz există ca
+    să îl găsească. <a href="/ro/presetari/filename-handling/">Presetarea filename-handling</a> are mult
+    mai multe nume: litere care seamănă cu altele, caractere invizibile, nume rezervate de Windows și
+    lungimi numărate în octeți.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">Volum și arhive</p>
+  <h2>Ce se întâmplă cu multe fișiere sau cu un fișier care conține multe?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caz de test</th><th>Fișier</th><th>Așteptat</th></tr></thead>
+    <tbody>
+      <tr><td>Cincizeci de fișiere într-o singură încărcare</td><td>de la <code>bulk_0001.jpg</code> la <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Un ZIP care chiar conține 200 de documente</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>O arhivă pe care sistemul tău o dezarhivează, verificată mai întâi de zip slip și zip bombs</td><td><code>tfg tool archive-scan upload.zip</code></td><td>sigură sau ce a găsit</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> stabilește câte fișiere conține încărcarea în masă, până la zece mii.
+    <a href="/ro/instrumente/">Instrumente</a> spune ce caută verificarea arhivelor.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">Într-un test</p>
+  <h2>Lista rulată ca test</h2>
+  <p>
+    Manifestul conține rezultatul așteptat al fiecărui fișier și numele sub care să fie încărcat, așa că
+    o singură buclă parcurge toată lista:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    Fișierele marcate <code>unspecified</code> sunt lăsate deoparte aici, pentru că răspunsul lor ține de
+    propria ta politică. Decide-l, scrie-l în rețetă cu <code>expected</code>, iar bucla le verifică și pe
+    ele. <a href="/ro/fisiere-de-test-in-ci/">Fișiere de test în CI</a> rulează asta într-un pipeline.
+  </p>
+</section>

@@ -1,0 +1,153 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>حالات اختبار رفع الملفات، مع الملفات اللازمة لتشغيلها</h1>
+<p class="lead">
+  قائمة تحقق بحالات اختبار رفع الملفات، من حد الحجم إلى اسم ملف يحاول الخروج من مجلده. كل حالة تسمّي
+  الملف الذي يختبرها وما ينبغي أن يفعله نظامك به، فيمكن تشغيل القائمة لا قراءتها فقط.
+</p>
+
+<div class="note">
+  <p class="note-title">القائمة كلها بأمر واحد</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    يكتب ملفًا لكل حالة تقريبًا مما يلي، مع بيان يقول ما ينبغي أن يحدث لكل منها. ضع الحد والأنواع التي
+    يعلنها نموذجك.
+  </p>
+</div>
+
+<p>
+  <code>accept</code> يعني أنه ينبغي لنظامك أن يقبل الملف، و<code>reject</code> أنه ينبغي أن يرفضه
+  برسالة واضحة. <code>unspecified</code> يعني أن كلا الجوابين قد يكون صحيحًا، فاكتب أيهما يقصده نظامك،
+  وتحقق من أنه يفعل ذلك في كل مرة. الكلمة التي تلي النتيجة هي السبب الذي يذكره البيان.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">الحجم</p>
+  <h2>هل يُطبَّق حد الحجم حيث أُعلن؟</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>حالة الاختبار</th><th>الملف</th><th>المتوقع</th></tr></thead>
+    <tbody>
+      <tr><td>أقل من الحد ببايت واحد</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>عند الحد تمامًا</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>أكثر من الحد ببايت واحد</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>ضعف الحد، للتأكد من أن الخادم يتوقف عن القراءة مبكرًا بدل أن يأخذ الملف كله في الذاكرة</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>ملف فارغ حجمه 0 بايت</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    الحالتان اللتان يخطئ فيهما الحد غالبًا هما حد لا يُفحص إلا في المتصفح، وحد يُحسب بـ MB بينما تحسب
+    الشيفرة بـ MiB. يضع <a href="/ar/presets/size-boundaries/">الإعداد المسبق size-boundaries</a> ملفًا
+    عند كل مسافة تختارها من الحد، بايت وكيلوبايت وميغابايت على كل جانب.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">النوع</p>
+  <h2>هل يقبل النموذج الأنواع التي ينبغي أن يقبلها ويرفض الباقي؟</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>حالة الاختبار</th><th>الملف</th><th>المتوقع</th></tr></thead>
+    <tbody>
+      <tr><td>كل نوع يقبله النموذج، كملف حقيقي من ذلك النوع</td><td><code>allowed_jpg.jpg</code>، <code>allowed_png.png</code>، <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>نوع لا يقبله النموذج</td><td><code>denied.svg</code>، <code>denied.html</code>، <code>denied.exe</code>، <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>امتداد يدل على نوع ومحتوى من نوع آخر، مثل ملف PDF اسمه .jpg</td><td><code>pdf_as_jpg.jpg</code>، <code>png_as_pdf.pdf</code>، <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>امتدادان، والأخير غير مسموح</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>بلا امتداد إطلاقًا</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>الامتداد بأحرف كبيرة</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    ملف SVG أو HTML يُؤخذ على أنه صورة أو نص عادي طريقة لتمرير سكربت عبر نموذج، ولهذا هما في قائمة
+    الأنواع التي يجب رفضها ما لم يكن نموذجك مقصودًا به قبولهما.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">المحتوى</p>
+  <h2>هل يفتح النظام الملف، أم ينظر إلى اسمه فقط؟</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>حالة الاختبار</th><th>الملف</th><th>المتوقع</th></tr></thead>
+    <tbody>
+      <tr><td>ملف مقطوع، كما يتركه رفع انقطع</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>ملف أول بايتاته أصفار، فلا شيء فيه يقول ما هو</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>أصغر ملف تسمح به الصيغة، صالح وصغير جدًا</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    الملف الذي ليس له إلا الاسم الصحيح والحجم الصحيح يجتاز كل فحص لا يفتحه.
+    <a href="/ar/sample-files/#corrupt">الملفات النموذجية التالفة</a> متاحة بصيغ PDF وWord وExcel
+    وPowerPoint وJPG وPNG وMP4 وZIP، وتشرح صفحة <a href="/ar/corrupt-test-files/">ملفات اختبار تالفة</a>
+    كيف تصنعها بأي صيغة وبأي حجم.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">الاسم</p>
+  <h2>هل يعود الملف بالاسم الذي أُعطي له؟</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>حالة الاختبار</th><th>الملف</th><th>المتوقع</th></tr></thead>
+    <tbody>
+      <tr><td>مسافات وأقواس</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>أحرف خارج ASCII ورمز تعبيري</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>اسم أطول من 200 حرف</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>اسم يخرج من مجلده، <code>../</code> أو <code>..\</code></td><td><code>climbing_name.jpg</code>، يُرفع باسم <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>مسار مطلق، على لينكس أو ويندوز</td><td><code>absolute_name.jpg</code>، يُرفع باسم <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    لا يمكن حفظ اسم فيه مسار على القرص، لذا يحمل الملف اسمًا عاديًا، ويقول البيان بأي اسم يُرفع. قبول
+    الملف والاحتفاظ بالجزء الأخير فقط من الاسم جواب جيد. أما كتابته خارج مجلد الرفع فهي العيب الذي وُجدت
+    هذه الحالة لاكتشافه. لدى <a href="/ar/presets/filename-handling/">الإعداد المسبق filename-handling</a>
+    أسماء أكثر بكثير: أحرف متشابهة الشكل، وأحرف غير مرئية، وأسماء يحجزها ويندوز، وأطوال تُحسب بالبايتات.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">الكمية والأرشيفات</p>
+  <h2>ماذا يحدث مع ملفات كثيرة، أو مع ملف يحوي الكثير منها؟</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>حالة الاختبار</th><th>الملف</th><th>المتوقع</th></tr></thead>
+    <tbody>
+      <tr><td>خمسون ملفًا في رفع واحد</td><td>من <code>bulk_0001.jpg</code> إلى <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ملف ZIP يحوي فعلًا 200 مستند</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>أرشيف يفك نظامك ضغطه، يُفحص أولًا بحثًا عن zip slip وzip bomb</td><td><code>tfg tool archive-scan upload.zip</code></td><td>آمن، أو ما وجده</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    يحدد <code>--bulk</code> عدد الملفات في الرفع الجماعي، حتى عشرة آلاف. وتشرح صفحة
+    <a href="/ar/tools/">الأدوات</a> ما يبحث عنه فحص الأرشيف.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">في اختبار</p>
+  <h2>تشغيل القائمة كاختبار</h2>
+  <p>
+    يحمل البيان النتيجة المتوقعة لكل ملف والاسم الذي يُرفع به، لذا تشغّل حلقة واحدة القائمة كلها:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    الملفات المعلَّمة بـ <code>unspecified</code> مستبعدة هنا، لأن جوابها هو سياستك أنت. قرّره، واكتبه في
+    الوصفة بـ <code>expected</code>، فتفحصها الحلقة أيضًا. <a href="/ar/test-files-in-ci/">ملفات الاختبار
+    في CI</a> تشغّل هذا في خط البناء.
+  </p>
+</section>

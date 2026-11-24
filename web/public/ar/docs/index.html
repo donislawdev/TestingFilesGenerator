@@ -109,6 +109,7 @@
       <a href="/ar/create-file-exact-size/">الحجم الدقيق</a>
       <a href="/ar/faq/">الأسئلة الشائعة</a>
       <a href="/ar/corrupt-test-files/">ملفات تالفة</a>
+      <a href="/ar/sample-files/">ملفات نموذجية</a>
       <a href="/ar/test-files-in-ci/">ملفات الاختبار في CI</a>
     </nav>
     <details class="langmenu">
@@ -165,6 +166,10 @@ tfg damage      سرد الطرق التي يستطيع بها هذا الإصد
 tfg tool        أدوات صغيرة للملفات التي لديك بالفعل
 tfg version     طباعة إصدار الأداة
 tfg license     طباعة الرخصة ومعناها للملفات المولَّدة</code></pre>
+  <p>
+    يضم <code>tfg tool</code> أدوات للملفات الموجودة لديك، مثل فحص أرشيف قبل فك ضغطه. وتشرح صفحة
+    <a href="/ar/tools/">الأدوات</a> كل واحدة منها.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -204,8 +209,8 @@ tfg license     طباعة الرخصة ومعناها للملفات المول
     أما <code>--damage</code> فيجيب عن الثالث: هل يُفتح الملف أصلًا. يُنتَج الملف بشكل طبيعي ثم
     يُتلف، فيبقى بالحجم الذي طلبته.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     تُكتب الإعدادات بعد نقطتين. يمكن تكرار الخيار، وترتيب كتابتها هو ترتيب تطبيقها. يسرد <code>tfg
     damage</code> ما يستطيعه هذا الإصدار وما يقبله كل نوع.
@@ -520,7 +525,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.6.0-rc1</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">ملفات اختبار لضمان الجودة بحجم دقيق، مع بيان يحدد كيف يجب أن يتفاعل نظامك مع كل ملف.</p>
     </div>
     <div class="footer-col">
@@ -543,6 +548,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
         <li><a href="/ar/create-file-exact-size/">الحجم الدقيق</a></li>
         <li><a href="/ar/faq/">الأسئلة الشائعة</a></li>
         <li><a href="/ar/corrupt-test-files/">ملفات تالفة</a></li>
+        <li><a href="/ar/sample-files/">ملفات نموذجية</a></li>
         <li><a href="/ar/test-files-in-ci/">ملفات الاختبار في CI</a></li>
       </ul>
     </div>

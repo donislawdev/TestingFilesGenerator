@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="id">
+<title>Periksa ZIP Sebelum Diekstrak dan Verifikasi Checksum SHA-256</title>
+<meta name="description" content="Alat offline untuk file yang sudah Anda miliki: periksa apakah arsip aman diekstrak, termasuk zip slip dan zip bomb, serta periksa atau tulis checksum SHA-256.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/id/alat/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/tools/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/nastroje/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/werkzeuge/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/herramientas/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/outils/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/tools/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/alat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/strumenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/tools/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/tools/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/hulpmiddelen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/narzedzia/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/ferramentas/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/instrumente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/tools/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/tools/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/araclar/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/tools/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/cong-cu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/tools/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/tools/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="id_ID">
+<meta property="og:title" content="Periksa ZIP Sebelum Diekstrak dan Verifikasi Checksum SHA-256">
+<meta property="og:description" content="Alat offline untuk file yang sudah Anda miliki: periksa apakah arsip aman diekstrak, termasuk zip slip dan zip bomb, serta periksa atau tulis checksum SHA-256.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/id/alat/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - file uji asli dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Periksa ZIP Sebelum Diekstrak dan Verifikasi Checksum SHA-256">
+<meta name="twitter:description" content="Alat offline untuk file yang sudah Anda miliki: periksa apakah arsip aman diekstrak, termasuk zip slip dan zip bomb, serta periksa atau tulis checksum SHA-256.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - file uji asli dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Beranda",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/id/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Dokumentasi",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/id\/dokumentasi\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Alat",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/id\/alat\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Lompat ke konten</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/id/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Utama">
+      <a href="/id/">Beranda</a>
+      <a href="/id/format/">Format</a>
+      <a href="/id/preset/">Preset</a>
+      <a href="/id/dokumentasi/" aria-current="true">Dokumentasi</a>
+      <a href="/id/kasus-penggunaan/">Kasus Penggunaan</a>
+      <a href="/id/membuat-file-ukuran-tepat/">Ukuran Tepat</a>
+      <a href="/id/faq/">FAQ</a>
+      <a href="/id/file-uji-rusak/">File rusak</a>
+      <a href="/id/contoh-file/">Contoh file</a>
+      <a href="/id/file-uji-di-ci/">File uji di CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Bahasa: Bahasa Indonesia">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Bahasa Indonesia</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/tools/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/tools/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/nastroje/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/werkzeuge/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/herramientas/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/outils/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/tools/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/it/strumenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/tools/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/tools/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/hulpmiddelen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/narzedzia/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/ferramentas/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/instrumente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/tools/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/tools/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/araclar/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/tools/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/cong-cu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/tools/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/tools/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/id/dokumentasi/">Dokumentasi</a></p>
+<h1>Periksa arsip sebelum diekstrak, dan verifikasi checksum</h1>
+<p class="lead">
+  Selain generator, <code>tfg</code> punya alat kecil untuk file yang sudah Anda miliki: apakah arsip
+  aman diekstrak, dan apakah sebuah file atau seluruh folder masih sesuai dengan checksum-nya. Alat ini
+  berjalan di mesin Anda, tanpa unggahan dan tanpa akun.
+</p>
+
+<div class="note">
+  <p class="note-title">Jawaban singkat</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> membaca arsip tanpa mengekstrak apa pun dan
+    berakhir dengan kode 0 jika aman, atau 7 dengan daftar yang ditemukannya.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> memberi tahu apakah file cocok
+    dengan checksum yang diberikan halaman unduhan.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">Yang tersedia</p>
+  <h2>Alat apa saja yang ada?</h2>
+  <p>
+    Ini daftar yang dicetak program, dibaca darinya saat halaman ini dibangun.
+    <code>tfg tool list</code> mencetak hal yang sama, dan <code>tfg tool show &lt;id&gt;</code>
+    menjelaskan apa yang diterima salah satunya. Setiap alat juga ada di layar Tools pada jendela
+    program, dengan pengaturan yang sama.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>Alat</th>
+      <th>Yang dijawabnya</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>archive-scan</code></td>
+      <td>Apakah arsip ini aman diekstrak?</td>
+    </tr>
+    <tr>
+      <td><code>checksum</code></td>
+      <td>Apakah file ini benar file yang diakuinya?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-check</code></td>
+      <td>Apakah setiap file masih sesuai dengan yang dinyatakan file checksum-nya?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-write</code></td>
+      <td>Bagaimana nanti saya tahu bahwa tidak satu pun dari file ini berubah?</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Arsip</p>
+  <h2>Apakah arsip ini aman diekstrak? Zip slip dan zip bomb</h2>
+  <p>
+    <code>archive-scan</code> melihat isi file ZIP, TAR, TAR.GZ, atau gzip tanpa menulis apa pun ke
+    disk dan menyatakan apakah aman mengekstraknya. Alat ini melaporkan:
+  </p>
+  <ul>
+    <li>entri yang akan ditulis di luar folder, jebakan yang dikenal sebagai zip slip</li>
+    <li>link, perangkat, atau dua nama yang akan berakhir di satu file</li>
+    <li>nama yang tidak bisa ditulis oleh sistem</li>
+    <li>entri yang dibuat untuk meledak saat diekstrak, jebakan yang dikenal sebagai zip bomb</li>
+    <li>entri yang rusak</li>
+  </ul>
+  <p>
+    Arsip di dalam arsip, seperti ZIP di dalam ZIP atau DOCX di dalam TAR, dibaca dengan cara yang
+    sama, di memori, sampai kedalaman 16 tingkat. Jebakan di salah satunya adalah jebakan bagi
+    keseluruhan, karena program yang mengekstrak semuanya juga mengekstrak arsip-arsip itu.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> juga melaporkan arsip yang hasil ekstraknya lebih besar dari yang
+    Anda izinkan. Hasil aman berakhir dengan kode 0, dan setiap temuan berakhir dengan 7, sehingga
+    pipeline bisa berhenti karenanya.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Satu file</p>
+  <h2>Apakah file ini benar file yang diakuinya?</h2>
+  <p>
+    <code>checksum</code> menghitung checksum sebuah file dan, jika diberi checksum pembanding,
+    menyatakan apakah keduanya cocok. Alat ini menerima md5, sha1, sha256, sha512, dan crc32, sha256
+    jika Anda tidak meminta yang lain, dan mengenali jenis checksum yang diberikan dari panjangnya.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    Checksum yang tidak cocok berakhir dengan kode 7. Ini menjawab pertanyaan yang sama dengan
+    <code>Get-FileHash</code> di Windows atau <code>sha256sum</code> di Linux, dengan perbandingan
+    yang dilakukan untuk Anda.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Seluruh folder</p>
+  <h2>Apakah ada yang berubah di folder ini?</h2>
+  <p>
+    <code>checksum-write</code> menulis checksum setiap file dalam folder ke SHA256SUMS di sebelahnya,
+    dengan byte yang sama seperti yang ditulis <code>sha256sum</code>, dan tidak pernah menimpa file
+    yang sudah ada. <code>checksum-check</code> kemudian memeriksa setiap file yang tercantum di
+    SHA256SUMS.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    File yang tidak tercantum tidak diperiksa, sama seperti <code>sha256sum -c</code>, dan path yang
+    keluar dari folder ditolak alih-alih dibaca. <a href="/id/contoh-file/">Contoh file</a> disertai
+    SHA256SUMS yang bisa Anda periksa dengan cara ini.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Berikutnya</p>
+  <h2>Ke mana dari sini</h2>
+  <ul>
+    <li>
+      <a href="/id/kasus-uji-unggah-file/">Kasus uji unggah file</a> menempatkan pemeriksaan arsip di
+      antara kasus unggahan lainnya.
+    </li>
+    <li>
+      <a href="/id/dokumentasi/">Dokumentasi</a> memuat setiap perintah dan kode keluar.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">File uji untuk QA dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Proyek</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Kode sumber di GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Unduhan</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Laporkan masalah</a></li>
+        <li><a href="https://donislawdev.com/support/">Dukung proyek ini</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Halaman</p>
+      <ul class="plain">
+        <li><a href="/id/">Beranda</a></li>
+        <li><a href="/id/format/">Format</a></li>
+        <li><a href="/id/preset/">Preset</a></li>
+        <li><a href="/id/dokumentasi/">Dokumentasi</a></li>
+        <li><a href="/id/kasus-penggunaan/">Kasus Penggunaan</a></li>
+        <li><a href="/id/membuat-file-ukuran-tepat/">Ukuran Tepat</a></li>
+        <li><a href="/id/faq/">FAQ</a></li>
+        <li><a href="/id/file-uji-rusak/">File rusak</a></li>
+        <li><a href="/id/contoh-file/">Contoh file</a></li>
+        <li><a href="/id/file-uji-di-ci/">File uji di CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Dirilis di bawah Lisensi Publik Umum GNU versi 3. File yang Anda buat adalah milik Anda - lisensi mencakup alatnya, bukan keluarannya.</p>
+    <p class="muted">Situs ini tidak memuat font, skrip, atau pelacak dari mana pun. Situs ini tidak memasang cookie.</p>
+  </div>
+</footer>
+</body>
+</html>

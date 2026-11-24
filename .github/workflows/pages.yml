@@ -20,8 +20,9 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
+
+env:
+  GO_VERSION: "1.27.4"
 
 # One deployment at a time, and a newer commit wins. Cancelling a running
 # deployment mid-flight would be worse than letting it finish, so in-progress
@@ -31,7 +32,62 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The files of the sample files page are not in the repository. The recipe
+  # beside the page makes them with the tfg of this commit, and every one is
+  # checked against the SHA256SUMS the page was rendered with before it may go
+  # out, so the sums a visitor reads are the sums of the bytes they download.
+  # A job of its own, with nothing but read access, because it builds and runs
+  # repository code and the job that publishes holds pages: write.
+  samples:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # The same commit the publish job checks out, for the same reason.
+      #
+      # CodeQL reports this checkout as actions/untrusted-checkout/medium. That
+      # query flags every checkout of a workflow_run head_sha in a job without
+      # write access, and by design it does not read the job's if. The if above
+      # lets only a push to main of this repository, or a person who can
+      # dispatch, reach this step, so the commit is never a fork's. Giving the
+      # job write access would move it under the queries that do read the if,
+      # which is the wrong trade for a job that runs repository code.
+      # nosemgrep: yaml.github-actions.security.workflow-run-target-code-checkout.workflow-run-target-code-checkout
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: make the sample files and check them against the page
+        env:
+          CGO_ENABLED: "0"
+        run: |
+          set -euo pipefail
+          go build -tags "$(cat .github/build-tags)" -o "$RUNNER_TEMP/tfg" ./cmd/tfg
+          "$RUNNER_TEMP/tfg" generate web/samples/samples.yaml --out web/public/samples
+          "$RUNNER_TEMP/tfg" tool checksum-check web/public/samples/SHA256SUMS
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: sample-files
+          path: web/public/samples
+          if-no-files-found: error
+          retention-days: 1
+
   publish:
+    needs: samples
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     # A dispatch is a person asking on purpose. Everything else has to be CI
     # saying the tree is good, ON THIS REPOSITORY, for a push.
     #
@@ -67,8 +123,12 @@ jobs:
         with:
           persist-credentials: false
           # The commit CI passed on, not whatever main happens to be now. On a
-          # dispatch there is no such commit and the default ref is right.
-          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+          # dispatch there is no such commit, and github.sha is the commit the
+          # branch was at when the run started - fixed for the whole run, so a
+          # push while the samples job works cannot pair its files with the
+          # pages of a newer commit, the way the branch name resolved twice
+          # could.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: refuse to publish an empty site
         # A misplaced path here would deploy nothing and take the site down
@@ -78,6 +138,13 @@ jobs:
           test -f web/public/index.html
           test -f web/public/sitemap.xml
           test -f web/public/CNAME
+
+      # The sample files the samples job made and checked. Nothing here builds
+      # or runs code of the repository.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: sample-files
+          path: web/public/samples
 
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d  # v6.0.0
 

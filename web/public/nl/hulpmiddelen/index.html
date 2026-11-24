@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="nl">
+<title>ZIP controleren voor het uitpakken en SHA-256-checksums</title>
+<meta name="description" content="Offline hulpmiddelen voor je eigen bestanden: een archief voor het uitpakken nakijken op zip slip en zip-bommen, en SHA-256-checksums controleren of schrijven.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/nl/hulpmiddelen/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/tools/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/nastroje/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/werkzeuge/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/herramientas/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/outils/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/tools/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/alat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/strumenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/tools/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/tools/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/hulpmiddelen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/narzedzia/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/ferramentas/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/instrumente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/tools/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/tools/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/araclar/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/tools/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/cong-cu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/tools/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/tools/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="ZIP controleren voor het uitpakken en SHA-256-checksums">
+<meta property="og:description" content="Offline hulpmiddelen voor je eigen bestanden: een archief voor het uitpakken nakijken op zip slip en zip-bommen, en SHA-256-checksums controleren of schrijven.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/nl/hulpmiddelen/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - echte testbestanden in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ZIP controleren voor het uitpakken en SHA-256-checksums">
+<meta name="twitter:description" content="Offline hulpmiddelen voor je eigen bestanden: een archief voor het uitpakken nakijken op zip slip en zip-bommen, en SHA-256-checksums controleren of schrijven.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - echte testbestanden in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/nl/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Documentatie",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/nl\/documentatie\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Hulpmiddelen",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/nl\/hulpmiddelen\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Direct naar de inhoud</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/nl/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hoofdmenu">
+      <a href="/nl/">Home</a>
+      <a href="/nl/formaten/">Formaten</a>
+      <a href="/nl/presets/">Presets</a>
+      <a href="/nl/documentatie/" aria-current="true">Documentatie</a>
+      <a href="/nl/toepassingen/">Toepassingen</a>
+      <a href="/nl/bestand-met-exacte-grootte-maken/">Exacte grootte</a>
+      <a href="/nl/veelgestelde-vragen/">FAQ</a>
+      <a href="/nl/beschadigde-testbestanden/">Beschadigde bestanden</a>
+      <a href="/nl/voorbeeldbestanden/">Voorbeeldbestanden</a>
+      <a href="/nl/testbestanden-in-ci/">Testbestanden in CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Taal: Nederlands">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Nederlands</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/tools/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/tools/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/nastroje/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/werkzeuge/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/herramientas/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/outils/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/tools/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/alat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/strumenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/tools/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/tools/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/pl/narzedzia/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/ferramentas/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/instrumente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/tools/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/tools/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/araclar/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/tools/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/cong-cu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/tools/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/tools/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/nl/documentatie/">Documentatie</a></p>
+<h1>Een archief controleren voor het uitpakken, en checksums verifiëren</h1>
+<p class="lead">
+  Naast de generator heeft <code>tfg</code> kleine hulpmiddelen voor bestanden die je al hebt: of een
+  archief veilig is om uit te pakken, en of een bestand of een hele map nog is wat de checksum zegt.
+  Ze draaien op je eigen machine, zonder upload en zonder account.
+</p>
+
+<div class="note">
+  <p class="note-title">Het korte antwoord</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> leest het archief zonder iets uit te pakken en
+    eindigt met code 0 als het veilig is, of met 7 en een lijst van wat het vond.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> zegt of een bestand overeenkomt met
+    de checksum die een downloadpagina je gaf.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">Wat er is</p>
+  <h2>Welke hulpmiddelen zijn er?</h2>
+  <p>
+    Dit is de lijst die het programma afdrukt, uit het programma gelezen op het moment dat deze pagina
+    wordt gebouwd. <code>tfg tool list</code> drukt dezelfde af, en <code>tfg tool show &lt;id&gt;</code>
+    zegt wat één ervan aanneemt. Elk hulpmiddel staat ook in het bureaubladvenster, op het scherm Tools,
+    met dezelfde instellingen.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>Hulpmiddel</th>
+      <th>Wat het beantwoordt</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>archive-scan</code></td>
+      <td>Is dit archief veilig om uit te pakken?</td>
+    </tr>
+    <tr>
+      <td><code>checksum</code></td>
+      <td>Is dit bestand het bestand dat het beweert te zijn?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-check</code></td>
+      <td>Is elk bestand nog wat zijn checksumbestand zegt?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-write</code></td>
+      <td>Hoe weet ik later dat geen van deze bestanden is veranderd?</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Archieven</p>
+  <h2>Is dit archief veilig om uit te pakken? Zip slip en zip-bommen</h2>
+  <p>
+    <code>archive-scan</code> kijkt in een ZIP-, TAR-, TAR.GZ- of gzip-bestand zonder iets naar schijf te
+    schrijven en zegt of uitpakken veilig is. Het meldt:
+  </p>
+  <ul>
+    <li>een item dat buiten de map zou worden geschreven, de valkuil die bekendstaat als zip slip</li>
+    <li>een link, een apparaat, of twee namen die op hetzelfde bestand zouden uitkomen</li>
+    <li>een naam die een systeem niet kan schrijven</li>
+    <li>een item dat gebouwd is om bij het uitpakken te exploderen, de valkuil die bekendstaat als zip-bom</li>
+    <li>een item dat beschadigd is</li>
+  </ul>
+  <p>
+    Archieven in het archief, zoals een ZIP in een ZIP of een DOCX in een TAR, worden op dezelfde manier
+    gelezen, in het geheugen, tot 16 niveaus diep. Een valkuil in een ervan is een valkuil in het
+    geheel, omdat een programma dat alles uitpakt die ook uitpakt.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> meldt ook een archief dat uitgepakt meer ruimte inneemt dan je toestaat.
+    Veilig eindigt met code 0 en elke vondst met 7, zodat een pipeline erop kan stoppen.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Eén bestand</p>
+  <h2>Is dit bestand het bestand dat het beweert te zijn?</h2>
+  <p>
+    <code>checksum</code> berekent de checksum van een bestand en zegt, als je er een opgeeft om mee te
+    vergelijken, of ze overeenkomen. Het kent md5, sha1, sha256, sha512 en crc32, sha256 tenzij je om
+    een andere vraagt, en het herkent aan de lengte welke soort je opgaf.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    Een checksum die niet overeenkomt, eindigt met code 7. Het beantwoordt dezelfde vraag als
+    <code>Get-FileHash</code> op Windows of <code>sha256sum</code> op Linux, met de vergelijking al voor
+    je gedaan.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Een hele map</p>
+  <h2>Is er iets in deze map veranderd?</h2>
+  <p>
+    <code>checksum-write</code> schrijft de checksum van elk bestand in een map naar SHA256SUMS ernaast,
+    met dezelfde bytes die <code>sha256sum</code> schrijft, en nooit over een bestand dat er al staat.
+    <code>checksum-check</code> controleert later elk bestand dat in SHA256SUMS staat.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    Bestanden die er niet in staan, worden niet bekeken, net als bij <code>sha256sum -c</code>, en een
+    pad dat de map verlaat, wordt geweigerd in plaats van gelezen. De
+    <a href="/nl/voorbeeldbestanden/">voorbeeldbestanden</a> komen met een SHA256SUMS die je zo kunt
+    controleren.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Verder</p>
+  <h2>Waar je vandaar heen kunt</h2>
+  <ul>
+    <li>
+      <a href="/nl/testgevallen-bestandsupload/">Testgevallen voor bestandsupload</a> zet de
+      archiefcontrole tussen de andere gevallen van een upload.
+    </li>
+    <li>
+      <a href="/nl/documentatie/">De documentatie</a> bevat elke opdracht en elke afsluitcode.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Testbestanden voor QA, in elke exacte grootte, met een manifest dat zegt hoe je systeem op elk bestand moet reageren.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Project</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Broncode op GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Downloads</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Een probleem melden</a></li>
+        <li><a href="https://donislawdev.com/support/">Steun het project</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Pagina&#39;s</p>
+      <ul class="plain">
+        <li><a href="/nl/">Home</a></li>
+        <li><a href="/nl/formaten/">Formaten</a></li>
+        <li><a href="/nl/presets/">Presets</a></li>
+        <li><a href="/nl/documentatie/">Documentatie</a></li>
+        <li><a href="/nl/toepassingen/">Toepassingen</a></li>
+        <li><a href="/nl/bestand-met-exacte-grootte-maken/">Exacte grootte</a></li>
+        <li><a href="/nl/veelgestelde-vragen/">FAQ</a></li>
+        <li><a href="/nl/beschadigde-testbestanden/">Beschadigde bestanden</a></li>
+        <li><a href="/nl/voorbeeldbestanden/">Voorbeeldbestanden</a></li>
+        <li><a href="/nl/testbestanden-in-ci/">Testbestanden in CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Uitgebracht onder de GNU General Public License, versie 3. De bestanden die je genereert zijn van jou - de licentie geldt voor de tool, niet voor de uitvoer.</p>
+    <p class="muted">Deze site laadt nergens vandaan lettertypen, scripts of trackers. Hij plaatst geen cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -109,6 +109,7 @@
       <a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a>
       <a href="/cs/faq/">FAQ</a>
       <a href="/cs/poskozene-testovaci-soubory/">Poškozené soubory</a>
+      <a href="/cs/ukazkove-soubory/">Ukázkové soubory</a>
       <a href="/cs/testovaci-soubory-v-ci/">Testovací soubory v CI</a>
     </nav>
     <details class="langmenu">
@@ -165,6 +166,10 @@ tfg damage      vypsat způsoby, jak tato verze umí soubor schválně poškodit
 tfg tool        drobné pomůcky pro soubory, které už máte
 tfg version     vypsat verzi nástroje
 tfg license     vypsat licenci a co znamená pro generované soubory</code></pre>
+  <p>
+    <code>tfg tool</code> obsahuje nástroje pro soubory, které už máte, například kontrolu archivu před
+    rozbalením. <a href="/cs/nastroje/">Nástroje</a> popisují každý z nich.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -206,8 +211,8 @@ tfg license     vypsat licenci a co znamená pro generované soubory</code></pre
     vůbec otevře. Soubor se vytvoří normálně a pak se rozbije, takže má stále velikost, o kterou
     jste požádali.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Nastavení se zadávají za dvojtečku. Přepínač se opakuje a pořadí, v jakém je napíšete, je pořadí, v
     jakém se uplatní. <code>tfg damage</code> vypíše, co tato verze umí a co která varianta přijímá.
@@ -527,7 +532,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.6.0-rc1</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">Testovací soubory pro QA v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat.</p>
     </div>
     <div class="footer-col">
@@ -550,6 +555,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
         <li><a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a></li>
         <li><a href="/cs/faq/">FAQ</a></li>
         <li><a href="/cs/poskozene-testovaci-soubory/">Poškozené soubory</a></li>
+        <li><a href="/cs/ukazkove-soubory/">Ukázkové soubory</a></li>
         <li><a href="/cs/testovaci-soubory-v-ci/">Testovací soubory v CI</a></li>
       </ul>
     </div>

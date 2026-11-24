@@ -61,11 +61,34 @@
       "description": "일부러 망가뜨린, 크기가 정확한 파일. 시스템이 거부해야 함을 알리는 매니페스트가 딸려 옵니다. 업로드 검증과 파서 테스트용."
     },
     {
+      "key": "samples",
+      "slug": "sample-files",
+      "nav": "샘플 파일",
+      "title": "테스트용 샘플 파일 - PDF, CSV, DOCX 등 다운로드",
+      "description": "테스트용 샘플 파일 다운로드. 모든 형식의 1MB 파일, 손상된 PDF, Word, Excel 파일, CSV 표, 자리 표시자 이미지를 SHA-256과 함께 제공합니다."
+    },
+    {
       "key": "ci",
       "slug": "test-files-in-ci",
       "nav": "CI의 테스트 파일",
       "title": "CI의 테스트 파일 - GitHub Actions, GitLab CI, PowerShell",
       "description": "바이너리를 커밋하는 대신 파이프라인에서 테스트 파일을 생성하세요. GitHub Actions 워크플로, GitLab 작업, 종료 코드, PowerShell의 함정."
+    },
+    {
+      "key": "upload-tests",
+      "slug": "file-upload-test-cases",
+      "nav": "업로드 테스트 케이스",
+      "title": "파일 업로드 테스트 케이스 - 실행할 파일 포함",
+      "description": "파일 업로드 테스트 케이스. 크기 한도, 빈 파일과 손상된 파일, 잘못된 유형, 예상하지 못한 파일 이름, 아카이브까지 케이스마다 확인할 파일이 있습니다.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "tools",
+      "nav": "도구",
+      "title": "압축 풀기 전 ZIP 검사와 SHA-256 체크섬 확인",
+      "description": "이미 가진 파일을 위한 오프라인 도구. zip slip과 zip 폭탄을 포함해 아카이브를 안전하게 풀 수 있는지 보고, SHA-256 체크섬을 확인하거나 만듭니다.",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "손상",
     "colEffect": "바이트에 하는 일",
     "colSettings": "설정",
-    "noSettings": "없음"
+    "noSettings": "없음",
+    "colFile": "파일",
+    "colSize": "크기",
+    "colSha256": "SHA-256",
+    "colExpected": "기대 결과",
+    "colTool": "도구",
+    "colQuestion": "답하는 질문"
   },
   "endings": {
     "0": "모두 정상적으로 동작했습니다.",
@@ -351,5 +380,11 @@
       "q": "수천 개의 파일을 처리하는 실행이 Windows에서 더 느린 이유는 무엇인가요?",
       "a": "Windows는 살펴보는 경로 하나하나에 더 많은 비용을 치르게 하고, 수천 개의 파일을 훑는 명령은 수천 개의 경로를 살펴보기 때문입니다. 1kB 파일 3000개가 있는 한 컴퓨터에서 측정하니 verify는 Windows에서 약 0.9초, 컨테이너 안의 Linux에서 약 0.2초가 걸렸습니다. 출력 경로를 짧게 하면 Windows 수치가 줄어듭니다. 파일 위의 모든 폴더도 살펴보는 대상에 포함되기 때문입니다."
     }
-  ]
+  ],
+  "tools": {
+    "archive-scan": "이 아카이브를 안전하게 풀 수 있을까요?",
+    "checksum": "이 파일이 주장하는 바로 그 파일일까요?",
+    "checksum-check": "모든 파일이 아직 체크섬 파일에 적힌 그대로일까요?",
+    "checksum-write": "이 파일들 중 어느 것도 바뀌지 않았다는 것을 나중에 어떻게 알 수 있을까요?"
+  }
 }

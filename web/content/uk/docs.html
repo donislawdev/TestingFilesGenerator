@@ -9,6 +9,10 @@
   <h2>Які є команди?</h2>
   <p>Кожна робить одну справу:</p>
   {{ template "commandList" . }}
+  <p>
+    У <code>tfg tool</code> зібрано інструменти для наявних файлів, наприклад перевірку архіву перед
+    розпакуванням. На сторінці <a href="/uk/tools/">Інструменти</a> описано кожен із них.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -50,8 +54,8 @@
     чи відкривається файл узагалі. Файл створюється як зазвичай, а потім псується, тому в нього
     лишається запитаний розмір.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Налаштування вказуються після двокрапки. Прапорець можна повторювати, і порядок запису - це порядок
     застосування. <code>tfg damage</code> перелічує, що вміє ця збірка та що приймає кожен вид

@@ -1,0 +1,159 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Dosya yükleme test senaryoları ve onları çalıştıracak dosyalar</h1>
+<p class="lead">
+  Dosya yükleme için, boyut sınırından klasöründen çıkmaya çalışan bir dosya adına kadar test
+  senaryolarından oluşan bir kontrol listesi. Her senaryo, onu sınayan dosyayı ve sisteminizin onunla ne
+  yapması gerektiğini söyler. Böylece liste yalnızca okunmaz, çalıştırılabilir de.
+</p>
+
+<div class="note">
+  <p class="note-title">Tüm liste tek komutla</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    aşağıdaki senaryoların neredeyse her biri için bir dosya ve her birine ne olması gerektiğini söyleyen
+    bir manifest yazar. Formunuzun bildirdiği sınırı ve türleri girin.
+  </p>
+</div>
+
+<p>
+  <code>accept</code>, sisteminizin dosyayı kabul etmesi, <code>reject</code> ise anlaşılır bir iletiyle
+  reddetmesi gerektiği anlamına gelir. <code>unspecified</code>, iki yanıtın da doğru olabileceği
+  anlamına gelir. Bu yüzden sisteminizin hangisini seçtiğini not edin ve bunu her seferinde yaptığını
+  denetleyin. Sonucun ardından gelen sözcük, manifestin verdiği nedendir.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">Boyut</p>
+  <h2>Boyut sınırı bildirildiği yerde uygulanıyor mu?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test senaryosu</th><th>Dosya</th><th>Beklenen</th></tr></thead>
+    <tbody>
+      <tr><td>Sınırın bir bayt altında</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Tam sınırda</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Sınırın bir bayt üstünde</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Sınırın iki katı, sunucunun hepsini belleğe almak yerine okumayı erken bıraktığını görmek için</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>0 baytlık boş bir dosya</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Bir sınırın en sık yanlış yapıldığı iki durum, yalnızca tarayıcıda denetlenen bir sınır ve kodun MiB
+    saydığı yerde MB ile sayılan bir sınırdır.
+    <a href="/tr/hazir-ayarlar/size-boundaries/">size-boundaries hazır ayarı</a>, seçtiğiniz sınırdan her
+    uzaklığa bir dosya koyar, iki yanda birer bayt, kilobayt ve megabayt.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">Tür</p>
+  <h2>Form alması gereken türleri alıp gerisini reddediyor mu?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test senaryosu</th><th>Dosya</th><th>Beklenen</th></tr></thead>
+    <tbody>
+      <tr><td>Formun kabul ettiği her tür, o türden gerçek bir dosya olarak</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Formun kabul etmediği bir tür</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Uzantısı bir türü söyleyen ama içeriği başka türden bir dosya, örneğin .jpg adlı bir PDF</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>İki uzantı, sonuncusuna izin verilmiyor</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Hiç uzantı yok</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>Büyük harfli uzantı</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Resim veya düz metin sanılan bir SVG ya da HTML dosyası, bir betiği formdan geçirmenin yoludur. Bu
+    yüzden, formunuz onları almak için tasarlanmadıysa, reddedilecek türler listesindedirler.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">İçerik</p>
+  <h2>Sistem dosyayı açıyor mu, yoksa yalnızca adına mı bakıyor?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test senaryosu</th><th>Dosya</th><th>Beklenen</th></tr></thead>
+    <tbody>
+      <tr><td>Yarıda kalan bir yüklemenin bıraktığı gibi kesilmiş bir dosya</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>İlk baytları sıfır olan, bu yüzden ne olduğunu hiçbir şeyin söylemediği bir dosya</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Bir biçimin izin verdiği en küçük dosya, geçerli ve minicik</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Yalnızca doğru ada ve doğru boyuta sahip bir dosya, onu hiç açmayan her denetimden geçer.
+    <a href="/tr/ornek-dosyalar/#corrupt">Bozuk örnek dosyalar</a> PDF, Word, Excel, PowerPoint, JPG, PNG,
+    MP4 ve ZIP olarak hazırdır. <a href="/tr/bozuk-test-dosyalari/">Bozuk test dosyaları</a> sayfası da
+    onları her biçimde ve her boyutta nasıl yapacağınızı anlatır.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">Ad</p>
+  <h2>Dosya kendisine verilen adla geri geliyor mu?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test senaryosu</th><th>Dosya</th><th>Beklenen</th></tr></thead>
+    <tbody>
+      <tr><td>Boşluklar ve parantezler</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ASCII dışı harfler ve bir emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>200 karakterden uzun bir ad</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>Klasöründen dışarı çıkan bir ad, <code>../</code> veya <code>..\</code></td><td><code>climbing_name.jpg</code>, yüklenirken adı <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Linux'ta veya Windows'ta mutlak bir yol</td><td><code>absolute_name.jpg</code>, yüklenirken adı <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Ad içindeki bir yol diske kaydedilemez, bu yüzden dosyanın düz bir adı vardır ve manifest hangi adla
+    yükleneceğini söyler. Dosyayı kabul edip adın yalnızca son parçasını tutmak iyi bir yanıttır. Onu
+    yükleme klasörünün dışına yazmak, bu senaryonun bulmak için var olduğu kusurdur.
+    <a href="/tr/hazir-ayarlar/filename-handling/">filename-handling hazır ayarında</a> çok daha fazla ad
+    vardır: birbirine benzeyen harfler, görünmez karakterler, Windows'un ayırdığı adlar ve bayt olarak
+    sayılan uzunluklar.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">Miktar ve arşivler</p>
+  <h2>Çok sayıda dosyayla ya da çok sayıda dosya içeren bir dosyayla ne olur?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Test senaryosu</th><th>Dosya</th><th>Beklenen</th></tr></thead>
+    <tbody>
+      <tr><td>Tek yüklemede elli dosya</td><td><code>bulk_0001.jpg</code> ile <code>bulk_0050.jpg</code> arası</td><td><code>accept</code></td></tr>
+      <tr><td>Gerçekten 200 belge içeren bir ZIP</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Sisteminizin açtığı bir arşiv, önce zip slip ve zip bomb için taranmış</td><td><code>tfg tool archive-scan upload.zip</code></td><td>güvenli ya da bulduğu şeyler</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> toplu yüklemenin kaç dosya içereceğini belirler, en fazla on bin.
+    <a href="/tr/araclar/">Araçlar</a> sayfası arşiv denetiminin neye baktığını anlatır.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">Bir testte</p>
+  <h2>Listeyi bir test olarak çalıştırmak</h2>
+  <p>
+    Manifest her dosyanın beklenen sonucunu ve hangi adla yükleneceğini tutar, bu yüzden tek bir döngü
+    tüm listeyi çalıştırır:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    <code>unspecified</code> olarak işaretli dosyalar burada atlanır, çünkü yanıtları kendi
+    politikanızdır. Kararınızı verin, tarife <code>expected</code> ile yazın, döngü onları da denetler.
+    <a href="/tr/ci-icinde-test-dosyalari/">CI'da test dosyaları</a> bunu bir hatta çalıştırır.
+  </p>
+</section>

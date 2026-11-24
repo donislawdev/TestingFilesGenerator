@@ -109,6 +109,7 @@
       <a href="/pl/plik-o-zadanym-rozmiarze/">Rozmiar pliku</a>
       <a href="/pl/faq/">FAQ</a>
       <a href="/pl/uszkodzone-pliki-testowe/">Uszkodzone pliki</a>
+      <a href="/pl/przykladowe-pliki/">Przykładowe pliki</a>
       <a href="/pl/pliki-testowe-w-ci/">Pliki testowe w CI</a>
     </nav>
     <details class="langmenu">
@@ -165,6 +166,10 @@ tfg damage      wypisuje sposoby, którymi ta wersja umie celowo zepsuć plik
 tfg tool        drobne czynności na plikach, które już masz
 tfg version     wypisuje wersję narzędzia
 tfg license     wypisuje licencję i to, co znaczy dla wygenerowanych plików</code></pre>
+  <p>
+    <code>tfg tool</code> zawiera narzędzia do plików, które już masz, na przykład sprawdzanie archiwum
+    przed rozpakowaniem. <a href="/pl/narzedzia/">Narzędzia</a> opisują każde z nich.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -206,8 +211,8 @@ tfg license     wypisuje licencję i to, co znaczy dla wygenerowanych plików</c
     się otwiera. Plik powstaje normalnie i dopiero potem zostaje zepsuty, więc dalej ma zamówiony
     rozmiar.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Ustawienia idą po dwukropku. Flagę można powtarzać, a kolejność zapisu jest kolejnością
     stosowania. <code>tfg damage</code> wypisuje, co ta wersja umie i co każde uszkodzenie
@@ -530,7 +535,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.6.0-rc1</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">Pliki testowe dla QA o dokładnie zadanym rozmiarze, z manifestem mówiącym, jak Twój system ma na każdy z nich zareagować.</p>
     </div>
     <div class="footer-col">
@@ -553,6 +558,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
         <li><a href="/pl/plik-o-zadanym-rozmiarze/">Rozmiar pliku</a></li>
         <li><a href="/pl/faq/">FAQ</a></li>
         <li><a href="/pl/uszkodzone-pliki-testowe/">Uszkodzone pliki</a></li>
+        <li><a href="/pl/przykladowe-pliki/">Przykładowe pliki</a></li>
         <li><a href="/pl/pliki-testowe-w-ci/">Pliki testowe w CI</a></li>
       </ul>
     </div>

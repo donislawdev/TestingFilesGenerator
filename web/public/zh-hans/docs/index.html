@@ -109,6 +109,7 @@
       <a href="/zh-hans/create-file-exact-size/">精确大小</a>
       <a href="/zh-hans/faq/">常见问题</a>
       <a href="/zh-hans/corrupt-test-files/">损坏文件</a>
+      <a href="/zh-hans/sample-files/">示例文件</a>
       <a href="/zh-hans/test-files-in-ci/">CI 中的测试文件</a>
     </nav>
     <details class="langmenu">
@@ -163,6 +164,9 @@ tfg damage      列出此版本可以故意破坏文件的方式
 tfg tool        处理现有文件的小工具
 tfg version     打印工具版本
 tfg license     打印许可证及其对生成文件的含义</code></pre>
+  <p>
+    <code>tfg tool</code> 包含处理现有文件的工具，例如在解压前检查压缩包。<a href="/zh-hans/tools/">工具</a>介绍了其中每一个。
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -201,8 +205,8 @@ tfg license     打印许可证及其对生成文件的含义</code></pre>
     本工具写出的其他所有文件在构造上都是正确的，这回答了上传校验器会问的三个问题中的两个。<code>--damage</code>
     回答第三个，也就是文件到底能不能打开。文件先正常生成，再被破坏，因此仍然保持你请求的大小。
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     设置写在冒号后面。该参数可以重复，写入的顺序就是应用的顺序。<code>tfg damage</code> 会列出此版本能做什么，以及每种破坏接受哪些设置。
   </p>
@@ -223,7 +227,7 @@ tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</co
     <li>文件小于破坏所需的大小，因为它会原样输出</li>
     <li>
       在破坏旁边写 <code>expected: accept</code>，因为没有任何文件能满足它。如果被测系统应该修复该文件，请写
-      <code>sanitize</code>；如果你问的正是这个问题，请写 <code>unspecified</code>
+      <code>sanitize</code>，如果你问的正是这个问题，请写 <code>unspecified</code>
     </li>
   </ul>
   <p>
@@ -495,7 +499,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.6.0-rc1</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">面向 QA 的精确大小测试文件，并附带说明系统应如何响应每个文件的清单。</p>
     </div>
     <div class="footer-col">
@@ -518,6 +522,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
         <li><a href="/zh-hans/create-file-exact-size/">精确大小</a></li>
         <li><a href="/zh-hans/faq/">常见问题</a></li>
         <li><a href="/zh-hans/corrupt-test-files/">损坏文件</a></li>
+        <li><a href="/zh-hans/sample-files/">示例文件</a></li>
         <li><a href="/zh-hans/test-files-in-ci/">CI 中的测试文件</a></li>
       </ul>
     </div>

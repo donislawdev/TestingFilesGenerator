@@ -144,7 +144,14 @@ type Download struct {
 // here means finding the place in the code that owns that fact, not writing
 // the value down.
 type Facts struct {
+	// Version is the build the pages were rendered from, which is what the
+	// example manifest says made it. Released is the release a person can
+	// install: the same while Version is stable, and the last stable release
+	// while Version is a release candidate, because a candidate stays on
+	// GitHub and never reaches the image, npm or PyPI. Commands that fetch a
+	// release name Released.
 	Version   string
+	Released  string
 	Formats   []Format
 	ExitCodes []int
 	Presets   []PresetFacts
@@ -154,6 +161,14 @@ type Facts struct {
 	// lists them. It exists so the page about corrupt files cannot go on
 	// describing one when the program has two.
 	Damages []Damage
+
+	// Samples is every file of the sample files page, in the order the
+	// recipe that makes them lists them (samples.go).
+	Samples []Sample
+
+	// Tools is every tool tfg tool list prints, in its order, so the page
+	// about them cannot leave one out.
+	Tools []string
 
 	// Commands is what tfg --help prints, in the order it prints it, read out
 	// of that help rather than out of a list beside it. Taking it from the
@@ -253,13 +268,14 @@ type Page struct {
 // engines are pointed at by x-default. RTL says the language is written right
 // to left, which puts dir="rtl" on every page of it.
 //
-// Endings, Terms, Presets, Commands, Outcomes and Damages are the places where
-// a word has to exist for every value the program can produce, and a missing
-// one is an error rather than a gap left in English. Endings is keyed by the
-// exit code written out in decimal, Terms by the kind, unit or shape exactly
-// as the registry spells it, Presets by the identifier, Commands by the name
-// tfg --help prints, Outcomes by the reaction a manifest declares and Damages
-// by the identifier of the damage.
+// Endings, Terms, Presets, Commands, Outcomes, Damages and Tools are the places
+// where a word has to exist for every value the program can produce, and a
+// missing one is an error rather than a gap left in English. Endings is keyed
+// by the exit code written out in decimal, Terms by the kind, unit or shape
+// exactly as the registry spells it, Presets by the identifier, Commands by
+// the name tfg --help prints, Outcomes by the reaction a manifest declares,
+// Damages by the identifier of the damage and Tools by the identifier of the
+// tool.
 type Language struct {
 	Code     string                `json:"code"`
 	Locale   string                `json:"locale"`
@@ -273,6 +289,7 @@ type Language struct {
 	Commands map[string]string     `json:"commands"`
 	Outcomes map[string]string     `json:"outcomes"`
 	Damages  map[string]string     `json:"damages"`
+	Tools    map[string]string     `json:"tools"`
 	Pages    []Page                `json:"pages"`
 	Faq      []QA                  `json:"faq"`
 }

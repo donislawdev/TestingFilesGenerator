@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="th">
+<title>กรณีทดสอบการอัปโหลดไฟล์ - พร้อมไฟล์สำหรับรันทดสอบ</title>
+<meta name="description" content="กรณีทดสอบการอัปโหลดไฟล์: ขีดจำกัดขนาด ไฟล์ว่างและไฟล์เสียหาย ชนิดไฟล์ผิด ชื่อไฟล์ที่ไม่คาดคิด และไฟล์บีบอัด แต่ละกรณีมาพร้อมไฟล์ที่ใช้ทดสอบ">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/th/file-upload-test-cases/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/file-upload-test-cases/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/testovaci-pripady-nahravani-souboru/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/testfaelle-datei-upload/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/casos-de-prueba-de-subida-de-archivos/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/cas-de-test-envoi-de-fichiers/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/file-upload-test-cases/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/kasus-uji-unggah-file/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/casi-di-test-upload-file/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/file-upload-test-cases/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/file-upload-test-cases/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/testgevallen-bestandsupload/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/przypadki-testowe-uploadu/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/casos-de-teste-de-upload-de-arquivos/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/cazuri-de-test-incarcare-fisiere/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/file-upload-test-cases/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/file-upload-test-cases/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/dosya-yukleme-test-senaryolari/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/file-upload-test-cases/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/truong-hop-kiem-thu-tai-len/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/file-upload-test-cases/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/file-upload-test-cases/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/file-upload-test-cases/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="th_TH">
+<meta property="og:title" content="กรณีทดสอบการอัปโหลดไฟล์ - พร้อมไฟล์สำหรับรันทดสอบ">
+<meta property="og:description" content="กรณีทดสอบการอัปโหลดไฟล์: ขีดจำกัดขนาด ไฟล์ว่างและไฟล์เสียหาย ชนิดไฟล์ผิด ชื่อไฟล์ที่ไม่คาดคิด และไฟล์บีบอัด แต่ละกรณีมาพร้อมไฟล์ที่ใช้ทดสอบ">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/th/file-upload-test-cases/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - ไฟล์ทดสอบจริงขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="กรณีทดสอบการอัปโหลดไฟล์ - พร้อมไฟล์สำหรับรันทดสอบ">
+<meta name="twitter:description" content="กรณีทดสอบการอัปโหลดไฟล์: ขีดจำกัดขนาด ไฟล์ว่างและไฟล์เสียหาย ชนิดไฟล์ผิด ชื่อไฟล์ที่ไม่คาดคิด และไฟล์บีบอัด แต่ละกรณีมาพร้อมไฟล์ที่ใช้ทดสอบ">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - ไฟล์ทดสอบจริงขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "หน้าแรก",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/th/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "กรณีการใช้งาน",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/th\/use-cases\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "กรณีทดสอบการอัปโหลด",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/th\/file-upload-test-cases\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">ข้ามไปยังเนื้อหา</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/th/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="เมนูหลัก">
+      <a href="/th/">หน้าแรก</a>
+      <a href="/th/formats/">รูปแบบไฟล์</a>
+      <a href="/th/presets/">พรีเซ็ต</a>
+      <a href="/th/docs/">เอกสาร</a>
+      <a href="/th/use-cases/" aria-current="true">กรณีการใช้งาน</a>
+      <a href="/th/create-file-exact-size/">ขนาดแม่นยำ</a>
+      <a href="/th/faq/">คำถามที่พบบ่อย</a>
+      <a href="/th/corrupt-test-files/">ไฟล์เสียหาย</a>
+      <a href="/th/sample-files/">ไฟล์ตัวอย่าง</a>
+      <a href="/th/test-files-in-ci/">ไฟล์ทดสอบใน CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="ภาษา: ไทย">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>ไทย</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/file-upload-test-cases/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/file-upload-test-cases/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/testovaci-pripady-nahravani-souboru/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/testfaelle-datei-upload/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/casos-de-prueba-de-subida-de-archivos/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/cas-de-test-envoi-de-fichiers/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/file-upload-test-cases/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/kasus-uji-unggah-file/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/casi-di-test-upload-file/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/file-upload-test-cases/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/file-upload-test-cases/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/testgevallen-bestandsupload/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/przypadki-testowe-uploadu/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/casos-de-teste-de-upload-de-arquivos/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/cazuri-de-test-incarcare-fisiere/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/file-upload-test-cases/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/tr/dosya-yukleme-test-senaryolari/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/file-upload-test-cases/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/truong-hop-kiem-thu-tai-len/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/file-upload-test-cases/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/file-upload-test-cases/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/th/use-cases/">กรณีการใช้งาน</a></p>
+<h1>กรณีทดสอบการอัปโหลดไฟล์ พร้อมไฟล์สำหรับรันทดสอบ</h1>
+<p class="lead">
+  รายการตรวจสอบกรณีทดสอบสำหรับการอัปโหลดไฟล์ ตั้งแต่ขีดจำกัดขนาดไปจนถึงชื่อไฟล์ที่พยายามออกไปนอกโฟลเดอร์ของตัวเอง
+  ทุกกรณีระบุไฟล์ที่ใช้ทดสอบและสิ่งที่ระบบของคุณควรทำกับไฟล์นั้น รายการนี้จึงรันได้จริง ไม่ใช่แค่อ่าน
+</p>
+
+<div class="note">
+  <p class="note-title">ทั้งรายการในคำสั่งเดียว</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    เขียนไฟล์สำหรับเกือบทุกกรณีด้านล่าง พร้อมแมนิเฟสต์ที่บอกว่าควรเกิดอะไรขึ้นกับแต่ละไฟล์
+    ใส่ขีดจำกัดและชนิดไฟล์ที่ฟอร์มของคุณประกาศไว้
+  </p>
+</div>
+
+<p>
+  <code>accept</code> หมายความว่าระบบของคุณควรรับไฟล์ และ <code>reject</code>
+  หมายความว่าควรปฏิเสธพร้อมข้อความที่ชัดเจน <code>unspecified</code> หมายความว่าคำตอบไหนก็ถูกได้
+  จึงควรจดไว้ว่าระบบของคุณตั้งใจแบบไหน แล้วตรวจว่ามันทำแบบนั้นทุกครั้ง
+  คำที่ตามหลังผลลัพธ์คือเหตุผลที่แมนิเฟสต์ให้ไว้
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">ขนาด</p>
+  <h2>ขีดจำกัดขนาดถูกบังคับใช้ตรงที่ประกาศไว้หรือไม่</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>กรณีทดสอบ</th><th>ไฟล์</th><th>ผลที่คาดหวัง</th></tr></thead>
+    <tbody>
+      <tr><td>ต่ำกว่าขีดจำกัดหนึ่งไบต์</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>เท่ากับขีดจำกัดพอดี</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>เกินขีดจำกัดหนึ่งไบต์</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>สองเท่าของขีดจำกัด เพื่อดูว่าเซิร์ฟเวอร์หยุดอ่านตั้งแต่เนิ่นๆ แทนที่จะรับทั้งไฟล์เข้าหน่วยความจำ</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>ไฟล์ว่างขนาด 0 ไบต์</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    สองกรณีที่ขีดจำกัดผิดบ่อยที่สุดคือขีดจำกัดที่ตรวจเฉพาะในเบราว์เซอร์ และขีดจำกัดที่นับเป็น MB
+    ขณะที่โค้ดนับเป็น MiB <a href="/th/presets/size-boundaries/">พรีเซ็ต size-boundaries</a>
+    วางไฟล์ไว้ทุกระยะจากขีดจำกัดที่คุณเลือก ทั้งหนึ่งไบต์ หนึ่งกิโลไบต์ และหนึ่งเมกะไบต์ทั้งสองฝั่ง
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">ชนิดไฟล์</p>
+  <h2>ฟอร์มรับชนิดที่ควรรับและปฏิเสธชนิดที่เหลือหรือไม่</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>กรณีทดสอบ</th><th>ไฟล์</th><th>ผลที่คาดหวัง</th></tr></thead>
+    <tbody>
+      <tr><td>ทุกชนิดที่ฟอร์มรับ เป็นไฟล์จริงของชนิดนั้น</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>ชนิดที่ฟอร์มไม่รับ</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>นามสกุลบอกชนิดหนึ่งแต่เนื้อหาเป็นอีกชนิด เช่น PDF ที่ตั้งชื่อเป็น .jpg</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>สองนามสกุล และนามสกุลสุดท้ายไม่ได้รับอนุญาต</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>ไม่มีนามสกุลเลย</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>นามสกุลเป็นตัวพิมพ์ใหญ่</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    ไฟล์ SVG หรือ HTML ที่ถูกเข้าใจว่าเป็นรูปภาพหรือข้อความธรรมดาเป็นวิธีหนึ่งในการลอบส่งสคริปต์ผ่านฟอร์ม
+    จึงอยู่ในรายการชนิดที่ต้องปฏิเสธ เว้นแต่ฟอร์มของคุณตั้งใจจะรับไฟล์เหล่านี้
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">เนื้อหา</p>
+  <h2>ระบบเปิดไฟล์ดู หรือดูแค่ชื่อไฟล์</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>กรณีทดสอบ</th><th>ไฟล์</th><th>ผลที่คาดหวัง</th></tr></thead>
+    <tbody>
+      <tr><td>ไฟล์ที่ถูกตัดสั้น แบบที่การอัปโหลดที่ถูกขัดจังหวะทิ้งไว้</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>ไฟล์ที่ไบต์แรกๆ เป็นศูนย์ จึงไม่มีอะไรบอกว่ามันคือไฟล์อะไร</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>ไฟล์เล็กที่สุดที่รูปแบบยอมให้ ถูกต้องและเล็กมาก</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    ไฟล์ที่มีแค่ชื่อถูกและขนาดถูกจะผ่านทุกการตรวจที่ไม่เคยเปิดไฟล์ดู
+    <a href="/th/sample-files/#corrupt">ไฟล์ตัวอย่างที่เสียหาย</a> มีทั้ง PDF, Word, Excel, PowerPoint,
+    JPG, PNG, MP4 และ ZIP และ <a href="/th/corrupt-test-files/">ไฟล์ทดสอบที่เสียหาย</a>
+    อธิบายวิธีสร้างไฟล์แบบนี้ในทุกรูปแบบและทุกขนาด
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">ชื่อ</p>
+  <h2>ไฟล์กลับมาด้วยชื่อที่ได้รับไปหรือไม่</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>กรณีทดสอบ</th><th>ไฟล์</th><th>ผลที่คาดหวัง</th></tr></thead>
+    <tbody>
+      <tr><td>ช่องว่างและวงเล็บ</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ตัวอักษรนอก ASCII และอีโมจิ</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>ชื่อยาวเกิน 200 อักขระ</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>ชื่อที่ปีนออกนอกโฟลเดอร์ของตัวเอง <code>../</code> หรือ <code>..\</code></td><td><code>climbing_name.jpg</code> อัปโหลดด้วยชื่อ <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>พาธสัมบูรณ์ บน Linux หรือ Windows</td><td><code>absolute_name.jpg</code> อัปโหลดด้วยชื่อ <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    ชื่อที่มีพาธอยู่ข้างในบันทึกลงดิสก์ไม่ได้ ไฟล์จึงใช้ชื่อธรรมดา และแมนิเฟสต์บอกว่าต้องอัปโหลดด้วยชื่ออะไร
+    การรับไฟล์แล้วเก็บไว้แค่ส่วนสุดท้ายของชื่อเป็นคำตอบที่ดี
+    การเขียนไฟล์ออกนอกโฟลเดอร์อัปโหลดคือข้อบกพร่องที่กรณีนี้มีไว้หา
+    <a href="/th/presets/filename-handling/">พรีเซ็ต filename-handling</a> มีชื่ออีกมาก:
+    ตัวอักษรหน้าตาคล้ายกัน อักขระที่มองไม่เห็น ชื่อที่ Windows สงวนไว้ และความยาวที่นับเป็นไบต์
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">ปริมาณและไฟล์บีบอัด</p>
+  <h2>จะเกิดอะไรขึ้นกับไฟล์จำนวนมาก หรือไฟล์ที่บรรจุไฟล์จำนวนมาก</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>กรณีทดสอบ</th><th>ไฟล์</th><th>ผลที่คาดหวัง</th></tr></thead>
+    <tbody>
+      <tr><td>ห้าสิบไฟล์ในการอัปโหลดครั้งเดียว</td><td><code>bulk_0001.jpg</code> ถึง <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ZIP ที่บรรจุเอกสาร 200 ฉบับจริงๆ</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>ไฟล์บีบอัดที่ระบบของคุณแตกไฟล์ ซึ่งตรวจหา zip slip และ zip bomb ก่อน</td><td><code>tfg tool archive-scan upload.zip</code></td><td>ปลอดภัย หรือสิ่งที่พบ</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> กำหนดว่าการอัปโหลดเป็นกลุ่มมีกี่ไฟล์ ได้สูงสุดหนึ่งหมื่นไฟล์
+    <a href="/th/tools/">เครื่องมือ</a> อธิบายว่าการตรวจไฟล์บีบอัดมองหาอะไรบ้าง
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">ในการทดสอบ</p>
+  <h2>รันรายการเป็นการทดสอบ</h2>
+  <p>
+    แมนิเฟสต์เก็บผลที่คาดหวังของทุกไฟล์และชื่อที่ใช้อัปโหลด ลูปเดียวจึงรันทั้งรายการได้:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    ไฟล์ที่มีป้าย <code>unspecified</code> ถูกข้ามไปตรงนี้ เพราะคำตอบของไฟล์เหล่านั้นคือนโยบายของคุณเอง
+    ตัดสินใจ แล้วเขียนลงในสูตรด้วย <code>expected</code> แล้วลูปจะตรวจไฟล์เหล่านั้นด้วย
+    <a href="/th/test-files-in-ci/">ไฟล์ทดสอบใน CI</a> รันสิ่งนี้ในไปป์ไลน์
+  </p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">ไฟล์ทดสอบสำหรับ QA ขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">โครงการ</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">ซอร์สโค้ดบน GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">ดาวน์โหลด</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">แจ้งปัญหา</a></li>
+        <li><a href="https://donislawdev.com/support/">สนับสนุนโครงการ</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">หน้าเว็บ</p>
+      <ul class="plain">
+        <li><a href="/th/">หน้าแรก</a></li>
+        <li><a href="/th/formats/">รูปแบบไฟล์</a></li>
+        <li><a href="/th/presets/">พรีเซ็ต</a></li>
+        <li><a href="/th/docs/">เอกสาร</a></li>
+        <li><a href="/th/use-cases/">กรณีการใช้งาน</a></li>
+        <li><a href="/th/create-file-exact-size/">ขนาดแม่นยำ</a></li>
+        <li><a href="/th/faq/">คำถามที่พบบ่อย</a></li>
+        <li><a href="/th/corrupt-test-files/">ไฟล์เสียหาย</a></li>
+        <li><a href="/th/sample-files/">ไฟล์ตัวอย่าง</a></li>
+        <li><a href="/th/test-files-in-ci/">ไฟล์ทดสอบใน CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev เผยแพร่ภายใต้ GNU General Public License เวอร์ชัน 3 ไฟล์ที่คุณสร้างเป็นของคุณ - ใบอนุญาตครอบคลุมตัวเครื่องมือ ไม่ใช่ผลลัพธ์ของมัน</p>
+    <p class="muted">เว็บไซต์นี้ไม่โหลดฟอนต์ สคริปต์ หรือตัวติดตามจากที่ใดเลย และไม่ตั้งค่าคุกกี้</p>
+  </div>
+</footer>
+</body>
+</html>

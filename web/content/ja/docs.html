@@ -7,6 +7,9 @@
   <h2>どんなコマンドがありますか。</h2>
   <p>それぞれが1つのことだけを行います。</p>
   {{ template "commandList" . }}
+  <p>
+    <code>tfg tool</code>には、展開前のアーカイブの検査など、手元にあるファイル向けのツールがあります。それぞれの説明は<a href="/ja/tools/">ツール</a>にあります。
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -44,8 +47,8 @@
   <p>
     このツールが書き込むそれ以外のファイルは、構造上すべて正しく、アップロード検証が問う3つの疑問のうち2つに答えます。<code>--damage</code>は3つ目、つまりファイルがそもそも開けるかに答えます。ファイルは通常どおり生成されてから壊されるため、要求したサイズのままです。
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     設定はコロンの後ろに書きます。フラグは繰り返せて、書いた順に適用されます。<code>tfg damage</code>は、このビルドで何ができるか、それぞれが何を受け付けるかを一覧表示します。
   </p>

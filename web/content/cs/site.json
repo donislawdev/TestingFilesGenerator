@@ -61,11 +61,34 @@
       "description": "Soubor záměrně rozbitý, přesné velikosti, s manifestem, který říká, že ho má váš systém odmítnout. Pro testování validace nahrávání a parserů."
     },
     {
+      "key": "samples",
+      "slug": "ukazkove-soubory",
+      "nav": "Ukázkové soubory",
+      "title": "Ukázkové soubory pro testování - PDF, CSV, DOCX ke stažení",
+      "description": "Testovací soubory ke stažení: jeden od každého formátu po 1 MB, poškozené soubory PDF, Word a Excel, tabulky CSV a zástupné obrázky, každý se součtem SHA-256."
+    },
+    {
       "key": "ci",
       "slug": "testovaci-soubory-v-ci",
       "nav": "Testovací soubory v CI",
       "title": "Testovací soubory v CI - GitHub Actions, GitLab CI a PowerShell",
       "description": "Generujte testovací soubory v pipeline místo commitování binárek: workflow pro GitHub Actions, job v GitLabu, návratové kódy a past PowerShellu."
+    },
+    {
+      "key": "upload-tests",
+      "slug": "testovaci-pripady-nahravani-souboru",
+      "nav": "Testovací případy nahrávání",
+      "title": "Testovací případy pro nahrávání souborů - se soubory k testu",
+      "description": "Testovací případy nahrávání souborů: limit velikosti, prázdné a poškozené soubory, špatný typ, nečekané názvy a archivy, každý se souborem, který ho testuje.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "nastroje",
+      "nav": "Nástroje",
+      "title": "Kontrola ZIP před rozbalením a ověření součtů SHA-256",
+      "description": "Offline nástroje pro soubory, které už máte: zda je bezpečné rozbalit archiv, včetně zip slip a zip bomb, a kontrola nebo zápis kontrolních součtů SHA-256.",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "Poškození",
     "colEffect": "Co dělá s bajty",
     "colSettings": "Nastavení",
-    "noSettings": "žádné"
+    "noSettings": "žádné",
+    "colFile": "Soubor",
+    "colSize": "Velikost",
+    "colSha256": "SHA-256",
+    "colExpected": "Očekáváno",
+    "colTool": "Nástroj",
+    "colQuestion": "Na co odpovídá"
   },
   "endings": {
     "0": "Vše fungovalo.",
@@ -224,8 +253,8 @@
     "picture-sizes": {
       "question": "Přijme můj systém obrázky ve velikostech, které používají obrazovky a platformy?",
       "title": "Velikosti obrázků",
-      "pageTitle": "Testovací obrázky v běžných velikostech - obrazovky, avatary, sociální sítě",
-      "description": "Obrázky ve velikostech obrazovek HD, Full HD, QHD a 4K, profilových fotek a titulních obrázků, příspěvků a náhledů, které chtějí sociální sítě, každý tak malý, jak jen může být.",
+      "pageTitle": "Testovací obrázky v běžných velikostech - obrazovky a sítě",
+      "description": "Obrázky ve velikostech obrazovek HD, Full HD, QHD a 4K, profilových fotek a titulních obrázků, příspěvků a náhledů, které chtějí sociální sítě.",
       "catches": [
         "limit šířky nebo výšky nastavený pro jeden tvar, který odmítne jiný, například pozadí profilu široké 1584 px",
         "náhled oříznutý nebo zploštělý, protože kód čeká obrázek na šířku a přijde obrázek na výšku",
@@ -351,5 +380,11 @@
       "q": "Proč je běh nad tisíci soubory na Windows pomalejší?",
       "a": "Protože Windows si účtuje víc za každou cestu, na kterou se podívá, a příkaz, který prochází tisíce souborů, se dívá na tisíce cest. Změřeno na jednom počítači s 3000 soubory po 1 kB: verify trvá na Windows asi 0,9 sekundy a na Linuxu v kontejneru asi 0,2 sekundy. Kratší výstupní cesta číslo na Windows zmenší, protože každá složka nad soubory je součástí toho, na co se dívá."
     }
-  ]
+  ],
+  "tools": {
+    "archive-scan": "Je bezpečné tento archiv rozbalit?",
+    "checksum": "Je tento soubor tím, za který se vydává?",
+    "checksum-check": "Odpovídá každý soubor stále tomu, co uvádí jeho soubor kontrolních součtů?",
+    "checksum-write": "Jak později poznám, že se žádný z těchto souborů nezměnil?"
+  }
 }

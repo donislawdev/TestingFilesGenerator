@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ru">
+<title>Проверка ZIP перед распаковкой и контрольные суммы SHA-256</title>
+<meta name="description" content="Офлайн-инструменты для уже имеющихся файлов: безопасно ли распаковывать архив, включая zip slip и zip-бомбы, а также проверка и запись сумм SHA-256.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ru/tools/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/tools/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/nastroje/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/werkzeuge/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/herramientas/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/outils/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/tools/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/alat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/strumenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/tools/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/tools/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/hulpmiddelen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/narzedzia/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/ferramentas/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/instrumente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/tools/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/tools/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/araclar/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/tools/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/cong-cu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/tools/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/tools/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="Проверка ZIP перед распаковкой и контрольные суммы SHA-256">
+<meta property="og:description" content="Офлайн-инструменты для уже имеющихся файлов: безопасно ли распаковывать архив, включая zip slip и zip-бомбы, а также проверка и запись сумм SHA-256.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ru/tools/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - настоящие тестовые файлы точного размера и манифест с ожидаемой реакцией вашей системы на каждый из них">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Проверка ZIP перед распаковкой и контрольные суммы SHA-256">
+<meta name="twitter:description" content="Офлайн-инструменты для уже имеющихся файлов: безопасно ли распаковывать архив, включая zip slip и zip-бомбы, а также проверка и запись сумм SHA-256.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - настоящие тестовые файлы точного размера и манифест с ожидаемой реакцией вашей системы на каждый из них">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Главная",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ru/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Документация",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ru\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Инструменты",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ru\/tools\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Перейти к содержимому</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ru/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Основное">
+      <a href="/ru/">Главная</a>
+      <a href="/ru/formats/">Форматы</a>
+      <a href="/ru/presets/">Пресеты</a>
+      <a href="/ru/docs/" aria-current="true">Документация</a>
+      <a href="/ru/use-cases/">Сценарии</a>
+      <a href="/ru/create-file-exact-size/">Точный размер</a>
+      <a href="/ru/faq/">FAQ</a>
+      <a href="/ru/corrupt-test-files/">Повреждённые файлы</a>
+      <a href="/ru/sample-files/">Примеры файлов</a>
+      <a href="/ru/test-files-in-ci/">Тестовые файлы в CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Язык: Русский">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Русский</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/tools/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/tools/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/nastroje/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/werkzeuge/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/herramientas/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/outils/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/tools/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/alat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/strumenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/tools/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/tools/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/hulpmiddelen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/narzedzia/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/ferramentas/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/instrumente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/th/tools/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/araclar/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/tools/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/cong-cu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/tools/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/tools/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/ru/docs/">Документация</a></p>
+<h1>Проверка архива перед распаковкой и сверка контрольных сумм</h1>
+<p class="lead">
+  Помимо генератора, в <code>tfg</code> есть небольшие инструменты для файлов, которые у вас уже есть:
+  можно ли безопасно распаковать архив и соответствует ли файл или целая папка своей контрольной
+  сумме. Они работают на вашей машине, без отправки файлов куда-либо и без учётной записи.
+</p>
+
+<div class="note">
+  <p class="note-title">Короткий ответ</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> читает архив, ничего не распаковывая, и
+    завершается с кодом 0, если он безопасен, или с кодом 7 и списком найденного.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> говорит, совпадает ли файл с суммой,
+    которую указала страница скачивания.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">Что есть</p>
+  <h2>Какие есть инструменты?</h2>
+  <p>
+    Это список, который печатает программа, прочитанный из неё при сборке этой страницы.
+    <code>tfg tool list</code> печатает то же самое, а <code>tfg tool show &lt;id&gt;</code> говорит,
+    что принимает один из них. Каждый инструмент есть и на экране Tools в окне программы, с теми же
+    настройками.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>Инструмент</th>
+      <th>На что отвечает</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>archive-scan</code></td>
+      <td>Безопасно ли распаковывать этот архив?</td>
+    </tr>
+    <tr>
+      <td><code>checksum</code></td>
+      <td>Тот ли это файл, за который он себя выдаёт?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-check</code></td>
+      <td>Соответствует ли каждый файл тому, что записано в его файле контрольных сумм?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-write</code></td>
+      <td>Как я потом узнаю, что ни один из этих файлов не изменился?</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Архивы</p>
+  <h2>Безопасно ли распаковывать этот архив? Zip slip и zip-бомбы</h2>
+  <p>
+    <code>archive-scan</code> заглядывает в файл ZIP, TAR, TAR.GZ или gzip, ничего не записывая на
+    диск, и говорит, безопасно ли его распаковывать. Он находит:
+  </p>
+  <ul>
+    <li>элемент, который был бы записан за пределами папки, то есть ловушку под названием zip slip</li>
+    <li>ссылку, устройство или два имени, которые попали бы в один файл</li>
+    <li>имя, которое система не может записать</li>
+    <li>элемент, построенный так, чтобы взорваться при распаковке, то есть ловушку под названием zip-бомба</li>
+    <li>повреждённый элемент</li>
+  </ul>
+  <p>
+    Архивы внутри архива, например ZIP в ZIP или DOCX в TAR, читаются так же, в памяти, до 16 уровней
+    вложенности. Ловушка в одном из них - ловушка во всём архиве, потому что программа, которая
+    распаковывает всё, распакует и их.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> также сообщает об архиве, который после распаковки занимает больше,
+    чем вы разрешаете. Безопасный архив завершается кодом 0, а любая находка кодом 7, так что конвейер
+    может на этом остановиться.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Один файл</p>
+  <h2>Тот ли это файл, за который он себя выдаёт?</h2>
+  <p>
+    <code>checksum</code> вычисляет контрольную сумму файла и, если дать ему сумму для сравнения,
+    говорит, совпадают ли они. Он поддерживает md5, sha1, sha256, sha512 и crc32, по умолчанию sha256,
+    а какой алгоритм у переданной суммы, определяет по её длине.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    Несовпадающая сумма завершается кодом 7. Это ответ на тот же вопрос, что и
+    <code>Get-FileHash</code> в Windows или <code>sha256sum</code> в Linux, только сравнение делается
+    за вас.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Целая папка</p>
+  <h2>Изменилось ли что-нибудь в этой папке?</h2>
+  <p>
+    <code>checksum-write</code> записывает контрольную сумму каждого файла папки в SHA256SUMS рядом
+    с ними, теми же байтами, что пишет <code>sha256sum</code>, и никогда не перезаписывает уже
+    существующий файл. <code>checksum-check</code> потом проверяет каждый файл, перечисленный
+    в SHA256SUMS.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    Файлы, которых нет в списке, не проверяются, так же как в <code>sha256sum -c</code>, а путь,
+    выходящий за пределы папки, отклоняется, а не читается. К <a href="/ru/sample-files/">примерам
+    файлов</a> прилагается SHA256SUMS, который можно проверить так же.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Дальше</p>
+  <h2>Куда идти отсюда</h2>
+  <ul>
+    <li>
+      <a href="/ru/file-upload-test-cases/">Тест-кейсы для загрузки файлов</a> ставят проверку архива
+      в один ряд с другими кейсами загрузки.
+    </li>
+    <li>
+      <a href="/ru/docs/">Документация</a> описывает каждую команду и код завершения.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Тестовые файлы для QA точного размера и манифест с ожидаемой реакцией вашей системы на каждый из них.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Проект</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Исходный код на GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Загрузки</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Сообщить о проблеме</a></li>
+        <li><a href="https://donislawdev.com/support/">Поддержать проект</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Страницы</p>
+      <ul class="plain">
+        <li><a href="/ru/">Главная</a></li>
+        <li><a href="/ru/formats/">Форматы</a></li>
+        <li><a href="/ru/presets/">Пресеты</a></li>
+        <li><a href="/ru/docs/">Документация</a></li>
+        <li><a href="/ru/use-cases/">Сценарии</a></li>
+        <li><a href="/ru/create-file-exact-size/">Точный размер</a></li>
+        <li><a href="/ru/faq/">FAQ</a></li>
+        <li><a href="/ru/corrupt-test-files/">Повреждённые файлы</a></li>
+        <li><a href="/ru/sample-files/">Примеры файлов</a></li>
+        <li><a href="/ru/test-files-in-ci/">Тестовые файлы в CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Распространяется по лицензии GNU General Public License версии 3. Файлы, которые вы создаёте, принадлежат вам - лицензия охватывает инструмент, а не его результат.</p>
+    <p class="muted">Этот сайт не загружает шрифты, скрипты и трекеры ниоткуда. Он не устанавливает куки.</p>
+  </div>
+</footer>
+</body>
+</html>

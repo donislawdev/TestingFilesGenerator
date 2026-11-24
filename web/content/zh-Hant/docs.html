@@ -7,6 +7,9 @@
   <h2>有哪些指令？</h2>
   <p>每個指令只做一件事：</p>
   {{ template "commandList" . }}
+  <p>
+    <code>tfg tool</code> 包含處理現有檔案的工具，例如在解壓縮前檢查壓縮檔。<a href="/zh-hant/tools/">工具</a>說明了其中每一個。
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -45,8 +48,8 @@
     本工具寫出的其他所有檔案在構造上都是正確的，這回答了上傳驗證器會問的三個問題中的兩個。<code>--damage</code>
     回答第三個，也就是檔案到底能不能開啟。檔案先正常產生，再被破壞，因此仍然維持你要求的大小。
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     設定寫在冒號後面。該參數可以重複，寫入的順序就是套用的順序。<code>tfg damage</code> 會列出此版本能做什麼，以及每種破壞接受哪些設定。
   </p>

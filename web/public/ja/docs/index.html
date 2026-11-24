@@ -109,6 +109,7 @@
       <a href="/ja/create-file-exact-size/">正確なサイズ</a>
       <a href="/ja/faq/">FAQ</a>
       <a href="/ja/corrupt-test-files/">破損ファイル</a>
+      <a href="/ja/sample-files/">サンプルファイル</a>
       <a href="/ja/test-files-in-ci/">CIでのテストファイル</a>
     </nav>
     <details class="langmenu">
@@ -163,6 +164,9 @@ tfg damage      このビルドがファイルを意図的に壊す方法を一�
 tfg tool        手元にあるファイル向けの小さなツール
 tfg version     ツールのバージョンを表示する
 tfg license     ライセンスと、生成ファイルにとっての意味を表示する</code></pre>
+  <p>
+    <code>tfg tool</code>には、展開前のアーカイブの検査など、手元にあるファイル向けのツールがあります。それぞれの説明は<a href="/ja/tools/">ツール</a>にあります。
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -200,8 +204,8 @@ tfg license     ライセンスと、生成ファイルにとっての意味を�
   <p>
     このツールが書き込むそれ以外のファイルは、構造上すべて正しく、アップロード検証が問う3つの疑問のうち2つに答えます。<code>--damage</code>は3つ目、つまりファイルがそもそも開けるかに答えます。ファイルは通常どおり生成されてから壊されるため、要求したサイズのままです。
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     設定はコロンの後ろに書きます。フラグは繰り返せて、書いた順に適用されます。<code>tfg damage</code>は、このビルドで何ができるか、それぞれが何を受け付けるかを一覧表示します。
   </p>
@@ -487,7 +491,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.6.0-rc1</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">QA向けの正確なサイズのテストファイルと、各ファイルに対するシステムの反応を示すマニフェスト。</p>
     </div>
     <div class="footer-col">
@@ -510,6 +514,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
         <li><a href="/ja/create-file-exact-size/">正確なサイズ</a></li>
         <li><a href="/ja/faq/">FAQ</a></li>
         <li><a href="/ja/corrupt-test-files/">破損ファイル</a></li>
+        <li><a href="/ja/sample-files/">サンプルファイル</a></li>
         <li><a href="/ja/test-files-in-ci/">CIでのテストファイル</a></li>
       </ul>
     </div>

@@ -61,11 +61,34 @@
       "description": "Un archivo roto a propósito, con el tamaño exacto que pides y un manifiesto que dice que tu sistema debe rechazarlo. Para probar validación de subidas y parsers."
     },
     {
+      "key": "samples",
+      "slug": "archivos-de-ejemplo",
+      "nav": "Archivos de ejemplo",
+      "title": "Archivos de prueba para descargar - PDF, CSV, DOCX y más",
+      "description": "Archivos de prueba para descargar: uno de cada formato de 1 MB, PDF, Word y Excel corruptos, tablas CSV e imágenes de marcador de posición, con su SHA-256."
+    },
+    {
       "key": "ci",
       "slug": "archivos-de-prueba-en-ci",
       "nav": "Archivos de prueba en CI",
       "title": "Archivos de prueba en CI - GitHub Actions, GitLab CI y PowerShell",
       "description": "Genera archivos de prueba en el pipeline en vez de subir binarios: workflow de GitHub Actions, job de GitLab, códigos de salida y la trampa de PowerShell."
+    },
+    {
+      "key": "upload-tests",
+      "slug": "casos-de-prueba-de-subida-de-archivos",
+      "nav": "Casos de prueba de subida",
+      "title": "Casos de prueba de subida de archivos - archivos incluidos",
+      "description": "Casos de prueba de subida de archivos: límite de tamaño, archivos vacíos o corruptos, tipo incorrecto, nombres raros y ZIP, cada uno con su archivo de prueba.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "herramientas",
+      "nav": "Herramientas",
+      "title": "Comprobar un ZIP antes de descomprimirlo y verificar SHA-256",
+      "description": "Herramientas sin conexión para tus archivos: ver si es seguro descomprimir un archivo comprimido (zip slip, zip bomb) y verificar o escribir sumas SHA-256.",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "Daño",
     "colEffect": "Qué hace con los bytes",
     "colSettings": "Ajustes",
-    "noSettings": "ninguno"
+    "noSettings": "ninguno",
+    "colFile": "Archivo",
+    "colSize": "Tamaño",
+    "colSha256": "SHA-256",
+    "colExpected": "Esperado",
+    "colTool": "Herramienta",
+    "colQuestion": "Qué responde"
   },
   "endings": {
     "0": "Todo ha funcionado.",
@@ -224,8 +253,8 @@
     "picture-sizes": {
       "question": "¿Acepta mi sistema imágenes en los tamaños que usan las pantallas y las plataformas?",
       "title": "Tamaños de imagen",
-      "pageTitle": "Imágenes de prueba en tamaños comunes - pantallas, avatares, redes sociales",
-      "description": "Imágenes en los tamaños de pantallas HD, Full HD, QHD y 4K, de fotos de perfil y de las portadas, publicaciones y miniaturas que piden las redes sociales, cada una tan pequeña como puede ser.",
+      "pageTitle": "Imágenes de prueba en tamaños comunes - pantallas y redes",
+      "description": "Imágenes en los tamaños de pantallas HD, Full HD, QHD y 4K, de fotos de perfil y de las portadas, publicaciones y miniaturas que piden las redes sociales.",
       "catches": [
         "un límite de ancho o de alto pensado para una forma que rechaza otra, como un fondo de perfil de 1584 px de ancho",
         "una miniatura recortada o aplastada porque el código espera una imagen horizontal y llega una vertical",
@@ -351,5 +380,11 @@
       "q": "¿Por qué una ejecución sobre miles de archivos es más lenta en Windows?",
       "a": "Porque Windows cobra más por cada ruta que mira, y un comando que recorre miles de archivos mira miles de rutas. Medido en una máquina con 3000 archivos de 1 kB, verify tarda unos 0,9 segundos en Windows y unos 0,2 segundos en Linux dentro de un contenedor. Una ruta de salida más corta reduce la cifra de Windows, porque cada carpeta por encima de los archivos forma parte de lo que se mira."
     }
-  ]
+  ],
+  "tools": {
+    "archive-scan": "¿Es seguro descomprimir este archivo comprimido?",
+    "checksum": "¿Es este archivo el que dice ser?",
+    "checksum-check": "¿Sigue cada archivo coincidiendo con lo que dice su archivo de sumas de comprobación?",
+    "checksum-write": "¿Cómo sabré más tarde que ninguno de estos archivos ha cambiado?"
+  }
 }

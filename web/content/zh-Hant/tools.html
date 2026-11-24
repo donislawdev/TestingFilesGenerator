@@ -1,0 +1,83 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>解壓縮前檢查壓縮檔，並核對總和檢查碼</h1>
+<p class="lead">
+  除了產生器，<code>tfg</code> 還附有處理現有檔案的小工具：壓縮檔能否安全解壓縮，以及一個檔案或整個資料夾是否仍與它的總和檢查碼相符。它們在你的電腦上執行，不上傳檔案，也不需要帳號。
+</p>
+
+<div class="note">
+  <p class="note-title">簡短回答</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> 讀取壓縮檔而不解壓縮任何內容，安全時以代碼 0 結束，否則以代碼 7 結束並列出發現的問題。<code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> 告訴你檔案是否與下載頁面給出的總和檢查碼相符。
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">有什麼</p>
+  <h2>有哪些工具？</h2>
+  <p>
+    這是程式印出的清單，在建置本頁時從程式中讀取。<code>tfg tool list</code> 印出同樣的內容，<code>tfg tool show &lt;id&gt;</code> 說明其中某個工具接受什麼設定。每個工具也都在桌面視窗的工具畫面中，設定相同。
+  </p>
+  {{ template "toolsTable" . }}
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">壓縮檔</p>
+  <h2>這個壓縮檔可以安全解壓縮嗎？zip slip 與 zip 炸彈</h2>
+  <p>
+    <code>archive-scan</code> 在不寫入磁碟任何內容的情況下查看 ZIP、TAR、TAR.GZ 或 gzip 檔案，並說明解壓縮它是否安全。它會回報：
+  </p>
+  <ul>
+    <li>會被寫到資料夾之外的項目，也就是稱為 zip slip 的陷阱</li>
+    <li>連結、裝置，或會落到同一個檔案上的兩個名稱</li>
+    <li>系統無法寫入的名稱</li>
+    <li>被設計成解壓縮時會爆炸式膨脹的項目，也就是稱為 zip 炸彈的陷阱</li>
+    <li>已損毀的項目</li>
+  </ul>
+  <p>
+    壓縮檔中的壓縮檔，例如 ZIP 中的 ZIP 或 TAR 中的 DOCX，也以同樣方式在記憶體中讀取，最深 16 層。其中任何一個裡的陷阱就是整個壓縮檔的陷阱，因為解壓縮全部內容的程式也會解壓縮它們。
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> 還會回報解壓縮後超過你允許大小的壓縮檔。安全時以代碼 0 結束，發現任何問題時以代碼 7 結束，所以流程可以據此停下。
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">單一檔案</p>
+  <h2>這個檔案就是它聲稱的那個檔案嗎？</h2>
+  <p>
+    <code>checksum</code> 計算檔案的總和檢查碼，如果給它一個用來比較的值，它會告訴你兩者是否相符。它支援 md5、sha1、sha256、sha512 和 crc32，未指定時使用 sha256，並根據給定值的長度判斷它是哪一種。
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    總和檢查碼不相符時以代碼 7 結束。它回答的問題與 Windows 上的 <code>Get-FileHash</code> 或 Linux 上的 <code>sha256sum</code> 相同，只是比較也替你做好了。
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">整個資料夾</p>
+  <h2>這個資料夾裡有東西變了嗎？</h2>
+  <p>
+    <code>checksum-write</code> 把資料夾中每個檔案的總和檢查碼寫入它們旁邊的 SHA256SUMS，位元組與 <code>sha256sum</code> 寫出的相同，而且絕不覆寫已有的 SHA256SUMS。<code>checksum-check</code> 之後會檢查 SHA256SUMS 列出的每個檔案。
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    它沒有列出的檔案不會被檢查，這與 <code>sha256sum -c</code> 相同。離開該資料夾的路徑會被拒絕，而不是被讀取。<a href="/zh-hant/sample-files/">範例檔案</a>附有一個可以這樣檢查的 SHA256SUMS。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">接下來</p>
+  <h2>從這裡去哪裡</h2>
+  <ul>
+    <li>
+      <a href="/zh-hant/file-upload-test-cases/">檔案上傳測試案例</a>把壓縮檔檢查與上傳的其他案例放在一起。
+    </li>
+    <li>
+      <a href="/zh-hant/docs/">文件</a>包含每道指令和每個結束碼。
+    </li>
+  </ul>
+</section>

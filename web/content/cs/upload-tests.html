@@ -1,0 +1,160 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Testovací případy pro nahrávání souborů, se soubory k jejich spuštění</h1>
+<p class="lead">
+  Kontrolní seznam testovacích případů pro nahrávání souborů, od limitu velikosti po název souboru,
+  který se snaží opustit svou složku. U každého případu je soubor, který ho testuje, a co s ním má
+  váš systém udělat, takže seznam lze spustit, a ne jen přečíst.
+</p>
+
+<div class="note">
+  <p class="note-title">Celý seznam jedním příkazem</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    zapíše soubor téměř pro každý případ níže, s manifestem, který říká, co se má s každým z nich
+    stát. Zadejte limit a typy, které deklaruje váš formulář.
+  </p>
+</div>
+
+<p>
+  <code>accept</code> znamená, že váš systém má soubor přijmout, a <code>reject</code>, že ho má
+  odmítnout se srozumitelnou zprávou. <code>unspecified</code> znamená, že správná může být kterákoli
+  odpověď, takže si zapište, kterou z nich váš systém volí, a ověřujte, že to tak dělá pokaždé. Slovo
+  za výsledkem je důvod, který uvádí manifest.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">Velikost</p>
+  <h2>Je limit velikosti vynucován tam, kde je deklarován?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Testovací případ</th><th>Soubor</th><th>Očekáváno</th></tr></thead>
+    <tbody>
+      <tr><td>O bajt pod limitem</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Přesně na limitu</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>O bajt nad limitem</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Dvojnásobek limitu, aby se ukázalo, že server přestane číst včas, místo aby vše načetl do paměti</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Prázdný soubor o 0 bajtech</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Dva případy, ve kterých limit nejčastěji selže, jsou limit kontrolovaný jen v prohlížeči a limit
+    počítaný v MB tam, kde kód počítá MiB. <a href="/cs/predvolby/size-boundaries/">Předvolba
+    size-boundaries</a> položí soubor do každé vzdálenosti od zvoleného limitu, o bajt, kilobajt
+    a megabajt na obě strany.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">Typ</p>
+  <h2>Přijímá formulář typy, které má, a zbytek odmítá?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Testovací případ</th><th>Soubor</th><th>Očekáváno</th></tr></thead>
+    <tbody>
+      <tr><td>Každý typ, který formulář přijímá, jako skutečný soubor toho typu</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Typ, který formulář nepřijímá</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Přípona říká jeden typ, ale obsah je jiného typu, například PDF s názvem .jpg</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>Dvě přípony, poslední z nich nepovolená</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Žádná přípona</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>Přípona velkými písmeny</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Soubor SVG nebo HTML považovaný za obrázek nebo prostý text je způsob, jak protlačit skript
+    formulářem. Proto jsou na seznamu typů k odmítnutí, pokud je váš formulář nemá přijímat.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">Obsah</p>
+  <h2>Otevře systém soubor, nebo se dívá jen na jeho název?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Testovací případ</th><th>Soubor</th><th>Očekáváno</th></tr></thead>
+    <tbody>
+      <tr><td>Soubor zkrácený tak, jak ho nechá přerušené nahrávání</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Soubor, jehož první bajty jsou nuly, takže nic neříká, co je zač</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Nejmenší soubor, který formát dovolí, platný a drobný</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Soubor, který má jen správný název a správnou velikost, projde každou kontrolou, která ho nikdy
+    neotevře. <a href="/cs/ukazkove-soubory/#corrupt">Poškozené ukázkové soubory</a> jsou ve formátech
+    PDF, Word, Excel, PowerPoint, JPG, PNG, MP4 a ZIP a
+    <a href="/cs/poskozene-testovaci-soubory/">poškozené testovací soubory</a> popisují, jak je
+    vytvořit v libovolném formátu a libovolné velikosti.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">Název</p>
+  <h2>Vrátí se soubor pod názvem, který dostal?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Testovací případ</th><th>Soubor</th><th>Očekáváno</th></tr></thead>
+    <tbody>
+      <tr><td>Mezery a závorky</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Písmena mimo ASCII a emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>Název delší než 200 znaků</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>Název, který vyleze ze své složky, <code>../</code> nebo <code>..\</code></td><td><code>climbing_name.jpg</code>, nahraný jako <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Absolutní cesta, z Linuxu nebo z Windows</td><td><code>absolute_name.jpg</code>, nahraný jako <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Název s cestou nelze uložit na disk, takže soubor má prostý název a manifest říká, pod jakým
+    názvem ho nahrát. Přijmout soubor a ponechat jen poslední část názvu je dobrá odpověď. Zapsat ho
+    mimo složku pro nahrávání je vada, kvůli které tento případ existuje.
+    <a href="/cs/predvolby/filename-handling/">Předvolba filename-handling</a> má mnohem víc názvů:
+    podobně vypadající písmena, neviditelné znaky, názvy vyhrazené systémem Windows a délky počítané
+    v bajtech.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">Množství a archivy</p>
+  <h2>Co se stane s mnoha soubory nebo se souborem, který jich obsahuje mnoho?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Testovací případ</th><th>Soubor</th><th>Očekáváno</th></tr></thead>
+    <tbody>
+      <tr><td>Padesát souborů v jednom nahrání</td><td><code>bulk_0001.jpg</code> až <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>ZIP, který opravdu obsahuje 200 dokumentů</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Archiv, který váš systém rozbaluje, nejprve zkontrolovaný na zip slip a zip bomby</td><td><code>tfg tool archive-scan upload.zip</code></td><td>bezpečný, nebo co se našlo</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> nastavuje, kolik souborů hromadné nahrání obsahuje, až deset tisíc.
+    <a href="/cs/nastroje/">Nástroje</a> popisují, co kontrola archivu hledá.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">V testu</p>
+  <h2>Seznam spuštěný jako test</h2>
+  <p>
+    Manifest obsahuje očekávaný výsledek každého souboru a název, pod kterým ho nahrát, takže jedna
+    smyčka projde celý seznam:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    Soubory označené <code>unspecified</code> se tu vynechávají, protože odpověď na ně je vaše vlastní
+    pravidlo. Rozhodněte ho, zapište ho do receptu pomocí <code>expected</code> a smyčka je zkontroluje
+    také. <a href="/cs/testovaci-soubory-v-ci/">Testovací soubory v CI</a> to spouštějí v pipeline.
+  </p>
+</section>

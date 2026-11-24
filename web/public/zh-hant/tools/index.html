@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="zh-Hant">
+<title>解壓縮前檢查 ZIP 壓縮檔，核對 SHA-256 總和檢查碼</title>
+<meta name="description" content="處理現有檔案的離線工具：檢查壓縮檔能否安全解壓縮，包括 zip slip 與 zip 炸彈，並核對或寫出 SHA-256 總和檢查碼。">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/zh-hant/tools/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/tools/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/nastroje/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/werkzeuge/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/herramientas/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/outils/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/tools/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/alat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/strumenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/tools/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/tools/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/hulpmiddelen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/narzedzia/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/ferramentas/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/instrumente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/tools/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/tools/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/araclar/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/tools/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/cong-cu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/tools/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/tools/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="zh_TW">
+<meta property="og:title" content="解壓縮前檢查 ZIP 壓縮檔，核對 SHA-256 總和檢查碼">
+<meta property="og:description" content="處理現有檔案的離線工具：檢查壓縮檔能否安全解壓縮，包括 zip slip 與 zip 炸彈，並核對或寫出 SHA-256 總和檢查碼。">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/zh-hant/tools/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 精確大小的真實測試檔案，並附上說明系統應如何回應每個檔案的清單">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="解壓縮前檢查 ZIP 壓縮檔，核對 SHA-256 總和檢查碼">
+<meta name="twitter:description" content="處理現有檔案的離線工具：檢查壓縮檔能否安全解壓縮，包括 zip slip 與 zip 炸彈，並核對或寫出 SHA-256 總和檢查碼。">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 精確大小的真實測試檔案，並附上說明系統應如何回應每個檔案的清單">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "首頁",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/zh-hant/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "文件",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hant\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "工具",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/zh-hant\/tools\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">跳到內容</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/zh-hant/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="主選單">
+      <a href="/zh-hant/">首頁</a>
+      <a href="/zh-hant/formats/">格式</a>
+      <a href="/zh-hant/presets/">預設集</a>
+      <a href="/zh-hant/docs/" aria-current="true">文件</a>
+      <a href="/zh-hant/use-cases/">使用情境</a>
+      <a href="/zh-hant/create-file-exact-size/">精確大小</a>
+      <a href="/zh-hant/faq/">常見問題</a>
+      <a href="/zh-hant/corrupt-test-files/">損毀檔案</a>
+      <a href="/zh-hant/sample-files/">範例檔案</a>
+      <a href="/zh-hant/test-files-in-ci/">CI 中的測試檔案</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="語言: 繁體中文">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>繁體中文</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/tools/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/tools/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/nastroje/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/werkzeuge/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/herramientas/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/outils/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/tools/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/alat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/strumenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/tools/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/tools/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/hulpmiddelen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/narzedzia/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/ferramentas/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/instrumente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/tools/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/tools/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/araclar/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/tools/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/cong-cu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/tools/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/zh-hant/docs/">文件</a></p>
+<h1>解壓縮前檢查壓縮檔，並核對總和檢查碼</h1>
+<p class="lead">
+  除了產生器，<code>tfg</code> 還附有處理現有檔案的小工具：壓縮檔能否安全解壓縮，以及一個檔案或整個資料夾是否仍與它的總和檢查碼相符。它們在你的電腦上執行，不上傳檔案，也不需要帳號。
+</p>
+
+<div class="note">
+  <p class="note-title">簡短回答</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> 讀取壓縮檔而不解壓縮任何內容，安全時以代碼 0 結束，否則以代碼 7 結束並列出發現的問題。<code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> 告訴你檔案是否與下載頁面給出的總和檢查碼相符。
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">有什麼</p>
+  <h2>有哪些工具？</h2>
+  <p>
+    這是程式印出的清單，在建置本頁時從程式中讀取。<code>tfg tool list</code> 印出同樣的內容，<code>tfg tool show &lt;id&gt;</code> 說明其中某個工具接受什麼設定。每個工具也都在桌面視窗的工具畫面中，設定相同。
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>工具</th>
+      <th>回答的問題</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>archive-scan</code></td>
+      <td>這個壓縮檔可以安全解壓縮嗎？</td>
+    </tr>
+    <tr>
+      <td><code>checksum</code></td>
+      <td>這個檔案就是它聲稱的那個檔案嗎？</td>
+    </tr>
+    <tr>
+      <td><code>checksum-check</code></td>
+      <td>每個檔案是否仍與總和檢查碼檔案所記錄的相符？</td>
+    </tr>
+    <tr>
+      <td><code>checksum-write</code></td>
+      <td>之後我要怎麼知道這些檔案一個都沒變？</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">壓縮檔</p>
+  <h2>這個壓縮檔可以安全解壓縮嗎？zip slip 與 zip 炸彈</h2>
+  <p>
+    <code>archive-scan</code> 在不寫入磁碟任何內容的情況下查看 ZIP、TAR、TAR.GZ 或 gzip 檔案，並說明解壓縮它是否安全。它會回報：
+  </p>
+  <ul>
+    <li>會被寫到資料夾之外的項目，也就是稱為 zip slip 的陷阱</li>
+    <li>連結、裝置，或會落到同一個檔案上的兩個名稱</li>
+    <li>系統無法寫入的名稱</li>
+    <li>被設計成解壓縮時會爆炸式膨脹的項目，也就是稱為 zip 炸彈的陷阱</li>
+    <li>已損毀的項目</li>
+  </ul>
+  <p>
+    壓縮檔中的壓縮檔，例如 ZIP 中的 ZIP 或 TAR 中的 DOCX，也以同樣方式在記憶體中讀取，最深 16 層。其中任何一個裡的陷阱就是整個壓縮檔的陷阱，因為解壓縮全部內容的程式也會解壓縮它們。
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> 還會回報解壓縮後超過你允許大小的壓縮檔。安全時以代碼 0 結束，發現任何問題時以代碼 7 結束，所以流程可以據此停下。
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">單一檔案</p>
+  <h2>這個檔案就是它聲稱的那個檔案嗎？</h2>
+  <p>
+    <code>checksum</code> 計算檔案的總和檢查碼，如果給它一個用來比較的值，它會告訴你兩者是否相符。它支援 md5、sha1、sha256、sha512 和 crc32，未指定時使用 sha256，並根據給定值的長度判斷它是哪一種。
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    總和檢查碼不相符時以代碼 7 結束。它回答的問題與 Windows 上的 <code>Get-FileHash</code> 或 Linux 上的 <code>sha256sum</code> 相同，只是比較也替你做好了。
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">整個資料夾</p>
+  <h2>這個資料夾裡有東西變了嗎？</h2>
+  <p>
+    <code>checksum-write</code> 把資料夾中每個檔案的總和檢查碼寫入它們旁邊的 SHA256SUMS，位元組與 <code>sha256sum</code> 寫出的相同，而且絕不覆寫已有的 SHA256SUMS。<code>checksum-check</code> 之後會檢查 SHA256SUMS 列出的每個檔案。
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    它沒有列出的檔案不會被檢查，這與 <code>sha256sum -c</code> 相同。離開該資料夾的路徑會被拒絕，而不是被讀取。<a href="/zh-hant/sample-files/">範例檔案</a>附有一個可以這樣檢查的 SHA256SUMS。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">接下來</p>
+  <h2>從這裡去哪裡</h2>
+  <ul>
+    <li>
+      <a href="/zh-hant/file-upload-test-cases/">檔案上傳測試案例</a>把壓縮檔檢查與上傳的其他案例放在一起。
+    </li>
+    <li>
+      <a href="/zh-hant/docs/">文件</a>包含每道指令和每個結束碼。
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">專為 QA 設計的精確大小測試檔案，並附上說明系統應如何回應每個檔案的清單。</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">專案</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub 上的原始碼</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">下載</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">回報問題</a></li>
+        <li><a href="https://donislawdev.com/support/">支持本專案</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">頁面</p>
+      <ul class="plain">
+        <li><a href="/zh-hant/">首頁</a></li>
+        <li><a href="/zh-hant/formats/">格式</a></li>
+        <li><a href="/zh-hant/presets/">預設集</a></li>
+        <li><a href="/zh-hant/docs/">文件</a></li>
+        <li><a href="/zh-hant/use-cases/">使用情境</a></li>
+        <li><a href="/zh-hant/create-file-exact-size/">精確大小</a></li>
+        <li><a href="/zh-hant/faq/">常見問題</a></li>
+        <li><a href="/zh-hant/corrupt-test-files/">損毀檔案</a></li>
+        <li><a href="/zh-hant/sample-files/">範例檔案</a></li>
+        <li><a href="/zh-hant/test-files-in-ci/">CI 中的測試檔案</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev。依 GNU 通用公共授權條款第 3 版發布。你產生的檔案歸你所有，授權涵蓋的是工具本身，而不是它的輸出。</p>
+    <p class="muted">本站不會從任何地方載入字型、指令碼或追蹤器，也不會設定 Cookie。</p>
+  </div>
+</footer>
+</body>
+</html>

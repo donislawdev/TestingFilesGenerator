@@ -109,6 +109,7 @@
       <a href="/pt-br/criar-arquivo-de-tamanho-exato/">Tamanho exato</a>
       <a href="/pt-br/perguntas-frequentes/">FAQ</a>
       <a href="/pt-br/arquivos-de-teste-corrompidos/">Arquivos corrompidos</a>
+      <a href="/pt-br/arquivos-de-exemplo/">Arquivos de exemplo</a>
       <a href="/pt-br/arquivos-de-teste-no-ci/">Arquivos de teste no CI</a>
     </nav>
     <details class="langmenu">
@@ -165,6 +166,10 @@ tfg damage      listar as formas como esta versão pode quebrar um arquivo de pr
 tfg tool        pequenas utilidades para arquivos que você já tem
 tfg version     imprimir a versão da ferramenta
 tfg license     imprimir a licença e o que ela significa para os arquivos gerados</code></pre>
+  <p>
+    <code>tfg tool</code> reúne as ferramentas para arquivos que você já tem, como checar um arquivo
+    compactado antes de descompactá-lo. <a href="/pt-br/ferramentas/">Ferramentas</a> descreve cada uma.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -206,8 +211,8 @@ tfg license     imprimir a licença e o que ela significa para os arquivos gerad
     arquivo abre, afinal. O arquivo é produzido normalmente e depois quebrado, então continua com o
     tamanho que você pediu.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     As configurações vão depois de dois-pontos. A opção se repete, e a ordem em que você as escreve é a
     ordem em que são aplicadas. <code>tfg damage</code> lista o que esta versão pode fazer e o que
@@ -531,7 +536,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.6.0-rc1</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">Arquivos de teste para QA, no tamanho exato, com um manifesto que diz como seu sistema deve reagir a cada um.</p>
     </div>
     <div class="footer-col">
@@ -554,6 +559,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
         <li><a href="/pt-br/criar-arquivo-de-tamanho-exato/">Tamanho exato</a></li>
         <li><a href="/pt-br/perguntas-frequentes/">FAQ</a></li>
         <li><a href="/pt-br/arquivos-de-teste-corrompidos/">Arquivos corrompidos</a></li>
+        <li><a href="/pt-br/arquivos-de-exemplo/">Arquivos de exemplo</a></li>
         <li><a href="/pt-br/arquivos-de-teste-no-ci/">Arquivos de teste no CI</a></li>
       </ul>
     </div>

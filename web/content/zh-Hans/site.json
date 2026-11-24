@@ -61,11 +61,34 @@
       "description": "一个故意弄坏、大小精确的文件，附带说明你的系统应拒绝它的清单。用于测试上传校验和解析器。"
     },
     {
+      "key": "samples",
+      "slug": "sample-files",
+      "nav": "示例文件",
+      "title": "测试用示例文件下载 - PDF、CSV、DOCX 等",
+      "description": "下载测试用示例文件：每种格式各一个 1 MB 文件，损坏的 PDF、Word 和 Excel 文件，CSV 表格和占位图片，每个都附 SHA-256。"
+    },
+    {
       "key": "ci",
       "slug": "test-files-in-ci",
       "nav": "CI 中的测试文件",
       "title": "CI 中的测试文件 - GitHub Actions、GitLab CI 和 PowerShell",
       "description": "在流水线中生成测试文件，而不是提交二进制文件：GitHub Actions 工作流、GitLab 作业、让构建失败的退出码，以及 PowerShell 的陷阱。"
+    },
+    {
+      "key": "upload-tests",
+      "slug": "file-upload-test-cases",
+      "nav": "上传测试用例",
+      "title": "文件上传测试用例 - 附带可运行的测试文件",
+      "description": "文件上传的测试用例：大小限制、空文件和损坏文件、错误的类型、意外的文件名和压缩包，每个用例都附带用来测试它的文件。",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "tools",
+      "nav": "工具",
+      "title": "解压前检查 ZIP 压缩包，核对 SHA-256 校验和",
+      "description": "处理现有文件的离线工具：检查压缩包能否安全解压，包括 zip slip 和 zip 炸弹，并核对或写出 SHA-256 校验和。",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "损坏方式",
     "colEffect": "对字节做了什么",
     "colSettings": "设置",
-    "noSettings": "无"
+    "noSettings": "无",
+    "colFile": "文件",
+    "colSize": "大小",
+    "colSha256": "SHA-256",
+    "colExpected": "预期",
+    "colTool": "工具",
+    "colQuestion": "回答的问题"
   },
   "endings": {
     "0": "一切正常。",
@@ -351,5 +380,11 @@
       "q": "为什么在 Windows 上处理数千个文件更慢？",
       "a": "因为 Windows 对查看的每个路径收取更多开销，而遍历数千个文件的命令要查看数千个路径。在一台有 3000 个 1 kB 文件的机器上实测，verify 在 Windows 上约需 0.9 秒，在容器中的 Linux 上约需 0.2 秒。输出路径更短会让 Windows 的数字变小，因为文件上方的每一级文件夹都属于被查看的内容。"
     }
-  ]
+  ],
+  "tools": {
+    "archive-scan": "这个压缩包可以安全解压吗？",
+    "checksum": "这个文件就是它声称的那个文件吗？",
+    "checksum-check": "每个文件是否仍与校验和文件所记录的一致？",
+    "checksum-write": "以后我怎么知道这些文件一个都没变？"
+  }
 }

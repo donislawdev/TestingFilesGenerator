@@ -9,6 +9,10 @@
   <h2>Quali comandi esistono?</h2>
   <p>Ognuno fa una cosa sola:</p>
   {{ template "commandList" . }}
+  <p>
+    <code>tfg tool</code> raccoglie gli strumenti per i file che hai già, come il controllo di un archivio
+    prima di decomprimerlo. <a href="/it/strumenti/">Strumenti</a> descrive ciascuno di essi.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -50,8 +54,8 @@
     file si apre, almeno. Il file viene prodotto normalmente e poi rotto, quindi ha ancora la
     dimensione che hai chiesto.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Le impostazioni vanno dopo i due punti. L'opzione si ripete, e l'ordine in cui le scrivi è l'ordine
     in cui vengono applicate. <code>tfg damage</code> elenca cosa può fare questa versione e cosa

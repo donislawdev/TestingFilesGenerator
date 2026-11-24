@@ -120,9 +120,12 @@ func factsFromTheProgram(t *testing.T) site.Facts {
 
 	return site.Facts{
 		Version:   version.Version,
+		Released:  releasedVersionOfThisBuild(t),
 		Formats:   formats,
 		ExitCodes: exitCodesInOrder(),
 		Damages:   damagesTheProgramHas(),
+		Samples:   samplesFromTheRecipe(t),
+		Tools:     toolsTheProgramHas(),
 		Presets:   presetFactsFromTheProgram(t),
 		Commands:  commandsTheToolPrints(t),
 		Downloads: declaredDownloads(),
@@ -200,6 +203,9 @@ func siteUnderTest(t *testing.T) site.Site {
 		Extra: map[string]string{
 			"assets/window.png": filepath.Join(repoRoot(t), ".github", "window.png"),
 			"assets/icon.png":   filepath.Join(repoRoot(t), "internal", "gui", "icon", "chickpea.png"),
+			// Published beside the files it makes, so the command on the page
+			// has its recipe one click away.
+			site.SamplesDir + "/samples.yaml": filepath.Join(repoRoot(t), filepath.FromSlash(sampleFilesRecipe)),
 		},
 	}
 }
@@ -554,6 +560,14 @@ func TestEveryLinkOnTheSiteLeadsSomewhere(t *testing.T) {
 	if err != nil {
 		t.Fatalf("rendering the site: %v", err)
 	}
+	// The sample files are made when the site is published, not rendered
+	// here, so a link to one is good when its SHA256SUMS lists it - the
+	// workflow refuses to publish unless every listed file is there - and
+	// the manifest is the one that run writes beside them.
+	made := map[string]bool{site.SamplesDir + "/manifest.json": true}
+	for _, s := range s.Facts.Samples {
+		made[site.SamplesDir+"/"+s.Name] = true
+	}
 	href := regexp.MustCompile(`(?:href|src)="(/[^"#]*)"`)
 	for page, body := range rendered {
 		if !strings.HasSuffix(page, ".html") {
@@ -564,7 +578,7 @@ func TestEveryLinkOnTheSiteLeadsSomewhere(t *testing.T) {
 			if strings.HasSuffix(target, "/") || target == "" {
 				target += "index.html"
 			}
-			if _, ok := rendered[target]; !ok {
+			if _, ok := rendered[target]; !ok && !made[target] {
 				t.Errorf("%s links to /%s and nothing is published there", page, m[1])
 			}
 		}

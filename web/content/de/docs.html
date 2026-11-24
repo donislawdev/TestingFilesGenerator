@@ -9,6 +9,10 @@
   <h2>Welche Befehle gibt es?</h2>
   <p>Jeder tut genau eine Sache:</p>
   {{ template "commandList" . }}
+  <p>
+    <code>tfg tool</code> enthält die Werkzeuge für Dateien, die du schon hast, etwa die Prüfung eines
+    Archivs vor dem Entpacken. Die Seite <a href="/de/werkzeuge/">Werkzeuge</a> beschreibt jedes davon.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -50,8 +54,8 @@
     lässt sich die Datei überhaupt öffnen. Die Datei wird normal erzeugt und dann beschädigt, sie
     hat also weiterhin die verlangte Größe.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Einstellungen stehen hinter einem Doppelpunkt. Das Flag lässt sich wiederholen, und die Reihenfolge,
     in der du sie schreibst, ist die Reihenfolge, in der sie angewendet werden. <code>tfg

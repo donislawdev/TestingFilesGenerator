@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ko">
+<title>압축 풀기 전 ZIP 검사와 SHA-256 체크섬 확인</title>
+<meta name="description" content="이미 가진 파일을 위한 오프라인 도구. zip slip과 zip 폭탄을 포함해 아카이브를 안전하게 풀 수 있는지 보고, SHA-256 체크섬을 확인하거나 만듭니다.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ko/tools/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/tools/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/nastroje/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/werkzeuge/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/herramientas/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/outils/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/tools/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/alat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/strumenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/tools/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/tools/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/hulpmiddelen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/narzedzia/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/ferramentas/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/instrumente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/tools/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/tools/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/araclar/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/tools/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/cong-cu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/tools/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/tools/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:title" content="압축 풀기 전 ZIP 검사와 SHA-256 체크섬 확인">
+<meta property="og:description" content="이미 가진 파일을 위한 오프라인 도구. zip slip과 zip 폭탄을 포함해 아카이브를 안전하게 풀 수 있는지 보고, SHA-256 체크섬을 확인하거나 만듭니다.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ko/tools/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - 정확한 크기의 실제 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="압축 풀기 전 ZIP 검사와 SHA-256 체크섬 확인">
+<meta name="twitter:description" content="이미 가진 파일을 위한 오프라인 도구. zip slip과 zip 폭탄을 포함해 아카이브를 안전하게 풀 수 있는지 보고, SHA-256 체크섬을 확인하거나 만듭니다.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - 정확한 크기의 실제 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "홈",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ko/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "문서",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ko\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "도구",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ko\/tools\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ko/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="메인 메뉴">
+      <a href="/ko/">홈</a>
+      <a href="/ko/formats/">형식</a>
+      <a href="/ko/presets/">프리셋</a>
+      <a href="/ko/docs/" aria-current="true">문서</a>
+      <a href="/ko/use-cases/">활용 사례</a>
+      <a href="/ko/create-file-exact-size/">정확한 크기</a>
+      <a href="/ko/faq/">FAQ</a>
+      <a href="/ko/corrupt-test-files/">손상 파일</a>
+      <a href="/ko/sample-files/">샘플 파일</a>
+      <a href="/ko/test-files-in-ci/">CI의 테스트 파일</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="언어: 한국어">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>한국어</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/tools/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/tools/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/cs/nastroje/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/werkzeuge/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/herramientas/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/outils/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/tools/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/alat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/strumenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/tools/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/nl/hulpmiddelen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/narzedzia/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/ferramentas/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/instrumente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/tools/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/tools/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/araclar/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/tools/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/cong-cu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/tools/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/tools/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/ko/docs/">문서</a></p>
+<h1>압축을 풀기 전에 아카이브를 검사하고 체크섬 확인하기</h1>
+<p class="lead">
+  <code>tfg</code>에는 생성기 외에도 이미 가진 파일을 위한 작은 도구가 있습니다. 아카이브를 안전하게 풀 수 있는지, 파일이나 폴더 전체가 체크섬이 말하는 그대로인지 확인합니다. 업로드도 계정도 없이 여러분의 컴퓨터에서 실행됩니다.
+</p>
+
+<div class="note">
+  <p class="note-title">짧은 답</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code>은 아무것도 풀지 않고 아카이브를 읽어, 안전하면 코드 0으로, 아니면 발견한 내용의 목록과 함께 코드 7로 끝납니다. <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code>은 파일이 다운로드 페이지에 적힌 체크섬과 일치하는지 알려 줍니다.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">있는 것</p>
+  <h2>어떤 도구가 있나요?</h2>
+  <p>
+    이것은 프로그램이 출력하는 목록이며, 이 페이지를 빌드할 때 프로그램에서 읽어 옵니다. <code>tfg tool list</code>는 같은 목록을 출력하고, <code>tfg tool show &lt;id&gt;</code>는 그중 하나가 받는 설정을 알려 줍니다. 모든 도구는 데스크톱 창의 도구 화면에도 같은 설정으로 있습니다.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>도구</th>
+      <th>답하는 질문</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>archive-scan</code></td>
+      <td>이 아카이브를 안전하게 풀 수 있을까요?</td>
+    </tr>
+    <tr>
+      <td><code>checksum</code></td>
+      <td>이 파일이 주장하는 바로 그 파일일까요?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-check</code></td>
+      <td>모든 파일이 아직 체크섬 파일에 적힌 그대로일까요?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-write</code></td>
+      <td>이 파일들 중 어느 것도 바뀌지 않았다는 것을 나중에 어떻게 알 수 있을까요?</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">아카이브</p>
+  <h2>이 아카이브를 안전하게 풀 수 있나요? zip slip과 zip 폭탄</h2>
+  <p>
+    <code>archive-scan</code>은 디스크에 아무것도 쓰지 않고 ZIP, TAR, TAR.GZ, gzip 파일 안을 살펴보고, 압축을 풀어도 안전한지 알려 줍니다. 보고하는 것은 다음과 같습니다.
+  </p>
+  <ul>
+    <li>폴더 밖에 쓰이게 될 항목. zip slip이라고 불리는 함정입니다</li>
+    <li>링크, 장치, 또는 한 파일에 겹쳐 쓰이게 될 두 이름</li>
+    <li>시스템이 쓸 수 없는 이름</li>
+    <li>압축을 풀면 폭발적으로 커지도록 만든 항목. zip 폭탄이라고 불리는 함정입니다</li>
+    <li>손상된 항목</li>
+  </ul>
+  <p>
+    ZIP 안의 ZIP이나 TAR 안의 DOCX처럼 아카이브 안의 아카이브도 같은 방식으로 메모리에서 16단계 깊이까지 읽습니다. 그중 하나에 있는 함정은 전체의 함정입니다. 모든 것을 푸는 프로그램은 그것들도 풀기 때문입니다.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code>를 주면 풀었을 때 허용한 크기보다 커지는 아카이브도 보고합니다. 안전하면 코드 0, 무언가 발견하면 코드 7로 끝나므로 파이프라인이 거기서 멈출 수 있습니다.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">파일 하나</p>
+  <h2>이 파일이 주장하는 바로 그 파일인가요?</h2>
+  <p>
+    <code>checksum</code>은 파일의 체크섬을 계산하고, 비교할 값을 주면 일치하는지 알려 줍니다. md5, sha1, sha256, sha512, crc32를 지원하고, 따로 지정하지 않으면 sha256을 쓰며, 주어진 값이 어느 종류인지는 길이로 알아냅니다.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    일치하지 않는 체크섬은 코드 7로 끝납니다. Windows의 <code>Get-FileHash</code>나 Linux의 <code>sha256sum</code>과 같은 질문에 답하되, 비교까지 대신 해 줍니다.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">폴더 전체</p>
+  <h2>이 폴더에서 바뀐 것이 있나요?</h2>
+  <p>
+    <code>checksum-write</code>는 폴더 안 모든 파일의 체크섬을 파일들 옆의 SHA256SUMS에 씁니다. <code>sha256sum</code>이 쓰는 것과 같은 바이트이며, 이미 있는 SHA256SUMS를 덮어쓰지 않습니다. <code>checksum-check</code>는 나중에 SHA256SUMS에 나열된 모든 파일을 확인합니다.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    나열되지 않은 파일은 <code>sha256sum -c</code>와 마찬가지로 확인하지 않으며, 폴더 밖으로 나가는 경로는 읽지 않고 거부합니다. <a href="/ko/sample-files/">샘플 파일</a>에는 이렇게 확인할 수 있는 SHA256SUMS가 함께 있습니다.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">다음</p>
+  <h2>여기서 어디로</h2>
+  <ul>
+    <li>
+      <a href="/ko/file-upload-test-cases/">파일 업로드 테스트 케이스</a>는 아카이브 검사를 업로드의 다른 케이스들과 함께 다룹니다.
+    </li>
+    <li>
+      <a href="/ko/docs/">문서</a>에는 모든 명령과 종료 코드가 있습니다.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">QA를 위한 정확한 크기의 테스트 파일과 각 파일에 시스템이 어떻게 반응해야 하는지 알려 주는 매니페스트.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">프로젝트</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">GitHub의 소스 코드</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">다운로드</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">문제 신고</a></li>
+        <li><a href="https://donislawdev.com/support/">프로젝트 후원</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">페이지</p>
+      <ul class="plain">
+        <li><a href="/ko/">홈</a></li>
+        <li><a href="/ko/formats/">형식</a></li>
+        <li><a href="/ko/presets/">프리셋</a></li>
+        <li><a href="/ko/docs/">문서</a></li>
+        <li><a href="/ko/use-cases/">활용 사례</a></li>
+        <li><a href="/ko/create-file-exact-size/">정확한 크기</a></li>
+        <li><a href="/ko/faq/">FAQ</a></li>
+        <li><a href="/ko/corrupt-test-files/">손상 파일</a></li>
+        <li><a href="/ko/sample-files/">샘플 파일</a></li>
+        <li><a href="/ko/test-files-in-ci/">CI의 테스트 파일</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. GNU 일반 공중 사용 허가서 버전 3에 따라 배포됩니다. 생성한 파일은 여러분의 것입니다. 라이선스는 도구에 적용되며 도구의 출력물에는 적용되지 않습니다.</p>
+    <p class="muted">이 사이트는 어디에서도 글꼴, 스크립트, 추적기를 불러오지 않습니다. 쿠키도 설정하지 않습니다.</p>
+  </div>
+</footer>
+</body>
+</html>

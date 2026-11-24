@@ -1,0 +1,83 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>解压前检查压缩包，并核对校验和</h1>
+<p class="lead">
+  除了生成器，<code>tfg</code> 还带有处理现有文件的小工具：压缩包能否安全解压，以及一个文件或整个文件夹是否仍与它的校验和一致。它们在你的机器上运行，不上传文件，也不需要账号。
+</p>
+
+<div class="note">
+  <p class="note-title">简短回答</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> 读取压缩包而不解压任何内容，安全时以代码 0 结束，否则以代码 7 结束并列出发现的问题。<code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> 告诉你文件是否与下载页面给出的校验和一致。
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">有什么</p>
+  <h2>有哪些工具？</h2>
+  <p>
+    这是程序打印出的列表，在构建本页时从程序中读取。<code>tfg tool list</code> 打印同样的内容，<code>tfg tool show &lt;id&gt;</code> 说明其中某个工具接受什么设置。每个工具也都在桌面窗口的工具界面中，设置相同。
+  </p>
+  {{ template "toolsTable" . }}
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">压缩包</p>
+  <h2>这个压缩包可以安全解压吗？zip slip 与 zip 炸弹</h2>
+  <p>
+    <code>archive-scan</code> 在不向磁盘写入任何内容的情况下查看 ZIP、TAR、TAR.GZ 或 gzip 文件，并说明解压它是否安全。它会报告：
+  </p>
+  <ul>
+    <li>会被写到文件夹之外的条目，也就是称为 zip slip 的陷阱</li>
+    <li>链接、设备，或会落到同一个文件上的两个名字</li>
+    <li>系统无法写入的名字</li>
+    <li>被构造成解压时会爆炸式膨胀的条目，也就是称为 zip 炸弹的陷阱</li>
+    <li>已损坏的条目</li>
+  </ul>
+  <p>
+    压缩包中的压缩包，例如 ZIP 中的 ZIP 或 TAR 中的 DOCX，也以同样方式在内存中读取，最深 16 层。其中任何一个里的陷阱就是整个压缩包的陷阱，因为解压全部内容的程序也会解压它们。
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> 还会报告解压后超过你允许大小的压缩包。安全时以代码 0 结束，发现任何问题时以代码 7 结束，所以流水线可以据此停下。
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">单个文件</p>
+  <h2>这个文件就是它声称的那个文件吗？</h2>
+  <p>
+    <code>checksum</code> 计算文件的校验和，如果给它一个用来比较的值，它会告诉你两者是否一致。它支持 md5、sha1、sha256、sha512 和 crc32，不指定时使用 sha256，并根据给定值的长度判断它是哪一种。
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    校验和不一致时以代码 7 结束。它回答的问题与 Windows 上的 <code>Get-FileHash</code> 或 Linux 上的 <code>sha256sum</code> 相同，只是比较也替你做好了。
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">整个文件夹</p>
+  <h2>这个文件夹里有东西变了吗？</h2>
+  <p>
+    <code>checksum-write</code> 把文件夹中每个文件的校验和写入它们旁边的 SHA256SUMS，字节与 <code>sha256sum</code> 写出的相同，并且绝不覆盖已有的 SHA256SUMS。<code>checksum-check</code> 之后会检查 SHA256SUMS 列出的每个文件。
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    它没有列出的文件不会被检查，这与 <code>sha256sum -c</code> 相同。离开该文件夹的路径会被拒绝，而不是被读取。<a href="/zh-hans/sample-files/">示例文件</a>附带一个可以这样检查的 SHA256SUMS。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">接下来</p>
+  <h2>从这里去哪里</h2>
+  <ul>
+    <li>
+      <a href="/zh-hans/file-upload-test-cases/">文件上传测试用例</a>把压缩包检查与上传的其他用例放在一起。
+    </li>
+    <li>
+      <a href="/zh-hans/docs/">文档</a>包含每条命令和每个退出码。
+    </li>
+  </ul>
+</section>

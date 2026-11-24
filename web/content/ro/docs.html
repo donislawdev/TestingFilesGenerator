@@ -9,6 +9,11 @@
   <h2>Ce comenzi există?</h2>
   <p>Fiecare face un singur lucru:</p>
   {{ template "commandList" . }}
+  <p>
+    <code>tfg tool</code> cuprinde instrumentele pentru fișiere pe care le ai deja, de exemplu verificarea
+    unei arhive înainte de dezarhivare. <a href="/ro/instrumente/">Instrumente</a> descrie fiecare dintre
+    ele.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -50,8 +55,8 @@
     răspunde la a treia - se deschide oare fișierul. Fișierul este produs normal și apoi stricat,
     deci are în continuare dimensiunea cerută.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Setările se pun după două puncte. Opțiunea se repetă, iar ordinea în care le scrii este ordinea în
     care se aplică. <code>tfg damage</code> listează ce poate face această versiune și ce acceptă

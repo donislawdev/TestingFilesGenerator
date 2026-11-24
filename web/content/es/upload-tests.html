@@ -1,0 +1,161 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Casos de prueba de subida de archivos, con los archivos para ejecutarlos</h1>
+<p class="lead">
+  Una lista de comprobación de casos de prueba para la subida de archivos, desde el límite de tamaño
+  hasta un nombre de archivo que intenta salir de su carpeta. Cada caso indica el archivo que lo prueba
+  y lo que tu sistema debe hacer con él, así que la lista se puede ejecutar y no solo leer.
+</p>
+
+<div class="note">
+  <p class="note-title">Toda la lista con un solo comando</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    escribe un archivo para casi todos los casos de abajo, con un manifiesto que dice qué debe pasar con
+    cada uno. Pon el límite y los tipos que declara tu formulario.
+  </p>
+</div>
+
+<p>
+  <code>accept</code> significa que tu sistema debe aceptar el archivo y <code>reject</code> que debe
+  rechazarlo con un mensaje claro. <code>unspecified</code> significa que cualquiera de las dos
+  respuestas puede ser correcta, así que anota cuál elige tu sistema y comprueba que lo hace siempre. La
+  palabra que sigue al resultado es el motivo que da el manifiesto.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">Tamaño</p>
+  <h2>¿Se aplica el límite de tamaño donde se declara?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caso de prueba</th><th>Archivo</th><th>Esperado</th></tr></thead>
+    <tbody>
+      <tr><td>Un byte por debajo del límite</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Justo en el límite</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Un byte por encima del límite</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>El doble del límite, para ver que el servidor deja de leer pronto en lugar de cargarlo todo en memoria</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Un archivo vacío de 0 bytes</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Los dos fallos más habituales de un límite son un límite comprobado solo en el navegador y un límite
+    contado en MB donde el código cuenta MiB. El
+    <a href="/es/presets/size-boundaries/">preset size-boundaries</a> pone un archivo a cada distancia del
+    límite que elijas, un byte, un kilobyte y un megabyte a cada lado.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">Tipo</p>
+  <h2>¿Acepta el formulario los tipos que debe y rechaza el resto?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caso de prueba</th><th>Archivo</th><th>Esperado</th></tr></thead>
+    <tbody>
+      <tr><td>Cada tipo que acepta el formulario, como un archivo real de ese tipo</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Un tipo que el formulario no acepta</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Una extensión de un tipo con contenido de otro, como un PDF llamado .jpg</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>Dos extensiones, la última no permitida</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Ninguna extensión</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>La extensión en mayúsculas</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Un SVG o un HTML tomado por una imagen o por texto plano es una forma de colar un script por un
+    formulario, y por eso están en la lista de tipos que rechazar, salvo que tu formulario quiera
+    aceptarlos.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">Contenido</p>
+  <h2>¿Abre el sistema el archivo o solo mira su nombre?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caso de prueba</th><th>Archivo</th><th>Esperado</th></tr></thead>
+    <tbody>
+      <tr><td>Un archivo cortado, como lo deja una subida interrumpida</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Un archivo cuyos primeros bytes son ceros, así que nada dice qué es</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>El archivo más pequeño que permite un formato, válido y diminuto</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Un archivo que solo tiene el nombre correcto y el tamaño correcto pasa cualquier comprobación que no
+    lo abre. Los <a href="/es/archivos-de-ejemplo/#corrupt">archivos de ejemplo corruptos</a> están en
+    PDF, Word, Excel, PowerPoint, JPG, PNG, MP4 y ZIP, y
+    <a href="/es/archivos-de-prueba-corruptos/">archivos de prueba corruptos</a> explica cómo crearlos en
+    cualquier formato y de cualquier tamaño.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">Nombre</p>
+  <h2>¿Vuelve el archivo con el nombre que se le dio?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caso de prueba</th><th>Archivo</th><th>Esperado</th></tr></thead>
+    <tbody>
+      <tr><td>Espacios y paréntesis</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Letras fuera de ASCII y un emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>Un nombre de más de 200 caracteres</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>Un nombre que sale de su carpeta, <code>../</code> o <code>..\</code></td><td><code>climbing_name.jpg</code>, subido como <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Una ruta absoluta, de Linux o de Windows</td><td><code>absolute_name.jpg</code>, subido como <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Un nombre con una ruta no se puede guardar en un disco, así que el archivo lleva un nombre simple y el
+    manifiesto dice con qué nombre subirlo. Aceptar el archivo y quedarse solo con la última parte del
+    nombre es una buena respuesta. Escribirlo fuera de la carpeta de subida es el defecto que este caso
+    existe para encontrar. El <a href="/es/presets/filename-handling/">preset filename-handling</a> tiene
+    muchos más nombres: letras que se confunden con otras, caracteres invisibles, nombres reservados por
+    Windows y longitudes contadas en bytes.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">Volumen y archivos comprimidos</p>
+  <h2>¿Qué pasa con muchos archivos, o con un archivo que contiene muchos?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Caso de prueba</th><th>Archivo</th><th>Esperado</th></tr></thead>
+    <tbody>
+      <tr><td>Cincuenta archivos en una sola subida</td><td>de <code>bulk_0001.jpg</code> a <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Un ZIP que de verdad contiene 200 documentos</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Un archivo comprimido que tu sistema descomprime, revisado antes en busca de zip slip y zip bombs</td><td><code>tfg tool archive-scan upload.zip</code></td><td>seguro, o lo que ha encontrado</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> fija cuántos archivos contiene la subida masiva, hasta diez mil.
+    <a href="/es/herramientas/">Herramientas</a> explica qué busca la comprobación de archivos comprimidos.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">En una prueba</p>
+  <h2>Ejecutar la lista como una prueba</h2>
+  <p>
+    El manifiesto guarda el resultado esperado de cada archivo y el nombre con el que subirlo, así que un
+    solo bucle recorre toda la lista:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    Los archivos marcados como <code>unspecified</code> se omiten aquí, porque su respuesta es tu propia
+    política. Decídela, escríbela en la receta con <code>expected</code> y el bucle también los comprueba.
+    <a href="/es/archivos-de-prueba-en-ci/">Archivos de prueba en CI</a> ejecuta esto en un pipeline.
+  </p>
+</section>

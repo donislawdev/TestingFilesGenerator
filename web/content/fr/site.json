@@ -61,11 +61,34 @@
       "description": "Un fichier cassé volontairement, à la taille exacte, avec un manifeste disant que votre système doit le rejeter. Pour tester la validation d'envoi et les parseurs."
     },
     {
+      "key": "samples",
+      "slug": "fichiers-d-exemple",
+      "nav": "Fichiers d'exemple",
+      "title": "Fichiers de test à télécharger - exemples PDF, CSV, DOCX",
+      "description": "Fichiers de test et d'exemple à télécharger : chaque format à 1 Mo, PDF, Word et Excel corrompus, tableaux CSV et images de substitution, avec leur SHA-256."
+    },
+    {
       "key": "ci",
       "slug": "fichiers-de-test-en-ci",
       "nav": "Fichiers de test en CI",
       "title": "Fichiers de test en CI - GitHub Actions, GitLab CI et PowerShell",
       "description": "Générez des fichiers de test dans le pipeline plutôt que de commiter des binaires : workflow GitHub Actions, job GitLab, codes de sortie et piège PowerShell."
+    },
+    {
+      "key": "upload-tests",
+      "slug": "cas-de-test-envoi-de-fichiers",
+      "nav": "Cas de test d'envoi",
+      "title": "Cas de test pour l'envoi de fichiers - avec les fichiers",
+      "description": "Cas de test d'envoi (upload) de fichiers : limite de taille, fichiers vides et corrompus, mauvais type, noms inattendus et archives, chacun avec son fichier.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "outils",
+      "nav": "Outils",
+      "title": "Vérifier un ZIP avant décompression et les sommes SHA-256",
+      "description": "Outils hors ligne pour vos fichiers : savoir si une archive se décompresse sans danger, zip slip et bombe zip compris, et vérifier ou écrire des sommes SHA-256.",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "Dommage",
     "colEffect": "Ce qu'il fait aux octets",
     "colSettings": "Réglages",
-    "noSettings": "aucun"
+    "noSettings": "aucun",
+    "colFile": "Fichier",
+    "colSize": "Taille",
+    "colSha256": "SHA-256",
+    "colExpected": "Attendu",
+    "colTool": "Outil",
+    "colQuestion": "La question à laquelle il répond"
   },
   "endings": {
     "0": "Tout a fonctionné.",
@@ -224,8 +253,8 @@
     "picture-sizes": {
       "question": "Mon système accepte-t-il les images aux tailles qu'utilisent les écrans et les plateformes ?",
       "title": "Tailles d'image",
-      "pageTitle": "Images de test aux tailles courantes - écrans, avatars, réseaux sociaux",
-      "description": "Des images aux tailles des écrans HD, Full HD, QHD et 4K, des photos de profil, et des couvertures, publications et miniatures que demandent les réseaux sociaux, chacune aussi petite que possible.",
+      "pageTitle": "Images de test aux tailles courantes - écrans et réseaux",
+      "description": "Des images aux tailles des écrans HD, Full HD, QHD et 4K, des photos de profil, et des couvertures, publications et miniatures que demandent les réseaux sociaux.",
       "catches": [
         "une limite de largeur ou de hauteur pensée pour une forme qui en refuse une autre, comme un arrière-plan de profil de 1584 px de large",
         "une miniature coupée ou écrasée parce que le code attend une image en paysage et qu'une image en portrait arrive",
@@ -351,5 +380,11 @@
       "q": "Pourquoi une exécution sur des milliers de fichiers est-elle plus lente sous Windows ?",
       "a": "Parce que Windows facture plus cher chaque chemin qu'il examine, et une commande qui parcourt des milliers de fichiers examine des milliers de chemins. Mesuré sur une machine avec 3000 fichiers de 1 ko, verify prend environ 0,9 seconde sous Windows et environ 0,2 seconde sous Linux dans un conteneur. Un chemin de sortie plus court réduit le chiffre de Windows, car chaque dossier au-dessus des fichiers fait partie de ce qui est examiné."
     }
-  ]
+  ],
+  "tools": {
+    "archive-scan": "Cette archive se décompresse-t-elle sans danger ?",
+    "checksum": "Ce fichier est-il bien celui qu'il prétend être ?",
+    "checksum-check": "Chaque fichier est-il toujours ce que dit son fichier de sommes de contrôle ?",
+    "checksum-write": "Comment saurai-je plus tard qu'aucun de ces fichiers n'a changé ?"
+  }
 }

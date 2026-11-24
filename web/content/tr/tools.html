@@ -1,0 +1,104 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Bir arşivi açmadan önce denetleme ve sağlama toplamlarını doğrulama</h1>
+<p class="lead">
+  Oluşturucunun yanında <code>tfg</code>, elinizdeki dosyalar için küçük araçlar da içerir: bir arşivi
+  açmanın güvenli olup olmadığı ve bir dosyanın ya da bütün bir klasörün hâlâ sağlama toplamının
+  söylediği gibi olup olmadığı. Kendi makinenizde, hiçbir şey yüklemeden ve hesap olmadan çalışırlar.
+</p>
+
+<div class="note">
+  <p class="note-title">Kısa yanıt</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> arşivi hiçbir şey çıkarmadan okur. Güvenliyse 0
+    koduyla, değilse bulduklarının listesiyle birlikte 7 koduyla biter.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> bir dosyanın, bir indirme sayfasının
+    verdiği toplamla eşleşip eşleşmediğini söyler.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">Neler var</p>
+  <h2>Hangi araçlar var?</h2>
+  <p>
+    Bu, programın yazdırdığı listedir ve bu sayfa oluşturulurken programdan okunur.
+    <code>tfg tool list</code> aynısını yazdırır, <code>tfg tool show &lt;id&gt;</code> ise birinin neyi
+    kabul ettiğini söyler. Her araç, aynı ayarlarla pencerenin Tools ekranında da bulunur.
+  </p>
+  {{ template "toolsTable" . }}
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Arşivler</p>
+  <h2>Bu arşivi açmak güvenli mi? Zip slip ve zip bomb</h2>
+  <p>
+    <code>archive-scan</code> bir ZIP, TAR, TAR.GZ veya gzip dosyasının içine diske hiçbir şey yazmadan
+    bakar ve onu açmanın güvenli olup olmadığını söyler. Şunları bildirir:
+  </p>
+  <ul>
+    <li>klasörün dışına yazılacak bir girdi, zip slip olarak bilinen tuzak</li>
+    <li>bir bağlantı, bir aygıt ya da aynı dosyaya düşecek iki ad</li>
+    <li>bir sistemin yazamayacağı bir ad</li>
+    <li>açıldığında patlamak üzere kurulmuş bir girdi, zip bomb olarak bilinen tuzak</li>
+    <li>hasarlı bir girdi</li>
+  </ul>
+  <p>
+    Arşivin içindeki arşivler, örneğin ZIP içinde bir ZIP ya da TAR içinde bir DOCX, aynı şekilde,
+    bellekte, 16 düzey derinliğe kadar okunur. Bunlardan birindeki tuzak bütünün tuzağıdır, çünkü her şeyi
+    açan bir program onları da açar.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code>, açıldığında izin verdiğinizden fazla yer kaplayan bir arşivi de
+    bildirir. Güvenli bir arşiv 0 koduyla, bir şey bulunan arşiv 7 koduyla biter. Böylece bir hat orada
+    durabilir.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Tek dosya</p>
+  <h2>Bu dosya, olduğunu söylediği dosya mı?</h2>
+  <p>
+    <code>checksum</code> bir dosyanın sağlama toplamını hesaplar ve karşılaştırmak için bir toplam
+    verirseniz eşleşip eşleşmediklerini söyler. md5, sha1, sha256, sha512 ve crc32 kabul eder, siz başka
+    birini istemezseniz sha256 kullanır ve verdiğiniz toplamın hangisi olduğunu uzunluğundan anlar.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    Eşleşmeyen bir toplam 7 koduyla biter. Windows'ta <code>Get-FileHash</code> ya da Linux'ta
+    <code>sha256sum</code> ile aynı soruyu yanıtlar, ama karşılaştırmayı sizin yerinize yapar.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Bütün bir klasör</p>
+  <h2>Bu klasörde bir şey değişti mi?</h2>
+  <p>
+    <code>checksum-write</code> bir klasördeki her dosyanın sağlama toplamını, dosyaların yanındaki bir
+    SHA256SUMS dosyasına <code>sha256sum</code> ile aynı baytlarla yazar ve zaten var olan bir dosyanın
+    üzerine asla yazmaz. <code>checksum-check</code> daha sonra SHA256SUMS dosyasının listelediği her
+    dosyayı denetler.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    Listelemediği dosyalara bakılmaz, tıpkı <code>sha256sum -c</code> gibi. Klasörün dışına çıkan bir yol
+    da okunmak yerine reddedilir. <a href="/tr/ornek-dosyalar/">Örnek dosyalar</a>, bu şekilde
+    denetleyebileceğiniz bir SHA256SUMS ile gelir.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Sonraki</p>
+  <h2>Buradan nereye gidilir</h2>
+  <ul>
+    <li>
+      <a href="/tr/dosya-yukleme-test-senaryolari/">Dosya yükleme test senaryoları</a>, arşiv denetimini
+      bir yüklemenin diğer senaryolarının arasına koyar.
+    </li>
+    <li>
+      <a href="/tr/dokumantasyon/">Dokümantasyon</a> her komutu ve her çıkış kodunu içerir.
+    </li>
+  </ul>
+</section>

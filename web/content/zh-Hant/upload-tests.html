@@ -1,0 +1,136 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>檔案上傳測試案例，附上執行它們的檔案</h1>
+<p class="lead">
+  一份檔案上傳測試案例的檢查表，從大小限制到試圖離開所在資料夾的檔名。每個案例都寫明測試它的檔案，以及你的系統應如何處理該檔案，所以這份列表不只能讀，還能直接執行。
+</p>
+
+<div class="note">
+  <p class="note-title">一道指令產生整份列表</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code> 會為下面幾乎每個案例寫出一個檔案，並附上一份清單，說明每個檔案應該得到什麼結果。把限制和類型換成你的表單宣告的值。
+  </p>
+</div>
+
+<p>
+  <code>accept</code> 表示你的系統應該接受該檔案，<code>reject</code> 表示應該拒絕它並給出清楚的訊息。<code>unspecified</code> 表示兩種答案都可能正確，所以請寫下你的系統採用哪一種，並檢查它每次都這樣做。結果後面的詞是清單給出的原因。
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">大小</p>
+  <h2>大小限制是否在宣告的位置生效？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>測試案例</th><th>檔案</th><th>預期</th></tr></thead>
+    <tbody>
+      <tr><td>比限制小一個位元組</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>恰好等於限制</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>比限制大一個位元組</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>限制的兩倍，用來確認伺服器會提早停止讀取，而不是全部讀進記憶體</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>0 位元組的空檔案</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    限制最常出錯的兩種情況是：只在瀏覽器中檢查的限制，以及以 MB 宣告、程式碼卻以 MiB 計算的限制。<a href="/zh-hant/presets/size-boundaries/">size-boundaries 預設集</a>會在你選定的限制周圍的每個距離上各放一個檔案，即兩側各相差一個位元組、一個千位元組和一個百萬位元組。
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">類型</p>
+  <h2>表單是否接受該接受的類型，並拒絕其餘類型？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>測試案例</th><th>檔案</th><th>預期</th></tr></thead>
+    <tbody>
+      <tr><td>表單接受的每種類型，各用一個該類型的真實檔案</td><td><code>allowed_jpg.jpg</code>、<code>allowed_png.png</code>、<code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>表單不接受的類型</td><td><code>denied.svg</code>、<code>denied.html</code>、<code>denied.exe</code>、<code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>副檔名是一種類型，內容卻是另一種，例如命名為 .jpg 的 PDF</td><td><code>pdf_as_jpg.jpg</code>、<code>png_as_pdf.pdf</code>、<code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>兩個副檔名，最後一個不被允許</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>完全沒有副檔名</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>大寫的副檔名</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    被當作圖片或純文字接受的 SVG 或 HTML 檔案，是讓指令碼繞過表單的一種辦法。所以除非你的表單本來就要接受它們，否則它們都在應拒絕的類型列表中。
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">內容</p>
+  <h2>系統是開啟檔案，還是只看檔名？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>測試案例</th><th>檔案</th><th>預期</th></tr></thead>
+    <tbody>
+      <tr><td>被截短的檔案，就像中斷的上傳留下的那樣</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>開頭位元組是零的檔案，因此沒有任何資訊說明它是什麼</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>格式允許的最小檔案，合法且極小</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    一個只有名稱和大小正確的檔案，能通過所有不開啟它的檢查。<a href="/zh-hant/sample-files/#corrupt">損毀的範例檔案</a>有 PDF、Word、Excel、PowerPoint、JPG、PNG、MP4 和 ZIP 格式，<a href="/zh-hant/corrupt-test-files/">損毀的測試檔案</a>說明如何以任意格式、任意大小製作它們。
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">檔名</p>
+  <h2>檔案取回時還是原來的名稱嗎？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>測試案例</th><th>檔案</th><th>預期</th></tr></thead>
+    <tbody>
+      <tr><td>空格和括號</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>非 ASCII 字母和 emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>超過 200 個字元的檔名</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>用 <code>../</code> 或 <code>..\</code> 跳出所在資料夾的檔名</td><td><code>climbing_name.jpg</code>，以 <code>../tfg_climbed_out.jpg</code> 的名稱上傳</td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Linux 或 Windows 上的絕對路徑</td><td><code>absolute_name.jpg</code>，以 <code>/tmp/tfg_climbed_out.jpg</code> 的名稱上傳</td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    帶有路徑的名稱無法儲存到磁碟上，所以檔案本身用普通的名稱，清單會說明上傳時用什麼名稱。接受檔案並只保留名稱的最後一部分，是好的處理方式。把它寫到上傳資料夾之外，正是這個案例要找出的缺陷。<a href="/zh-hant/presets/filename-handling/">filename-handling 預設集</a>還有更多檔名：形似的字母、不可見字元、Windows 保留的名稱，以及以位元組計算的長度。
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">數量與壓縮檔</p>
+  <h2>檔案很多，或一個檔案裡裝著很多檔案時，會發生什麼？</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>測試案例</th><th>檔案</th><th>預期</th></tr></thead>
+    <tbody>
+      <tr><td>一次上傳 50 個檔案</td><td><code>bulk_0001.jpg</code> 到 <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>真正包含 200 份文件的 ZIP</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>你的系統會解壓縮的壓縮檔，先檢查 zip slip 和 zip 炸彈</td><td><code>tfg tool archive-scan upload.zip</code></td><td>安全，或列出發現的問題</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> 設定大量上傳包含多少個檔案，最多一萬個。<a href="/zh-hant/tools/">工具</a>說明壓縮檔檢查會尋找什麼。
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">在測試中</p>
+  <h2>把列表當作測試執行</h2>
+  <p>
+    清單包含每個檔案的預期結果和上傳時使用的名稱，所以一個迴圈就能跑完整份列表：
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    標為 <code>unspecified</code> 的檔案在這裡被略過，因為它們的答案取決於你自己的策略。決定策略，用 <code>expected</code> 寫進配方，迴圈就會一併檢查它們。<a href="/zh-hant/test-files-in-ci/">CI 中的測試檔案</a>會在流程中執行這段程式碼。
+  </p>
+</section>

@@ -3636,8 +3636,8 @@
   },
   "Tool.checksum-write.Question": {
     "description": "The question the checksum-write tool answers - its name in the list of tools and the title over it.",
-    "hash": "sha256-3d55c8d03d3a",
-    "other": "How will I know later that nothing in this folder changed?"
+    "hash": "sha256-c18c47d5b2fe",
+    "other": "How will I know later that none of these files changed?"
   },
   "Tool.checksum.Detail": {
     "description": "One sentence under the question of the checksum tool, saying what it does.",

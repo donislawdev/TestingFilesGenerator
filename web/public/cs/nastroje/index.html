@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="cs">
+<title>Kontrola ZIP před rozbalením a ověření součtů SHA-256</title>
+<meta name="description" content="Offline nástroje pro soubory, které už máte: zda je bezpečné rozbalit archiv, včetně zip slip a zip bomb, a kontrola nebo zápis kontrolních součtů SHA-256.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/cs/nastroje/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/tools/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/nastroje/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/werkzeuge/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/herramientas/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/outils/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/tools/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/alat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/strumenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/tools/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/tools/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/hulpmiddelen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/narzedzia/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/ferramentas/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/instrumente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/tools/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/tools/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/araclar/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/tools/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/cong-cu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/tools/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/tools/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="cs_CZ">
+<meta property="og:title" content="Kontrola ZIP před rozbalením a ověření součtů SHA-256">
+<meta property="og:description" content="Offline nástroje pro soubory, které už máte: zda je bezpečné rozbalit archiv, včetně zip slip a zip bomb, a kontrola nebo zápis kontrolních součtů SHA-256.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/cs/nastroje/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ar_AR">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Kontrola ZIP před rozbalením a ověření součtů SHA-256">
+<meta name="twitter:description" content="Offline nástroje pro soubory, které už máte: zda je bezpečné rozbalit archiv, včetně zip slip a zip bomb, a kontrola nebo zápis kontrolních součtů SHA-256.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - skutečné testovací soubory v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Úvod",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/cs/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Dokumentace",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/cs\/dokumentace\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Nástroje",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/cs\/nastroje\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Přejít na obsah</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/cs/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="Hlavní">
+      <a href="/cs/">Úvod</a>
+      <a href="/cs/formaty/">Formáty</a>
+      <a href="/cs/predvolby/">Předvolby</a>
+      <a href="/cs/dokumentace/" aria-current="true">Dokumentace</a>
+      <a href="/cs/pripady-pouziti/">Případy použití</a>
+      <a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a>
+      <a href="/cs/faq/">FAQ</a>
+      <a href="/cs/poskozene-testovaci-soubory/">Poškozené soubory</a>
+      <a href="/cs/ukazkove-soubory/">Ukázkové soubory</a>
+      <a href="/cs/testovaci-soubory-v-ci/">Testovací soubory v CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="Jazyk: Čeština">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>Čeština</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/tools/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/ar/tools/" hreflang="ar" lang="ar" rel="alternate">العربية</a></li>
+        <li><a href="/de/werkzeuge/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/herramientas/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/outils/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/tools/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/alat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/strumenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/tools/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/tools/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/hulpmiddelen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/narzedzia/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/ferramentas/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/instrumente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/tools/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/tools/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/araclar/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/tools/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/cong-cu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/tools/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/tools/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/cs/dokumentace/">Dokumentace</a></p>
+<h1>Kontrola archivu před rozbalením a ověření kontrolních součtů</h1>
+<p class="lead">
+  Vedle generátoru má <code>tfg</code> drobné nástroje pro soubory, které už máte: zda je bezpečné
+  archiv rozbalit a zda soubor nebo celá složka stále odpovídá svému kontrolnímu součtu. Běží na vašem
+  počítači, bez nahrávání a bez účtu.
+</p>
+
+<div class="note">
+  <p class="note-title">Stručná odpověď</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> přečte archiv, aniž by cokoli rozbalil, a skončí
+    kódem 0, když je bezpečný, nebo kódem 7 se seznamem toho, co našel.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> řekne, zda soubor odpovídá součtu,
+    který vám dala stránka ke stažení.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">Co je k dispozici</p>
+  <h2>Jaké nástroje existují?</h2>
+  <p>
+    Toto je seznam, který program vypisuje, načtený z něj při sestavení této stránky.
+    <code>tfg tool list</code> vypíše totéž a <code>tfg tool show &lt;id&gt;</code> řekne, co který
+    z nich přijímá. Každý nástroj je také na obrazovce Tools v okně programu, se stejnými nastaveními.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>Nástroj</th>
+      <th>Na co odpovídá</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>archive-scan</code></td>
+      <td>Je bezpečné tento archiv rozbalit?</td>
+    </tr>
+    <tr>
+      <td><code>checksum</code></td>
+      <td>Je tento soubor tím, za který se vydává?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-check</code></td>
+      <td>Odpovídá každý soubor stále tomu, co uvádí jeho soubor kontrolních součtů?</td>
+    </tr>
+    <tr>
+      <td><code>checksum-write</code></td>
+      <td>Jak později poznám, že se žádný z těchto souborů nezměnil?</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Archivy</p>
+  <h2>Je bezpečné tento archiv rozbalit? Zip slip a zip bomby</h2>
+  <p>
+    <code>archive-scan</code> nahlédne do souboru ZIP, TAR, TAR.GZ nebo gzip, aniž by cokoli zapsal
+    na disk, a řekne, zda je jeho rozbalení bezpečné. Hlásí:
+  </p>
+  <ul>
+    <li>položku, která by se zapsala mimo složku, past známou jako zip slip</li>
+    <li>odkaz, zařízení nebo dva názvy, které by skončily v jednom souboru</li>
+    <li>název, který systém nedokáže zapsat</li>
+    <li>položku sestavenou tak, aby při rozbalení explodovala, past známou jako zip bomba</li>
+    <li>poškozenou položku</li>
+  </ul>
+  <p>
+    Archivy uvnitř archivu, například ZIP v ZIPu nebo DOCX v TARu, se čtou stejně, v paměti, až do
+    hloubky 16 úrovní. Past v jednom z nich je pastí celku, protože program, který rozbaluje všechno,
+    rozbalí i je.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> nahlásí také archiv, který se rozbalí na víc, než dovolíte. Bezpečný
+    archiv skončí kódem 0 a jakýkoli nález kódem 7, takže se na něm pipeline může zastavit.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Jeden soubor</p>
+  <h2>Je tento soubor tím, za který se vydává?</h2>
+  <p>
+    <code>checksum</code> spočítá kontrolní součet souboru, a když dostane součet k porovnání, řekne,
+    zda se shodují. Umí md5, sha1, sha256, sha512 a crc32, výchozí je sha256, a podle délky pozná,
+    který z nich jste dostali.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    Součet, který nesouhlasí, skončí kódem 7. Odpovídá na stejnou otázku jako <code>Get-FileHash</code>
+    ve Windows nebo <code>sha256sum</code> v Linuxu, jen porovnání udělá za vás.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Celá složka</p>
+  <h2>Změnilo se v této složce něco?</h2>
+  <p>
+    <code>checksum-write</code> zapíše kontrolní součet každého souboru ve složce do souboru SHA256SUMS
+    vedle nich, stejnými bajty, jaké zapisuje <code>sha256sum</code>, a nikdy nepřepíše soubor, který
+    už tam je. <code>checksum-check</code> později zkontroluje každý soubor, který SHA256SUMS uvádí.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    Soubory, které neuvádí, se nekontrolují, stejně jako u <code>sha256sum -c</code>, a cesta, která
+    vede mimo složku, se odmítne, místo aby se četla. <a href="/cs/ukazkove-soubory/">Ukázkové
+    soubory</a> mají SHA256SUMS, který takto můžete zkontrolovat.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Dál</p>
+  <h2>Kam jít odtud</h2>
+  <ul>
+    <li>
+      <a href="/cs/testovaci-pripady-nahravani-souboru/">Testovací případy pro nahrávání souborů</a>
+      zařazují kontrolu archivu mezi ostatní případy nahrávání.
+    </li>
+    <li>
+      <a href="/cs/dokumentace/">Dokumentace</a> obsahuje každý příkaz a návratový kód.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">Testovací soubory pro QA v přesné velikosti s manifestem, který říká, jak má váš systém na každý z nich reagovat.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Projekt</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">Zdrojový kód na GitHubu</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">Stažení</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">Nahlásit problém</a></li>
+        <li><a href="https://donislawdev.com/support/">Podpořit projekt</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">Stránky</p>
+      <ul class="plain">
+        <li><a href="/cs/">Úvod</a></li>
+        <li><a href="/cs/formaty/">Formáty</a></li>
+        <li><a href="/cs/predvolby/">Předvolby</a></li>
+        <li><a href="/cs/dokumentace/">Dokumentace</a></li>
+        <li><a href="/cs/pripady-pouziti/">Případy použití</a></li>
+        <li><a href="/cs/vytvoreni-souboru-presne-velikosti/">Přesná velikost</a></li>
+        <li><a href="/cs/faq/">FAQ</a></li>
+        <li><a href="/cs/poskozene-testovaci-soubory/">Poškozené soubory</a></li>
+        <li><a href="/cs/ukazkove-soubory/">Ukázkové soubory</a></li>
+        <li><a href="/cs/testovaci-soubory-v-ci/">Testovací soubory v CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. Vydáno pod licencí GNU General Public License, verze 3. Soubory, které vygenerujete, jsou vaše - licence se vztahuje na nástroj, ne na jeho výstup.</p>
+    <p class="muted">Tento web odnikud nenačítá písma, skripty ani sledovače. Nenastavuje cookies.</p>
+  </div>
+</footer>
+</body>
+</html>

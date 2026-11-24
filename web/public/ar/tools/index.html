@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="ar">
+<title>افحص ZIP قبل فك ضغطه وتحقق من مجاميع SHA-256</title>
+<meta name="description" content="أدوات تعمل دون اتصال للملفات الموجودة لديك: اعرف هل فك ضغط أرشيف ما آمن، بما في ذلك zip slip وzip bomb، وافحص المجاميع الاختبارية SHA-256 أو اكتبها.">
+<link rel="canonical" href="https://testingfilesgenerator.donislawdev.com/ar/tools/">
+<link rel="alternate" hreflang="en" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<link rel="alternate" hreflang="ar" href="https://testingfilesgenerator.donislawdev.com/ar/tools/">
+<link rel="alternate" hreflang="cs" href="https://testingfilesgenerator.donislawdev.com/cs/nastroje/">
+<link rel="alternate" hreflang="de" href="https://testingfilesgenerator.donislawdev.com/de/werkzeuge/">
+<link rel="alternate" hreflang="es" href="https://testingfilesgenerator.donislawdev.com/es/herramientas/">
+<link rel="alternate" hreflang="fr" href="https://testingfilesgenerator.donislawdev.com/fr/outils/">
+<link rel="alternate" hreflang="hi" href="https://testingfilesgenerator.donislawdev.com/hi/tools/">
+<link rel="alternate" hreflang="id" href="https://testingfilesgenerator.donislawdev.com/id/alat/">
+<link rel="alternate" hreflang="it" href="https://testingfilesgenerator.donislawdev.com/it/strumenti/">
+<link rel="alternate" hreflang="ja" href="https://testingfilesgenerator.donislawdev.com/ja/tools/">
+<link rel="alternate" hreflang="ko" href="https://testingfilesgenerator.donislawdev.com/ko/tools/">
+<link rel="alternate" hreflang="nl" href="https://testingfilesgenerator.donislawdev.com/nl/hulpmiddelen/">
+<link rel="alternate" hreflang="pl" href="https://testingfilesgenerator.donislawdev.com/pl/narzedzia/">
+<link rel="alternate" hreflang="pt-BR" href="https://testingfilesgenerator.donislawdev.com/pt-br/ferramentas/">
+<link rel="alternate" hreflang="ro" href="https://testingfilesgenerator.donislawdev.com/ro/instrumente/">
+<link rel="alternate" hreflang="ru" href="https://testingfilesgenerator.donislawdev.com/ru/tools/">
+<link rel="alternate" hreflang="th" href="https://testingfilesgenerator.donislawdev.com/th/tools/">
+<link rel="alternate" hreflang="tr" href="https://testingfilesgenerator.donislawdev.com/tr/araclar/">
+<link rel="alternate" hreflang="uk" href="https://testingfilesgenerator.donislawdev.com/uk/tools/">
+<link rel="alternate" hreflang="vi" href="https://testingfilesgenerator.donislawdev.com/vi/cong-cu/">
+<link rel="alternate" hreflang="zh-Hans" href="https://testingfilesgenerator.donislawdev.com/zh-hans/tools/">
+<link rel="alternate" hreflang="zh-Hant" href="https://testingfilesgenerator.donislawdev.com/zh-hant/tools/">
+<link rel="alternate" hreflang="x-default" href="https://testingfilesgenerator.donislawdev.com/tools/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Testing Files Generator">
+<meta property="og:locale" content="ar_AR">
+<meta property="og:title" content="افحص ZIP قبل فك ضغطه وتحقق من مجاميع SHA-256">
+<meta property="og:description" content="أدوات تعمل دون اتصال للملفات الموجودة لديك: اعرف هل فك ضغط أرشيف ما آمن، بما في ذلك zip slip وzip bomb، وافحص المجاميع الاختبارية SHA-256 أو اكتبها.">
+<meta property="og:url" content="https://testingfilesgenerator.donislawdev.com/ar/tools/">
+<meta property="og:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Testing Files Generator - ملفات اختبار حقيقية بحجم دقيق، مع بيان يحدد كيف يجب أن يتفاعل نظامك مع كل ملف">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="hi_IN">
+<meta property="og:locale:alternate" content="id_ID">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="nl_NL">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ro_RO">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="th_TH">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+<meta property="og:locale:alternate" content="zh_CN">
+<meta property="og:locale:alternate" content="zh_TW">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="افحص ZIP قبل فك ضغطه وتحقق من مجاميع SHA-256">
+<meta name="twitter:description" content="أدوات تعمل دون اتصال للملفات الموجودة لديك: اعرف هل فك ضغط أرشيف ما آمن، بما في ذلك zip slip وzip bomb، وافحص المجاميع الاختبارية SHA-256 أو اكتبها.">
+<meta name="twitter:image" content="https://testingfilesgenerator.donislawdev.com/assets/social-preview.png">
+<meta name="twitter:image:alt" content="Testing Files Generator - ملفات اختبار حقيقية بحجم دقيق، مع بيان يحدد كيف يجب أن يتفاعل نظامك مع كل ملف">
+<meta name="theme-color" content="#131417">
+<link rel="icon" href="/assets/icon.png" type="image/png">
+<link rel="apple-touch-icon" href="/assets/icon.png">
+<link rel="stylesheet" href="/assets/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "الرئيسية",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com/ar/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "التوثيق",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ar\/docs\/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "الأدوات",
+      "item": "https:\/\/testingfilesgenerator.donislawdev.com\/ar\/tools\/"
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">تخطَّ إلى المحتوى</a>
+
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="/ar/">
+      <img src="/assets/icon.png" width="28" height="28" alt="" loading="lazy">
+      <span>Testing Files Generator</span>
+    </a>
+    <nav class="mainnav" aria-label="القائمة الرئيسية">
+      <a href="/ar/">الرئيسية</a>
+      <a href="/ar/formats/">الصيغ</a>
+      <a href="/ar/presets/">الإعدادات المسبقة</a>
+      <a href="/ar/docs/" aria-current="true">التوثيق</a>
+      <a href="/ar/use-cases/">حالات الاستخدام</a>
+      <a href="/ar/create-file-exact-size/">الحجم الدقيق</a>
+      <a href="/ar/faq/">الأسئلة الشائعة</a>
+      <a href="/ar/corrupt-test-files/">ملفات تالفة</a>
+      <a href="/ar/sample-files/">ملفات نموذجية</a>
+      <a href="/ar/test-files-in-ci/">ملفات الاختبار في CI</a>
+    </nav>
+    <details class="langmenu">
+      <summary aria-label="اللغة: العربية">
+        <svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.8 4 6 4 9.5s-1.4 6.7-4 9.5c-2.6-2.8-4-6-4-9.5s1.4-6.7 4-9.5z"/></svg>
+        <span>العربية</span>
+      </summary>
+      <ul class="langlist">
+        <li><a href="/tools/" hreflang="en" lang="en" rel="alternate">English</a></li>
+        <li><a href="/cs/nastroje/" hreflang="cs" lang="cs" rel="alternate">Čeština</a></li>
+        <li><a href="/de/werkzeuge/" hreflang="de" lang="de" rel="alternate">Deutsch</a></li>
+        <li><a href="/es/herramientas/" hreflang="es" lang="es" rel="alternate">Español</a></li>
+        <li><a href="/fr/outils/" hreflang="fr" lang="fr" rel="alternate">Français</a></li>
+        <li><a href="/hi/tools/" hreflang="hi" lang="hi" rel="alternate">हिन्दी</a></li>
+        <li><a href="/id/alat/" hreflang="id" lang="id" rel="alternate">Bahasa Indonesia</a></li>
+        <li><a href="/it/strumenti/" hreflang="it" lang="it" rel="alternate">Italiano</a></li>
+        <li><a href="/ja/tools/" hreflang="ja" lang="ja" rel="alternate">日本語</a></li>
+        <li><a href="/ko/tools/" hreflang="ko" lang="ko" rel="alternate">한국어</a></li>
+        <li><a href="/nl/hulpmiddelen/" hreflang="nl" lang="nl" rel="alternate">Nederlands</a></li>
+        <li><a href="/pl/narzedzia/" hreflang="pl" lang="pl" rel="alternate">Polski</a></li>
+        <li><a href="/pt-br/ferramentas/" hreflang="pt-BR" lang="pt-BR" rel="alternate">Português (Brasil)</a></li>
+        <li><a href="/ro/instrumente/" hreflang="ro" lang="ro" rel="alternate">Română</a></li>
+        <li><a href="/ru/tools/" hreflang="ru" lang="ru" rel="alternate">Русский</a></li>
+        <li><a href="/th/tools/" hreflang="th" lang="th" rel="alternate">ไทย</a></li>
+        <li><a href="/tr/araclar/" hreflang="tr" lang="tr" rel="alternate">Türkçe</a></li>
+        <li><a href="/uk/tools/" hreflang="uk" lang="uk" rel="alternate">Українська</a></li>
+        <li><a href="/vi/cong-cu/" hreflang="vi" lang="vi" rel="alternate">Tiếng Việt</a></li>
+        <li><a href="/zh-hans/tools/" hreflang="zh-Hans" lang="zh-Hans" rel="alternate">简体中文</a></li>
+        <li><a href="/zh-hant/tools/" hreflang="zh-Hant" lang="zh-Hant" rel="alternate">繁體中文</a></li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<p class="eyebrow"><a href="/ar/docs/">التوثيق</a></p>
+<h1>افحص الأرشيف قبل فك ضغطه، وتحقق من المجاميع الاختبارية</h1>
+<p class="lead">
+  إلى جانب المولّد، في <code>tfg</code> أدوات صغيرة للملفات الموجودة لديك: هل فك ضغط أرشيف ما آمن، وهل
+  ما زال ملف أو مجلد كامل كما يقول مجموعه الاختباري. تعمل على جهازك، دون رفع أي ملف ودون حساب.
+</p>
+
+<div class="note">
+  <p class="note-title">الجواب المختصر</p>
+  <p>
+    يقرأ <code>tfg tool archive-scan download.zip</code> الأرشيف دون فك ضغط أي شيء، وينتهي بالرمز 0 حين
+    يكون آمنًا، أو بالرمز 7 مع قائمة بما وجده. ويقول
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> هل يطابق الملف المجموع الذي أعطتك
+    إياه صفحة التنزيل.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">ما المتاح</p>
+  <h2>ما الأدوات المتاحة؟</h2>
+  <p>
+    هذه هي القائمة التي يطبعها البرنامج، وتُقرأ منه عند بناء هذه الصفحة. يطبع <code>tfg tool list</code>
+    القائمة نفسها، ويبيّن <code>tfg tool show &lt;id&gt;</code> ما تقبله واحدة منها. وكل أداة موجودة
+    أيضًا في شاشة Tools في نافذة سطح المكتب، بالإعدادات نفسها.
+  </p>
+  <div class="tablewrap">
+<table class="data">
+  <thead>
+    <tr>
+      <th>الأداة</th>
+      <th>السؤال الذي تجيب عنه</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>archive-scan</code></td>
+      <td>هل فك ضغط هذا الأرشيف آمن؟</td>
+    </tr>
+    <tr>
+      <td><code>checksum</code></td>
+      <td>هل هذا الملف هو ما يدّعي أنه هو؟</td>
+    </tr>
+    <tr>
+      <td><code>checksum-check</code></td>
+      <td>هل ما زال كل ملف كما يقول ملف مجاميعه الاختبارية؟</td>
+    </tr>
+    <tr>
+      <td><code>checksum-write</code></td>
+      <td>كيف سأعرف لاحقًا أن أيًّا من هذه الملفات لم يتغيّر؟</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">الأرشيفات</p>
+  <h2>هل فك ضغط هذا الأرشيف آمن؟ zip slip وzip bomb</h2>
+  <p>
+    ينظر <code>archive-scan</code> داخل ملف ZIP أو TAR أو TAR.GZ أو gzip دون أن يكتب شيئًا على القرص،
+    ويقول هل فك ضغطه آمن. يُبلغ عن:
+  </p>
+  <ul>
+    <li>مدخل سيُكتب خارج المجلد، وهو الفخ المعروف باسم zip slip</li>
+    <li>رابط، أو جهاز، أو اسمين سيقعان على ملف واحد</li>
+    <li>اسم لا يستطيع نظام ما كتابته</li>
+    <li>مدخل مبني لينفجر عند فك الضغط، وهو الفخ المعروف باسم zip bomb</li>
+    <li>مدخل تالف</li>
+  </ul>
+  <p>
+    الأرشيفات داخل الأرشيف، مثل ZIP داخل ZIP أو DOCX داخل TAR، تُقرأ بالطريقة نفسها، في الذاكرة، حتى
+    عمق 16 مستوى. والفخ في واحد منها فخ في الأرشيف كله، لأن البرنامج الذي يفك ضغط كل شيء يفك ضغطها
+    هي أيضًا.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    ويُبلغ <code>--unpacked_limit</code> أيضًا عن أرشيف يصير بعد فك ضغطه أكبر مما تسمح به. الأرشيف
+    الآمن ينتهي بالرمز 0، وأي شيء يُعثر عليه ينتهي بالرمز 7، فيستطيع خط البناء أن يتوقف عنده.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">ملف واحد</p>
+  <h2>هل هذا الملف هو ما يدّعي أنه هو؟</h2>
+  <p>
+    يحسب <code>checksum</code> المجموع الاختباري لملف، وإذا أُعطي مجموعًا للمقارنة يقول هل يتطابقان.
+    يقبل md5 وsha1 وsha256 وsha512 وcrc32، ويستخدم sha256 ما لم تطلب غيره، ويعرف نوع المجموع الذي
+    أُعطي من طوله.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    المجموع الذي لا يطابق ينتهي بالرمز 7. يجيب عن السؤال نفسه الذي يجيب عنه <code>Get-FileHash</code>
+    على ويندوز أو <code>sha256sum</code> على لينكس، مع إجراء المقارنة نيابة عنك.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">مجلد كامل</p>
+  <h2>هل تغيّر أي شيء في هذا المجلد؟</h2>
+  <p>
+    يكتب <code>checksum-write</code> المجموع الاختباري لكل ملف في مجلد إلى SHA256SUMS بجانب الملفات،
+    بالبايتات نفسها التي يكتبها <code>sha256sum</code>، ولا يكتب أبدًا فوق ملف موجود.
+    ويفحص <code>checksum-check</code> لاحقًا كل ملف يسرده SHA256SUMS.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    الملفات التي لا يسردها لا يُنظر فيها، كما في <code>sha256sum -c</code>، والمسار الذي يخرج من المجلد
+    يُرفض بدل أن يُقرأ. <a href="/ar/sample-files/">الملفات النموذجية</a> تأتي مع SHA256SUMS يمكنك فحصه
+    بهذه الطريقة.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">التالي</p>
+  <h2>إلى أين من هنا</h2>
+  <ul>
+    <li>
+      <a href="/ar/file-upload-test-cases/">حالات اختبار رفع الملفات</a> تضع فحص الأرشيف بين حالات الرفع
+      الأخرى.
+    </li>
+    <li>
+      <a href="/ar/docs/">التوثيق</a> يضم كل أمر وكل رمز خروج.
+    </li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-col">
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="muted">ملفات اختبار لضمان الجودة بحجم دقيق، مع بيان يحدد كيف يجب أن يتفاعل نظامك مع كل ملف.</p>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">المشروع</p>
+      <ul class="plain">
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator">الشيفرة المصدرية على GitHub</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/releases">التنزيلات</a></li>
+        <li><a href="https://github.com/donislawdev/TestingFilesGenerator/issues">الإبلاغ عن مشكلة</a></li>
+        <li><a href="https://donislawdev.com/support/">ادعم المشروع</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <p class="footer-head">الصفحات</p>
+      <ul class="plain">
+        <li><a href="/ar/">الرئيسية</a></li>
+        <li><a href="/ar/formats/">الصيغ</a></li>
+        <li><a href="/ar/presets/">الإعدادات المسبقة</a></li>
+        <li><a href="/ar/docs/">التوثيق</a></li>
+        <li><a href="/ar/use-cases/">حالات الاستخدام</a></li>
+        <li><a href="/ar/create-file-exact-size/">الحجم الدقيق</a></li>
+        <li><a href="/ar/faq/">الأسئلة الشائعة</a></li>
+        <li><a href="/ar/corrupt-test-files/">ملفات تالفة</a></li>
+        <li><a href="/ar/sample-files/">ملفات نموذجية</a></li>
+        <li><a href="/ar/test-files-in-ci/">ملفات الاختبار في CI</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap footer-legal">
+    <p class="muted">Copyright (C) 2026 DonislawDev. مُصدَر بموجب رخصة جنو العمومية العامة، الإصدار 3. الملفات التي تولّدها ملكك، فالرخصة تشمل الأداة لا مخرجاتها.</p>
+    <p class="muted">لا يحمّل هذا الموقع خطوطًا ولا سكربتات ولا متتبعات من أي مكان. ولا يضبط ملفات تعريف الارتباط.</p>
+  </div>
+</footer>
+</body>
+</html>

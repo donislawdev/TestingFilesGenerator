@@ -109,6 +109,7 @@
       <a href="/it/creare-file-di-dimensione-esatta/">Dimensione esatta</a>
       <a href="/it/domande-frequenti/">FAQ</a>
       <a href="/it/file-di-test-corrotti/">File corrotti</a>
+      <a href="/it/file-di-esempio/">File di esempio</a>
       <a href="/it/file-di-test-in-ci/">File di test in CI</a>
     </nav>
     <details class="langmenu">
@@ -165,6 +166,10 @@ tfg damage      elencare i modi in cui questa versione può rompere un file di p
 tfg tool        piccole utilità per file che hai già
 tfg version     stampare la versione dello strumento
 tfg license     stampare la licenza e cosa significa per i file generati</code></pre>
+  <p>
+    <code>tfg tool</code> raccoglie gli strumenti per i file che hai già, come il controllo di un archivio
+    prima di decomprimerlo. <a href="/it/strumenti/">Strumenti</a> descrive ciascuno di essi.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -206,8 +211,8 @@ tfg license     stampare la licenza e cosa significa per i file generati</code><
     file si apre, almeno. Il file viene prodotto normalmente e poi rotto, quindi ha ancora la
     dimensione che hai chiesto.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Le impostazioni vanno dopo i due punti. L'opzione si ripete, e l'ordine in cui le scrivi è l'ordine
     in cui vengono applicate. <code>tfg damage</code> elenca cosa può fare questa versione e cosa
@@ -532,7 +537,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.6.0-rc1</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">File di test per la QA, della dimensione esatta, con un manifest che dice come il tuo sistema deve reagire a ciascuno.</p>
     </div>
     <div class="footer-col">
@@ -555,6 +560,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
         <li><a href="/it/creare-file-di-dimensione-esatta/">Dimensione esatta</a></li>
         <li><a href="/it/domande-frequenti/">FAQ</a></li>
         <li><a href="/it/file-di-test-corrotti/">File corrotti</a></li>
+        <li><a href="/it/file-di-esempio/">File di esempio</a></li>
         <li><a href="/it/file-di-test-in-ci/">File di test in CI</a></li>
       </ul>
     </div>

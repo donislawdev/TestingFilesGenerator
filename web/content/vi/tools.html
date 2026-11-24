@@ -1,0 +1,104 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Kiểm tra tệp nén trước khi giải nén và xác minh checksum</h1>
+<p class="lead">
+  Bên cạnh trình tạo, <code>tfg</code> có các công cụ nhỏ cho tệp bạn đã có: một tệp nén có an toàn để
+  giải nén không, và một tệp hay cả một thư mục có còn đúng như checksum của nó nói không. Chúng chạy
+  trên máy của bạn, không tải gì lên và không cần tài khoản.
+</p>
+
+<div class="note">
+  <p class="note-title">Câu trả lời ngắn</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> đọc tệp nén mà không giải nén thứ gì, rồi kết thúc
+    với mã 0 khi nó an toàn, hoặc mã 7 kèm danh sách những gì nó tìm thấy.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> cho biết một tệp có khớp với checksum
+    mà trang tải xuống đưa cho bạn không.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">Có những gì</p>
+  <h2>Có những công cụ nào?</h2>
+  <p>
+    Đây là danh sách chương trình in ra, được đọc từ chính nó khi trang này được dựng.
+    <code>tfg tool list</code> in ra cùng danh sách đó, và <code>tfg tool show &lt;id&gt;</code> cho biết
+    một công cụ nhận những gì. Mọi công cụ cũng có trên màn hình Tools của cửa sổ desktop, với cùng các
+    thiết lập.
+  </p>
+  {{ template "toolsTable" . }}
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Tệp nén</p>
+  <h2>Tệp nén này có an toàn để giải nén không? Zip slip và zip bomb</h2>
+  <p>
+    <code>archive-scan</code> xem bên trong một tệp ZIP, TAR, TAR.GZ hoặc gzip mà không ghi gì xuống đĩa
+    và cho biết giải nén nó có an toàn không. Nó báo cáo:
+  </p>
+  <ul>
+    <li>một mục sẽ được ghi ra ngoài thư mục, cái bẫy có tên zip slip</li>
+    <li>một liên kết, một thiết bị, hoặc hai tên sẽ rơi vào cùng một tệp</li>
+    <li>một tên mà một hệ thống không ghi được</li>
+    <li>một mục được dựng để phình nổ khi giải nén, cái bẫy có tên zip bomb</li>
+    <li>một mục bị hỏng</li>
+  </ul>
+  <p>
+    Tệp nén nằm trong tệp nén, chẳng hạn ZIP trong ZIP hay DOCX trong TAR, được đọc theo cùng cách, trong
+    bộ nhớ, sâu tới 16 tầng. Một cái bẫy ở một trong số đó là cái bẫy của cả tệp, vì một chương trình
+    giải nén mọi thứ cũng sẽ giải nén chúng.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> cũng báo cáo một tệp nén mà khi giải nén ra lớn hơn mức bạn cho phép.
+    An toàn thì kết thúc với mã 0, còn tìm thấy bất cứ điều gì thì kết thúc với mã 7, nên pipeline có
+    thể dừng lại ở đó.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Một tệp</p>
+  <h2>Tệp này có đúng là tệp mà nó tự nhận không?</h2>
+  <p>
+    <code>checksum</code> tính checksum của một tệp và, khi được đưa một giá trị để so, cho biết chúng có
+    khớp không. Nó nhận md5, sha1, sha256, sha512 và crc32, mặc định là sha256, và nhận ra bạn đưa loại
+    nào dựa vào độ dài của giá trị đó.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    Một checksum không khớp sẽ kết thúc với mã 7. Nó trả lời cùng câu hỏi với <code>Get-FileHash</code>
+    trên Windows hay <code>sha256sum</code> trên Linux, chỉ khác là phần so sánh được làm sẵn cho bạn.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Cả một thư mục</p>
+  <h2>Có gì trong thư mục này đã thay đổi không?</h2>
+  <p>
+    <code>checksum-write</code> ghi checksum của mọi tệp trong một thư mục vào SHA256SUMS đặt cạnh
+    chúng, đúng các byte mà <code>sha256sum</code> ghi, và không bao giờ ghi đè lên tệp đã có.
+    <code>checksum-check</code> sau đó kiểm tra mọi tệp mà SHA256SUMS liệt kê.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    Những tệp không có trong danh sách sẽ không được xem tới, giống <code>sha256sum -c</code>, và một
+    đường dẫn đi ra ngoài thư mục sẽ bị từ chối thay vì được đọc. <a href="/vi/tep-mau/">Tệp mẫu</a> có
+    kèm một SHA256SUMS mà bạn kiểm tra được theo cách này.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Tiếp theo</p>
+  <h2>Đi đâu từ đây</h2>
+  <ul>
+    <li>
+      <a href="/vi/truong-hop-kiem-thu-tai-len/">Trường hợp kiểm thử tải lên tệp</a> đặt bước kiểm tra
+      tệp nén giữa các trường hợp khác của một lần tải lên.
+    </li>
+    <li>
+      <a href="/vi/tai-lieu/">Tài liệu</a> có mọi lệnh và mọi mã thoát.
+    </li>
+  </ul>
+</section>

@@ -1,0 +1,159 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Trường hợp kiểm thử tải lên tệp, kèm tệp để chạy chúng</h1>
+<p class="lead">
+  Danh sách kiểm tra các trường hợp kiểm thử cho chức năng tải tệp lên, từ giới hạn kích thước đến một
+  tên tệp tìm cách ra khỏi thư mục của nó. Mỗi trường hợp nêu tệp dùng để kiểm thử nó và điều hệ thống
+  của bạn nên làm với tệp đó, nên danh sách này chạy được chứ không chỉ để đọc.
+</p>
+
+<div class="note">
+  <p class="note-title">Cả danh sách trong một lệnh</p>
+  <p>
+    <code>tfg generate --preset upload-validation --limit 10mb --allow jpg,png,pdf --out ./upload</code>
+    ghi một tệp cho gần như mọi trường hợp bên dưới, kèm một manifest nói điều nên xảy ra với từng tệp.
+    Điền giới hạn và các loại tệp mà biểu mẫu của bạn khai báo.
+  </p>
+</div>
+
+<p>
+  <code>accept</code> nghĩa là hệ thống của bạn nên nhận tệp, còn <code>reject</code> là nên từ chối tệp
+  với một thông báo rõ ràng. <code>unspecified</code> nghĩa là câu trả lời nào cũng có thể đúng, nên hãy
+  ghi lại hệ thống của bạn chọn câu nào và kiểm tra rằng nó làm đúng như vậy mọi lần. Từ đứng sau kết
+  quả là lý do mà manifest đưa ra.
+</p>
+
+<section class="section" id="size">
+  <p class="eyebrow">Kích thước</p>
+  <h2>Giới hạn kích thước có được áp dụng ở đúng nơi khai báo không?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Trường hợp kiểm thử</th><th>Tệp</th><th>Kỳ vọng</th></tr></thead>
+    <tbody>
+      <tr><td>Dưới giới hạn một byte</td><td><code>10mb_under_1b.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Đúng bằng giới hạn</td><td><code>10mb_at_limit.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Vượt giới hạn một byte</td><td><code>10mb_over_1b.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Gấp đôi giới hạn, để xem máy chủ có ngừng đọc sớm thay vì nạp tất cả vào bộ nhớ không</td><td><code>10mb_far_over_2x.jpg</code></td><td><code>reject</code> <code>size_limit</code></td></tr>
+      <tr><td>Một tệp rỗng 0 byte</td><td><code>empty.jpg</code></td><td><code>unspecified</code> <code>size_zero</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Hai trường hợp giới hạn hay sai nhất là giới hạn chỉ được kiểm tra trong trình duyệt, và giới hạn
+    tính bằng MB trong khi mã tính bằng MiB. <a href="/vi/preset/size-boundaries/">Preset
+    size-boundaries</a> đặt một tệp ở mọi khoảng cách so với giới hạn bạn chọn, một byte, một kilobyte
+    và một megabyte về mỗi phía.
+  </p>
+</section>
+
+<section class="section" id="type">
+  <p class="eyebrow">Loại tệp</p>
+  <h2>Biểu mẫu có nhận đúng loại cần nhận và từ chối phần còn lại không?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Trường hợp kiểm thử</th><th>Tệp</th><th>Kỳ vọng</th></tr></thead>
+    <tbody>
+      <tr><td>Mỗi loại mà biểu mẫu nhận, dưới dạng một tệp thật của loại đó</td><td><code>allowed_jpg.jpg</code>, <code>allowed_png.png</code>, <code>allowed_pdf.pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Một loại mà biểu mẫu không nhận</td><td><code>denied.svg</code>, <code>denied.html</code>, <code>denied.exe</code>, <code>denied.sh</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Phần mở rộng nói một loại nhưng nội dung là loại khác, chẳng hạn PDF đặt tên .jpg</td><td><code>pdf_as_jpg.jpg</code>, <code>png_as_pdf.pdf</code>, <code>jpg_as_png.png</code></td><td><code>reject</code> <code>mime_mismatch</code></td></tr>
+      <tr><td>Hai phần mở rộng, phần cuối không được phép</td><td><code>invoice.jpg.exe</code></td><td><code>reject</code> <code>extension_rule</code></td></tr>
+      <tr><td>Hoàn toàn không có phần mở rộng</td><td><code>invoice</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+      <tr><td>Phần mở rộng viết hoa</td><td><code>PHOTO.JPG</code></td><td><code>unspecified</code> <code>extension_rule</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Một tệp SVG hay HTML bị tưởng là ảnh hay văn bản thuần là một cách để lách tập lệnh qua biểu mẫu,
+    nên chúng nằm trong danh sách loại cần từ chối, trừ khi biểu mẫu của bạn chủ ý nhận chúng.
+  </p>
+</section>
+
+<section class="section" id="content">
+  <p class="eyebrow">Nội dung</p>
+  <h2>Hệ thống có mở tệp ra không, hay chỉ nhìn tên của nó?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Trường hợp kiểm thử</th><th>Tệp</th><th>Kỳ vọng</th></tr></thead>
+    <tbody>
+      <tr><td>Một tệp bị cắt cụt, như một lần tải lên bị ngắt để lại</td><td><a href="/samples/corrupt-truncate.pdf" download>corrupt-truncate.pdf</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Một tệp có các byte đầu là số không, nên không gì cho biết nó là gì</td><td><a href="/samples/corrupt-zero-head.png" download>corrupt-zero-head.png</a></td><td><code>reject</code> <code>content_malformed</code></td></tr>
+      <tr><td>Tệp nhỏ nhất mà một định dạng cho phép, hợp lệ và rất nhỏ</td><td><code>tfg generate --preset empty-and-minimal</code></td><td><code>accept</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Một tệp chỉ có tên đúng và kích thước đúng sẽ qua mọi bước kiểm tra không bao giờ mở nó ra.
+    <a href="/vi/tep-mau/#corrupt">Tệp mẫu bị hỏng</a> có ở dạng PDF, Word, Excel, PowerPoint, JPG, PNG,
+    MP4 và ZIP, và <a href="/vi/tep-kiem-thu-bi-hong/">tệp kiểm thử bị hỏng</a> cho biết cách tạo chúng
+    ở bất kỳ định dạng và kích thước nào.
+  </p>
+</section>
+
+<section class="section" id="names">
+  <p class="eyebrow">Tên</p>
+  <h2>Tệp có quay lại với đúng tên nó được đặt không?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Trường hợp kiểm thử</th><th>Tệp</th><th>Kỳ vọng</th></tr></thead>
+    <tbody>
+      <tr><td>Dấu cách và dấu ngoặc</td><td><code>my report (final) v2.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Chữ cái ngoài ASCII và một emoji</td><td><code>wiadomość_日本語_🎉.jpg</code></td><td><code>unspecified</code> <code>filename_invalid</code></td></tr>
+      <tr><td>Tên dài hơn 200 ký tự</td><td><code>aaa...aaa.jpg</code></td><td><code>unspecified</code> <code>filename_too_long</code></td></tr>
+      <tr><td>Tên trèo ra khỏi thư mục của nó, <code>../</code> hoặc <code>..\</code></td><td><code>climbing_name.jpg</code>, tải lên dưới tên <code>../tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+      <tr><td>Một đường dẫn tuyệt đối, trên Linux hoặc Windows</td><td><code>absolute_name.jpg</code>, tải lên dưới tên <code>/tmp/tfg_climbed_out.jpg</code></td><td><code>unspecified</code> <code>filename_traversal</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    Một tên có đường dẫn không thể lưu xuống đĩa, nên tệp giữ một tên thường và manifest cho biết phải
+    tải nó lên dưới tên nào. Nhận tệp và chỉ giữ phần cuối của tên là một câu trả lời tốt. Ghi nó ra
+    ngoài thư mục tải lên là khiếm khuyết mà trường hợp này sinh ra để tìm.
+    <a href="/vi/preset/filename-handling/">Preset filename-handling</a> có nhiều tên hơn nữa: chữ cái
+    trông giống nhau, ký tự vô hình, tên mà Windows dành riêng và độ dài tính bằng byte.
+  </p>
+</section>
+
+<section class="section" id="many">
+  <p class="eyebrow">Số lượng và tệp nén</p>
+  <h2>Chuyện gì xảy ra với nhiều tệp, hay với một tệp chứa nhiều tệp?</h2>
+  <div class="tablewrap">
+  <table class="data">
+    <thead><tr><th>Trường hợp kiểm thử</th><th>Tệp</th><th>Kỳ vọng</th></tr></thead>
+    <tbody>
+      <tr><td>Năm mươi tệp trong một lần tải lên</td><td>từ <code>bulk_0001.jpg</code> đến <code>bulk_0050.jpg</code></td><td><code>accept</code></td></tr>
+      <tr><td>Một tệp ZIP thực sự chứa 200 tài liệu</td><td><code>tfg generate --format zip --size 5mb --set entries=200 --set entry_format=pdf</code></td><td><code>accept</code></td></tr>
+      <tr><td>Một tệp nén mà hệ thống của bạn giải nén, được kiểm tra zip slip và zip bomb trước</td><td><code>tfg tool archive-scan upload.zip</code></td><td>an toàn, hoặc những gì nó tìm thấy</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>
+    <code>--bulk</code> đặt số tệp trong lần tải lên hàng loạt, tối đa mười nghìn.
+    <a href="/vi/cong-cu/">Công cụ</a> cho biết bước kiểm tra tệp nén tìm những gì.
+  </p>
+</section>
+
+<section class="section" id="test">
+  <p class="eyebrow">Trong một bài kiểm thử</p>
+  <h2>Chạy danh sách như một bài kiểm thử</h2>
+  <p>
+    Manifest chứa kết quả kỳ vọng của mọi tệp và tên để tải tệp lên, nên một vòng lặp chạy được cả danh
+    sách:
+  </p>
+  <pre><code>import json, os
+
+directory = "upload"
+manifest = json.load(open(os.path.join(directory, "manifest.json")))
+
+for entry in manifest["files"]:
+    outcome = entry["expected"]["outcome"]
+    if outcome == "unspecified":
+        continue
+    name = entry.get("send_as", entry["name"])
+    response = upload(os.path.join(directory, entry["path"]), name)
+    assert response.ok == (outcome == "accept"), name</code></pre>
+  <p>
+    Các tệp đánh dấu <code>unspecified</code> được bỏ qua ở đây, vì câu trả lời cho chúng là chính sách
+    của riêng bạn. Hãy quyết định, ghi nó vào công thức bằng <code>expected</code>, và vòng lặp sẽ kiểm
+    tra cả chúng. <a href="/vi/tep-kiem-thu-trong-ci/">Tệp kiểm thử trong CI</a> chạy việc này trong
+    pipeline.
+  </p>
+</section>

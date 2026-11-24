@@ -109,6 +109,7 @@
       <a href="/ro/creare-fisier-de-dimensiune-exacta/">Dimensiune exactă</a>
       <a href="/ro/intrebari-frecvente/">FAQ</a>
       <a href="/ro/fisiere-de-test-corupte/">Fișiere corupte</a>
+      <a href="/ro/fisiere-de-exemplu/">Fișiere de exemplu</a>
       <a href="/ro/fisiere-de-test-in-ci/">Fișiere de test în CI</a>
     </nav>
     <details class="langmenu">
@@ -165,6 +166,11 @@ tfg damage      listează modurile în care această versiune poate strica un fi
 tfg tool        mici unelte pentru fișiere pe care le ai deja
 tfg version     afișează versiunea instrumentului
 tfg license     afișează licența și ce înseamnă ea pentru fișierele generate</code></pre>
+  <p>
+    <code>tfg tool</code> cuprinde instrumentele pentru fișiere pe care le ai deja, de exemplu verificarea
+    unei arhive înainte de dezarhivare. <a href="/ro/instrumente/">Instrumente</a> descrie fiecare dintre
+    ele.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -206,8 +212,8 @@ tfg license     afișează licența și ce înseamnă ea pentru fișierele gener
     răspunde la a treia - se deschide oare fișierul. Fișierul este produs normal și apoi stricat,
     deci are în continuare dimensiunea cerută.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Setările se pun după două puncte. Opțiunea se repetă, iar ordinea în care le scrii este ordinea în
     care se aplică. <code>tfg damage</code> listează ce poate face această versiune și ce acceptă
@@ -532,7 +538,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.6.0-rc1</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">Fișiere de test pentru QA, la dimensiunea exactă, cu un manifest care spune cum trebuie să reacționeze sistemul tău la fiecare.</p>
     </div>
     <div class="footer-col">
@@ -555,6 +561,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
         <li><a href="/ro/creare-fisier-de-dimensiune-exacta/">Dimensiune exactă</a></li>
         <li><a href="/ro/intrebari-frecvente/">FAQ</a></li>
         <li><a href="/ro/fisiere-de-test-corupte/">Fișiere corupte</a></li>
+        <li><a href="/ro/fisiere-de-exemplu/">Fișiere de exemplu</a></li>
         <li><a href="/ro/fisiere-de-test-in-ci/">Fișiere de test în CI</a></li>
       </ul>
     </div>

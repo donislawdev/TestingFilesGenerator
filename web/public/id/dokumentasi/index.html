@@ -109,6 +109,7 @@
       <a href="/id/membuat-file-ukuran-tepat/">Ukuran Tepat</a>
       <a href="/id/faq/">FAQ</a>
       <a href="/id/file-uji-rusak/">File rusak</a>
+      <a href="/id/contoh-file/">Contoh file</a>
       <a href="/id/file-uji-di-ci/">File uji di CI</a>
     </nav>
     <details class="langmenu">
@@ -165,6 +166,10 @@ tfg damage      mendaftar cara build ini dapat merusak file dengan sengaja
 tfg tool        alat kecil untuk file yang sudah Anda miliki
 tfg version     mencetak versi alat
 tfg license     mencetak lisensi dan artinya bagi file yang dihasilkan</code></pre>
+  <p>
+    <code>tfg tool</code> berisi alat untuk file yang sudah Anda miliki, misalnya memeriksa arsip
+    sebelum diekstrak. <a href="/id/alat/">Alat</a> menjelaskan masing-masing.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -206,8 +211,8 @@ tfg license     mencetak lisensi dan artinya bagi file yang dihasilkan</code></p
     file itu dapat dibuka sama sekali. File dibuat secara normal lalu dirusak, sehingga ukurannya
     tetap seperti yang Anda minta.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Pengaturan ditulis setelah titik dua. Opsinya dapat diulang, dan urutan penulisannya adalah urutan
     penerapannya. <code>tfg damage</code> mendaftar apa yang bisa dilakukan build ini dan apa yang
@@ -534,7 +539,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.6.0-rc1</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">File uji untuk QA dengan ukuran tepat, beserta manifes yang menyatakan bagaimana sistem Anda harus bereaksi terhadap tiap file.</p>
     </div>
     <div class="footer-col">
@@ -557,6 +562,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
         <li><a href="/id/membuat-file-ukuran-tepat/">Ukuran Tepat</a></li>
         <li><a href="/id/faq/">FAQ</a></li>
         <li><a href="/id/file-uji-rusak/">File rusak</a></li>
+        <li><a href="/id/contoh-file/">Contoh file</a></li>
         <li><a href="/id/file-uji-di-ci/">File uji di CI</a></li>
       </ul>
     </div>

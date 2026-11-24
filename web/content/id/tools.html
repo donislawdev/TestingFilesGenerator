@@ -1,0 +1,106 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Periksa arsip sebelum diekstrak, dan verifikasi checksum</h1>
+<p class="lead">
+  Selain generator, <code>tfg</code> punya alat kecil untuk file yang sudah Anda miliki: apakah arsip
+  aman diekstrak, dan apakah sebuah file atau seluruh folder masih sesuai dengan checksum-nya. Alat ini
+  berjalan di mesin Anda, tanpa unggahan dan tanpa akun.
+</p>
+
+<div class="note">
+  <p class="note-title">Jawaban singkat</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> membaca arsip tanpa mengekstrak apa pun dan
+    berakhir dengan kode 0 jika aman, atau 7 dengan daftar yang ditemukannya.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> memberi tahu apakah file cocok
+    dengan checksum yang diberikan halaman unduhan.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">Yang tersedia</p>
+  <h2>Alat apa saja yang ada?</h2>
+  <p>
+    Ini daftar yang dicetak program, dibaca darinya saat halaman ini dibangun.
+    <code>tfg tool list</code> mencetak hal yang sama, dan <code>tfg tool show &lt;id&gt;</code>
+    menjelaskan apa yang diterima salah satunya. Setiap alat juga ada di layar Tools pada jendela
+    program, dengan pengaturan yang sama.
+  </p>
+  {{ template "toolsTable" . }}
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Arsip</p>
+  <h2>Apakah arsip ini aman diekstrak? Zip slip dan zip bomb</h2>
+  <p>
+    <code>archive-scan</code> melihat isi file ZIP, TAR, TAR.GZ, atau gzip tanpa menulis apa pun ke
+    disk dan menyatakan apakah aman mengekstraknya. Alat ini melaporkan:
+  </p>
+  <ul>
+    <li>entri yang akan ditulis di luar folder, jebakan yang dikenal sebagai zip slip</li>
+    <li>link, perangkat, atau dua nama yang akan berakhir di satu file</li>
+    <li>nama yang tidak bisa ditulis oleh sistem</li>
+    <li>entri yang dibuat untuk meledak saat diekstrak, jebakan yang dikenal sebagai zip bomb</li>
+    <li>entri yang rusak</li>
+  </ul>
+  <p>
+    Arsip di dalam arsip, seperti ZIP di dalam ZIP atau DOCX di dalam TAR, dibaca dengan cara yang
+    sama, di memori, sampai kedalaman 16 tingkat. Jebakan di salah satunya adalah jebakan bagi
+    keseluruhan, karena program yang mengekstrak semuanya juga mengekstrak arsip-arsip itu.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> juga melaporkan arsip yang hasil ekstraknya lebih besar dari yang
+    Anda izinkan. Hasil aman berakhir dengan kode 0, dan setiap temuan berakhir dengan 7, sehingga
+    pipeline bisa berhenti karenanya.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Satu file</p>
+  <h2>Apakah file ini benar file yang diakuinya?</h2>
+  <p>
+    <code>checksum</code> menghitung checksum sebuah file dan, jika diberi checksum pembanding,
+    menyatakan apakah keduanya cocok. Alat ini menerima md5, sha1, sha256, sha512, dan crc32, sha256
+    jika Anda tidak meminta yang lain, dan mengenali jenis checksum yang diberikan dari panjangnya.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    Checksum yang tidak cocok berakhir dengan kode 7. Ini menjawab pertanyaan yang sama dengan
+    <code>Get-FileHash</code> di Windows atau <code>sha256sum</code> di Linux, dengan perbandingan
+    yang dilakukan untuk Anda.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Seluruh folder</p>
+  <h2>Apakah ada yang berubah di folder ini?</h2>
+  <p>
+    <code>checksum-write</code> menulis checksum setiap file dalam folder ke SHA256SUMS di sebelahnya,
+    dengan byte yang sama seperti yang ditulis <code>sha256sum</code>, dan tidak pernah menimpa file
+    yang sudah ada. <code>checksum-check</code> kemudian memeriksa setiap file yang tercantum di
+    SHA256SUMS.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    File yang tidak tercantum tidak diperiksa, sama seperti <code>sha256sum -c</code>, dan path yang
+    keluar dari folder ditolak alih-alih dibaca. <a href="/id/contoh-file/">Contoh file</a> disertai
+    SHA256SUMS yang bisa Anda periksa dengan cara ini.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Berikutnya</p>
+  <h2>Ke mana dari sini</h2>
+  <ul>
+    <li>
+      <a href="/id/kasus-uji-unggah-file/">Kasus uji unggah file</a> menempatkan pemeriksaan arsip di
+      antara kasus unggahan lainnya.
+    </li>
+    <li>
+      <a href="/id/dokumentasi/">Dokumentasi</a> memuat setiap perintah dan kode keluar.
+    </li>
+  </ul>
+</section>

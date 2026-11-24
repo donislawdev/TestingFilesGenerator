@@ -61,11 +61,34 @@
       "description": "Zrób plik zepsuty celowo, o dokładnie takim rozmiarze, jaki podasz, z manifestem mówiącym, że system powinien go odrzucić. Do testów walidacji uploadu i parserów."
     },
     {
+      "key": "samples",
+      "slug": "przykladowe-pliki",
+      "nav": "Przykładowe pliki",
+      "title": "Przykładowe pliki do testów - PDF, CSV, DOCX do pobrania",
+      "description": "Pliki testowe do pobrania: każdy z {{ .Facts.FormatCount }} formatów po 1 MB, uszkodzone PDF, Word i Excel, tabele CSV i obrazki zastępcze, każdy z sumą SHA-256."
+    },
+    {
       "key": "ci",
       "slug": "pliki-testowe-w-ci",
       "nav": "Pliki testowe w CI",
       "title": "Pliki testowe w CI - GitHub Actions, GitLab CI i PowerShell",
       "description": "Generuj pliki testowe w potoku zamiast commitować binaria: workflow GitHub Actions, zadanie GitLaba, kody wyjścia przerywające build i pułapka PowerShella."
+    },
+    {
+      "key": "upload-tests",
+      "slug": "przypadki-testowe-uploadu",
+      "nav": "Przypadki testowe uploadu",
+      "title": "Przypadki testowe uploadu plików - z plikami do testu",
+      "description": "Lista przypadków testowych uploadu plików: limit rozmiaru, pusty i uszkodzony plik, zły typ, nietypowe nazwy i archiwa, każdy z plikiem, który go sprawdza.",
+      "parent": "use-cases"
+    },
+    {
+      "key": "tools",
+      "slug": "narzedzia",
+      "nav": "Narzędzia",
+      "title": "Sprawdź ZIP przed rozpakowaniem i sumy kontrolne SHA-256",
+      "description": "Narzędzia offline do plików, które już masz: czy archiwum można bezpiecznie rozpakować (zip slip, zip bomb) oraz sprawdzanie i zapis sum SHA-256.",
+      "parent": "docs"
     }
   ],
   "words": {
@@ -109,7 +132,13 @@
     "colDamage": "Uszkodzenie",
     "colEffect": "Co robi z bajtami",
     "colSettings": "Ustawienia",
-    "noSettings": "brak"
+    "noSettings": "brak",
+    "colFile": "Plik",
+    "colSize": "Rozmiar",
+    "colSha256": "SHA-256",
+    "colExpected": "Oczekiwane",
+    "colTool": "Narzędzie",
+    "colQuestion": "Na co odpowiada"
   },
   "endings": {
     "0": "Wszystko się udało.",
@@ -224,8 +253,8 @@
     "picture-sizes": {
       "question": "Czy mój system przyjmuje obrazki w rozmiarach, jakich używają ekrany i platformy?",
       "title": "Rozmiary obrazków",
-      "pageTitle": "Obrazki testowe w popularnych rozmiarach - ekrany, awatary, media społecznościowe",
-      "description": "Obrazki w rozmiarach ekranów HD, Full HD, QHD i 4K, zdjęć profilowych oraz okładek, postów i miniatur, o które proszą platformy społecznościowe, każdy tak mały, jak się da.",
+      "pageTitle": "Obrazki testowe w typowych rozmiarach - ekrany i social media",
+      "description": "Obrazki w rozmiarach ekranów HD, Full HD, QHD i 4K, zdjęć profilowych oraz okładek, postów i miniatur, o które proszą platformy społecznościowe.",
       "catches": [
         "limit szerokości albo wysokości ustawiony z myślą o jednym kształcie, który odrzuca inny, na przykład tło profilu szerokie na 1584 px",
         "miniatura przycięta albo spłaszczona, bo kod spodziewa się obrazka poziomego, a przychodzi pionowy",
@@ -351,5 +380,11 @@
     "append-junk": "Dopisuje losowe bajty za końcem pliku i zachowuje dokładnie rozmiar, o który prosiłeś, tak jak przychodzi plik z czymś przyklejonym na końcu.",
     "truncate": "Odcina koniec pliku i zachowuje dokładnie rozmiar, o który prosiłeś, tak jak zostawia go przerwane wysyłanie albo kopiowanie.",
     "zero-head": "Nadpisuje pierwsze bajty pliku zerami, nie zmieniając jego długości. Większość czytników zagląda tam najpierw, więc to uszkodzenie zauważy prawie wszystko."
+  },
+  "tools": {
+    "archive-scan": "Czy to archiwum można bezpiecznie rozpakować?",
+    "checksum": "Czy ten plik jest tym, za który się podaje?",
+    "checksum-check": "Czy każdy plik jest wciąż taki, jak podaje jego plik sum kontrolnych?",
+    "checksum-write": "Jak później poznam, że żaden z tych plików się nie zmienił?"
   }
 }

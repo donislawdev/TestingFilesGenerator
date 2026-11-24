@@ -109,6 +109,7 @@
       <a href="/uk/create-file-exact-size/">Точний розмір</a>
       <a href="/uk/faq/">FAQ</a>
       <a href="/uk/corrupt-test-files/">Пошкоджені файли</a>
+      <a href="/uk/sample-files/">Приклади файлів</a>
       <a href="/uk/test-files-in-ci/">Тестові файли в CI</a>
     </nav>
     <details class="langmenu">
@@ -165,6 +166,10 @@ tfg damage      перелічити способи, якими ця збірк�
 tfg tool        невеликі інструменти для вже наявних файлів
 tfg version     вивести версію інструмента
 tfg license     вивести ліцензію та що вона означає для створених файлів</code></pre>
+  <p>
+    У <code>tfg tool</code> зібрано інструменти для наявних файлів, наприклад перевірку архіву перед
+    розпакуванням. На сторінці <a href="/uk/tools/">Інструменти</a> описано кожен із них.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -206,8 +211,8 @@ tfg license     вивести ліцензію та що вона означа�
     чи відкривається файл узагалі. Файл створюється як зазвичай, а потім псується, тому в нього
     лишається запитаний розмір.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Налаштування вказуються після двокрапки. Прапорець можна повторювати, і порядок запису - це порядок
     застосування. <code>tfg damage</code> перелічує, що вміє ця збірка та що приймає кожен вид
@@ -531,7 +536,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.6.0-rc1</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">Тестові файли для QA точного розміру та маніфест з очікуваною реакцією вашої системи на кожен із них.</p>
     </div>
     <div class="footer-col">
@@ -554,6 +559,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
         <li><a href="/uk/create-file-exact-size/">Точний розмір</a></li>
         <li><a href="/uk/faq/">FAQ</a></li>
         <li><a href="/uk/corrupt-test-files/">Пошкоджені файли</a></li>
+        <li><a href="/uk/sample-files/">Приклади файлів</a></li>
         <li><a href="/uk/test-files-in-ci/">Тестові файли в CI</a></li>
       </ul>
     </div>

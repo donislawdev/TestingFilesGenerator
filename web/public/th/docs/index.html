@@ -109,6 +109,7 @@
       <a href="/th/create-file-exact-size/">ขนาดแม่นยำ</a>
       <a href="/th/faq/">คำถามที่พบบ่อย</a>
       <a href="/th/corrupt-test-files/">ไฟล์เสียหาย</a>
+      <a href="/th/sample-files/">ไฟล์ตัวอย่าง</a>
       <a href="/th/test-files-in-ci/">ไฟล์ทดสอบใน CI</a>
     </nav>
     <details class="langmenu">
@@ -164,6 +165,10 @@ tfg damage      แสดงรายการวิธีที่บิลด�
 tfg tool        เครื่องมือเล็กๆ สำหรับไฟล์ที่คุณมีอยู่แล้ว
 tfg version     พิมพ์เวอร์ชันของเครื่องมือ
 tfg license     พิมพ์ใบอนุญาตและความหมายสำหรับไฟล์ที่สร้างขึ้น</code></pre>
+  <p>
+    <code>tfg tool</code> รวมเครื่องมือสำหรับไฟล์ที่คุณมีอยู่แล้ว เช่น การตรวจไฟล์บีบอัดก่อนแตกไฟล์
+    <a href="/th/tools/">เครื่องมือ</a> อธิบายเครื่องมือแต่ละตัว
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -203,8 +208,8 @@ tfg license     พิมพ์ใบอนุญาตและความห�
     ซึ่งตอบสองในสามคำถามที่ตัวตรวจสอบการอัปโหลดถาม <code>--damage</code> ตอบข้อที่สาม -
     ไฟล์เปิดได้หรือไม่ ไฟล์ถูกสร้างตามปกติแล้วจึงถูกทำให้เสีย จึงยังคงมีขนาดที่คุณขอ
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     การตั้งค่าอยู่หลังเครื่องหมายทวิภาค แฟลกระบุซ้ำได้ และลำดับที่คุณเขียนคือลำดับที่ใช้ <code>tfg
     damage</code> แสดงว่าบิลด์นี้ทำอะไรได้บ้างและแต่ละแบบรับอะไร
@@ -523,7 +528,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.6.0-rc1</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">ไฟล์ทดสอบสำหรับ QA ขนาดแม่นยำ พร้อมแมนิเฟสต์ที่บอกว่าระบบของคุณควรตอบสนองต่อแต่ละไฟล์อย่างไร</p>
     </div>
     <div class="footer-col">
@@ -546,6 +551,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
         <li><a href="/th/create-file-exact-size/">ขนาดแม่นยำ</a></li>
         <li><a href="/th/faq/">คำถามที่พบบ่อย</a></li>
         <li><a href="/th/corrupt-test-files/">ไฟล์เสียหาย</a></li>
+        <li><a href="/th/sample-files/">ไฟล์ตัวอย่าง</a></li>
         <li><a href="/th/test-files-in-ci/">ไฟล์ทดสอบใน CI</a></li>
       </ul>
     </div>

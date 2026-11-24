@@ -1,0 +1,105 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>Een archief controleren voor het uitpakken, en checksums verifiëren</h1>
+<p class="lead">
+  Naast de generator heeft <code>tfg</code> kleine hulpmiddelen voor bestanden die je al hebt: of een
+  archief veilig is om uit te pakken, en of een bestand of een hele map nog is wat de checksum zegt.
+  Ze draaien op je eigen machine, zonder upload en zonder account.
+</p>
+
+<div class="note">
+  <p class="note-title">Het korte antwoord</p>
+  <p>
+    <code>tfg tool archive-scan download.zip</code> leest het archief zonder iets uit te pakken en
+    eindigt met code 0 als het veilig is, of met 7 en een lijst van wat het vond.
+    <code>tfg tool checksum setup.exe --expected &lt;sum&gt;</code> zegt of een bestand overeenkomt met
+    de checksum die een downloadpagina je gaf.
+  </p>
+</div>
+
+<section class="section" id="list">
+  <p class="eyebrow">Wat er is</p>
+  <h2>Welke hulpmiddelen zijn er?</h2>
+  <p>
+    Dit is de lijst die het programma afdrukt, uit het programma gelezen op het moment dat deze pagina
+    wordt gebouwd. <code>tfg tool list</code> drukt dezelfde af, en <code>tfg tool show &lt;id&gt;</code>
+    zegt wat één ervan aanneemt. Elk hulpmiddel staat ook in het bureaubladvenster, op het scherm Tools,
+    met dezelfde instellingen.
+  </p>
+  {{ template "toolsTable" . }}
+</section>
+
+<section class="section" id="archive-scan">
+  <p class="eyebrow">Archieven</p>
+  <h2>Is dit archief veilig om uit te pakken? Zip slip en zip-bommen</h2>
+  <p>
+    <code>archive-scan</code> kijkt in een ZIP-, TAR-, TAR.GZ- of gzip-bestand zonder iets naar schijf te
+    schrijven en zegt of uitpakken veilig is. Het meldt:
+  </p>
+  <ul>
+    <li>een item dat buiten de map zou worden geschreven, de valkuil die bekendstaat als zip slip</li>
+    <li>een link, een apparaat, of twee namen die op hetzelfde bestand zouden uitkomen</li>
+    <li>een naam die een systeem niet kan schrijven</li>
+    <li>een item dat gebouwd is om bij het uitpakken te exploderen, de valkuil die bekendstaat als zip-bom</li>
+    <li>een item dat beschadigd is</li>
+  </ul>
+  <p>
+    Archieven in het archief, zoals een ZIP in een ZIP of een DOCX in een TAR, worden op dezelfde manier
+    gelezen, in het geheugen, tot 16 niveaus diep. Een valkuil in een ervan is een valkuil in het
+    geheel, omdat een programma dat alles uitpakt die ook uitpakt.
+  </p>
+  <pre><code>tfg tool archive-scan upload.zip
+tfg tool archive-scan backup.tar.gz --unpacked_limit 500mb</code></pre>
+  <p>
+    <code>--unpacked_limit</code> meldt ook een archief dat uitgepakt meer ruimte inneemt dan je toestaat.
+    Veilig eindigt met code 0 en elke vondst met 7, zodat een pipeline erop kan stoppen.
+  </p>
+</section>
+
+<section class="section" id="checksum">
+  <p class="eyebrow">Eén bestand</p>
+  <h2>Is dit bestand het bestand dat het beweert te zijn?</h2>
+  <p>
+    <code>checksum</code> berekent de checksum van een bestand en zegt, als je er een opgeeft om mee te
+    vergelijken, of ze overeenkomen. Het kent md5, sha1, sha256, sha512 en crc32, sha256 tenzij je om
+    een andere vraagt, en het herkent aan de lengte welke soort je opgaf.
+  </p>
+  <pre><code>tfg tool checksum installer.msi
+tfg tool checksum installer.msi --expected 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08</code></pre>
+  <p>
+    Een checksum die niet overeenkomt, eindigt met code 7. Het beantwoordt dezelfde vraag als
+    <code>Get-FileHash</code> op Windows of <code>sha256sum</code> op Linux, met de vergelijking al voor
+    je gedaan.
+  </p>
+</section>
+
+<section class="section" id="folder">
+  <p class="eyebrow">Een hele map</p>
+  <h2>Is er iets in deze map veranderd?</h2>
+  <p>
+    <code>checksum-write</code> schrijft de checksum van elk bestand in een map naar SHA256SUMS ernaast,
+    met dezelfde bytes die <code>sha256sum</code> schrijft, en nooit over een bestand dat er al staat.
+    <code>checksum-check</code> controleert later elk bestand dat in SHA256SUMS staat.
+  </p>
+  <pre><code>tfg tool checksum-write ./fixtures
+tfg tool checksum-check ./fixtures/SHA256SUMS</code></pre>
+  <p>
+    Bestanden die er niet in staan, worden niet bekeken, net als bij <code>sha256sum -c</code>, en een
+    pad dat de map verlaat, wordt geweigerd in plaats van gelezen. De
+    <a href="/nl/voorbeeldbestanden/">voorbeeldbestanden</a> komen met een SHA256SUMS die je zo kunt
+    controleren.
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">Verder</p>
+  <h2>Waar je vandaar heen kunt</h2>
+  <ul>
+    <li>
+      <a href="/nl/testgevallen-bestandsupload/">Testgevallen voor bestandsupload</a> zet de
+      archiefcontrole tussen de andere gevallen van een upload.
+    </li>
+    <li>
+      <a href="/nl/documentatie/">De documentatie</a> bevat elke opdracht en elke afsluitcode.
+    </li>
+  </ul>
+</section>

@@ -9,6 +9,10 @@
   <h2>Welke opdrachten zijn er?</h2>
   <p>Elke doet precies één ding:</p>
   {{ template "commandList" . }}
+  <p>
+    <code>tfg tool</code> bevat de hulpmiddelen voor bestanden die je al hebt, zoals een archief
+    controleren voordat je het uitpakt. <a href="/nl/hulpmiddelen/">Hulpmiddelen</a> beschrijft elk ervan.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -50,8 +54,8 @@
     bestand überhaupt open. Het bestand wordt normaal gemaakt en daarna beschadigd, dus het heeft
     nog steeds de grootte die je vroeg.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Instellingen komen na een dubbele punt. De optie herhaalt zich, en de volgorde waarin je ze schrijft
     is de volgorde waarin ze worden toegepast. <code>tfg damage</code> toont wat deze build kan en

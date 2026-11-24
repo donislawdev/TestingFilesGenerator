@@ -109,6 +109,7 @@
       <a href="/tr/tam-boyutta-dosya-olusturma/">Tam boyut</a>
       <a href="/tr/sss/">SSS</a>
       <a href="/tr/bozuk-test-dosyalari/">Bozuk dosyalar</a>
+      <a href="/tr/ornek-dosyalar/">Örnek dosyalar</a>
       <a href="/tr/ci-icinde-test-dosyalari/">CI&#39;da test dosyaları</a>
     </nav>
     <details class="langmenu">
@@ -165,6 +166,10 @@ tfg damage      bu sürümün bir dosyayı kasıtlı bozma yollarını listele
 tfg tool        elinizdeki dosyalar için küçük araçlar
 tfg version     araç sürümünü yazdır
 tfg license     lisansı ve üretilen dosyalar için anlamını yazdır</code></pre>
+  <p>
+    <code>tfg tool</code>, elinizdeki dosyalar için araçları içerir, örneğin bir arşivi açmadan önce
+    denetlemek. <a href="/tr/araclar/">Araçlar</a> sayfası her birini anlatır.
+  </p>
 </section>
 
 <section class="section" id="one-file">
@@ -205,8 +210,8 @@ tfg license     lisansı ve üretilen dosyalar için anlamını yazdır</code></
     üç sorudan ikisini yanıtlar. <code>--damage</code> üçüncüsünü yanıtlar - dosya hiç açılıyor mu.
     Dosya normal üretilir, sonra bozulur, böylece hâlâ istediğiniz boyuttadır.
   </p>
-  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./out
-tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./out</code></pre>
+  <pre><code>tfg generate --format png --size 2mb --damage zero-head --out ./zero-head
+tfg generate --format png --size 2mb --damage zero-head:bytes=16 --out ./zero-head-16</code></pre>
   <p>
     Ayarlar iki noktadan sonra gelir. Bayrak tekrarlanır ve yazdığınız sıra uygulanma sırasıdır.
     <code>tfg damage</code> bu sürümün neler yapabildiğini ve her birinin ne aldığını listeler.
@@ -529,7 +534,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.6.0-rc1</p>
+      <p class="footer-brand">Testing Files Generator 0.5.0</p>
       <p class="muted">QA için tam boyutta test dosyaları ve sisteminizin her birine nasıl tepki vermesi gerektiğini söyleyen bir manifest.</p>
     </div>
     <div class="footer-col">
@@ -552,6 +557,7 @@ tfg preset eject size-boundaries &gt; my.yaml</code></pre>
         <li><a href="/tr/tam-boyutta-dosya-olusturma/">Tam boyut</a></li>
         <li><a href="/tr/sss/">SSS</a></li>
         <li><a href="/tr/bozuk-test-dosyalari/">Bozuk dosyalar</a></li>
+        <li><a href="/tr/ornek-dosyalar/">Örnek dosyalar</a></li>
         <li><a href="/tr/ci-icinde-test-dosyalari/">CI&#39;da test dosyaları</a></li>
       </ul>
     </div>

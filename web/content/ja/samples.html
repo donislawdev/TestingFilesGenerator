@@ -1,0 +1,86 @@
+{{ with .Up }}<p class="eyebrow"><a href="{{ .URL }}">{{ .Label }}</a></p>{{ end }}
+<h1>テスト用サンプルファイル</h1>
+<p class="lead">
+  アップロードフォーム、パーサー、取り込み処理のテストに使える、ダウンロード用の本物のファイルです。この生成ツールが書き出す全形式のファイルを1つずつ、意図的に壊したファイル、表計算ソフトが書き出すとおりの表、プレースホルダー画像があります。インストールも登録も要りません。
+</p>
+
+<div class="note">
+  <p class="note-title">1つのレシピから作成</p>
+  <p>
+    このページのファイルはすべて、1つのレシピ<a href="/samples/samples.yaml">samples.yaml</a>から作られています。<code>tfg</code>で実行すれば、どのマシンでも同じバイトが得られます。そのため、各ファイルの横のSHA-256は、信じるしかない値ではなく、自分で確かめられる値です。
+  </p>
+  <pre><code>tfg generate samples.yaml --out samples</code></pre>
+  <p>
+    すべてのチェックサムは<a href="/samples/SHA256SUMS">SHA256SUMS</a>にあります。これをそのフォルダーに置けば、<code>tfg tool checksum-check samples/SHA256SUMS</code>または<code>sha256sum -c SHA256SUMS</code>で、すべてのファイルが一致するかがわかります。
+  </p>
+</div>
+
+<p>
+  各表の最後の列は、システムがそのファイルをどう扱うべきかについて、<a href="/samples/manifest.json">マニフェスト</a>が期待する結果です。<code>accept</code>はファイルを受け入れるべき、<code>reject</code>は拒否するべき、<code>unspecified</code>はシステムのルール次第という意味です。
+</p>
+
+<section class="section" id="formats">
+  <p class="eyebrow">すべての形式</p>
+  <h2>全形式のファイルを1つずつ、各1MB</h2>
+  <p>
+    文書、画像、テキスト、データ、アーカイブ、メール、テレメトリ、音声、動画。どれもちょうど1048576バイトで、それぞれの形式の本物のファイルです。PDFはPDFリーダーで、DOCXはWordで、XLSXはExcelで開け、ZIPは展開できます。
+  </p>
+  {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    別のサイズもコマンド1つで作れます。<code>tfg generate --format pdf --size 10mb</code>はちょうど10MBのPDFを書き出し、1GBのファイルも同じ方法で作れます。それほど大きなファイルはこのページに置いていません。ダウンロードするより、コマンドで作るほうが速いからです。
+  </p>
+</section>
+
+<section class="section" id="corrupt">
+  <p class="eyebrow">意図的に破損</p>
+  <h2>破損したPDF、Word、Excelファイルと画像、動画、ZIP</h2>
+  <p>
+    どれも正常なファイルとして作ってから壊したもので、サイズは今もちょうど1MBです。<code>truncate</code>は、途中で止まったアップロードと同じように末尾を切り落とします。<code>zero-head</code>は、リーダーがファイルの種類を判断するために見る先頭のバイトをゼロで上書きします。マニフェストは、システムがこれらをすべて拒否することを期待しています。
+  </p>
+  {{ with .SampleTable "corrupt" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    <a href="/ja/corrupt-test-files/">破損したテストファイル</a>では、任意の形式と任意のサイズで自分で作る方法と、どんな破損があるかを説明しています。
+  </p>
+</section>
+
+<section class="section" id="tables">
+  <p class="eyebrow">取り込み用</p>
+  <h2>CSV、JSON、Excelの表</h2>
+  <p>
+    同じ表を、実際のツールが書き出すさまざまな形で用意しています。値の区切りがカンマ、セミコロン、タブ、パイプのもの、Windowsの改行のもの、ヘッダー行のないもの、すべての値を引用符で囲んだものと一切囲まないもの、列の多いCSV、Excelのシート、3つの構造のJSONです。一部が<code>unspecified</code>になっているのは、セミコロンを受け付けるかどうかは取り込み処理が自分で決めることだからです。してはいけないのは、表の半分だけを読むことです。
+  </p>
+  {{ with .SampleTable "tables" }}{{ template "samplesTable" . }}{{ end }}
+  <p>
+    これらは<a href="/ja/presets/tabular-import/">tabular-importプリセット</a>のファイルです。このプリセットなら、指定したとおりの行数と列数で作れます。
+  </p>
+</section>
+
+<section class="section" id="placeholders">
+  <p class="eyebrow">レイアウト用</p>
+  <h2>よく使われるサイズのプレースホルダー画像</h2>
+  <p>
+    中央にサイズが書かれた単色のグレーの画像で、本物の画像ができる前にページをレイアウトするためのものです。正方形のサムネイル、300 x 250の広告、728 x 90のバナー、1200 x 630のソーシャルカード、Full HDの画面があります。どれも、その画像として可能な限り小さく作っています。
+  </p>
+  {{ with .SampleTable "placeholders" }}{{ template "samplesTable" . }}{{ end }}
+  <p>ほかのサイズや色にするには、次のようにします。</p>
+  <pre><code>tfg generate --format png --size smallest --set content=placeholder --set width=640 --set height=360 --set background=1e293b</code></pre>
+  <p>
+    <a href="/ja/presets/picture-sizes/">picture-sizesプリセット</a>に<code>--content placeholder</code>を付けると、画面やプラットフォームが使うすべてのサイズを1回の実行で作れます。
+  </p>
+</section>
+
+<section class="section" id="next">
+  <p class="eyebrow">次へ</p>
+  <h2>ここからどこへ</h2>
+  <ul>
+    <li>
+      <a href="/ja/file-upload-test-cases/">ファイルアップロードのテストケース</a>では、これらのファイルのどれがアップロードフォームの何をテストするかを説明しています。
+    </li>
+    <li>
+      <a href="/ja/presets/">プリセット</a>は、テストの疑問1つごとに用意した既製のセットです。
+    </li>
+    <li>
+      <a href="/ja/test-files-in-ci/">CIでのテストファイル</a>では、このようなファイルをリポジトリに置かず、パイプラインで作ります。
+    </li>
+  </ul>
+</section>

@@ -75,7 +75,7 @@ targets:
   test:
     runs-on: ubuntu-latest
     env:
-      TFG_VERSION: "{{ .Facts.Version }}"
+      TFG_VERSION: "{{ .Facts.Released }}"
     steps:
       - uses: actions/checkout@v4
 
@@ -108,7 +108,7 @@ targets:
   <pre><code>fixtures:
   image: ubuntu:24.04
   variables:
-    TFG_VERSION: "{{ .Facts.Version }}"
+    TFG_VERSION: "{{ .Facts.Released }}"
   script:
     - apt-get update -qq &amp;&amp; apt-get install -y -qq curl ca-certificates
     - base={{ .Facts.Releases }}/download/v$TFG_VERSION
