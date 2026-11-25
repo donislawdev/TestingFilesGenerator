@@ -36,6 +36,9 @@
     Documentos, imágenes, texto, datos, archivos comprimidos, correo, telemetría, sonido y vídeo, cada
     uno de exactamente 1 048 576 bytes y cada uno un archivo real de su formato. El PDF se abre en un
     lector de PDF, el DOCX en Word, el XLSX en Excel y el ZIP se descomprime.
+    El servidor envía comprimidos los archivos de texto y algunas imágenes, así que durante la descarga
+    tu navegador puede mostrar un tamaño menor que el de la tabla. El archivo guardado tiene el tamaño
+    de la tabla y coincide con su SHA-256.
   </p>
   {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
   <p>

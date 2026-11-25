@@ -37,6 +37,9 @@
     Documenten, afbeeldingen, tekst, data, archieven, e-mail, telemetrie, geluid en video, elk precies
     1 048 576 bytes en elk een echt bestand van zijn formaat. De PDF opent in een PDF-lezer, de DOCX in
     Word, de XLSX in Excel en de ZIP pakt uit.
+    De server stuurt tekstbestanden en sommige afbeeldingen gecomprimeerd, dus tijdens het downloaden
+    kan je browser een kleinere grootte tonen dan de tabel. Het opgeslagen bestand heeft de grootte uit
+    de tabel en klopt met zijn SHA-256.
   </p>
   {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
   <p>

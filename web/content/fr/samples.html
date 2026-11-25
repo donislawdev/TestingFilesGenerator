@@ -37,6 +37,9 @@
     Documents, images, texte, données, archives, courrier, télémétrie, son et vidéo, chacun d'exactement
     1 048 576 octets et chacun un vrai fichier de son format. Le PDF s'ouvre dans un lecteur PDF, le DOCX
     dans Word, le XLSX dans Excel, et le ZIP se décompresse.
+    Le serveur envoie les fichiers texte et certaines images compressés, donc pendant le téléchargement
+    votre navigateur peut afficher une taille plus petite que celle du tableau. Le fichier enregistré a
+    la taille du tableau et correspond à son SHA-256.
   </p>
   {{ with .SampleTable "formats" }}{{ template "samplesTable" . }}{{ end }}
   <p>

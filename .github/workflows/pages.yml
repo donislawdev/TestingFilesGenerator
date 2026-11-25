@@ -10,7 +10,11 @@ name: Site
 # could put a stale page up while CI was still going red about it.
 #
 # So the site goes out only after CI has passed on main, for the exact commit
-# CI passed on. A red suite means the site does not move.
+# CI passed on, and only while that commit is still the tip of main. A red
+# suite means the site does not move. The jobs on macOS are left out of that
+# question (O371): GitHub cancelled them again and again for want of a runner,
+# each time holding the site back for hours, and nothing the site shows comes
+# from macOS. The ci job below asks, .github/scripts/site_gate.py answers.
 on:
   workflow_run:
     workflows: ["CI"]
@@ -32,6 +36,58 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Whether CI passed on this commit, macOS aside, and whether the commit is
+  # still the tip of main. It reads the jobs of the run that triggered this one
+  # and holds nothing but read access. A verdict of no is an answer, not a
+  # failure, so it leaves this job green and the jobs after it skipped. A script
+  # that cannot judge turns it red, so a broken gate is seen.
+  ci:
+    name: CI passed, macOS aside
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      publish: ${{ steps.verdict.outputs.publish }}
+    steps:
+      # The script comes from main as it is now, never from the commit being
+      # judged, so nothing a branch carries runs here.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+
+      - name: read the jobs of the CI run and judge them
+        id: verdict
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          # A dispatch is a person asking on purpose, with no CI run to read.
+          if [ "$EVENT" = workflow_dispatch ]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/jobs?filter=latest&per_page=100" --paginate \
+            --jq '.jobs[] | [.name, (.conclusion // "none"), (.labels | join(","))] | @tsv' > "$RUNNER_TEMP/jobs.tsv"
+          tip=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
+          code=0
+          python3 .github/scripts/site_gate.py "$RUNNER_TEMP/jobs.tsv" "$HEAD_SHA" "$tip" || code=$?
+          case "$code" in
+            0) echo "publish=true" >> "$GITHUB_OUTPUT" ;;
+            3) echo "publish=false" >> "$GITHUB_OUTPUT"
+               echo "::notice::The site does not move for $HEAD_SHA. The lines above say why." ;;
+            *) exit "$code" ;;
+          esac
+
   # The files of the sample files page are not in the repository. The recipe
   # beside the page makes them with the tfg of this commit, and every one is
   # checked against the SHA256SUMS the page was rendered with before it may go
@@ -39,11 +95,12 @@ jobs:
   # A job of its own, with nothing but read access, because it builds and runs
   # repository code and the job that deploys holds pages: write.
   samples:
+    needs: ci
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.head_repository.full_name == github.repository)
+      needs.ci.outputs.publish == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -83,14 +140,14 @@ jobs:
           retention-days: 1
 
   publish:
-    needs: samples
+    needs: [ci, samples]
     # Read access only. It uploads the site, and the deploy job after it is the
     # one that publishes. configure-pages only reads the Pages settings here.
     permissions:
       contents: read
       pages: read
-    # A dispatch is a person asking on purpose. Everything else has to be CI
-    # saying the tree is good, ON THIS REPOSITORY, for a push.
+    # A dispatch is a person asking on purpose. Everything else has to be the
+    # ci job saying the tree is good, ON THIS REPOSITORY, for a push.
     #
     # The last two conditions were added on 2026-08-27, the day this project
     # started taking pull requests, and they close a hole that opened with it.
@@ -107,10 +164,10 @@ jobs:
     # rather than anything reaching a secret. That is still not a thing to leave
     # open once anyone can open a pull request.
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'push' &&
-      github.event.workflow_run.head_repository.full_name == github.repository)
+      needs.ci.outputs.publish == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

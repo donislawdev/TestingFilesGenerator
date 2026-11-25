@@ -78,7 +78,7 @@ Source: <https://github.com/goccy/go-yaml>
 
 ## golang.org/x/text
 
-Version 0.43.0. Supplies Unicode normalisation, used to decide whether two file
+Version 0.44.0. Supplies Unicode normalisation, used to decide whether two file
 names are one name spelled two ways.
 
 ```
@@ -121,7 +121,7 @@ Source: <https://go.googlesource.com/text>
 
 ## github.com/gen2brain/gav1d
 
-Version 0.2.6. Codes and reads AV1, which is what the picture inside an
+Version 0.2.7. Codes and reads AV1, which is what the picture inside an
 AVIF is. It is written in Go and assembly with no C in it and no module
 of its own behind it, so it brings nothing else along.
 
@@ -163,7 +163,7 @@ Source: <https://github.com/gen2brain/gav1d>
 
 ## github.com/gen2brain/jxl
 
-Version 0.2.0. Codes JPEG XL. It is written in Go and assembly with no C in
+Version 0.2.1. Codes JPEG XL. It is written in Go and assembly with no C in
 it and no module of its own behind it, so it brings nothing else along.
 
 ```
@@ -237,6 +237,12 @@ move.
 published advisories name v0.60.0. Its licence file is byte for byte the one
 at v0.60.0, and no module entered or left the graph.
 
+`golang.org/x/image` went to v0.48.0 on 2026-11-24, on the same day as
+`golang.org/x/text` v0.44.0, `github.com/gen2brain/jxl` v0.2.1 and
+`github.com/gen2brain/gav1d` v0.2.7, whose sections are above. The licence and
+patent files of all four are byte for byte the ones at the versions before,
+and no module entered or left the graph.
+
 Two arrived later than the rest. `github.com/FyshOS/fancyfs` came in on the
 same day with the folder picker, because the toolkit's dialog package
 imports it to decorate folder icons. Its licence was read before it was
@@ -288,7 +294,7 @@ is the module's own MIT, carried unchanged.
 | `github.com/srwiley/oksvg` | v0.0.0-20221011165216-be6e8873101c | BSD-3-Clause | (c) 2018, Steven R Wiley |
 | `github.com/srwiley/rasterx` | v0.0.0-20220730225603-2ab79fcdd4ef | BSD-3-Clause | (c) 2018, Steven R Wiley |
 | `github.com/yuin/goldmark` | v1.8.2 | MIT | (c) 2019 Yusuke Inuzuka |
-| `golang.org/x/image` | v0.46.0 | BSD-3-Clause | 2009 The Go Authors. |
+| `golang.org/x/image` | v0.48.0 | BSD-3-Clause | 2009 The Go Authors. |
 | `golang.org/x/net` | v0.62.0 | BSD-3-Clause | 2009 The Go Authors. |
 | `golang.org/x/sys` | v0.50.0 | BSD-3-Clause | 2009 The Go Authors. |
 
