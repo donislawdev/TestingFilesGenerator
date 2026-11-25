@@ -92,15 +92,17 @@ func bare(value string, s Shell) bool {
 }
 
 // olderPowerShellDiffers reports whether Windows PowerShell 5.1 hands this value
-// to a program differently from PowerShell 7.
+// to a program differently from PowerShell 7.3 and later.
 //
 // Measured on 2026-11-25 on this project's own machine, 5.1.26100 against
 // 7.7.0, with the same line given to a program that prints what it received.
 // 5.1 does not escape a double quote when it builds the command line, so 'a"b'
 // arrives as ab, and it wraps a value holding a space in quotes without
 // doubling a backslash at its end, so 'C:\My Dir\' swallows the closing quote
-// and the next argument with it. 7 gets both right, and no one line is right in
-// both, so the window says which PowerShell the line needs instead.
+// and the next argument with it. 7.7 gets both right, and no one line is right
+// in both, so the window says which PowerShell the line needs instead. 7.3 is
+// the first that builds the line this way by default - the documentation of
+// $PSNativeCommandArgumentPassing - and 7.0 to 7.2 hand values over as 5.1 does.
 func olderPowerShellDiffers(value string) bool {
 	if strings.ContainsRune(value, '"') {
 		return true

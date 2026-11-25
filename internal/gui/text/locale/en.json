@@ -206,8 +206,8 @@
   },
   "CommandNeedsPowerShell7": {
     "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are. Carries one value, {{.Settings}}, which has to stay spelled exactly that way.",
-    "hash": "sha256-954f9bfdb79c",
-    "other": "Run it in PowerShell 7. Windows PowerShell 5.1 would change the double quotes or the last backslash in {{.Settings}} before tfg reads them."
+    "hash": "sha256-86f572b88d3f",
+    "other": "Run it in PowerShell 7.3 or later. Windows PowerShell 5.1 and earlier versions of PowerShell 7 would change the double quotes or the last backslash in {{.Settings}} before tfg reads them."
   },
   "CommandNotText": {
     "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are.",

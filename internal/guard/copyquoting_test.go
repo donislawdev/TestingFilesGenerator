@@ -28,7 +28,7 @@ import (
 // 2026-11-25 before this was written - docs, the analysis of that day, section 2.
 //
 // Windows PowerShell 5.1 is asked separately. It hands a double quote and a
-// last backslash after a space to a program differently from PowerShell 7, the
+// last backslash after a space to a program differently from PowerShell 7.3, the
 // line says so instead of pretending, and this guard holds both halves of that
 // sentence: every value the line does NOT warn about arrives whole in 5.1, and
 // every value it does warn about really arrives changed - a warning nobody
@@ -52,7 +52,7 @@ func TestEveryValueReachesTheProgramAsItWasWritten(t *testing.T) {
 		}
 	}
 	if ran == 0 {
-		t.Skip("NOT CHECKED: no PowerShell and no sh on this machine. CI runs this on Windows, Linux and macOS, each with PowerShell 7.")
+		t.Skip("NOT CHECKED: no PowerShell and no sh on this machine. CI runs this on Windows, Linux and macOS, each with PowerShell 7.3 or later.")
 	}
 }
 
@@ -141,6 +141,13 @@ func canary(t *testing.T, shell string, s commandline.Shell, program commandline
 	if got := arrived(t, shell, s, bad); reflect.DeepEqual(got, broken) {
 		t.Errorf("CANARY: %s handed the badly written %q over whole, so this guard cannot tell a broken line from a good one", shell, bad)
 	}
+	// An empty word is an argument too. A line that gained one would ask the
+	// program something else, and a reader that split the output on white
+	// space would lose it and pass the line.
+	extra, whole := start.Text+" --v x ''", []string{"--v", "x", ""}
+	if got := arrived(t, shell, s, extra); !reflect.DeepEqual(got, whole) {
+		t.Errorf("CANARY: %s handed %q over as %q, so this guard cannot see an empty argument", shell, extra, got)
+	}
 }
 
 // expectArrived runs a line and compares what the program received.
@@ -188,16 +195,22 @@ func arrived(t *testing.T, shell string, s commandline.Shell, line string) []str
 	if err != nil {
 		t.Fatalf("%s did not run the line: %v\n%s", shell, err, line)
 	}
+	// One line per argument, each behind a mark, so an empty argument is a
+	// line of its own rather than nothing between two others.
 	var args []string
-	for _, h := range strings.Fields(string(out)) {
+	for line := range strings.Lines(string(out)) {
+		h, marked := strings.CutPrefix(strings.TrimRight(line, "\r\n"), echoMark)
 		b, err := hex.DecodeString(h)
-		if err != nil {
-			t.Fatalf("%s printed %q, which is not what the stand in prints", shell, h)
+		if !marked || err != nil {
+			t.Fatalf("%s printed %q, which is not what the stand in prints", shell, line)
 		}
 		args = append(args, string(b))
 	}
 	return args
 }
+
+// echoMark stands before every argument the stand in prints.
+const echoMark = "arg:"
 
 func writeScript(t *testing.T, path, body string) {
 	t.Helper()
@@ -216,7 +229,7 @@ func echoProgram(t *testing.T) commandline.Program {
 	dir := t.TempDir()
 	src := filepath.Join(dir, "echo.go")
 	writeScript(t, src, "package main\n\nimport (\n\t\"encoding/hex\"\n\t\"fmt\"\n\t\"os\"\n)\n\n"+
-		"func main() {\n\tfor _, a := range os.Args[1:] {\n\t\tfmt.Println(hex.EncodeToString([]byte(a)))\n\t}\n}\n")
+		"func main() {\n\tfor _, a := range os.Args[1:] {\n\t\tfmt.Println(\""+echoMark+"\" + hex.EncodeToString([]byte(a)))\n\t}\n}\n")
 	name := "tfg"
 	if runtime.GOOS == "windows" {
 		name = "tfg.exe"

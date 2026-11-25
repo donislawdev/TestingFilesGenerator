@@ -56,11 +56,15 @@ func newCopying(host Host, fields *parts.Fields, line func() (*commandline.Line,
 }
 
 // press writes the command for this computer and puts it on the clipboard.
+//
+// A refusal from putting the line together goes through unwritable as well as
+// one from writing it, because a damage setting with a comma is refused there,
+// and it belongs under its box in the words of this window.
 func (c *copying) press() {
 	c.clear()
 	l, err := c.line()
 	if err != nil {
-		c.refuse(err)
+		c.refuse(unwritable(err))
 		return
 	}
 	shell := commandline.ShellFor(runtime.GOOS)

@@ -145,13 +145,19 @@ func TestACommandCopiedFromToolsReadsTheFileTheBoxNames(t *testing.T) {
 // nothing reaches the clipboard. The same form with the box put right copies a
 // line - the canary that the press reaches the screen at all, without which an
 // empty clipboard proves nothing.
+//
+// The comma in a damage setting is refused while the line is put together,
+// before it is written for a shell, so it is a refusal of its own here: it
+// once reached the foot of the form in the words of the commandline package
+// rather than under its box.
 func TestCopyCommandRefusesWhatGenerateRefusesAndCopiesNothing(t *testing.T) {
 	cases := []struct {
-		label, box, bad, good string
-		says                  string
+		label, damage, box, bad, good string
+		says                          string
 	}{
-		{"a size that is not a size", "size", "ten", "10kb", ""},
-		{"a name template with a tab in it", "name", "a\tb_{index}.txt", "ab_{index}.txt", text.CommandControlCharacter()},
+		{"a size that is not a size", "", "size", "ten", "10kb", ""},
+		{"a name template with a tab in it", "", "name", "a\tb_{index}.txt", "ab_{index}.txt", text.CommandControlCharacter()},
+		{"a damage setting with a comma in it", damage.ZeroHead, damage.SettingBytes, "1,6", "16", text.CommandCommaInDamage()},
 	}
 	for _, c := range cases {
 		t.Run(c.label, func(t *testing.T) {
@@ -161,6 +167,13 @@ func TestCopyCommandRefusesWhatGenerateRefusesAndCopiesNothing(t *testing.T) {
 			t.Cleanup(func() { join(host) })
 			fields := gen.Fields()
 			entryUnder(t, content, text.FieldOutputDir()).SetText(t.TempDir())
+			if c.damage != "" {
+				chooser, ok := controlUnder(content, text.FieldDamage()).(*parts.Chooser)
+				if !ok {
+					t.Fatalf("the damage field is not a list to choose from")
+				}
+				chooser.SetSelected(c.damage)
+			}
 
 			setBox(t, fields, c.box, c.bad)
 			if got := boxText(t, fields, c.box); got != c.bad {

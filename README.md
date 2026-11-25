@@ -901,8 +901,8 @@ found in the window can go into a script or a pipeline. It is written for
 PowerShell on Windows and for bash or zsh on macOS and Linux. It starts with
 `tfg` when a terminal finds it by that name, with the full path of a `tfg` next
 to the window when that is where it is, and the window says so when it finds
-neither. A value with a double quote in it needs PowerShell 7 rather than
-Windows PowerShell 5.1, and the window says that too. Settings the window would
+neither. A value with a double quote in it needs PowerShell 7.3 or later rather
+than Windows PowerShell 5.1, and the window says that too. Settings the window would
 refuse are refused here as well, under their boxes, and nothing is copied.
 
 <p>

@@ -86,9 +86,10 @@ type Written struct {
 	Text string
 	// Program is where the line found tfg on this computer.
 	Program Where
-	// OlderPowerShell lists the settings whose values Windows PowerShell 5.1
-	// hands to a program differently from PowerShell 7, in the order they
-	// appear - see olderPowerShellDiffers. Empty for sh.
+	// OlderPowerShell lists the settings whose values Windows PowerShell 5.1,
+	// and PowerShell 7 before 7.3, hand to a program differently from
+	// PowerShell 7.3 and later, in the order they appear - see
+	// olderPowerShellDiffers. Empty for sh.
 	OlderPowerShell []string
 }
 

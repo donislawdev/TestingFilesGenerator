@@ -23,10 +23,11 @@ func CommandCopiedTerminal() string {
 
 // CommandNeedsPowerShell7 follows the line above when a value is one Windows
 // PowerShell 5.1 would change before tfg sees it - a double quote, or a last
-// backslash after a space - and names the boxes it is in.
+// backslash after a space - and names the boxes it is in. PowerShell 7 before
+// 7.3 hands such a value over the way 5.1 does, so the version is named whole.
 func CommandNeedsPowerShell7(labels []string) string {
 	return sayf("CommandNeedsPowerShell7",
-		"Run it in PowerShell 7. Windows PowerShell 5.1 would change the double quotes or the last backslash in {{.Settings}} before tfg reads them.",
+		"Run it in PowerShell 7.3 or later. Windows PowerShell 5.1 and earlier versions of PowerShell 7 would change the double quotes or the last backslash in {{.Settings}} before tfg reads them.",
 		map[string]any{"Settings": strings.Join(labels, ", ")})
 }
 
