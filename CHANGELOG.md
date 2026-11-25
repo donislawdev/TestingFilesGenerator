@@ -16,6 +16,13 @@ because it turns other people's test suites red.
 
 ### Added
 
+- **Copy command in the window.** The Single batch, Presets, Several batches
+  and Tools screens put on the clipboard the `tfg` command that does what the
+  screen would do, so a set you found in the window can go into a script or a
+  pipeline. It is written for PowerShell on Windows and for bash or zsh on
+  macOS and Linux, and it starts `tfg` the way your computer finds it. On
+  Several batches it saves the recipe of the screen as a file in the folder
+  the terminal is open in, then runs it.
 - **Sample files to download on the website.** One file of every format at
   exactly 1 MB, corrupt PDF, Word, Excel, PowerPoint, JPG, PNG, MP4 and ZIP
   files, CSV, JSON and Excel tables for an import, and placeholder pictures in

@@ -540,6 +540,15 @@
 												</container>
 											</container>
 										</container>
+										<container size="788x77">
+											<container size="788x28">
+												<widget pos="648,0" size="139x28" type="*parts.Button">
+													<rectangle pos="-2,-2" radius="6" size="143x32" strokeColor="hyperlink"/>
+													<rectangle fillColor="button" radius="6" size="138x27" strokeColor="inputBorder" strokeWidth="1"/>
+													<text alignment="center" bold pos="16,6" size="107x16">Copy command</text>
+												</widget>
+											</container>
+										</container>
 									</container>
 								</container>
 							</container>

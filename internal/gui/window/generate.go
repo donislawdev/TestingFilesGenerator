@@ -248,6 +248,7 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	g := &Generate{runner: newRunner(host.Later, host.Remembered, host.MachineMemory), host: host, tips: parts.NewTips(), settingsFolded: true}
 	g.runner.settle = watchedSettle(host, g.runner, g.settle)
 	g.runner.offer.through(host)
+	copyBtn := offerCopy(g.runner, host, g.commandLine)
 	// This screen is one target and draws its boxes under the bare key, so a
 	// refusal that arrives carrying a position belongs to the box of that name.
 	g.runner.readdress = withoutTheTarget
@@ -280,7 +281,7 @@ func NewGenerate(host Host, links ...fyne.CanvasObject) *Generate {
 	// foot of the form would be cut off at the edge of the viewport.
 	g.body = g.tips.Over(container.NewBorder(
 		nil,
-		g.footer(rail(append(outwardButtons(host), links...)...)),
+		g.footer(railOf(host, nil, links), copyBtn),
 		nil, nil,
 		(g.keepScroll(parts.VScroll(parts.Screen(
 			parts.Titled(text.TabOneTarget(), text.SubtitleGenerate()),
