@@ -113,7 +113,9 @@ whose test suites depend on it.
   `internal/guard` is also broken on purpose by an entry in
   `internal/guard/mutation/entries.py`, and the `mutation` check on a pull
   request runs the entries the change reaches. A new test needs an entry there,
-  or a line in `internal/guard/mutationcoverage_test.go` saying why it has none.
+  or a line saying why it has none: in `internal/guard/provenbyprobe_test.go`
+  for a test proven by a canary or by a break made by hand, in
+  `internal/guard/mutationcoverage_test.go` for one that is not proven yet.
 - **Words a user reads are English, with a flat hyphen and no semicolons.** That
   covers the README, the changelog, `--help`, every message, and every comment
   in the code. A test enforces the punctuation.

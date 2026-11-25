@@ -104,6 +104,11 @@
     "hash": "sha256-96e3f09a5f16",
     "other": "Copy all"
   },
+  "ButtonCopyCommand": {
+    "description": "The words on a button.",
+    "hash": "sha256-9a01feecae67",
+    "other": "Copy command"
+  },
   "ButtonDonate": {
     "description": "The words on a button.",
     "hash": "sha256-c91ee0f2799d",
@@ -173,6 +178,46 @@
     "description": "An entry in a list somebody chooses from. Carries one value, {{.Language}}, which has to stay spelled exactly that way.",
     "hash": "sha256-bb58ca050419",
     "other": "Same as the system ({{.Language}})"
+  },
+  "CommandCommaInDamage": {
+    "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are.",
+    "hash": "sha256-9e8ab62cbc41",
+    "other": "A command line cannot carry a comma here, because --damage separates its settings with commas. Remove the comma to copy the command."
+  },
+  "CommandControlCharacter": {
+    "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are.",
+    "hash": "sha256-4355c101940d",
+    "other": "A command line cannot carry a line break or another invisible character. Remove it to copy the command."
+  },
+  "CommandCopiedPowerShell": {
+    "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are.",
+    "hash": "sha256-3d0a8b6b260b",
+    "other": "The command is on the clipboard, written for PowerShell."
+  },
+  "CommandCopiedTerminal": {
+    "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are.",
+    "hash": "sha256-95f8477e11ec",
+    "other": "The command is on the clipboard, written for a terminal such as bash or zsh."
+  },
+  "CommandLeadingDash": {
+    "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are.",
+    "hash": "sha256-e2b4a6864082",
+    "other": "A command would read a value starting with a dash as an option. Give the full path instead."
+  },
+  "CommandNeedsPowerShell7": {
+    "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are. Carries one value, {{.Settings}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-954f9bfdb79c",
+    "other": "Run it in PowerShell 7. Windows PowerShell 5.1 would change the double quotes or the last backslash in {{.Settings}} before tfg reads them."
+  },
+  "CommandNotText": {
+    "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are.",
+    "hash": "sha256-4f494b6856e0",
+    "other": "This value is not readable text, so it cannot be written into a command. Type it again to copy the command."
+  },
+  "CommandWithoutTfg": {
+    "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are.",
+    "hash": "sha256-826f73e7a16d",
+    "other": "tfg was not found on this computer. Install the command line, or put the folder it is in on PATH, before you run this."
   },
   "ContentsHeading": {
     "description": "Shown where an archive says what it holds.",

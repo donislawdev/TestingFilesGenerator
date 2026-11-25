@@ -391,6 +391,17 @@ func rail(items ...fyne.CanvasObject) fyne.CanvasObject {
 	return container.NewHBox(items...)
 }
 
+// railOf is the rail of a work screen, in one order on all of them: Donate
+// and GitHub, then a divider and the screen's own buttons that run nothing -
+// Add a batch - when it has any, and the ways to the other screens.
+func railOf(h Host, own []fyne.CanvasObject, links []fyne.CanvasObject) fyne.CanvasObject {
+	items := outwardButtons(h)
+	if len(own) > 0 {
+		items = append(append(items, parts.Divider()), own...)
+	}
+	return rail(append(items, links...)...)
+}
+
 // roomToSpeak is where a run says what it is doing, and it keeps its height
 // whether or not there is a run. See parts.WithRoomForARun for why.
 //
@@ -404,8 +415,11 @@ func roomToSpeak(bar *parts.Progress, status *widget.Label, problem *parts.Error
 
 // footer is the bar at the foot of a screen: the buttons, and under them the
 // room a run speaks in - which at rest carries what the form comes to.
-func (r *runner) footer(rail fyne.CanvasObject) fyne.CanvasObject {
-	return parts.ActionBar(rail, r.actions(), roomToSpeak(r.busy.bar, r.status, r.problem))
+//
+// end is what stands at the right end of the bar - Copy command, see
+// parts.ActionBarEnds - or nil on a screen without one.
+func (r *runner) footer(rail, end fyne.CanvasObject) fyne.CanvasObject {
+	return parts.ActionBarEnds(rail, end, r.actions(), roomToSpeak(r.busy.bar, r.status, r.problem))
 }
 
 // onPreview says what the run would cost and writes nothing.

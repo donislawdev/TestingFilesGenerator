@@ -439,6 +439,19 @@ func (dividerLayout) Layout(objects []fyne.CanvasObject, size fyne.Size) {
 // on the form's - and the owner reversed the decision knowing it: one edge for
 // everything that is not centred. Pass nil on a screen that has none.
 func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.CanvasObject {
+	return ActionBarEnds(rail, nil, content...)
+}
+
+// ActionBarEnds is ActionBar with a second rail at the right edge, for what
+// belongs to the form and runs nothing - Copy command.
+//
+// At the right rather than on the rail at the left, and measured rather than
+// argued: the bar is never wider than the readable column, 788 px, and Donate,
+// GitHub and Copy command on one rail left the buttons that run something 47 px
+// right of centre, against the owner's decision of 2026-08-19 that they sit in
+// the middle (TestTheButtonsThatRunSomethingSitInTheMiddle). One button at each
+// end keeps them there. Pass nil for end and this is ActionBar.
+func ActionBarEnds(rail, end fyne.CanvasObject, content ...fyne.CanvasObject) fyne.CanvasObject {
 	// The padding goes inside the column as well as around the bar, and that is
 	// what puts the bar's own words on the same left edge as the form's.
 	//
@@ -465,8 +478,13 @@ func ActionBar(rail fyne.CanvasObject, content ...fyne.CanvasObject) fyne.Canvas
 		// words and not its invisible box, the rule inkTight keeps for a label.
 		// Measured on 2026-09-24 with the box on the edge: the heart stood
 		// 16 px right of the line under it.
-		inner = container.New(railOver{centred: content[0]}, inner,
-			container.NewVBox(container.New(hungOut{by: BarButtonInsetX}, rail)))
+		over := []fyne.CanvasObject{inner, container.NewVBox(container.New(hungOut{by: BarButtonInsetX}, rail))}
+		if end != nil {
+			// A button with a surface of its own, so its edge is the one
+			// that stands on the column's - nothing to hang out.
+			over = append(over, container.NewVBox(container.New(atTheRight{}, end)))
+		}
+		inner = container.New(railOver{centred: content[0]}, over...)
 	}
 	column := container.New(readableWidth{}, Indented(inner))
 	return container.NewStack(panelSurface(), Padded(InsetBar, column))
@@ -521,10 +539,21 @@ func (r railOver) MinSize(objects []fyne.CanvasObject) fyne.Size {
 		size = size.Max(o.MinSize())
 	}
 	if len(objects) > 1 {
-		need := objects[1].MinSize().Width + GapColumns + r.centred.MinSize().Width
+		left, right := clearOf(objects)
+		need := left + r.centred.MinSize().Width + right
 		size.Width = fyne.Max(size.Width, need)
 	}
 	return size
+}
+
+// clearOf is the room each rail takes from the row, a gap included: the rail
+// at the left always, the one at the right when there is one.
+func clearOf(objects []fyne.CanvasObject) (left, right float32) {
+	left = objects[1].MinSize().Width + GapColumns
+	if len(objects) > 2 {
+		right = objects[2].MinSize().Width + GapColumns
+	}
+	return left, right
 }
 
 func (r railOver) Layout(objects []fyne.CanvasObject, size fyne.Size) {
@@ -556,10 +585,29 @@ func (r railOver) keepRailClear(objects []fyne.CanvasObject) (*fyne.Container, b
 	if !ours {
 		return nil, false
 	}
-	room := objects[1].MinSize().Width + GapColumns
-	moved := keep.clearLeft != room
-	keep.clearLeft = room
+	left, right := clearOf(objects)
+	moved := keep.clearLeft != left || keep.clearRight != right
+	keep.clearLeft, keep.clearRight = left, right
 	return row, moved
+}
+
+// atTheRight lays its one child at its minimum size against the right edge.
+type atTheRight struct{}
+
+func (atTheRight) MinSize(objects []fyne.CanvasObject) fyne.Size {
+	size := fyne.Size{}
+	for _, o := range objects {
+		size = size.Max(o.MinSize())
+	}
+	return size
+}
+
+func (atTheRight) Layout(objects []fyne.CanvasObject, size fyne.Size) {
+	for _, o := range objects {
+		min := o.MinSize()
+		o.Resize(min)
+		o.Move(fyne.NewPos(size.Width-min.Width, 0))
+	}
 }
 
 // Screen stacks sections under a head - a Title, or a Titled pair.

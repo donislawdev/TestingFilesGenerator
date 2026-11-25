@@ -895,6 +895,16 @@ beside earlier runs, sits under the output directory and stays on unless you
 turn it off. With it off, such a run is refused, the same as on the command line
 without `--number-if-taken`.
 
+Copy command, on the Single batch, Presets and Tools screens, puts on the
+clipboard the `tfg` command that does what the screen would do, so a set you
+found in the window can go into a script or a pipeline. It is written for
+PowerShell on Windows and for bash or zsh on macOS and Linux. It starts with
+`tfg` when a terminal finds it by that name, with the full path of a `tfg` next
+to the window when that is where it is, and the window says so when it finds
+neither. A value with a double quote in it needs PowerShell 7 rather than
+Windows PowerShell 5.1, and the window says that too. Settings the window would
+refuse are refused here as well, under their boxes, and nothing is copied.
+
 <p>
   <img src=".github/window-presets.png" width="49%" alt="The Presets screen of the window, with the list of presets open">
   <img src=".github/window-settings.png" width="49%" alt="One batch of log files in the window, with the settings the log format takes">

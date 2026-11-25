@@ -83,7 +83,7 @@ func structure() Entry {
 		two := s.Add("count", "How many files", "1", parts.NoDetail, parts.NewEntry())
 		return []fyne.CanvasObject{one, two}
 	}
-	return Entry{Name: "Section", Covers: []string{"Divider", "ActionBar"}, States: []State{
+	return Entry{Name: "Section", Covers: []string{"Divider", "ActionBar", "ActionBarEnds"}, States: []State{
 		{"a section of two rows", func() fyne.CanvasObject {
 			return parts.Section("File configuration", twoRows()...)
 		}},
@@ -95,6 +95,15 @@ func structure() Entry {
 			// Composed the way the work screens compose it: the rail at the
 			// left edge, the buttons in a row of their own, centred.
 			return parts.ActionBar(container.NewHBox(parts.NewButton(parts.Quiet, "Donate", func() {}).InTheBar()),
+				parts.ButtonRow(
+					parts.NewButton(parts.Secondary, "Preview", func() {}).InTheBar(),
+					parts.NewButton(parts.Primary, "Generate", func() {}).InTheBar()))
+		}},
+		{"the bar with a button at its right end", func() fyne.CanvasObject {
+			// Copy command's place on the work screens: the run buttons stay
+			// centred between the two ends.
+			return parts.ActionBarEnds(container.NewHBox(parts.NewButton(parts.Quiet, "Donate", func() {}).InTheBar()),
+				parts.NewButton(parts.Secondary, "Copy command", func() {}).InTheBar(),
 				parts.ButtonRow(
 					parts.NewButton(parts.Secondary, "Preview", func() {}).InTheBar(),
 					parts.NewButton(parts.Primary, "Generate", func() {}).InTheBar()))

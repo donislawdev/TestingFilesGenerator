@@ -61,6 +61,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	p := &Preset{runner: newRunner(host.Later, host.Remembered, host.MachineMemory), host: host, tips: parts.NewTips()}
 	p.runner.offer.through(host)
 	p.runner.settle = watchedSettle(host, p.runner, p.settle)
+	copyBtn := offerCopy(p.runner, host, p.commandLine)
 	// No readdress here, and that is the boundary of this screen rather than an
 	// omission. The other two screens draw boxes for the settings of a target,
 	// so a refusal carrying a position has a box to be moved onto. This one
@@ -100,7 +101,7 @@ func NewPreset(host Host, links ...fyne.CanvasObject) *Preset {
 	// chooser, because they are the answer to the question that card asks.
 	p.body = p.tips.Over(container.NewBorder(
 		nil,
-		p.footer(rail(append(outwardButtons(host), links...)...)),
+		p.footer(railOf(host, nil, links), copyBtn),
 		nil, nil,
 		(p.keepScroll(parts.VScroll(parts.Screen(
 			parts.Titled(text.TabPresets(), text.SubtitlePreset()),

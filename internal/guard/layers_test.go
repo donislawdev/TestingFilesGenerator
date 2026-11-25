@@ -119,6 +119,12 @@ var layer = map[string]int{
 	"internal/gui/catalogue": 5,
 	"internal/gui/text":      5,
 	"internal/gui/window":    5,
+	// Writes the command a screen of the window stands for, in the spelling
+	// of the command line - flags - which no package below the surfaces may
+	// write (TestNoMessageBelowTheSurfacesIsWrittenInFlagSpelling). On the
+	// surface layer because it is the edge between the two, and reached
+	// only from the window, by the edge named below.
+	"internal/commandline": 5,
 
 	"cmd/tfg":     6,
 	"cmd/tfg-gui": 6,
@@ -234,7 +240,7 @@ var sameLayerAllowed = map[string][]string{
 	// windows. That direction is what lets a part be rendered on its own,
 	// which is where the golden images sit - an image of a whole screen
 	// changes with every layout change and stops being looked at.
-	"internal/gui/window": {"internal/gui/parts", "internal/gui/text"},
+	"internal/gui/window": {"internal/gui/parts", "internal/gui/text", "internal/commandline"},
 	// The sentences the window shows. It imports nothing of ours - a text
 	// package that reached for the engine to word a message would put half a
 	// message here and half where the engine says it, which is how two

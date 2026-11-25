@@ -152,11 +152,13 @@ func NewTools(host Host) *Tools {
 	t.offer.btn.InTheBar().Hide()
 	bar := parts.NewProgress()
 	bar.Hide()
-	t.busy = &busy{fields: t.fields, starters: []*parts.Button{run}, cancel: cancel, bar: bar, later: host.Later}
-	t.busy.row = parts.ButtonRow(run, cancel, t.offer.btn)
 	t.status = widget.NewLabel("")
 	t.status.Wrapping = fyne.TextWrapWord
 	t.fault = parts.NewErrorArea()
+	copyBtn := toolCopying(host, t).btn
+	t.busy = &busy{fields: t.fields, starters: []*parts.Button{run}, cancel: cancel, bar: bar, later: host.Later,
+		also: []fyne.Disableable{copyBtn}}
+	t.busy.row = parts.ButtonRow(run, cancel, t.offer.btn)
 
 	t.view.scroll = parts.VScroll(parts.Screen(
 		parts.Titled(text.TabTools(), text.SubtitleTools()),
@@ -169,7 +171,7 @@ func NewTools(host Host) *Tools {
 	))
 	t.view.body = t.tips.Over(container.NewBorder(
 		nil,
-		parts.ActionBar(rail(outwardButtons(host)...), t.busy.row, roomToSpeak(bar, t.status, t.fault)),
+		parts.ActionBarEnds(railOf(host, nil, nil), copyBtn, t.busy.row, roomToSpeak(bar, t.status, t.fault)),
 		nil, nil,
 		t.view.scroll,
 	))
