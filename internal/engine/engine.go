@@ -443,16 +443,7 @@ func PlanContext(ctx context.Context, targets []Target, opt Options) ([]PlannedF
 	}
 
 	if opt.OutDir == "" {
-		return nil, &RecipeError{Setting: SettingOutDir,
-			Detail: core.Says("engine.NoOutDir", "the output directory is empty"),
-			// "or leave it out to use the current one" used to close this
-			// sentence and it was removed on 2026-08-26. It is true of a
-			// recipe file and of the command line, and it is a thing a person
-			// CANNOT do in the window: there, leaving it out is exactly what
-			// they just did, and all three screens refuse it. One refusal
-			// cannot carry two surfaces' advice, and the half that survives is
-			// the half that is true on both. O125.
-			Remedy: core.Says("engine.NoOutDirFix", "Name a directory, for example ./fixtures")}
+		return nil, NoOutDir()
 	}
 
 	// Worked out after the budget took its reference point, so the reserved

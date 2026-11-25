@@ -480,10 +480,16 @@ var provenByProbe = map[string]string{
 	"TestCopyCommandRefusesWhatGenerateRefusesAndCopiesNothing": "its own canary - the same form with the box put right must " +
 		"copy a line, so an empty clipboard is a refusal and not a press that reached nothing.",
 	"TestEveryValueReachesTheProgramAsItWasWritten": "its own canary - a line written badly on purpose, a bare -foo.txt in " +
-		"PowerShell and a bare $HOME in sh, must not arrive whole - and broken by hand on 2026-11-25 by no longer doubling the " +
-		"typographic quote U+2019: red in PowerShell 7, the quote closed the value and split the line.",
+		"PowerShell and a bare $HOME in sh, must not arrive whole, and a line with an extra '' must arrive with the empty " +
+		"argument - and broken by hand on 2026-11-25 by no longer doubling the typographic quote U+2019: red in PowerShell 7, " +
+		"the quote closed the value and split the line. The empty argument canary was red with a reader that skipped empty lines.",
+	"TestACommandCopiedFromSeveralBatchesMakesTheFilesTheWindowMakes": "its own canary - the same script with quoting that " +
+		"expands must save something other than the recipe - and broken by hand on 2026-11-25 by leaving the seed out of the " +
+		"saved recipe: red in pwsh and powershell, the files differed. Also red with an emptied output folder no longer refused. " +
+		"Leaving -Encoding utf8 out stayed GREEN on this machine, whose code page is UTF-8 (65001), so 5.1 writes UTF-8 anyway.",
 	"TestTheLineStartsTfgTheWayThisComputerFindsIt": "its own canary in every case that finds tfg - the same machine without " +
 		"the file must find nothing.",
 	"TestAValueNoLineCanCarryIsRefusedUnderItsSetting": "every row requires a refusal of one kind under one setting, so a " +
-		"writer that refused nothing, or refused under another name, fails every row.",
+		"writer that refused nothing, or refused under another name, fails every row. The rows of a saved text were red on " +
+		"2026-11-25 with the check of the line that ends it switched off.",
 }

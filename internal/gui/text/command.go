@@ -31,6 +31,15 @@ func CommandNeedsPowerShell7(labels []string) string {
 		map[string]any{"Settings": strings.Join(labels, ", ")})
 }
 
+// CommandSavesRecipe follows the first line on the Several batches screen,
+// whose command saves the recipe as a file and then runs it - so a person
+// knows a file will appear where they paste it, and under which name.
+func CommandSavesRecipe(file string) string {
+	return sayf("CommandSavesRecipe",
+		"It saves the recipe as {{.File}} in the folder the terminal is open in, then runs it.",
+		map[string]any{"File": file})
+}
+
 // CommandWithoutTfg follows the first line when tfg is neither where a
 // terminal looks for programs nor next to this window, so the line cannot
 // run here as it stands.
@@ -64,4 +73,11 @@ func CommandCommaInDamage() string {
 func CommandLeadingDash() string {
 	return say("CommandLeadingDash",
 		"A command would read a value starting with a dash as an option. Give the full path instead.")
+}
+
+// CommandEndsText is a refusal of a recipe with a line the terminal would read
+// as the end of the text it saves, which would leave half a recipe on disk.
+func CommandEndsText() string {
+	return say("CommandEndsText",
+		"A line of the recipe would end the text the terminal saves before the recipe is whole. Change the value at the start of that line to copy the command.")
 }

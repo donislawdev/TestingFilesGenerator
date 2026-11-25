@@ -81,7 +81,11 @@ const (
 	// out of format/jpg/jpg.go into stream.go, when the size word smallest
 	// and the placeholder took both past the ceiling. The longest file is
 	// engine/engine.go now.
-	longestFile = 386
+	// Lowered from 386 on 2026-11-25: the refusal of a run with no output
+	// directory moved out of engine/engine.go into errors.go, so the window's
+	// Copy command gives it in the same words. engine/engine.go is still the
+	// longest.
+	longestFile = 384
 
 	// Depth answers a different question than length, and it is the better
 	// question of the two. A hundred line function that is flat reads top to

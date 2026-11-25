@@ -34,7 +34,7 @@ import (
 type copying struct {
 	btn *parts.Button
 	// line writes the screen's command, or refuses the way Generate would.
-	line func() (*commandline.Line, error)
+	line func() (commandline.Command, error)
 	// put is the clipboard, tell the status line, clear takes the marks of an
 	// earlier refusal away and refuse puts one under its box.
 	put    func(string)
@@ -49,7 +49,7 @@ type copying struct {
 // newCopying builds the button. The screen hands over where its words go,
 // because the runner of the three work screens and the Tools screen keep them
 // in different places.
-func newCopying(host Host, fields *parts.Fields, line func() (*commandline.Line, error)) *copying {
+func newCopying(host Host, fields *parts.Fields, line func() (commandline.Command, error)) *copying {
 	c := &copying{line: line, put: host.Copy, fields: fields}
 	c.btn = parts.NewButton(parts.Secondary, text.ButtonCopyCommand(), c.press).InTheBar()
 	return c
@@ -83,6 +83,9 @@ func (c *copying) said(w commandline.Written, shell commandline.Shell) string {
 	lines := []string{text.CommandCopiedTerminal()}
 	if shell == commandline.PowerShell {
 		lines[0] = text.CommandCopiedPowerShell()
+	}
+	if w.File != "" {
+		lines = append(lines, text.CommandSavesRecipe(w.File))
 	}
 	if len(w.OlderPowerShell) > 0 {
 		lines = append(lines, text.CommandNeedsPowerShell7(c.labelsOf(w.OlderPowerShell)))
@@ -126,6 +129,8 @@ func unwritable(err error) error {
 		said = text.CommandCommaInDamage()
 	case commandline.LeadingDash:
 		said = text.CommandLeadingDash()
+	case commandline.EndsText:
+		said = text.CommandEndsText()
 	}
 	return saying(u.Setting, errors.New(said))
 }
@@ -153,7 +158,7 @@ func thisSystem() commandline.System {
 // the row stays centred on Preview and Generate - see parts.ActionBarEnds.
 // Held while a run owns the screen like Add a batch, because the form it
 // reads is frozen then.
-func offerCopy(r *runner, host Host, line func() (*commandline.Line, error)) *parts.Button {
+func offerCopy(r *runner, host Host, line func() (commandline.Command, error)) *parts.Button {
 	c := newCopying(host, r.fields, line)
 	c.tell = func(said string) { showOn(r.status, said) }
 	c.clear = r.clearProblems
@@ -197,6 +202,17 @@ func absolute(path string) string {
 	return whole
 }
 
+// outWritten is the output folder as --out takes it, whole, or the refusal
+// Generate gives for an emptied box. Asked here rather than left to the
+// command, because the command does not refuse it: a line without --out
+// writes into whatever folder the terminal is in.
+func outWritten(dir string) (string, error) {
+	if dir == "" {
+		return "", engine.NoOutDir()
+	}
+	return absolute(dir), nil
+}
+
 // memoryWritten is --memory as this window would run, or nothing for auto,
 // which is what the command line does without the flag.
 func memoryWritten(kept Remembered) string {
@@ -219,8 +235,12 @@ func damageWritten(chain damage.Chain) (string, error) {
 
 // commandLine is the command for the Single batch screen: tfg generate with a
 // flag for every box somebody stated.
-func (g *Generate) commandLine() (*commandline.Line, error) {
+func (g *Generate) commandLine() (commandline.Command, error) {
 	targets, opt, err := g.settle()
+	if err != nil {
+		return nil, err
+	}
+	out, err := outWritten(opt.OutDir)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +264,7 @@ func (g *Generate) commandLine() (*commandline.Line, error) {
 	return l.Flag(commandline.Damage, damaged, recipe.KeyDamage).
 		Switch(commandline.Clean, !t.Label).
 		Flag(commandline.Seed, unlessDefault(strconv.FormatInt(opt.Seed, 10), commandSeed), engine.SettingSeed).
-		Flag(commandline.Out, absolute(opt.OutDir), engine.SettingOutDir).
+		Flag(commandline.Out, out, engine.SettingOutDir).
 		Switch(commandline.NumberIfTaken, opt.NumberIfTaken).
 		Flag(commandline.Memory, memoryWritten(g.kept()), ""), nil
 }
@@ -252,8 +272,12 @@ func (g *Generate) commandLine() (*commandline.Line, error) {
 // commandLine is the command for the Presets screen: tfg generate --preset with
 // a flag for every parameter somebody stated, which is how the command line
 // takes them.
-func (p *Preset) commandLine() (*commandline.Line, error) {
+func (p *Preset) commandLine() (commandline.Command, error) {
 	_, opt, err := p.settle()
+	if err != nil {
+		return nil, err
+	}
+	out, err := outWritten(opt.OutDir)
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +286,7 @@ func (p *Preset) commandLine() (*commandline.Line, error) {
 		l.Flag(commandline.Named(f.Name), f.Value(), f.Name)
 	}
 	return l.Flag(commandline.Seed, unlessDefault(strconv.FormatInt(opt.Seed, 10), commandSeed), engine.SettingSeed).
-		Flag(commandline.Out, absolute(opt.OutDir), engine.SettingOutDir).
+		Flag(commandline.Out, out, engine.SettingOutDir).
 		Switch(commandline.NumberIfTaken, opt.NumberIfTaken).
 		Flag(commandline.Memory, memoryWritten(p.kept()), ""), nil
 }
@@ -270,7 +294,7 @@ func (p *Preset) commandLine() (*commandline.Line, error) {
 // toolCopying is the button on the Tools screen, which keeps its words and its
 // refusals in places of its own rather than in a runner.
 func toolCopying(host Host, t *Tools) *copying {
-	c := newCopying(host, t.fields, func() (*commandline.Line, error) { return toolsCommandLine(t) })
+	c := newCopying(host, t.fields, func() (commandline.Command, error) { return toolsCommandLine(t) })
 	c.tell = func(said string) { showOn(t.status, said) }
 	c.clear = func() {
 		t.fields.ClearAll()
@@ -293,7 +317,7 @@ func toolCopying(host Host, t *Tools) *copying {
 //
 // A function rather than a method, because Tools stands at the ceiling on the
 // methods of a type.
-func toolsCommandLine(t *Tools) (*commandline.Line, error) {
+func toolsCommandLine(t *Tools) (commandline.Command, error) {
 	d := t.chosen
 	in := t.form.request()
 	if bad := d.CheckEach(in); len(bad) > 0 {

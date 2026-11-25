@@ -158,6 +158,9 @@ func TestCopyCommandRefusesWhatGenerateRefusesAndCopiesNothing(t *testing.T) {
 		{"a size that is not a size", "", "size", "ten", "10kb", ""},
 		{"a name template with a tab in it", "", "name", "a\tb_{index}.txt", "ab_{index}.txt", text.CommandControlCharacter()},
 		{"a damage setting with a comma in it", damage.ZeroHead, damage.SettingBytes, "1,6", "16", text.CommandCommaInDamage()},
+		// The command does not refuse this one itself: without --out it writes
+		// into the folder the terminal is in, where the window refuses.
+		{"an output folder left empty", "", engine.SettingOutDir, "", os.TempDir(), ""},
 	}
 	for _, c := range cases {
 		t.Run(c.label, func(t *testing.T) {

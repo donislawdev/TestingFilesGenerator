@@ -202,7 +202,7 @@ func NewRecipe(host Host, links ...fyne.CanvasObject) *Recipe {
 
 	r.body = r.tips.Over(container.NewBorder(
 		nil,
-		r.footer(railOf(host, []fyne.CanvasObject{r.addBtn}, links), nil),
+		r.footer(railOf(host, []fyne.CanvasObject{r.addBtn}, links), offerRecipeCopy(r, host)),
 		nil, nil,
 		(r.keepScroll(parts.VScroll(parts.Screen(parts.Titled(text.TabRecipe(), text.SubtitleRecipe()), r.baseBox, r.batchBox, r.outBox)))),
 	))
@@ -612,22 +612,11 @@ func (r *Recipe) onFormatChosen(b *batch, id string) {
 func (r *Recipe) settle() ([]engine.Target, engine.Options, error) {
 	var none engine.Options
 
-	doc := recipe.Document{
-		Seed:     r.seed.Text,
-		OutDir:   r.outDir.Text,
-		Manifest: r.manifest.Text,
-		Label:    &r.label.Checked,
-	}
-	doc.Extends, doc.With = r.base.draft()
-	for _, b := range r.batches {
-		doc.Targets = append(doc.Targets, b.draft())
-	}
-
 	// Cleared before the reading rather than after it, for the reason the
 	// preset screen gives: a form that does not settle carries no notes.
 	r.notes = nil
 
-	src, err := recipe.Compose(doc)
+	src, err := recipe.Compose(documentOf(r))
 	if err != nil {
 		return nil, none, err
 	}
@@ -671,6 +660,23 @@ func (r *Recipe) settle() ([]engine.Target, engine.Options, error) {
 		}
 	}
 	return targets, opt, nil
+}
+
+// documentOf is the screen as a recipe document, every value the text that
+// was typed. A function rather than a method, because Recipe is near its
+// ceiling of methods - and Copy command composes the same document.
+func documentOf(r *Recipe) recipe.Document {
+	doc := recipe.Document{
+		Seed:     r.seed.Text,
+		OutDir:   r.outDir.Text,
+		Manifest: r.manifest.Text,
+		Label:    &r.label.Checked,
+	}
+	doc.Extends, doc.With = r.base.draft()
+	for _, b := range r.batches {
+		doc.Targets = append(doc.Targets, b.draft())
+	}
+	return doc
 }
 
 // statedDirectory is where this screen would write, with an emptied box left

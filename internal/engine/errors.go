@@ -132,6 +132,25 @@ const (
 	SettingLabel  = "label"
 )
 
+// NoOutDir is the refusal of a run with no output directory.
+//
+// Its own function because two places give it: Plan, and the window's Copy
+// command, which has to refuse an emptied box before any plan is made. The
+// command line would otherwise take a line without --out to mean the folder
+// the terminal is in, and write there while the window refuses.
+func NoOutDir() error {
+	return &RecipeError{Setting: SettingOutDir,
+		Detail: core.Says("engine.NoOutDir", "the output directory is empty"),
+		// "or leave it out to use the current one" used to close this
+		// sentence and it was removed on 2026-08-26. It is true of a
+		// recipe file and of the command line, and it is a thing a person
+		// CANNOT do in the window: there, leaving it out is exactly what
+		// they just did, and all three screens refuse it. One refusal
+		// cannot carry two surfaces' advice, and the half that survives is
+		// the half that is true on both. O125.
+		Remedy: core.Says("engine.NoOutDirFix", "Name a directory, for example ./fixtures")}
+}
+
 // atTarget gives a refusal from below the position of the target it happened
 // in, so a screen showing twenty of them can mark the right box.
 //

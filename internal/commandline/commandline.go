@@ -91,6 +91,9 @@ type Written struct {
 	// PowerShell 7.3 and later, in the order they appear - see
 	// olderPowerShellDiffers. Empty for sh.
 	OlderPowerShell []string
+	// File is the name of the file the text saves before it runs tfg, in the
+	// folder the terminal is in - see Script. Empty for a single line.
+	File string
 }
 
 // Write is the line for one shell, started the way this computer starts tfg.

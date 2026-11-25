@@ -142,6 +142,9 @@ const (
 	// LeadingDash is an argument starting with a dash, which the command
 	// would read as a flag.
 	LeadingDash
+	// EndsText is a line of a file a Script saves that the shell would read
+	// as the end of the text - see Script.Write.
+	EndsText
 )
 
 // Unwritable is a value the line cannot carry, and the setting it came from.
@@ -160,6 +163,8 @@ func (u *Unwritable) Error() string {
 		return u.Setting + " holds a comma, and --damage separates its settings with commas"
 	case LeadingDash:
 		return u.Setting + " starts with a dash, which the command would read as a flag"
+	case EndsText:
+		return "a line of the file would end the text the shell saves before the file is whole"
 	}
 	return u.Setting + " cannot be written on a command line"
 }

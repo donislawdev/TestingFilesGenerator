@@ -199,6 +199,11 @@
     "hash": "sha256-95f8477e11ec",
     "other": "The command is on the clipboard, written for a terminal such as bash or zsh."
   },
+  "CommandEndsText": {
+    "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are.",
+    "hash": "sha256-41050b7e08f6",
+    "other": "A line of the recipe would end the text the terminal saves before the recipe is whole. Change the value at the start of that line to copy the command."
+  },
   "CommandLeadingDash": {
     "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are.",
     "hash": "sha256-e2b4a6864082",
@@ -213,6 +218,11 @@
     "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are.",
     "hash": "sha256-4f494b6856e0",
     "other": "This value is not readable text, so it cannot be written into a command. Type it again to copy the command."
+  },
+  "CommandSavesRecipe": {
+    "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are. Carries one value, {{.File}}, which has to stay spelled exactly that way.",
+    "hash": "sha256-fa44cd8b1756",
+    "other": "It saves the recipe as {{.File}} in the folder the terminal is open in, then runs it."
   },
   "CommandWithoutTfg": {
     "description": "Shown on the line under the buttons after Copy command is pressed, or under a box whose value a command line cannot carry. tfg, PowerShell, bash, zsh, PATH and --damage stay as they are.",

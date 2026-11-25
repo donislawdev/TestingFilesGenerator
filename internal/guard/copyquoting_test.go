@@ -177,7 +177,14 @@ func expectArrived(t *testing.T, shell string, s commandline.Shell, line string,
 // answers the arguments the program printed.
 func arrived(t *testing.T, shell string, s commandline.Shell, line string) []string {
 	t.Helper()
-	dir := t.TempDir()
+	return ranIn(t, shell, s, t.TempDir(), line, "")
+}
+
+// ranIn runs a script the way a terminal open in dir would, with first put
+// at the front of PATH when it is given, and answers the arguments the stand
+// in printed. The script file is written into dir as well.
+func ranIn(t *testing.T, shell string, s commandline.Shell, dir, line, first string) []string {
+	t.Helper()
 	var cmd *exec.Cmd
 	if s == commandline.PowerShell {
 		// With a byte order mark, without which 5.1 reads the script in the
@@ -190,6 +197,12 @@ func arrived(t *testing.T, shell string, s commandline.Shell, line string) []str
 		script := filepath.Join(dir, "line.sh")
 		writeScript(t, script, line+"\n")
 		cmd = exec.Command(shell, script)
+	}
+	cmd.Dir = dir
+	if first != "" {
+		// Last wins, and on Windows without regard to case, so this PATH
+		// replaces the Path the environment already holds.
+		cmd.Env = append(os.Environ(), "PATH="+first+string(os.PathListSeparator)+os.Getenv("PATH"))
 	}
 	out, err := cmd.Output()
 	if err != nil {
@@ -226,6 +239,23 @@ func writeScript(t *testing.T, path, body string) {
 // out.
 func echoProgram(t *testing.T) commandline.Program {
 	t.Helper()
+	dir := echoBuilt(t)
+	p := commandline.Locate(commandline.System{
+		GOOS:       runtime.GOOS,
+		Getenv:     func(string) string { return "" },
+		Executable: filepath.Join(dir, "tfg-gui"),
+		Stat:       os.Stat,
+	})
+	if p.Where != commandline.Beside {
+		t.Fatalf("the stand in at %s was not found beside the window (found: %v)", dir, p.Where)
+	}
+	return p
+}
+
+// echoBuilt builds the stand in for tfg, a program that prints every argument
+// it is handed, and answers the folder it is in.
+func echoBuilt(t *testing.T) string {
+	t.Helper()
 	dir := t.TempDir()
 	src := filepath.Join(dir, "echo.go")
 	writeScript(t, src, "package main\n\nimport (\n\t\"encoding/hex\"\n\t\"fmt\"\n\t\"os\"\n)\n\n"+
@@ -240,16 +270,7 @@ func echoProgram(t *testing.T) commandline.Program {
 	if out, err := build.CombinedOutput(); err != nil {
 		t.Fatalf("building the stand in for tfg: %v\n%s", err, out)
 	}
-	p := commandline.Locate(commandline.System{
-		GOOS:       runtime.GOOS,
-		Getenv:     func(string) string { return "" },
-		Executable: filepath.Join(dir, "tfg-gui"),
-		Stat:       os.Stat,
-	})
-	if p.Where != commandline.Beside {
-		t.Fatalf("the stand in at %s was not found beside the window (found: %v)", dir, p.Where)
-	}
-	return p
+	return dir
 }
 
 // shellsFor is every shell on this machine that reads a dialect. sh is not
@@ -395,5 +416,34 @@ func TestAValueNoLineCanCarryIsRefusedUnderItsSetting(t *testing.T) {
 	}
 	if got, _ := commandline.DamageValue("zero-head", map[string]string{"z": "1", "bytes": "16"}); got != "zero-head:bytes=16,z=1" {
 		t.Errorf("DamageValue wrote %q, want the settings in the order of their names", got)
+	}
+	checkTextEnds(t, missing)
+}
+
+// checkTextEnds holds a Script to the one line each shell reads as the end of
+// the text it saves - '@ at the start of a line in PowerShell, the word that
+// closes the text in sh - and asks that a line merely holding it, or an
+// indented '@, which both PowerShells kept inside on 2026-11-25, is written.
+func checkTextEnds(t *testing.T, missing commandline.Program) {
+	then := commandline.New("generate").Argument("r.yaml", "")
+	for _, c := range []struct {
+		content string
+		shell   commandline.Shell
+		refused bool
+	}{
+		{"a: 1\n'@x\n", commandline.PowerShell, true},
+		{"a: 1\n  '@\nb: '@\n", commandline.PowerShell, false},
+		{"a: 1\nTFG_EOF\n", commandline.POSIX, true},
+		{"a: 1\n TFG_EOF\nb: TFG_EOF\n", commandline.POSIX, false},
+		{"a: 1\nb: \x01\n", commandline.POSIX, true},
+	} {
+		w, err := commandline.FileThen("r.yaml", c.content, then).Write(missing, c.shell)
+		var u *commandline.Unwritable
+		switch {
+		case c.refused && !errors.As(err, &u):
+			t.Errorf("a text holding %q was written for shell %d, and the shell would save part of it:\n%s", c.content, c.shell, w.Text)
+		case !c.refused && (err != nil || !strings.Contains(w.Text, strings.TrimSuffix(c.content, "\n"))):
+			t.Errorf("a text holding %q was refused or changed for shell %d (%v):\n%s", c.content, c.shell, err, w.Text)
+		}
 	}
 }
