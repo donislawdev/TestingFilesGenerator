@@ -72,15 +72,20 @@ type buttonRow struct {
 	held float32
 }
 
-// MinSize is as wide as the buttons that run something - the offers can always
-// go under them - and as tall as the lines the row takes at the width it was
-// last given, or as it is held.
+// MinSize is as wide as the buttons that run something, or the widest offer if
+// that is wider - the offers can always go under them, one to a line at the
+// least - and as tall as the lines the row takes at the width it was last
+// given, or as it is held.
 func (b *buttonRow) MinSize(objects []fyne.CanvasObject) fyne.Size {
-	widthOf := objects
+	width := lineWidth(shown(objects))
 	if b.wraps {
-		widthOf = objects[:min(b.lead, len(objects))]
+		lead := min(b.lead, len(objects))
+		width = lineWidth(shown(objects[:lead]))
+		for _, o := range shown(objects[lead:]) {
+			width = fyne.Max(width, o.MinSize().Width)
+		}
 	}
-	size := fyne.NewSize(lineWidth(shown(widthOf)), 0)
+	size := fyne.NewSize(width, 0)
 	tallest := lineHeight(shown(objects))
 	for i, line := range b.lines(objects, b.width) {
 		if i > 0 {

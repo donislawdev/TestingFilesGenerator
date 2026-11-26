@@ -99,8 +99,8 @@ type busy struct {
 	// screen is told the work has ended. Nil in the shipped program - see
 	// runner.HoldBeforeFinishing for what it is for. Here rather than on the
 	// screens since 2026-11-03, when the Tools tab came to need it as well.
-	// The search for tfg behind Copy command passes through it too, just
-	// before its answer reaches the screen.
+	// The search for tfg behind Copy command passes through it too, inside the
+	// search, at its first look at the disk - see copying.system.
 	hold func()
 
 	// writing, when a guard supplies one, is run on a writer each time a run

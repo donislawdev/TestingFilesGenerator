@@ -86,9 +86,50 @@ func barAfterARun(t *testing.T, tab string) {
 		width += 2 * theme.Padding()
 	}
 	narrowest := fyne.NewSize(width, window.LargestOpening.Height)
-	w.Resize(narrowest)
-	settle(content, w)
+	opening := w.Canvas().Size().Width
+	settleAt(content, w, narrowest)
+	// settle lays the window out at the size it opens at, which is the size
+	// asked about above - so the narrow state is asserted, not assumed. Until
+	// the review of this guard (#266) it went through settle and asked the
+	// opening width twice.
+	if now := w.Canvas().Size().Width; now >= opening {
+		t.Fatalf("the window was to be narrowed to %.0f px and is %.0f px wide, as wide as it opened, so the "+
+			"narrowest window is not what is asked about", narrowest.Width, now)
+	}
 	noButtonOverAnother(t, content, w, "the narrowest window")
+}
+
+// settleAt is settle at a size of the guard's choosing: laid out again at
+// another size and back, so every container asks its children again.
+func settleAt(content fyne.CanvasObject, w fyne.Window, size fyne.Size) {
+	content.Refresh()
+	w.Resize(fyne.NewSize(size.Width, size.Height-1))
+	content.Refresh()
+	w.Resize(size)
+}
+
+// TestAnOfferWiderThanTheRunButtonsStaysInsideTheBar lays out a bar whose one
+// offer is wider than the button that runs something, in the narrowest window
+// the bar allows, and asks that the offer ends inside it. The row's minimum was
+// the run buttons alone until the review of #266, so a window that narrow put
+// the offer on a line of its own and let it run past the edge.
+func TestAnOfferWiderThanTheRunButtonsStaysInsideTheBar(t *testing.T) {
+	newTestApp()
+	t.Cleanup(func() { newTestApp() })
+	offer := parts.NewButton(parts.Secondary, "Open the instructions this run wrote beside its files", func() {}).InTheBar()
+	bar := parts.ActionBar(nil, parts.ActionRow(
+		[]fyne.CanvasObject{parts.NewButton(parts.Primary, "Go", func() {}).InTheBar()}, offer))
+	w := test.NewWindow(bar)
+	t.Cleanup(w.Close)
+	narrowest := bar.MinSize()
+	settleAt(bar, w, narrowest)
+	settleAt(bar, w, narrowest)
+	drv := fyne.CurrentApp().Driver()
+	ends := drv.AbsolutePositionForObject(offer).X + offer.Size().Width
+	if width := w.Canvas().Size().Width; ends > width+0.5 {
+		t.Errorf("in a window %.0f px wide, the narrowest the bar allows, the offer ends at x=%.1f - past the edge",
+			width, ends)
+	}
 }
 
 // barButtonNames are the buttons that stand in the bar at the foot: the rail,

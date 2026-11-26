@@ -47,14 +47,17 @@ type copying struct {
 	// fields gives a setting the label its box shows, for the line that
 	// names boxes.
 	fields *parts.Fields
-	// looking is the search for tfg on a worker, waited for by a guard, and
-	// pressed counts the presses, so a search that answers after a newer
-	// press puts nothing on the clipboard.
-	looking sync.WaitGroup
-	pressed int
-	// hold is the screen's busy.holdBeforeFinishing: the search passes
-	// through it on its way to the clipboard, so a guard can see the window
-	// answer while the search has not. Nothing in the shipped program.
+	// looking is the search for tfg on a worker, waited for by a guard.
+	// searching says one is under way, and waiting is the line of the newest
+	// press for its answer, or nil when that press was refused. Both are read
+	// and written on the interface thread only.
+	looking   sync.WaitGroup
+	searching bool
+	waiting   commandline.Command
+	// hold is the screen's busy.holdBeforeFinishing, passed through inside
+	// the search, at its first look at the disk - so a guard can hold the
+	// search itself and see the window answer meanwhile. Nothing in the
+	// shipped program.
 	hold func()
 }
 
@@ -73,13 +76,18 @@ func newCopying(host Host, fields *parts.Fields, line func() (commandline.Comman
 // one from writing it, because a damage setting with a comma is refused there,
 // and it belongs under its box in the words of this window. Both are asked on
 // this thread, at the press, so a refusal lands under the box the moment the
-// button is pressed.
+// button is pressed - and a search still under way for an earlier press then
+// copies nothing, since the newest press is the one that counts.
 //
 // Where tfg is, is asked on a worker. It looks at every folder on PATH, and a
 // folder on a network host that does not answer took 21.0 s on 2026-11-26
 // (docs/REVIEW-264-2026-11-25.md, remark 4) - the window stood still for all of
-// it. On this machine's own PATH it is 561 looks and 16 ms.
+// it. On this machine's own PATH it is 561 looks and 16 ms. One search at a
+// time: a press while one is under way leaves its line for that search's answer
+// instead of starting another, so pressing again and again at a folder that
+// does not answer adds no worker.
 func (c *copying) press() {
+	c.waiting = nil
 	c.clear()
 	l, err := c.line()
 	if err == nil {
@@ -89,27 +97,49 @@ func (c *copying) press() {
 		c.refuse(unwritable(err))
 		return
 	}
-	c.pressed++
+	c.waiting = l
+	if c.searching {
+		return
+	}
+	c.searching = true
 	c.looking.Add(1)
-	go c.lookFor(l, c.pressed)
+	go c.lookFor()
 }
 
 // lookFor asks where tfg is, on the worker, and hands the answer to the
-// interface thread with the press it answers.
-func (c *copying) lookFor(l commandline.Command, press int) {
+// interface thread.
+func (c *copying) lookFor() {
 	defer c.looking.Done()
-	program := commandline.Locate(thisSystem())
-	if c.hold != nil {
-		c.hold()
-	}
-	fyne.Do(func() { c.copy(l, program, press) })
+	program := commandline.Locate(c.system())
+	fyne.Do(func() { c.answer(program) })
 }
 
-// copy writes the line with the word that starts tfg on this computer and puts
-// it on the clipboard, on the interface thread - unless a newer press has
-// asked since, whose answer is the one that counts.
-func (c *copying) copy(l commandline.Command, program commandline.Program, press int) {
-	if press != c.pressed {
+// system is this computer as the search reads it, with the guard's hold, when
+// there is one, in front of its first look at the disk.
+func (c *copying) system() commandline.System {
+	sys := thisSystem()
+	if c.hold == nil {
+		return sys
+	}
+	stat, held := sys.Stat, false
+	sys.Stat = func(name string) (os.FileInfo, error) {
+		if !held {
+			held = true
+			c.hold()
+		}
+		return stat(name)
+	}
+	return sys
+}
+
+// answer copies the line of the newest press with the word that starts tfg on
+// this computer, on the interface thread - or nothing, when that press was
+// refused.
+func (c *copying) answer(program commandline.Program) {
+	c.searching = false
+	l := c.waiting
+	c.waiting = nil
+	if l == nil {
 		return
 	}
 	shell := commandline.ShellFor(runtime.GOOS)

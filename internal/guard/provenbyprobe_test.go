@@ -502,7 +502,13 @@ var provenByProbe = map[string]string{
 	"TestTheFormDoesNotMoveWhenARunStartsAfterOneThatOfferedSomething": "broken on 2026-11-26 by no longer holding the row " +
 		"before the offers are taken away: red, the form grew 41 px at the press of Generate. It asserts that the offers " +
 		"stood on a line of their own first, or it asks nothing.",
-	"TestCopyCommandLeavesTheWindowFreeWhileItLooksForTfg": "broken on 2026-11-26 by searching for tfg on the thread of " +
-		"the press: red, the press had not returned while the search was held. It asks that the line reaches the " +
-		"clipboard once the search is let go, so a press that copied nothing does not pass.",
+	"TestCopyCommandLeavesTheWindowFreeWhileItLooksForTfg": "broken on 2026-11-26, after the review of #266 moved the " +
+		"hold inside the search, by searching on the thread of the press: red, the press had not returned. And by " +
+		"starting a search per press: red, three searches for three presses. It asks that the line of the last press " +
+		"reaches the clipboard once the search is let go, so a press that copied nothing does not pass.",
+	"TestARefusedPressCopiesNothingWhileAnEarlierSearchAnswers": "broken on 2026-11-26 by forgetting the earlier " +
+		"press only after the form was taken: red, the earlier search copied its line over the refusal. It asserts " +
+		"the refusal first.",
+	"TestAnOfferWiderThanTheRunButtonsStaysInsideTheBar": "broken on 2026-11-26 by leaving the widest offer out of " +
+		"the row's minimum: red, the offer ended at 423 px in a window 107 px wide.",
 }
