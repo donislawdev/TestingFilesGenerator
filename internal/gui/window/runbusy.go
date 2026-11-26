@@ -72,6 +72,10 @@ type busy struct {
 	// have no business being pressed while work is going. The batch screen's
 	// "add a batch" is one: pressing it rebuilds the form under a run.
 	also []fyne.Disableable
+	// lookups wait for what the screen's buttons ask on a worker without
+	// owning the screen - the search for tfg behind Copy command - so a guard
+	// can wait for their answers as it waits for work. See settledLookups.
+	lookups []func()
 	// row is the row the buttons stand in, laid out again whenever one of
 	// them comes or goes - see relay.
 	row *fyne.Container
@@ -95,6 +99,8 @@ type busy struct {
 	// screen is told the work has ended. Nil in the shipped program - see
 	// runner.HoldBeforeFinishing for what it is for. Here rather than on the
 	// screens since 2026-11-03, when the Tools tab came to need it as well.
+	// The search for tfg behind Copy command passes through it too, just
+	// before its answer reaches the screen.
 	hold func()
 
 	// writing, when a guard supplies one, is run on a writer each time a run
@@ -187,7 +193,28 @@ func (b *busy) undress() {
 	b.cancel.Disable()
 	b.cancel.Hide()
 	b.bar.Hide()
+	if b.row != nil {
+		parts.HoldRows(b.row, false)
+	}
 	b.relay()
+}
+
+// settledLookups waits for every lookup a button started, for a guard.
+func (b *busy) settledLookups() {
+	for _, wait := range b.lookups {
+		wait()
+	}
+}
+
+// keepRowHeight holds the row of buttons at the height it has now until the
+// work is over - undress lets it go. Asked for before the offers of the run
+// before are taken away, because those can stand on a line of their own and
+// the line would go with them, moving the form at the press of Generate. See
+// parts.HoldRows.
+func (b *busy) keepRowHeight() {
+	if b.row != nil {
+		parts.HoldRows(b.row, true)
+	}
 }
 
 // halt asks the work wearing this face to stop, and turns the face to

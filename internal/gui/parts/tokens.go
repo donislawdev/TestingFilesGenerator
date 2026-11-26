@@ -215,6 +215,11 @@ const (
 	// about 4 px, so Preview and Generate, and Duplicate and Remove, each read
 	// as one control with two words in it.
 	GapButtons = space3
+	// GapButtonRows is the space between two lines of buttons in that bar,
+	// when what a finished run offers goes under the buttons that run
+	// something (ActionRow). The same as between two buttons side by side, so
+	// the two lines read as one group rather than as a second bar.
+	GapButtonRows = GapButtons
 	// GlyphButton is the side of the small square button that holds one
 	// glyph - the mark beside a field's name that opens its explanation. The
 	// glyph itself is the toolkit's inline icon, 20, and the square keeps two

@@ -1,7 +1,7 @@
-<canvas padded size="1100x18640">
+<canvas padded size="1100x18769">
 	<content>
-		<container pos="4,4" size="1092x18632">
-			<container pos="136,0" size="820x18632">
+		<container pos="4,4" size="1092x18761">
+			<container pos="136,0" size="820x18761">
 				<container size="820x49">
 					<container pos="16,0" size="788x49">
 						<container size="788x24">
@@ -4445,12 +4445,12 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,12660" size="820x1166">
-					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x1166" strokeColor="button" strokeWidth="1"/>
-					<container size="820x1166">
-						<container pos="16,16" size="788x1134">
+				<container pos="0,12660" size="820x1294">
+					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x1294" strokeColor="button" strokeWidth="1"/>
+					<container size="820x1294">
+						<container pos="16,16" size="788x1262">
 							<text bold size="788x20" textSize="17">Section</text>
-							<container pos="0,36" size="788x1097">
+							<container pos="0,36" size="788x1226">
 								<container size="788x148">
 									<widget size="788x14" type="*parts.QuietText">
 										<container size="788x14">
@@ -4686,7 +4686,76 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,502" size="788x224">
+								<container pos="0,502" size="788x112">
+									<widget size="788x14" type="*parts.QuietText">
+										<container size="788x14">
+											<widget pos="-6,-6" size="800x26" type="*widget.RichText">
+												<text color="placeholder" pos="6,6" size="281x14" textSize="12">the bar after a run, its offers on a line of their own</text>
+											</widget>
+										</container>
+									</widget>
+									<container pos="0,18" size="788x93">
+										<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="788x93" strokeColor="button" strokeWidth="1"/>
+										<container size="788x93">
+											<container pos="12,12" size="764x69">
+												<container size="764x69">
+													<container pos="16,0" size="732x69">
+														<container size="732x69">
+															<container size="732x69">
+																<widget pos="268,0" size="87x28" type="*parts.Button">
+																	<rectangle pos="-2,-2" radius="6" size="91x32" strokeColor="hyperlink"/>
+																	<rectangle fillColor="button" radius="6" size="86x27" strokeColor="inputBorder" strokeWidth="1"/>
+																	<text alignment="center" bold pos="16,6" size="55x16">Preview</text>
+																</widget>
+																<widget pos="368,0" size="95x28" type="*parts.Button">
+																	<rectangle pos="-2,-2" radius="6" size="99x32" strokeColor="hyperlink"/>
+																	<rectangle fillColor="hyperlink" radius="6" size="95x28"/>
+																	<text alignment="center" bold color="foregroundOnError" pos="16,6" size="63x16">Generate</text>
+																</widget>
+																<widget pos="67,40" size="112x28" type="*parts.Button">
+																	<rectangle pos="-2,-2" radius="6" size="116x32" strokeColor="hyperlink"/>
+																	<rectangle fillColor="button" radius="6" size="111x27" strokeColor="inputBorder" strokeWidth="1"/>
+																	<text alignment="center" bold pos="16,6" size="80x16">Open folder</text>
+																</widget>
+																<widget pos="191,40" size="132x28" type="*parts.Button">
+																	<rectangle pos="-2,-2" radius="6" size="136x32" strokeColor="hyperlink"/>
+																	<rectangle fillColor="button" radius="6" size="130x27" strokeColor="inputBorder" strokeWidth="1"/>
+																	<text alignment="center" bold pos="16,6" size="100x16">Open manifest</text>
+																</widget>
+																<widget pos="336,40" size="328x28" type="*parts.Button">
+																	<rectangle pos="-2,-2" radius="6" size="332x32" strokeColor="hyperlink"/>
+																	<rectangle fillColor="button" radius="6" size="327x27" strokeColor="inputBorder" strokeWidth="1"/>
+																	<text alignment="center" bold pos="16,6" size="296x16">Open instructions with a much longer name</text>
+																</widget>
+															</container>
+														</container>
+														<container size="732x69">
+															<container size="732x26">
+																<container pos="-16,0" size="748x26">
+																	<widget size="72x26" type="*parts.Button">
+																		<rectangle pos="-2,-2" radius="6" size="76x30" strokeColor="hyperlink"/>
+																		<rectangle radius="6" size="72x26"/>
+																		<text alignment="center" color="placeholder" pos="16,6" size="40x14" textSize="12">Donate</text>
+																	</widget>
+																</container>
+															</container>
+														</container>
+														<container size="732x69">
+															<container size="732x28">
+																<widget pos="592,0" size="139x28" type="*parts.Button">
+																	<rectangle pos="-2,-2" radius="6" size="143x32" strokeColor="hyperlink"/>
+																	<rectangle fillColor="button" radius="6" size="138x27" strokeColor="inputBorder" strokeWidth="1"/>
+																	<text alignment="center" bold pos="16,6" size="107x16">Copy command</text>
+																</widget>
+															</container>
+														</container>
+													</container>
+												</container>
+											</container>
+										</container>
+									</container>
+								</container>
+								<container pos="0,631" size="788x224">
 									<widget size="788x14" type="*parts.QuietText">
 										<container size="788x14">
 											<widget pos="-6,-6" size="800x26" type="*widget.RichText">
@@ -4824,7 +4893,7 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,743" size="788x189">
+								<container pos="0,872" size="788x189">
 									<widget size="788x14" type="*parts.QuietText">
 										<container size="788x14">
 											<widget pos="-6,-6" size="800x26" type="*widget.RichText">
@@ -4939,7 +5008,7 @@
 										</container>
 									</container>
 								</container>
-								<container pos="0,949" size="788x148">
+								<container pos="0,1078" size="788x148">
 									<widget size="788x14" type="*parts.QuietText">
 										<container size="788x14">
 											<widget pos="-6,-6" size="800x26" type="*widget.RichText">
@@ -5010,7 +5079,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,13851" size="820x385">
+				<container pos="0,13979" size="820x385">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x385" strokeColor="button" strokeWidth="1"/>
 					<container size="820x385">
 						<container pos="16,16" size="788x353">
@@ -5080,7 +5149,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,14260" size="820x1718">
+				<container pos="0,14388" size="820x1718">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x1718" strokeColor="button" strokeWidth="1"/>
 					<container size="820x1718">
 						<container pos="16,16" size="788x1686">
@@ -5702,7 +5771,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,16003" size="820x1718">
+				<container pos="0,16131" size="820x1718">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x1718" strokeColor="button" strokeWidth="1"/>
 					<container size="820x1718">
 						<container pos="16,16" size="788x1686">
@@ -6324,7 +6393,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,17745" size="820x429">
+				<container pos="0,17874" size="820x429">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x429" strokeColor="button" strokeWidth="1"/>
 					<container size="820x429">
 						<container pos="16,16" size="788x397">
@@ -6489,7 +6558,7 @@
 						</container>
 					</container>
 				</container>
-				<container pos="0,18199" size="820x441">
+				<container pos="0,18327" size="820x441">
 					<rectangle fillColor="rgba(43,43,47,255)" radius="8" size="820x441" strokeColor="button" strokeWidth="1"/>
 					<container size="820x441">
 						<container pos="16,16" size="788x409">

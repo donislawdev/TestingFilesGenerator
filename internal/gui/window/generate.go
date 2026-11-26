@@ -698,6 +698,12 @@ func (g *Generate) settle() ([]engine.Target, engine.Options, error) {
 	if err != nil {
 		bad = append(bad, err)
 	}
+	// Asked here and not left to the run, because Copy command settles the
+	// form too and leaves an empty flag out - the copy of an emptied name
+	// would run under the command line's own, where Generate refuses.
+	if err := engine.MissingID(g.id.Text); err != nil {
+		bad = append(bad, err)
+	}
 
 	if len(bad) > 0 {
 		return nil, none, errors.Join(bad...)

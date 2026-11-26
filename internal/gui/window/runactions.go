@@ -77,8 +77,10 @@ func (r *runner) actions() fyne.CanvasObject {
 	// row out again when a button in it is hidden - see busy.relay.
 	//
 	// A row of ours with a wider gap since the prototype of 2026-09-23 - see
-	// parts.ButtonRow.
-	r.busy.row = parts.ButtonRow(r.previewBtn, r.generateBtn, r.busy.cancel,
+	// parts.ButtonRow. The offers of a finished run go to a line of their own
+	// when they do not fit beside the buttons, since 2026-11-26 - see
+	// parts.ActionRow.
+	r.busy.row = parts.ActionRow([]fyne.CanvasObject{r.previewBtn, r.generateBtn, r.busy.cancel},
 		r.offer.folderBtn, r.offer.manifest.btn, r.offer.instructions.btn)
 	return r.busy.row
 }

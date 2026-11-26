@@ -272,10 +272,8 @@ func (f PlannedFile) Damaged() bool {
 // the run rather than about one entry, and run is what the memory setting lets
 // the run hold, which the draw of a range is kept inside (planstretch.go).
 func settleTarget(ctx context.Context, t *Target, opt Options, seen map[string]bool, run int64) (format.Descriptor, error) {
-	if t.ID == "" {
-		return format.Descriptor{}, &RecipeError{Setting: SettingID,
-			Detail:  core.Says("engine.NoID", "a target has no id"),
-			Because: core.Says("engine.NoIDWhy", "every target needs a stable id, it anchors the seed and links to the manifest")}
+	if err := MissingID(t.ID); err != nil {
+		return format.Descriptor{}, err
 	}
 	if seen[t.ID] {
 		return format.Descriptor{}, &RecipeError{Setting: SettingID,

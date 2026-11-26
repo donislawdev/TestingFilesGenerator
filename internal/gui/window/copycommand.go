@@ -7,6 +7,9 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
+
+	"fyne.io/fyne/v2"
 
 	"github.com/donislawdev/TestingFilesGenerator/internal/commandline"
 	"github.com/donislawdev/TestingFilesGenerator/internal/core"
@@ -44,6 +47,15 @@ type copying struct {
 	// fields gives a setting the label its box shows, for the line that
 	// names boxes.
 	fields *parts.Fields
+	// looking is the search for tfg on a worker, waited for by a guard, and
+	// pressed counts the presses, so a search that answers after a newer
+	// press puts nothing on the clipboard.
+	looking sync.WaitGroup
+	pressed int
+	// hold is the screen's busy.holdBeforeFinishing: the search passes
+	// through it on its way to the clipboard, so a guard can see the window
+	// answer while the search has not. Nothing in the shipped program.
+	hold func()
 }
 
 // newCopying builds the button. The screen hands over where its words go,
@@ -59,16 +71,49 @@ func newCopying(host Host, fields *parts.Fields, line func() (commandline.Comman
 //
 // A refusal from putting the line together goes through unwritable as well as
 // one from writing it, because a damage setting with a comma is refused there,
-// and it belongs under its box in the words of this window.
+// and it belongs under its box in the words of this window. Both are asked on
+// this thread, at the press, so a refusal lands under the box the moment the
+// button is pressed.
+//
+// Where tfg is, is asked on a worker. It looks at every folder on PATH, and a
+// folder on a network host that does not answer took 21.0 s on 2026-11-26
+// (docs/REVIEW-264-2026-11-25.md, remark 4) - the window stood still for all of
+// it. On this machine's own PATH it is 561 looks and 16 ms.
 func (c *copying) press() {
 	c.clear()
 	l, err := c.line()
+	if err == nil {
+		_, err = l.Write(commandline.Program{Where: commandline.Missing}, commandline.ShellFor(runtime.GOOS))
+	}
 	if err != nil {
 		c.refuse(unwritable(err))
 		return
 	}
+	c.pressed++
+	c.looking.Add(1)
+	go c.lookFor(l, c.pressed)
+}
+
+// lookFor asks where tfg is, on the worker, and hands the answer to the
+// interface thread with the press it answers.
+func (c *copying) lookFor(l commandline.Command, press int) {
+	defer c.looking.Done()
+	program := commandline.Locate(thisSystem())
+	if c.hold != nil {
+		c.hold()
+	}
+	fyne.Do(func() { c.copy(l, program, press) })
+}
+
+// copy writes the line with the word that starts tfg on this computer and puts
+// it on the clipboard, on the interface thread - unless a newer press has
+// asked since, whose answer is the one that counts.
+func (c *copying) copy(l commandline.Command, program commandline.Program, press int) {
+	if press != c.pressed {
+		return
+	}
 	shell := commandline.ShellFor(runtime.GOOS)
-	written, err := l.Write(commandline.Locate(thisSystem()), shell)
+	written, err := l.Write(program, shell)
 	if err != nil {
 		c.refuse(unwritable(err))
 		return
@@ -164,6 +209,8 @@ func offerCopy(r *runner, host Host, line func() (commandline.Command, error)) *
 	c.clear = r.clearProblems
 	c.refuse = r.refuse
 	r.busy.also = append(r.busy.also, c.btn)
+	r.busy.lookups = append(r.busy.lookups, c.looking.Wait)
+	c.hold = r.busy.holdBeforeFinishing
 	return c.btn
 }
 

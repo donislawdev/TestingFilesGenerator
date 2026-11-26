@@ -74,6 +74,20 @@ func textRanks() Entry {
 	}}
 }
 
+// barAfterARun is the bar the way a finished run leaves it when what the run
+// offers has no room beside the buttons that run something: the offers on a
+// line of their own under them (parts.ActionRow).
+func barAfterARun() fyne.CanvasObject {
+	return parts.ActionBarEnds(container.NewHBox(parts.NewButton(parts.Quiet, "Donate", func() {}).InTheBar()),
+		parts.NewButton(parts.Secondary, "Copy command", func() {}).InTheBar(),
+		parts.ActionRow([]fyne.CanvasObject{
+			parts.NewButton(parts.Secondary, "Preview", func() {}).InTheBar(),
+			parts.NewButton(parts.Primary, "Generate", func() {}).InTheBar()},
+			parts.NewButton(parts.Secondary, "Open folder", func() {}).InTheBar(),
+			parts.NewButton(parts.Secondary, "Open manifest", func() {}).InTheBar(),
+			parts.NewButton(parts.Secondary, "Open instructions with a much longer name", func() {}).InTheBar()))
+}
+
 // What a screen is built from besides its fields: the panel a section is,
 // the line between two things, and the bar a run is started from.
 func structure() Entry {
@@ -83,7 +97,7 @@ func structure() Entry {
 		two := s.Add("count", "How many files", "1", parts.NoDetail, parts.NewEntry())
 		return []fyne.CanvasObject{one, two}
 	}
-	return Entry{Name: "Section", Covers: []string{"Divider", "ActionBar", "ActionBarEnds"}, States: []State{
+	return Entry{Name: "Section", Covers: []string{"Divider", "ActionBar", "ActionBarEnds", "ActionRow"}, States: []State{
 		{"a section of two rows", func() fyne.CanvasObject {
 			return parts.Section("File configuration", twoRows()...)
 		}},
@@ -108,6 +122,7 @@ func structure() Entry {
 					parts.NewButton(parts.Secondary, "Preview", func() {}).InTheBar(),
 					parts.NewButton(parts.Primary, "Generate", func() {}).InTheBar()))
 		}},
+		{"the bar after a run, its offers on a line of their own", barAfterARun},
 		{"fields in columns, each as wide as its value needs", func() fyne.CanvasObject {
 			s := form()
 			return parts.Section("File configuration",

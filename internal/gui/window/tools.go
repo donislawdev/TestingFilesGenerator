@@ -155,9 +155,11 @@ func NewTools(host Host) *Tools {
 	t.status = widget.NewLabel("")
 	t.status.Wrapping = fyne.TextWrapWord
 	t.fault = parts.NewErrorArea()
-	copyBtn := toolCopying(host, t).btn
+	copying := toolCopying(host, t)
+	copyBtn := copying.btn
 	t.busy = &busy{fields: t.fields, starters: []*parts.Button{run}, cancel: cancel, bar: bar, later: host.Later,
-		also: []fyne.Disableable{copyBtn}}
+		also: []fyne.Disableable{copyBtn}, lookups: []func(){copying.looking.Wait}}
+	copying.hold = t.busy.holdBeforeFinishing
 	t.busy.row = parts.ButtonRow(run, cancel, t.offer.btn)
 
 	t.view.scroll = parts.VScroll(parts.Screen(
@@ -215,8 +217,12 @@ func (t *Tools) onCancel() { t.busy.halt(t.job, t.status) }
 // It waits, so it is called off the interface thread - see closing.go.
 func (t *Tools) Stop() { t.job.stop() }
 
-// Settled waits for the tool that is running to finish, for a guard.
-func (t *Tools) Settled() { t.job.settled() }
+// Settled waits for the tool that is running to finish, and for the search
+// behind Copy command, for a guard.
+func (t *Tools) Settled() {
+	t.job.settled()
+	t.busy.settledLookups()
+}
 
 // HoldBeforeFinishing sets a hold the tool passes through on its way to
 // reporting, for a guard - see runner.HoldBeforeFinishing.
