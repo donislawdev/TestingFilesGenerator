@@ -26,6 +26,8 @@ A PDF of exactly 1 MiB and one byte is a real PDF, so a server that looks inside
 
 tfg, the Testing Files Generator, is a free and open source program that writes real files for tests: a JPEG that opens in a viewer, a PDF a reader can read, a CSV a spreadsheet imports, each at exactly the size you ask for. Beside the files it writes a manifest, a list that says for every file what it is for and what a system should do with it.
 
+[The tfg website](https://testingfilesgenerator.donislawdev.com/) lists the formats and presets, has sample files to download, and explains the commands, recipes and manifest.
+
 This package runs tfg from your tests:
 
 1. You choose a set of files. Usually that is a preset, a set tfg knows by name that answers one question, such as "does my upload form take what it should and turn the rest away?".
