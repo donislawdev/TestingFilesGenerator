@@ -30,4 +30,6 @@ def test_upload(file, page):
 
 Everything else is in [the README of testing-files-generator](https://github.com/donislawdev/TestingFilesGenerator/tree/main/python/testing-files-generator#readme).
 
+[The tfg website](https://testingfilesgenerator.donislawdev.com/) lists the formats and presets, has sample files to download, and explains the commands, recipes and manifest.
+
 This package is under the Mozilla Public License 2.0, in LICENSE.
