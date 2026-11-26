@@ -176,9 +176,9 @@
 </div>
   <p>
     The archives are named after the program, the version, the system and the processor, such as
-    <code>tfg_0.5.0_linux_amd64.tar.gz</code> or
-    <code>tfg-gui_0.5.0_windows_amd64.zip</code>. On Windows x64 the release also has an
-    installer, <code>tfg-setup_0.5.0_windows_amd64.msi</code>.
+    <code>tfg_0.6.0_linux_amd64.tar.gz</code> or
+    <code>tfg-gui_0.6.0_windows_amd64.zip</code>. On Windows x64 the release also has an
+    installer, <code>tfg-setup_0.6.0_windows_amd64.msi</code>.
   </p>
   <p>
     The Windows and macOS programs are signed, so they start without a warning about an unknown
@@ -198,7 +198,7 @@
     matching checksum says the archive arrived whole. With the GitHub command line installed, the
     attestation also says the release workflow of this project made it.
   </p>
-  <pre><code>tfg_version=0.5.0
+  <pre><code>tfg_version=0.6.0
 archive=tfg_${tfg_version}_linux_amd64.tar.gz
 url=https://github.com/donislawdev/TestingFilesGenerator/releases/download/v$tfg_version
 curl -fsSLO "$url/$archive"
@@ -218,7 +218,7 @@ gh attestation verify "$archive" --repo donislawdev/TestingFilesGenerator --pred
     release archive and nothing else, and it runs with no network. Name the version rather than
     <code>latest</code>, so the same recipe gives the same files next month too.
   </p>
-  <pre><code>docker run --rm --network none -v "${PWD}:/work" ghcr.io/donislawdev/tfg:0.5.0 generate --format pdf --size 1mb</code></pre>
+  <pre><code>docker run --rm --network none -v "${PWD}:/work" ghcr.io/donislawdev/tfg:0.6.0 generate --format pdf --size 1mb</code></pre>
   <p>
     The files land in the current directory. On Linux add <code>--user "$(id -u):$(id -g)"</code>, so
     the image may write there and the files belong to you. With no directory mounted, the run stops
@@ -301,7 +301,7 @@ go build -tags "$(cat .github/build-tags)" ./cmd/tfg</code></pre>
 <footer class="footer">
   <div class="wrap footer-inner">
     <div class="footer-col">
-      <p class="footer-brand">Testing Files Generator 0.5.0</p>
+      <p class="footer-brand">Testing Files Generator 0.6.0</p>
       <p class="muted">Test files for QA, at any exact size, with a manifest that states how your system should react to each one.</p>
     </div>
     <div class="footer-col">
