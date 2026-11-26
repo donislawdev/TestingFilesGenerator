@@ -55,6 +55,10 @@ because it turns other people's test suites red.
   install commands.
 - **The README says what the tool can do in full**: presets, damaged files, a
   name no disk stores, the tools, and the packages for pytest and Node.
+- **After a run, Open folder, Open manifest and Open instructions get a line of
+  their own** under Preview and Generate in the window, when they do not fit
+  beside them. Preview and Generate stay where they were, and the next run
+  starts without the form moving.
 
 ### Fixed
 

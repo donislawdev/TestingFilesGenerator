@@ -66,6 +66,7 @@ func TestACommandCopiedFromSeveralBatchesMakesTheFilesTheWindowMakes(t *testing.
 	// folder the terminal is in, where Generate refuses.
 	setBox(t, fields, recipe.KeyOutputDir, "")
 	press(t, body, text.ButtonCopyCommand())
+	screen.Settled()
 	if host.copied != "" || findField(fields, recipe.KeyOutputDir).Saying() == "" {
 		t.Errorf("with the output folder emptied the clipboard holds %q and the box says %q", host.copied, findField(fields, recipe.KeyOutputDir).Saying())
 	}
@@ -79,7 +80,7 @@ func TestACommandCopiedFromSeveralBatchesMakesTheFilesTheWindowMakes(t *testing.
 		t.Run(filepath.Base(shell), func(t *testing.T) {
 			fromScript := t.TempDir()
 			setBox(t, fields, recipe.KeyOutputDir, fromScript)
-			script := copiedFrom(t, host, body)
+			script := copiedFrom(t, host, body, screen.Settled)
 			last := script[strings.LastIndex(script, "\n")+1:]
 			if !strings.HasPrefix(last, commandline.Name+" ") {
 				t.Fatalf("the last command does not start tfg by its name, so the stand in put first on PATH is not what runs:\n%s", script)

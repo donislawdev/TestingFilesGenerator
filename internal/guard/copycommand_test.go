@@ -64,7 +64,7 @@ func TestACommandCopiedFromSingleBatchMakesTheFilesTheWindowMakes(t *testing.T) 
 
 	fromLine := t.TempDir()
 	entryUnder(t, content, text.FieldOutputDir()).SetText(fromLine)
-	line := copiedFrom(t, host, content)
+	line := copiedFrom(t, host, content, gen.Settled)
 	for _, flag := range []string{commandline.Format, commandline.Set, commandline.Count, commandline.ID,
 		commandline.NameTemplate, commandline.Seed, commandline.Damage, commandline.Clean, commandline.Out} {
 		if !strings.Contains(line, flag) {
@@ -96,7 +96,7 @@ func TestACommandCopiedFromPresetsMakesTheFilesTheWindowMakes(t *testing.T) {
 
 	fromLine := t.TempDir()
 	entryUnder(t, content, text.FieldOutputDir()).SetText(fromLine)
-	line := copiedFrom(t, host, content)
+	line := copiedFrom(t, host, content, screen.Settled)
 	for _, flag := range []string{commandline.Preset, "--limit", "--spread", commandline.Format, commandline.Seed} {
 		if !strings.Contains(line, flag) {
 			t.Fatalf("the copied line has no %s:\n%s", flag, line)
@@ -133,7 +133,7 @@ func TestACommandCopiedFromToolsReadsTheFileTheBoxNames(t *testing.T) {
 	setBox(t, fields, "file", file)
 	setBox(t, fields, "algorithm", "sha256")
 
-	line := copiedFrom(t, host, content)
+	line := copiedFrom(t, host, content, screen.Settled)
 	out := runCopied(t, line)
 	sum := sha256.Sum256(body)
 	if !strings.Contains(out, hex.EncodeToString(sum[:])) {
@@ -158,6 +158,10 @@ func TestCopyCommandRefusesWhatGenerateRefusesAndCopiesNothing(t *testing.T) {
 		{"a size that is not a size", "", "size", "ten", "10kb", ""},
 		{"a name template with a tab in it", "", "name", "a\tb_{index}.txt", "ab_{index}.txt", text.CommandControlCharacter()},
 		{"a damage setting with a comma in it", damage.ZeroHead, damage.SettingBytes, "1,6", "16", text.CommandCommaInDamage()},
+		// The line leaves an empty flag out, and without --id the command
+		// runs under the name it fills in itself - so until 2026-11-26 the copy
+		// of this form ran where Generate refused (review of #264, remark 7).
+		{"a batch name left empty", "", engine.SettingID, "", "files", ""},
 		// The command does not refuse this one itself: without --out it writes
 		// into the folder the terminal is in, where the window refuses.
 		{"an output folder left empty", "", engine.SettingOutDir, "", os.TempDir(), ""},
@@ -183,6 +187,7 @@ func TestCopyCommandRefusesWhatGenerateRefusesAndCopiesNothing(t *testing.T) {
 				t.Fatalf("the box holds %q rather than %q, so there is nothing to refuse", got, c.bad)
 			}
 			press(t, content, text.ButtonCopyCommand())
+			gen.Settled()
 			if host.copied != "" {
 				t.Errorf("a refused form put %q on the clipboard", host.copied)
 			}
@@ -193,6 +198,7 @@ func TestCopyCommandRefusesWhatGenerateRefusesAndCopiesNothing(t *testing.T) {
 
 			setBox(t, fields, c.box, c.good)
 			press(t, content, text.ButtonCopyCommand())
+			gen.Settled()
 			if host.copied == "" {
 				t.Fatalf("the form put right copied nothing either, so the refusal above proves nothing")
 			}
@@ -205,10 +211,12 @@ func TestCopyCommandRefusesWhatGenerateRefusesAndCopiesNothing(t *testing.T) {
 
 // copiedFrom presses Copy command and answers the line, after asking that the
 // status line says which shell it was written for.
-func copiedFrom(t *testing.T, host *fakeHost, o fyne.CanvasObject) string {
+func copiedFrom(t *testing.T, host *fakeHost, o fyne.CanvasObject, settled func()) string {
 	t.Helper()
 	host.copied = ""
 	press(t, o, text.ButtonCopyCommand())
+	// Where tfg is, is asked on a worker - the copy lands when it answers.
+	settled()
 	if host.copied == "" {
 		t.Fatalf("Copy command put nothing on the clipboard. The screen says: %s", textIn(o))
 	}

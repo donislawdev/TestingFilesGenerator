@@ -85,7 +85,10 @@ const (
 	// directory moved out of engine/engine.go into errors.go, so the window's
 	// Copy command gives it in the same words. engine/engine.go is still the
 	// longest.
-	longestFile = 384
+	// Lowered from 384 on 2026-11-26: the refusal of a target with no id moved
+	// out of engine/engine.go into errors.go the same way, for the same
+	// button. engine/engine.go is still the longest.
+	longestFile = 382
 
 	// Depth answers a different question than length, and it is the better
 	// question of the two. A hundred line function that is flat reads top to

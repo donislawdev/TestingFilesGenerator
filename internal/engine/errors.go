@@ -312,3 +312,18 @@ func (e *CollisionError) Said() core.Said {
 		"%s already exists and this run will not write over it. Generate into an empty directory, or remove the file first",
 		core.A("Path", core.Shown(e.Path)))
 }
+
+// MissingID is the refusal of a target with no id, or nil when it has one.
+//
+// Exported for the window, which asks it before it writes a command line as
+// well as before a run: a line with --id left out runs under the id the command
+// line fills in, so without this the copy of a form that Generate refuses would
+// run.
+func MissingID(id string) error {
+	if id != "" {
+		return nil
+	}
+	return &RecipeError{Setting: SettingID,
+		Detail:  core.Says("engine.NoID", "a target has no id"),
+		Because: core.Says("engine.NoIDWhy", "every target needs a stable id, it anchors the seed and links to the manifest")}
+}

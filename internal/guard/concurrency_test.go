@@ -48,6 +48,11 @@ var mayBeConcurrent = map[string]string{
 	// os.Stat on a worker, the answer back through fyne.Do, nothing shared but
 	// a count read on the interface thread.
 	"internal/gui/window/dropping.go": "what a dropped path is gets asked beside the window, so a network path that does not answer cannot freeze it",
+	// The same reason for the same kind of question: Copy command asks every
+	// folder on PATH whether tfg is in it, and one on a network host that does
+	// not answer took 21.0 s on 2026-11-26. The newest press wins, counted on
+	// the interface thread, and a guard waits on the group.
+	"internal/gui/window/copycommand.go": "where tfg is gets asked beside the window, so a folder on PATH that does not answer cannot freeze it",
 	// Signals arrive on a channel by definition, and the handler has to run
 	// beside the work it interrupts.
 	"cmd/tfg/main.go": "the interrupt handler has to run beside the work it stops",

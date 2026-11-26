@@ -595,7 +595,9 @@ func (r *runner) onGenerate() {
 	// Remembered here rather than read back afterwards, because the box on the
 	// screen can be edited while a run is going and the button has to open
 	// where the files ACTUALLY went. Hidden first, so a run that produces
-	// nothing does not leave the offer from the run before it standing.
+	// nothing does not leave the offer from the run before it standing - with
+	// the row held at its height, so their line does not go with them.
+	r.busy.keepRowHeight()
 	r.offer.forget()
 	r.offer.wroteInto = opt.OutDir
 	r.startRun(targets, opt)
@@ -824,8 +826,12 @@ func (r *runner) HoldWhileWriting(fn func(ctx context.Context)) { r.busy.writing
 // that distinction disappears, because there fyne.Do runs on the calling
 // goroutine, so the callback has already run by the time the channel closes -
 // which is why a guard may read the screen the moment this returns, and why the
-// limit is a production one rather than a test one.
-func (r *runner) Settled() { r.work.settled() }
+// limit is a production one rather than a test one. The search behind Copy
+// command is waited for the same way, with the same limit.
+func (r *runner) Settled() {
+	r.work.settled()
+	r.busy.settledLookups()
+}
 
 // wholeNumber reads a plain count out of a box.
 //

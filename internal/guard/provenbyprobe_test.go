@@ -492,4 +492,23 @@ var provenByProbe = map[string]string{
 	"TestAValueNoLineCanCarryIsRefusedUnderItsSetting": "every row requires a refusal of one kind under one setting, so a " +
 		"writer that refused nothing, or refused under another name, fails every row. The rows of a saved text were red on " +
 		"2026-11-25 with the check of the line that ends it switched off.",
+	// The review of #264, 2026-11-26 (docs/REVIEW-264-2026-11-25.md). Each was
+	// broken once through go test -overlay, the tree untouched, and the row
+	// for an emptied batch name of the guard above was red the same way with
+	// the window no longer asking engine.MissingID.
+	"TestTheBarsButtonsNeverStandOverOneAnother": "its own canary - a bar whose offers stand in a row that cannot wrap, in " +
+		"a column as wide as the window allows, must be found with buttons over one another - and broken on 2026-11-26 by " +
+		"building the work screens' row with ButtonRow again: red.",
+	"TestTheFormDoesNotMoveWhenARunStartsAfterOneThatOfferedSomething": "broken on 2026-11-26 by no longer holding the row " +
+		"before the offers are taken away: red, the form grew 41 px at the press of Generate. It asserts that the offers " +
+		"stood on a line of their own first, or it asks nothing.",
+	"TestCopyCommandLeavesTheWindowFreeWhileItLooksForTfg": "broken on 2026-11-26, after the review of #266 moved the " +
+		"hold inside the search, by searching on the thread of the press: red, the press had not returned. And by " +
+		"starting a search per press: red, three searches for three presses. It asks that the line of the last press " +
+		"reaches the clipboard once the search is let go, so a press that copied nothing does not pass.",
+	"TestARefusedPressCopiesNothingWhileAnEarlierSearchAnswers": "broken on 2026-11-26 by forgetting the earlier " +
+		"press only after the form was taken: red, the earlier search copied its line over the refusal. It asserts " +
+		"the refusal first.",
+	"TestAnOfferWiderThanTheRunButtonsStaysInsideTheBar": "broken on 2026-11-26 by leaving the widest offer out of " +
+		"the row's minimum: red, the offer ended at 423 px in a window 107 px wide.",
 }
