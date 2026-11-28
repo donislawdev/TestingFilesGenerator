@@ -14,63 +14,7 @@ because it turns other people's test suites red.
 
 ## [Unreleased]
 
-### Added
-
-- **Copy command in the window.** The Single batch, Presets, Several batches
-  and Tools screens put on the clipboard the `tfg` command that does what the
-  screen would do, so a set you found in the window can go into a script or a
-  pipeline. It is written for PowerShell on Windows and for bash or zsh on
-  macOS and Linux, and it starts `tfg` the way your computer finds it. On
-  Several batches it saves the recipe of the screen as a file in the folder
-  the terminal is open in, then runs it.
-- **Sample files to download on the website.** One file of every format at
-  exactly 1 MB, corrupt PDF, Word, Excel, PowerPoint, JPG, PNG, MP4 and ZIP
-  files, CSV, JSON and Excel tables for an import, and placeholder pictures in
-  common sizes. Each comes with its SHA-256 and what the manifest expects a
-  system to do with it. All of them come from one recipe published beside
-  them, so `tfg generate samples.yaml` makes the same bytes on any machine.
-- **File upload test cases on the website.** A checklist from the size limit
-  to a file name that leaves its folder, each case with the file that tests it
-  and the outcome to expect, in every language of the site.
-- **A page about the tools on the website.** Checking an archive for zip slip
-  and zip bombs before unpacking it, and checking or writing SHA-256 checksums.
-- **Documentation on the website, in English.** Install, getting started,
-  every command with every flag and its default, every key of a recipe, every
-  field of the manifest, every setting of every format, the packages for
-  pytest and Node, and the desktop window screen by screen. The lists come
-  from the program when the site is built, so they say what the version you
-  download does. The documentation page in the other languages leads to them,
-  with a line about each page in your language.
-- **Recipes to download.** Ready recipes for an image upload, a document
-  upload, a spreadsheet import, archives, email, video and sound, a CI smoke
-  test and ten thousand files, and every preset as a recipe. Each writes into a
-  folder of its own name, so several can run one after another.
-
-### Changed
-
-- **npm, PyPI and the container image get stable releases only.** A release
-  candidate stays a prerelease on GitHub, so `npm install`, `pip install` and
-  the image never give you one. While the code on `main` is a release
-  candidate, the README and the website name the last stable release in their
-  install commands.
-- **The README says what the tool can do in full**: presets, damaged files, a
-  name no disk stores, the tools, and the packages for pytest and Node.
-- **After a run, Open folder, Open manifest and Open instructions get a line of
-  their own** under Preview and Generate in the window, when they do not fit
-  beside them. Preview and Generate stay where they were, and the next run
-  starts without the form moving.
-
-### Fixed
-
-- **`tfg tool checksum-write` no longer promises to notice any change in the
-  folder.** Its question is now "How will I know later that none of these files
-  changed?". `checksum-check` checks the files the checksum file lists, so a
-  file added to the folder later is not noticed.
-- **The examples in the README and on the documentation page each write into a
-  folder of their own.** Run one after another, the second used to stop at the
-  manifest the first had left in the same folder.
-
-## [0.6.0-rc1] - 2026-11-18
+## [0.6.0] - 2026-11-28
 
 ### Breaking
 
@@ -129,6 +73,36 @@ because it turns other people's test suites red.
   0.5.0 wrote.
 
 ### Added
+
+- **Copy command in the window.** The Single batch, Presets, Several batches
+  and Tools screens put on the clipboard the `tfg` command that does what the
+  screen would do, so a set you found in the window can go into a script or a
+  pipeline. It is written for PowerShell on Windows and for bash or zsh on
+  macOS and Linux, and it starts `tfg` the way your computer finds it. On
+  Several batches it saves the recipe of the screen as a file in the folder
+  the terminal is open in, then runs it.
+- **Sample files to download on the website.** One file of every format at
+  exactly 1 MB, corrupt PDF, Word, Excel, PowerPoint, JPG, PNG, MP4 and ZIP
+  files, CSV, JSON and Excel tables for an import, and placeholder pictures in
+  common sizes. Each comes with its SHA-256 and what the manifest expects a
+  system to do with it. All of them come from one recipe published beside
+  them, so `tfg generate samples.yaml` makes the same bytes on any machine.
+- **File upload test cases on the website.** A checklist from the size limit
+  to a file name that leaves its folder, each case with the file that tests it
+  and the outcome to expect, in every language of the site.
+- **A page about the tools on the website.** Checking an archive for zip slip
+  and zip bombs before unpacking it, and checking or writing SHA-256 checksums.
+- **Documentation on the website, in English.** Install, getting started,
+  every command with every flag and its default, every key of a recipe, every
+  field of the manifest, every setting of every format, the packages for
+  pytest and Node, and the desktop window screen by screen. The lists come
+  from the program when the site is built, so they say what the version you
+  download does. The documentation page in the other languages leads to them,
+  with a line about each page in your language.
+- **Recipes to download.** Ready recipes for an image upload, a document
+  upload, a spreadsheet import, archives, email, video and sound, a CI smoke
+  test and ten thousand files, and every preset as a recipe. Each writes into a
+  folder of its own name, so several can run one after another.
 
 - **A preset of picture sizes.** `tfg generate --preset picture-sizes` writes
   a picture at each of 21 common sizes: HD, Full HD, QHD and 4K screens,
@@ -319,7 +293,18 @@ because it turns other people's test suites red.
   `--user "$(id -u):$(id -g)"` to write there. README also shows a step that
   installs `tfg` on Windows and macOS runners in GitHub Actions.
 
+- **npm, PyPI and the Docker image get stable releases only.** A release
+  candidate stays a prerelease on GitHub, so `npm install`, `pip install` and
+  the image never give you one.
+
 ### Changed
+
+- **The README says what the tool can do in full**: presets, damaged files, a
+  name no disk stores, the tools, and the packages for pytest and Node.
+- **After a run, Open folder, Open manifest and Open instructions get a line of
+  their own** under Preview and Generate in the window, when they do not fit
+  beside them. Preview and Generate stay where they were, and the next run
+  starts without the form moving.
 
 - **Working out the smallest file of a picture takes half the time.** A
   picture with its width and height set and `smallest` as its size was
@@ -443,6 +428,14 @@ because it turns other people's test suites red.
   The field was optional, and `manifest_version` does not change.
 
 ### Fixed
+
+- **`tfg tool checksum-write` no longer promises to notice any change in the
+  folder.** Its question is now "How will I know later that none of these files
+  changed?". `checksum-check` checks the files the checksum file lists, so a
+  file added to the folder later is not noticed.
+- **The examples in the README and on the documentation page each write into a
+  folder of their own.** Run one after another, the second used to stop at the
+  manifest the first had left in the same folder.
 
 - **The title bar of the window is dark on Windows set to light apps.** The
   window is always dark, and on a Windows set to light apps its title bar was
@@ -3272,8 +3265,8 @@ because it turns other people's test suites red.
 
 Initial release.
 
-[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.6.0-rc1...HEAD
-[0.6.0-rc1]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.5.0...v0.6.0-rc1
+[Unreleased]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/donislawdev/TestingFilesGenerator/compare/v0.2.0...v0.3.0

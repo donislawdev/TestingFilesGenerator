@@ -9,8 +9,8 @@ package version
 //
 // Set to 0.1.0 by the owner on 2026-08-02, raised to 0.2.0 on 2026-08-28, to
 // 0.3.0-rc1 on 2026-09-03, to 0.3.0 on 2026-09-09, to 0.4.0 on 2026-09-25, to
-// 0.5.0 on 2026-10-20 and to 0.6.0-rc1 on 2026-11-18, every one of them by
-// the owner. It stopped being an internal number the day 0.1.0 was published: this
+// 0.5.0 on 2026-10-20, to 0.6.0-rc1 on 2026-11-18 and to 0.6.0 on 2026-11-28,
+// every one of them by the owner. It stopped being an internal number the day 0.1.0 was published: this
 // is what somebody compares their build against when a hash they stored months
 // ago does not match.
 //
@@ -35,10 +35,9 @@ package version
 // the 26 changed. The settings of html and eml that moved bytes on the way to
 // this release were never in one, so they are listed under Added.
 //
-// 0.6.0-rc1 is a release candidate, and the owner put it out without the
-// release check: what it moves is said under Breaking, and the comparison of
-// every format with the published 0.5.0 is the check 0.6.0 itself goes
-// through.
+// 0.6.0-rc1 was a release candidate, and the owner put it out without the
+// release check. 0.6.0 is everything it carried and what came after it, and
+// what it moves against the published 0.5.0 is said under Breaking.
 //
 // The absence of a suffix is a decision rather than tidying up. The release
 // workflow marks a release as a prerelease when the TAG NAME carries a hyphen,
@@ -50,8 +49,9 @@ package version
 // the workflow greps for a heading naming exactly it before it will build
 // anything. The entries that shipped as 0.3.0-rc1 were folded into the 0.3.0
 // section on 2026-09-09 for the same reason the version has one place: someone
-// upgrading from 0.2.0 needs one list of what changed, not two.
-const Version = "0.6.0-rc1"
+// upgrading from 0.2.0 needs one list of what changed, not two. The entries
+// of 0.6.0-rc1 went into the 0.6.0 section the same way.
+const Version = "0.6.0"
 
 // LicenceNotice is what "tfg license" prints and what the window's about
 // screen shows.
